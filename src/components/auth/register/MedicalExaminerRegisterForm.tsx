@@ -4,13 +4,13 @@ import {
   Step1PersonalInfo,
   Step2MedicalCredentials,
   Step3IMEExperince,
-  Step4Specializations,
-  Step5Experience,
-  Step6Availability,
-  Step7Documents,
-  Step8Verification,
-  Step9Review,
-  Step10Completion,
+  Step4ExperienceDetails,
+  Step5Availablity,
+  Step6Legal,
+  Step7SubmitConfirmation,
+  Step8ThankYou,
+  Step9Password,
+  Step10Success,
 } from "./medicalExaminerSteps";
 import ProgressIndicator from "./progressIndicator/ProgressIndicator";
 
@@ -21,13 +21,13 @@ export const MedicalExaminerRegisterForm: React.FC = () => {
     { component: Step1PersonalInfo },
     { component: Step2MedicalCredentials },
     { component: Step3IMEExperince },
-    { component: Step4Specializations },
-    { component: Step5Experience },
-    { component: Step6Availability },
-    { component: Step7Documents },
-    { component: Step8Verification },
-    { component: Step9Review },
-    { component: Step10Completion },
+    { component: Step4ExperienceDetails },
+    { component: Step5Availablity },
+    { component: Step6Legal },
+    { component: Step7SubmitConfirmation },
+    { component: Step8ThankYou },
+    { component: Step9Password },
+    { component: Step10Success },
   ];
 
   const goToNext = () => {

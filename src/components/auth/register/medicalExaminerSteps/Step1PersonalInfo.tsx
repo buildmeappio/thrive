@@ -6,15 +6,9 @@ import { Dropdown } from "~/components/ui/Dropdown";
 import { provinceOptions } from "~/config/medicalExaminerRegister/ProvinceDropdownOptions";
 import ContinueButton from "~/components/ui/ContinueButton";
 import BackButton from "~/components/ui/BackButton";
+import type { MedExaminerRegStepProps } from "~/types";
 
-interface Step1PersonalInfoProps {
-  onNext: () => void;
-  onPrevious: () => void;
-  currentStep: number;
-  totalSteps: number;
-}
-
-export const Step1PersonalInfo: React.FC<Step1PersonalInfoProps> = ({
+export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
   onNext,
   onPrevious,
   currentStep,

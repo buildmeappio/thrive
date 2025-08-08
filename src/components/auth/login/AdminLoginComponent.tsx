@@ -7,9 +7,8 @@ export function AdminLoginComponent() {
   return (
     <div className="flex min-h-screen flex-col justify-between md:flex-row">
 
-      <div className="mt-14 flex flex-1 flex-col pl-40">
-        <h1 className="mb-8 text-xl font-bold md:text-4xl">
-
+      <div className="flex flex-1 flex-col justify-center items-center md:justify-start md:items-start md:mt-14 md:pl-40 px-4 sm:px-8">
+        <h1 className="mb-6 text-2xl font-bold sm:mb-8 sm:text-3xl md:text-4xl text-center md:text-left">
           Welcome To{" "}
           <span className="bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] bg-clip-text text-transparent">
             Thrive

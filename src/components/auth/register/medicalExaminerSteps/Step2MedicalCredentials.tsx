@@ -7,17 +7,14 @@ import { Dropdown } from "~/components/ui/Dropdown";
 import { medicalSpecialtyOptions } from "~/config/medicalExaminerRegister/MedicalSpecialtyDropdownOptions";
 import ContinueButton from "~/components/ui/ContinueButton";
 import BackButton from "~/components/ui/BackButton";
+import type { MedExaminerRegStepProps } from "~/types";
 
-interface Step2MedicalCredentialsProps {
-  onNext: () => void;
-  onPrevious: () => void;
-  currentStep: number;
-  totalSteps: number;
-}
-
-export const Step2MedicalCredentials: React.FC<
-  Step2MedicalCredentialsProps
-> = ({ onNext, onPrevious, currentStep, totalSteps }) => {
+export const Step2MedicalCredentials: React.FC<MedExaminerRegStepProps> = ({
+  onNext,
+  onPrevious,
+  currentStep,
+  totalSteps,
+}) => {
   const medicalLicenseRef = useRef<HTMLInputElement>(null);
   const cvResumeRef = useRef<HTMLInputElement>(null);
   const licenseExpiryRef = useRef<HTMLInputElement>(null);
