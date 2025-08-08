@@ -4,12 +4,11 @@ import { Button } from "~/components/ui/button";
 import Image from "next/image";
 import { PasswordInput } from "~/components/ui/PasswordInput";
 import { ArrowRight } from "lucide-react";
-
 export function MedicalExaminerLoginComponent() {
   return (
     <div className="flex min-h-screen flex-col justify-between md:flex-row">
-      <div className="mt-14 flex flex-1 flex-col pl-40">
-        <h1 className="mb-8 text-xl font-bold md:text-4xl">
+      <div className="px-6 flex flex-1 flex-col justify-center items-center md:mt-14 md:flex-1 md:pl-40 md:px-0 md:items-start md:justify-start">
+        <h1 className="mb-8 text-3xl font-bold text-center md:text-4xl md:text-left">
           Welcome To <span className="text-[#00A8FF]">Thrive</span>{" "}
         </h1>
         <div className="w-full max-w-sm rounded-xl border-[#E9EDEE] bg-white p-6 shadow-xs">
@@ -49,7 +48,7 @@ export function MedicalExaminerLoginComponent() {
           </form>
         </div>
       </div>
-      <div className="relative mt-10 w-[38%] overflow-hidden">
+      <div className="hidden md:block relative mt-10 w-[38%] overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src="/doctor-gettingStarted.png"
