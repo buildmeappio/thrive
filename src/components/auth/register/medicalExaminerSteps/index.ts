@@ -1,6 +1,6 @@
 export { Step1PersonalInfo } from "./Step1PersonalInfo";
-export { Step2ProfessionalInfo } from "./Step2ProfessionalInfo";
-export { Step3Credentials } from "./Step3Credentials";
+export { Step2MedicalCredentials } from "./Step2MedicalCredentials";
+export { Step3IMEExperince } from "./Step3IMEExperience";
 export { Step4Specializations } from "./Step4Specializations";
 export { Step5Experience } from "./Step5Experience";
 export { Step6Availability } from "./Step6Availability";

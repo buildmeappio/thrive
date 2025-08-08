@@ -7,7 +7,7 @@ import { PasswordInput } from "~/components/ui/PasswordInput";
 export function AdminLoginComponent() {
   return (
     <div className="flex min-h-screen flex-col justify-between md:flex-row">
-      <div className="mt-14 pl-40 flex flex-1 flex-col">
+      <div className="mt-14 flex flex-1 flex-col pl-40">
         <h1 className="mb-8 text-xl font-bold md:text-4xl">
           Welcome To{" "}
           <span className="bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] bg-clip-text text-transparent">
