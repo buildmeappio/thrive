@@ -7,15 +7,9 @@ import { languageOptions } from "~/config/medicalExaminerRegister/LanguageDropdo
 import { Checkbox } from "~/components/ui/checkbox";
 import ContinueButton from "~/components/ui/ContinueButton";
 import BackButton from "~/components/ui/BackButton";
+import type { MedExaminerRegStepProps } from "~/types";
 
-interface Step3IMEExperinceProps {
-  onNext: () => void;
-  onPrevious: () => void;
-  currentStep: number;
-  totalSteps: number;
-}
-
-export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
+export const Step3IMEExperince: React.FC<MedExaminerRegStepProps> = ({
   onNext,
   onPrevious,
   currentStep,
