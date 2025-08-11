@@ -46,30 +46,20 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <div className="flex min-h-fit flex-col px-4 pt-4 pb-6 sm:px-6 sm:py-6 md:px-0">
       <div className="flex-1 space-y-4 sm:space-y-6">
-        {/* Desktop View - Heading */}
-        <div className="text-center hidden md:block">
-          <h3 className="my-10 text-3xl font-medium text-[#140047]">
-            Availability & Preferences
-          </h3>
-        </div>
+        <h3 className="my-2 text-center text-xl font-medium whitespace-nowrap text-[#140047] md:my-10 md:text-2xl">
+          Availability & Preferences
+        </h3>
 
-        {/* Mobile View - Single line heading */}
-        <div className="text-center md:hidden">
-          <h3 className="my-2 text-xl font-medium text-[#140047] whitespace-nowrap">
-            Availability & Preferences
-          </h3>
-        </div>
-
-        <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-x-4 sm:gap-x-14 gap-y-4 sm:gap-y-6 md:grid-cols-2">
+        <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-4 sm:mt-8 sm:gap-x-14 sm:gap-y-6 md:grid-cols-2">
           <Dropdown
             id="preferredRegions"
             label="Preferred Regions"
             value={formData.preferredRegions}
             onChange={(value) => handleInputChange("preferredRegions", value)}
             options={regionOptions}
-            required={true}
+            required
             placeholder="Toronto"
           />
 
@@ -79,25 +69,26 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
             value={formData.maxTravelDistance}
             onChange={(value) => handleInputChange("maxTravelDistance", value)}
             options={travelDistanceOptions}
-            required={true}
+            required
             placeholder="Up to 25 km"
           />
+
           <Dropdown
             id="daysAvailable"
             label="Days Available"
             value={formData.daysAvailable}
             onChange={(value) => handleInputChange("daysAvailable", value)}
             options={daysOptions}
-            required={true}
+            required
             placeholder="Monday"
           />
 
           <div className="space-y-2">
-            <Label className="text-black text-sm sm:text-base">
+            <Label className="text-sm">
               Time Windows<span className="text-red-500">*</span>
             </Label>
-            <div className="flex flex-row flex-wrap gap-x-4 gap-y-2 sm:gap-x-6 pt-2">
-              <label className="flex cursor-pointer items-center space-x-2">
+            <div className="flex flex-row flex-wrap gap-x-4 gap-y-2 pt-2 sm:gap-x-6">
+              <div className="flex items-center space-x-2">
                 <Checkbox
                   checked={formData.timeWindows.morning}
                   onCheckedChange={(checked) =>
@@ -106,9 +97,12 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
                   checkedColor="#00A8FF"
                   checkIconColor="white"
                 />
-                <span className="text-sm font-medium text-gray-700">Morning</span>
-              </label>
-              <label className="flex cursor-pointer items-center space-x-2">
+                <Label className="text-sm font-medium text-gray-700">
+                  Morning
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
                 <Checkbox
                   checked={formData.timeWindows.afternoon}
                   onCheckedChange={(checked) =>
@@ -117,11 +111,12 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
                   checkedColor="#00A8FF"
                   checkIconColor="white"
                 />
-                <span className="text-sm font-medium text-gray-700">
+                <Label className="text-sm font-medium text-gray-700">
                   Afternoon
-                </span>
-              </label>
-              <label className="flex cursor-pointer items-center space-x-2">
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
                 <Checkbox
                   checked={formData.timeWindows.evening}
                   onCheckedChange={(checked) =>
@@ -130,14 +125,16 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
                   checkedColor="#00A8FF"
                   checkIconColor="white"
                 />
-                <span className="text-sm font-medium text-gray-700">Evening</span>
-              </label>
+                <Label className="text-sm font-medium text-gray-700">
+                  Evening
+                </Label>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-4 sm:mt-6 space-y-3">
-          <Label className="text-black text-sm sm:text-base">
+        <div className="mt-4 space-y-3 sm:mt-6">
+          <Label className="text-sm">
             Accept Virtual Assessments<span className="text-red-500">*</span>
           </Label>
           <RadioGroup
@@ -177,8 +174,8 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
             </div>
           </RadioGroup>
         </div>
-        
-        <div className="mt-6 sm:mt-auto flex justify-between items-center gap-4 pt-6 sm:pt-8">
+
+        <div className="mt-6 flex items-center justify-between gap-4 pt-6 sm:mt-auto sm:pt-8">
           <BackButton
             onClick={onPrevious}
             disabled={currentStep === 1}

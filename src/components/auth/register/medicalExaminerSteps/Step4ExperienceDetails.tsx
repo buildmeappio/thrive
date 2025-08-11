@@ -23,22 +23,16 @@ export const Step4ExperienceDetails: React.FC<MedExaminerRegStepProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-4 sm:px-6 lg:px-8 py-4 sm:py-6 sm:pt-0">
-      <div className="flex-1 space-y-4 sm:space-y-6 sm:space-y-0">
-        {/* Desktop View - Heading */}
-       <div className="text-center mt-0 sm:mt-0 hidden md:block">
-  <h3 className="my-10 text-3xl whitespace-nowrap font-medium text-[#140047]">Share Some Details About Your Past Experience</h3>
-</div>
-
-        {/* Mobile View - Center aligned heading */}
-        <div className="text-center mt-0 sm:mt-0 md:hidden">
-          <h3 className="my-2 text-xl font-medium text-[#140047]">
+    <div className="sm:px- flex min-h-fit flex-col px-4 pt-4 pb-6 sm:py-6 sm:pt-0 md:px-0">
+      <div className="flex-1 space-y-4 sm:space-y-6">
+        <div className="mt-0 text-center sm:mt-0">
+          <h3 className="my-2 text-xl font-medium text-[#140047] md:my-10 md:text-2xl md:whitespace-nowrap">
             Share Some Details About Your Past Experience
           </h3>
         </div>
 
-        <div className="flex-1 flex flex-col">
-          <div className="space-y-3 flex-1">
+        <div className="flex flex-1 flex-col">
+          <div className="flex-1 space-y-3">
             <div className="relative">
               <Textarea
                 id="experienceDetails"
@@ -47,22 +41,22 @@ export const Step4ExperienceDetails: React.FC<MedExaminerRegStepProps> = ({
                 onChange={(e) =>
                   handleInputChange("experienceDetails", e.target.value)
                 }
-                className="min-h-[150px] sm:min-h-[200px] w-full resize-none text-sm sm:text-base"
+                className="min-h-[150px] w-full resize-none text-sm sm:min-h-[200px] sm:text-base"
                 maxLength={500}
               />
-              <div className="absolute right-2 sm:right-3 bottom-2 sm:bottom-3 text-xs sm:text-sm text-gray-400">
+              <div className="absolute right-2 bottom-2 text-xs text-gray-400 sm:right-3 sm:bottom-3 sm:text-sm">
                 {formData.experienceDetails.length}/500
               </div>
             </div>
             <Label
               htmlFor="experienceDetails"
-              className="-mt-2 text-xs sm:text-sm font-normal text-[#8A8A8A]"
+              className="-mt-2 text-xs font-normal text-[#8A8A8A] sm:text-sm"
             >
               Talk about yourself and your background
             </Label>
           </div>
-          
-          <div className="mt-6 sm:mt-8 lg:mt-auto flex justify-between items-center gap-4 pt-6 sm:pt-8 lg:pt-15 sm:pt-0">
+
+          <div className="mt-8 flex items-center justify-between gap-4 pt-6 sm:mt-8 sm:pt-0 sm:pt-8 lg:mt-auto lg:pt-15">
             <BackButton
               onClick={onPrevious}
               disabled={currentStep === 1}

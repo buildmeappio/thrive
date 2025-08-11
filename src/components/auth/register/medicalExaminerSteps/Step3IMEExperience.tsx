@@ -36,20 +36,12 @@ export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
   };
 
   return (
-    <div className="flex h-full flex-col space-y-6 md:space-y-6 sm:space-y-0 px-4 md:px-0">
-      {/* Desktop View - Heading */}
-      <div className="text-center ">
-        <h3 className="my-4 md:my-10 text-xl md:text-3xl font-normal md:font-medium text-[#140047]">
+    <div className="flex h-full flex-col space-y-6 sm:space-y-0 md:space-y-6 md:px-0 pb-6 px-4 ">
+      <div className="text-center">
+        <h3 className="my-4 text-xl font-normal text-[#140047] md:my-10 md:text-3xl md:font-medium">
           IME Experience & Qualifications
         </h3>
       </div>
-
-      {/* Mobile View - Left aligned heading */}
-      {/* <div className="text-left md:hidden">
-        <h3 className="my-2 text-3xl font-medium text-[#140047]">
-          IME Experience & Qualifications
-        </h3>
-      </div> */}
 
       {/* Form fields */}
       <div className="grid flex-1 grid-cols-1 gap-x-14 gap-y-6 md:grid-cols-2">
@@ -117,7 +109,7 @@ export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
           </div>
         </div>
       </div>
-       <div className="mt-6 sm:mt-auto flex justify-between items-center gap-4 pt-6 sm:pt-8">
+      <div className="mt-1 flex items-center justify-between gap-4 pt-6 sm:mt-auto sm:pt-8">
         <BackButton
           onClick={onPrevious}
           disabled={currentStep === 1}

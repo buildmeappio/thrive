@@ -31,25 +31,14 @@ export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
   };
 
   return (
-    <div className="space-y-6 px-4 md:px-0">
-      {/* Mobile View - Reduced spacing */}
+    <div className="space-y-6 px-4 pb-8 md:px-0">
       <div className="pt-1 md:pt-0">
-        {/* Desktop View - Heading outside */}
-        <div className="text-center hidden md:block">
-          <h3 className="my-10 text-3xl font-medium text-[#140047]">
-            Enter Your Personal Details
-          </h3>
-        </div>
-
-        <div className="mt-0 md:mt-8 grid grid-cols-1 gap-x-14 gap-y-5 md:grid-cols-2">
-          {/* Mobile View - Heading inside form with larger text */}
-          <div className="col-span-1 text-center mt-1 mb-2 md:hidden">
-            <h3 className="text-2xl mt-4 font-medium text-[#140047]">
-              Enter Your Personal Details
-            </h3>
-          </div>
+        <h3 className="mt-4 mb-2 text-center text-2xl font-medium text-[#140047] md:mt-10 md:mb-0 md:text-2xl">
+          Enter Your Personal Details
+        </h3>
+        <div className="mt-0 grid grid-cols-1 gap-x-14 gap-y-5 md:mt-8 md:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="firstName" className="text-black text-sm">
+            <Label htmlFor="firstName" className="text-sm text-black">
               First Name<span className="text-red-500">*</span>
             </Label>
             <Input
@@ -60,7 +49,7 @@ export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName" className="text-black text-sm">
+            <Label htmlFor="lastName" className="text-sm text-black">
               Last Name<span className="text-red-500">*</span>
             </Label>
             <Input
@@ -71,7 +60,7 @@ export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phoneNumber" className="text-black text-sm">
+            <Label htmlFor="phoneNumber" className="text-sm text-black">
               Phone Number<span className="text-red-500">*</span>
             </Label>
             <Input
@@ -83,7 +72,7 @@ export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="emailAddress" className="text-black text-sm">
+            <Label htmlFor="emailAddress" className="text-sm text-black">
               Email Address<span className="text-red-500">*</span>
             </Label>
             <Input
@@ -91,21 +80,25 @@ export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
               type="email"
               placeholder="s.ahmed@precisionmed.ca"
               value={formData.emailAddress}
-              onChange={(e) => handleInputChange("emailAddress", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("emailAddress", e.target.value)
+              }
             />
           </div>
           <Dropdown
             id="provinceOfResidence"
             label="Province of Residence"
             value={formData.provinceOfResidence}
-            onChange={(value) => handleInputChange("provinceOfResidence", value)}
+            onChange={(value) =>
+              handleInputChange("provinceOfResidence", value)
+            }
             options={provinceOptions}
             required={true}
             placeholder="Select Province"
           />
 
           <div className="space-y-2">
-            <Label htmlFor="mailingAddress" className="text-black text-sm">
+            <Label htmlFor="mailingAddress" className="text-sm text-black">
               Mailing Address<span className="text-red-500">*</span>
             </Label>
             <Input
@@ -118,26 +111,9 @@ export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
             />
           </div>
         </div>
-        
-        {/* Mobile View - Buttons in form area, left aligned with same size */}
-        <div className="mt-14 flex flex-row justify-start gap-4 md:hidden">
-          <BackButton
-            onClick={onPrevious}
-            disabled={currentStep === 1}
-            borderColor="#00A8FF"
-            iconColor="#00A8FF"
-          />
-          <ContinueButton
-            onClick={onNext}
-            isLastStep={currentStep === totalSteps}
-            gradientFrom="#89D7FF"
-            gradientTo="#00A8FF"
-          />
-        </div>
       </div>
 
-      {/* Desktop View - Original layout */}
-      <div className="mt-8 hidden md:flex justify-between">
+      <div className="mt-8 flex flex-row justify-start gap-4 md:justify-between">
         <BackButton
           onClick={onPrevious}
           disabled={currentStep === 1}
