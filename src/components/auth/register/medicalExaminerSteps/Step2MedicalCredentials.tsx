@@ -53,14 +53,14 @@ export const Step2MedicalCredentials: React.FC<MedExaminerRegStepProps> = ({
     licenseExpiryRef.current?.showPicker();
   };
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="text-center">
-        <h3 className="my-10 text-3xl font-medium text-[#140047]">
+        <h3 className="my-2 md:my-10 text-xl md:text-3xl mt-4-md:mt-0 font-normal md:font-medium text-[#140047]">
           Enter Your Medical Credentials
         </h3>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-x-14 gap-y-6 md:grid-cols-2">
+      <div className="mt-2 md:mt-8 grid grid-cols-1 gap-x-14 gap-y-6 md:grid-cols-2">
         <Dropdown
           id="medicalSpecialty"
           label="Medical Specialties"
@@ -167,7 +167,7 @@ export const Step2MedicalCredentials: React.FC<MedExaminerRegStepProps> = ({
         </div>
       </div>
 
-      <div className="mt-8 flex justify-between">
+      <div className="mt-4 md:mt-8 flex justify-between">
         <BackButton
           onClick={onPrevious}
           disabled={currentStep === 1}

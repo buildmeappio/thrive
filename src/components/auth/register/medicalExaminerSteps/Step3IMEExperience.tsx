@@ -7,9 +7,15 @@ import { languageOptions } from "~/config/medicalExaminerRegister/LanguageDropdo
 import { Checkbox } from "~/components/ui/checkbox";
 import ContinueButton from "~/components/ui/ContinueButton";
 import BackButton from "~/components/ui/BackButton";
-import type { MedExaminerRegStepProps } from "~/types";
 
-export const Step3IMEExperince: React.FC<MedExaminerRegStepProps> = ({
+interface Step3IMEExperinceProps {
+  onNext: () => void;
+  onPrevious: () => void;
+  currentStep: number;
+  totalSteps: number;
+}
+
+export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
   onNext,
   onPrevious,
   currentStep,
@@ -30,13 +36,20 @@ export const Step3IMEExperince: React.FC<MedExaminerRegStepProps> = ({
   };
 
   return (
-    <div className="flex h-full flex-col space-y-6">
-      {/* Heading */}
-      <div className="text-center">
-        <h3 className="my-10 text-3xl font-medium text-[#140047]">
+    <div className="flex h-full flex-col space-y-6 md:space-y-6 sm:space-y-0 px-4 md:px-0">
+      {/* Desktop View - Heading */}
+      <div className="text-center ">
+        <h3 className="my-4 md:my-10 text-xl md:text-3xl font-normal md:font-medium text-[#140047]">
           IME Experience & Qualifications
         </h3>
       </div>
+
+      {/* Mobile View - Left aligned heading */}
+      {/* <div className="text-left md:hidden">
+        <h3 className="my-2 text-3xl font-medium text-[#140047]">
+          IME Experience & Qualifications
+        </h3>
+      </div> */}
 
       {/* Form fields */}
       <div className="grid flex-1 grid-cols-1 gap-x-14 gap-y-6 md:grid-cols-2">
@@ -104,7 +117,7 @@ export const Step3IMEExperince: React.FC<MedExaminerRegStepProps> = ({
           </div>
         </div>
       </div>
-      <div className="mt-auto flex justify-between pt-15">
+       <div className="mt-6 sm:mt-auto flex justify-between items-center gap-4 pt-6 sm:pt-8">
         <BackButton
           onClick={onPrevious}
           disabled={currentStep === 1}

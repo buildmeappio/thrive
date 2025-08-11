@@ -46,141 +46,152 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h3 className="my-10 text-3xl font-medium text-[#140047]">
-          Availability & Preferences
-        </h3>
-      </div>
+    <div className="min-h-screen flex flex-col px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <div className="flex-1 space-y-4 sm:space-y-6">
+        {/* Desktop View - Heading */}
+        <div className="text-center hidden md:block">
+          <h3 className="my-10 text-3xl font-medium text-[#140047]">
+            Availability & Preferences
+          </h3>
+        </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-x-14 gap-y-6 md:grid-cols-2">
-        <Dropdown
-          id="preferredRegions"
-          label="Preferred Regions"
-          value={formData.preferredRegions}
-          onChange={(value) => handleInputChange("preferredRegions", value)}
-          options={regionOptions}
-          required={true}
-          placeholder="Toronto"
-        />
+        {/* Mobile View - Single line heading */}
+        <div className="text-center md:hidden">
+          <h3 className="my-2 text-xl font-medium text-[#140047] whitespace-nowrap">
+            Availability & Preferences
+          </h3>
+        </div>
 
-        <Dropdown
-          id="maxTravelDistance"
-          label="Max Travel Distance"
-          value={formData.maxTravelDistance}
-          onChange={(value) => handleInputChange("maxTravelDistance", value)}
-          options={travelDistanceOptions}
-          required={true}
-          placeholder="Up to 25 km"
-        />
-        <Dropdown
-          id="daysAvailable"
-          label="Days Available"
-          value={formData.daysAvailable}
-          onChange={(value) => handleInputChange("daysAvailable", value)}
-          options={daysOptions}
-          required={true}
-          placeholder="Monday"
-        />
+        <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-x-4 sm:gap-x-14 gap-y-4 sm:gap-y-6 md:grid-cols-2">
+          <Dropdown
+            id="preferredRegions"
+            label="Preferred Regions"
+            value={formData.preferredRegions}
+            onChange={(value) => handleInputChange("preferredRegions", value)}
+            options={regionOptions}
+            required={true}
+            placeholder="Toronto"
+          />
 
-        <div className="space-y-2">
-          <Label className="text-black">
-            Time Windows<span className="text-red-500">*</span>
-          </Label>
-          <div className="flex items-center space-x-6 pt-2">
-            <label className="flex cursor-pointer items-center space-x-2">
-              <Checkbox
-                checked={formData.timeWindows.morning}
-                onCheckedChange={(checked) =>
-                  handleTimeWindowChange("morning", checked as boolean)
-                }
-                checkedColor="#00A8FF"
-                checkIconColor="white"
-              />
-              <span className="text-sm font-medium text-gray-700">Morning</span>
-            </label>
-            <label className="flex cursor-pointer items-center space-x-2">
-              <Checkbox
-                checked={formData.timeWindows.afternoon}
-                onCheckedChange={(checked) =>
-                  handleTimeWindowChange("afternoon", checked as boolean)
-                }
-                checkedColor="#00A8FF"
-                checkIconColor="white"
-              />
-              <span className="text-sm font-medium text-gray-700">
-                Afternoon
-              </span>
-            </label>
-            <label className="flex cursor-pointer items-center space-x-2">
-              <Checkbox
-                checked={formData.timeWindows.evening}
-                onCheckedChange={(checked) =>
-                  handleTimeWindowChange("evening", checked as boolean)
-                }
-                checkedColor="#00A8FF"
-                checkIconColor="white"
-              />
-              <span className="text-sm font-medium text-gray-700">Evening</span>
-            </label>
+          <Dropdown
+            id="maxTravelDistance"
+            label="Max Travel Distance"
+            value={formData.maxTravelDistance}
+            onChange={(value) => handleInputChange("maxTravelDistance", value)}
+            options={travelDistanceOptions}
+            required={true}
+            placeholder="Up to 25 km"
+          />
+          <Dropdown
+            id="daysAvailable"
+            label="Days Available"
+            value={formData.daysAvailable}
+            onChange={(value) => handleInputChange("daysAvailable", value)}
+            options={daysOptions}
+            required={true}
+            placeholder="Monday"
+          />
+
+          <div className="space-y-2">
+            <Label className="text-black text-sm sm:text-base">
+              Time Windows<span className="text-red-500">*</span>
+            </Label>
+            <div className="flex flex-row flex-wrap gap-x-4 gap-y-2 sm:gap-x-6 pt-2">
+              <label className="flex cursor-pointer items-center space-x-2">
+                <Checkbox
+                  checked={formData.timeWindows.morning}
+                  onCheckedChange={(checked) =>
+                    handleTimeWindowChange("morning", checked as boolean)
+                  }
+                  checkedColor="#00A8FF"
+                  checkIconColor="white"
+                />
+                <span className="text-sm font-medium text-gray-700">Morning</span>
+              </label>
+              <label className="flex cursor-pointer items-center space-x-2">
+                <Checkbox
+                  checked={formData.timeWindows.afternoon}
+                  onCheckedChange={(checked) =>
+                    handleTimeWindowChange("afternoon", checked as boolean)
+                  }
+                  checkedColor="#00A8FF"
+                  checkIconColor="white"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  Afternoon
+                </span>
+              </label>
+              <label className="flex cursor-pointer items-center space-x-2">
+                <Checkbox
+                  checked={formData.timeWindows.evening}
+                  onCheckedChange={(checked) =>
+                    handleTimeWindowChange("evening", checked as boolean)
+                  }
+                  checkedColor="#00A8FF"
+                  checkIconColor="white"
+                />
+                <span className="text-sm font-medium text-gray-700">Evening</span>
+              </label>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="mt-6 space-y-3">
-        <Label className="text-black">
-          Accept Virtual Assessments<span className="text-red-500">*</span>
-        </Label>
-        <RadioGroup
-          value={formData.acceptVirtualAssessments}
-          onValueChange={(value) =>
-            handleInputChange("acceptVirtualAssessments", value)
-          }
-          className="flex space-x-6"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem
-              value="yes"
-              id="yes"
-              checkedColor="#00A8FF"
-              indicatorColor="#00A8FF"
-            />
-            <Label
-              htmlFor="yes"
-              className="cursor-pointer text-sm font-medium text-gray-700"
-            >
-              Yes
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem
-              value="no"
-              id="no"
-              checkedColor="#00A8FF"
-              indicatorColor="#00A8FF"
-            />
-            <Label
-              htmlFor="no"
-              className="cursor-pointer text-sm font-medium text-gray-700"
-            >
-              No
-            </Label>
-          </div>
-        </RadioGroup>
-      </div>
-      <div className="mt-auto flex justify-between pt-8">
-        <BackButton
-          onClick={onPrevious}
-          disabled={currentStep === 1}
-          borderColor="#00A8FF"
-          iconColor="#00A8FF"
-        />
-        <ContinueButton
-          onClick={onNext}
-          isLastStep={currentStep === totalSteps}
-          gradientFrom="#89D7FF"
-          gradientTo="#00A8FF"
-        />
+        <div className="mt-4 sm:mt-6 space-y-3">
+          <Label className="text-black text-sm sm:text-base">
+            Accept Virtual Assessments<span className="text-red-500">*</span>
+          </Label>
+          <RadioGroup
+            value={formData.acceptVirtualAssessments}
+            onValueChange={(value) =>
+              handleInputChange("acceptVirtualAssessments", value)
+            }
+            className="flex flex-row flex-wrap gap-x-4 gap-y-2 sm:gap-x-6"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem
+                value="yes"
+                id="yes"
+                checkedColor="#00A8FF"
+                indicatorColor="#00A8FF"
+              />
+              <Label
+                htmlFor="yes"
+                className="cursor-pointer text-sm font-medium text-gray-700"
+              >
+                Yes
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem
+                value="no"
+                id="no"
+                checkedColor="#00A8FF"
+                indicatorColor="#00A8FF"
+              />
+              <Label
+                htmlFor="no"
+                className="cursor-pointer text-sm font-medium text-gray-700"
+              >
+                No
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+        
+        <div className="mt-6 sm:mt-auto flex justify-between items-center gap-4 pt-6 sm:pt-8">
+          <BackButton
+            onClick={onPrevious}
+            disabled={currentStep === 1}
+            borderColor="#00A8FF"
+            iconColor="#00A8FF"
+          />
+          <ContinueButton
+            onClick={onNext}
+            isLastStep={currentStep === totalSteps}
+            gradientFrom="#89D7FF"
+            gradientTo="#00A8FF"
+          />
+        </div>
       </div>
     </div>
   );
