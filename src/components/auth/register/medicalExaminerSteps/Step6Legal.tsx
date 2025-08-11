@@ -192,7 +192,8 @@
 //   );
 // };
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
+import { Formik, Form } from "formik";
 import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
 import ContinueButton from "~/components/ui/ContinueButton";
@@ -200,6 +201,10 @@ import BackButton from "~/components/ui/BackButton";
 import { Upload, Download } from "lucide-react";
 import { Checkbox } from "~/components/ui/checkbox";
 import type { MedExaminerRegStepProps } from "~/types";
+import {
+  step6LegalSchema,
+  step6InitialValues,
+} from "~/validation/medicalExaminer/examinerRegisterValidation";
 
 export const Step6Legal: React.FC<MedExaminerRegStepProps> = ({
   onNext,
@@ -210,35 +215,16 @@ export const Step6Legal: React.FC<MedExaminerRegStepProps> = ({
   const ndaRef = useRef<HTMLInputElement>(null);
   const insuranceRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState({
-    signedNDA: null as File | null,
-    insuranceProof: null as File | null,
-    consentBackgroundVerification: false,
-    agreeTermsConditions: false,
-  });
-
-  const handleFileChange = (
-    field: "signedNDA" | "insuranceProof",
-    file: File | null,
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: file,
-    }));
+  const handleSubmit = (values: typeof step6InitialValues) => {
+    console.log("Step 6 Form Data:", values);
+    onNext();
   };
 
-  const handleCheckboxChange = (field: string, checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: checked,
-    }));
-  };
-
-  const handleNDAClick = () => {
+  const handleNDAClick = (setFieldValue: any) => () => {
     ndaRef.current?.click();
   };
 
-  const handleInsuranceClick = () => {
+  const handleInsuranceClick = (setFieldValue: any) => () => {
     insuranceRef.current?.click();
   };
 
@@ -247,140 +233,172 @@ export const Step6Legal: React.FC<MedExaminerRegStepProps> = ({
   };
 
   return (
-    <div className="space-y-4 px-4 pb-6 md:space-y-6 md:px-0">
-      <div className="text-center">
-        <h3 className="my-4 text-xl font-normal text-[#140047] md:my-10 md:text-2xl md:font-medium">
-          Legal & Compliance
-        </h3>
-      </div>
+    <Formik
+      initialValues={step6InitialValues}
+      validationSchema={step6LegalSchema}
+      onSubmit={handleSubmit}
+      validateOnChange={false}
+      validateOnBlur={false}
+    >
+      {({ values, errors, setFieldValue, submitForm }) => (
+        <Form>
+          <div className="space-y-4 px-4 pb-8 md:space-y-6 md:px-0">
+            <div className="text-center">
+              <h3 className="my-4 text-xl font-normal text-[#140047] md:my-10 md:text-2xl md:font-medium">
+                Legal & Compliance
+              </h3>
+            </div>
 
-      <div className="mt-2 grid grid-cols-1 gap-x-14 gap-y-6 md:mt-8 md:grid-cols-2">
-        {/* NDA Upload */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="signedNDA" className="text-black">
-              Upload Signed NDA<span className="text-red-500">*</span>
-            </Label>
-            <button
-              onClick={downloadNDA}
-              type="button"
-              className="flex items-center gap-2 text-xs font-medium text-[#00A8FF] hover:text-[#0088CC] sm:text-sm"
-            >
-              <Download size={14} className="sm:h-4 sm:w-4" />
-              Download NDA
-            </button>
+            <div className="mt-2 grid grid-cols-1 gap-x-14 gap-y-6 md:mt-8 md:grid-cols-2">
+              {/* NDA Upload */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="signedNDA" className="text-black">
+                    Upload Signed NDA<span className="text-red-500">*</span>
+                  </Label>
+                  <button
+                    onClick={downloadNDA}
+                    type="button"
+                    className="flex items-center gap-2 text-xs font-medium text-[#00A8FF] hover:text-[#0088CC] sm:text-sm"
+                  >
+                    <Download size={14} className="sm:h-4 sm:w-4" />
+                    Download NDA
+                  </button>
+                </div>
+                <Input
+                  onClick={handleNDAClick(setFieldValue)}
+                  icon={Upload}
+                  type="text"
+                  placeholder="DrAhmed_NDA.pdf"
+                  value={values.signedNDA ? values.signedNDA.name : ""}
+                  readOnly
+                />
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  ref={ndaRef}
+                  accept=".pdf,.doc,.docx"
+                  style={{ display: "none" }}
+                  onChange={(e) =>
+                    setFieldValue("signedNDA", e.target.files?.[0] || null)
+                  }
+                />
+                {errors.signedNDA && (
+                  <p className="text-xs text-red-500">{errors.signedNDA}</p>
+                )}
+              </div>
+
+              {/* Insurance Proof Upload */}
+              <div className="space-y-3">
+                <Label htmlFor="insuranceProof" className="text-black">
+                  Upload Insurance Proof<span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  onClick={handleInsuranceClick(setFieldValue)}
+                  icon={Upload}
+                  type="text"
+                  placeholder="DrAhmed_Insurance.pdf"
+                  value={
+                    values.insuranceProof ? values.insuranceProof.name : ""
+                  }
+                  readOnly
+                />
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  ref={insuranceRef}
+                  accept=".pdf,.doc,.docx,.jpg,.png"
+                  style={{ display: "none" }}
+                  onChange={(e) =>
+                    setFieldValue("insuranceProof", e.target.files?.[0] || null)
+                  }
+                />
+                {errors.insuranceProof && (
+                  <p className="text-xs text-red-500">
+                    {errors.insuranceProof}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Checkboxes */}
+            <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  checked={values.consentBackgroundVerification}
+                  onCheckedChange={(checked) =>
+                    setFieldValue(
+                      "consentBackgroundVerification",
+                      checked as boolean,
+                    )
+                  }
+                  checkedColor="#00A8FF"
+                  checkIconColor="white"
+                />
+                <Label className="cursor-pointer text-xs font-medium text-gray-700 sm:text-sm">
+                  Consent to Background Verification
+                  <span className="text-red-500">*</span>
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  checked={values.agreeTermsConditions}
+                  onCheckedChange={(checked) =>
+                    setFieldValue("agreeTermsConditions", checked as boolean)
+                  }
+                  checkedColor="#00A8FF"
+                  checkIconColor="white"
+                />
+                <Label className="cursor-pointer text-xs font-medium text-gray-700 sm:text-sm">
+                  Agree to{" "}
+                  <a
+                    href="#"
+                    className="text-[#00A8FF] underline decoration-[#00A8FF] hover:decoration-[#0088CC]"
+                  >
+                    Terms & Conditions
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="#"
+                    className="text-[#00A8FF] underline decoration-[#00A8FF] hover:decoration-[#0088CC]"
+                  >
+                    Privacy Policy
+                  </a>
+                  <span className="text-red-500">*</span>
+                </Label>
+              </div>
+              {errors.agreeTermsConditions && (
+                <p className="text-xs text-red-500">
+                  {errors.agreeTermsConditions}
+                </p>
+              )}
+
+              {errors.consentBackgroundVerification && (
+                <p className="text-xs text-red-500">
+                  {errors.consentBackgroundVerification}
+                </p>
+              )}
+            </div>
+
+            {/* Buttons */}
+            <div className="mt-10 flex justify-between md:mt-30">
+              <BackButton
+                onClick={onPrevious}
+                disabled={currentStep === 1}
+                borderColor="#00A8FF"
+                iconColor="#00A8FF"
+              />
+              <ContinueButton
+                onClick={submitForm}
+                isLastStep={currentStep === totalSteps}
+                gradientFrom="#89D7FF"
+                gradientTo="#00A8FF"
+              />
+            </div>
           </div>
-          <Input
-            onClick={handleNDAClick}
-            icon={Upload}
-            type="text"
-            placeholder="DrAhmed_NDA.pdf"
-            value={formData.signedNDA ? formData.signedNDA.name : ""}
-            readOnly
-          />
-          {/* Hidden file input */}
-          <input
-            type="file"
-            ref={ndaRef}
-            accept=".pdf,.doc,.docx"
-            style={{ display: "none" }}
-            onChange={(e) =>
-              handleFileChange("signedNDA", e.target.files?.[0] || null)
-            }
-          />
-        </div>
-
-        {/* Insurance Proof Upload */}
-        <div className="space-y-2">
-          <Label htmlFor="insuranceProof" className="text-black">
-            Upload Insurance Proof<span className="text-red-500">*</span>
-          </Label>
-          <Input
-            onClick={handleInsuranceClick}
-            icon={Upload}
-            type="text"
-            placeholder="DrAhmed_Insurance.pdf"
-            value={formData.insuranceProof ? formData.insuranceProof.name : ""}
-            readOnly
-          />
-          {/* Hidden file input */}
-          <input
-            type="file"
-            ref={insuranceRef}
-            accept=".pdf,.doc,.docx,.jpg,.png"
-            style={{ display: "none" }}
-            onChange={(e) =>
-              handleFileChange("insuranceProof", e.target.files?.[0] || null)
-            }
-          />
-        </div>
-      </div>
-
-      {/* Checkboxes */}
-      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            checked={formData.consentBackgroundVerification}
-            onCheckedChange={(checked) =>
-              handleCheckboxChange(
-                "consentBackgroundVerification",
-                checked as boolean,
-              )
-            }
-            checkedColor="#00A8FF"
-            checkIconColor="white"
-          />
-          <Label className="cursor-pointer text-xs font-medium text-gray-700 sm:text-sm">
-            Consent to Background Verification
-            <span className="text-red-500">*</span>
-          </Label>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            checked={formData.agreeTermsConditions}
-            onCheckedChange={(checked) =>
-              handleCheckboxChange("agreeTermsConditions", checked as boolean)
-            }
-            checkedColor="#00A8FF"
-            checkIconColor="white"
-          />
-          <Label className="cursor-pointer text-xs font-medium text-gray-700 sm:text-sm">
-            Agree to{" "}
-            <a
-              href="#"
-              className="text-[#00A8FF] underline decoration-[#00A8FF] hover:decoration-[#0088CC]"
-            >
-              Terms & Conditions
-            </a>{" "}
-            and{" "}
-            <a
-              href="#"
-              className="text-[#00A8FF] underline decoration-[#00A8FF] hover:decoration-[#0088CC]"
-            >
-              Privacy Policy
-            </a>
-            <span className="text-red-500">*</span>
-          </Label>
-        </div>
-      </div>
-
-      {/* Buttons */}
-      <div className="mt-10 flex justify-between md:mt-30">
-        <BackButton
-          onClick={onPrevious}
-          disabled={currentStep === 1}
-          borderColor="#00A8FF"
-          iconColor="#00A8FF"
-        />
-        <ContinueButton
-          onClick={onNext}
-          isLastStep={currentStep === totalSteps}
-          gradientFrom="#89D7FF"
-          gradientTo="#00A8FF"
-        />
-      </div>
-    </div>
+        </Form>
+      )}
+    </Formik>
   );
 };
-
