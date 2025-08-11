@@ -4,12 +4,11 @@ import { Button } from "~/components/ui/button";
 import Image from "next/image";
 import { PasswordInput } from "~/components/ui/PasswordInput";
 import { ArrowRight } from "lucide-react";
-
 export function OrganizationLoginComponent() {
   return (
-    <div className="flex min-h-screen flex-col justify-between md:flex-row">
-      <div className="mt-14 ml-40 flex w-[45%] flex-col">
-        <h1 className="mb-8 text-xl font-bold md:text-4xl">
+    <div className="flex min-h-screen flex-col justify-center md:justify-between md:flex-row">
+      <div className="px-6 flex w-full flex-col justify-center items-center md:mt-14 md:ml-40 md:w-[45%] md:items-start md:px-0 md:justify-start">
+        <h1 className="mb-8 text-2xl font-bold text-center md:text-4xl md:text-left">
           Welcome To <span>Thrive</span>{" "}
         </h1>
         <div className="w-full max-w-sm rounded-xl border-[#E9EDEE] bg-white p-6 shadow-xs">
@@ -49,7 +48,7 @@ export function OrganizationLoginComponent() {
           </form>
         </div>
       </div>
-      <div className="relative mt-10 flex-1 overflow-hidden">
+      <div className="hidden md:block relative mt-10 flex-1 overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src="/org-gettingStarted.png"

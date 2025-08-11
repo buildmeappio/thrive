@@ -10,17 +10,17 @@ export function PasswordInput({
   const [show, setShow] = React.useState(false);
 
   return (
-    <div className="relative w-full mt-1">
+    <div className="relative mt-1 w-full">
       <Input
         type={show ? "text" : "password"}
         className={cn("pr-10", className)}
-        placeholder="Enter your password"
         {...props}
       />
       <button
         type="button"
-        onClick={() => setShow(!show)}
+        onClick={() => setShow((prev) => !prev)}
         className="absolute top-1/2 right-3 -translate-y-1/2 focus:outline-none"
+        tabIndex={-1}
       >
         {show ? (
           <EyeOff size={20} color="#9EA9AA" />
