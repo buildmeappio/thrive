@@ -5,10 +5,9 @@ import Image from "next/image";
 import { PasswordInput } from "~/components/ui/PasswordInput";
 export function AdminLoginComponent() {
   return (
-    <div className="flex min-h-screen flex-col justify-between md:flex-row"
-      <div className="flex flex-1 flex-col justify-center items-center md:justify-start md:items-start md:mt-14 md:pl-40 px-4 sm:px-8">
-        <h1 className="mb-6 text-2xl font-bold sm:mb-8 sm:text-3xl md:text-4xl text-center md:text-left">
-
+    <div className="flex min-h-screen flex-col justify-between md:flex-row">
+      <div className="flex flex-1 flex-col items-center justify-center px-4 sm:px-8 md:mt-14 md:items-start md:justify-start md:pl-40">
+        <h1 className="mb-6 text-center text-2xl font-bold sm:mb-8 sm:text-3xl md:text-left md:text-4xl">
           Welcome To{" "}
           <span className="bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] bg-clip-text text-transparent">
             Thrive
@@ -34,10 +33,7 @@ export function AdminLoginComponent() {
               <Label htmlFor="password" className="text-black">
                 Password<span className="text-red-500">*</span>
               </Label>
-              <PasswordInput
-                id="password"
-                placeholder="Enter your password"
-              />
+              <PasswordInput id="password" placeholder="Enter your password" />
             </div>
             <div className="mb-4 text-right">
               <a
@@ -54,8 +50,7 @@ export function AdminLoginComponent() {
         </div>
       </div>
 
-     <div className="relative flex-1 overflow-hidden hidden md:block min-h-screen">
-
+      <div className="relative hidden min-h-screen flex-1 overflow-hidden md:block">
         <div className="absolute inset-0">
           <Image
             src="/adminLogin.png"
