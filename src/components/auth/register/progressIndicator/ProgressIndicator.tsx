@@ -3,13 +3,15 @@ import React from "react";
 interface ProgressIndicatorProps {
   currentStep: number;
   totalSteps: number;
-  color?: string;
+  gradientFrom?: string;
+  gradientTo?: string;
 }
 
 const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   currentStep,
   totalSteps,
-  color = "#00A8FF",
+  gradientFrom = "#89D7FF",
+  gradientTo = "#00A8FF",
 }) => {
   const progressPercent = (currentStep / totalSteps) * 100;
 
@@ -20,7 +22,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           className="h-full rounded-[91px] transition-all duration-300"
           style={{
             width: `${progressPercent}%`,
-            backgroundColor: color,
+            background: `linear-gradient(270deg, ${gradientFrom} 0%, ${gradientTo} 100%)`,
           }}
         />
       </div>

@@ -1,92 +1,91 @@
-import React, { useState } from "react";
+import React from "react";
+import { Formik, Form } from "formik";
 import { Label } from "~/components/ui/label";
 import ContinueButton from "~/components/ui/ContinueButton";
-import BackButton from "~/components/ui/BackButton";
 import { PasswordInput } from "~/components/ui/PasswordInput";
+import {
+  step9PasswordSchema,
+  step9InitialValues,
+} from "~/validation/medicalExaminer/examinerRegisterValidation";
+import type { Step9PasswordProps } from "~/types/register/medicalExaminer/MedExaminerSetPasswordProps";
 
-interface Step9PasswordProps {
-  userId?: string;
-  onNext: () => void;
-  onPrevious: () => void;
-  currentStep: number;
-  totalSteps: number;
-}
-
-export const Step9Password: React.FC<Step9PasswordProps> = ({
-  userId,
-  onNext,
-  onPrevious,
-  currentStep,
-  totalSteps,
-}) => {
-  const [formData, setFormData] = useState({
-    password: "",
-    confirmPassword: "",
-  });
-  const [errors, setErrors] = useState<string[]>([]);
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-    if (errors.length > 0) {
-      setErrors([]);
-    }
-  };
-  const handleSubmit = () => {
+export const Step9Password: React.FC<Step9PasswordProps> = ({ onNext }) => {
+  const handleSubmit = (values: typeof step9InitialValues) => {
+    console.log("Step 9 Form Data:", values);
     onNext();
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h3 className="my-10 text-3xl font-medium text-[#140047]">
-          Create Your Password
-        </h3>
-      </div>
+    <Formik
+      initialValues={step9InitialValues}
+      validationSchema={step9PasswordSchema}
+      onSubmit={handleSubmit}
+      validateOnChange={false}
+      validateOnBlur={false}
+    >
+      {({ values, errors, handleChange, submitForm }) => (
+        <Form>
+          <div className="py-auto flex flex-col items-center space-y-6 px-4 md:px-0">
+            <div className="w-full max-w-md pt-1 md:w-3/5 md:max-w-none md:pt-0">
+              <div className="mt-0 md:mt-8">
+                <div className="space-y-6 md:space-y-6">
+                  <div className="space-y-3 md:space-y-2">
+                    <Label
+                      htmlFor="password"
+                      className="text-base text-black md:text-base"
+                    >
+                      Password<span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <PasswordInput
+                        name="password"
+                        id="password"
+                        placeholder="Enter your password"
+                        value={values.password}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    {errors.password && (
+                      <p className="text-xs text-red-500">{errors.password}</p>
+                    )}
+                  </div>
 
-      <div className="mt-8 space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="password" className="text-black">
-            Password<span className="text-red-500">*</span>
-          </Label>
-          <div className="relative">
-            <PasswordInput
-              id="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={(e) => handleInputChange("password", e.target.value)}
-              className="pr-12"
-            />
+                  <div className="space-y-3 md:space-y-2">
+                    <Label
+                      htmlFor="confirmPassword"
+                      className="text-base text-black md:text-base"
+                    >
+                      Confirm Password<span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <PasswordInput
+                        name="confirmPassword"
+                        id="confirmPassword"
+                        placeholder="Confirm your password"
+                        value={values.confirmPassword}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    {errors.confirmPassword && (
+                      <p className="text-xs text-red-500">
+                        {errors.confirmPassword}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 flex justify-end md:mt-14">
+                <ContinueButton
+                  onClick={submitForm}
+                  gradientFrom="#89D7FF"
+                  gradientTo="#00A8FF"
+                />
+              </div>
+            </div>
           </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-black">
-            Confirm Password<span className="text-red-500">*</span>
-          </Label>
-          <div className="relative">
-            <PasswordInput
-              id="confirmPassword"
-              placeholder="Confirm your password"
-              value={formData.confirmPassword}
-              onChange={(e) =>
-                handleInputChange("confirmPassword", e.target.value)
-              }
-              className="pr-12"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-auto flex justify-end pt-8">
-        <ContinueButton
-          onClick={handleSubmit}
-          gradientFrom="#89D7FF"
-          gradientTo="#00A8FF"
-        />
-      </div>
-    </div>
+        </Form>
+      )}
+    </Formik>
   );
 };

@@ -26,8 +26,8 @@ export const MedicalExaminerRegisterForm: React.FC = () => {
     { component: Step6Legal },
     { component: Step7SubmitConfirmation },
     { component: Step8ThankYou },
-    { component: Step9Password },
-    { component: Step10Success },
+    // { component: Step9Password },
+    // { component: Step10Success },
   ];
 
   const goToNext = () => {
@@ -77,8 +77,10 @@ export const MedicalExaminerRegisterForm: React.FC = () => {
         <ProgressIndicator
           currentStep={currentStep}
           totalSteps={steps.length}
-          color="#00A8FF"
+          gradientFrom="#89D7FF"
+          gradientTo="#00A8FF"
         />
+
         {getCurrentStepComponent()}
       </div>
     </div>
