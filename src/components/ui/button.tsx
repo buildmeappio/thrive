@@ -35,9 +35,9 @@ const buttonVariants = cva(
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         icon: "size-9",
 
-        adminLogin: "w-full h-[45.34px] rounded-[7.8px] gap-2 px-4 py-2",
-        medicalExaminerLogin: "px-4 py-2 h-[45.34px] w-full rounded-[44.3px]",
-        organizationLogin: "px-4 py-2 h-[45.34px] w-full rounded-[44.3px]",
+        adminLogin: "w-full h-[58px] rounded-[7.8px] gap-2 px-4 py-2",
+        medicalExaminerLogin: "px-4 py-2 h-[58px] w-full rounded-[44.3px]",
+        organizationLogin: "px-4 py-2 h-[58px] w-full rounded-[44.3px]",
       },
     },
     defaultVariants: {

@@ -31,7 +31,7 @@ export function LoginPageClient({ userType }: LoginPageClientProps) {
   return (
     <>
       <AuthNavbar />
-      <div className="bg-[#F2F5F6]">{renderLoginComponent()}</div>
+      {renderLoginComponent()}
     </>
   );
 }
