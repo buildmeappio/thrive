@@ -61,7 +61,7 @@ export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                 </h3>
               </div>
 
-              <div className="mt-4 grid flex-1 grid-cols-1 gap-x-14 gap-y-6 md:mt-8 md:grid-cols-2">
+              <div className="mt-6 grid flex-1 grid-cols-1 gap-x-14 gap-y-6 md:mt-8 md:grid-cols-2">
                 <div className="space-y-2">
                   <Dropdown
                     id="yearsOfIMEExperience"
