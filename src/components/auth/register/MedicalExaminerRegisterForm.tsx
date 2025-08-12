@@ -9,8 +9,6 @@ import {
   Step6Legal,
   Step7SubmitConfirmation,
   Step8ThankYou,
-  Step9Password,
-  Step10Success,
 } from "./medicalExaminerSteps";
 import ProgressIndicator from "./progressIndicator/ProgressIndicator";
 
@@ -26,8 +24,6 @@ export const MedicalExaminerRegisterForm: React.FC = () => {
     { component: Step6Legal },
     { component: Step7SubmitConfirmation },
     { component: Step8ThankYou },
-    // { component: Step9Password },
-    // { component: Step10Success },
   ];
 
   const goToNext = () => {
@@ -58,31 +54,16 @@ export const MedicalExaminerRegisterForm: React.FC = () => {
 
   const showTitle = currentStep <= 6;
   return (
-    <div className="mx-auto max-w-[900px] p-4 md:min-h-screen md:p-6">
+    <div className="mx-auto max-w-[900px] p-4 md:min-h-screen md:p-0 md:py-6">
       <div className="mb-4 flex h-[60px] items-center justify-between">
         {showTitle && (
-          <h2 className="text-[19px] font-semibold md:text-[40px]">
+          <h2 className="md:ml- text-[19px] font-semibold md:text-[44px]">
             Let's complete your profile to join{" "}
             <span className="text-[#00A8FF]">Thrive.</span>
           </h2>
         )}
       </div>
-
-      <div
-        className="mt-4 rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:rounded-[47px] md:px-[50px] md:pb-10"
-        style={{
-          boxShadow: "0px 0px 36.35px 0px #00000008",
-        }}
-      >
-        <ProgressIndicator
-          currentStep={currentStep}
-          totalSteps={steps.length}
-          gradientFrom="#89D7FF"
-          gradientTo="#00A8FF"
-        />
-
-        {getCurrentStepComponent()}
-      </div>
+      {getCurrentStepComponent()}
     </div>
   );
 };
