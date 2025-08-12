@@ -1,5 +1,5 @@
 export interface DashboardPageProps {
-  params: {
+  params: Promise<{
     userType: string;
-  };
+  }>;
 }

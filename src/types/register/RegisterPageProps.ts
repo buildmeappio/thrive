@@ -1,5 +1,5 @@
 export interface RegisterPageProps {
-  params: {
+  params: Promise<{
     userType: string;
-  };
+  }>;
 }
