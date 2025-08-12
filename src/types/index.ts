@@ -5,7 +5,7 @@ export type {
   MedicalExaminer,
 } from "./user/user";
 export type {
-  GettingStartedComponentPageProps,
+  GettingStartedPageProps,
   MedicalExaminerGettingStartedProps,
   OrganizationGettingStartedProps,
 } from "./gettingStarted/GettingStartedPageProps";

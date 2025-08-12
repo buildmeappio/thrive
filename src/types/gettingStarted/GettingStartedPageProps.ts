@@ -1,6 +1,5 @@
-export interface GettingStartedComponentPageProps {
-  params: {
+export interface GettingStartedPageProps {
+  params: Promise<{
     userType: string;
-  };
-  onGetStarted?: () => void;
+  }>;
 }
