@@ -1,5 +1,5 @@
 export interface LoginPageProps {
-  params: {
+  params: Promise<{
     userType: string;
-  };
+  }>;
 }
