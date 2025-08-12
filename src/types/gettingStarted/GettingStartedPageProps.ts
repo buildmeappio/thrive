@@ -4,10 +4,3 @@ export interface GettingStartedComponentPageProps {
   };
   onGetStarted?: () => void;
 }
-
-export interface OrganizationGettingStartedProps {
-  onGetStarted: () => void;
-}
-export interface MedicalExaminerGettingStartedProps {
-  onGetStarted: () => void;
-}

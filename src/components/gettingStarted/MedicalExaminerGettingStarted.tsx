@@ -2,10 +2,13 @@
 import Image from "next/image";
 import { ArrowRight, Check } from "lucide-react";
 import { MedicalExaminerFeatures } from "~/config/GettingStartedFeatures.config";
-import type { MedicalExaminerGettingStartedProps } from "~/types";
-export const MedicalExaminerGettingStarted: React.FC<
-  MedicalExaminerGettingStartedProps
-> = ({ onGetStarted }) => {
+import { useRouter } from "next/navigation";
+
+export const MedicalExaminerGettingStarted: React.FC = () => {
+  const router = useRouter();
+  const handleGetStarted = () => {
+    router.push("/register/medicalExaminer");
+  };
   return (
     <div className="flex min-h-screen bg-[#fafafa] flex-col md:flex-row">
       <div className="mt-8 px-6 flex-shrink-0 md:mt-16 md:w-[60%] md:pl-20 md:px-0">
@@ -23,7 +26,7 @@ export const MedicalExaminerGettingStarted: React.FC<
             </p>
           </div>
           <button
-            onClick={onGetStarted}
+            onClick={handleGetStarted}
             className="flex cursor-pointer items-center gap-2 rounded-full px-8 py-4 text-[16px] font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
             style={{
               background: "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",

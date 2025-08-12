@@ -11,18 +11,12 @@ export default function GettingStartedPage({
 }: GettingStartedComponentPageProps) {
   const { userType } = params;
 
-  const handleGetStarted = () => {
-    console.log(`Getting started for ${userType}`);
-  };
-
   const renderGettingStartedComponent = () => {
     switch (userType) {
       case "organization":
-        return <OrganizationGettingStarted onGetStarted={handleGetStarted} />;
+        return <OrganizationGettingStarted />;
       case "medicalExaminer":
-        return (
-          <MedicalExaminerGettingStarted onGetStarted={handleGetStarted} />
-        );
+        return <MedicalExaminerGettingStarted />;
       default:
         notFound();
     }
