@@ -3,10 +3,3 @@ export interface GettingStartedPageProps {
     userType: string;
   }>;
 }
-
-export interface OrganizationGettingStartedProps {
-  onGetStarted: () => void;
-}
-export interface MedicalExaminerGettingStartedProps {
-  onGetStarted: () => void;
-}
