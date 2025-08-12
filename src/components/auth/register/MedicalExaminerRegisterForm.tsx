@@ -10,8 +10,6 @@ import {
   Step7SubmitConfirmation,
   Step8ThankYou,
 } from "./medicalExaminerSteps";
-import ProgressIndicator from "./progressIndicator/ProgressIndicator";
-
 export const MedicalExaminerRegisterForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
