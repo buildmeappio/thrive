@@ -34,7 +34,7 @@ export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
 
   return (
     <div
-      className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
+      className="mt-4 flex w-full flex-col justify-between rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
       style={{
         boxShadow: "0px 0px 36.35px 0px #00000008",
       }}
