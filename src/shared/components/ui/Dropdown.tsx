@@ -15,17 +15,17 @@ export const Dropdown: React.FC<DropdownProps> = ({
 }) => {
   return (
     <div className={`space-y-2 ${className}`}>
-      <label htmlFor={id} className="text-sm font-medium text-gray-700">
+      <label htmlFor={id} className="text-sm font-normal text-[#000000]">
         {label}
         {required && <span className="text-red-500">*</span>}
       </label>
-      <div className="relative">
+      <div className="relative mt-2">
         <select
           id={id}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className={`h-[55px] w-full appearance-none rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 pl-10 text-[14px] leading-[100%] font-normal tracking-[0.5%] ${
-            value === "" ? "text-[#A4A4A4]" : "text-gray-700"
+            value === "" ? "text-[#A4A4A4]" : "text-[#A4A4A4]"
           } focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50`}
         >
           <option value="" disabled className="text-[#9EA9AA]">
