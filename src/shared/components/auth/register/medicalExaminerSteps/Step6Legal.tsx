@@ -1,17 +1,17 @@
 "use client";
 import React, { useRef } from "react";
 import { Formik, Form } from "formik";
-import { Label } from "~/components/ui/label";
-import { Input } from "~/components/ui/input";
-import ContinueButton from "~/components/ui/ContinueButton";
-import BackButton from "~/components/ui/BackButton";
+import { Label } from "@/shared/components/ui/label";
+import { Input } from "@/shared/components/ui/input";
+import ContinueButton from "@/shared/components/ui/ContinueButton";
+import BackButton from "@/shared/components/ui/BackButton";
 import { Upload, Download } from "lucide-react";
-import { Checkbox } from "~/components/ui/checkbox";
-import type { MedExaminerRegStepProps } from "~/types";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import type { MedExaminerRegStepProps } from "@/shared/types";
 import {
   step6LegalSchema,
   step6InitialValues,
-} from "~/validation/medicalExaminer/examinerRegisterValidation";
+} from "@/shared/validation/medicalExaminer/examinerRegisterValidation";
 import ProgressIndicator from "../progressIndicator/ProgressIndicator";
 
 export const Step6Legal: React.FC<MedExaminerRegStepProps> = ({

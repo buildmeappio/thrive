@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { ArrowRight, Check } from "lucide-react";
-import { OrganizationFeatures } from "~/config/GettingStartedFeatures.config";
+import { OrganizationFeatures } from "@/shared/config/GettingStartedFeatures.config";
 import { useRouter } from "next/navigation";
 
 export const OrganizationGettingStarted: React.FC = () => {
@@ -49,7 +49,7 @@ export const OrganizationGettingStarted: React.FC = () => {
 
         <div className="relative -mx-6 mt-8 mb-8 md:hidden">
           <Image
-            src="/org-gettingStarted.png"
+            src="/images/org-gettingStarted.png"
             alt="Admin Dashboard Preview"
             width={400}
             height={400}
@@ -82,7 +82,7 @@ export const OrganizationGettingStarted: React.FC = () => {
       <div className="relative mt-16 hidden flex-1 overflow-hidden md:block">
         <div className="absolute inset-0">
           <Image
-            src="/org-gettingStarted.png"
+            src="/images/org-gettingStarted.png"
             alt="Admin Dashboard Preview"
             width={200}
             height={200}

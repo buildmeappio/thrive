@@ -1,19 +1,19 @@
 import React from "react";
 import { Formik, Form } from "formik";
-import { Label } from "~/components/ui/label";
-import { Dropdown } from "~/components/ui/Dropdown";
-import { Checkbox } from "~/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
-import { regionOptions } from "~/config/medicalExaminerRegister/RegionDropdownOptions";
-import { travelDistanceOptions } from "~/config/medicalExaminerRegister/TravelDistanceDropdownOptions";
-import { daysOptions } from "~/config/medicalExaminerRegister/DaysDropdownOptions";
-import ContinueButton from "~/components/ui/ContinueButton";
-import BackButton from "~/components/ui/BackButton";
-import type { MedExaminerRegStepProps } from "~/types";
+import { Label } from "@/shared/components/ui/label";
+import { Dropdown } from "@/shared/components/ui/Dropdown";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
+import { regionOptions } from "@/shared/config/medicalExaminerRegister/RegionDropdownOptions";
+import { travelDistanceOptions } from "@/shared/config/medicalExaminerRegister/TravelDistanceDropdownOptions";
+import { daysOptions } from "@/shared/config/medicalExaminerRegister/DaysDropdownOptions";
+import ContinueButton from "@/shared/components/ui/ContinueButton";
+import BackButton from "@/shared/components/ui/BackButton";
+import type { MedExaminerRegStepProps } from "@/shared/types";
 import {
   step5AvailabilitySchema,
   step5InitialValues,
-} from "~/validation/medicalExaminer/examinerRegisterValidation";
+} from "@/shared/validation/medicalExaminer/examinerRegisterValidation";
 import ProgressIndicator from "../progressIndicator/ProgressIndicator";
 
 export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({

@@ -1,13 +1,13 @@
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Button } from "~/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { Button } from "@/shared/components/ui/button";
 import Image from "next/image";
-import { PasswordInput } from "~/components/ui/PasswordInput";
+import { PasswordInput } from "@/shared/components/ui/PasswordInput";
 import { Form, Formik } from "formik";
 import {
   loginInitialValues,
   loginSchema,
-} from "~/validation/login/loginValidation";
+} from "@/shared/validation/login/loginValidation";
 export function AdminLoginComponent() {
   const handleSubmit = (values: typeof loginInitialValues) => {
     console.log(values);
@@ -90,7 +90,7 @@ export function AdminLoginComponent() {
         <div className="pl- relative hidden flex-1 overflow-hidden md:block">
           <div className="absolute inset-0">
             <Image
-              src="/adminLogin.png"
+              src="/images/adminLogin.png"
               alt="Admin Dashboard Preview"
               width={800}
               height={200}

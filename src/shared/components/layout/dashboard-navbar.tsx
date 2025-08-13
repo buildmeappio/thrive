@@ -11,7 +11,7 @@ export function DashboardNavbar() {
           <div className="flex items-center">
             <Link href="/">
               <Image
-                src="/thriveLogo.png"
+                src="//images/thriveLogo.png"
                 alt="Thrive"
                 width={191}
                 height={82}

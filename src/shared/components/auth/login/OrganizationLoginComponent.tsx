@@ -1,14 +1,14 @@
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Button } from "~/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { Button } from "@/shared/components/ui/button";
 import Image from "next/image";
-import { PasswordInput } from "~/components/ui/PasswordInput";
+import { PasswordInput } from "@/shared/components/ui/PasswordInput";
 import { ArrowRight } from "lucide-react";
 import { Form, Formik } from "formik";
 import {
   loginInitialValues,
   loginSchema,
-} from "~/validation/login/loginValidation";
+} from "@/shared/validation/login/loginValidation";
 
 export function OrganizationLoginComponent() {
   const handleSubmit = (values: typeof loginInitialValues) => {
@@ -94,7 +94,7 @@ export function OrganizationLoginComponent() {
         <div className="pl- relative hidden flex-1 overflow-hidden md:block">
           <div className="absolute inset-0">
             <Image
-              src="/org-gettingStarted.png"
+              src="/images/org-gettingStarted.png"
               alt="Admin Dashboard Preview"
               width={200}
               height={200}

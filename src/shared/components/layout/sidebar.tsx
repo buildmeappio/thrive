@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "~/lib/utils";
-import type { UserRole } from "~/types/user/user";
+import { cn } from "@/shared/lib/utils";
+import type { UserRole } from "@/shared/types/user/user";
 
 interface SidebarProps {
   userRole: UserRole;

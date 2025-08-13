@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { ArrowRight, Check } from "lucide-react";
-import { MedicalExaminerFeatures } from "~/config/GettingStartedFeatures.config";
+import { MedicalExaminerFeatures } from "@/shared/config/GettingStartedFeatures.config";
 import { useRouter } from "next/navigation";
 
 export const MedicalExaminerGettingStarted: React.FC = () => {
@@ -38,7 +38,7 @@ export const MedicalExaminerGettingStarted: React.FC = () => {
         </div>
         <div className="relative mt-8 mb-8 -mx-6 md:hidden">
           <Image
-            src="/doctor-gettingStarted.png"
+            src="/images/doctor-gettingStarted.png"
             alt="Admin Dashboard Preview"
             width={350}
             height={350}
@@ -68,7 +68,7 @@ export const MedicalExaminerGettingStarted: React.FC = () => {
       <div className="relative mt-16 flex-1 overflow-hidden hidden md:block">
         <div className="absolute inset-0">
           <Image
-            src="/doctor-gettingStarted.png"
+            src="/images/doctor-gettingStarted.png"
             alt="Admin Dashboard Preview"
             width={200}
             height={200}

@@ -1,11 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  Step9Password,
-  Step10Success,
-} from "~/components/auth/register/medicalExaminerSteps";
-import { AuthNavbar } from "~/components/layout";
+import { Step10Success, Step9Password } from "@/shared/components/auth/register/medicalExaminerSteps";
+import { AuthNavbar } from "@/shared/components/layout";
 
 export default function SetPasswordPage() {
   const params = useParams();
