@@ -1,21 +1,24 @@
-"use client";
+'use client';
 
-import { DashboardLayout } from "~/components/layout/dashboard-layout";
-import type { UserRole } from "~/types/user/user";
+import { DashboardLayout } from '@/shared/components/layout/dashboard-layout';
+import type { UserRole } from '@/shared/types/user/user';
+import { usePathname } from 'next/navigation';
 
-const mockUser = {
-  role: "MEDICAL_EXAMINER" as UserRole,
-  name: "Hasnain",
-};
+export default function DashboardLayoutWrapper({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const userType = pathname.split('/')[2];
+  const getUserRole = (): UserRole => {
+    switch (userType) {
+      case 'admin':
+        return 'ADMIN';
+      case 'organization':
+        return 'ORGANIZATION';
+      case 'medical-examiner':
+        return 'MEDICAL_EXAMINER';
+      default:
+        return 'ADMIN';
+    }
+  };
 
-export default function DashboardLayoutWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <DashboardLayout userRole={mockUser.role} userName={mockUser.name}>
-      {children}
-    </DashboardLayout>
-  );
+  return <DashboardLayout userRole={getUserRole()}>{children}</DashboardLayout>;
 }

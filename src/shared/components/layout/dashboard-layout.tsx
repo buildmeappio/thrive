@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import type { ReactNode } from "react";
-import { DashboardNavbar } from "./dashboard-navbar";
-import { Sidebar } from "./sidebar";
-import type { UserRole } from "@/shared/types/user/user";
+import type { ReactNode } from 'react';
+import { DashboardNavbar } from './dashboard-navbar';
+import { Sidebar } from './sidebar';
+import type { UserRole } from '@/shared/types/user/user';
 
-interface DashboardLayoutProps {  
+interface DashboardLayoutProps {
   children: ReactNode;
   userRole: UserRole;
   userName?: string;
@@ -13,13 +13,11 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children, userRole }: DashboardLayoutProps) {
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen flex-col bg-[#FAFAFA]">
       <DashboardNavbar />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden py-4">
         <Sidebar userRole={userRole} />
-        <main className="flex-1 overflow-y-auto bg-[#FAFAFA] p-6">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   );
