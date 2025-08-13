@@ -1,5 +1,5 @@
 import React from "react";
-import type { MedExaminerRegStepProps } from "~/types";
+import type { MedExaminerRegStepProps } from "@/shared/types";
 import { Check } from "lucide-react";
 import ProgressIndicator from "../progressIndicator/ProgressIndicator";
 export const Step8ThankYou: React.FC<MedExaminerRegStepProps> = ({

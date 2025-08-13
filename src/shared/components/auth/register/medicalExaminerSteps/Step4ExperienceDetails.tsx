@@ -1,14 +1,14 @@
 import React from "react";
 import { Formik, Form } from "formik";
-import BackButton from "~/components/ui/BackButton";
-import ContinueButton from "~/components/ui/ContinueButton";
-import { Label } from "~/components/ui/label";
-import { Textarea } from "~/components/ui/textarea";
-import type { MedExaminerRegStepProps } from "~/types";
+import BackButton from "@/shared/components/ui/BackButton";
+import ContinueButton from "@/shared/components/ui/ContinueButton";
+import { Label } from "@/shared/components/ui/label";
+import { Textarea } from "@/shared/components/ui/textarea";
+import type { MedExaminerRegStepProps } from "@/shared/types";
 import {
   step4ExperienceDetailsSchema,
   step4InitialValues,
-} from "~/validation/medicalExaminer/examinerRegisterValidation";
+} from "@/shared/validation/medicalExaminer/examinerRegisterValidation";
 import ProgressIndicator from "../progressIndicator/ProgressIndicator";
 
 export const Step4ExperienceDetails: React.FC<MedExaminerRegStepProps> = ({

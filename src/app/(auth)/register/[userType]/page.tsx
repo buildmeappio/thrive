@@ -1,6 +1,6 @@
-import React from "react";
-import type { RegisterPageProps } from "~/types";
-import { RegisterPageClient } from "~/components/auth/register/RegisterPageClient";
+import { RegisterPageClient } from '@/shared/components/auth/register/RegisterPageClient';
+import { RegisterPageProps } from '@/shared/types';
+import React from 'react';
 
 export default async function RegisterPage({ params }: RegisterPageProps) {
   const { userType } = await params;

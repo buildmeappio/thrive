@@ -1,13 +1,13 @@
 import React from "react";
 import { Formik, Form } from "formik";
-import { Label } from "~/components/ui/label";
-import ContinueButton from "~/components/ui/ContinueButton";
-import { PasswordInput } from "~/components/ui/PasswordInput";
+import { Label } from "@/shared/components/ui/label";
+import ContinueButton from "@/shared/components/ui/ContinueButton";
+import { PasswordInput } from "@/shared/components/ui/PasswordInput";
 import {
   step9PasswordSchema,
   step9InitialValues,
-} from "~/validation/medicalExaminer/examinerRegisterValidation";
-import type { Step9PasswordProps } from "~/types/register/medicalExaminer/MedExaminerSetPasswordProps";
+} from "@/shared/validation/medicalExaminer/examinerRegisterValidation";
+import type { Step9PasswordProps } from "@/shared/types/register/medicalExaminer/MedExaminerSetPasswordProps";
 
 export const Step9Password: React.FC<Step9PasswordProps> = ({ onNext }) => {
   const handleSubmit = (values: typeof step9InitialValues) => {

@@ -1,11 +1,11 @@
 "use client";
 import React from "react";
 import { notFound } from "next/navigation";
-import { LoginConfigs } from "~/config/Login.config";
-import { AdminLoginComponent } from "~/components/auth/login/AdminLoginComponent";
-import { OrganizationLoginComponent } from "~/components/auth/login/OrganizationLoginComponent";
-import { MedicalExaminerLoginComponent } from "~/components/auth/login/MedicalExaminerLoginComponent";
-import { AuthNavbar } from "~/components/layout";
+import { LoginConfigs } from "@/shared/config/Login.config";
+import { AdminLoginComponent } from "@/shared/components/auth/login/AdminLoginComponent";
+import { OrganizationLoginComponent } from "@/shared/components/auth/login/OrganizationLoginComponent";
+import { MedicalExaminerLoginComponent } from "@/shared/components/auth/login/MedicalExaminerLoginComponent";
+import { AuthNavbar } from "@/shared/components/layout";
 
 interface LoginPageClientProps {
   userType: string;

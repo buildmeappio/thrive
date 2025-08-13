@@ -1,6 +1,6 @@
 import React from "react";
 import { MapPin } from "lucide-react";
-import type { DropdownProps } from "~/types/dropdown/DropdownProps";
+import type { DropdownProps } from "@/shared/types/dropdown/DropdownProps";
 
 export const Dropdown: React.FC<DropdownProps> = ({
   id,

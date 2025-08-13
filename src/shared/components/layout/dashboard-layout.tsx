@@ -3,9 +3,9 @@
 import type { ReactNode } from "react";
 import { DashboardNavbar } from "./dashboard-navbar";
 import { Sidebar } from "./sidebar";
-import type { UserRole } from "~/types/user/user";
+import type { UserRole } from "@/shared/types/user/user";
 
-interface DashboardLayoutProps {
+interface DashboardLayoutProps {  
   children: ReactNode;
   userRole: UserRole;
   userName?: string;
