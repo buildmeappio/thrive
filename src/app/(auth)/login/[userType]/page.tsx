@@ -1,6 +1,6 @@
-import React from "react";
-import type { LoginPageProps } from "~/types";
-import { LoginPageClient } from "~/components/auth/login/LoginPageClient";
+import React from 'react';
+import type { LoginPageProps } from '@/shared/types';
+import { LoginPageClient } from '@/shared/components/auth/login/LoginPageClient';
 
 export default async function LoginPage({ params }: LoginPageProps) {
   const { userType } = await params;

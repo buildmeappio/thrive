@@ -2,73 +2,636 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+// ==================== USER MODEL (Canadian Compliance Enhanced) ====================
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  emailVerified   DateTime?
+  emailVerifiedAt DateTime?
 
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
+  // Authentication
+  passwordHash String? // Null until password is set
 
-    @@index([name])
+  // Basic Information
+  username          String?  @unique
+  firstName         String
+  lastName          String
+  preferredLanguage Language @default(EN)
+
+  // Status and Role Management
+  role     Role
+  status   UserStatus @default(PENDING_VERIFICATION)
+  isActive Boolean    @default(true)
+
+  // Security and session tracking
+  lastLoginAt   DateTime?
+  lastLoginIp   String?
+  loginAttempts Int       @default(0)
+  lockedUntil   DateTime?
+
+  // CASL.js Authorization
+  permissions String[] // JSON array of permission strings
+
+  // Canadian Privacy Compliance (PIPEDA)
+  consentGiven          Boolean   @default(false)
+  consentDate           DateTime?
+  marketingOptIn        Boolean   @default(false)
+  dataRetention         DateTime? // PIPEDA compliance - 7 years
+  privacyPolicyAccepted Boolean   @default(false)
+  dataRetentionConsent  Boolean   @default(false)
+
+  // Audit fields
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdByIp String?
+  createdBy   String?
+  updatedBy   String?
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  refreshTokens RefreshToken[]
+  profile       UserProfile?
+  auditLogs     AuditLog[]
+  notifications Notification[]
+
+  // Approval and workflow relationships
+  approvalRequests ApprovalRequest[] @relation("RequestedBy")
+  approvalActions  ApprovalAction[]  @relation("ApprovedBy")
+  ExaminerProfile  ExaminerProfile?
+
+  @@index([email])
+  @@index([role, status])
+  @@index([lastLoginAt])
+  @@index([preferredLanguage])
+  @@map("users")
 }
 
-// Necessary for Next auth
+// ==================== REFRESH TOKEN MODEL (Enhanced Security) ====================
+model RefreshToken {
+  id     String @id @default(uuid())
+  token  String @unique
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+  isRevoked Boolean   @default(false)
+
+  // Compliance tracking
+  ipAddress String?
+  userAgent String?
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+// ==================== USER PROFILE (Canadian Specific) ====================
+model UserProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Contact Information (encrypted)
+  bio        String?
+  avatar     String?
+  phone      String? // Canadian phone format
+  address    String?
+  city       String?
+  province   Province?
+  postalCode String? // Canadian postal code format
+  country    String    @default("CA")
+
+  // Accessibility preferences (WCAG compliance)
+  accessibilityPreferences Json?
+
+  // Profile completion tracking
+  profileCompleteness    Int     @default(0) // Percentage complete
+  requiredFieldsComplete Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_profiles")
+}
+
+// ==================== NEXTAUTH.JS MODELS ====================
 model Account {
-    id                       String  @id @default(cuid())
-    userId                   String
-    type                     String
-    provider                 String
-    providerAccountId        String
-    refresh_token            String? // @db.Text
-    access_token             String? // @db.Text
-    expires_at               Int?
-    token_type               String?
-    scope                    String?
-    id_token                 String? // @db.Text
-    session_state            String?
-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    refresh_token_expires_in Int?
+  id                       String  @id @default(uuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String? @db.Text
+  access_token             String? @db.Text
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? @db.Text
+  session_state            String?
+  refresh_token_expires_in Int?
 
-    @@unique([provider, providerAccountId])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    posts         Post[]
+  @@map("sessions")
 }
 
 model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-    @@unique([identifier, token])
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// Add these models to your existing prisma/schema.prisma file
+
+// ==================== EXAMINER PROFILE MODEL ====================
+model ExaminerProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Personal information (encrypted)
+  firstName   String // Encrypted
+  lastName    String // Encrypted
+  phone       String // Encrypted
+  dateOfBirth DateTime // Encrypted
+  gender      String?
+
+  // Professional license (encrypted)
+  licenseNumber     String // Encrypted - Medical license
+  licenseProvince   String // Canadian province
+  licenseExpiryDate DateTime
+  secondaryLicenses Json? // Array of additional licenses
+
+  // Professional details
+  specialties     ExaminerSpecialty[]
+  subSpecialties  String[] // Additional sub-specializations
+  yearsExperience Int
+  languagesSpoken String[]
+  certifiedIn     String[] // Additional certifications
+
+  // Practice information (encrypted)
+  practiceType       String // Private, Hospital, Clinic, etc.
+  clinicName         String? // Encrypted
+  clinicAffiliation  String? // Encrypted
+  hospitalPrivileges Json? // Array of hospital affiliations
+
+  // Contact & location (encrypted JSON)
+  practiceAddress  Json // Encrypted practice address
+  mailingAddress   Json? // Encrypted mailing address if different
+  emergencyContact Json // Encrypted emergency contact
+
+  // Professional credentials (encrypted)
+  medicalSchool       String // Encrypted
+  graduationYear      Int
+  residencyProgram    String? // Encrypted
+  residencyYear       Int?
+  fellowshipProgram   String? // Encrypted
+  fellowshipYear      Int?
+  boardCertifications Json // Array of certifications with details
+
+  // IME specific qualifications
+  imeTraining       Json? // IME training certificates
+  imeCertifications Json? // IME certifications
+  imeExperience     Int? // Years of IME experience
+  imeVolume         Int? // IMEs per year
+
+  // Insurance & legal (encrypted JSON)
+  malpracticeInsurance Json // Insurance details
+  malpracticeHistory   Json? // Any claims history
+  disciplinaryHistory  Json? // Professional discipline history
+  criminalBackground   Json? // Background check results
+
+  // Availability & rates
+  availableForIme Boolean  @default(true)
+  hourlyRate      Decimal?
+  halfDayRate     Decimal?
+  fullDayRate     Decimal?
+  reportRate      Decimal? // Rate for report writing
+  travelRate      Decimal? // Rate for travel time
+  travelRadius    Int? // km willing to travel
+  workingHours    Json? // Structured working hours
+  timeOffPeriods  Json? // Scheduled time off
+
+  // Performance metrics
+  averageReportTime       Int? // Days to complete report
+  caseCompletionRate      Decimal? // Percentage of completed cases
+  clientSatisfactionScore Decimal? // Average rating
+  totalCasesCompleted     Int      @default(0)
+  totalReportsWritten     Int      @default(0)
+
+  // Document storage (encrypted paths)
+  medicalLicense   String? // Document path
+  cvDocument       String? // Document path
+  malpracticeDoc   String? // Document path
+  certificatesDocs Json? // Array of certificate documents
+  transcriptsDocs  Json? // Medical school transcripts
+  referenceLetters Json? // Professional references
+  photoId          String? // Government ID
+
+  // Verification status
+  status           ExaminerStatus   @default(PENDING_VERIFICATION)
+  onboardingStep   String? // Current step in onboarding
+  credentialStatus CredentialStatus @default(PENDING_VERIFICATION)
+  verifiedAt       DateTime?
+  verifiedBy       String? // Admin user ID
+
+  // Approval workflow
+  approvalNotes          String? // Admin notes
+  rejectionReason        String?
+  additionalInfoRequired String? // What additional info is needed
+  resubmissionCount      Int     @default(0)
+
+  // Background check
+  backgroundCheckStatus CredentialStatus @default(PENDING_VERIFICATION)
+  backgroundCheckDate   DateTime?
+  backgroundCheckExpiry DateTime?
+
+  // Consent and compliance
+  consentGiven             Boolean   @default(false)
+  consentDate              DateTime?
+  privacyPolicyAccepted    Boolean   @default(false)
+  dataRetentionConsent     Boolean   @default(false)
+  professionalCodeAccepted Boolean   @default(false)
+
+  // Profile completion tracking
+  profileCompleteness    Int     @default(0) // Percentage complete
+  requiredFieldsComplete Boolean @default(false)
+  documentsComplete      Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([specialties])
+  @@index([licenseProvince])
+  @@index([availableForIme])
+  @@index([credentialStatus])
+  @@index([verifiedAt])
+  @@map("examiner_profiles")
+}
+
+// ==================== ADDITIONAL ENUMS ====================
+enum ExaminerStatus {
+  PENDING_VERIFICATION // Email verification pending
+  DOCUMENTS_PENDING // Profile complete, documents needed
+  DOCUMENTS_SUBMITTED // Documents uploaded, awaiting review
+  UNDER_REVIEW // Admin reviewing application
+  ADDITIONAL_INFO_REQUIRED // More info needed from examiner
+  APPROVED // Approved by admin
+  REJECTED // Rejected by admin
+  ACTIVE // Fully active and available
+  INACTIVE // Temporarily inactive
+  SUSPENDED // Suspended by admin
+
+  @@map("examiner_statuses")
+}
+
+enum ExaminerSpecialty {
+  ORTHOPEDIC_SURGERY
+  NEUROLOGY
+  PSYCHIATRY
+  PSYCHOLOGY
+  INTERNAL_MEDICINE
+  PHYSICAL_MEDICINE_REHABILITATION
+  OCCUPATIONAL_MEDICINE
+  RADIOLOGY
+  CARDIOLOGY
+  PULMONOLOGY
+  PAIN_MANAGEMENT
+  RHEUMATOLOGY
+  SPORTS_MEDICINE
+  GENERAL_PRACTICE
+  EMERGENCY_MEDICINE
+  FAMILY_MEDICINE
+  DERMATOLOGY
+  OPHTHALMOLOGY
+  ENT
+  UROLOGY
+  GASTROENTEROLOGY
+  ENDOCRINOLOGY
+  HEMATOLOGY_ONCOLOGY
+  INFECTIOUS_DISEASE
+  NEPHROLOGY
+  ANESTHESIOLOGY
+  PATHOLOGY
+  OTHER
+
+  @@map("examiner_specialties")
+}
+
+enum CredentialStatus {
+  PENDING_VERIFICATION
+  VERIFIED
+  EXPIRED
+  REJECTED
+  NEEDS_RENEWAL
+
+  @@map("credential_statuses")
+}
+
+// ==================== APPROVAL SYSTEM ====================
+model ApprovalRequest {
+  id String @id @default(uuid())
+
+  // Request details
+  type   ApprovalType
+  status ApprovalStatus @default(PENDING)
+
+  // Related entities
+  userId      String? // User being approved
+  requestedBy User?   @relation("RequestedBy", fields: [userId], references: [id])
+
+  // Request data
+  requestData Json // Flexible data for different approval types
+
+  // Workflow
+  currentStage      String? // Current approval stage
+  requiredApprovers String[] // List of required approver user IDs
+  completedStages   String[] // Completed approval stages
+
+  // Deadlines
+  submittedAt    DateTime  @default(now())
+  dueDate        DateTime?
+  escalationDate DateTime? // When to escalate if not completed
+
+  // Additional info requests
+  additionalInfoRequired    String?
+  additionalInfoRequestedAt DateTime?
+  additionalInfoProvidedAt  DateTime?
+
+  // Final decision
+  finalizedAt    DateTime?
+  finalizedBy    String? // Admin user ID
+  finalDecision  ApprovalStatus?
+  decisionReason String?
+
+  // Compliance tracking
+  reviewLevel    String? // Level 1, Level 2, Executive
+  riskAssessment String? // Risk level of this approval
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Related entities
+  actions       ApprovalAction[]
+  notifications Notification[]
+
+  @@index([type, status])
+  @@index([submittedAt])
+  @@index([dueDate])
+  @@index([userId])
+  @@map("approval_requests")
+}
+
+model ApprovalAction {
+  id String @id @default(uuid())
+
+  requestId String
+  request   ApprovalRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  approvedBy String
+  approver   User   @relation("ApprovedBy", fields: [approvedBy], references: [id])
+
+  action   ApprovalStatus // APPROVED, REJECTED, ADDITIONAL_INFO_REQUIRED
+  comments String?
+  stage    String? // Which stage of approval this represents
+
+  // Detailed decision tracking
+  decisionCriteria Json? // What criteria were evaluated
+  riskMitigation   String? // Risk mitigation notes
+  conditions       String? // Any conditions attached to approval
+
+  actionDate DateTime @default(now())
+
+  @@index([requestId])
+  @@index([approvedBy])
+  @@index([actionDate])
+  @@map("approval_actions")
+}
+
+// ==================== AUDIT LOGGING (PIPEDA COMPLIANCE) ====================
+model AuditLog {
+  id String @id @default(uuid())
+
+  // User and session information
+  userId    String?
+  user      User?   @relation(fields: [userId], references: [id])
+  sessionId String?
+  ipAddress String
+  userAgent String?
+
+  // Action details
+  action     AuditAction
+  resource   String // Table/entity affected
+  resourceId String? // ID of the affected record
+
+  // Additional context
+  description String
+  severity    AuditSeverity @default(MEDIUM)
+
+  // Data changes (for compliance)
+  oldValues Json? // Previous values (encrypted)
+  newValues Json? // New values (encrypted)
+
+  // Request details
+  requestMethod  String? // HTTP method
+  requestUrl     String? // Request URL
+  requestHeaders Json? // Request headers (sanitized)
+  responseStatus Int? // HTTP response status
+  responseTime   Int? // Response time in ms
+
+  // Compliance tracking
+  dataCategory String? // PHI, PII, Financial, etc.
+  accessReason String? // Business justification
+
+  // Geographic and timing
+  timestamp DateTime @default(now())
+  timezone  String?
+  location  Json? // Geographic location if available
+
+  // Error tracking
+  errorCode    String? // Error code if applicable
+  errorMessage String? // Error message
+  stackTrace   String? // Stack trace for debugging
+
+  // Retention and compliance
+  retentionDate DateTime? // When this log should be deleted
+  isArchived    Boolean   @default(false)
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+  @@index([severity])
+  @@index([resource, resourceId])
+  @@index([ipAddress])
+  @@index([dataCategory])
+  @@map("audit_logs")
+}
+
+// ==================== NOTIFICATIONS ====================
+model Notification {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  approvalRequestId String?
+  approvalRequest   ApprovalRequest? @relation(fields: [approvalRequestId], references: [id])
+
+  type    NotificationType
+  title   String
+  message String
+
+  isRead    Boolean   @default(false)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
+
+  // Delivery tracking
+  emailSent   Boolean   @default(false)
+  emailSentAt DateTime?
+  smsSent     Boolean   @default(false)
+  smsSentAt   DateTime?
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ==================== ENUMS ====================
+enum Language {
+  EN
+  FR
+}
+
+enum Province {
+  AB // Alberta
+  BC // British Columbia
+  MB // Manitoba
+  NB // New Brunswick
+  NL // Newfoundland and Labrador
+  NS // Nova Scotia
+  ON // Ontario
+  PE // Prince Edward Island
+  QC // Quebec
+  SK // Saskatchewan
+  NT // Northwest Territories
+  NU // Nunavut
+  YT // Yukon
+}
+
+enum Role {
+  MEDICAL_EXAMINER
+  SUPER_ADMIN
+  CLAIMANT
+  ORGANIZATION_MANAGER
+}
+
+enum UserStatus {
+  PENDING_VERIFICATION // Email not verified yet
+  PENDING_APPROVAL // Awaiting admin approval
+  APPROVED // Approved by admin
+  REJECTED // Rejected by admin
+  ACTIVE // Fully active account
+  SUSPENDED // Temporarily suspended
+  DEACTIVATED // Permanently deactivated
+}
+
+enum ApprovalStatus {
+  PENDING
+  UNDER_REVIEW
+  ADDITIONAL_INFO_REQUIRED
+  APPROVED
+  REJECTED
+  CANCELLED
+  EXPIRED
+}
+
+enum ApprovalType {
+  USER_REGISTRATION
+  PROFILE_UPDATE
+  DATA_EXPORT
+  DATA_DELETION
+  ACCOUNT_DEACTIVATION
+  ROLE_CHANGE
+  PERMISSION_CHANGE
+}
+
+enum AuditAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+  PASSWORD_CHANGE
+  PASSWORD_RESET
+  PERMISSION_CHANGE
+  ROLE_CHANGE
+  STATUS_CHANGE
+  DATA_EXPORT
+  DATA_PRINT
+  EMAIL_SENT
+  SMS_SENT
+  DOCUMENT_UPLOAD
+  DOCUMENT_DOWNLOAD
+  DOCUMENT_VIEW
+  DOCUMENT_DELETE
+  SYSTEM_ACCESS
+  UNAUTHORIZED_ACCESS_ATTEMPT
+  DATA_BREACH_DETECTED
+  BULK_OPERATION
+  API_ACCESS
+  ADMIN_ACTION
+  CONSENT_GIVEN
+  CONSENT_WITHDRAWN
+  DATA_RETENTION_APPLIED
+  SESSION_CREATED
+  SESSION_REVOKED
+  REFRESH_TOKEN_GENERATED
+  REFRESH_TOKEN_REVOKED
+}
+
+enum AuditSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum NotificationType {
+  SYSTEM
+  APPROVAL_REQUEST
+  APPROVAL_DECISION
+  SECURITY_ALERT
+  COMPLIANCE_REMINDER
+  DATA_RETENTION_NOTICE
+  CONSENT_EXPIRY
 }
