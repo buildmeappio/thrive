@@ -1,6 +1,6 @@
-import React from 'react';
-import { MapPin } from 'lucide-react';
-import type { DropdownProps } from '@/shared/types/dropdown/DropdownProps';
+import React from "react";
+import { MapPin } from "lucide-react";
+import type { DropdownProps } from "~/types/dropdown/DropdownProps";
 
 export const Dropdown: React.FC<DropdownProps> = ({
   id,
@@ -9,9 +9,9 @@ export const Dropdown: React.FC<DropdownProps> = ({
   onChange,
   options,
   required = false,
-  placeholder = 'Select an option',
+  placeholder = "Select an option",
   icon = <MapPin size={16} color="#A4A4A4" strokeWidth={2} />,
-  className = '',
+  className = "",
 }) => {
   return (
     <div className={`space-y-2 ${className}`}>
@@ -23,15 +23,15 @@ export const Dropdown: React.FC<DropdownProps> = ({
         <select
           id={id}
           value={value}
-          onChange={e => onChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           className={`h-[55px] w-full appearance-none rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 pl-10 text-[14px] leading-[100%] font-normal tracking-[0.5%] ${
-            value === '' ? 'text-[#A4A4A4]' : 'text-gray-700'
+            value === "" ? "text-[#A4A4A4]" : "text-gray-700"
           } focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50`}
         >
           <option value="" disabled className="text-[#9EA9AA]">
             {placeholder}
           </option>
-          {options.map(option => (
+          {options.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>

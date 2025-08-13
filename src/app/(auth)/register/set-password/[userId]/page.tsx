@@ -1,11 +1,11 @@
-'use client';
-import React, { useState } from 'react';
-import { useParams } from 'next/navigation';
+"use client";
+import React, { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import {
   Step9Password,
   Step10Success,
-} from '@/shared/components/auth/register/medicalExaminerSteps';
-import { AuthNavbar } from '@/shared/components/layout';
+} from "~/components/auth/register/medicalExaminerSteps";
+import { AuthNavbar } from "~/components/layout";
 
 export default function SetPasswordPage() {
   const params = useParams();
@@ -43,10 +43,12 @@ export default function SetPasswordPage() {
           <div
             className="min-h-[350px] rounded-[20px] bg-white px-1 py-5 md:min-h-[400px] md:px-[50px] md:py-0"
             style={{
-              boxShadow: '0px 0px 36.35px 0px #00000008',
+              boxShadow: "0px 0px 36.35px 0px #00000008",
             }}
           >
-            <div className="-mb-6 pt-1 pb-1 md:mb-0">{getCurrentStepComponent()}</div>
+            <div className="-mb-6 pt-1 pb-1 md:mb-0">
+              {getCurrentStepComponent()}
+            </div>
           </div>
         </div>
       </div>

@@ -1,18 +1,12 @@
-import { z } from 'zod';
-
-export const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, 'Email is required')
-    .refine(email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email), {
-      message: 'Invalid email address',
-    }),
-  password: z.string().min(1, 'Password is required'),
+import * as Yup from "yup";
+export const loginSchema = Yup.object({
+  email: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required"),
+  password: Yup.string().required("Password is required"),
 });
 
-export type LoginSchema = z.infer<typeof loginSchema>;
-
 export const loginInitialValues = {
-  email: '',
-  password: '',
+  email: "",
+  password: "",
 };

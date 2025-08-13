@@ -1,10 +1,10 @@
-'use client';
-import React from 'react';
-import { notFound } from 'next/navigation';
-import { RegisterConfigs } from '@/shared/config/Register.config';
-import { OrganizationRegisterForm } from '@/shared/components/auth/register/OrganizationRegisterForm';
-import { MedicalExaminerRegisterForm } from '@/shared/components/auth/register/MedicalExaminerRegisterForm';
-import { AuthNavbar } from '@/shared/components/layout';
+"use client";
+import React from "react";
+import { notFound } from "next/navigation";
+import { RegisterConfigs } from "~/config/Register.config";
+import { OrganizationRegisterForm } from "~/components/auth/register/OrganizationRegisterForm";
+import { MedicalExaminerRegisterForm } from "~/components/auth/register/MedicalExaminerRegisterForm";
+import { AuthNavbar } from "~/components/layout";
 
 interface RegisterPageClientProps {
   userType: string;
@@ -15,13 +15,13 @@ export function RegisterPageClient({ userType }: RegisterPageClientProps) {
     notFound();
   }
 
-  const _config = RegisterConfigs[userType];
+  const config = RegisterConfigs[userType];
 
   const renderRegisterForm = () => {
     switch (userType) {
-      case 'organization':
+      case "organization":
         return <OrganizationRegisterForm />;
-      case 'medicalExaminer':
+      case "medicalExaminer":
         return <MedicalExaminerRegisterForm />;
       default:
         return notFound();

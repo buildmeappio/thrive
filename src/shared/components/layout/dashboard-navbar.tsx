@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
+import Link from "next/link";
+import Image from "next/image";
 
 export function DashboardNavbar() {
   return (
@@ -10,7 +10,12 @@ export function DashboardNavbar() {
         <div className="flex justify-between">
           <div className="flex items-center">
             <Link href="/">
-              <Image src="/images/thriveLogo.png" alt="Thrive" width={191} height={82} />
+              <Image
+                src="/thriveLogo.png"
+                alt="Thrive"
+                width={191}
+                height={82}
+              />
             </Link>
           </div>
 
