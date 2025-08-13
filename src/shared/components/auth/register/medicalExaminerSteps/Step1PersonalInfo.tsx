@@ -1,18 +1,18 @@
-import React from "react";
-import { Formik, Form } from "formik";
-import { Input } from "~/components/ui/input";
-import { User, Phone, Mail, MapPin } from "lucide-react";
-import { Label } from "~/components/ui/label";
-import { Dropdown } from "~/components/ui/Dropdown";
-import { provinceOptions } from "~/config/medicalExaminerRegister/ProvinceDropdownOptions";
-import ContinueButton from "~/components/ui/ContinueButton";
-import BackButton from "~/components/ui/BackButton";
-import type { MedExaminerRegStepProps } from "~/types";
+import React from 'react';
+import { Formik, Form } from 'formik';
+import { MedExaminerRegStepProps } from '@/shared/types';
 import {
-  step1PersonalInfoSchema,
   step1InitialValues,
-} from "~/validation/medicalExaminer/examinerRegisterValidation";
-import ProgressIndicator from "../progressIndicator/ProgressIndicator";
+  step1PersonalInfoSchema,
+} from '@/shared/validation/medicalExaminer/examinerRegisterValidation';
+import ProgressIndicator from '../progressIndicator/ProgressIndicator';
+import { Label } from '@radix-ui/react-label';
+import { Input } from '@/shared/components/ui';
+import { Mail, MapPin, Phone, User } from 'lucide-react';
+import { Dropdown } from '@/shared/components/ui/Dropdown';
+import { provinceOptions } from '@/shared/config/medicalExaminerRegister/ProvinceDropdownOptions';
+import BackButton from '@/shared/components/ui/BackButton';
+import ContinueButton from '@/shared/components/ui/ContinueButton';
 
 export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
   onNext,
@@ -21,14 +21,14 @@ export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
   totalSteps,
 }) => {
   const handleSubmit = (values: typeof step1InitialValues) => {
-    console.log("Step 1 Form Data:", values);
+    console.log('Step 1 Form Data:', values);
     onNext();
   };
   return (
     <div
       className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
       style={{
-        boxShadow: "0px 0px 36.35px 0px #00000008",
+        boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
     >
       <ProgressIndicator
@@ -64,9 +64,7 @@ export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
                       value={values.firstName}
                       onChange={handleChange}
                     />
-                    {errors.firstName && (
-                      <p className="text-xs text-red-500">{errors.firstName}</p>
-                    )}
+                    {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName" className="text-sm text-black">
@@ -79,9 +77,7 @@ export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
                       value={values.lastName}
                       onChange={handleChange}
                     />
-                    {errors.lastName && (
-                      <p className="text-xs text-red-500">{errors.lastName}</p>
-                    )}
+                    {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phoneNumber" className="text-sm text-black">
@@ -96,16 +92,11 @@ export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
                       onChange={handleChange}
                     />
                     {errors.phoneNumber && (
-                      <p className="text-xs text-red-500">
-                        {errors.phoneNumber}
-                      </p>
+                      <p className="text-xs text-red-500">{errors.phoneNumber}</p>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="emailAddress"
-                      className="text-sm text-black"
-                    >
+                    <Label htmlFor="emailAddress" className="text-sm text-black">
                       Email Address<span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -117,9 +108,7 @@ export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
                       onChange={handleChange}
                     />
                     {errors.emailAddress && (
-                      <p className="text-xs text-red-500">
-                        {errors.emailAddress}
-                      </p>
+                      <p className="text-xs text-red-500">{errors.emailAddress}</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -127,26 +116,18 @@ export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
                       id="provinceOfResidence"
                       label="Province of Residence"
                       value={values.provinceOfResidence}
-                      onChange={(value) =>
-                        setFieldValue("provinceOfResidence", value)
-                      }
+                      onChange={value => setFieldValue('provinceOfResidence', value)}
                       options={provinceOptions}
                       required={true}
                       placeholder="Select Province"
                     />
-                    {errors.provinceOfResidence &&
-                      errors.provinceOfResidence && (
-                        <p className="text-xs text-red-500">
-                          {errors.provinceOfResidence}
-                        </p>
-                      )}
+                    {errors.provinceOfResidence && errors.provinceOfResidence && (
+                      <p className="text-xs text-red-500">{errors.provinceOfResidence}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="mailingAddress"
-                      className="text-sm text-black"
-                    >
+                    <Label htmlFor="mailingAddress" className="text-sm text-black">
                       Mailing Address<span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -157,9 +138,7 @@ export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
                       onChange={handleChange}
                     />
                     {errors.mailingAddress && (
-                      <p className="text-xs text-red-500">
-                        {errors.mailingAddress}
-                      </p>
+                      <p className="text-xs text-red-500">{errors.mailingAddress}</p>
                     )}
                   </div>
                 </div>

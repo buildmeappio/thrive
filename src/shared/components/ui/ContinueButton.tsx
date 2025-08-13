@@ -1,6 +1,6 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
-import type { ContinueButtonProps } from "~/types";
+import type { ContinueButtonProps } from "@/shared/types";
 
 const ContinueButton: React.FC<ContinueButtonProps> = ({
   isLastStep,

@@ -1,18 +1,18 @@
-import React from "react";
-import { Formik, Form } from "formik";
-import { Label } from "~/components/ui/label";
-import { Dropdown } from "~/components/ui/Dropdown";
-import { provinceOptions } from "~/config/medicalExaminerRegister/ProvinceDropdownOptions";
-import { yearsOfExperienceOptions } from "~/config/medicalExaminerRegister/YrsExperienceDropdownOptions";
-import { languageOptions } from "~/config/medicalExaminerRegister/LanguageDropdownOptions";
-import { Checkbox } from "~/components/ui/checkbox";
-import ContinueButton from "~/components/ui/ContinueButton";
-import BackButton from "~/components/ui/BackButton";
+import React from 'react';
+import { Formik, Form } from 'formik';
+import { Label } from '@/shared/components/ui/label';
+import { Dropdown } from '@/shared/components/ui/Dropdown';
+import { provinceOptions } from '@/shared/config/medicalExaminerRegister/ProvinceDropdownOptions';
+import { yearsOfExperienceOptions } from '@/shared/config/medicalExaminerRegister/YrsExperienceDropdownOptions';
+import { languageOptions } from '@/shared/config/medicalExaminerRegister/LanguageDropdownOptions';
+import { Checkbox } from '@/shared/components/ui/checkbox';
+import ContinueButton from '@/shared/components/ui/ContinueButton';
+import BackButton from '@/shared/components/ui/BackButton';
 import {
   step3IMEExperienceSchema,
   step3InitialValues,
-} from "~/validation/medicalExaminer/examinerRegisterValidation";
-import ProgressIndicator from "../progressIndicator/ProgressIndicator";
+} from '@/shared/validation/medicalExaminer/examinerRegisterValidation';
+import ProgressIndicator from '../progressIndicator/ProgressIndicator';
 
 interface Step3IMEExperinceProps {
   onNext: () => void;
@@ -28,7 +28,7 @@ export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
   totalSteps,
 }) => {
   const handleSubmit = (values: typeof step3InitialValues) => {
-    console.log("Step 3 Form Data:", values);
+    console.log('Step 3 Form Data:', values);
     onNext();
   };
 
@@ -36,7 +36,7 @@ export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
     <div
       className="mt-4 flex w-full flex-col justify-between rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
       style={{
-        boxShadow: "0px 0px 36.35px 0px #00000008",
+        boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
     >
       <ProgressIndicator
@@ -67,17 +67,13 @@ export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                     id="yearsOfIMEExperience"
                     label="Years of IME Experience"
                     value={values.yearsOfIMEExperience}
-                    onChange={(value) =>
-                      setFieldValue("yearsOfIMEExperience", value)
-                    }
+                    onChange={value => setFieldValue('yearsOfIMEExperience', value)}
                     options={yearsOfExperienceOptions}
                     required={true}
                     placeholder="12 Years"
                   />
                   {errors.yearsOfIMEExperience && (
-                    <p className="text-xs text-red-500">
-                      {errors.yearsOfIMEExperience}
-                    </p>
+                    <p className="text-xs text-red-500">{errors.yearsOfIMEExperience}</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -85,17 +81,13 @@ export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                     id="provinceOfLicensure"
                     label="Province of Licensure"
                     value={values.provinceOfLicensure}
-                    onChange={(value) =>
-                      setFieldValue("provinceOfLicensure", value)
-                    }
+                    onChange={value => setFieldValue('provinceOfLicensure', value)}
                     options={provinceOptions}
                     required={true}
                     placeholder="Select Province"
                   />
                   {errors.provinceOfLicensure && (
-                    <p className="text-xs text-red-500">
-                      {errors.provinceOfLicensure}
-                    </p>
+                    <p className="text-xs text-red-500">{errors.provinceOfLicensure}</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -103,17 +95,13 @@ export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                     id="languagesSpoken"
                     label="Languages Spoken"
                     value={values.languagesSpoken}
-                    onChange={(value) =>
-                      setFieldValue("languagesSpoken", value)
-                    }
+                    onChange={value => setFieldValue('languagesSpoken', value)}
                     options={languageOptions}
                     required={true}
                     placeholder="Select Language"
                   />
                   {errors.languagesSpoken && (
-                    <p className="text-xs text-red-500">
-                      {errors.languagesSpoken}
-                    </p>
+                    <p className="text-xs text-red-500">{errors.languagesSpoken}</p>
                   )}
                 </div>
 
@@ -125,41 +113,29 @@ export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                   <div className="flex items-center space-x-6 pt-2">
                     <label className="flex cursor-pointer items-center space-x-2">
                       <Checkbox
-                        checked={values.forensicAssessmentTrained === "yes"}
-                        onCheckedChange={(checked) =>
-                          setFieldValue(
-                            "forensicAssessmentTrained",
-                            checked ? "yes" : "",
-                          )
+                        checked={values.forensicAssessmentTrained === 'yes'}
+                        onCheckedChange={checked =>
+                          setFieldValue('forensicAssessmentTrained', checked ? 'yes' : '')
                         }
                         checkedColor="#00A8FF"
                         checkIconColor="white"
                       />
-                      <span className="text-sm font-medium text-gray-700">
-                        Yes
-                      </span>
+                      <span className="text-sm font-medium text-gray-700">Yes</span>
                     </label>
                     <label className="flex cursor-pointer items-center space-x-2">
                       <Checkbox
-                        checked={values.forensicAssessmentTrained === "no"}
-                        onCheckedChange={(checked) =>
-                          setFieldValue(
-                            "forensicAssessmentTrained",
-                            checked ? "no" : "",
-                          )
+                        checked={values.forensicAssessmentTrained === 'no'}
+                        onCheckedChange={checked =>
+                          setFieldValue('forensicAssessmentTrained', checked ? 'no' : '')
                         }
                         checkedColor="#00A8FF"
                         checkIconColor="white"
                       />
-                      <span className="text-sm font-medium text-gray-700">
-                        No
-                      </span>
+                      <span className="text-sm font-medium text-gray-700">No</span>
                     </label>
                   </div>
                   {errors.forensicAssessmentTrained && (
-                    <p className="text-xs text-red-500">
-                      {errors.forensicAssessmentTrained}
-                    </p>
+                    <p className="text-xs text-red-500">{errors.forensicAssessmentTrained}</p>
                   )}
                 </div>
               </div>
