@@ -1,147 +1,132 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import {
-  LayoutDashboard,
-  UserCheck,
-  Users,
-  UserCog,
-  Building2,
-  Calendar,
-  FileText,
-  Receipt,
-  FileSearch,
-  LogOut,
-} from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import Link from 'next/link';
-
-const Sidebar = () => {
+import { adminSidebarRoutes } from '@/shared/config/admindashboard/sidebar/SidebarRoutes';
+const AdminSidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleLogout = () => {
     router.push('/login');
   };
-
-  const handleMenuClick = () => {
-    setIsCollapsed(!isCollapsed);
-  };
-
-  const menuItems = [
-    {
-      icon: LayoutDashboard,
-      label: 'Dashboard',
-      href: '/dashboard/admin',
-    },
-    {
-      icon: UserCheck,
-      label: 'Refferals',
-      href: '/refferals',
-    },
-    {
-      icon: Users,
-      label: 'Claimants',
-      href: '/claimants',
-    },
-    {
-      icon: UserCog,
-      label: 'Examiners',
-      href: '/examiners',
-    },
-    {
-      icon: Building2,
-      label: 'Service Providers',
-      href: '/service-providers',
-    },
-    {
-      icon: Calendar,
-      label: 'Schedule',
-      href: '/schedule',
-    },
-    {
-      icon: FileText,
-      label: 'Reports',
-      href: '/reports',
-    },
-    {
-      icon: Receipt,
-      label: 'Billing & Invoices',
-      href: '/billing-invoices',
-    },
-    {
-      icon: FileSearch,
-      label: 'Audit Logs',
-      href: '/audit-logs',
-    },
-    {
-      icon: LogOut,
-      label: 'Logout',
-      href: '/login',
-      onClick: handleLogout,
-      isLogout: true,
-    },
-  ];
-
-  const isActive = (href: string) => {
-    return pathname === href;
-  };
-
+  const isActive = (href: string) => pathname === href;
   return (
-    <div className={`flex h-full flex-col rounded-r-[50px] bg-white mt-2 transition-all duration-300 ${
-      isCollapsed ? 'w-[90px]' : 'w-[264px]'
-    }`}>
-      {/* Navigation Menu */}
+    <div
+      className={`mt-2 flex h-full w-[275px] flex-col justify-between rounded-r-[50px] bg-white transition-all duration-300`}
+    >
       <nav className="mt-8">
-        <div className={`space-y-6 pb-6 ${isCollapsed ? 'px-2' : 'px-10'}`}>
-          {menuItems.map((item, index) => {
+        <div className={`space-y-6 px-10 pb-6`}>
+          {adminSidebarRoutes.map((item, index) => {
             const itemIsActive = isActive(item.href);
             const IconComponent = item.icon;
-            const isLogoutButton = item.isLogout;
-
             return (
               <Link
                 key={index}
                 href={item.href}
-                onClick={handleMenuClick}
-                className={`flex items-center rounded-[48px] px-4 py-3 font-semibold transition-all duration-200 ${
-                  isLogoutButton
-                    ? 'justify-center'
-                    : isCollapsed
-                      ? 'justify-center px-4'
-                      : 'space-x-3'
-                } ${
-                  isLogoutButton
-                    ? 'bg-[#00005D] text-white space-x-3'
-                    : itemIsActive
-                      ? 'bg-gradient-to-l  from-emerald-300 to-sky-500 text-[#FFFFFF]'
-                      : 'text-[#7D7D7D] bg-gray-100'
+                className={`flex items-center space-x-2 rounded-[48px] px-4 py-2.5 font-semibold transition-all duration-200 ${
+                  itemIsActive
+                    ? 'bg-gradient-to-l from-emerald-300 to-sky-500 text-[#FFFFFF]'
+                    : 'bg-gray-100 text-[#7D7D7D] hover:bg-gradient-to-l hover:from-emerald-300 hover:to-sky-500 hover:text-white'
                 }`}
-                title={isCollapsed ? item.label : undefined}
+                title={item.label}
               >
                 <IconComponent
+                  strokeWidth={2}
                   size={20}
-                  className={`h-5 w-5 ${
-                    isLogoutButton
-                      ? 'text-white'
-                      : itemIsActive
-                        ? 'text-white'
-                        : 'text-current'
-                  }`}
+                  className={`h-5 w-5 ${itemIsActive ? 'text-white' : 'text-current'}`}
                 />
-                {(!isCollapsed && !isLogoutButton) && (
-                  <span className="text-sm">{item.label}</span>
-                )}
-                {(isLogoutButton) && (
-                  <span className="text-sm">{item.label}</span>
-                )}
+                <span className="text-[15px]">{item.label}</span>
               </Link>
             );
           })}
         </div>
       </nav>
+
+      <div className="mt-30 px-10 pb-6">
+        <button
+          onClick={handleLogout}
+          className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-[48px] bg-[#00005D] px-[20px] py-[12px] font-semibold text-white transition-all duration-200 hover:bg-[#00005D]/80"
+        >
+          <LogOut size={20} strokeWidth={2} className="text-white" />
+          <span className="text-[15px]">Logout</span>
+        </button>
+      </div>
     </div>
   );
 };
 
-export default Sidebar;
+export default AdminSidebar;
 
+// import React, { useState } from 'react';
+// import { usePathname, useRouter } from 'next/navigation';
+// import { LogOut } from 'lucide-react';
+// import Link from 'next/link';
+// import { adminSidebarRoutes } from '@/shared/config/admindashboard/sidebar/SidebarRoutes';
+
+// const AdminSidebar = () => {
+//   const pathname = usePathname();
+//   const router = useRouter();
+//   const [isCollapsed, setIsCollapsed] = useState(false);
+
+//   const handleLogout = () => {
+//     router.push('/login');
+//   };
+
+//   const handleMenuClick = () => {
+//     setIsCollapsed(!isCollapsed);
+//   };
+
+//   const isActive = (href: string) => pathname === href;
+
+//   return (
+//     <div
+//       className={`mt-2 flex h-full flex-col justify-between rounded-r-[50px] bg-white transition-all duration-300 ${
+//         isCollapsed ? 'w-[90px]' : 'w-[275px]'
+//       }`}
+//     >
+//       <nav className="mt-8">
+//         <div className={`space-y-6 pb-6 ${isCollapsed ? 'px-2' : 'px-10'}`}>
+//           {adminSidebarRoutes.map((item, index) => {
+//             const itemIsActive = isActive(item.href);
+//             const IconComponent = item.icon;
+//             return (
+//               <Link
+//                 key={index}
+//                 href={item.href}
+//                 onClick={handleMenuClick}
+//                 className={`flex items-center rounded-[48px] px-4 py-2.5 font-semibold transition-all duration-200 ${
+//                   isCollapsed ? 'justify-center px-4' : 'space-x-2'
+//                 } ${
+//                   itemIsActive
+//                     ? 'bg-gradient-to-l from-emerald-300 to-sky-500 text-[#FFFFFF]'
+//                     : 'bg-gray-100 text-[#7D7D7D]'
+//                 }`}
+//                 title={isCollapsed ? item.label : undefined}
+//               >
+//                 <IconComponent
+//                   strokeWidth={2}
+//                   size={20}
+//                   className={`h-5 w-5 ${itemIsActive ? 'text-white' : 'text-current'}`}
+//                 />
+//                 {!isCollapsed && <span className="text-[15px]">{item.label}</span>}
+//               </Link>
+//             );
+//           })}
+//         </div>
+//       </nav>
+
+//       <div className={`pb-6 ${isCollapsed ? 'px-2' : 'px-10'} mt-30`}>
+//         <button
+//           onClick={handleLogout}
+//           className="flex w-full cursor-pointer items-center justify-center space-x-3 rounded-[48px] bg-[#00005D] px-4 py-2.5 font-semibold text-white transition-all duration-200 hover:bg-[#00005D]/80"
+//         >
+//           <LogOut size={20} strokeWidth={2} className="text-white" />
+//           {!isCollapsed && <span className="text-[15px]">Logout</span>}
+//         </button>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default AdminSidebar;

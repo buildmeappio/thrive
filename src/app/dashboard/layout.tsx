@@ -2,7 +2,7 @@
 
 import { DashboardLayout } from '@/shared/components/layout/dashboard-layout';
 import type { UserRole } from '@/shared/types/user/user';
-import { usePathname } from 'next/navigation';
+import { notFound, usePathname } from 'next/navigation';
 
 export default function DashboardLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -13,10 +13,10 @@ export default function DashboardLayoutWrapper({ children }: { children: React.R
         return 'ADMIN';
       case 'organization':
         return 'ORGANIZATION';
-      case 'medical-examiner':
+      case 'medicalExaminer':
         return 'MEDICAL_EXAMINER';
       default:
-        return 'ADMIN';
+        return notFound();
     }
   };
 
