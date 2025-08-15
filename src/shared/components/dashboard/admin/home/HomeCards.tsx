@@ -46,7 +46,7 @@ const HomeCards = () => {
         </div>
         <div className="flex h-full w-full flex-col gap-1 rounded-3xl bg-[#000080] p-4">
           <div className="flex items-center justify-between">
-            <Image src="/images/insurers.png" alt="insurer" width={18} height={18} />
+            <Image src="/images/insurers.png" alt="insurer" width={20} height={20} />
             <div className="w-fit rounded-full bg-[#0000BD] px-4 py-1.5">
               <h4 className="text-[12px] font-normal text-white">This Month</h4>
             </div>
@@ -67,7 +67,7 @@ const HomeCards = () => {
           style={{ background: 'linear-gradient(270deg, #01F4C8 0%, #00A8FF 100%)' }}
         >
           <div className="flex items-center justify-between">
-            <Image src="/images/alert.png" alt="alert" width={18} height={18} />
+            <Image src="/images/alert.png" alt="alert" width={20} height={20} />
             <div className="w-fit rounded-full bg-[#006599] px-4 py-1.5">
               <h4 className="text-[12px] font-normal text-white">All Time</h4>
             </div>
