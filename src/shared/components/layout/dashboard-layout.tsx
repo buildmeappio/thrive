@@ -13,7 +13,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children, userRole }: DashboardLayoutProps) {
   return (
-    <div className="flex h-screen flex-col bg-[#FAFAFA]">
+    <div className="flex  flex-col bg-[#FAFAFA]">
       <DashboardNavbar />
       <div className="flex flex-1 overflow-hidden py-4">
         <Sidebar userRole={userRole} />
