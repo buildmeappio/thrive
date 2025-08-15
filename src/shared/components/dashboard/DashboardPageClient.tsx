@@ -1,6 +1,9 @@
 'use client';
 import React from 'react';
 import { notFound } from 'next/navigation';
+import AdminDashboardPage from '@/app/dashboard/admin/page';
+import OrganizationDashboardPage from '@/app/dashboard/organization/page';
+import MedicalExaminerDashboardPage from '@/app/dashboard/medicalExaminer/page';
 
 interface DashboardPageClientProps {
   userType: string;
@@ -10,11 +13,11 @@ export function DashboardPageClient({ userType }: DashboardPageClientProps) {
   const renderDashboardContent = () => {
     switch (userType) {
       case 'admin':
-        return <h1>Admin Dashboard Content</h1>;
+        return <AdminDashboardPage />;
       case 'organization':
-        return <h1>Organization Dashboard Content</h1>;
-      case 'medical-examiner':
-        return <h1>Medical Examiner Dashboard Content</h1>;
+        return <OrganizationDashboardPage />;
+      case 'medicalExaminer':
+        return <MedicalExaminerDashboardPage />;
       default:
         return notFound();
     }

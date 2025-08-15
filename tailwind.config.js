@@ -17,9 +17,9 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        heading: ['var(--font-degular)', 'system-ui', 'sans-serif'],
-        body: ['var(--font-poppins)', 'system-ui', 'sans-serif'],
-        sans: ['var(--font-poppins)', 'system-ui', 'sans-serif'], // Default
+        'degular': ['var(--font-degular)', 'system-ui', 'sans-serif'],
+        'poppins': ['var(--font-poppins)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-poppins)', 'system-ui', 'sans-serif'], // Default font is Poppins
       },
       colors: {
         // Canadian-inspired color palette
@@ -82,10 +82,7 @@ module.exports = {
         md: '0.375rem',
         sm: '0.25rem',
       },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
-      },
+      // Removed duplicate fontFamily section
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
