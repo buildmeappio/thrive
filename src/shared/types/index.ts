@@ -14,3 +14,4 @@ export type { BackButtonProps } from './buttons/BackButtonProps';
 export type { ContinueButtonProps } from './buttons/ContinueButtonProps';
 export type { MedExaminerRegStepProps } from './register/medicalExaminer/MedExaminerRegStepProps';
 export type { IAdminSidebarRoutes } from './sidebar/ISidebarRoutes';
+export type { IMedicalExaminersData } from './dashboard/admin/HomeMedExaminers.interface';
