@@ -22,7 +22,7 @@ const HomeStats = () => {
     datasets: [
       {
         data: [10, 20, 30, 20, 40],
-        backgroundColor: ctx => {
+        backgroundColor: (ctx: { chart: any; dataIndex: any; }) => {
           const { chart, dataIndex } = ctx;
           if (dataIndex === 2) {
             const gradient = chart.ctx.createLinearGradient(0, 0, 200, 200);
@@ -79,3 +79,4 @@ const HomeStats = () => {
 };
 
 export default HomeStats;
+
