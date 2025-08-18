@@ -1,5 +1,5 @@
-"use client";
-import React, { useState } from "react";
+'use client';
+import React, { useState } from 'react';
 import {
   Step1PersonalInfo,
   Step2MedicalCredentials,
@@ -9,7 +9,7 @@ import {
   Step6Legal,
   Step7SubmitConfirmation,
   Step8ThankYou,
-} from "./medicalExaminerSteps";
+} from './medicalExaminerSteps';
 export const MedicalExaminerRegisterForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -26,13 +26,13 @@ export const MedicalExaminerRegisterForm: React.FC = () => {
 
   const goToNext = () => {
     if (currentStep < steps.length) {
-      setCurrentStep((prev) => prev + 1);
+      setCurrentStep(prev => prev + 1);
     }
   };
 
   const goToPrevious = () => {
     if (currentStep > 1) {
-      setCurrentStep((prev) => prev - 1);
+      setCurrentStep(prev => prev - 1);
     }
   };
 
@@ -53,11 +53,10 @@ export const MedicalExaminerRegisterForm: React.FC = () => {
   const showTitle = currentStep <= 6;
   return (
     <div className="mx-auto max-w-[900px] p-4 md:min-h-screen md:p-0 md:py-6">
-      <div className="mb-4 flex h-[60px] items-center justify-between">
+      <div className="mb-6 flex h-[60px] items-center justify-between">
         {showTitle && (
-          <h2 className="md:ml- text-[19px] font-semibold md:text-[44px]">
-            Let's complete your profile to join{" "}
-            <span className="text-[#00A8FF]">Thrive.</span>
+          <h2 className="text-center text-[22px] leading-none font-semibold tracking-[-0.03em] whitespace-nowrap md:text-4xl lg:text-5xl xl:text-[54px]">
+            Let's complete your profile to join <span className="text-[#00A8FF]">Thrive.</span>
           </h2>
         )}
       </div>

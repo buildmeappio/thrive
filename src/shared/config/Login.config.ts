@@ -1,19 +1,19 @@
-import type { ILoginConfig } from "~/types";
+import type { ILoginConfig } from '@/shared/types';
 
 export const LoginConfigs: Record<string, ILoginConfig> = {
   admin: {
-    type: "admin",
-    title: "Admin Login",
-    subtitle: "Access admin dashboard",
+    type: 'admin',
+    title: 'Admin Login',
+    subtitle: 'Access admin dashboard',
   },
   organization: {
-    type: "organization",
-    title: "Organization Login",
-    subtitle: "Access your organization dashboard",
+    type: 'organization',
+    title: 'Organization Login',
+    subtitle: 'Access your organization dashboard',
   },
   medicalExaminer: {
-    type: "medicalExaminer",
-    title: "Medical Examiner Login",
-    subtitle: "Access your medical examiner dashboard",
+    type: 'medicalExaminer',
+    title: 'Medical Examiner Login',
+    subtitle: 'Access your medical examiner dashboard',
   },
 };
