@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 'use client';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
@@ -46,7 +47,7 @@ const RequestMoreInfo: React.FC<IRequestMoreInfoProps> = ({ isOpen, onClose }) =
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-4xl px-2 shadow-xl w-[90%] md:w-[650px] h-[320px]"
+        className="bg-white rounded-4xl px-2 shadow-xl w-[90%] md:w-[650px] md:h-[320px] h-[340px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 pt-4 pb-2">
