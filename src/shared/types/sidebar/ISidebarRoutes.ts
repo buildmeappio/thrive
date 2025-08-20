@@ -1,6 +1,6 @@
 import { LucideIcon } from 'lucide-react';
 
-export interface IAdminSidebarRoutes {
+export interface ISidebarRoutes {
   icon: LucideIcon;
   label: string;
   href: string;

@@ -10,9 +10,10 @@ import {
   Receipt,
   FileSearch,
 } from 'lucide-react';
-import { IAdminSidebarRoutes } from '@/shared/types';
+import { ISidebarRoutes } from '@/shared/types';
+import {Home, Settings, CreditCard, HelpCircle } from 'lucide-react';
 
-export const adminSidebarRoutes: IAdminSidebarRoutes[] = [
+export const adminSidebarRoutes: ISidebarRoutes[] = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard/admin' },
   { icon: UserCheck, label: 'Referrals', href: '/dashboard/admin/referrals' },
   { icon: Users, label: 'Claimants', href: '/dashboard/admin/claimants' },
@@ -22,4 +23,11 @@ export const adminSidebarRoutes: IAdminSidebarRoutes[] = [
   { icon: FileText, label: 'Reports', href: '/dashboard/admin/reports' },
   { icon: Receipt, label: 'Billing & Invoices', href: '/dashboard/admin/billing-invoices' },
   { icon: FileSearch, label: 'Audit Logs', href: '/dashboard/admin/audit-logs' },
+];
+export const medicalExaminerSidebarRoutes: ISidebarRoutes[] = [
+  { icon: Home, label: 'Dashboard', href: '/dashboard/medicalExaminer' },
+  { icon: FileText, label: 'All Cases', href: '/dashboard/medicalExaminer/cases' },
+  { icon: Settings, label: 'Settings', href: '/dashboard/medicalExaminer/settings' },
+  { icon: CreditCard, label: 'Billing & Invoices', href: '/dashboard/medicalExaminer/billing' },
+  { icon: HelpCircle, label: 'Support & Help', href: '/dashboard/medicalExaminer/support' },
 ];
