@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 'use client';
 import React, { useState, type JSX } from 'react';
 import RequestMoreInfo from './RequestMoreInfo';
@@ -15,8 +16,8 @@ import {
 
 const ReviewExaminer: React.FC = () => {
   const [isRequestOpen, setIsRequestOpen] = useState(false);
-  const [isRejectOpen, setIsRejectOpen] = useState(false); 
-  
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+
   const handleDownload = (fileName: string): void => {
     console.log(`Downloading ${fileName}`);
   };
@@ -26,7 +27,7 @@ const ReviewExaminer: React.FC = () => {
     if (actionLabel === 'Request More Info') {
       setIsRequestOpen(true);
     } else if (actionLabel === 'Reject Examiner') {
-      setIsRejectOpen(true); 
+      setIsRejectOpen(true);
       }
   };
 
@@ -77,10 +78,10 @@ const ReviewExaminer: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 md:p-6">
+    <div className="min-h-screen bg-gray-50 md:p-6  ">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8">
-          <div className="text-4xl font-semibold leading-none tracking-tight text-gray-900">
+          <div className="md:text-4xl text-3xl font-semibold leading-none tracking-tight text-gray-900">
             Review{' '}
             <span className="bg-gradient-to-l from-emerald-300 to-sky-500 bg-clip-text text-transparent">
               {examinerData.name}
@@ -89,12 +90,12 @@ const ReviewExaminer: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 rounded-4xl bg-white px-4 shadow-sm lg:grid-cols-2">
+        <div className="grid grid-cols-1 md:gap-8 gap-2 rounded-4xl bg-white md:px-4 shadow-sm lg:grid-cols-2">
           <div className="space-y-0">
             {renderSection('Personal & Contact Info', personalContactInfo)}
             <div className="mt-0">{renderSection('Medical Credentials', medicalCredentials)}</div>
           </div>
-          <div className="space-y-6">
+          <div className="space-y-2">
             {renderSection('IME Experience & Qualifications', imeExperience, true)}
             {renderSection('Legal & Compliance', legalCompliance)}
             <div className="">
@@ -130,3 +131,4 @@ const ReviewExaminer: React.FC = () => {
 };
 
 export default ReviewExaminer;
+
