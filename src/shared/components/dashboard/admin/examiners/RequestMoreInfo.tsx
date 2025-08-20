@@ -1,78 +1,94 @@
 'use client';
-import React, { useState } from 'react';
+import { Label } from '@/shared/components/ui/label';
+import { Textarea } from '@/shared/components/ui/textarea';
+import { IRequestMoreInfoProps } from '@/shared/types';
+import React, { useState, useEffect } from 'react';
 
-interface RequestMoreInfoProps {
-  isOpen: boolean;
-  onClose: () => void;
-  examinerName: string;
-}
-
-const RequestMoreInfo: React.FC<RequestMoreInfoProps> = ({ isOpen, onClose }) => {
+const RequestMoreInfo: React.FC<IRequestMoreInfoProps> = ({ isOpen, onClose }) => {
   const [message, setMessage] = useState('');
-  const [charCount, setCharCount] = useState(0);
-  const maxChars = 200;
+  const [error, setError] = useState('');
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
-    if (text.length <= maxChars) {
-      setMessage(text);
-      setCharCount(text.length);
+    setMessage(text);
+    if (!text.trim()) {
+      setError('Message is required');
+    } else {
+      setError('');
     }
   };
 
   const handleSend = () => {
+    if (!message.trim()) {
+      setError('Message is required');
+      return;
+    }
     console.log('Sending request for more info:', message);
-    // Add your send logic here
-    setMessage('');
-    setCharCount(0);
+    setError('');
     onClose();
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-4xl px-2 shadow-xl w-[5px] md:w-[650px] h-[320px]">
-        {/* Header */}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-4xl px-2 shadow-xl w-[90%] md:w-[650px] h-[320px]"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between px-6 pt-4 pb-2">
           <h2 className="text-xl font-semibold text-[#000093]">
             Request More Info
           </h2>
           <button
             onClick={onClose}
-            className="text-[#000093] text-xl font-bold w-8 h-8 flex items-center justify-center"
+            className="w-8 h-8 flex items-center justify-center font-bold bg-[#000080] rounded-full text-white cursor-pointer hover:bg-[#0000b3] transition"
           >
             ×
           </button>
+
         </div>
 
-        {/* Body */}
-        <div className="px-6 pt-2">
+        <div className="px-6 pt-2 relative">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Write Text Here
-            </label>
-            <textarea
-              value={message}
-              onChange={handleMessageChange}
-              placeholder="Type here..."
-              className="w-full p-3 focus:border-none bg-[#F6F6F6] rounded-2xl resize-none"
-              rows={4}
-            />
-            <div className="flex justify-end mt-1">
-              <span className="text-xs text-gray-500">
-                {charCount}/{maxChars}
-              </span>
+            <Label htmlFor="message" className="text-black text-xl mb-1">
+              Write Text Here<span className="text-red-500">*</span>
+            </Label>
+            <div className="relative">
+              <Textarea
+                name="message"
+                id="message"
+                placeholder="Type here..."
+                value={message}
+                onChange={handleMessageChange}
+                className="min-h-[150px] w-full resize-none text-sm sm:text-base md:min-h-[120px]"
+                maxLength={500}
+              />
+              <div className="absolute right-2 bottom-2 text-xs text-gray-400 sm:right-3 sm:bottom-2 sm:text-sm">
+                {message.length}/500
+              </div>
             </div>
+            {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex justify-end pt-1 px-6 pb-4">
           <button
             onClick={handleSend}
-            disabled={message.trim().length === 0}
-            className="w-[155px] h-[41px] bg-[#000080] text-white px-[15.67px] py-2 rounded-[22.5px] font-medium hover:bg-[#000066] disabled:bg-[#000080] disabled:cursor-not-allowed transition-colors gap-[11.25px] rotate-0 opacity-100"
+            className="cursor-pointer w-[155px] h-[41px] bg-[#000080] hover:bg-[#000080]/85 text-white px-[15.67px] py-2 rounded-[22.5px] font-medium transition-colors"
           >
             Send
           </button>
@@ -83,4 +99,3 @@ const RequestMoreInfo: React.FC<RequestMoreInfoProps> = ({ isOpen, onClose }) =>
 };
 
 export default RequestMoreInfo;
-
