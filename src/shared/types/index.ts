@@ -15,3 +15,7 @@ export type { ContinueButtonProps } from './buttons/ContinueButtonProps';
 export type { MedExaminerRegStepProps } from './register/medicalExaminer/MedExaminerRegStepProps';
 export type { IAdminSidebarRoutes } from './sidebar/ISidebarRoutes';
 export type { IMedicalExaminersData } from './dashboard/admin/HomeMedExaminers.interface';
+export type { IReviewExaminerData } from './dashboard/admin/ReviewExaminer.interface';
+export type {  IRequestMoreInfoProps} from './dashboard/admin/ReviewExaminer.interface';
+export type { IReviewExaminerAction } from './dashboard/admin/ReviewExaminer.interface';
+export type { IReviewExaminerField } from './dashboard/admin/ReviewExaminer.interface';

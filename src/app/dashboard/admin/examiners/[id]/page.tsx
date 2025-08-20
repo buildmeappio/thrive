@@ -6,7 +6,6 @@ const DoctorReviewsPage = () => {
   return (
     <div>
       <ReviewExaminer/>
-
        </div>
 
   )
