@@ -95,7 +95,7 @@ const ReviewExaminer: React.FC = () => {
             {renderSection('Personal & Contact Info', personalContactInfo)}
             <div className="mt-0">{renderSection('Medical Credentials', medicalCredentials)}</div>
           </div>
-          <div className="space-y-2">
+          <div className="md:space-y-12">
             {renderSection('IME Experience & Qualifications', imeExperience, true)}
             {renderSection('Legal & Compliance', legalCompliance)}
             <div className="">

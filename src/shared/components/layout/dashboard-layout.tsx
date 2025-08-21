@@ -16,7 +16,7 @@ export function DashboardLayout({ children, userRole }: DashboardLayoutProps) {
   };
 
   return (
-    <div className="flex flex-col bg-[#FAFAFA]">
+    <div className="flex flex-col bg-[#F4FBFF]">
       <DashboardNavbar onMobileMenuToggle={toggleMobileSidebar} />
       <div className="flex flex-1 overflow-hidden py-2">
         <Sidebar
