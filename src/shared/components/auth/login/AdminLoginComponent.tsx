@@ -33,7 +33,7 @@ export function AdminLoginComponent() {
               validateOnChange={false}
               validateOnBlur={false}
             >
-              {({ values, errors, handleChange, submitForm }) => (
+              {({ values, errors, handleChange }) => (
                 <Form>
                   <div className="mb-4 sm:mb-5">
                     <Label htmlFor="email" className="text-black">

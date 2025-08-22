@@ -2,8 +2,11 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/components/ui/accordion';
 import { Check } from 'lucide-react';
 import React, { useState } from 'react'
-import ProfileForm from './ProfileForm';
-import { medicalExaminerProfileSteps } from '@/shared/config/medicalExaminerdashboard/profileSetup/ProfileSteps';
+import { MedicalExaminerProfileSteps } from '@/shared/config/medicalExaminerdashboard/profileSetup/ProfileSteps';
+import MedicalExaminerProfileStep1 from './MedicalExaminerProfileStep1';
+import MedicalExaminerProfileStep2 from './MedicalExaminerProfileStep2';
+import MedicalExaminerProfileStep3 from './MedicalExaminerProfileStep3';
+import MedicalExaminerProfileStep4 from './MedicalExaminerProfileStep4';
 
 const MedicalExaminerProfilSetup = () => {
   const [activeStep, setActiveStep] = useState<string | null>(null)
@@ -13,14 +16,14 @@ const MedicalExaminerProfilSetup = () => {
       setCompletedSteps([...completedSteps, id])
     }
     const nextStep = (parseInt(id) + 1).toString()
-    if (medicalExaminerProfileSteps.find((s) => s.id === nextStep)) {
+    if (MedicalExaminerProfileSteps.find((s) => s.id === nextStep)) {
       setActiveStep(nextStep)
     } else {
       setActiveStep(null)
     }
   }
 
-  const allCompleted = completedSteps.length === medicalExaminerProfileSteps.length;
+  const allCompleted = completedSteps.length === MedicalExaminerProfileSteps.length;
 
   return (
     <div>
@@ -53,7 +56,7 @@ const MedicalExaminerProfilSetup = () => {
         }}
       >
         {
-          medicalExaminerProfileSteps.map((step) => {
+          MedicalExaminerProfileSteps.map((step) => {
             const isCompleted = completedSteps.includes(step.id)
             const isActive = activeStep === step.id
             const stepNum = parseInt(step.id)
@@ -68,9 +71,13 @@ const MedicalExaminerProfilSetup = () => {
               >
                 <AccordionTrigger className="flex items-center px-6 py-3 hover:no-underline">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="text-sm font-medium rounded-full bg-[#9CDDFF] px-5 py-1 text-black">
+                    <div
+                      className={`text-sm font-medium rounded-full bg-[#9CDDFF] px-5 py-1 text-black transition-opacity
+    ${isCompleted ? 'opacity-50' : 'opacity-100'}`}
+                    >
                       {step.stepNumber}
                     </div>
+
                     <h3
                       className={`text-[20px] font-normal transition-colors ${isCompleted ? 'line-through text-black' : 'text-black'
                         }`}
@@ -101,17 +108,15 @@ const MedicalExaminerProfilSetup = () => {
                   )}
                 </AccordionTrigger>
                 <AccordionContent className="px-6 pb-6">
-                  {step.id === '1' && <ProfileForm />}
+                  {step.id === '1' && <MedicalExaminerProfileStep1 />}
                   {step.id === '2' && (
-                    <div className="p-4 text-gray-500">
-                      Choose Your Specialty & IME Preferences content
-                    </div>
+                    <MedicalExaminerProfileStep2 />
                   )}
                   {step.id === '3' && (
-                    <div className="p-4 text-gray-500">Set Your Availability content</div>
+                    <MedicalExaminerProfileStep3 />
                   )}
                   {step.id === '4' && (
-                    <div className="p-4 text-gray-500">Set Up Payout Details content</div>
+                    <MedicalExaminerProfileStep4 />
                   )}
                 </AccordionContent>
               </AccordionItem>

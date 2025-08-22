@@ -1,10 +1,11 @@
-import MedicalExaminerProfilSetup from '@/shared/components/dashboard/medicalExaminer/preActivatedSteps/MedicalExaminerProfilSetup';
 import React from 'react';
 
 export default function MedicalExaminerDashboardPage() {
   return (
     <div>
-      <MedicalExaminerProfilSetup />
+      <h1 className='text-black'>
+        Home Dashboard
+      </h1>
     </div>
   );
 }

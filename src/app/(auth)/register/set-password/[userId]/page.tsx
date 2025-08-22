@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Step10Success, Step9Password } from "@/shared/components/auth/register/medicalExaminerSteps";
 import { AuthNavbar } from "@/shared/components/layout";
 

@@ -15,7 +15,6 @@ export function LoginPageClient({ userType }: LoginPageClientProps) {
   if (!LoginConfigs[userType]) {
     notFound();
   }
-  const config = LoginConfigs[userType];
   const renderLoginComponent = () => {
     switch (userType) {
       case "admin":

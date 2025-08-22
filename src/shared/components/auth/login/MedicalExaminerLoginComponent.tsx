@@ -29,7 +29,7 @@ export function MedicalExaminerLoginComponent() {
               validateOnChange={false}
               validateOnBlur={false}
             >
-              {({ values, errors, handleChange, submitForm }) => (
+              {({ values, errors, handleChange }) => (
                 <Form>
                   <div className="mb-6">
                     <Label htmlFor="email" className="text-black">

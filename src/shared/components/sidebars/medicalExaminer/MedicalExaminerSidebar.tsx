@@ -30,7 +30,7 @@ const MedicalExaminerSidebar = ({ isMobileOpen = false, onMobileClose }: Medical
     <div
       className={`
         flex md:w-[275px] w-[240px] flex-col justify-between rounded-r-[50px] bg-white transition-all duration-300
-        md:relative md:translate-x-0 md:h-screen
+        md:relative md:translate-x-0 md:h-auto md:min-h-screen
         ${isMobileOpen
           ? 'fixed left-0 top-[calc(theme(spacing.16)+theme(spacing.2))] z-50 h-[calc(100vh-theme(spacing.16)-theme(spacing.2))] translate-x-0 mt-2'
           : 'fixed left-0 z-50 -translate-x-full md:translate-x-0 mt-4'
