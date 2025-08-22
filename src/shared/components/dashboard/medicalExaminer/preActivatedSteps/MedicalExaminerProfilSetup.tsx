@@ -69,30 +69,28 @@ const MedicalExaminerProfilSetup = () => {
                 value={step.id}
                 className={`rounded-2xl border bg-white ${isDisabled || (allCompleted && !isActive) ? "opacity-50 pointer-events-none" : ""}`}
               >
-                <AccordionTrigger className="flex items-center px-6 py-3 hover:no-underline">
-                  <div className="flex items-center gap-3 flex-1">
+                <AccordionTrigger className="flex flex-col md:flex-row md:items-center px-6 py-3 hover:no-underline gap-2 md:gap-0">
+                  {/* Left Section: step number + title */}
+                  <div className="flex items-center gap-2 sm:gap-3 flex-1">
                     <div
-                      className={`text-sm font-medium rounded-full bg-[#9CDDFF] px-5 py-1 text-black transition-opacity
-    ${isCompleted ? 'opacity-50' : 'opacity-100'}`}
+                      className={`text-xs md:text-sm font-medium rounded-md md:rounded-full bg-[#9CDDFF] px-2 md:px-5 py-1 text-black transition-opacity ${isCompleted ? 'opacity-50' : 'opacity-100'}`}
                     >
                       {step.stepNumber}
                     </div>
 
                     <h3
-                      className={`text-[20px] font-normal transition-colors ${isCompleted ? 'line-through text-black' : 'text-black'
-                        }`}
+                      className={`text-sm md:text-[20px] font-normal transition-colors ${isCompleted ? 'line-through text-black' : 'text-black'}`}
                     >
                       {step.title}
                     </h3>
                   </div>
-
                   {!isCompleted && isActive && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleComplete(step.id);
                       }}
-                      className="flex items-center gap-2 px-4 py-1 border border-[#C4C4C4] text-[#6D6D6D] text-[16px] font-normal rounded-full"
+                      className="flex items-center justify-center md:justify-start gap-2 px-4 py-1 border border-[#C4C4C4] text-[#6D6D6D] text-sm md:text-[16px] font-normal rounded-full w-full md:w-auto"
                     >
                       Mark as Complete
                       <span className="w-4 h-4 flex items-center justify-center rounded-full bg-[#AFAFAF]">
@@ -100,13 +98,16 @@ const MedicalExaminerProfilSetup = () => {
                       </span>
                     </button>
                   )}
-
                   {isCompleted && (
-                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-sm">
-                      <Check size={20} />
+                    <div className="w-full md:w-auto flex justify-center md:justify-end mt-2 md:mt-0">
+                      <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-sm">
+                        <Check size={20} />
+                      </div>
                     </div>
                   )}
+
                 </AccordionTrigger>
+
                 <AccordionContent className="px-6 pb-6">
                   {step.id === '1' && <MedicalExaminerProfileStep1 />}
                   {step.id === '2' && (

@@ -7,6 +7,7 @@ import { Textarea } from '@/shared/components/ui/textarea';
 import { Label } from '@/shared/components/ui/label';
 import { Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui/avatar';
 import { provinceOptions } from '@/shared/config/dropdownOptions/MedExaminerDropdownOptions';
+
 const MedicalExaminerProfileStep1 = () => {
   const [values, setValues] = React.useState({
     firstName: "",
@@ -45,6 +46,7 @@ const MedicalExaminerProfileStep1 = () => {
 
   return (
     <div className="space-y-6 mt-4">
+      {/* Row 1 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label htmlFor="firstName" className="text-sm text-black">
@@ -135,15 +137,15 @@ const MedicalExaminerProfileStep1 = () => {
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-3 flex flex-col h-full">
+        <div className="lg:col-span-3 flex flex-col items-center lg:items-start">
           <Label className="text-sm text-black mb-2 block">
             Profile Photo<span className="text-red-500">*</span>
           </Label>
           <div
-            className="mt-2 flex-grow flex cursor-pointer"
+            className="mt-2 flex cursor-pointer"
             onClick={() => fileInputRef.current?.click()}
           >
-            <Avatar className="w-30 h-30 border-2 border-gray-200">
+            <Avatar className="w-28 h-28 sm:w-32 sm:h-32 border-2 border-gray-200">
               <AvatarImage src={profilePhoto || "/images/avatar.png"} />
               <AvatarFallback className="bg-[#37BBFF] text-white text-lg">
                 SA
@@ -159,21 +161,21 @@ const MedicalExaminerProfileStep1 = () => {
           </div>
         </div>
 
-        <div className="lg:col-span-9 flex flex-col h-full">
+        <div className="lg:col-span-9 flex flex-col">
           <Label htmlFor="bio" className="text-sm text-black mb-2">
             Add Bio<span className="text-red-500">*</span>
           </Label>
-          <div className="relative space-y-3 flex-grow">
+          <div className="relative space-y-3">
             <Textarea
               name="bio"
               id="bio"
               placeholder="Tell us about yourself and your background"
               value={values.bio}
               onChange={handleChange}
-              className="min-h-[120px] w-full resize-none text-sm sm:text-base md:min-h-[140px] h-full"
+              className="min-h-[130px] w-full resize-none text-sm sm:text-base md:min-h-[140px]"
               maxLength={500}
             />
-            <div className="absolute right-2 bottom-2 text-xs text-gray-400 md:right-3 md:bottom-5 md:text-sm">
+            <div className="absolute right-2 bottom-6 text-xs text-gray-400 md:right-3 md:bottom-3 md:text-sm">
               {values.bio.length}/500
             </div>
           </div>
