@@ -1,4 +1,4 @@
-import MedicalExaminerProfilSetup from '@/shared/components/dashboard/medicalExaminer/preActivatedSteps/MedicalExaminerProfilSetup'
+import MedicalExaminerProfilSetup from '@/shared/components/dashboard/medicalExaminer/settings/preActivatedSteps/MedicalExaminerProfilSetup'
 import React from 'react'
 
 const MedicalExaminerSettingsPage = () => {
