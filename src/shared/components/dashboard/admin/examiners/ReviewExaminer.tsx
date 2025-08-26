@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/consistent-type-imports */
 'use client';
 import React, { useState, type JSX } from 'react';
 import RequestMoreInfo from './RequestMoreInfo';
-import RejectReason from './RejectReason'; // ✅ import RejectReason
+import RejectReason from './RejectReason';
 import { IReviewExaminerAction, IReviewExaminerField } from '@/shared/types';
 import {
   actions,
@@ -28,7 +27,7 @@ const ReviewExaminer: React.FC = () => {
       setIsRequestOpen(true);
     } else if (actionLabel === 'Reject Examiner') {
       setIsRejectOpen(true);
-      }
+    }
   };
 
   const renderField = (item: IReviewExaminerField, index: number): JSX.Element => (

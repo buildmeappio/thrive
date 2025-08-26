@@ -21,3 +21,4 @@ export type { IReviewExaminerAction } from './dashboard/admin/ReviewExaminer.int
 export type { IReviewExaminerField } from './dashboard/admin/ReviewExaminer.interface';
 export type { DashboardLayoutProps } from './dashboard/DashboardLayoutProps';
 export type { MedicalExaminerProfileStep } from './dashboard/medicalExaminer/MedicalExProfileSteps.interface';
+export type { NewCaseField } from './dashboard/medicalExaminer/NewCaseField.interface';
