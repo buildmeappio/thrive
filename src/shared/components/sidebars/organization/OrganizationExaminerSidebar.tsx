@@ -1,6 +1,12 @@
 import React from 'react'
 
-const OrganizationExaminerSidebar = () => {
+
+interface OrganizationSidebarProps {
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
+}
+  const OrganizationExaminerSidebar = ({ isMobileOpen = false, onMobileClose }: OrganizationSidebarProps) => {
+
   return (
     <div className="w-64 bg-sidebar border-r border-sidebar-border p-4">
       <h2 className="text-lg font-semibold text-sidebar-foreground mb-4">Organization</h2>

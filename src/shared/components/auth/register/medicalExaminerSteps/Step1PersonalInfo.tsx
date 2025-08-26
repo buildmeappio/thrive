@@ -6,13 +6,13 @@ import {
   step1PersonalInfoSchema,
 } from '@/shared/validation/medicalExaminer/examinerRegisterValidation';
 import ProgressIndicator from '../progressIndicator/ProgressIndicator';
-import { Label } from '@radix-ui/react-label';
+import { Label } from '@/shared/components/ui/label';
 import { Input } from '@/shared/components/ui';
 import { Mail, MapPin, Phone, User } from 'lucide-react';
 import { Dropdown } from '@/shared/components/ui/Dropdown';
-import { provinceOptions } from '@/shared/config/medicalExaminerRegister/ProvinceDropdownOptions';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
+import { provinceOptions } from '@/shared/config/dropdownOptions/MedExaminerDropdownOptions';
 
 export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({
   onNext,

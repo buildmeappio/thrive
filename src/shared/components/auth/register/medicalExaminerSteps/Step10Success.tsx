@@ -3,7 +3,7 @@ import { ArrowRight, Smile } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 
-export const Step10Success: React.FC<{ onNext: () => void }> = ({ onNext }) => {
+export const Step10Success: React.FC<{ onNext: () => void }> = () => {
   const router = useRouter();
   const handleClick = () => {
     router.push("/login/medicalExaminer");

@@ -2,9 +2,6 @@ import React from 'react';
 import { Formik, Form } from 'formik';
 import { Label } from '@/shared/components/ui/label';
 import { Dropdown } from '@/shared/components/ui/Dropdown';
-import { provinceOptions } from '@/shared/config/medicalExaminerRegister/ProvinceDropdownOptions';
-import { yearsOfExperienceOptions } from '@/shared/config/medicalExaminerRegister/YrsExperienceDropdownOptions';
-import { languageOptions } from '@/shared/config/medicalExaminerRegister/LanguageDropdownOptions';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import BackButton from '@/shared/components/ui/BackButton';
@@ -13,6 +10,7 @@ import {
   step3InitialValues,
 } from '@/shared/validation/medicalExaminer/examinerRegisterValidation';
 import ProgressIndicator from '../progressIndicator/ProgressIndicator';
+import { languageOptions, provinceOptions, yearsOfExperienceOptions } from '@/shared/config/dropdownOptions/MedExaminerDropdownOptions';
 
 interface Step3IMEExperinceProps {
   onNext: () => void;

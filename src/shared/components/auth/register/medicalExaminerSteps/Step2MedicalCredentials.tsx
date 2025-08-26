@@ -4,7 +4,6 @@ import { Formik, Form } from 'formik';
 import { FileText, Upload, Calendar, MapPin } from 'lucide-react';
 import { Label } from '@/shared/components/ui/label';
 import { Dropdown } from '@/shared/components/ui/Dropdown';
-import { medicalSpecialtyOptions } from '@/shared/config/medicalExaminerRegister/MedicalSpecialtyDropdownOptions';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import BackButton from '@/shared/components/ui/BackButton';
 import type { MedExaminerRegStepProps } from '@/shared/types';
@@ -14,6 +13,7 @@ import {
 } from '@/shared/validation/medicalExaminer/examinerRegisterValidation';
 import ProgressIndicator from '../progressIndicator/ProgressIndicator';
 import { Input } from '@/shared/components/ui';
+import { medicalSpecialtyOptions } from '@/shared/config/dropdownOptions/MedExaminerDropdownOptions';
 
 export const Step2MedicalCredentials: React.FC<MedExaminerRegStepProps> = ({
   onNext,

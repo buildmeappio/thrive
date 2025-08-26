@@ -1,3 +1,4 @@
+// Sidebar.tsx
 'use client';
 import React from 'react';
 import type { UserRole } from '@/shared/types/user/user';
@@ -8,16 +9,18 @@ import { notFound } from 'next/navigation';
 
 interface SidebarProps {
   userRole: UserRole;
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
-export function Sidebar({ userRole }: SidebarProps) {
+export function Sidebar({ userRole, isMobileOpen, onMobileClose }: SidebarProps) {
   switch (userRole) {
     case 'ADMIN':
-      return <AdminSidebar />;
+      return <AdminSidebar isMobileOpen={isMobileOpen} onMobileClose={onMobileClose} />;
     case 'ORGANIZATION':
-      return <OrganizationExaminerSidebar />;
+      return <OrganizationExaminerSidebar isMobileOpen={isMobileOpen} onMobileClose={onMobileClose} />;
     case 'MEDICAL_EXAMINER':
-      return <MedicalExaminerSidebar />;
+      return <MedicalExaminerSidebar isMobileOpen={isMobileOpen} onMobileClose={onMobileClose} />;
     default:
       return notFound();
   }
