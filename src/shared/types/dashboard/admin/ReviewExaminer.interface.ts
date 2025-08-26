@@ -19,5 +19,5 @@ export interface IReviewExaminerAction {
 export interface IRequestMoreInfoProps {
   isOpen: boolean;
   onClose: () => void;
-  examinerName: string;
+  examinerName?: string;
 }

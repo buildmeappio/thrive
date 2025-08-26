@@ -14,9 +14,21 @@ export function DashboardLayout({ children, userRole }: DashboardLayoutProps) {
   const closeMobileSidebar = () => {
     setIsMobileSidebarOpen(false);
   };
+  const getBackgroundColor = () => {
+    switch (userRole) {
+      case 'ADMIN':
+        return 'bg-[#F6F6F6]';
+      case 'MEDICAL_EXAMINER':
+        return 'bg-[#F4FBFF]';
+      case 'ORGANIZATION':
+        return 'bg-[#F4FBFF]';
+      default:
+        return 'bg-[#F4FBFF]';
+    }
+  };
 
   return (
-    <div className="flex flex-col bg-[#F4FBFF]">
+    <div className={`flex flex-col ${getBackgroundColor()}`}>
       <DashboardNavbar onMobileMenuToggle={toggleMobileSidebar} />
       <div className="flex flex-1 overflow-hidden py-2">
         <Sidebar

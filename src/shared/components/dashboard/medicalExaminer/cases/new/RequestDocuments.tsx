@@ -1,11 +1,14 @@
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 'use client';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { IRequestMoreInfoProps } from '@/shared/types';
 import React, { useState, useEffect } from 'react';
 
-const RejectReason: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+const RequestDocuments: React.FC<IRequestMoreInfoProps> = ({ isOpen, onClose }) => {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -21,7 +24,7 @@ const RejectReason: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
         const text = e.target.value;
         setMessage(text);
         if (!text.trim()) {
-            setError('Reject reason is required');
+            setError('Message is required');
         } else {
             setError('');
         }
@@ -29,10 +32,10 @@ const RejectReason: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
 
     const handleSend = () => {
         if (!message.trim()) {
-            setError('Reject reason is required');
+            setError('Message is required');
             return;
         }
-        console.log('Sending reject reason:', message);
+        console.log('Sending request for documents:', message);
         setError('');
         onClose();
     };
@@ -49,15 +52,15 @@ const RejectReason: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between px-6 pt-4 pb-2">
-                    <h2 className="text-xl font-semibold text-[#B00000]">Reject Reason</h2>
+                    <h2 className="text-xl font-semibold text-[#00A8FF]">
+                        Request More Info / Documents
+                    </h2>
                     <button
                         onClick={onClose}
-                        className="cursor-pointer text-white bg-[#B00000] text-xl font-bold w-6 h-6 flex items-center justify-center rounded-full transition leading-none"
+                        className="w-6 h-6 flex items-center justify-center font-bold bg-[#00A8FF] rounded-full text-white cursor-pointer hover:bg-[#00A8FF]/85 transition"
                     >
                         ×
                     </button>
-
-
                 </div>
 
                 <div className="px-6 pt-2 relative">
@@ -86,7 +89,7 @@ const RejectReason: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
                 <div className="flex justify-end pt-1 px-6 pb-4">
                     <button
                         onClick={handleSend}
-                        className="cursor-pointer w-[155px] h-[41px] bg-[#000080] hover:bg-[#000080]/85 text-white px-[15.67px] py-2 rounded-[22.5px] font-medium transition-colors"
+                        className="cursor-pointer w-[155px] h-[41px] bg-[#00A8FF] hover:bg-[#00A8FF]/85 text-white px-[15.67px] py-2 rounded-[22.5px] font-medium transition-colors"
                     >
                         Send
                     </button>
@@ -96,4 +99,4 @@ const RejectReason: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
     );
 };
 
-export default RejectReason;
+export default RequestDocuments;

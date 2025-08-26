@@ -3,9 +3,10 @@ import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
 import React, { useState, useEffect } from 'react';
 
-const RejectReason: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+const RejectOffer: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -32,7 +33,7 @@ const RejectReason: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
             setError('Reject reason is required');
             return;
         }
-        console.log('Sending reject reason:', message);
+        console.log('Sending reject offer reason:', message);
         setError('');
         onClose();
     };
@@ -49,15 +50,13 @@ const RejectReason: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between px-6 pt-4 pb-2">
-                    <h2 className="text-xl font-semibold text-[#B00000]">Reject Reason</h2>
+                    <h2 className="text-xl font-semibold text-[#BA0000]">Reason For Decline Offer</h2>
                     <button
                         onClick={onClose}
-                        className="cursor-pointer text-white bg-[#B00000] text-xl font-bold w-6 h-6 flex items-center justify-center rounded-full transition leading-none"
+                        className="cursor-pointer text-white bg-[#BA0000] hover:bg-[#BA0000]/85 text-xl font-bold w-6 h-6 flex items-center justify-center rounded-full transition leading-none"
                     >
                         ×
                     </button>
-
-
                 </div>
 
                 <div className="px-6 pt-2 relative">
@@ -86,7 +85,7 @@ const RejectReason: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
                 <div className="flex justify-end pt-1 px-6 pb-4">
                     <button
                         onClick={handleSend}
-                        className="cursor-pointer w-[155px] h-[41px] bg-[#000080] hover:bg-[#000080]/85 text-white px-[15.67px] py-2 rounded-[22.5px] font-medium transition-colors"
+                        className="cursor-pointer w-[155px] h-[41px] bg-[#BA0000] hover:bg-[#BA0000]/85 text-white px-[15.67px] py-2 rounded-[22.5px] font-medium transition-colors"
                     >
                         Send
                     </button>
@@ -96,4 +95,4 @@ const RejectReason: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOp
     );
 };
 
-export default RejectReason;
+export default RejectOffer;

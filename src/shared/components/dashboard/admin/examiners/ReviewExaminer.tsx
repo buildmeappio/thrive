@@ -55,8 +55,8 @@ const ReviewExaminer: React.FC = () => {
     showExperienceDetails: boolean = false
   ): JSX.Element => (
     <div className="">
-      <div className="p-6">
-        <h2 className="mb-6 text-xl font-semibold text-gray-900">{title}</h2>
+      <div className="px-4 md:p-6">
+        <h2 className="my-4 md:mb-6 text-xl font-semibold text-black">{title}</h2>
         <div className="space-y-3">
           {fields.map((field: IReviewExaminerField, index: number) => renderField(field, index))}
           {showExperienceDetails && (
@@ -77,10 +77,10 @@ const ReviewExaminer: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 md:p-6  ">
-      <div className="mx-auto max-w-6xl">
+    <div className="min-h-screen md:p-6  ">
+      <div className="mx-auto md:max-w-6xl">
         <div className="mb-8">
-          <div className="md:text-4xl text-3xl font-semibold leading-none tracking-tight text-gray-900">
+          <div className="md:text-[40px] text-[26px] font-semibold leading-none tracking-tight text-gray-900">
             Review{' '}
             <span className="bg-gradient-to-l from-emerald-300 to-sky-500 bg-clip-text text-transparent">
               {examinerData.name}
@@ -89,7 +89,7 @@ const ReviewExaminer: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:gap-8 gap-2 rounded-4xl bg-white md:px-4 shadow-sm lg:grid-cols-2">
+        <div className="grid grid-cols-1 md:gap-8 gap-2 rounded-4xl bg-white px-0 md:px-4 shadow-sm lg:grid-cols-2">
           <div className="space-y-0">
             {renderSection('Personal & Contact Info', personalContactInfo)}
             <div className="mt-0">{renderSection('Medical Credentials', medicalCredentials)}</div>
@@ -98,7 +98,7 @@ const ReviewExaminer: React.FC = () => {
             {renderSection('IME Experience & Qualifications', imeExperience, true)}
             {renderSection('Legal & Compliance', legalCompliance)}
             <div className="">
-              <div className="p-6">
+              <div className="px-4 md:p-6">
                 <h2 className="mb-6 text-xl font-semibold text-gray-900">Actions</h2>
                 <div className="flex flex-col md:flex-row gap-3">
                   {actions.map((action: IReviewExaminerAction, index: number) => (

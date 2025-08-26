@@ -47,7 +47,7 @@ const RequestMoreInfo: React.FC<IRequestMoreInfoProps> = ({ isOpen, onClose }) =
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-4xl px-2 shadow-xl w-[90%] md:w-[650px] md:h-[320px] h-[340px]"
+        className="bg-white rounded-4xl px-2 shadow-xl w-[90%] md:w-[650px] md:h-[310px] h-[340px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 pt-4 pb-2">
@@ -56,7 +56,7 @@ const RequestMoreInfo: React.FC<IRequestMoreInfoProps> = ({ isOpen, onClose }) =
           </h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center font-bold bg-[#000080] rounded-full text-white cursor-pointer hover:bg-[#0000b3] transition"
+            className="w-6 h-6 flex items-center justify-center font-bold bg-[#000080] rounded-full text-white cursor-pointer hover:bg-[#0000b3] transition"
           >
             ×
           </button>
