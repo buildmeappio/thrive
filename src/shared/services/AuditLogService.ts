@@ -1,4 +1,3 @@
-
 import type { AuditLog, AuditAction, AuditSeverity } from '@prisma/client';
 import { prisma } from '@/shared/lib/prisma';
 

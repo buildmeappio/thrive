@@ -8,7 +8,7 @@ import type {
   ExaminerLicenseSchema,
   ExaminerProfessionalSchema,
   ExaminerDocumentSchema,
-} from '../schemas/examinerSchema';
+} from './examiner.schema';
 
 export type ExaminerProfileWithUser = ExaminerProfile & {
   user: User;

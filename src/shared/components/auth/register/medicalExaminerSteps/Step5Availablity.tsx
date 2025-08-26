@@ -21,7 +21,7 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
   totalSteps,
 }) => {
   const handleSubmit = (values: typeof step5InitialValues) => {
-    console.log("Step 5 Form Data:", values);
+    console.log('Step 5 Form Data:', values);
     onNext();
   };
 
@@ -29,7 +29,7 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
     <div
       className="mt-4 flex min-h-[500px] w-full flex-col rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
       style={{
-        boxShadow: "0px 0px 36.35px 0px #00000008",
+        boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
     >
       <ProgressIndicator
@@ -61,17 +61,13 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
                       id="preferredRegions"
                       label="Preferred Regions"
                       value={values.preferredRegions}
-                      onChange={(value) =>
-                        setFieldValue("preferredRegions", value)
-                      }
+                      onChange={value => setFieldValue('preferredRegions', value)}
                       options={regionOptions}
                       required
                       placeholder="Toronto"
                     />
                     {errors.preferredRegions && (
-                      <p className="text-xs text-red-500">
-                        {errors.preferredRegions}
-                      </p>
+                      <p className="text-xs text-red-500">{errors.preferredRegions}</p>
                     )}
                   </div>
 
@@ -80,17 +76,13 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
                       id="maxTravelDistance"
                       label="Max Travel Distance"
                       value={values.maxTravelDistance}
-                      onChange={(value) =>
-                        setFieldValue("maxTravelDistance", value)
-                      }
+                      onChange={value => setFieldValue('maxTravelDistance', value)}
                       options={travelDistanceOptions}
                       required
                       placeholder="Up to 25 km"
                     />
                     {errors.maxTravelDistance && (
-                      <p className="text-xs text-red-500">
-                        {errors.maxTravelDistance}
-                      </p>
+                      <p className="text-xs text-red-500">{errors.maxTravelDistance}</p>
                     )}
                   </div>
 
@@ -99,17 +91,13 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
                       id="daysAvailable"
                       label="Days Available"
                       value={values.daysAvailable}
-                      onChange={(value) =>
-                        setFieldValue("daysAvailable", value)
-                      }
+                      onChange={value => setFieldValue('daysAvailable', value)}
                       options={daysOptions}
                       required
                       placeholder="Monday"
                     />
                     {errors.daysAvailable && (
-                      <p className="text-xs text-red-500">
-                        {errors.daysAvailable}
-                      </p>
+                      <p className="text-xs text-red-500">{errors.daysAvailable}</p>
                     )}
                   </div>
 
@@ -121,67 +109,50 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           checked={values.timeWindows.morning}
-                          onCheckedChange={(checked) =>
-                            setFieldValue(
-                              "timeWindows.morning",
-                              checked as boolean,
-                            )
+                          onCheckedChange={checked =>
+                            setFieldValue('timeWindows.morning', checked as boolean)
                           }
                           checkedColor="#00A8FF"
                           checkIconColor="white"
                         />
-                        <Label className="text-sm font-medium text-gray-700">
-                          Morning
-                        </Label>
+                        <Label className="text-sm font-medium text-gray-700">Morning</Label>
                       </div>
 
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           checked={values.timeWindows.afternoon}
-                          onCheckedChange={(checked) =>
-                            setFieldValue(
-                              "timeWindows.afternoon",
-                              checked as boolean,
-                            )
+                          onCheckedChange={checked =>
+                            setFieldValue('timeWindows.afternoon', checked as boolean)
                           }
                           checkedColor="#00A8FF"
                           checkIconColor="white"
                         />
-                        <Label className="text-sm font-medium text-gray-700">
-                          Afternoon
-                        </Label>
+                        <Label className="text-sm font-medium text-gray-700">Afternoon</Label>
                       </div>
 
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           checked={values.timeWindows.evening}
-                          onCheckedChange={(checked) =>
-                            setFieldValue(
-                              "timeWindows.evening",
-                              checked as boolean,
-                            )
+                          onCheckedChange={checked =>
+                            setFieldValue('timeWindows.evening', checked as boolean)
                           }
                           checkedColor="#00A8FF"
                           checkIconColor="white"
                         />
-                        <Label className="text-sm font-medium text-gray-700">
-                          Evening
-                        </Label>
+                        <Label className="text-sm font-medium text-gray-700">Evening</Label>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-4 space-y-3 sm:-mt-">
+                <div className="sm:-mt- mt-4 space-y-3">
                   <Label className="text-black">
                     Accept Virtual Assessments
                     <span className="text-red-500">*</span>
                   </Label>
                   <RadioGroup
                     value={values.acceptVirtualAssessments}
-                    onValueChange={(value) =>
-                      setFieldValue("acceptVirtualAssessments", value)
-                    }
+                    onValueChange={value => setFieldValue('acceptVirtualAssessments', value)}
                     className="flex flex-row flex-wrap gap-x-4 gap-y-2 sm:gap-x-6"
                   >
                     <div className="flex items-center space-x-2">
@@ -214,15 +185,13 @@ export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
                     </div>
                   </RadioGroup>
                   {errors.acceptVirtualAssessments && (
-                    <p className="text-xs text-red-500">
-                      {errors.acceptVirtualAssessments}
-                    </p>
+                    <p className="text-xs text-red-500">{errors.acceptVirtualAssessments}</p>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="mt-auto flex items-center justify-center md:justify-between gap-4 pb-8 md:mt-0">
+            <div className="mt-auto flex items-center justify-center gap-4 pb-8 md:mt-0 md:justify-between">
               <BackButton
                 onClick={onPrevious}
                 disabled={currentStep === 1}

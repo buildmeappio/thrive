@@ -22,17 +22,14 @@ const AdminSidebar = ({ isMobileOpen = false, onMobileClose }: AdminSidebarProps
   return (
     <>
       <div
-        className={`
-          flex md:w-[275px] w-[240px] flex-col justify-between rounded-r-[50px] bg-white transition-all duration-300
-          md:relative md:translate-x-0 md:h-full
-          ${isMobileOpen
-            ? 'fixed left-0 top-[calc(theme(spacing.16)+theme(spacing.2))] z-50 h-[calc(100vh-theme(spacing.16)-theme(spacing.2))] translate-x-0 mt-2'
-            : 'fixed left-0 z-50 -translate-x-full md:translate-x-0 mt-4'
-          }
-        `}
+        className={`flex w-[240px] flex-col justify-between rounded-r-[50px] bg-white transition-all duration-300 md:relative md:h-full md:w-[275px] md:translate-x-0 ${
+          isMobileOpen
+            ? 'fixed top-[calc(theme(spacing.16)+theme(spacing.2))] left-0 z-50 mt-2 h-[calc(100vh-theme(spacing.16)-theme(spacing.2))] translate-x-0'
+            : 'fixed left-0 z-50 mt-4 -translate-x-full md:translate-x-0'
+        } `}
       >
         <nav className="mt-8">
-          <div className="space-y-6 px-6 md:px-10 pb-6">
+          <div className="space-y-6 px-6 pb-6 md:px-10">
             {adminSidebarRoutes.map((item, index) => {
               const itemIsActive = isActive(item.href);
               const IconComponent = item.icon;

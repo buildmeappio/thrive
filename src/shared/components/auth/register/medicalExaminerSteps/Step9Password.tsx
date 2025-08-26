@@ -1,17 +1,17 @@
-import React from "react";
-import { Formik, Form } from "formik";
-import { Label } from "@/shared/components/ui/label";
-import ContinueButton from "@/shared/components/ui/ContinueButton";
-import { PasswordInput } from "@/shared/components/ui/PasswordInput";
+import React from 'react';
+import { Formik, Form } from 'formik';
+import { Label } from '@/shared/components/ui/label';
+import ContinueButton from '@/shared/components/ui/ContinueButton';
+import { PasswordInput } from '@/shared/components/ui/PasswordInput';
 import {
   step9PasswordSchema,
   step9InitialValues,
-} from "@/shared/validation/medicalExaminer/examinerRegisterValidation";
-import type { Step9PasswordProps } from "@/shared/types/register/medicalExaminer/MedExaminerSetPasswordProps";
+} from '@/shared/validation/medicalExaminer/examinerRegisterValidation';
+import type { Step9PasswordProps } from '@/shared/types/register/medicalExaminer/MedExaminerSetPasswordProps';
 
 export const Step9Password: React.FC<Step9PasswordProps> = ({ onNext }) => {
   const handleSubmit = (values: typeof step9InitialValues) => {
-    console.log("Step 9 Form Data:", values);
+    console.log('Step 9 Form Data:', values);
     onNext();
   };
 
@@ -30,10 +30,7 @@ export const Step9Password: React.FC<Step9PasswordProps> = ({ onNext }) => {
               <div className="mt-0 md:mt-8">
                 <div className="space-y-6 md:space-y-6">
                   <div className="space-y-3 md:space-y-2">
-                    <Label
-                      htmlFor="password"
-                      className="text-base text-black md:text-base"
-                    >
+                    <Label htmlFor="password" className="text-base text-black md:text-base">
                       Password<span className="text-red-500">*</span>
                     </Label>
                     <div className="relative">
@@ -45,16 +42,11 @@ export const Step9Password: React.FC<Step9PasswordProps> = ({ onNext }) => {
                         onChange={handleChange}
                       />
                     </div>
-                    {errors.password && (
-                      <p className="text-xs text-red-500">{errors.password}</p>
-                    )}
+                    {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
                   </div>
 
                   <div className="space-y-3 md:space-y-2">
-                    <Label
-                      htmlFor="confirmPassword"
-                      className="text-base text-black md:text-base"
-                    >
+                    <Label htmlFor="confirmPassword" className="text-base text-black md:text-base">
                       Confirm Password<span className="text-red-500">*</span>
                     </Label>
                     <div className="relative">
@@ -67,20 +59,14 @@ export const Step9Password: React.FC<Step9PasswordProps> = ({ onNext }) => {
                       />
                     </div>
                     {errors.confirmPassword && (
-                      <p className="text-xs text-red-500">
-                        {errors.confirmPassword}
-                      </p>
+                      <p className="text-xs text-red-500">{errors.confirmPassword}</p>
                     )}
                   </div>
                 </div>
               </div>
 
               <div className="mt-8 flex justify-end md:mt-14">
-                <ContinueButton
-                  onClick={submitForm}
-                  gradientFrom="#89D7FF"
-                  gradientTo="#00A8FF"
-                />
+                <ContinueButton onClick={submitForm} gradientFrom="#89D7FF" gradientTo="#00A8FF" />
               </div>
             </div>
           </div>

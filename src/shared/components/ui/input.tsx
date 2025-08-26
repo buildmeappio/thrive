@@ -1,22 +1,16 @@
-import * as React from "react";
-import { cn } from "@/shared/lib/utils";
-import type { LucideIcon } from "lucide-react";
+import * as React from 'react';
+import { cn } from '@/shared/lib/utils';
+import type { LucideIcon } from 'lucide-react';
 
-interface InputProps extends React.ComponentProps<"input"> {
+interface InputProps extends React.ComponentProps<'input'> {
   icon?: LucideIcon;
-  iconPosition?: "left" | "right";
+  iconPosition?: 'left' | 'right';
 }
 
-function Input({
-  className,
-  type,
-  icon: Icon,
-  iconPosition = "left",
-  ...props
-}: InputProps) {
+function Input({ className, type, icon: Icon, iconPosition = 'left', ...props }: InputProps) {
   return (
     <div className="relative">
-      {Icon && iconPosition === "left" && (
+      {Icon && iconPosition === 'left' && (
         <Icon
           className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#A4A4A4]"
           strokeWidth={2}
@@ -36,7 +30,7 @@ function Input({
         )}
         {...props}
       />
-      {Icon && iconPosition === "right" && (
+      {Icon && iconPosition === 'right' && (
         <Icon
           className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#A4A4A4]"
           strokeWidth={2}

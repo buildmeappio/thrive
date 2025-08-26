@@ -15,8 +15,6 @@ export function RegisterPageClient({ userType }: RegisterPageClientProps) {
     notFound();
   }
 
-  const config = RegisterConfigs[userType];
-
   const renderRegisterForm = () => {
     switch (userType) {
       case 'organization':

@@ -1,13 +1,10 @@
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-import { Button } from "@/shared/components/ui/button";
-import Image from "next/image";
-import { PasswordInput } from "@/shared/components/ui/PasswordInput";
-import { Form, Formik } from "formik";
-import {
-  loginInitialValues,
-  loginSchema,
-} from "@/shared/validation/login/loginValidation";
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { Button } from '@/shared/components/ui/button';
+import Image from 'next/image';
+import { PasswordInput } from '@/shared/components/ui/PasswordInput';
+import { Form, Formik } from 'formik';
+import { loginInitialValues, loginSchema } from '@/shared/validation/login/loginValidation';
 export function AdminLoginComponent() {
   const handleSubmit = (values: typeof loginInitialValues) => {
     console.log(values);
@@ -17,10 +14,10 @@ export function AdminLoginComponent() {
       <div className="flex min-h-screen flex-col justify-between md:flex-row">
         <div className="flex flex-1 flex-col justify-center px-4 sm:px-8 md:px-0 md:pl-30">
           <h1 className="mb-4 text-center text-3xl font-bold md:text-left md:text-[44px]">
-            Welcome To{" "}
+            Welcome To{' '}
             <span className="bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] bg-clip-text text-transparent">
               Thrive
-            </span>{" "}
+            </span>{' '}
             <br />
             Admin Dashboard
           </h1>
@@ -47,11 +44,7 @@ export function AdminLoginComponent() {
                       placeholder="Enter your email address"
                       className="mt-1 border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0"
                     />
-                    {errors.email && (
-                      <p className="mt-1 text-xs text-red-500">
-                        {errors.email}
-                      </p>
-                    )}
+                    {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
                   </div>
                   <div className="mb-4">
                     <Label htmlFor="password" className="text-black">
@@ -64,17 +57,12 @@ export function AdminLoginComponent() {
                       onChange={handleChange}
                     />
                     {errors.password && (
-                      <p className="mt-1 text-xs text-red-500">
-                        {errors.password}
-                      </p>
+                      <p className="mt-1 text-xs text-red-500">{errors.password}</p>
                     )}
                   </div>
 
                   <div className="mb-4 text-right">
-                    <a
-                      href="#"
-                      className="text-sm font-medium text-[#0069A0] hover:underline"
-                    >
+                    <a href="#" className="text-sm font-medium text-[#0069A0] hover:underline">
                       Forgot Password?
                     </a>
                   </div>

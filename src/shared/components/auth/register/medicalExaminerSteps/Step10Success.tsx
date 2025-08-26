@@ -1,12 +1,12 @@
-"use client";
-import { ArrowRight, Smile } from "lucide-react";
-import { useRouter } from "next/navigation";
-import React from "react";
+'use client';
+import { ArrowRight, Smile } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import React from 'react';
 
 export const Step10Success: React.FC<{ onNext: () => void }> = () => {
   const router = useRouter();
   const handleClick = () => {
-    router.push("/login/medicalExaminer");
+    router.push('/login/medicalExaminer');
   };
 
   return (
@@ -16,16 +16,16 @@ export const Step10Success: React.FC<{ onNext: () => void }> = () => {
           <Smile className="h-8 w-8 text-white" strokeWidth={2} />
         </div>
 
-        <h3 className="text-2xl font-semibold md:text-[52px] md:mb-0 mb-4">Success!</h3>
+        <h3 className="mb-4 text-2xl font-semibold md:mb-0 md:text-[52px]">Success!</h3>
 
         <p className="mb-6 w-full max-w-[1200px] text-center text-sm leading-relaxed text-[#848484] md:text-lg">
-          Your account has been successfully created. You can log in to <br /> view and
-          manage your profile, documents, and upcoming IMEs.
+          Your account has been successfully created. You can log in to <br /> view and manage your
+          profile, documents, and upcoming IMEs.
         </p>
 
         <button
           onClick={handleClick}
-          className="mt-0 md:mt-6 flex h-[50px] w-full max-w-[350px] cursor-pointer items-center justify-center gap-2 rounded-[33px] bg-[#00A8FF] p-4 font-medium text-white transition-colors duration-200 hover:bg-[#0088cc]"
+          className="mt-0 flex h-[50px] w-full max-w-[350px] cursor-pointer items-center justify-center gap-2 rounded-[33px] bg-[#00A8FF] p-4 font-medium text-white transition-colors duration-200 hover:bg-[#0088cc] md:mt-6"
         >
           Continue
           <ArrowRight

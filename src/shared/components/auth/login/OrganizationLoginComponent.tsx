@@ -1,14 +1,11 @@
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-import { Button } from "@/shared/components/ui/button";
-import Image from "next/image";
-import { PasswordInput } from "@/shared/components/ui/PasswordInput";
-import { ArrowRight } from "lucide-react";
-import { Form, Formik } from "formik";
-import {
-  loginInitialValues,
-  loginSchema,
-} from "@/shared/validation/login/loginValidation";
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { Button } from '@/shared/components/ui/button';
+import Image from 'next/image';
+import { PasswordInput } from '@/shared/components/ui/PasswordInput';
+import { ArrowRight } from 'lucide-react';
+import { Form, Formik } from 'formik';
+import { loginInitialValues, loginSchema } from '@/shared/validation/login/loginValidation';
 
 export function OrganizationLoginComponent() {
   const handleSubmit = (values: typeof loginInitialValues) => {
@@ -20,7 +17,7 @@ export function OrganizationLoginComponent() {
       <div className="flex min-h-screen flex-col justify-between md:flex-row">
         <div className="flex flex-1 flex-col justify-center px-6 md:px-0 md:pl-30">
           <h1 className="mb-4 text-center text-3xl font-bold md:text-left md:text-[44px]">
-            Welcome To <span>Thrive</span>{" "}
+            Welcome To <span>Thrive</span>{' '}
           </h1>
           <div className="w-full rounded-xl border-[#E9EDEE] bg-white p-6 shadow-xs md:w-[445px]">
             <h2 className="mb-6 text-[30px] font-semibold">Log In</h2>
@@ -46,11 +43,7 @@ export function OrganizationLoginComponent() {
                       placeholder="Enter your email address"
                       className="mt-1 border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0"
                     />
-                    {errors.email && (
-                      <p className="mt-1 text-xs text-red-500">
-                        {errors.email}
-                      </p>
-                    )}
+                    {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
                   </div>
 
                   <div className="mb-4">
@@ -64,23 +57,18 @@ export function OrganizationLoginComponent() {
                       onChange={handleChange}
                     />
                     {errors.password && (
-                      <p className="mt-1 text-xs text-red-500">
-                        {errors.password}
-                      </p>
+                      <p className="mt-1 text-xs text-red-500">{errors.password}</p>
                     )}
                   </div>
 
                   <div className="mb-4 text-right">
-                    <a
-                      href="#"
-                      className="text-sm font-medium text-[#140047] hover:underline"
-                    >
+                    <a href="#" className="text-sm font-medium text-[#140047] hover:underline">
                       Forgot Password?
                     </a>
                   </div>
 
                   <Button variant="organizationLogin" size="organizationLogin">
-                    Login{" "}
+                    Login{' '}
                     <span>
                       <ArrowRight strokeWidth={3} color="white" />
                     </span>

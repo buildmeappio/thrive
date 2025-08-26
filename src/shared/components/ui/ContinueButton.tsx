@@ -1,11 +1,11 @@
-import React from "react";
-import { ArrowRight } from "lucide-react";
-import type { ContinueButtonProps } from "@/shared/types";
+import React from 'react';
+import { ArrowRight } from 'lucide-react';
+import type { ContinueButtonProps } from '@/shared/types';
 
 const ContinueButton: React.FC<ContinueButtonProps> = ({
   isLastStep,
-  gradientFrom = "#89D7FF",
-  gradientTo = "#00A8FF",
+  gradientFrom = '#89D7FF',
+  gradientTo = '#00A8FF',
   onClick,
 }) => {
   return (
@@ -17,7 +17,7 @@ const ContinueButton: React.FC<ContinueButtonProps> = ({
       }}
     >
       <span className="transition-all duration-300 ease-in-out">
-        {isLastStep ? "Submit" : "Continue"}
+        {isLastStep ? 'Submit' : 'Continue'}
       </span>
       <ArrowRight className="cup ml-2 h-4 w-4 text-white transition-all duration-300 ease-in-out" />
     </button>

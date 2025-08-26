@@ -1,5 +1,5 @@
 import { RegisterPageClient } from '@/shared/components/auth/register/RegisterPageClient';
-import { RegisterPageProps } from '@/shared/types';
+import type { RegisterPageProps } from '@/shared/types';
 import React from 'react';
 
 export default async function RegisterPage({ params }: RegisterPageProps) {

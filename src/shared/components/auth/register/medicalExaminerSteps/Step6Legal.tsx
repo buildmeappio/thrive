@@ -1,18 +1,18 @@
-"use client";
-import React, { useRef } from "react";
-import { Formik, Form } from "formik";
-import { Label } from "@/shared/components/ui/label";
-import { Input } from "@/shared/components/ui/input";
-import ContinueButton from "@/shared/components/ui/ContinueButton";
-import BackButton from "@/shared/components/ui/BackButton";
-import { Upload, Download } from "lucide-react";
-import { Checkbox } from "@/shared/components/ui/checkbox";
-import type { MedExaminerRegStepProps } from "@/shared/types";
+'use client';
+import React, { useRef } from 'react';
+import { Formik, Form } from 'formik';
+import { Label } from '@/shared/components/ui/label';
+import { Input } from '@/shared/components/ui/input';
+import ContinueButton from '@/shared/components/ui/ContinueButton';
+import BackButton from '@/shared/components/ui/BackButton';
+import { Upload, Download } from 'lucide-react';
+import { Checkbox } from '@/shared/components/ui/checkbox';
+import type { MedExaminerRegStepProps } from '@/shared/types';
 import {
   step6LegalSchema,
   step6InitialValues,
-} from "@/shared/validation/medicalExaminer/examinerRegisterValidation";
-import ProgressIndicator from "../progressIndicator/ProgressIndicator";
+} from '@/shared/validation/medicalExaminer/examinerRegisterValidation';
+import ProgressIndicator from '../progressIndicator/ProgressIndicator';
 
 export const Step6Legal: React.FC<MedExaminerRegStepProps> = ({
   onNext,
@@ -24,7 +24,7 @@ export const Step6Legal: React.FC<MedExaminerRegStepProps> = ({
   const insuranceRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (values: typeof step6InitialValues) => {
-    console.log("Step 6 Form Data:", values);
+    console.log('Step 6 Form Data:', values);
     onNext();
   };
 
@@ -37,14 +37,14 @@ export const Step6Legal: React.FC<MedExaminerRegStepProps> = ({
   };
 
   const downloadNDA = () => {
-    console.log("Downloading NDA template...");
+    console.log('Downloading NDA template...');
   };
 
   return (
     <div
       className="mt-4 flex min-h-[500px] w-full flex-col rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
       style={{
-        boxShadow: "0px 0px 36.35px 0px #00000008",
+        boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
     >
       <ProgressIndicator
@@ -89,21 +89,17 @@ export const Step6Legal: React.FC<MedExaminerRegStepProps> = ({
                     icon={Upload}
                     type="text"
                     placeholder="DrAhmed_NDA.pdf"
-                    value={values.signedNDA ? values.signedNDA.name : ""}
+                    value={values.signedNDA ? values.signedNDA.name : ''}
                     readOnly
                   />
                   <input
                     type="file"
                     ref={ndaRef}
                     accept=".pdf,.doc,.docx"
-                    style={{ display: "none" }}
-                    onChange={(e) =>
-                      setFieldValue("signedNDA", e.target.files?.[0] || null)
-                    }
+                    style={{ display: 'none' }}
+                    onChange={e => setFieldValue('signedNDA', e.target.files?.[0] || null)}
                   />
-                  {errors.signedNDA && (
-                    <p className="text-xs text-red-500">{errors.signedNDA}</p>
-                  )}
+                  {errors.signedNDA && <p className="text-xs text-red-500">{errors.signedNDA}</p>}
                 </div>
                 <div className="space-y-3">
                   <Label htmlFor="insuranceProof" className="text-black">
@@ -115,39 +111,27 @@ export const Step6Legal: React.FC<MedExaminerRegStepProps> = ({
                     icon={Upload}
                     type="text"
                     placeholder="DrAhmed_Insurance.pdf"
-                    value={
-                      values.insuranceProof ? values.insuranceProof.name : ""
-                    }
+                    value={values.insuranceProof ? values.insuranceProof.name : ''}
                     readOnly
                   />
                   <input
                     type="file"
                     ref={insuranceRef}
                     accept=".pdf,.doc,.docx,.jpg,.png"
-                    style={{ display: "none" }}
-                    onChange={(e) =>
-                      setFieldValue(
-                        "insuranceProof",
-                        e.target.files?.[0] || null,
-                      )
-                    }
+                    style={{ display: 'none' }}
+                    onChange={e => setFieldValue('insuranceProof', e.target.files?.[0] || null)}
                   />
                   {errors.insuranceProof && (
-                    <p className="text-xs text-red-500">
-                      {errors.insuranceProof}
-                    </p>
+                    <p className="text-xs text-red-500">{errors.insuranceProof}</p>
                   )}
                 </div>
               </div>
-              <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 md:mt-14">
+              <div className="mt-8 grid grid-cols-1 gap-4 md:mt-14 md:grid-cols-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     checked={values.consentBackgroundVerification}
-                    onCheckedChange={(checked) =>
-                      setFieldValue(
-                        "consentBackgroundVerification",
-                        checked as boolean,
-                      )
+                    onCheckedChange={checked =>
+                      setFieldValue('consentBackgroundVerification', checked as boolean)
                     }
                     checkedColor="#00A8FF"
                     checkIconColor="white"
@@ -158,24 +142,24 @@ export const Step6Legal: React.FC<MedExaminerRegStepProps> = ({
                   </Label>
                 </div>
 
-                <div className="flex items-center space-x-2 ml-0 md:ml-5">
+                <div className="ml-0 flex items-center space-x-2 md:ml-5">
                   <Checkbox
                     checked={values.agreeTermsConditions}
-                    onCheckedChange={(checked) =>
-                      setFieldValue("agreeTermsConditions", checked as boolean)
+                    onCheckedChange={checked =>
+                      setFieldValue('agreeTermsConditions', checked as boolean)
                     }
                     checkedColor="#00A8FF"
                     checkIconColor="white"
                   />
                   <Label className="cursor-pointer text-xs font-medium text-gray-700 sm:text-sm">
-                    Agree to{" "}
+                    Agree to{' '}
                     <a
                       href="#"
                       className="text-[#00A8FF] underline decoration-[#00A8FF] hover:decoration-[#0088CC]"
                     >
                       Terms & Conditions
-                    </a>{" "}
-                    and{" "}
+                    </a>{' '}
+                    and{' '}
                     <a
                       href="#"
                       className="text-[#00A8FF] underline decoration-[#00A8FF] hover:decoration-[#0088CC]"
@@ -186,15 +170,11 @@ export const Step6Legal: React.FC<MedExaminerRegStepProps> = ({
                   </Label>
                 </div>
                 {errors.agreeTermsConditions && (
-                  <p className="text-xs text-red-500">
-                    {errors.agreeTermsConditions}
-                  </p>
+                  <p className="text-xs text-red-500">{errors.agreeTermsConditions}</p>
                 )}
 
                 {errors.consentBackgroundVerification && (
-                  <p className="text-xs text-red-500">
-                    {errors.consentBackgroundVerification}
-                  </p>
+                  <p className="text-xs text-red-500">{errors.consentBackgroundVerification}</p>
                 )}
               </div>
             </div>

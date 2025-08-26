@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { ExaminerService } from '@/features/examiner/services/examinerServices';
+import { ExaminerService } from '@/features/examiner/examiner.service';
 import { authOptions } from '@/shared/lib/auth';
 import {
   examinerPersonalInfoSchema,
@@ -13,7 +13,7 @@ import {
   examinerInsuranceSchema,
   examinerAvailabilitySchema,
   examinerConsentSchema,
-} from '@/features/examiner/schemas/examinerSchema';
+} from '@/features/examiner/examiner.schema';
 
 const examinerService = new ExaminerService();
 

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { DashboardNavbar } from './dashboard-navbar';
 import { Sidebar } from './sidebar';
-import { DashboardLayoutProps } from '@/shared/types';
+import type { DashboardLayoutProps } from '@/shared/types';
 
 export function DashboardLayout({ children, userRole }: DashboardLayoutProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);

@@ -1,8 +1,8 @@
-import React from "react";
-import ContinueButton from "@/shared/components/ui/ContinueButton";
-import BackButton from "@/shared/components/ui/BackButton";
-import type { MedExaminerRegStepProps } from "@/shared/types";
-import ProgressIndicator from "../progressIndicator/ProgressIndicator";
+import React from 'react';
+import ContinueButton from '@/shared/components/ui/ContinueButton';
+import BackButton from '@/shared/components/ui/BackButton';
+import type { MedExaminerRegStepProps } from '@/shared/types';
+import ProgressIndicator from '../progressIndicator/ProgressIndicator';
 
 export const Step7SubmitConfirmation: React.FC<MedExaminerRegStepProps> = ({
   onNext,
@@ -12,7 +12,7 @@ export const Step7SubmitConfirmation: React.FC<MedExaminerRegStepProps> = ({
 }) => {
   const handleSubmit = () => {
     // Handle final submission logic here
-    console.log("Form submitted successfully!");
+    console.log('Form submitted successfully!');
     if (onNext) {
       onNext();
     }
@@ -22,7 +22,7 @@ export const Step7SubmitConfirmation: React.FC<MedExaminerRegStepProps> = ({
     <div
       className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[450px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
       style={{
-        boxShadow: "0px 0px 36.35px 0px #00000008",
+        boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
     >
       <ProgressIndicator
@@ -39,11 +39,11 @@ export const Step7SubmitConfirmation: React.FC<MedExaminerRegStepProps> = ({
           </h3>
           <div className="mt-4 text-center text-[14px] leading-relaxed font-light text-[#8A8A8A] md:text-base">
             <p className="text-center">
-              Your Medical Examiner profile is ready for review. Please{" "}
+              Your Medical Examiner profile is ready for review. Please{' '}
               <span className="hidden md:inline">
                 <br />
               </span>
-              confirm that all information and documents are accurate.{" "}
+              confirm that all information and documents are accurate.{' '}
               <span className="hidden md:inline">
                 <br />
               </span>

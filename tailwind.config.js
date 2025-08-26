@@ -17,8 +17,8 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        'degular': ['var(--font-degular)', 'system-ui', 'sans-serif'],
-        'poppins': ['var(--font-poppins)', 'system-ui', 'sans-serif'],
+        degular: ['var(--font-degular)', 'system-ui', 'sans-serif'],
+        poppins: ['var(--font-poppins)', 'system-ui', 'sans-serif'],
         sans: ['var(--font-poppins)', 'system-ui', 'sans-serif'], // Default font is Poppins
       },
       colors: {

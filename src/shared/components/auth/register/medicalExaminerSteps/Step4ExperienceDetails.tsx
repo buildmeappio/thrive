@@ -1,15 +1,15 @@
-import React from "react";
-import { Formik, Form } from "formik";
-import BackButton from "@/shared/components/ui/BackButton";
-import ContinueButton from "@/shared/components/ui/ContinueButton";
-import { Label } from "@/shared/components/ui/label";
-import { Textarea } from "@/shared/components/ui/textarea";
-import type { MedExaminerRegStepProps } from "@/shared/types";
+import React from 'react';
+import { Formik, Form } from 'formik';
+import BackButton from '@/shared/components/ui/BackButton';
+import ContinueButton from '@/shared/components/ui/ContinueButton';
+import { Label } from '@/shared/components/ui/label';
+import { Textarea } from '@/shared/components/ui/textarea';
+import type { MedExaminerRegStepProps } from '@/shared/types';
 import {
   step4ExperienceDetailsSchema,
   step4InitialValues,
-} from "@/shared/validation/medicalExaminer/examinerRegisterValidation";
-import ProgressIndicator from "../progressIndicator/ProgressIndicator";
+} from '@/shared/validation/medicalExaminer/examinerRegisterValidation';
+import ProgressIndicator from '../progressIndicator/ProgressIndicator';
 
 export const Step4ExperienceDetails: React.FC<MedExaminerRegStepProps> = ({
   onNext,
@@ -18,7 +18,7 @@ export const Step4ExperienceDetails: React.FC<MedExaminerRegStepProps> = ({
   totalSteps,
 }) => {
   const handleSubmit = (values: typeof step4InitialValues) => {
-    console.log("Step 4 Form Data:", values);
+    console.log('Step 4 Form Data:', values);
     onNext();
   };
 
@@ -26,7 +26,7 @@ export const Step4ExperienceDetails: React.FC<MedExaminerRegStepProps> = ({
     <div
       className="mt-4 flex min-h-[500px] w-full flex-col rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
       style={{
-        boxShadow: "0px 0px 36.35px 0px #00000008",
+        boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
     >
       <ProgressIndicator
@@ -74,9 +74,7 @@ export const Step4ExperienceDetails: React.FC<MedExaminerRegStepProps> = ({
                     Talk about yourself and your background
                   </Label>
                   {errors.experienceDetails && (
-                    <p className="text-xs text-red-500">
-                      {errors.experienceDetails}
-                    </p>
+                    <p className="text-xs text-red-500">{errors.experienceDetails}</p>
                   )}
                 </div>
               </div>

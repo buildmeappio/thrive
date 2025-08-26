@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 
 
 interface OrganizationSidebarProps {
@@ -8,24 +8,36 @@ interface OrganizationSidebarProps {
   const OrganizationExaminerSidebar = ({ isMobileOpen = false, onMobileClose }: OrganizationSidebarProps) => {
 
   return (
-    <div className="w-64 bg-sidebar border-r border-sidebar-border p-4">
-      <h2 className="text-lg font-semibold text-sidebar-foreground mb-4">Organization</h2>
+    <div className="bg-sidebar border-sidebar-border w-64 border-r p-4">
+      <h2 className="text-sidebar-foreground mb-4 text-lg font-semibold">Organization</h2>
       <nav className="space-y-2">
-        <a href="#" className="block px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent">
+        <a
+          href="#"
+          className="text-sidebar-foreground hover:bg-sidebar-accent block rounded-md px-3 py-2"
+        >
           Dashboard
         </a>
-        <a href="#" className="block px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent">
+        <a
+          href="#"
+          className="text-sidebar-foreground hover:bg-sidebar-accent block rounded-md px-3 py-2"
+        >
           Medical Examiners
         </a>
-        <a href="#" className="block px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent">
+        <a
+          href="#"
+          className="text-sidebar-foreground hover:bg-sidebar-accent block rounded-md px-3 py-2"
+        >
           Reports
         </a>
-        <a href="#" className="block px-3 py-2 rounded-md text-sidebar-foreground hover:bg-sidebar-accent">
+        <a
+          href="#"
+          className="text-sidebar-foreground hover:bg-sidebar-accent block rounded-md px-3 py-2"
+        >
           Settings
         </a>
       </nav>
     </div>
-  )
-}
+  );
+};
 
-export default OrganizationExaminerSidebar
+export default OrganizationExaminerSidebar;
