@@ -2,7 +2,10 @@ import React from 'react'
 
 const MedicalExaminerCasesPage = () => {
     return (
-        <div>MedicalExaminerAllCases</div>
+        <div><h1 className='text-black'>
+            MedicalExaminerAllCases
+        </h1>
+        </div>
     )
 }
 
