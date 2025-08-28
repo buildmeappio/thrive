@@ -1,0 +1,35 @@
+import jwt, { Secret, SignOptions, JwtPayload } from 'jsonwebtoken';
+
+const otpSecret: Secret = process.env.JWT_SECRET!;
+const passwordSecret: Secret = process.env.PASSWORD_JWT_SECRET!;
+
+// ----- OTP Tokens -----
+export function signOtpToken(payload: object, expiresIn: SignOptions['expiresIn'] = '5m'): string {
+  const options: SignOptions = { expiresIn };
+  return jwt.sign(payload, otpSecret, options);
+}
+
+export function verifyOtpToken(token: string): JwtPayload | null {
+  try {
+    return jwt.verify(token, otpSecret) as JwtPayload;
+  } catch {
+    return null;
+  }
+}
+
+// ----- Password Tokens -----
+export function signPasswordToken(
+  payload: object,
+  expiresIn: SignOptions['expiresIn'] = '15m'
+): string {
+  const options: SignOptions = { expiresIn };
+  return jwt.sign(payload, passwordSecret, options);
+}
+
+export function verifyPasswordToken(token: string): JwtPayload | null {
+  try {
+    return jwt.verify(token, passwordSecret) as JwtPayload;
+  } catch {
+    return null;
+  }
+}

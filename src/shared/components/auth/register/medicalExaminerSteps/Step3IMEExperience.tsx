@@ -10,7 +10,11 @@ import {
   step3InitialValues,
 } from '@/shared/validation/medicalExaminer/examinerRegisterValidation';
 import ProgressIndicator from '../progressIndicator/ProgressIndicator';
-import { languageOptions, provinceOptions, yearsOfExperienceOptions } from '@/shared/config/dropdownOptions/MedExaminerDropdownOptions';
+import {
+  languageOptions,
+  provinceOptions,
+  yearsOfExperienceOptions,
+} from '@/shared/config/dropdownOptions/MedExaminerDropdownOptions';
 
 interface Step3IMEExperinceProps {
   onNext: () => void;

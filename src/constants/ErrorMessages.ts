@@ -1,0 +1,10 @@
+export default Object.freeze({
+  STEPS_REQUIRED: 'Missing required registration steps',
+  PASSWORD_TOKEN_REQUIRED: 'Unauthorized: missing password token',
+  MISMATCH_EMAIL: 'Email mismatch in registration flow',
+  INVALID_PASSWORD_TOKEN: 'Invalid or expired password token',
+  FAILED_CHECK_ORG_NAME: 'Failed to check organization name',
+  FAILED_CHECK_ORG_EMAIL: 'Failed to check organization email',
+  FAILED_REGISTER_ORG: 'Failed to register organization',
+  FAILED_FINALIZE_ORG_REG: 'Failed to finalize organization registration',
+});

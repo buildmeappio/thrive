@@ -48,7 +48,7 @@ model VerificationCodes {
   id        String    @id @unique @default(uuid())
   code      String    @map("code") @db.VarChar(255)
   expiresAt DateTime  @map("expires_at") @db.Timestamptz()
-  accountId String    @map("account_id") @db.Uuid
+  accountId String    @map("account_id")
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
@@ -66,11 +66,12 @@ enum OrganizationStatus {
 
 model Organization {
   id                     String             @id @unique @default(uuid())
-  typeId                 String             @map("type_id") @db.Uuid
-  addressId              String             @map("address_id") @db.Uuid
+  typeId                 String             @map("type_id")
+  addressId              String             @map("address_id")
   address                Address            @relation("Address", fields: [addressId], references: [id])
   type                   OrganizationType   @relation(name: "OrganizationType", fields: [typeId], references: [id])
   name                   String             @map("name") @db.VarChar(255)
+  email                  String             @unique @map("email") @db.VarChar(255)
   website                String?            @map("website") @db.VarChar(255)
   isAuthorized           Boolean            @default(false) @map("is_authorized")
   dataSharingConsent     Boolean            @default(false) @map("data_sharing_consent")
@@ -93,10 +94,10 @@ model Organization {
 
 model OrganizationManager {
   id             String    @id @unique @default(uuid())
-  organizationId String    @map("organization_id") @db.Uuid
-  accountId      String    @map("account_id") @db.Uuid
+  organizationId String    @map("organization_id")
+  accountId      String    @map("account_id")
   jobTitle       String?   @map("job_title") @db.VarChar(255)
-  departmentId   String?   @map("department_id") @db.Uuid
+  departmentId   String?   @map("department_id")
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz()
@@ -117,7 +118,7 @@ model User {
   phone          String?   @map("phone") @db.VarChar(255)
   gender         String?   @map("gender") @db.VarChar(255)
   dateOfBirth    DateTime? @map("date_of_birth") @db.Timestamptz()
-  profilePhotoId String?   @map("profile_photo_id") @db.Uuid
+  profilePhotoId String?   @map("profile_photo_id")
 
   profilePhoto Documents? @relation(name: "ProfilePhoto", fields: [profilePhotoId], references: [id])
 
@@ -131,8 +132,8 @@ model User {
 
 model Account {
   id         String    @id @unique @default(uuid())
-  roleId     String    @map("role_id") @db.Uuid
-  userId     String    @map("user_id") @db.Uuid
+  roleId     String    @map("role_id")
+  userId     String    @map("user_id")
   isVerified Boolean   @default(false) @map("is_verified")
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
