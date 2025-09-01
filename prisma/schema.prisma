@@ -1,0 +1,191 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model OrganizationType {
+  id            String         @id @unique @default(uuid()) @db.Uuid
+  name          String         @map("name") @db.VarChar(255)
+  description   String?        @map("description") @db.Text
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt     DateTime?      @map("deleted_at") @db.Timestamptz()
+  organizations Organization[] @relation("OrganizationType")
+
+  @@map("organization_types")
+}
+
+model Department {
+  id        String                @id @unique @default(uuid()) @db.Uuid
+  name      String                @map("name") @db.VarChar(255)
+  createdAt DateTime              @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime              @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime?             @map("deleted_at") @db.Timestamptz()
+  managers  OrganizationManager[] @relation("DepartmentManager")
+
+  @@map("departments")
+}
+
+model Role {
+  id        String    @id @unique @default(uuid()) @db.Uuid
+  name      String    @map("name") @db.VarChar(255)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+  accounts  Account[] @relation("AccountRole")
+
+  @@map("roles")
+}
+
+model VerificationCodes {
+  id        String    @id @unique @default(uuid()) @db.Uuid
+  code      String    @map("code") @db.VarChar(255)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz()
+  accountId String    @map("account_id") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  account Account @relation(name: "AccountVerification", fields: [accountId], references: [id])
+
+  @@map("verification_codes")
+}
+
+enum OrganizationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Organization {
+  id                     String             @id @unique @default(uuid()) @db.Uuid
+  typeId                 String             @map("type_id") @db.Uuid
+  addressId              String             @map("address_id") @db.Uuid
+  address                Address            @relation("Address", fields: [addressId], references: [id])
+  type                   OrganizationType   @relation(name: "OrganizationType", fields: [typeId], references: [id])
+  name                   String             @map("name") @db.VarChar(255)
+  website                String?            @map("website") @db.VarChar(255)
+  isAuthorized           Boolean            @default(false) @map("is_authorized")
+  dataSharingConsent     Boolean            @default(false) @map("data_sharing_consent")
+  agreeToTermsAndPrivacy Boolean            @default(false) @map("agree_to_terms_and_privacy")
+  status                 OrganizationStatus @default(PENDING) @map("status")
+  approvedBy             String?            @map("approved_by") @db.Uuid
+  approvedAt             DateTime?          @map("approved_at") @db.Timestamptz()
+  rejectedBy             String?            @map("rejected_by") @db.Uuid
+  rejectedAt             DateTime?          @map("rejected_at") @db.Timestamptz()
+  rejectedReason         String?            @map("rejected_reason") @db.Text
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  manager OrganizationManager[] @relation("OrganizationManager")
+
+  @@map("organizations")
+}
+
+model OrganizationManager {
+  id             String    @id @unique @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  accountId      String    @map("account_id") @db.Uuid
+  jobTitle       String?   @map("job_title") @db.VarChar(255)
+  departmentId   String?   @map("department_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz()
+
+  account      Account      @relation(name: "AccountManager", fields: [accountId], references: [id])
+  organization Organization @relation(name: "OrganizationManager", fields: [organizationId], references: [id])
+  department   Department?  @relation(name: "DepartmentManager", fields: [departmentId], references: [id])
+
+  @@map("organization_managers")
+}
+
+model User {
+  id             String    @id @unique @default(uuid()) @db.Uuid
+  firstName      String    @map("first_name") @db.VarChar(255)
+  lastName       String    @map("last_name") @db.VarChar(255)
+  email          String    @unique @map("email") @db.VarChar(255)
+  password       String    @map("password") @db.VarChar(255)
+  phone          String?   @map("phone") @db.VarChar(255)
+  gender         String?   @map("gender") @db.VarChar(255)
+  dateOfBirth    DateTime? @map("date_of_birth") @db.Timestamptz()
+  profilePhotoId String?   @map("profile_photo_id") @db.Uuid
+
+  profilePhoto Documents? @relation(name: "ProfilePhoto", fields: [profilePhotoId], references: [id])
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+  accounts  Account[] @relation("AccountUser")
+
+  @@map("users")
+}
+
+model Account {
+  id         String    @id @unique @default(uuid()) @db.Uuid
+  roleId     String    @map("role_id") @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  isVerified Boolean   @default(false) @map("is_verified")
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz()
+
+  role              Role                  @relation(name: "AccountRole", fields: [roleId], references: [id])
+  user              User                  @relation(name: "AccountUser", fields: [userId], references: [id])
+  verificationCodes VerificationCodes[]   @relation("AccountVerification")
+  managers          OrganizationManager[] @relation("AccountManager")
+
+  @@map("accounts")
+}
+
+model Address {
+  id            String         @id @unique @default(uuid()) @db.Uuid
+  address       String         @map("address") @db.Text
+  street        String         @map("street") @db.VarChar(255)
+  province      String         @map("province") @db.VarChar(255)
+  city          String         @map("city") @db.VarChar(255)
+  postalCode    String         @map("postal_code") @db.VarChar(255)
+  suite         String         @map("suite") @db.VarChar(255)
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt     DateTime?      @map("deleted_at") @db.Timestamptz()
+  organizations Organization[] @relation("Address")
+
+  @@map("addresses")
+}
+
+model Documents {
+  id        String    @id @unique @default(uuid()) @db.Uuid
+  name      String    @map("name") @db.VarChar(255)
+  type      String    @map("type") @db.VarChar(255)
+  size      Int       @map("size") @db.Integer
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+  users     User[]    @relation("ProfilePhoto")
+
+  @@map("documents")
+}
+
+model PrismaSeed {
+  id        String    @id @unique @default(uuid()) @db.Uuid
+  name      String    @map("name") @db.VarChar(255)
+  runAt     DateTime  @map("run_at") @db.Timestamptz()
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  @@map("_prisma_seeds")
+}

@@ -1,0 +1,34 @@
+{
+  "name": "prisma-db",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "studio": "prisma studio",
+    "seed": "prisma db seed",
+    "dev": "tsx watch src/seed.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thrive-org/prisma-db.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thrive-org/prisma-db/issues"
+  },
+  "homepage": "https://github.com/thrive-org/prisma-db#readme",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^6.15.0",
+    "dotenv": "^17.2.1",
+    "prisma": "^6.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}

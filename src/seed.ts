@@ -1,0 +1,59 @@
+/* eslint-disable no-console */
+import { PrismaClient } from '@prisma/client';
+
+import RoleSeeder from './seeders/role.seeder';
+import OrganizationTypeSeeder from './seeders/organizationType.seeder';
+import DepartmentSeeder from './seeders/department.seeder';
+
+const seeds = [
+    RoleSeeder,
+    OrganizationTypeSeeder,
+    DepartmentSeeder,
+];
+
+const prisma = new PrismaClient();
+
+async function hasRunSeed(name: string) {
+    const existing = await prisma.prismaSeed.findFirst({
+        where: { name },
+    });
+    return !!existing;
+}
+
+async function markSeedAsRun(name: string) {
+    await prisma.prismaSeed.create({
+        data: { name, runAt: new Date() },
+    });
+}
+
+async function main() {
+    for (const seed of seeds) {
+        console.log('🔍 Checking if seed has run:', seed.name);
+        const alreadyRun = await hasRunSeed(seed.name);
+        if (alreadyRun) {
+            console.log(`Skipping seed (already run): ${seed.name}`);
+            continue;
+        }
+
+        const instance = seed.getInstance(prisma);
+        console.log(`Starting seed: ${seed.name}`);
+        try {
+            await instance.run();
+            await markSeedAsRun(seed.name);
+            console.log(`Completed seed: ${seed.name}`);
+        } catch (error) {
+            console.error(`Error in seed ${seed.name}:`, error);
+            throw error;
+        }
+    }
+}
+
+main()
+    .then(async () => {
+        await prisma.$disconnect();
+    })
+    .catch(async (e) => {
+        console.error(e);
+        await prisma.$disconnect();
+        process.exit(1);
+    });
