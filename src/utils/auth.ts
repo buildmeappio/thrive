@@ -1,5 +1,4 @@
-import NextAuth, { type NextAuthOptions, type DefaultSession, type User } from 'next-auth';
-import { getServerSession } from 'next-auth';
+import NextAuth, { type NextAuthOptions, type DefaultSession, type User, getServerSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import prisma from '@/shared/lib/prisma';

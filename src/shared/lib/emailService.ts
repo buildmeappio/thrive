@@ -62,6 +62,7 @@ class EmailService {
     try {
       return await fs.readFile(templatePath, 'utf-8');
     } catch (err) {
+      console.log('Error loading email template:', err);
       throw new Error(`Template ${templateName} not found`);
     }
   }

@@ -1,4 +1,4 @@
-import jwt, { Secret, SignOptions, JwtPayload } from 'jsonwebtoken';
+import jwt, { type Secret, type SignOptions, type JwtPayload } from 'jsonwebtoken';
 
 const otpSecret: Secret = process.env.JWT_SECRET!;
 const passwordSecret: Secret = process.env.PASSWORD_JWT_SECRET!;

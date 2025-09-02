@@ -1,4 +1,4 @@
-import { RoleType } from '@/constants/role';
+import { type RoleType } from '@/constants/role';
 
 type Session = {
   role: RoleType;

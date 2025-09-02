@@ -1,6 +1,12 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
-import type { BackButtonProps } from '~/types';
+
+export type BackButtonProps = {
+  disabled?: boolean;
+  borderColor?: string;
+  iconColor?: string;
+  onClick?: () => void;
+};
 
 const BackButton: React.FC<BackButtonProps> = ({
   disabled = false,

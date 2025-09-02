@@ -1,6 +1,6 @@
 // Step 3
 import React from 'react';
-import { Formik, Form, FormikHelpers } from 'formik';
+import { Formik, Form, type FormikHelpers } from 'formik';
 import {
   step3ComplianceAccessInitialValues,
   step3ComplianceAccessSchema,
@@ -11,7 +11,7 @@ import { Checkbox } from '@/shared/components/ui/checkbox';
 import { Label } from '@/shared/components/ui/label';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
 import { sendOtp } from '@/shared/lib/sendOtp';
-import { OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
+import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 
 const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
   onNext,

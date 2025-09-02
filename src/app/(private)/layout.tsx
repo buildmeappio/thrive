@@ -1,8 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { DashboardNavbar } from '@/shared/components/layout';
 import SideBar from '@/shared/components/layout/sidebar';
-import { ReactNode } from 'react';
 
 type DashboardLayoutProps = {
   children: ReactNode;

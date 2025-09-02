@@ -1,6 +1,6 @@
 // Step 2
 import React, { useEffect, useState } from 'react';
-import { Formik, Form, FormikHelpers } from 'formik';
+import { Formik, Form, type FormikHelpers } from 'formik';
 import {
   step2OfficeDetailsInitialValues,
   step2OfficeDetailsSchema,
@@ -11,7 +11,7 @@ import { Mail, Phone, User, Briefcase } from 'lucide-react';
 import { Dropdown } from '@/shared/components/ui/Dropdown';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
-import { OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
+import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
 import {
   checkOrganizationEmailAction,
@@ -97,7 +97,7 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
         validateOnChange={false}
         validateOnBlur={false}
       >
-        {({ values, errors, handleChange, setFieldValue, submitForm }) => (
+        {({ values, errors, handleChange, setFieldValue }) => (
           <Form>
             <div className="space-y-6 px-4 pb-8 md:px-0">
               <div className="mt-6 grid grid-cols-1 gap-x-14 gap-y-5 md:mt-8 md:grid-cols-2">

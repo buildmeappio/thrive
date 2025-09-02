@@ -1,6 +1,13 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-import type { ContinueButtonProps } from '@/shared/types';
+
+export type ContinueButtonProps = {
+  isLastStep?: boolean;
+  gradientFrom?: string;
+  gradientTo?: string;
+  color?: string;
+  onClick?: () => void;
+};
 
 const ContinueButton: React.FC<ContinueButtonProps> = ({
   isLastStep,

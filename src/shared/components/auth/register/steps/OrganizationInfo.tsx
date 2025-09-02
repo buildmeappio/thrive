@@ -11,10 +11,10 @@ import {
   step1OrganizationInfoInitialValues,
   step1OrganizationInfoSchema,
 } from '@/features/organization/organization.schema';
-import { Form, Formik, FormikHelpers } from 'formik';
+import { Form, Formik, type FormikHelpers } from 'formik';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
-import { OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
+import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
 import {
   checkOrganizationNameAction,
@@ -94,7 +94,7 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
         validateOnChange={false}
         validateOnBlur={false}
       >
-        {({ values, errors, handleChange, setFieldValue, submitForm }) => (
+        {({ values, errors, handleChange, setFieldValue }) => (
           <Form>
             <div className="space-y-6 px-4 md:space-y-12 md:px-0">
               <div className="pt-1 md:pt-4">

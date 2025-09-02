@@ -1,13 +1,13 @@
 // Step 4
-import { useState, useRef, useEffect } from 'react';
-import { Formik, Form, FormikHelpers } from 'formik';
+import { useState, useRef } from 'react';
+import { Formik, Form, type FormikHelpers } from 'formik';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import {
   step4verificationCodeInitialValues,
   step4VerificationCodeSchema,
 } from '@/features/organization/organization.schema';
-import { OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
+import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
 import { verifyOtp } from '@/shared/lib/verifyOtp';
 
@@ -94,10 +94,11 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
         validateOnChange={false}
         validateOnBlur={false}
       >
-        {({ setFieldValue, errors }) => {
-          useEffect(() => {
-            setFieldValue('code', code.join(''));
-          }, [code, setFieldValue]);
+        {({ errors }) => {
+        // {({ setFieldValue, errors }) => {
+          // useEffect(() => {
+          //   setFieldValue('code', code.join(''));
+          // }, [code, setFieldValue]);
 
           return (
             <Form>

@@ -2,7 +2,7 @@
 
 import ErrorMessages from '@/constants/ErrorMessages';
 import organizationService from './organization.service';
-import { FormData } from '@/store/useOrgRegFormStore';
+import { type FormData } from '@/store/useOrgRegFormStore';
 
 export const checkOrganizationNameAction = async (name: string): Promise<boolean> => {
   try {

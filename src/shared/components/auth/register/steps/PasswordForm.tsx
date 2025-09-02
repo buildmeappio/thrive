@@ -1,6 +1,6 @@
 // Step 5
 import React from 'react';
-import { Formik, Form, FormikHelpers } from 'formik';
+import { Formik, Form, type FormikHelpers } from 'formik';
 import {
   step5PasswordInitialValues,
   step5PasswordSchema,
@@ -10,7 +10,7 @@ import { Input } from '@/shared/components/ui';
 import { Eye, EyeOff } from 'lucide-react';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
-import { OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
+import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
 import { finalizeOrganizationRegistrationAction } from '@/features/organization/organization.actions';
 import { signIn } from 'next-auth/react';
