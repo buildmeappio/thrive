@@ -46,7 +46,7 @@ export const finalizeOrganizationRegistrationAction = async (data: FormData) => 
 
 export const getOrganizationTypeAction = async () => {
   try {
-    return await organizationService.getOrganizationTypeService;
+    return await organizationService.getOrganizationTypeService();
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_GET_ORG_TYPE;
     console.error(ErrorMessages.FAILED_GET_ORG_TYPE, error);
@@ -54,9 +54,9 @@ export const getOrganizationTypeAction = async () => {
   }
 };
 
-export const getDepartmentsAction = async () => {
+export const getDepartmentAction = async () => {
   try {
-    return await organizationService.getDepartmentsService();
+    return await organizationService.getDepartmentService();
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_GET_DEPARTMENTS;
     console.error(ErrorMessages.FAILED_GET_DEPARTMENTS, error);

@@ -11,7 +11,7 @@ export const step1OrganizationInfoSchema = Yup.object({
     .min(5, 'Address lookup must be at least 5 characters')
     .required('Address lookup is required'),
   streetAddress: Yup.string().optional(),
-  aptUnitSuite: Yup.string(),
+  aptUnitSuite: Yup.string().optional(),
   city: Yup.string().optional(),
   postalCode: Yup.string().optional(),
   provinceOfResidence: Yup.string().optional(),

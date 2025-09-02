@@ -1,4 +1,5 @@
 // Step 2  
+import React, { useEffect, useState } from 'react';
 import { Formik, Form, FormikHelpers } from 'formik';
 import {
   step2OfficeDetailsInitialValues,
@@ -12,19 +13,13 @@ import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
-import { checkOrganizationEmailAction } from '@/features/organization/organization.actions';
+import { checkOrganizationEmailAction, getDepartmentAction } from '@/features/organization/organization.actions';
 
-// Department options
-const departmentOptions = [
-  { value: 'legal', label: 'Legal' },
-  { value: 'claims', label: 'Claims' },
-  { value: 'hr', label: 'Human Resources' },
-  { value: 'medical', label: 'Medical' },
-  { value: 'operations', label: 'Operations' },
-  { value: 'finance', label: 'Finance' },
-  { value: 'administration', label: 'Administration' },
-  { value: 'other', label: 'Other' },
-];
+// Define the type for department options
+interface DepartmentOption {
+  value: string;
+  label: string;
+}
 
 const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -33,20 +28,50 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
   totalSteps,
 }) => {
   const { setData, data } = useOrgRegFormStore();
+  
+  const [departmentOptions, setDepartmentOptions] = useState<DepartmentOption[]>([]);
+  const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
+  const [departmentError, setDepartmentError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        setIsLoadingDepartments(true);
+        setDepartmentError(null);
+        
+        const response = await getDepartmentAction();
+        
+        if (response.success && response.result) {
+          const options = response.result.map(department => ({
+            value: department.id,
+            label: department.name
+          }));
+          setDepartmentOptions(options);
+        }
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+        setDepartmentError('Failed to load departments. Please try refreshing the page.');
+      } finally {
+        setIsLoadingDepartments(false);
+      }
+    };
+
+    fetchDepartments();
+  }, []);
 
   const handleSubmit = async (
     values: typeof step2OfficeDetailsInitialValues,
     actions: FormikHelpers<typeof step2OfficeDetailsInitialValues>
   ) => {
-    // const exists = await checkOrganizationEmailAction(values.officialEmailAddress);
+    const exists = await checkOrganizationEmailAction(values.officialEmailAddress);
 
-    // if (exists) {
-    //   actions.setFieldError(
-    //     'officialEmailAddress',
-    //     'This email is already associated with an organization.'
-    //   );
-    //   return;
-    // }
+    if (exists) {
+      actions.setFieldError(
+        'officialEmailAddress',
+        'This email is already associated with an organization.'
+      );
+      return;
+    }
 
     setData('step2', values);
 
@@ -109,7 +134,7 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
                     name="phoneNumber"
                     icon={Phone}
                     type="tel"
-                    placeholder="lois@desjardins.com"
+                    placeholder="(555) 123-4567"
                     value={values.phoneNumber}
                     onChange={handleChange}
                   />
@@ -157,9 +182,27 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
                     onChange={(value: string) => setFieldValue('department', value)}
                     options={departmentOptions}
                     required={true}
-                    placeholder="Select Department"
+                    placeholder={
+                      isLoadingDepartments 
+                        ? "Loading departments..." 
+                        : departmentError 
+                        ? "Error loading departments"
+                        : "Select Department"
+                    }
                   />
                   {errors.department && <p className="text-xs text-red-500">{errors.department}</p>}
+                  {departmentError && (
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-red-500">{departmentError}</p>
+                      <button
+                        type="button"
+                        onClick={() => window.location.reload()}
+                        className="text-xs text-blue-600 hover:text-blue-800 underline"
+                      >
+                        Refresh Page
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -182,4 +225,5 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
     </div>
   );
 };
+
 export default OfficeDetails;

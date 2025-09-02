@@ -1,12 +1,11 @@
 // Step 1
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Label } from '@/shared/components/ui/label';
 import { Globe, MapPin } from 'lucide-react';
 import { Input } from '@/shared/components/ui';
 import { provinceOptions } from '@/shared/config/organizationRegister/ProvinceOptions';
-import { organizationTypeOptions } from '@/shared/config/organizationRegister/organizationTypeOptions';
 import { Dropdown } from '@/shared/components/ui/Dropdown';
 import {
   step1OrganizationInfoInitialValues,
@@ -17,7 +16,12 @@ import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
-import { checkOrganizationNameAction } from '@/features/organization/organization.actions';
+import { checkOrganizationNameAction, getOrganizationTypeAction } from '@/features/organization/organization.actions';
+
+interface OrganizationTypeOption {
+  value: string;
+  label: string;
+}
 
 const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -26,6 +30,32 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
   totalSteps = 3,
 }) => {
   const { setData, data } = useOrgRegFormStore();
+  
+  const [organizationTypeOptions, setOrganizationTypeOptions] = useState<OrganizationTypeOption[]>([]);
+  const [isLoadingOrgTypes, setIsLoadingOrgTypes] = useState(true);
+
+  useEffect(() => {
+    const fetchOrganizationTypes = async () => {
+      try {
+        setIsLoadingOrgTypes(true);
+        const response = await getOrganizationTypeAction();
+        
+        if (response.success && response.result) {
+          const options = response.result.map(orgType => ({
+            value: orgType.id,
+            label: orgType.name
+          }));
+          setOrganizationTypeOptions(options);
+        }
+      } catch (error) {
+        console.error('Error fetching organization types:', error);
+      } finally {
+        setIsLoadingOrgTypes(false);
+      }
+    };
+
+    fetchOrganizationTypes();
+  }, []);
 
   const handleSubmit = async (
     values: typeof step1OrganizationInfoInitialValues,
@@ -73,7 +103,7 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
                         onChange={(value: string) => setFieldValue('organizationType', value)}
                         options={organizationTypeOptions}
                         required={true}
-                        placeholder="Select Organization Type"
+                        placeholder={isLoadingOrgTypes ? "Loading..." : "Select Organization Type"}
                       />
                       {errors.organizationType && (
                         <p className="text-sm text-red-500">{errors.organizationType}</p>
@@ -233,4 +263,5 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
     </div>
   );
 };
+
 export default OrganizationInfo;

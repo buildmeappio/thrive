@@ -77,7 +77,7 @@ export const createOrganizationWithUser = async (data: CreateOrganizationWithUse
         name: organizationName,
         website: organizationWebsite,
         email: officialEmailAddress,
-        type: { connect: { id: '290cceb0-dedc-4c33-9801-1e7d4cb443g6' } },
+        type: { connect: { id: organizationType } },
         address: { connect: { id: address.id } },
         agreeToTermsAndPrivacy: agreeTermsConditions,
         dataSharingConsent: consentSecureDataHandling,
@@ -108,10 +108,18 @@ export const createOrganizationWithUser = async (data: CreateOrganizationWithUse
     }
 
     // Account
+    const orgManagerRole = await tx.role.findFirst({
+      where: { name: 'organization-manager' }, 
+    });
+
+    if (!orgManagerRole) {
+      throw new Error('Organization Manager role not found');
+    }
+
     const account = await tx.account.create({
       data: {
-        userId: user.id,
-        roleId: '290cceb0-dedc-4c33-9801-1e7d4cb116b2',
+      userId: user.id,
+      roleId: orgManagerRole.id,
       },
     });
 
@@ -142,7 +150,7 @@ const getOrganizationType = async (): Promise<OrganizationType[]> => {
 
 const getDepartments = async (): Promise<Department[]> => {
   return prisma.department.findMany({
-    where: {
+    where: { 
       deletedAt: null
     },
     orderBy: {

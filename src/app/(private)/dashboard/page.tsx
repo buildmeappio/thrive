@@ -5,9 +5,9 @@ export default function OrganizationDashboardPage() {
   return (
     <div className="p-6">
         <CaseInfo />
-        {/* <DocumentUpload />
+        <DocumentUpload />
         <ConsentInfo />
-        <ReferralSubmitted /> */}
+        <ReferralSubmitted />
     </div>
   );
 }

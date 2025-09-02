@@ -18,10 +18,8 @@ declare module "next-auth" {
       email: string;
       firstName: string | null;
       lastName: string | null;
-      phone: string | null;
-      gender: string | null;
-      dateOfBirth: Date | null;
       role: Role | null;
+      accountId: string | null;
     } & DefaultSession["user"];
   }
 
@@ -30,10 +28,8 @@ declare module "next-auth" {
     email: string;
     firstName: string | null;
     lastName: string | null;
-    phone: string | null;
-    gender: string | null;
-    dateOfBirth: Date | null;
     role: Role | null;
+    accountId: string | null;
     password?: string;
   }
 }
@@ -44,27 +40,10 @@ declare module "next-auth/jwt" {
     email: string;
     firstName: string | null;
     lastName: string | null;
-    phone: string | null;
-    gender: string | null;
-    dateOfBirth: Date | null;
     role: Role | null;
+    accountId: string | null;
   }
 }
-
-// Infer user type from Prisma query
-type UserWithRole = Prisma.UserGetPayload<{
-  select: {
-    id: true;
-    email: true;
-    password: true;
-    firstName: true;
-    lastName: true;
-    phone: true;
-    gender: true;
-    dateOfBirth: true;
-    accounts: { include: { role: true } };
-  };
-}>;
 
 const authorize = async (
   credentials: Record<"email" | "password", string> | undefined
@@ -79,9 +58,6 @@ const authorize = async (
       password: true,
       firstName: true,
       lastName: true,
-      phone: true,
-      gender: true,
-      dateOfBirth: true,
       accounts: { include: { role: true } },
     },
   });
@@ -99,14 +75,12 @@ const authorize = async (
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
-    phone: user.phone,
-    gender: user.gender,
-    dateOfBirth: user.dateOfBirth,
     role: user.accounts[0]?.role || null,
+    accountId: user.accounts[0]?.id || null,
   };
 };
 
-// Callbacks
+// Store minimal data in JWT token
 const jwt: NonNullable<NextAuthOptions["callbacks"]>["jwt"] = async ({
   token,
   user,
@@ -116,10 +90,8 @@ const jwt: NonNullable<NextAuthOptions["callbacks"]>["jwt"] = async ({
     token.email = user.email;
     token.firstName = user.firstName;
     token.lastName = user.lastName;
-    token.phone = user.phone;
-    token.gender = user.gender;
-    token.dateOfBirth = user.dateOfBirth;
     token.role = user.role;
+    token.accountId = user.accountId;
   }
   return token;
 };
@@ -129,14 +101,12 @@ const session: NonNullable<NextAuthOptions["callbacks"]>["session"] = async ({
   token,
 }) => {
   if (session.user) {
-    session.user.id = token.id;
-    session.user.email = token.email;
-    session.user.firstName = token.firstName;
-    session.user.lastName = token.lastName;
-    session.user.phone = token.phone;
-    session.user.gender = token.gender;
-    session.user.dateOfBirth = token.dateOfBirth;
-    session.user.role = token.role;
+    session.user.id = token.id as string;
+    session.user.email = token.email as string;
+    session.user.firstName = token.firstName as string | null;
+    session.user.lastName = token.lastName as string | null;
+    session.user.role = token.role as Role | null;
+    session.user.accountId = token.accountId as string | null;
   }
   return session;
 };
