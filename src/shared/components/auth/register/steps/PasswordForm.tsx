@@ -28,7 +28,10 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
 
   const { setData, data } = useOrgRegFormStore();
 
-  const handleSubmit = async (values: typeof step5PasswordInitialValues, actions: FormikHelpers<typeof step5PasswordInitialValues>) => {
+  const handleSubmit = async (
+    values: typeof step5PasswordInitialValues,
+    actions: FormikHelpers<typeof step5PasswordInitialValues>
+  ) => {
     setData('step5', values);
 
     const res = await finalizeOrganizationRegistrationAction(data);
@@ -36,23 +39,22 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
     if (res.success) {
       if (onNext) onNext();
     } else {
-      actions.setFieldError('code', "Error");
+      actions.setFieldError('code', 'Error');
     }
 
     actions.setSubmitting(false);
 
     const result = await signIn('credentials', {
-        email: data.step2?.officialEmailAddress,
-        password: values.password,
-        redirect: false,
-      });
+      email: data.step2?.officialEmailAddress,
+      password: values.password,
+      redirect: false,
+    });
 
-      if (result?.ok) {
-        router.push('/dashboard');
-      } else {
-        throw new Error('Login failed after registration');
-      }
-    
+    if (result?.ok) {
+      router.push('/dashboard');
+    } else {
+      throw new Error('Login failed after registration');
+    }
   };
 
   return (
@@ -63,7 +65,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
       }}
     >
       <Formik
-        initialValues={data.step5 ??step5PasswordInitialValues}
+        initialValues={data.step5 ?? step5PasswordInitialValues}
         validationSchema={step5PasswordSchema}
         onSubmit={handleSubmit}
         validateOnChange={false}
@@ -133,10 +135,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                   borderColor="#000080"
                   iconColor="#000080"
                 />
-                <ContinueButton
-                  isLastStep={currentStep === totalSteps}
-                  color="#000080"
-                />
+                <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
               </div>
             </div>
           </Form>

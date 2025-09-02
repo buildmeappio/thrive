@@ -117,11 +117,10 @@ body {
   --sidebar-ring: oklch(0.556 0 0);
 }
 /* Hide accordion chevron icon */
-button[data-state="open"] > svg,
-button[data-state="closed"] > svg {
+button[data-state='open'] > svg,
+button[data-state='closed'] > svg {
   display: none !important;
 }
-
 
 @layer base {
   * {

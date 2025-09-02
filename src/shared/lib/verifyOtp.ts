@@ -46,6 +46,7 @@ export async function verifyOtp(otp: string, email: string): Promise<VerifyOtpRe
 
     return { success: true, email: decoded.email };
   } catch (err) {
+    console.error('OTP verification error:', err);
     return { success: false, message: 'OTP verification failed' };
   }
 }

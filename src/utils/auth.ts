@@ -1,17 +1,12 @@
-import NextAuth, {
-  type NextAuthOptions,
-  type DefaultSession,
-  type User,
-} from "next-auth";
-import { getServerSession } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import prisma from "@/shared/lib/prisma";
-import type { Role } from "@prisma/client";
-import type { Prisma } from "@prisma/client";
+import NextAuth, { type NextAuthOptions, type DefaultSession, type User } from 'next-auth';
+import { getServerSession } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import bcrypt from 'bcryptjs';
+import prisma from '@/shared/lib/prisma';
+import type { Role } from '@prisma/client';
 
 // Extend NextAuth types
-declare module "next-auth" {
+declare module 'next-auth' {
   interface Session {
     user: {
       id: string;
@@ -20,7 +15,7 @@ declare module "next-auth" {
       lastName: string | null;
       role: Role | null;
       accountId: string | null;
-    } & DefaultSession["user"];
+    } & DefaultSession['user'];
   }
 
   interface User {
@@ -34,7 +29,7 @@ declare module "next-auth" {
   }
 }
 
-declare module "next-auth/jwt" {
+declare module 'next-auth/jwt' {
   interface JWT {
     id: string;
     email: string;
@@ -46,7 +41,7 @@ declare module "next-auth/jwt" {
 }
 
 const authorize = async (
-  credentials: Record<"email" | "password", string> | undefined
+  credentials: Record<'email' | 'password', string> | undefined
 ): Promise<User | null> => {
   if (!credentials?.email || !credentials?.password) return null;
 
@@ -64,10 +59,7 @@ const authorize = async (
 
   if (!user) return null;
 
-  const isPasswordValid = await bcrypt.compare(
-    credentials.password,
-    user.password
-  );
+  const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
   if (!isPasswordValid) return null;
 
   return {
@@ -81,10 +73,7 @@ const authorize = async (
 };
 
 // Store minimal data in JWT token
-const jwt: NonNullable<NextAuthOptions["callbacks"]>["jwt"] = async ({
-  token,
-  user,
-}) => {
+const jwt: NonNullable<NextAuthOptions['callbacks']>['jwt'] = async ({ token, user }) => {
   if (user) {
     token.id = user.id;
     token.email = user.email;
@@ -96,7 +85,7 @@ const jwt: NonNullable<NextAuthOptions["callbacks"]>["jwt"] = async ({
   return token;
 };
 
-const session: NonNullable<NextAuthOptions["callbacks"]>["session"] = async ({
+const session: NonNullable<NextAuthOptions['callbacks']>['session'] = async ({
   session,
   token,
 }) => {
@@ -113,14 +102,14 @@ const session: NonNullable<NextAuthOptions["callbacks"]>["session"] = async ({
 
 // Auth options
 export const authOptions: NextAuthOptions = {
-  session: { strategy: "jwt" },
-  pages: { signIn: "/login", error: "/api/auth/error" },
+  session: { strategy: 'jwt' },
+  pages: { signIn: '/login', error: '/api/auth/error' },
   providers: [
     CredentialsProvider({
-      name: "credentials",
+      name: 'credentials',
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
       },
       authorize,
     }),

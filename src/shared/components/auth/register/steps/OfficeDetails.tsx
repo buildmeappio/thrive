@@ -1,4 +1,4 @@
-// Step 2  
+// Step 2
 import React, { useEffect, useState } from 'react';
 import { Formik, Form, FormikHelpers } from 'formik';
 import {
@@ -13,7 +13,10 @@ import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
-import { checkOrganizationEmailAction, getDepartmentAction } from '@/features/organization/organization.actions';
+import {
+  checkOrganizationEmailAction,
+  getDepartmentAction,
+} from '@/features/organization/organization.actions';
 
 // Define the type for department options
 interface DepartmentOption {
@@ -28,7 +31,7 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
   totalSteps,
 }) => {
   const { setData, data } = useOrgRegFormStore();
-  
+
   const [departmentOptions, setDepartmentOptions] = useState<DepartmentOption[]>([]);
   const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
   const [departmentError, setDepartmentError] = useState<string | null>(null);
@@ -38,13 +41,13 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
       try {
         setIsLoadingDepartments(true);
         setDepartmentError(null);
-        
+
         const response = await getDepartmentAction();
-        
+
         if (response.success && response.result) {
           const options = response.result.map(department => ({
             value: department.id,
-            label: department.name
+            label: department.name,
           }));
           setDepartmentOptions(options);
         }
@@ -183,11 +186,11 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
                     options={departmentOptions}
                     required={true}
                     placeholder={
-                      isLoadingDepartments 
-                        ? "Loading departments..." 
-                        : departmentError 
-                        ? "Error loading departments"
-                        : "Select Department"
+                      isLoadingDepartments
+                        ? 'Loading departments...'
+                        : departmentError
+                          ? 'Error loading departments'
+                          : 'Select Department'
                     }
                   />
                   {errors.department && <p className="text-xs text-red-500">{errors.department}</p>}
@@ -197,7 +200,7 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
                       <button
                         type="button"
                         onClick={() => window.location.reload()}
-                        className="text-xs text-blue-600 hover:text-blue-800 underline"
+                        className="text-xs text-blue-600 underline hover:text-blue-800"
                       >
                         Refresh Page
                       </button>
@@ -214,10 +217,7 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
                 borderColor="#000080"
                 iconColor="#000080"
               />
-              <ContinueButton
-                isLastStep={currentStep === totalSteps}
-                color="#000080"
-              />
+              <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
             </div>
           </Form>
         )}

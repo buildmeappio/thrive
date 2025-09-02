@@ -22,7 +22,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
   const { setData, data } = useOrgRegFormStore();
 
   const handleSubmit = async (
-    values: typeof step3ComplianceAccessInitialValues, 
+    values: typeof step3ComplianceAccessInitialValues,
     actions: FormikHelpers<typeof step3ComplianceAccessInitialValues>
   ) => {
     setData('step3', values);
@@ -30,7 +30,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
     const email = data.step2?.officialEmailAddress;
     if (email) {
       await sendOtp(email);
-      console.log("OTP sent to", email);
+      console.log('OTP sent to', email);
     }
 
     actions.setSubmitting(false);
@@ -54,7 +54,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
         validateOnChange={false}
         validateOnBlur={false}
       >
-        {({ values, errors, setFieldValue, submitForm }) => (
+        {({ values, errors, setFieldValue }) => (
           <Form>
             <div className="space-y-6 px-4 pb-8 md:px-0">
               <div className="mt-8 flex flex-col items-start justify-center space-y-12 md:mt-12 md:items-center">
@@ -138,10 +138,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                   borderColor="#000080"
                   iconColor="#000080"
                 />
-                <ContinueButton
-                  isLastStep={currentStep === totalSteps}
-                  color="#000080"
-                />
+                <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
               </div>
             </div>
           </Form>

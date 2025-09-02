@@ -15,7 +15,7 @@ export default function Providers({ children, session }: ProvidersProps) {
   return (
     <SessionProvider session={session}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-            <ToastProvider>{children}</ToastProvider>
+        <ToastProvider>{children}</ToastProvider>
       </ThemeProvider>
     </SessionProvider>
   );

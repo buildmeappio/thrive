@@ -2,12 +2,11 @@ import { OrganizationGettingStarted } from '@/shared/components/gettingStarted/O
 import { AuthNavbar } from '@/shared/components/layout';
 
 const GettingStartedPageClient = () => {
-
   return (
     <>
       <AuthNavbar />
       <OrganizationGettingStarted />
     </>
   );
-}
+};
 export default GettingStartedPageClient;

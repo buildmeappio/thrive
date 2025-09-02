@@ -25,10 +25,9 @@ const DashboardNavbar = ({ onMobileMenuToggle }: DashboardNavbarProps) => {
 
         {/* User Profile Section */}
         <div className="flex items-center space-x-4">
-          <div className="flex space-x-2 bg-[#F6F6F6] rounded-full px-6 py-3">
+          <div className="flex space-x-2 rounded-full bg-[#F6F6F6] px-6 py-3">
             <HelpCircle className="h-4 w-4" />
             <span className="text-right text-[16.47px] leading-[100%] font-semibold tracking-[0%]">
-              
               Help
             </span>
           </div>

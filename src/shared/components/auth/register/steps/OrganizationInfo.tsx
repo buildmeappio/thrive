@@ -16,7 +16,10 @@ import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
-import { checkOrganizationNameAction, getOrganizationTypeAction } from '@/features/organization/organization.actions';
+import {
+  checkOrganizationNameAction,
+  getOrganizationTypeAction,
+} from '@/features/organization/organization.actions';
 
 interface OrganizationTypeOption {
   value: string;
@@ -30,8 +33,10 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
   totalSteps = 3,
 }) => {
   const { setData, data } = useOrgRegFormStore();
-  
-  const [organizationTypeOptions, setOrganizationTypeOptions] = useState<OrganizationTypeOption[]>([]);
+
+  const [organizationTypeOptions, setOrganizationTypeOptions] = useState<OrganizationTypeOption[]>(
+    []
+  );
   const [isLoadingOrgTypes, setIsLoadingOrgTypes] = useState(true);
 
   useEffect(() => {
@@ -39,11 +44,11 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
       try {
         setIsLoadingOrgTypes(true);
         const response = await getOrganizationTypeAction();
-        
+
         if (response.success && response.result) {
           const options = response.result.map(orgType => ({
             value: orgType.id,
-            label: orgType.name
+            label: orgType.name,
           }));
           setOrganizationTypeOptions(options);
         }
@@ -103,7 +108,7 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
                         onChange={(value: string) => setFieldValue('organizationType', value)}
                         options={organizationTypeOptions}
                         required={true}
-                        placeholder={isLoadingOrgTypes ? "Loading..." : "Select Organization Type"}
+                        placeholder={isLoadingOrgTypes ? 'Loading...' : 'Select Organization Type'}
                       />
                       {errors.organizationType && (
                         <p className="text-sm text-red-500">{errors.organizationType}</p>
@@ -251,10 +256,7 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
                   borderColor="#000080"
                   iconColor="#000080"
                 />
-                <ContinueButton
-                  isLastStep={currentStep === totalSteps}
-                  color="#000080"
-                />
+                <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
               </div>
             </div>
           </Form>

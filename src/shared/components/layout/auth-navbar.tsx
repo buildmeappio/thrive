@@ -11,5 +11,5 @@ const AuthNavbar = () => {
       </div>
     </nav>
   );
-}
+};
 export default AuthNavbar;

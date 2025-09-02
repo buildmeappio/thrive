@@ -103,7 +103,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
             <Form>
               <div className="mt-6 flex min-h-[400px] flex-col items-center justify-center space-y-10 sm:mt-8 sm:space-y-12">
                 <div className="text-center">
-                  <p className="mt-2 text-base font-medium leading-relaxed text-[#6C7278] sm:text-lg md:text-[20px]">
+                  <p className="mt-2 text-base leading-relaxed font-medium text-[#6C7278] sm:text-lg md:text-[20px]">
                     Enter the 4 digit verification code we have sent to {email}
                   </p>
                 </div>
@@ -113,15 +113,15 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                   {code.map((digit, index) => (
                     <input
                       key={index}
-                      ref={(el) => {
+                      ref={el => {
                         inputRefs.current[index] = el;
                       }}
                       type="text"
                       inputMode="numeric"
                       maxLength={1}
                       value={digit}
-                      onChange={(e) => handleInputChange(index, e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      onChange={e => handleInputChange(index, e.target.value)}
+                      onKeyDown={e => handleKeyDown(index, e)}
                       onPaste={index === 0 ? handlePaste : undefined}
                       className="aspect-square w-[60px] rounded-xl border-2 border-[#C2C2C282] bg-[#F9F9F9] text-center text-xl font-medium text-[#140047] focus:border-[#00A8FF] focus:outline-none sm:w-[80px] sm:text-2xl md:w-[100px] md:rounded-2xl md:text-[28px]"
                       style={{
@@ -131,9 +131,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                   ))}
                 </div>
 
-                {errors.code && (
-                  <p className="mt-2 text-sm text-red-500">{errors.code}</p>
-                )}
+                {errors.code && <p className="mt-2 text-sm text-red-500">{errors.code}</p>}
 
                 {/* Resend link */}
                 <div className="text-center">
@@ -157,10 +155,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                     borderColor="#000080"
                     iconColor="#000080"
                   />
-                  <ContinueButton
-                    isLastStep={currentStep === totalSteps}
-                    color="#000080"
-                  />
+                  <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
                 </div>
               </div>
             </Form>

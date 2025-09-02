@@ -1,5 +1,9 @@
 import prisma from '@/shared/lib/prisma';
-import type { Organization, Address, User, Account, Department, OrganizationType } from '@prisma/client';
+import type {
+  Organization,
+  Department,
+  OrganizationType,
+} from '@prisma/client';
 
 export const findOrganizationByName = async (name: string): Promise<Organization | null> => {
   return prisma.organization.findFirst({
@@ -109,7 +113,7 @@ export const createOrganizationWithUser = async (data: CreateOrganizationWithUse
 
     // Account
     const orgManagerRole = await tx.role.findFirst({
-      where: { name: 'organization-manager' }, 
+      where: { name: 'organization-manager' },
     });
 
     if (!orgManagerRole) {
@@ -118,8 +122,8 @@ export const createOrganizationWithUser = async (data: CreateOrganizationWithUse
 
     const account = await tx.account.create({
       data: {
-      userId: user.id,
-      roleId: orgManagerRole.id,
+        userId: user.id,
+        roleId: orgManagerRole.id,
       },
     });
 
@@ -139,26 +143,25 @@ export const createOrganizationWithUser = async (data: CreateOrganizationWithUse
 
 const getOrganizationType = async (): Promise<OrganizationType[]> => {
   return prisma.organizationType.findMany({
-    where: { 
-      deletedAt: null
+    where: {
+      deletedAt: null,
     },
     orderBy: {
-      name: 'asc'
-    }
+      name: 'asc',
+    },
   });
 };
 
 const getDepartments = async (): Promise<Department[]> => {
   return prisma.department.findMany({
-    where: { 
-      deletedAt: null
+    where: {
+      deletedAt: null,
     },
     orderBy: {
-      name: 'asc'
-    }
+      name: 'asc',
+    },
   });
 };
-
 
 export default {
   findOrganizationByName,

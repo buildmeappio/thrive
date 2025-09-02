@@ -4,14 +4,8 @@ import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
-  Home, 
-  LifeBuoy, 
-  LogOut,
-  Plus,
-  UserPlus
-} from 'lucide-react';
-import { Button } from "@/shared/components/ui";
+import { Home, LifeBuoy, LogOut, Plus, UserPlus } from 'lucide-react';
+import { Button } from '@/shared/components/ui';
 
 export const medicalExaminerSidebarRoutes = [
   { icon: Home, label: 'Dashboard', href: '/dashboard' },
@@ -24,10 +18,7 @@ interface SideBarProps {
   onMobileClose?: () => void;
 }
 
-const SideBar = ({
-  isMobileOpen = false,
-  onMobileClose,
-}: SideBarProps) => {
+const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -53,21 +44,19 @@ const SideBar = ({
 
   return (
     <div
-      className={`fixed left-0 top-0 z-50 flex w-[280px] flex-col bg-white transition-all duration-300 h-screen ${
-        isMobileOpen
-          ? 'translate-x-0'
-          : '-translate-x-full md:translate-x-0'
+      className={`fixed top-0 left-0 z-50 flex h-screen w-[280px] flex-col bg-white transition-all duration-300 ${
+        isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       }`}
     >
       {/* Logo Section */}
       <div className="flex items-center justify-center p-6">
-          <Image
-            src="/images/thriveLogo.png"
-            alt="Thrive"
-            width={160}
-            height={80}
-            className="h-auto w-32 sm:w-36 md:w-40"
-          />
+        <Image
+          src="/images/thriveLogo.png"
+          alt="Thrive"
+          width={160}
+          height={80}
+          className="h-auto w-32 sm:w-36 md:w-40"
+        />
       </div>
 
       {/* Sidebar Content */}
@@ -95,8 +84,8 @@ const SideBar = ({
                 onClick={handleLinkClick}
                 className={`flex items-center space-x-3 rounded-full px-6 py-2.5 font-semibold transition-all duration-200 ${
                   itemIsActive
-                    ? 'bg-[#E9F8FF] text-[#000000] border border-[#BCE8FF]'
-                    : 'bg-[#F3F3F3] text-[#9B9B9B] hover:bg-[#E9F8FF] hover:text-[#000093] border border-transparent hover:border-[#BCE8FF]'
+                    ? 'border border-[#BCE8FF] bg-[#E9F8FF] text-[#000000]'
+                    : 'border border-transparent bg-[#F3F3F3] text-[#9B9B9B] hover:border-[#BCE8FF] hover:bg-[#E9F8FF] hover:text-[#000093]'
                 }`}
               >
                 <IconComponent
@@ -126,7 +115,7 @@ const SideBar = ({
       {/* Mobile Overlay */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 md:hidden"
+          className="bg-opacity-75 fixed inset-0 z-40 bg-gray-600 md:hidden"
           onClick={onMobileClose}
         />
       )}

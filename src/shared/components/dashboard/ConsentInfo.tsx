@@ -1,8 +1,4 @@
-const ConsentInfo = () =>{
-    return(
-        <div>
-            Consent Info
-        </div>
-    )
-}
+const ConsentInfo = () => {
+  return <div>Consent Info</div>;
+};
 export default ConsentInfo;
