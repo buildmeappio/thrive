@@ -10,7 +10,7 @@ import prisma from "@/shared/lib/prisma";
 import type { Role } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
-// 🔹 Extend NextAuth types
+// Extend NextAuth types
 declare module "next-auth" {
   interface Session {
     user: {
@@ -51,7 +51,7 @@ declare module "next-auth/jwt" {
   }
 }
 
-// 🔹 Infer user type from Prisma query
+// Infer user type from Prisma query
 type UserWithRole = Prisma.UserGetPayload<{
   select: {
     id: true;
@@ -106,7 +106,7 @@ const authorize = async (
   };
 };
 
-// 🔹 Callbacks
+// Callbacks
 const jwt: NonNullable<NextAuthOptions["callbacks"]>["jwt"] = async ({
   token,
   user,
@@ -141,7 +141,7 @@ const session: NonNullable<NextAuthOptions["callbacks"]>["session"] = async ({
   return session;
 };
 
-// 🔹 Auth options
+// Auth options
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   pages: { signIn: "/login", error: "/api/auth/error" },
@@ -159,7 +159,7 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-// 🔹 Export handler directly
+// Export handler directly
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

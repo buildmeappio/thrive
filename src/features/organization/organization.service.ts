@@ -22,9 +22,11 @@ const registerOrganizationService = async (data: FormData) => {
     throw new Error(ErrorMessages.STEPS_REQUIRED);
   }
 
+  // this step
   if (!data.step5) {
     throw new Error(ErrorMessages.STEPS_REQUIRED);
   }
+
   const { password } = data.step5;
   const hashedPassword = await bcrypt.hash(password, 10);
 

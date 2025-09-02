@@ -17,6 +17,20 @@ export async function sendOtp(email: string) {
     maxAge: 300,
   });
 
+  console.log("--------------------------")
+  console.log("--------------------------")
+  console.log("--------------------------")
+  console.log("--------------------------")
+  console.log("--------------------------")
+  console.log("--------------------------")
+  console.log(otp)
+  console.log("--------------------------")
+  console.log("--------------------------")
+  console.log("--------------------------")
+  console.log("--------------------------")
+  console.log("--------------------------")
+  console.log("--------------------------")
+
   await emailService.sendEmail(
     'Welcome to Our Platform!',
     'otp.html',

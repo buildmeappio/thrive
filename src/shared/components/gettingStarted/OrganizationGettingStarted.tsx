@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 export const OrganizationGettingStarted: React.FC = () => {
   const router = useRouter();
   const handleGetStarted = () => {
-    router.push('/register/organization');
+    router.push('/register');
   };
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAFF] md:flex-row">

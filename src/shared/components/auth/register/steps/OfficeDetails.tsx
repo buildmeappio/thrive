@@ -38,15 +38,15 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
     values: typeof step2OfficeDetailsInitialValues,
     actions: FormikHelpers<typeof step2OfficeDetailsInitialValues>
   ) => {
-    const exists = await checkOrganizationEmailAction(values.officialEmailAddress);
+    // const exists = await checkOrganizationEmailAction(values.officialEmailAddress);
 
-    if (exists) {
-      actions.setFieldError(
-        'officialEmailAddress',
-        'This email is already associated with an organization.'
-      );
-      return;
-    }
+    // if (exists) {
+    //   actions.setFieldError(
+    //     'officialEmailAddress',
+    //     'This email is already associated with an organization.'
+    //   );
+    //   return;
+    // }
 
     setData('step2', values);
 
