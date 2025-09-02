@@ -1,4 +1,4 @@
-import type { Role, Language, UserStatus } from '@prisma/client';
+import type { Role } from '@prisma/client';
 
 // Extend NextAuth types
 declare module 'next-auth' {
@@ -7,8 +7,6 @@ declare module 'next-auth' {
     firstName: string;
     lastName: string;
     role: Role;
-    status: UserStatus;
-    preferredLanguage: Language;
     emailVerified?: Date | null;
   }
 
@@ -19,8 +17,6 @@ declare module 'next-auth' {
       firstName: string;
       lastName: string;
       role: Role;
-      status: UserStatus;
-      preferredLanguage: Language;
       emailVerified?: Date | null;
       image?: string | null;
     };
@@ -33,8 +29,6 @@ declare module 'next-auth/jwt' {
     firstName: string;
     lastName: string;
     role: Role;
-    status: UserStatus;
-    preferredLanguage: Language;
     emailVerified?: Date | null;
   }
 }
@@ -45,8 +39,6 @@ export interface AuthUser {
   firstName: string;
   lastName: string;
   role: Role;
-  status: UserStatus;
-  preferredLanguage: Language;
   emailVerified?: Date | null;
   isActive: boolean;
 }
@@ -61,7 +53,6 @@ export interface RegisterData {
   password: string;
   firstName: string;
   lastName: string;
-  preferredLanguage?: Language;
   consentGiven: boolean;
   marketingOptIn?: boolean;
 }

@@ -7,4 +7,6 @@ export default Object.freeze({
   FAILED_CHECK_ORG_EMAIL: 'Failed to check organization email',
   FAILED_REGISTER_ORG: 'Failed to register organization',
   FAILED_FINALIZE_ORG_REG: 'Failed to finalize organization registration',
+  FAILED_GET_ORG_TYPE: 'Failed to get organization type',
+  FAILED_GET_DEPARTMENTS: 'Failed to get departments'
 });

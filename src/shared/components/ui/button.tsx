@@ -17,10 +17,6 @@ const buttonVariants = cva(
         ghost: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
         link: 'text-primary underline-offset-4 hover:underline',
 
-        adminLogin: 'text-white font-semibold bg-[linear-gradient(270deg,#01F4C8_0%,#00A8FF_100%)]',
-
-        medicalExaminerLogin: 'bg-[#00A8FF] text-white font-semibold rounded-[44.3px]',
-
         organizationLogin: 'bg-[#140047] text-white font-semibold rounded-[44.3px]',
       },
       size: {
@@ -29,8 +25,6 @@ const buttonVariants = cva(
         lg: 'h-10 rounded-md px-6 has-[>svg]:px-4',
         icon: 'size-9',
 
-        adminLogin: 'w-full h-[58px] rounded-[7.8px] gap-2 px-4 py-2',
-        medicalExaminerLogin: 'px-4 py-2 h-[58px] w-full rounded-[44.3px]',
         organizationLogin: 'px-4 py-2 h-[58px] w-full rounded-[44.3px]',
       },
     },

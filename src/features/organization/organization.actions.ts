@@ -43,3 +43,23 @@ export const finalizeOrganizationRegistrationAction = async (data: FormData) => 
     throw new Error(message);
   }
 };
+
+export const getOrganizationTypeAction = async () => {
+  try {
+    return await organizationService.getOrganizationTypeService;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : ErrorMessages.FAILED_GET_ORG_TYPE;
+    console.error(ErrorMessages.FAILED_GET_ORG_TYPE, error);
+    throw new Error(message);
+  }
+};
+
+export const getDepartmentsAction = async () => {
+  try {
+    return await organizationService.getDepartmentsService();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : ErrorMessages.FAILED_GET_DEPARTMENTS;
+    console.error(ErrorMessages.FAILED_GET_DEPARTMENTS, error);
+    throw new Error(message);
+  }
+};

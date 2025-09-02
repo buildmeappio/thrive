@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import { degular, poppins } from '@/shared/lib/fonts';
 import { SessionProvider } from '@/shared/components/providers/SessionProvider';
 import { ThemeProvider } from '@/shared/components/providers/ThemeProvider';
-import { AbilityProvider } from '@/shared/components/providers/AbilityProvider';
 import './globals.css';
 
 export const viewport: Viewport = {
@@ -61,7 +60,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             enableSystem
             disableTransitionOnChange
           >
-            <AbilityProvider>
               <div className="bg-background text-foreground min-h-screen">
                 {/* Skip to main content for accessibility */}
                 <a
@@ -78,7 +76,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <span className="flex items-center gap-1">🇨🇦 Canadian Privacy Compliant</span>
                 </div>
               </div>
-            </AbilityProvider>
           </ThemeProvider>
         </SessionProvider>
       </body>

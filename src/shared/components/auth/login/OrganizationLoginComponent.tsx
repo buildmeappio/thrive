@@ -83,7 +83,7 @@ export function OrganizationLoginComponent() {
           <div className="absolute inset-0">
             <Image
               src="/images/org-gettingStarted.png"
-              alt="Admin Dashboard Preview"
+              alt="Organization Dashboard Preview"
               width={200}
               height={200}
               className="h-full w-full"

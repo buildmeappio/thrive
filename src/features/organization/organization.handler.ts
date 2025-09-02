@@ -1,5 +1,5 @@
 import prisma from '@/shared/lib/prisma';
-import type { Organization, Address, User, Account, Department } from '@prisma/client';
+import type { Organization, Address, User, Account, Department, OrganizationType } from '@prisma/client';
 
 export const findOrganizationByName = async (name: string): Promise<Organization | null> => {
   return prisma.organization.findFirst({
@@ -129,8 +129,33 @@ export const createOrganizationWithUser = async (data: CreateOrganizationWithUse
   });
 };
 
+const getOrganizationType = async (): Promise<OrganizationType[]> => {
+  return prisma.organizationType.findMany({
+    where: { 
+      deletedAt: null
+    },
+    orderBy: {
+      name: 'asc'
+    }
+  });
+};
+
+const getDepartments = async (): Promise<Department[]> => {
+  return prisma.department.findMany({
+    where: {
+      deletedAt: null
+    },
+    orderBy: {
+      name: 'asc'
+    }
+  });
+};
+
+
 export default {
   findOrganizationByName,
   findOrganizationByEmail,
   createOrganizationWithUser,
+  getOrganizationType,
+  getDepartments,
 };

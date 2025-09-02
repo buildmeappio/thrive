@@ -1,5 +1,3 @@
-export { AuthLayout } from './auth-layout';
-export { AuthNavbar } from './auth-navbar';
-export { DashboardLayout } from './dashboard-layout';
-export { DashboardNavbar } from './dashboard-navbar';
-export { Sidebar } from './sidebar';
+export { default as AuthNavbar } from './auth-navbar';
+export { default as DashboardNavbar } from './dashboard-navbar';
+export { default as Sidebar } from './sidebar';

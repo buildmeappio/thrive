@@ -49,7 +49,7 @@ export const OrganizationGettingStarted: React.FC = () => {
         <div className="relative -mx-6 mt-8 mb-8 md:hidden">
           <Image
             src="/images/org-gettingStarted.png"
-            alt="Admin Dashboard Preview"
+            alt="Organization Dashboard Preview"
             width={400}
             height={400}
             className="h-auto w-full rounded-lg object-cover"
@@ -80,7 +80,7 @@ export const OrganizationGettingStarted: React.FC = () => {
         <div className="absolute inset-0">
           <Image
             src="/images/org-gettingStarted.png"
-            alt="Admin Dashboard Preview"
+            alt="Organization Dashboard Preview"
             width={200}
             height={200}
             className="h-full w-full"

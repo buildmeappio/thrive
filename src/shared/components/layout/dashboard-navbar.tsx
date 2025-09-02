@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 interface DashboardNavbarProps {
   onMobileMenuToggle?: () => void;
 }
-export function DashboardNavbar({ onMobileMenuToggle }: DashboardNavbarProps) {
+const DashboardNavbar = ({ onMobileMenuToggle }: DashboardNavbarProps) => {
   return (
     <nav className="bg-white">
       <div className="flex w-full items-center justify-between px-4 py-2 sm:px-6 md:px-8">
@@ -37,3 +37,4 @@ export function DashboardNavbar({ onMobileMenuToggle }: DashboardNavbarProps) {
     </nav>
   );
 }
+export default DashboardNavbar;

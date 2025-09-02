@@ -18,10 +18,13 @@ const checkOrganizationEmailService = async (email: string): Promise<boolean> =>
 };
 
 const registerOrganizationService = async (data: FormData) => {
-  if (!data.step1 || !data.step2 || !data.step3 || !data.step5) {
+  if (!data.step1 || !data.step2 || !data.step3) {
     throw new Error(ErrorMessages.STEPS_REQUIRED);
   }
 
+  if (!data.step5) {
+    throw new Error(ErrorMessages.STEPS_REQUIRED);
+  }
   const { password } = data.step5;
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -51,9 +54,22 @@ const finalizeOrganizationRegistrationService = async (data: FormData) => {
   return { success: true, result };
 };
 
+const getOrganizationTypeService = async () => {
+  return { success: true, result: await handler.getOrganizationType() };
+};
+
+const getDepartmentsService = async () => {
+  return {
+    success: true,
+    result: await handler.getDepartments(),
+  };
+};
+
 export default {
   checkOrganizationNameService,
   checkOrganizationEmailService,
   registerOrganizationService,
   finalizeOrganizationRegistrationService,
+  getOrganizationTypeService,
+  getDepartmentsService,
 };
