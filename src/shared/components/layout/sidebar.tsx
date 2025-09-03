@@ -28,8 +28,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   };
 
   const handleNewReferral = () => {
-    // Add your new IME referral logic here
-    console.log('Creating new IME referral');
+    router.push('/dashboard/ime-referral');
     if (onMobileClose) {
       onMobileClose();
     }

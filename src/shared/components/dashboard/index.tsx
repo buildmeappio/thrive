@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 
-import Welcome from './Welcome';
-import Approved from './Approved';
 import { acceptOrganizationAction, getOrganizationAction } from '@/features/organization/organization.actions';
 import { OrganizationStatus } from '@/constants/organizationStatus';
 import { useSession } from 'next-auth/react';
+import Welcome from './Welcome';
+import Approved from './Approved';
 
 interface Organization {
   id: string;

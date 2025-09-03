@@ -1,6 +1,10 @@
+'use client'
 import { Button } from '@/shared/components/ui';
+import { useRouter } from 'next/navigation';
 
 const Approved = () => {
+  const router = useRouter();
+
   return (
     <div>
       {/* <h1 className="mb-6 sm:mb-8 text-2xl sm:text-3xl lg:text-[40px] font-semibold tracking-[-0.03em] text-[#000000]">
@@ -48,7 +52,7 @@ const Approved = () => {
           <p className="text-sm sm:text-base lg:text-[16px] font-medium tracking-[-0.03em] text-[#000000]">
             Let's get your first independent medical examination started.
           </p>
-          <Button className="rounded-full bg-[#000093] hover:bg-[#000093] px-6 sm:px-8 lg:px-12 py-2 text-xs sm:text-sm lg:text-[11px] font-medium tracking-[-0.03em] text-[#ffffff] w-fit">
+          <Button onClick={() => router.push('/dashboard/ime-referral')} className="rounded-full bg-[#000093] hover:bg-[#000093] px-6 sm:px-8 lg:px-12 py-2 text-xs sm:text-sm lg:text-[11px] font-medium tracking-[-0.03em] text-[#ffffff] w-fit">
             ✚ New IME Referral
           </Button>
         </div>
