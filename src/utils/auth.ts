@@ -1,4 +1,4 @@
-import NextAuth, { type NextAuthOptions, type DefaultSession, type User, getServerSession } from 'next-auth';
+import NextAuth, { type NextAuthOptions, type DefaultSession, getServerSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import prisma from '@/shared/lib/prisma';
@@ -24,24 +24,12 @@ declare module 'next-auth' {
     lastName: string | null;
     role: Role | null;
     accountId: string | null;
-    password?: string;
-  }
-}
-
-declare module 'next-auth/jwt' {
-  interface JWT {
-    id: string;
-    email: string;
-    firstName: string | null;
-    lastName: string | null;
-    role: Role | null;
-    accountId: string | null;
   }
 }
 
 const authorize = async (
   credentials: Record<'email' | 'password', string> | undefined
-): Promise<User | null> => {
+) => {
   if (!credentials?.email || !credentials?.password) return null;
 
   const user = await prisma.user.findUnique({
@@ -71,34 +59,6 @@ const authorize = async (
   };
 };
 
-// Store minimal data in JWT token
-const jwt: NonNullable<NextAuthOptions['callbacks']>['jwt'] = async ({ token, user }) => {
-  if (user) {
-    token.id = user.id;
-    token.email = user.email;
-    token.firstName = user.firstName;
-    token.lastName = user.lastName;
-    token.role = user.role;
-    token.accountId = user.accountId;
-  }
-  return token;
-};
-
-const session: NonNullable<NextAuthOptions['callbacks']>['session'] = async ({
-  session,
-  token,
-}) => {
-  if (session.user) {
-    session.user.id = token.id as string;
-    session.user.email = token.email as string;
-    session.user.firstName = token.firstName as string | null;
-    session.user.lastName = token.lastName as string | null;
-    session.user.role = token.role as Role | null;
-    session.user.accountId = token.accountId as string | null;
-  }
-  return session;
-};
-
 // Auth options
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' },
@@ -113,7 +73,28 @@ export const authOptions: NextAuthOptions = {
       authorize,
     }),
   ],
-  callbacks: { jwt, session },
+  callbacks: {
+    jwt: async ({ token, user }) => {
+      if (user) {
+        token.id = user.id;
+        token.firstName = user.firstName;
+        token.lastName = user.lastName;
+        token.role = user.role;
+        token.accountId = user.accountId;
+      }
+      return token;
+    },
+    session: async ({ session, token }) => {
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.firstName = token.firstName as string | null;
+        session.user.lastName = token.lastName as string | null;
+        session.user.role = token.role as Role | null;
+        session.user.accountId = token.accountId as string | null;
+      }
+      return session;
+    },
+  },
   secret: process.env.NEXTAUTH_SECRET,
 };
 
