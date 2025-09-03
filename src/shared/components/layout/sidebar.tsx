@@ -65,7 +65,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
         <div className="p-4">
           <Button
             onClick={handleNewReferral}
-            className="flex w-full items-center justify-center space-x-2 rounded-full bg-[#000093] px-6 py-2.5 font-semibold text-white transition-all duration-200 hover:bg-[#0090DD]"
+            className="flex w-full items-center justify-center space-x-2 rounded-full bg-[#000093] px-6 font-semibold text-white transition-all duration-200 hover:bg-[#000093]"
           >
             <Plus size={20} strokeWidth={2} className="h-5 w-5 text-white" />
             <span className="text-sm">New IME Referral</span>
@@ -84,8 +84,8 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
                 onClick={handleLinkClick}
                 className={`flex items-center space-x-3 rounded-full px-6 py-2.5 font-semibold transition-all duration-200 ${
                   itemIsActive
-                    ? 'border border-[#BCE8FF] bg-[#E9F8FF] text-[#000000]'
-                    : 'border border-transparent bg-[#F3F3F3] text-[#9B9B9B] hover:border-[#BCE8FF] hover:bg-[#E9F8FF] hover:text-[#000093]'
+                    ? 'border border-[#DBDBFF] bg-[#F1F1FF] text-[#000000]'
+                    : 'border border-transparent bg-[#F3F3F3] text-[#9B9B9B] hover:border-[#DBDBFF] hover:bg-[#F1F1FF] hover:text-[#000000]'
                 }`}
               >
                 <IconComponent
