@@ -1,7 +1,6 @@
-import React from 'react';
-import GettingStartedPageClient from '@/shared/components/gettingStarted/GettingStartedPageClient';
+import GettingStarted from "@/shared/components/GettingStarted";
 
 const GettingStartedPage = () => {
-  return <GettingStartedPageClient />;
+  return <GettingStarted />;
 };
 export default GettingStartedPage;

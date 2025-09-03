@@ -1,6 +1,6 @@
-import LoginPageClient from '@/shared/components/auth/login/LoginPageClient';
+import LoginForm from "@/shared/components/Login";
 
 const LoginPage = () => {
-  return <LoginPageClient />;
+  return <LoginForm />;
 };
 export default LoginPage;

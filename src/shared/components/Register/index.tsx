@@ -2,13 +2,11 @@
 
 import { useState } from 'react';
 import { registerStepsTitles } from '@/shared/config/organizationRegister/registerStepsTitles';
-import {
-  ComplianceAccess,
-  OfficeDetails,
-  OrganizationInfo,
-  PasswordForm,
-  VerificationCode,
-} from './steps';
+import OrganizationInfo from './OrganizationInfo';
+import OfficeDetails from './OfficeDetails';
+import ComplianceAccess from './ComplianceAccess';
+import VerificationCode from './VerificationCode';
+import PasswordForm from './PasswordForm';
 
 interface StepConfig {
   component: React.ComponentType<StepProps>;
@@ -29,7 +27,7 @@ const STEPS: StepConfig[] = [
   { component: PasswordForm },
 ];
 
-const OrganizationRegisterForm: React.FC = () => {
+const RegisterForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
   const goToNext = (): void => {
@@ -84,4 +82,4 @@ const OrganizationRegisterForm: React.FC = () => {
     </div>
   );
 };
-export default OrganizationRegisterForm;
+export default RegisterForm;

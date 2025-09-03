@@ -9,7 +9,7 @@ import { ArrowRight } from 'lucide-react';
 import { Form, Formik } from 'formik';
 import { loginInitialValues, loginSchema } from '@/shared/validation/login/loginValidation';
 
-export function OrganizationLoginComponent() {
+const LoginForm = () => {
   const handleSubmit = (values: typeof loginInitialValues) => {
     console.log(values);
   };
@@ -96,3 +96,4 @@ export function OrganizationLoginComponent() {
     </div>
   );
 }
+export default LoginForm;

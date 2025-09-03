@@ -1,6 +1,6 @@
-import RegisterPageClient from '@/shared/components/auth/register/RegisterPageClient';
+import RegisterForm from "@/shared/components/Register";
 
 const RegisterPage = () => {
-  return <RegisterPageClient />;
+  return <RegisterForm />;
 };
 export default RegisterPage;
