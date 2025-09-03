@@ -5,6 +5,7 @@ import {
   type Department,
   type OrganizationType,
   OrganizationStatus,
+  User,
 } from '@prisma/client';
 
 export const findOrganizationByName = async (name: string): Promise<Organization | null> => {
@@ -13,8 +14,8 @@ export const findOrganizationByName = async (name: string): Promise<Organization
   });
 };
 
-export const findOrganizationByEmail = async (email: string): Promise<Organization | null> => {
-  return prisma.organization.findFirst({
+export const findUserByEmail = async (email: string): Promise<User | null> => {
+  return prisma.user.findFirst({
     where: { email: { equals: email, mode: 'insensitive' } },
   });
 };
@@ -82,7 +83,6 @@ export const createOrganizationWithUser = async (data: CreateOrganizationWithUse
       data: {
         name: organizationName,
         website: organizationWebsite,
-        email: officialEmailAddress,
         type: { connect: { id: organizationType } },
         address: { connect: { id: address.id } },
         agreeToTermsAndPrivacy: agreeTermsConditions,
@@ -211,7 +211,7 @@ const getOrganization = async (id: string): Promise<Organization | null> => {
 
 export default {
   findOrganizationByName,
-  findOrganizationByEmail,
+  findUserByEmail,
   createOrganizationWithUser,
   getOrganizationType,
   getDepartments,

@@ -1,5 +1,5 @@
 // Step 4
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
@@ -91,11 +91,10 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
         validateOnChange={false}
         validateOnBlur={false}
       >
-        {({ errors }) => {
-        // {({ setFieldValue, errors }) => {
-          // useEffect(() => {
-          //   setFieldValue('code', code.join(''));
-          // }, [code, setFieldValue]);
+        {({ setFieldValue, errors }) => {
+          useEffect(() => {
+            setFieldValue('code', code.join(''));
+          }, [code, setFieldValue]);
 
           return (
             <Form>

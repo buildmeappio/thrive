@@ -11,9 +11,9 @@ const checkOrganizationNameService = async (name: string): Promise<boolean> => {
   return !!org;
 };
 
-const checkOrganizationEmailService = async (email: string): Promise<boolean> => {
+const checkUserEmailService = async (email: string): Promise<boolean> => {
   if (!email) return false;
-  const org = await handler.findOrganizationByEmail(email);
+  const org = await handler.findUserByEmail(email);
   return !!org;
 };
 
@@ -74,7 +74,7 @@ const getOrganizationService = async (id: string) => {
 
 export default {
   checkOrganizationNameService,
-  checkOrganizationEmailService,
+  checkUserEmailService,
   registerOrganizationService,
   finalizeOrganizationRegistrationService,
   getOrganizationTypeService,

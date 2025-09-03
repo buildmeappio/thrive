@@ -11,7 +11,7 @@ const PageOptions = [
   {
     name: 'dashboard',
     label: 'Dashboard',
-    search: true,
+    search: false,
   },
   {
     name: 'ime-referral',

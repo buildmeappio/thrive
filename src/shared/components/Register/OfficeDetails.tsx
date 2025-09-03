@@ -10,7 +10,7 @@ import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
 import {
-  checkOrganizationEmailAction,
+  checkUserEmailAction,
   getDepartmentAction,
 } from '@/features/organization/organization.actions';
 import { OfficeDetailsInitialValues, OfficeDetailsSchema } from '@/shared/validation/register/registerValidation';
@@ -63,7 +63,7 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
     values: typeof OfficeDetailsInitialValues,
     actions: FormikHelpers<typeof OfficeDetailsInitialValues>
   ) => {
-    const exists = await checkOrganizationEmailAction(values.officialEmailAddress);
+    const exists = await checkUserEmailAction(values.officialEmailAddress);
 
     if (exists) {
       actions.setFieldError(

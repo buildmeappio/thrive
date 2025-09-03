@@ -7,7 +7,6 @@ import { Button } from '@/shared/components/ui/button';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Label } from '@/shared/components/ui/label';
 import { Dropdown } from '@/shared/components/ui/Dropdown';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
 import ProgressIndicator from './ProgressIndicator';
 import BackButton from '../../ui/BackButton';
 import ContinueButton from '../../ui/ContinueButton';

@@ -14,9 +14,9 @@ export const checkOrganizationNameAction = async (name: string): Promise<boolean
   }
 };
 
-export const checkOrganizationEmailAction = async (email: string): Promise<boolean> => {
+export const checkUserEmailAction = async (email: string): Promise<boolean> => {
   try {
-    return await organizationService.checkOrganizationEmailService(email);
+    return await organizationService.checkUserEmailService(email);
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_CHECK_ORG_EMAIL;
     console.error(ErrorMessages.FAILED_CHECK_ORG_EMAIL, error);
