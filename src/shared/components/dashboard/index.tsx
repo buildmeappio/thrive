@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react';
 
-import { acceptOrganizationAction, getOrganizationAction } from '@/features/organization/organization.actions';
+import {
+  acceptOrganizationAction,
+  getOrganizationAction,
+} from '@/features/organization/organization.actions';
 import { OrganizationStatus } from '@/constants/organizationStatus';
 import { useSession } from 'next-auth/react';
 import Welcome from './Welcome';
@@ -19,12 +22,11 @@ const OrganizationDashboard = () => {
   const { data: session } = useSession();
   const organizationId = session?.user?.organizationId || '';
 
-  console.log(organizationId)
+  console.log(organizationId);
   const handleAccept = async () => {
     try {
       const response = await acceptOrganizationAction(organizationId!);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
   useEffect(() => {
     const fetchOrganization = async () => {

@@ -7,8 +7,7 @@ export const ClaimantDetailsSchema = z.object({
   gender: z.string().min(1, 'Gender is required'),
   phone: z.string().min(1, 'Phone number is required'),
   email: z.string().email('Invalid email address').min(1, 'Email is required'),
-  addressLookup: z.string()
-    .min(5, 'Address lookup must be at least 5 characters'),
+  addressLookup: z.string().min(5, 'Address lookup must be at least 5 characters'),
   street: z.string().optional(),
   apt: z.string().optional(),
   city: z.string().optional(),

@@ -7,11 +7,9 @@ const protectedRoutes = ['/dashboard'];
 export default withAuth(
   function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
-    
+
     // Check if current path is a protected route
-    const isProtectedRoute = protectedRoutes.some((route) => 
-      pathname.startsWith(route)
-    );
+    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
     if (isProtectedRoute) {
       const response = NextResponse.next();
@@ -28,11 +26,9 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         const pathname = req.nextUrl.pathname;
-        
+
         // Check if current path is a protected route
-        const isProtectedRoute = protectedRoutes.some((route) => 
-          pathname.startsWith(route)
-        );
+        const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
         // If it's a protected route, require a valid token
         if (isProtectedRoute) {

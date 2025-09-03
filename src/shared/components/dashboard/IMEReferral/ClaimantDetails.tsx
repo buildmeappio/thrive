@@ -12,10 +12,10 @@ import { Dropdown } from '@/shared/components/ui/Dropdown';
 import ProgressIndicator from './ProgressIndicator';
 import { provinceOptions } from '@/shared/config/ProvinceOptions';
 import { genderOptions } from '@/shared/config/GenderOptions';
-import { 
-  ClaimantDetailsSchema, 
+import {
+  ClaimantDetailsSchema,
   ClaimantDetailsInitialValues,
-  type ClaimantDetails 
+  type ClaimantDetails,
 } from '@/shared/validation/imeReferral/imeReferralValidation';
 
 type ClaimantDetailsFormProps = {
@@ -31,20 +31,20 @@ const ClaimantDetailsForm: React.FC<ClaimantDetailsFormProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { 
-    register, 
-    handleSubmit, 
-    watch, 
+  const {
+    register,
+    handleSubmit,
+    watch,
     setValue,
-    formState: { errors }
+    formState: { errors },
   } = useForm<ClaimantDetails>({
     resolver: zodResolver(ClaimantDetailsSchema),
-    defaultValues: ClaimantDetailsInitialValues
+    defaultValues: ClaimantDetailsInitialValues,
   });
 
   const watchedValues = watch();
 
-  const onSubmit: SubmitHandler<ClaimantDetails> = async (values) => {
+  const onSubmit: SubmitHandler<ClaimantDetails> = async values => {
     console.log('Form Submitted:', values);
     if (onNext) onNext();
   };
@@ -105,9 +105,7 @@ const ClaimantDetailsForm: React.FC<ClaimantDetailsFormProps> = ({
                     />
                     <CalendarIcon className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   </div>
-                  {errors.dob && (
-                    <p className="text-sm text-red-500">{errors.dob.message}</p>
-                  )}
+                  {errors.dob && <p className="text-sm text-red-500">{errors.dob.message}</p>}
                 </div>
               </div>
 
@@ -126,9 +124,7 @@ const ClaimantDetailsForm: React.FC<ClaimantDetailsFormProps> = ({
                     placeholder="Select gender"
                     className={errors.gender ? 'border-red-500' : ''}
                   />
-                  {errors.gender && (
-                    <p className="text-sm text-red-500">{errors.gender.message}</p>
-                  )}
+                  {errors.gender && <p className="text-sm text-red-500">{errors.gender.message}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -140,9 +136,7 @@ const ClaimantDetailsForm: React.FC<ClaimantDetailsFormProps> = ({
                     placeholder="123456789"
                     className={errors.phone ? 'border-red-500' : ''}
                   />
-                  {errors.phone && (
-                    <p className="text-sm text-red-500">{errors.phone.message}</p>
-                  )}
+                  {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -155,9 +149,7 @@ const ClaimantDetailsForm: React.FC<ClaimantDetailsFormProps> = ({
                     placeholder="johndoe20@gmail.com"
                     className={errors.email ? 'border-red-500' : ''}
                   />
-                  {errors.email && (
-                    <p className="text-sm text-red-500">{errors.email.message}</p>
-                  )}
+                  {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
                 </div>
               </div>
 
@@ -183,26 +175,17 @@ const ClaimantDetailsForm: React.FC<ClaimantDetailsFormProps> = ({
               <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="street">Street Address</Label>
-                  <Input
-                    {...register('street')}
-                    placeholder="50 Stephanie Street"
-                  />
+                  <Input {...register('street')} placeholder="50 Stephanie Street" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="apt">Apt / Unit / Suite</Label>
-                  <Input
-                    {...register('apt')}
-                    placeholder="402"
-                  />
+                  <Input {...register('apt')} placeholder="402" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="city">City</Label>
-                  <Input
-                    {...register('city')}
-                    placeholder="Toronto"
-                  />
+                  <Input {...register('city')} placeholder="Toronto" />
                 </div>
               </div>
 
@@ -210,10 +193,7 @@ const ClaimantDetailsForm: React.FC<ClaimantDetailsFormProps> = ({
               <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="postalCode">Postal Code</Label>
-                  <Input
-                    {...register('postalCode')}
-                    placeholder="7200"
-                  />
+                  <Input {...register('postalCode')} placeholder="7200" />
                 </div>
 
                 <div className="space-y-2">

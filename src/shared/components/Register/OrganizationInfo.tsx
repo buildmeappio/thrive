@@ -16,7 +16,10 @@ import {
   checkOrganizationNameAction,
   getOrganizationTypeAction,
 } from '@/features/organization/organization.actions';
-import { OrganizationInfoInitialValues, OrganizationInfoSchema } from '@/shared/validation/register/registerValidation';
+import {
+  OrganizationInfoInitialValues,
+  OrganizationInfoSchema,
+} from '@/shared/validation/register/registerValidation';
 
 interface OrganizationTypeOption {
   value: string;

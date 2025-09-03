@@ -15,16 +15,16 @@ const LoginForm = () => {
   const router = useRouter();
   const handleSubmit = async (values: typeof loginInitialValues) => {
     const result = await signIn('credentials', {
-          email: values.email,
-          password: values.password,
-          redirect: false,
-        });
-    
-        if (result?.ok) {
-          router.push('/dashboard');
-        } else {
-          throw new Error('Login failed after registration');
-        }
+      email: values.email,
+      password: values.password,
+      redirect: false,
+    });
+
+    if (result?.ok) {
+      router.push('/dashboard');
+    } else {
+      throw new Error('Login failed after registration');
+    }
   };
 
   return (
@@ -108,5 +108,5 @@ const LoginForm = () => {
       </div>
     </div>
   );
-}
+};
 export default LoginForm;

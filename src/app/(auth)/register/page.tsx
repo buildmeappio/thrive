@@ -1,5 +1,5 @@
-import RegisterForm from "@/shared/components/Register";
-import { Metadata } from "next";
+import RegisterForm from '@/shared/components/Register';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Register | Thrive',

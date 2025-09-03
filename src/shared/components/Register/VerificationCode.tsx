@@ -6,7 +6,10 @@ import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
 import { verifyOtp } from '@/shared/lib/verifyOtp';
-import { VerificationCodeInitialValues, VerificationCodeSchema } from '@/shared/validation/register/registerValidation';
+import {
+  VerificationCodeInitialValues,
+  VerificationCodeSchema,
+} from '@/shared/validation/register/registerValidation';
 
 const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   onNext,

@@ -4,8 +4,11 @@ import {
   type Organization,
   type Department,
   type OrganizationType,
+  type CaseType,
   OrganizationStatus,
   User,
+  ExamFormat,
+  RequestedSpecialty,
 } from '@prisma/client';
 
 export const findOrganizationByName = async (name: string): Promise<Organization | null> => {
@@ -173,7 +176,6 @@ const acceptOrganization = async (id: string): Promise<Organization | null> => {
     },
   });
 
-  
   if (!organization) throw new Error(ErrorMessages.ORG_NOT_FOUND);
 
   if (organization.status === OrganizationStatus.ACCEPTED) {
@@ -209,6 +211,39 @@ const getOrganization = async (id: string): Promise<Organization | null> => {
   return organization;
 };
 
+const getCaseType = async (): Promise<CaseType[]> => {
+  return prisma.caseType.findMany({
+    where: {
+      deletedAt: null,
+    },
+    orderBy: {
+      name: 'asc',
+    },
+  });
+};
+
+const getExamFormat = async (): Promise<ExamFormat[]> => {
+  return prisma.examFormat.findMany({
+    where: {
+      deletedAt: null,
+    },
+    orderBy: {
+      name: 'asc',
+    },
+  });
+};
+
+const getRequestedSpecialty = async (): Promise<RequestedSpecialty[]> => {
+  return prisma.requestedSpecialty.findMany({
+    where: {
+      deletedAt: null,
+    },
+    orderBy: {
+      name: 'asc',
+    },
+  });
+};
+
 export default {
   findOrganizationByName,
   findUserByEmail,
@@ -217,4 +252,7 @@ export default {
   getDepartments,
   acceptOrganization,
   getOrganization,
+  getCaseType,
+  getExamFormat,
+  getRequestedSpecialty,
 };

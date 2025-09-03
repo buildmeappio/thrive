@@ -1,5 +1,5 @@
-import OrganizationDashboard from "@/shared/components/dashboard";
-import { Metadata } from "next";
+import OrganizationDashboard from '@/shared/components/dashboard';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Dashboard | Thrive',
@@ -7,9 +7,6 @@ export const metadata: Metadata = {
 };
 
 const DashboardPage = () => {
-
-  return (
-    <OrganizationDashboard />
-  );
-}
+  return <OrganizationDashboard />;
+};
 export default DashboardPage;

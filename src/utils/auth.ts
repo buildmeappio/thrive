@@ -14,7 +14,7 @@ declare module 'next-auth' {
       lastName: string | null;
       role: Role | null;
       accountId: string | null;
-      organizationId: string | null; // Add this
+      organizationId: string | null;
     } & DefaultSession['user'];
   }
 
@@ -25,13 +25,11 @@ declare module 'next-auth' {
     lastName: string | null;
     role: Role | null;
     accountId: string | null;
-    organizationId: string | null; // Add this
+    organizationId: string | null;
   }
 }
 
-const authorize = async (
-  credentials: Record<'email' | 'password', string> | undefined
-) => {
+const authorize = async (credentials: Record<'email' | 'password', string> | undefined) => {
   if (!credentials?.email || !credentials?.password) return null;
 
   const user = await prisma.user.findUnique({
@@ -42,14 +40,14 @@ const authorize = async (
       password: true,
       firstName: true,
       lastName: true,
-      accounts: { 
-        include: { 
+      accounts: {
+        include: {
           role: true,
-          managers: { // Include organization manager relationship
+          managers: {
             where: { deletedAt: null },
-            select: { organizationId: true }
-          }
-        } 
+            select: { organizationId: true },
+          },
+        },
       },
     },
   });
@@ -95,7 +93,7 @@ export const authOptions: NextAuthOptions = {
         token.lastName = user.lastName;
         token.role = user.role;
         token.accountId = user.accountId;
-        token.organizationId = user.organizationId; // Add this
+        token.organizationId = user.organizationId;
       }
       return token;
     },
@@ -106,7 +104,7 @@ export const authOptions: NextAuthOptions = {
         session.user.lastName = token.lastName as string | null;
         session.user.role = token.role as Role | null;
         session.user.accountId = token.accountId as string | null;
-        session.user.organizationId = token.organizationId as string | null; // Add this
+        session.user.organizationId = token.organizationId as string | null;
       }
       return session;
     },

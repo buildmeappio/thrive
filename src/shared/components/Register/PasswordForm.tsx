@@ -11,7 +11,10 @@ import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
 import { finalizeOrganizationRegistrationAction } from '@/features/organization/organization.actions';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { PasswordInitialValues, PasswordSchema } from '@/shared/validation/register/registerValidation';
+import {
+  PasswordInitialValues,
+  PasswordSchema,
+} from '@/shared/validation/register/registerValidation';
 
 const PasswordForm: React.FC<OrganizationRegStepProps> = ({
   onNext,

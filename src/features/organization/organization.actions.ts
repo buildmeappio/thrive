@@ -83,3 +83,34 @@ export const getOrganizationAction = async (id: string) => {
     throw new Error(message);
   }
 };
+
+export const getCaseTypeAction = async () => {
+  try {
+    return await organizationService.getCaseTypeService();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : ErrorMessages.FAILED_GET_CASE_TYPE;
+    console.error(ErrorMessages.FAILED_GET_CASE_TYPE, error);
+    throw new Error(message);
+  }
+};
+
+export const getExamFormatAction = async () => {
+  try {
+    return await organizationService.getExamFormatService();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : ErrorMessages.FAILED_GET_EXAM_FORMAT;
+    console.error(ErrorMessages.FAILED_GET_EXAM_FORMAT, error);
+    throw new Error(message);
+  }
+};
+
+export const getRequestedSpecialtyAction = async () => {
+  try {
+    return await organizationService.getRequestedSpecialtyService();
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : ErrorMessages.FAILED_GET_REQUESTED_SPECIALTY;
+    console.error(ErrorMessages.FAILED_GET_REQUESTED_SPECIALTY, error);
+    throw new Error(message);
+  }
+};

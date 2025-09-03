@@ -72,6 +72,18 @@ const getOrganizationService = async (id: string) => {
   return { success: true, result: await handler.getOrganization(id) };
 };
 
+const getCaseTypeService = async () => {
+  return { success: true, result: await handler.getCaseType() };
+};
+
+const getExamFormatService = async () => {
+  return { success: true, result: await handler.getExamFormat() };
+};
+
+const getRequestedSpecialtyService = async () => {
+  return { success: true, result: await handler.getRequestedSpecialty() };
+};
+
 export default {
   checkOrganizationNameService,
   checkUserEmailService,
@@ -81,4 +93,7 @@ export default {
   getDepartmentService,
   acceptOrganizationService,
   getOrganizationService,
+  getCaseTypeService,
+  getExamFormatService,
+  getRequestedSpecialtyService,
 };

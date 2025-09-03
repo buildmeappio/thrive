@@ -29,11 +29,11 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
     watch,
     setValue,
     handleSubmit,
-    formState: { isSubmitting }
+    formState: { isSubmitting },
   } = useForm<ConsentFormData>({
     defaultValues: {
-      consentConfirmed: false
-    }
+      consentConfirmed: false,
+    },
   });
 
   const isChecked = watch('consentConfirmed');
@@ -61,7 +61,7 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
               Consent Confirmation
             </h1>
           </div>
-          
+
           {/* Checkbox Section */}
           <div className="mb-20 sm:mb-40">
             <div className="flex items-start space-x-3">
@@ -131,10 +131,7 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
                 <span>Save as Draft</span>
                 <ArrowRight className="h-4 w-4" />
               </Button>
-              <ContinueButton 
-                isLastStep={currentStep === totalSteps} 
-                color="#000080"
-              />
+              <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
             </div>
           </div>
         </form>

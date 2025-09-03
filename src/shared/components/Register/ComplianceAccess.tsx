@@ -8,7 +8,10 @@ import { Label } from '@/shared/components/ui/label';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
 import { sendOtp } from '@/shared/lib/sendOtp';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
-import { ComplianceAccessInitialValues, ComplianceAccessSchema } from '@/shared/validation/register/registerValidation';
+import {
+  ComplianceAccessInitialValues,
+  ComplianceAccessSchema,
+} from '@/shared/validation/register/registerValidation';
 
 const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
   onNext,

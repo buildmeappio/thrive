@@ -1,3 +1,3 @@
 export default Object.freeze({
-    ORG_ACCEPTED: 'Organization accepted successfully'
-})
+  ORG_ACCEPTED: 'Organization accepted successfully',
+});

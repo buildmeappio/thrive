@@ -13,7 +13,10 @@ import {
   checkUserEmailAction,
   getDepartmentAction,
 } from '@/features/organization/organization.actions';
-import { OfficeDetailsInitialValues, OfficeDetailsSchema } from '@/shared/validation/register/registerValidation';
+import {
+  OfficeDetailsInitialValues,
+  OfficeDetailsSchema,
+} from '@/shared/validation/register/registerValidation';
 
 // Define the type for department options
 interface DepartmentOption {

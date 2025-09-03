@@ -41,7 +41,7 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
   const showGreeting = (session: any) => {
     const name = session?.user?.firstName || 'User';
     return (
-      <span className='text-[#000000]'>
+      <span className="text-[#000000]">
         Welcome, <span className="text-[#000093]">{name}</span> from Desjardins!
       </span>
     );
@@ -66,11 +66,7 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
             onClick={toggleSidebar}
             className="p-2 hover:bg-gray-100"
           >
-            {isSidebarOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
+            {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </Button>
 
           {/* Title for mobile */}
@@ -92,18 +88,14 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
           </div>
 
           {/* Search Section for desktop */}
-          {currentPage?.search && (
-            <Searchbar currentPage={currentPage} isMobile={false} />
-          )}
+          {currentPage?.search && <Searchbar currentPage={currentPage} isMobile={false} />}
 
           {/* Profile Section for desktop */}
           {session && <ProfileDropdown isMobile={false} session={session} />}
         </div>
 
         {/* Mobile Search Section */}
-        {currentPage?.search && (
-          <Searchbar currentPage={currentPage} isMobile={true} />
-        )}
+        {currentPage?.search && <Searchbar currentPage={currentPage} isMobile={true} />}
       </div>
     </header>
   );

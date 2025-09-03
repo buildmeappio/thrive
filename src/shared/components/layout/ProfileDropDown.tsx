@@ -63,7 +63,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
           <li>
             <a
               href="/dashboard"
-              className="flex items-center px-4 py-2 space-x-2 transition-colors hover:bg-gray-100"
+              className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100"
             >
               <Home size={16} />
               <span>Dashboard</span>
@@ -72,7 +72,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
           <li>
             <a
               href="/dashboard/profile"
-              className="flex items-center px-4 py-2 space-x-2 transition-colors hover:bg-gray-100"
+              className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100"
             >
               <User size={16} />
               <span>Profile</span>
@@ -81,7 +81,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
           <li>
             <a
               href="/dashboard/settings"
-              className="flex items-center px-4 py-2 space-x-2 transition-colors hover:bg-gray-100"
+              className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100"
             >
               <Settings size={16} />
               <span>Settings</span>
@@ -94,7 +94,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
               signOut({ callbackUrl: '/login' });
               localStorage.removeItem('token');
             }}
-            className="flex items-center cursor-pointer px-4 py-2 space-x-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
+            className="flex cursor-pointer items-center space-x-2 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
           >
             <LogOut size={16} />
             <span>Sign out</span>
@@ -106,20 +106,16 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
 
   if (isMobile) {
     return (
-      <div
-        className="relative"
-        ref={avatarMobileRef}
-        style={{ width: 50, height: 50 }}
-      >
+      <div className="relative" ref={avatarMobileRef} style={{ width: 50, height: 50 }}>
         {imageLoading && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-gray-500 bg-opacity-50">
+          <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-full bg-gray-500">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
           </div>
         )}
         <Image
           height={50}
           width={50}
-          onClick={() => setDropdownOpen((prev) => !prev)}
+          onClick={() => setDropdownOpen(prev => !prev)}
           className="h-[50px] w-[50px] cursor-pointer rounded-full border border-[#DBDBFF] bg-white object-cover"
           src={getProfileImageUrl()}
           alt="User dropdown"
@@ -137,18 +133,14 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
   }
 
   return (
-    <div
-      className="relative"
-      ref={avatarDesktopRef}
-      style={{ width: 60, height: 60 }}
-    >
+    <div className="relative" ref={avatarDesktopRef} style={{ width: 60, height: 60 }}>
       {imageLoading && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-gray-500 bg-opacity-50">
+        <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-full bg-gray-500">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
         </div>
       )}
       <Image
-        onClick={() => setDropdownOpen((prev) => !prev)}
+        onClick={() => setDropdownOpen(prev => !prev)}
         className="h-[60px] min-h-[60px] w-[60px] cursor-pointer rounded-full border border-[#DBDBFF] bg-white object-cover"
         src={getProfileImageUrl()}
         alt="User dropdown"

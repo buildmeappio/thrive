@@ -31,11 +31,11 @@ const DocumentUpload: React.FC<DocumentUploadFormProps> = ({
     register,
     handleSubmit,
     setValue,
-    formState: { isSubmitting }
+    formState: { isSubmitting },
   } = useForm<DocumentUploadFormData>({
     defaultValues: {
-      files: null
-    }
+      files: null,
+    },
   });
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
@@ -162,7 +162,10 @@ const DocumentUpload: React.FC<DocumentUploadFormProps> = ({
                 <div className="mt-4 space-y-2">
                   <h3 className="text-sm font-medium text-gray-700">Uploaded Files:</h3>
                   {uploadedFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+                    >
                       <div className="flex items-center space-x-2">
                         <FileText className="h-4 w-4 text-gray-400" />
                         <span className="text-sm text-gray-700">{file.name}</span>
@@ -199,10 +202,7 @@ const DocumentUpload: React.FC<DocumentUploadFormProps> = ({
               >
                 <span>Save as Draft</span>
               </Button>
-              <ContinueButton 
-                isLastStep={currentStep === totalSteps} 
-                color="#000080"
-              />
+              <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
             </div>
           </div>
         </form>

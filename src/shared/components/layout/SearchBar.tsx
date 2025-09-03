@@ -42,7 +42,7 @@ const Searchbar: React.FC<SearchbarProps> = ({ currentPage, isMobile }) => {
           onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
             setSearchString(event.target.value)
           }
-          className="h-11 w-full rounded-full border border-[#DBDBFF] bg-white pl-10 pr-4 text-base text-gray-700 hover:border-[#000093] focus:border-[#000093] focus:ring-2 focus:ring-[#000093]/20"
+          className="h-11 w-full rounded-full border border-[#DBDBFF] bg-white pr-4 pl-10 text-base text-gray-700 hover:border-[#000093] focus:border-[#000093] focus:ring-2 focus:ring-[#000093]/20"
         />
       </div>
     );
@@ -57,8 +57,8 @@ const Searchbar: React.FC<SearchbarProps> = ({ currentPage, isMobile }) => {
         <Input
           placeholder={placeholder}
           value={searchString}
-          onChange={(event) => setSearchString(event.target.value)}
-          className="h-11 w-full rounded-full border border-[#DBDBFF] bg-white pl-10 pr-4 text-sm text-gray-700 hover:border-[#000093] focus:border-[#000093] focus:ring-2 focus:ring-[#000093]/20"
+          onChange={event => setSearchString(event.target.value)}
+          className="h-11 w-full rounded-full border border-[#DBDBFF] bg-white pr-4 pl-10 text-sm text-gray-700 hover:border-[#000093] focus:border-[#000093] focus:ring-2 focus:ring-[#000093]/20"
         />
       </div>
     </div>
