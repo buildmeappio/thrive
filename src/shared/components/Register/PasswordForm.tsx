@@ -1,10 +1,6 @@
 // Step 5
 import React from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
-import {
-  step5PasswordInitialValues,
-  step5PasswordSchema,
-} from '@/features/organization/organization.schema';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/shared/components/ui';
 import { Eye, EyeOff } from 'lucide-react';
@@ -15,6 +11,7 @@ import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
 import { finalizeOrganizationRegistrationAction } from '@/features/organization/organization.actions';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { PasswordInitialValues, PasswordSchema } from '@/shared/validation/register/registerValidation';
 
 const PasswordForm: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -29,8 +26,8 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
   const { setData, data } = useOrgRegFormStore();
 
   const handleSubmit = async (
-    values: typeof step5PasswordInitialValues,
-    actions: FormikHelpers<typeof step5PasswordInitialValues>
+    values: typeof PasswordInitialValues,
+    actions: FormikHelpers<typeof PasswordInitialValues>
   ) => {
     setData('step5', values);
 
@@ -65,8 +62,8 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
       }}
     >
       <Formik
-        initialValues={data.step5 ?? step5PasswordInitialValues}
-        validationSchema={step5PasswordSchema}
+        initialValues={data.step5 ?? PasswordInitialValues}
+        validationSchema={PasswordSchema}
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}

@@ -1,10 +1,6 @@
 // Step 3
 import React from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
-import {
-  step3ComplianceAccessInitialValues,
-  step3ComplianceAccessSchema,
-} from '@/features/organization/organization.schema';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { Checkbox } from '@/shared/components/ui/checkbox';
@@ -12,6 +8,7 @@ import { Label } from '@/shared/components/ui/label';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
 import { sendOtp } from '@/shared/lib/sendOtp';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
+import { ComplianceAccessInitialValues, ComplianceAccessSchema } from '@/shared/validation/register/registerValidation';
 
 const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -22,8 +19,8 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
   const { setData, data } = useOrgRegFormStore();
 
   const handleSubmit = async (
-    values: typeof step3ComplianceAccessInitialValues,
-    actions: FormikHelpers<typeof step3ComplianceAccessInitialValues>
+    values: typeof ComplianceAccessInitialValues,
+    actions: FormikHelpers<typeof ComplianceAccessInitialValues>
   ) => {
     setData('step3', values);
 
@@ -48,8 +45,8 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
       }}
     >
       <Formik
-        initialValues={data.step3 ?? step3ComplianceAccessInitialValues}
-        validationSchema={step3ComplianceAccessSchema}
+        initialValues={data.step3 ?? ComplianceAccessInitialValues}
+        validationSchema={ComplianceAccessSchema}
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}

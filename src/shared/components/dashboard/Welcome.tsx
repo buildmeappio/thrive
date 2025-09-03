@@ -3,9 +3,6 @@ import { Button } from '@/shared/components/ui';
 const Welcome = () => {
   return (
     <div>
-      {/* <h1 className="mb-6 sm:mb-8 text-2xl sm:text-3xl lg:text-[40px] font-semibold tracking-[-0.03em] text-[#000000]">
-        Welcome, <span className="text-[#000093]">Sarah</span> from Desjardins!
-      </h1> */}
       <div className="w-full max-w-[640px] min-h-[270px] rounded-[25px] bg-white px-6 sm:px-8 lg:px-12 py-6">
         <h1 className="text-xl sm:text-2xl lg:text-[30px] font-semibold tracking-[-0.01em] text-[#000093]">
           Verification in progress!

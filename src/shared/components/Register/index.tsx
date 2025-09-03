@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { registerStepsTitles } from '@/shared/config/organizationRegister/registerStepsTitles';
+import { registerStepsTitles } from '@/shared/config/registerStepsTitles';
 import OrganizationInfo from './OrganizationInfo';
 import OfficeDetails from './OfficeDetails';
 import ComplianceAccess from './ComplianceAccess';

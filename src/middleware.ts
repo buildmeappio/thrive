@@ -14,10 +14,15 @@ export default withAuth(
     );
 
     if (isProtectedRoute) {
-      return NextResponse.next();
+      const response = NextResponse.next();
+      response.headers.set('x-pathname', pathname);
+      return response;
     }
 
-    return NextResponse.next();
+    // Allow the request to proceed
+    const response = NextResponse.next();
+    response.headers.set('x-pathname', pathname);
+    return response;
   },
   {
     callbacks: {

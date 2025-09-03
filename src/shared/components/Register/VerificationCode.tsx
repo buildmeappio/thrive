@@ -3,13 +3,10 @@ import { useState, useRef } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
-import {
-  step4verificationCodeInitialValues,
-  step4VerificationCodeSchema,
-} from '@/features/organization/organization.schema';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
 import { verifyOtp } from '@/shared/lib/verifyOtp';
+import { VerificationCodeInitialValues, VerificationCodeSchema } from '@/shared/validation/register/registerValidation';
 
 const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -56,8 +53,8 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   const { setData, data } = useOrgRegFormStore();
 
   const handleSubmit = async (
-    values: typeof step4verificationCodeInitialValues,
-    actions: FormikHelpers<typeof step4verificationCodeInitialValues>
+    values: typeof VerificationCodeInitialValues,
+    actions: FormikHelpers<typeof VerificationCodeInitialValues>
   ) => {
     setData('step4', values);
 
@@ -88,8 +85,8 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
       }}
     >
       <Formik
-        initialValues={data.step4 ?? step4verificationCodeInitialValues}
-        validationSchema={step4VerificationCodeSchema}
+        initialValues={data.step4 ?? VerificationCodeInitialValues}
+        validationSchema={VerificationCodeSchema}
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}

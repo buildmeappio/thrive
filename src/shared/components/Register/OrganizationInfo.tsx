@@ -5,12 +5,8 @@ import React, { useEffect, useState } from 'react';
 import { Label } from '@/shared/components/ui/label';
 import { Globe, MapPin } from 'lucide-react';
 import { Input } from '@/shared/components/ui';
-import { provinceOptions } from '@/shared/config/organizationRegister/ProvinceOptions';
+import { provinceOptions } from '@/shared/config/ProvinceOptions';
 import { Dropdown } from '@/shared/components/ui/Dropdown';
-import {
-  step1OrganizationInfoInitialValues,
-  step1OrganizationInfoSchema,
-} from '@/features/organization/organization.schema';
 import { Form, Formik, type FormikHelpers } from 'formik';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
@@ -20,6 +16,7 @@ import {
   checkOrganizationNameAction,
   getOrganizationTypeAction,
 } from '@/features/organization/organization.actions';
+import { OrganizationInfoInitialValues, OrganizationInfoSchema } from '@/shared/validation/register/registerValidation';
 
 interface OrganizationTypeOption {
   value: string;
@@ -63,8 +60,8 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
   }, []);
 
   const handleSubmit = async (
-    values: typeof step1OrganizationInfoInitialValues,
-    actions: FormikHelpers<typeof step1OrganizationInfoInitialValues>
+    values: typeof OrganizationInfoInitialValues,
+    actions: FormikHelpers<typeof OrganizationInfoInitialValues>
   ) => {
     const exists = await checkOrganizationNameAction(values.organizationName);
 
@@ -88,8 +85,8 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
       }}
     >
       <Formik
-        initialValues={data.step1 ?? step1OrganizationInfoInitialValues}
-        validationSchema={step1OrganizationInfoSchema}
+        initialValues={data.step1 ?? OrganizationInfoInitialValues}
+        validationSchema={OrganizationInfoSchema}
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}

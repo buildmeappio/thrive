@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { registerStepsTitles } from '@/shared/config/organizationRegister/registerStepsTitles';
+import { registerStepsTitles } from '@/shared/config/registerStepsTitles';
 import ClaimantDetails from './ClaimantDetails';
 import CaseInfo from './CaseInfo';
-import ConsentInfo from '../ConsentInfo';
+import ConsentInfo from './ConsentInfo';
 import DocumentUpload from './DocumentUpload';
-import ReferralSubmitted from '../ReferralSubmitted';
+import ReferralSubmitted from './ReferralSubmitted';
 
 interface StepConfig {
   component: React.ComponentType<StepProps>;

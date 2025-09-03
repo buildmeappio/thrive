@@ -1,10 +1,6 @@
 // Step 2
 import React, { useEffect, useState } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
-import {
-  step2OfficeDetailsInitialValues,
-  step2OfficeDetailsSchema,
-} from '@/features/organization/organization.schema';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/shared/components/ui';
 import { Mail, Phone, User, Briefcase } from 'lucide-react';
@@ -17,6 +13,7 @@ import {
   checkOrganizationEmailAction,
   getDepartmentAction,
 } from '@/features/organization/organization.actions';
+import { OfficeDetailsInitialValues, OfficeDetailsSchema } from '@/shared/validation/register/registerValidation';
 
 // Define the type for department options
 interface DepartmentOption {
@@ -63,8 +60,8 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
   }, []);
 
   const handleSubmit = async (
-    values: typeof step2OfficeDetailsInitialValues,
-    actions: FormikHelpers<typeof step2OfficeDetailsInitialValues>
+    values: typeof OfficeDetailsInitialValues,
+    actions: FormikHelpers<typeof OfficeDetailsInitialValues>
   ) => {
     const exists = await checkOrganizationEmailAction(values.officialEmailAddress);
 
@@ -91,8 +88,8 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
       }}
     >
       <Formik
-        initialValues={data.step2 ?? step2OfficeDetailsInitialValues}
-        validationSchema={step2OfficeDetailsSchema}
+        initialValues={data.step2 ?? OfficeDetailsInitialValues}
+        validationSchema={OfficeDetailsSchema}
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}

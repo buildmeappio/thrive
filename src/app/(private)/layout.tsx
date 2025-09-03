@@ -1,34 +1,83 @@
 'use client';
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode, Suspense } from 'react';
+import { usePathname } from 'next/navigation';
+import SideBar from '@/shared/components/layout/Sidebar';
+import { SidebarProvider, useSidebar } from '@/shared/components/providers/SideBarProvider';
 import { DashboardNavbar } from '@/shared/components/layout';
-import SideBar from '@/shared/components/layout/sidebar';
+import { SearchProvider } from '@/shared/components/providers/SearchProvider';
 
 type DashboardLayoutProps = {
   children: ReactNode;
+  fallback?: ReactNode;
+  suspense?: boolean;
 };
 
-const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+// Inner layout component that uses the sidebar context
+const DashboardLayoutInner = ({ 
+  children, 
+  fallback, 
+  suspense = true 
+}: DashboardLayoutProps) => {
+  const { isSidebarOpen, closeSidebar } = useSidebar();
+  const pathname = usePathname();
 
-  const toggleMobileSidebar = () => {
-    setIsMobileSidebarOpen(!isMobileSidebarOpen);
-  };
+  const renderContent = () => {
+    if (!suspense) {
+      return children;
+    }
 
-  const closeMobileSidebar = () => {
-    setIsMobileSidebarOpen(false);
+    return (
+      <Suspense
+        fallback={
+          fallback || (
+            <div className="flex h-full w-full flex-1 items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
+            </div>
+          )
+        }
+      >
+        {children}
+      </Suspense>
+    );
   };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <SideBar isMobileOpen={isMobileSidebarOpen} onMobileClose={closeMobileSidebar} />
-      {/* Add left margin/padding to account for sidebar width */}
-      <div className="flex flex-1 flex-col ml-64 lg:ml-64 md:ml-0">
-        <DashboardNavbar onMobileMenuToggle={toggleMobileSidebar} />
-        <main className="px-4 md:px-8 flex-1 overflow-y-auto bg-gray-50">
-          <div className="max-w-full p-6">{children}</div>
+      {/* Sidebar */}
+      <SideBar isMobileOpen={isSidebarOpen} onMobileClose={closeSidebar} />
+      
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 md:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+      
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col md:ml-[280px]">
+        {/* Header */}
+        <DashboardNavbar currentPath={pathname} />
+        
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto bg-gray-50 px-4 md:px-8">
+          <div className="max-w-full p-6">
+            {renderContent()}
+          </div>
         </main>
       </div>
     </div>
+  );
+};
+
+// Main layout component with providers
+const DashboardLayout = (props: DashboardLayoutProps) => {
+  return (
+    <SidebarProvider>
+      <SearchProvider>
+        <DashboardLayoutInner {...props} />
+      </SearchProvider>
+    </SidebarProvider>
   );
 };
 

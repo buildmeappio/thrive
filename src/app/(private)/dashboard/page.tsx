@@ -1,4 +1,4 @@
-import OrganizationDashboard from "@/shared/components/Dashboard";
+import OrganizationDashboard from "@/shared/components/dashboard";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
