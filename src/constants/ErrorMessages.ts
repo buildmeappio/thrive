@@ -9,4 +9,8 @@ export default Object.freeze({
   FAILED_FINALIZE_ORG_REG: 'Failed to finalize organization registration',
   FAILED_GET_ORG_TYPE: 'Failed to get organization type',
   FAILED_GET_DEPARTMENTS: 'Failed to get departments',
+  FAILED_ACCEPT_ORG: 'Failed to accept organization',
+  ORG_NOT_FOUND: 'Organization not found',
+  ORG_ALREADY_ACCEPTED: 'Organization is already accepted',
+  FAILED_GET_ORG_STATUS: 'Failed to get organization status',
 });

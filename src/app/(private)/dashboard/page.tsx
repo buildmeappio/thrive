@@ -1,24 +1,15 @@
-import {
-  CaseInfo,
-  ConsentInfo,
-  DocumentUpload,
-  ReferralSubmitted,
-} from '@/shared/components/Dashboard';
-import { Metadata } from 'next';
-import React from 'react';
+import OrganizationDashboard from "@/shared/components/Dashboard";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: 'Dashboard | Thrive',
-  description: 'Your personal dashboard - Thrive',
+  description: 'Manage your organization on Thrive',
 };
 
-export default function OrganizationDashboardPage() {
+const DashboardPage = () => {
+
   return (
-    <div className="p-6">
-      <CaseInfo />
-      <DocumentUpload />
-      <ConsentInfo />
-      <ReferralSubmitted />
-    </div>
+    <OrganizationDashboard />
   );
 }
+export default DashboardPage;

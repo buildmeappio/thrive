@@ -63,3 +63,23 @@ export const getDepartmentAction = async () => {
     throw new Error(message);
   }
 };
+
+export const acceptOrganizationAction = async (id: string) => {
+  try {
+    return await organizationService.acceptOrganizationService(id);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : ErrorMessages.FAILED_ACCEPT_ORG;
+    console.error(ErrorMessages.FAILED_ACCEPT_ORG, error);
+    throw new Error(message);
+  }
+};
+
+export const getOrganizationAction = async (id: string) => {
+  try {
+    return await organizationService.getOrganizationService(id);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : ErrorMessages.FAILED_GET_ORG_STATUS;
+    console.error(ErrorMessages.FAILED_GET_ORG_STATUS, error);
+    throw new Error(message);
+  }
+};

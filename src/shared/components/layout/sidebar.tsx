@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Home, LifeBuoy, LogOut, Plus, UserPlus } from 'lucide-react';
 import { Button } from '@/shared/components/ui';
+import { signOut } from 'next-auth/react';
 
 export const medicalExaminerSidebarRoutes = [
   { icon: Home, label: 'Dashboard', href: '/dashboard' },
@@ -23,7 +24,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   const router = useRouter();
 
   const handleLogout = () => {
-    router.push('/login');
+    signOut({ callbackUrl: '/login' });
   };
 
   const handleNewReferral = () => {

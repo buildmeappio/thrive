@@ -21,9 +21,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <SideBar isMobileOpen={isMobileSidebarOpen} onMobileClose={closeMobileSidebar} />
-      <div className="flex flex-1 flex-col">
+      {/* Add left margin/padding to account for sidebar width */}
+      <div className="flex flex-1 flex-col ml-64 lg:ml-64 md:ml-0">
         <DashboardNavbar onMobileMenuToggle={toggleMobileSidebar} />
-        <main className="flex-1 overflow-y-auto bg-gray-50">
+        <main className="px-4 md:px-8 flex-1 overflow-y-auto bg-gray-50">
           <div className="max-w-full p-6">{children}</div>
         </main>
       </div>

@@ -1,8 +1,10 @@
+import ErrorMessages from '@/constants/ErrorMessages';
 import prisma from '@/shared/lib/prisma';
-import type {
-  Organization,
-  Department,
-  OrganizationType,
+import {
+  type Organization,
+  type Department,
+  type OrganizationType,
+  OrganizationStatus,
 } from '@prisma/client';
 
 export const findOrganizationByName = async (name: string): Promise<Organization | null> => {
@@ -163,10 +165,56 @@ const getDepartments = async (): Promise<Department[]> => {
   });
 };
 
+const acceptOrganization = async (id: string): Promise<Organization | null> => {
+  const organization = await prisma.organization.findFirst({
+    where: {
+      id,
+      deletedAt: null,
+    },
+  });
+
+  
+  if (!organization) throw new Error(ErrorMessages.ORG_NOT_FOUND);
+
+  if (organization.status === OrganizationStatus.ACCEPTED) {
+    throw new Error(ErrorMessages.ORG_ALREADY_ACCEPTED);
+  }
+
+  const updatedOrganization = await prisma.organization.update({
+    where: {
+      id,
+      deletedAt: null,
+    },
+    data: {
+      status: OrganizationStatus.ACCEPTED,
+    },
+  });
+  return updatedOrganization;
+};
+
+const getOrganization = async (id: string): Promise<Organization | null> => {
+  const organization = await prisma.organization.findFirst({
+    where: {
+      id,
+      deletedAt: null,
+    },
+  });
+
+  if (!organization) throw new Error(ErrorMessages.ORG_NOT_FOUND);
+
+  if (organization.status === OrganizationStatus.ACCEPTED) {
+    throw new Error(ErrorMessages.ORG_ALREADY_ACCEPTED);
+  }
+
+  return organization;
+};
+
 export default {
   findOrganizationByName,
   findOrganizationByEmail,
   createOrganizationWithUser,
   getOrganizationType,
   getDepartments,
+  acceptOrganization,
+  getOrganization,
 };

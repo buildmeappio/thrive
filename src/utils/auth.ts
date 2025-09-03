@@ -14,6 +14,7 @@ declare module 'next-auth' {
       lastName: string | null;
       role: Role | null;
       accountId: string | null;
+      organizationId: string | null; // Add this
     } & DefaultSession['user'];
   }
 
@@ -24,6 +25,7 @@ declare module 'next-auth' {
     lastName: string | null;
     role: Role | null;
     accountId: string | null;
+    organizationId: string | null; // Add this
   }
 }
 
@@ -40,7 +42,15 @@ const authorize = async (
       password: true,
       firstName: true,
       lastName: true,
-      accounts: { include: { role: true } },
+      accounts: { 
+        include: { 
+          role: true,
+          managers: { // Include organization manager relationship
+            where: { deletedAt: null },
+            select: { organizationId: true }
+          }
+        } 
+      },
     },
   });
 
@@ -49,13 +59,17 @@ const authorize = async (
   const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
   if (!isPasswordValid) return null;
 
+  const account = user.accounts[0];
+  const organizationId = account?.managers[0]?.organizationId || null;
+
   return {
     id: user.id,
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
-    role: user.accounts[0]?.role || null,
-    accountId: user.accounts[0]?.id || null,
+    role: account?.role || null,
+    accountId: account?.id || null,
+    organizationId,
   };
 };
 
@@ -81,6 +95,7 @@ export const authOptions: NextAuthOptions = {
         token.lastName = user.lastName;
         token.role = user.role;
         token.accountId = user.accountId;
+        token.organizationId = user.organizationId; // Add this
       }
       return token;
     },
@@ -91,6 +106,7 @@ export const authOptions: NextAuthOptions = {
         session.user.lastName = token.lastName as string | null;
         session.user.role = token.role as Role | null;
         session.user.accountId = token.accountId as string | null;
+        session.user.organizationId = token.organizationId as string | null; // Add this
       }
       return session;
     },

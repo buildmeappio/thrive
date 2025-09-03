@@ -8,10 +8,23 @@ import { PasswordInput } from '@/shared/components/ui/PasswordInput';
 import { ArrowRight } from 'lucide-react';
 import { Form, Formik } from 'formik';
 import { loginInitialValues, loginSchema } from '@/shared/validation/login/loginValidation';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 const LoginForm = () => {
-  const handleSubmit = (values: typeof loginInitialValues) => {
-    console.log(values);
+  const router = useRouter();
+  const handleSubmit = async (values: typeof loginInitialValues) => {
+    const result = await signIn('credentials', {
+          email: values.email,
+          password: values.password,
+          redirect: false,
+        });
+    
+        if (result?.ok) {
+          router.push('/dashboard');
+        } else {
+          throw new Error('Login failed after registration');
+        }
   };
 
   return (

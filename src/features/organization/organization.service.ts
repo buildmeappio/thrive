@@ -64,6 +64,14 @@ const getDepartmentService = async () => {
   return { success: true, result: await handler.getDepartments() };
 };
 
+const acceptOrganizationService = async (id: string) => {
+  return { success: true, result: await handler.acceptOrganization(id) };
+};
+
+const getOrganizationService = async (id: string) => {
+  return { success: true, result: await handler.getOrganization(id) };
+};
+
 export default {
   checkOrganizationNameService,
   checkOrganizationEmailService,
@@ -71,4 +79,6 @@ export default {
   finalizeOrganizationRegistrationService,
   getOrganizationTypeService,
   getDepartmentService,
+  acceptOrganizationService,
+  getOrganizationService,
 };
