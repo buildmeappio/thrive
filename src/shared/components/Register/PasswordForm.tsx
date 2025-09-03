@@ -15,6 +15,7 @@ import {
   PasswordInitialValues,
   PasswordSchema,
 } from '@/shared/validation/register/registerValidation';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 const PasswordForm: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -53,7 +54,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
     if (result?.ok) {
       router.push('/dashboard');
     } else {
-      throw new Error('Login failed after registration');
+      throw new Error(ErrorMessages.LOGIN_FAILED);
     }
   };
 

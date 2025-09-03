@@ -16,4 +16,7 @@ export default Object.freeze({
   FAILED_GET_CASE_TYPE: 'Failed to get case type',
   FAILED_GET_EXAM_FORMAT: 'Failed to get exam format',
   FAILED_GET_REQUESTED_SPECIALTY: 'Failed to get requested specialty',
+  EMAIL_ALREADY_EXISTS: 'This email is already associated with an organization',
+  ORG_NAME_ALREADY_EXISTS: 'This organization name already exists',
+  LOGIN_FAILED: 'Login failed, please check your credentials',
 });

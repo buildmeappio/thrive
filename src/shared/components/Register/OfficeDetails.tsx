@@ -17,8 +17,8 @@ import {
   OfficeDetailsInitialValues,
   OfficeDetailsSchema,
 } from '@/shared/validation/register/registerValidation';
+import ErrorMessages from '@/constants/ErrorMessages';
 
-// Define the type for department options
 interface DepartmentOption {
   value: string;
   label: string;
@@ -52,8 +52,8 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
           setDepartmentOptions(options);
         }
       } catch (error) {
-        console.error('Error fetching departments:', error);
-        setDepartmentError('Failed to load departments. Please try refreshing the page.');
+        console.error(ErrorMessages.FAILED_GET_DEPARTMENTS, error);
+        setDepartmentError(ErrorMessages.FAILED_GET_DEPARTMENTS);
       } finally {
         setIsLoadingDepartments(false);
       }
@@ -71,7 +71,7 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
     if (exists) {
       actions.setFieldError(
         'officialEmailAddress',
-        'This email is already associated with an organization.'
+        ErrorMessages.EMAIL_ALREADY_EXISTS
       );
       return;
     }

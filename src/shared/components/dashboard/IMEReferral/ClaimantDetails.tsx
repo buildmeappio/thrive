@@ -17,15 +17,9 @@ import {
   ClaimantDetailsInitialValues,
   type ClaimantDetails,
 } from '@/shared/validation/imeReferral/imeReferralValidation';
+import { IMEReferralFormProps } from '@/shared/types/imeReferral/imeReferralStepsProps';
 
-type ClaimantDetailsFormProps = {
-  onNext?: () => void;
-  onPrevious?: () => void;
-  currentStep: number;
-  totalSteps: number;
-};
-
-const ClaimantDetailsForm: React.FC<ClaimantDetailsFormProps> = ({
+const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
   onNext,
   onPrevious,
   currentStep,

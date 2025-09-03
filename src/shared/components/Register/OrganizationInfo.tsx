@@ -20,6 +20,7 @@ import {
   OrganizationInfoInitialValues,
   OrganizationInfoSchema,
 } from '@/shared/validation/register/registerValidation';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 interface OrganizationTypeOption {
   value: string;
@@ -53,7 +54,7 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
           setOrganizationTypeOptions(options);
         }
       } catch (error) {
-        console.error('Error fetching organization types:', error);
+        console.error(ErrorMessages.FAILED_GET_ORG_TYPE, error);
       } finally {
         setIsLoadingOrgTypes(false);
       }
@@ -69,7 +70,7 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
     const exists = await checkOrganizationNameAction(values.organizationName);
 
     if (exists) {
-      actions.setFieldError('organizationName', 'This organization already exists.');
+      actions.setFieldError('organizationName', ErrorMessages.ORG_NAME_ALREADY_EXISTS);
       return;
     }
 

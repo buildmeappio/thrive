@@ -30,7 +30,6 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
     const email = data.step2?.officialEmailAddress;
     if (email) {
       await sendOtp(email);
-      console.log('OTP sent to', email);
     }
 
     actions.setSubmitting(false);
