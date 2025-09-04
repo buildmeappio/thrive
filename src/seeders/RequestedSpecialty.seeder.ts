@@ -1,53 +1,53 @@
 /* eslint-disable no-console */
-import { RequestedSpeciality } from '../constants/requestedSpeciality';
 import { PrismaClient } from '@prisma/client';
+import { RequestedSpecialty } from 'src/constants/RequestedSpecialty';
 
-interface RequestedSpecialityData {
+interface RequestedSpecialtyData {
     name: string;
     description?: string;
 }
 
-class RequestedSpecialitySeeder {
-    private static instance: RequestedSpecialitySeeder | null = null;
+class RequestedSpecialtySeeder {
+    private static instance: RequestedSpecialtySeeder | null = null;
     private db: PrismaClient;
 
     private constructor(db: PrismaClient) {
         this.db = db;
     }
 
-    public static getInstance(db: PrismaClient): RequestedSpecialitySeeder {
-        if (!RequestedSpecialitySeeder.instance) {
-            RequestedSpecialitySeeder.instance = new RequestedSpecialitySeeder(db);
+    public static getInstance(db: PrismaClient): RequestedSpecialtySeeder {
+        if (!RequestedSpecialtySeeder.instance) {
+            RequestedSpecialtySeeder.instance = new RequestedSpecialtySeeder(db);
         }
-        return RequestedSpecialitySeeder.instance;
+        return RequestedSpecialtySeeder.instance;
     }
 
     public async run() {
         console.log('🚀 Starting requested specialties seed process...');
 
-        const data: RequestedSpecialityData[] = [
+        const data: RequestedSpecialtyData[] = [
             {
-                name: RequestedSpeciality.ORTHOPEDIC_SURGERY,
+                name: RequestedSpecialty.ORTHOPEDIC_SURGERY,
                 description: 'Specialty focused on musculoskeletal system disorders'
             },
             {
-                name: RequestedSpeciality.NEUROLOGY,
+                name: RequestedSpecialty.NEUROLOGY,
                 description: 'Specialty dealing with nervous system disorders'
             },
             {
-                name: RequestedSpeciality.PSYCHIATRY,
+                name: RequestedSpecialty.PSYCHIATRY,
                 description: 'Medical specialty focused on mental health disorders'
             },
             {
-                name: RequestedSpeciality.PSYCHOLOGY,
+                name: RequestedSpecialty.PSYCHOLOGY,
                 description: 'Assessment and treatment of mental health and behavioral issues'
             },
             {
-                name: RequestedSpeciality.PHYSICAL_MEDICINE_REHABILITATION,
+                name: RequestedSpecialty.PHYSICAL_MEDICINE_REHABILITATION,
                 description: 'Specialty focused on restoring function and mobility'
             },
             {
-                name: RequestedSpeciality.PAIN_MANAGEMENT,
+                name: RequestedSpecialty.PAIN_MANAGEMENT,
                 description: 'Specialized treatment of chronic and acute pain conditions'
             }
         ];
@@ -57,7 +57,7 @@ class RequestedSpecialitySeeder {
         console.log('✅ Requested specialties seed process completed.');
     }
 
-    private async createRequestedSpecialties(data: RequestedSpecialityData[]): Promise<void> {
+    private async createRequestedSpecialties(data: RequestedSpecialtyData[]): Promise<void> {
         if (!data || !Array.isArray(data) || data.length === 0) {
             throw new Error('Requested specialty data must be a non-empty array');
         }
@@ -73,22 +73,22 @@ class RequestedSpecialitySeeder {
                 throw new Error('Requested specialty name is required');
             }
 
-            let RequestedSpeciality = await this.db.RequestedSpeciality.findFirst({
+            let RequestedSpecialty = await this.db.requestedSpecialty.findFirst({
                 where: { name },
             });
 
-            if (RequestedSpeciality) {
+            if (RequestedSpecialty) {
                 console.log(
-                    `ℹ️ Requested specialty already exists: "${RequestedSpeciality.name}" (ID: ${RequestedSpeciality.id})`,
+                    `ℹ️ Requested specialty already exists: "${RequestedSpecialty.name}" (ID: ${RequestedSpecialty.id})`,
                 );
                 continue;
             }
 
-            RequestedSpeciality = await this.db.RequestedSpeciality.create({
+            RequestedSpecialty = await this.db.requestedSpecialty.create({
                 data: { name, description },
             });
 
-            console.log(`✅ Created new requested specialty: "${RequestedSpeciality.name}" (ID: ${RequestedSpeciality.id})`);
+            console.log(`✅ Created new requested specialty: "${RequestedSpecialty.name}" (ID: ${RequestedSpecialty.id})`);
         }
     }
 
@@ -99,9 +99,9 @@ class RequestedSpecialitySeeder {
     public async cleanupOldRequestedSpecialties() {
         console.log('🧹 Starting cleanup of old requested specialties...');
         
-        const currentSpecialtyNames = Object.values(RequestedSpeciality);
+        const currentSpecialtyNames = Object.values(RequestedSpecialty);
 
-        const oldSpecialties = await this.db.RequestedSpeciality.findMany({
+        const oldSpecialties = await this.db.requestedSpecialty.findMany({
             where: {
                 name: {
                     notIn: currentSpecialtyNames,
@@ -123,4 +123,4 @@ class RequestedSpecialitySeeder {
     }
 }
 
-export default RequestedSpecialitySeeder;
+export default RequestedSpecialtySeeder;

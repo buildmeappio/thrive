@@ -10,4 +10,4 @@ export const OrganizationTypes = Object.freeze({
   IME_VENDOR_OR_SERVICE_PROVIDER: 'ime_vendor_or_service_provider',
 } as const);
 
-export type RoleType = (typeof OrganizationTypes)[keyof typeof OrganizationTypes];
+export type OrganizationTypes = (typeof OrganizationTypes)[keyof typeof OrganizationTypes];

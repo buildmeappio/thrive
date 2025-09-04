@@ -7,7 +7,9 @@
     "migrate": "prisma migrate dev",
     "studio": "prisma studio",
     "seed": "prisma db seed",
-    "dev": "tsx watch src/seed.ts"
+    "dev": "tsx watch src/seed.ts",
+    "prisma:seed:dev": "npm run build && prisma db seed",
+    "prisma:seed": "prisma db seed"
   },
   "repository": {
     "type": "git",
@@ -30,5 +32,8 @@
     "@types/node": "^24.3.0",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
-  }
+  },
+  "prisma": {
+        "seed": "tsx ./src/seeders/seed.ts"
+    }
 }

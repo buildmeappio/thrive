@@ -7,4 +7,4 @@ export const ExamFormat = Object.freeze({
     ON_SITE: 'On-Site'
 } as const);
 
-export type RoleType = (typeof ExamFormat)[keyof typeof ExamFormat];
+export type ExamFormatType = (typeof ExamFormat)[keyof typeof ExamFormat];

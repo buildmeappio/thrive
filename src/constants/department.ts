@@ -9,4 +9,4 @@ export const Departments = Object.freeze({
   FINANCE_OR_BILLING: 'finance_or_billing',
 } as const);
 
-export type RoleType = (typeof Departments)[keyof typeof Departments];
+export type DepartmentType = (typeof Departments)[keyof typeof Departments];

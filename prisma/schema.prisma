@@ -91,7 +91,7 @@ model Organization {
   deletedAt              DateTime?          @map("deleted_at") @db.Timestamptz()
 
   manager                OrganizationManager[] @relation("OrganizationManager")
-  referrals              IMEReferralRequest[]  @relation("OrganizationReferrals")
+  referrals              IMEReferral[]         @relation("OrganizationReferrals")
 
   @@map("organizations")
 }
@@ -147,7 +147,7 @@ model Account {
   user              User                  @relation(name: "AccountUser", fields: [userId], references: [id])
   verificationCodes VerificationCodes[]   @relation("AccountVerification")
   managers          OrganizationManager[] @relation("AccountManager")
-  referrals         IMEReferralRequest[]  @relation("ExaminerReferrals")
+  referrals         IMEReferral[]         @relation("ExaminerReferrals")
 
   @@map("accounts")
 }
@@ -164,31 +164,42 @@ model Address {
   updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt     DateTime?      @map("deleted_at") @db.Timestamptz()
   organizations Organization[] @relation("Address")
-  referrals     IMEReferralRequest[] @relation("ReferralAddress")
+  claimants     Claimant[]     @relation("ClaimantAddress")
 
   @@map("addresses")
 }
 
-model IMEReferralRequest {
+model Claimant {
+  id            String        @id @unique @default(uuid()) @db.Uuid
+  firstName     String        @map("first_name") @db.VarChar(255)
+  lastName      String        @map("last_name") @db.VarChar(255)
+  dateOfBirth   DateTime      @map("date_of_birth") @db.Date
+  gender        String        @map("gender") @db.VarChar(50)
+  phoneNumber   String        @map("phone_number") @db.VarChar(255)
+  emailAddress  String        @map("email_address") @db.VarChar(255)
+  addressId     String        @map("address_id") @db.Uuid
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz()
+  
+  address       Address       @relation("ClaimantAddress", fields: [addressId], references: [id])
+  referrals     IMEReferral[] @relation("ClaimantReferrals")
+
+  @@map("claimants")
+}
+
+model IMEReferral {
   id                    String                @id @unique @default(uuid()) @db.Uuid
   caseNumber            String                @map("case_number") @db.VarChar(255)
   status                IMEReferralStatus     @default(PENDING) @map("status")
   examinerId            String                @map("examiner_id") @db.Uuid
   organizationId        String?               @map("organization_id") @db.Uuid
+  claimantId            String                @map("claimant_id") @db.Uuid
   
   // Foreign keys for the new models
   caseTypeId            String                @map("case_type_id") @db.Uuid
   examFormatId          String                @map("exam_format_id") @db.Uuid
   requestedSpecialtyId  String                @map("requested_specialty_id") @db.Uuid
-  
-  // Claimant Information
-  claimantFirstName     String                @map("claimant_first_name") @db.VarChar(255)
-  claimantLastName      String                @map("claimant_last_name") @db.VarChar(255)
-  dateOfBirth           DateTime              @map("date_of_birth") @db.Date
-  gender                String                @map("gender") @db.VarChar(50)
-  phoneNumber           String                @map("phone_number") @db.VarChar(255)
-  emailAddress          String                @map("email_address") @db.VarChar(255)
-  addressId             String                @map("address_id") @db.Uuid
   
   // Case Information
   reasonForReferral     String                @map("reason_for_referral") @db.Text
@@ -202,13 +213,28 @@ model IMEReferralRequest {
   // Relations
   examiner              Account               @relation("ExaminerReferrals", fields: [examinerId], references: [id])
   organization          Organization?         @relation("OrganizationReferrals", fields: [organizationId], references: [id])
-  address               Address               @relation("ReferralAddress", fields: [addressId], references: [id])
-  documents             Documents[]           @relation("ReferralDocuments")
+  claimant              Claimant              @relation("ClaimantReferrals", fields: [claimantId], references: [id])
+  documents             ReferralDocument[]    @relation("ReferralDocuments")
   caseType              CaseType              @relation("CaseTypeReferrals", fields: [caseTypeId], references: [id])
   examFormat            ExamFormat            @relation("ExamFormatReferrals", fields: [examFormatId], references: [id])
   requestedSpecialty    RequestedSpecialty    @relation("RequestedSpecialtyReferrals", fields: [requestedSpecialtyId], references: [id])
   
-  @@map("ime_referral_requests")
+  @@map("ime_referrals")
+}
+
+model ReferralDocument {
+  id            String        @id @unique @default(uuid()) @db.Uuid
+  referralId    String        @map("referral_id") @db.Uuid
+  documentId    String        @map("document_id") @db.Uuid
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz()
+  
+  referral      IMEReferral   @relation("ReferralDocuments", fields: [referralId], references: [id])
+  document      Documents     @relation("DocumentReferrals", fields: [documentId], references: [id])
+
+  @@unique([referralId, documentId])
+  @@map("referral_documents")
 }
 
 model Documents {
@@ -220,7 +246,7 @@ model Documents {
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
   users     User[]    @relation("ProfilePhoto")
-  referrals IMEReferralRequest[] @relation("ReferralDocuments")
+  referrals ReferralDocument[] @relation("DocumentReferrals")
 
   @@map("documents")
 }
@@ -232,7 +258,7 @@ model CaseType {
   createdAt             DateTime                @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt             DateTime                @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt             DateTime?               @map("deleted_at") @db.Timestamptz()
-  imeReferralRequests   IMEReferralRequest[]    @relation("CaseTypeReferrals")
+  imeReferrals          IMEReferral[]           @relation("CaseTypeReferrals")
 
   @@map("case_types")
 }
@@ -244,7 +270,7 @@ model ExamFormat {
   createdAt             DateTime                @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt             DateTime                @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt             DateTime?               @map("deleted_at") @db.Timestamptz()
-  imeReferralRequests   IMEReferralRequest[]    @relation("ExamFormatReferrals")
+  imeReferrals          IMEReferral[]           @relation("ExamFormatReferrals")
 
   @@map("exam_formats")
 }
@@ -256,7 +282,7 @@ model RequestedSpecialty {
   createdAt             DateTime                @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt             DateTime                @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt             DateTime?               @map("deleted_at") @db.Timestamptz()
-  imeReferralRequests   IMEReferralRequest[]    @relation("RequestedSpecialtyReferrals")
+  imeReferrals          IMEReferral[]           @relation("RequestedSpecialtyReferrals")
 
   @@map("requested_specialties")
 }

@@ -1,4 +1,4 @@
-export const RequestedSpeciality = Object.freeze({
+export const RequestedSpecialty = Object.freeze({
   ORTHOPEDIC_SURGERY: "Orthopedic Surgery",
   NEUROLOGY: "Neurology",
   PSYCHIATRY: "Psychiatry",
@@ -7,5 +7,5 @@ export const RequestedSpeciality = Object.freeze({
   PAIN_MANAGEMENT: "Pain Management",
 } as const);
 
-export type RoleType =
-  (typeof RequestedSpeciality)[keyof typeof RequestedSpeciality];
+export type RequestedSpecialtyType =
+  (typeof RequestedSpecialty)[keyof typeof RequestedSpecialty];
