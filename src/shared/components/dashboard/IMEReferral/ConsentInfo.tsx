@@ -3,7 +3,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import BackButton from '../../ui/BackButton';
 import ContinueButton from '../../ui/ContinueButton';
 import ProgressIndicator from './ProgressIndicator';
@@ -29,7 +29,7 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
     watch,
     setValue,
     handleSubmit,
-    formState: { isSubmitting },
+    // formState: { isSubmitting },
   } = useForm<ConsentFormData>({
     defaultValues: {
       consentConfirmed: false,

@@ -36,7 +36,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
 
         {/* Step circles positioned equally across the progress bar */}
         {steps.map((step, index) => {
-          const isCompleted = index + 1 <= currentStep;
+          // const isCompleted = index + 1 <= currentStep;
           const position = (index / (steps.length - 1)) * 100;
 
           return (

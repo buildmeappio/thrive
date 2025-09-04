@@ -1,5 +1,5 @@
 import IMEReferral from '@/shared/components/dashboard/IMEReferral';
-import { Metadata } from 'next';
+import { type Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'IME Referral | Thrive',

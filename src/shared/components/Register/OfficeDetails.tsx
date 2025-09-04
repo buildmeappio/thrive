@@ -9,10 +9,7 @@ import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistrationStore';
-import {
-  checkUserEmailAction,
-  getDepartmentAction,
-} from '@/features/organization/organization.actions';
+import { checkUserEmailAction, getDepartmentAction } from '@/features/organization.actions';
 import {
   OfficeDetailsInitialValues,
   OfficeDetailsSchema,

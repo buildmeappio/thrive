@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { registerStepsTitles } from '@/shared/config/registerStepsTitles';
 import ClaimantDetails from './ClaimantDetails';
 import CaseInfo from './CaseInfo';
 import ConsentInfo from './ConsentInfo';
@@ -59,13 +58,13 @@ const IMEReferral: React.FC = () => {
     );
   };
 
-  const getStepLabel = (): string | null => {
-    return currentStep <= registerStepsTitles.length
-      ? registerStepsTitles[currentStep - 1].label
-      : null;
-  };
+  // const getStepLabel = (): string | null => {
+  //   return currentStep <= registerStepsTitles.length
+  //     ? registerStepsTitles[currentStep - 1].label
+  //     : null;
+  // };
 
-  const stepLabel = getStepLabel();
+  // const stepLabel = getStepLabel();
 
   return <div>{renderCurrentStep()}</div>;
 };

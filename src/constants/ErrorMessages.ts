@@ -71,4 +71,5 @@ export default Object.freeze({
   ADDRESS_LOOKUP_MIN: 'Address lookup must be at least 5 characters',
   ORGANIZATION_TYPE_REQUIRED: 'Organization type is required',
   ORGANIZATION_NAME_REQUIRED: 'Organization name is required',
+  JWT_SECRETS_REQUIRED: 'JWT secrets are not properly configured in environment variables',
 });

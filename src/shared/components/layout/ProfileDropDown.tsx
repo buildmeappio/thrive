@@ -1,9 +1,9 @@
 'use client';
-import { Session } from 'next-auth';
+import { type Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { User, Settings, LogOut, Home, LifeBuoy, UserPlus } from 'lucide-react';
+import { LogOut, Home, LifeBuoy, UserPlus } from 'lucide-react';
 
 type ProfileDropdownProps = {
   isMobile: boolean;

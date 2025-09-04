@@ -1,6 +1,6 @@
 'use client';
 import React, { useCallback, useMemo } from 'react';
-import { useForm, Controller, SubmitHandler } from 'react-hook-form';
+import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/shared/components/ui/button';
@@ -132,10 +132,6 @@ const CaseInfo: React.FC<CaseInfoProps> = ({
     },
     [onNext]
   );
-
-  const handlePrevious = useCallback(() => {
-    onPrevious?.();
-  }, [onPrevious]);
 
   const isFormDisabled = isLoading || isSubmitting;
 

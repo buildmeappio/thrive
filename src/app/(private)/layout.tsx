@@ -1,5 +1,6 @@
 'use client';
-import { useState, type ReactNode, Suspense } from 'react';
+
+import { type ReactNode, Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import SideBar from '@/shared/components/layout/Sidebar';
 import { SidebarProvider, useSidebar } from '@/shared/components/providers/SideBarProvider';
@@ -8,34 +9,12 @@ import { SearchProvider } from '@/shared/components/providers/SearchProvider';
 
 type DashboardLayoutProps = {
   children: ReactNode;
-  fallback?: ReactNode;
-  suspense?: boolean;
 };
 
 // Inner layout component that uses the sidebar context
-const DashboardLayoutInner = ({ children, fallback, suspense = true }: DashboardLayoutProps) => {
+const DashboardLayoutInner = ({ children }: DashboardLayoutProps) => {
   const { isSidebarOpen, closeSidebar } = useSidebar();
   const pathname = usePathname();
-
-  const renderContent = () => {
-    if (!suspense) {
-      return children;
-    }
-
-    return (
-      <Suspense
-        fallback={
-          fallback || (
-            <div className="flex h-full w-full flex-1 items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
-            </div>
-          )
-        }
-      >
-        {children}
-      </Suspense>
-    );
-  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -57,7 +36,17 @@ const DashboardLayoutInner = ({ children, fallback, suspense = true }: Dashboard
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto bg-gray-50 px-4 md:px-8">
-          <div className="max-w-full p-6">{renderContent()}</div>
+          <div className="max-w-full p-6">
+            <Suspense
+              fallback={
+                <div className="flex h-full w-full flex-1 items-center justify-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
+                </div>
+              }
+            >
+              {children}
+            </Suspense>
+          </div>
         </main>
       </div>
     </div>
@@ -65,11 +54,11 @@ const DashboardLayoutInner = ({ children, fallback, suspense = true }: Dashboard
 };
 
 // Main layout component with providers
-const DashboardLayout = (props: DashboardLayoutProps) => {
+const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <SidebarProvider>
       <SearchProvider>
-        <DashboardLayoutInner {...props} />
+        <DashboardLayoutInner>{children}</DashboardLayoutInner>
       </SearchProvider>
     </SidebarProvider>
   );

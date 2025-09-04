@@ -84,7 +84,7 @@ const getRequestedSpecialtyService = async () => {
   return { success: true, result: await handler.getRequestedSpecialty() };
 };
 
-export default {
+const organizationService = {
   checkOrganizationNameService,
   checkUserEmailService,
   registerOrganizationService,
@@ -97,3 +97,5 @@ export default {
   getExamFormatService,
   getRequestedSpecialtyService,
 };
+
+export default organizationService;

@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import {
-  acceptOrganizationAction,
-  getOrganizationAction,
-} from '@/features/organization/organization.actions';
+import { acceptOrganizationAction, getOrganizationAction } from '@/features/organization.actions';
 import { OrganizationStatus } from '@/constants/organizationStatus';
 import { useSession } from 'next-auth/react';
 import Welcome from './Welcome';
@@ -18,31 +15,35 @@ interface Organization {
 
 const OrganizationDashboard = () => {
   const [organization, setOrganization] = useState<Organization | null>(null);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
-  const organizationId = session?.user?.organizationId || '';
+  const organizationId = session?.user?.organizationId;
 
-  console.log(organizationId);
   const handleAccept = async () => {
     try {
       const response = await acceptOrganizationAction(organizationId!);
-    } catch (error) {}
+      if (response.success) {
+        setOrganization(response.result);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
   useEffect(() => {
     const fetchOrganization = async () => {
       try {
+        if (!organizationId) return;
         const response = await getOrganizationAction(organizationId);
         setOrganization(response.result);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch organization';
-      } finally {
-        setLoading(false);
+        console.log(errorMessage);
       }
+      // finally {
+      //   setLoading(false);
+      // }
     };
-
-    if (organizationId) {
-      fetchOrganization();
-    }
+    fetchOrganization();
   }, [organizationId]);
 
   return (

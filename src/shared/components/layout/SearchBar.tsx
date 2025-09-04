@@ -1,5 +1,4 @@
 'use client';
-import Image from 'next/image';
 import { Input } from '@/shared/components/ui/input';
 import { Search } from 'lucide-react';
 import { useSearch } from '../providers/SearchProvider';

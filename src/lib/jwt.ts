@@ -1,7 +1,12 @@
+import ErrorMessages from '@/constants/ErrorMessages';
 import jwt, { type Secret, type SignOptions, type JwtPayload } from 'jsonwebtoken';
 
-const otpSecret: Secret = process.env.JWT_SECRET!;
-const passwordSecret: Secret = process.env.PASSWORD_JWT_SECRET!;
+if (!process.env.JWT_SECRET || !process.env.PASSWORD_JWT_SECRET) {
+  throw new Error(ErrorMessages.JWT_SECRETS_REQUIRED);
+}
+
+const otpSecret: Secret = process.env.JWT_SECRET;
+const passwordSecret: Secret = process.env.PASSWORD_JWT_SECRET;
 
 // ----- OTP Tokens -----
 export function signOtpToken(payload: object, expiresIn: SignOptions['expiresIn'] = '5m'): string {

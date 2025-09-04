@@ -1,5 +1,5 @@
 import GettingStarted from '@/shared/components/GettingStarted';
-import { Metadata } from 'next';
+import { type Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Getting Started | Thrive',

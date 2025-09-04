@@ -1,5 +1,5 @@
 import LoginForm from '@/shared/components/Login';
-import { Metadata } from 'next';
+import { type Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Login | Thrive',

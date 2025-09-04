@@ -15,7 +15,7 @@ import { useRegistrationStore } from '@/store/useRegistrationStore';
 import {
   checkOrganizationNameAction,
   getOrganizationTypeAction,
-} from '@/features/organization/organization.actions';
+} from '@/features/organization.actions';
 import {
   OrganizationInfoInitialValues,
   OrganizationInfoSchema,

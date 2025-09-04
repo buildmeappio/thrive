@@ -1,8 +1,13 @@
 'use server';
 
+import ErrorMessages from '@/constants/ErrorMessages';
 import { signPasswordToken } from '@/lib/jwt';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
+
+if (!process.env.JWT_SECRET) {
+  throw new Error(ErrorMessages.JWT_SECRETS_REQUIRED);
+}
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 

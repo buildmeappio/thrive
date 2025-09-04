@@ -1,5 +1,5 @@
 import OrganizationDashboard from '@/shared/components/dashboard';
-import { Metadata } from 'next';
+import { type Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Dashboard | Thrive',

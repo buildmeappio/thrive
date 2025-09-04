@@ -31,7 +31,7 @@ const DocumentUpload: React.FC<DocumentUploadFormProps> = ({
     register,
     handleSubmit,
     setValue,
-    formState: { isSubmitting },
+    // formState: { isSubmitting },
   } = useForm<DocumentUploadFormData>({
     defaultValues: {
       files: null,

@@ -1,6 +1,5 @@
 'use client';
 
-import React, { useEffect } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Label } from '@radix-ui/react-label';
@@ -17,7 +16,7 @@ import {
   ClaimantDetailsInitialValues,
   type ClaimantDetails,
 } from '@/shared/validation/imeReferral/imeReferralValidation';
-import { IMEReferralFormProps } from '@/shared/types/imeReferral/imeReferralStepsProps';
+import { type IMEReferralFormProps } from '@/shared/types/imeReferral/imeReferralStepsProps';
 import { useIMEReferralStore } from '@/store/useIMEReferralStore';
 
 const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
@@ -33,7 +32,6 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
     handleSubmit,
     watch,
     setValue,
-    reset,
     formState: { errors },
   } = useForm<ClaimantDetails>({
     resolver: zodResolver(ClaimantDetailsSchema),

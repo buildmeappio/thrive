@@ -5,10 +5,10 @@ import {
   type Department,
   type OrganizationType,
   type CaseType,
+  type User,
+  type ExamFormat,
+  type RequestedSpecialty,
   OrganizationStatus,
-  User,
-  ExamFormat,
-  RequestedSpecialty,
 } from '@prisma/client';
 
 export const findOrganizationByName = async (name: string): Promise<Organization | null> => {
@@ -244,7 +244,7 @@ const getRequestedSpecialty = async (): Promise<RequestedSpecialty[]> => {
   });
 };
 
-export default {
+const handler = {
   findOrganizationByName,
   findUserByEmail,
   createOrganizationWithUser,
@@ -256,3 +256,4 @@ export default {
   getExamFormat,
   getRequestedSpecialty,
 };
+export default handler;
