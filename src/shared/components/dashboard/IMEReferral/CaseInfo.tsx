@@ -268,6 +268,7 @@ const CaseInfo: React.FC<IMEReferralFormProps> = ({
               iconColor="#000080"
             />
             <ContinueButton
+              isSubmitting={false}
               isLastStep={currentStep === totalSteps}
               color="#000080"
               disabled={isSubmitting}

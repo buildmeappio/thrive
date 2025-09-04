@@ -122,6 +122,7 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
                 <ArrowRight className="cup ml-2 h-4 w-4 text-white transition-all duration-300 ease-in-out" />
               </Button>
               <ContinueButton
+                isSubmitting={false}
                 isLastStep={currentStep === totalSteps}
                 color="#000080"
                 disabled={isSubmitting}

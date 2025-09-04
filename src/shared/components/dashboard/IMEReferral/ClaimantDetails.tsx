@@ -215,7 +215,11 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                 borderColor="#000080"
                 iconColor="#000080"
               />
-              <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
+              <ContinueButton
+                isSubmitting={false}
+                isLastStep={currentStep === totalSteps}
+                color="#000080"
+              />
             </div>
           </div>
         </form>

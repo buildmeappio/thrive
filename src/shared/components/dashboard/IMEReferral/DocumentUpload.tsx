@@ -125,6 +125,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
             />
 
             <ContinueButton
+              isSubmitting={false}
               isLastStep={currentStep === totalSteps}
               color="#000080"
               disabled={isSubmitting}
