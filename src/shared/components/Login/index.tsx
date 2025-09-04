@@ -10,6 +10,7 @@ import { Form, Formik } from 'formik';
 import { loginInitialValues, loginSchema } from '@/shared/validation/login/loginValidation';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 const LoginForm = () => {
   const router = useRouter();
@@ -23,7 +24,7 @@ const LoginForm = () => {
     if (result?.ok) {
       router.push('/dashboard');
     } else {
-      throw new Error('Login failed after registration');
+      throw new Error(ErrorMessages.LOGIN_FAILED);
     }
   };
 

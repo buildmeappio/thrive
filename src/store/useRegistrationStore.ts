@@ -40,7 +40,7 @@ type FormStore = {
   reset: () => void;
 };
 
-export const useOrgRegFormStore = create<FormStore>(set => ({
+export const useRegistrationStore = create<FormStore>(set => ({
   data: {},
   setData: (step, value) =>
     set(state => ({

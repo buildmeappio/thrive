@@ -8,7 +8,7 @@ import { Dropdown } from '@/shared/components/ui/Dropdown';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
-import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
+import { useRegistrationStore } from '@/store/useRegistrationStore';
 import {
   checkUserEmailAction,
   getDepartmentAction,
@@ -30,7 +30,7 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { setData, data } = useOrgRegFormStore();
+  const { setData, data } = useRegistrationStore();
 
   const [departmentOptions, setDepartmentOptions] = useState<DepartmentOption[]>([]);
   const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
@@ -69,10 +69,7 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
     const exists = await checkUserEmailAction(values.officialEmailAddress);
 
     if (exists) {
-      actions.setFieldError(
-        'officialEmailAddress',
-        ErrorMessages.EMAIL_ALREADY_EXISTS
-      );
+      actions.setFieldError('officialEmailAddress', ErrorMessages.EMAIL_ALREADY_EXISTS);
       return;
     }
 

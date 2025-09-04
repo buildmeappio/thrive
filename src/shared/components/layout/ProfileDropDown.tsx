@@ -3,7 +3,7 @@ import { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { User, Settings, LogOut, Home } from 'lucide-react';
+import { User, Settings, LogOut, Home, LifeBuoy, UserPlus } from 'lucide-react';
 
 type ProfileDropdownProps = {
   isMobile: boolean;
@@ -71,20 +71,20 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
           </li>
           <li>
             <a
-              href="/dashboard/profile"
+              href="/dashboard/ime-referrals"
               className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100"
             >
-              <User size={16} />
-              <span>Profile</span>
+              <UserPlus size={16} />
+              <span>Referrals</span>
             </a>
           </li>
           <li>
             <a
-              href="/dashboard/settings"
+              href="/dashboard/support"
               className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100"
             >
-              <Settings size={16} />
-              <span>Settings</span>
+              <LifeBuoy size={16} />
+              <span>Support</span>
             </a>
           </li>
         </ul>

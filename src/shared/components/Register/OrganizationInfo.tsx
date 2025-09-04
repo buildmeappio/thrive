@@ -11,7 +11,7 @@ import { Form, Formik, type FormikHelpers } from 'formik';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
-import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
+import { useRegistrationStore } from '@/store/useRegistrationStore';
 import {
   checkOrganizationNameAction,
   getOrganizationTypeAction,
@@ -33,7 +33,7 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
   currentStep = 1,
   totalSteps = 3,
 }) => {
-  const { setData, data } = useOrgRegFormStore();
+  const { setData, data } = useRegistrationStore();
 
   const [organizationTypeOptions, setOrganizationTypeOptions] = useState<OrganizationTypeOption[]>(
     []

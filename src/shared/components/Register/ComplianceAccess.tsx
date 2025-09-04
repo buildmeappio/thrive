@@ -5,7 +5,7 @@ import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import { Label } from '@/shared/components/ui/label';
-import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
+import { useRegistrationStore } from '@/store/useRegistrationStore';
 import { sendOtp } from '@/shared/lib/sendOtp';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import {
@@ -19,7 +19,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { setData, data } = useOrgRegFormStore();
+  const { setData, data } = useRegistrationStore();
 
   const handleSubmit = async (
     values: typeof ComplianceAccessInitialValues,

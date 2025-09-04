@@ -4,12 +4,12 @@ import { Formik, Form, type FormikHelpers } from 'formik';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
-import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
+import { useRegistrationStore } from '@/store/useRegistrationStore';
 import { verifyOtp } from '@/shared/lib/verifyOtp';
 import {
   VerificationCodeInitialValues,
   VerificationCodeSchema,
-} from '@/shared/validation/register/registerValidation';
+} from '@/shared/validation/registerValidation';
 
 const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -53,7 +53,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
     }
   };
 
-  const { setData, data } = useOrgRegFormStore();
+  const { setData, data } = useRegistrationStore();
 
   const handleSubmit = async (
     values: typeof VerificationCodeInitialValues,

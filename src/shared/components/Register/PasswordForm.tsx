@@ -7,7 +7,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
-import { useOrgRegFormStore } from '@/store/useOrgRegFormStore';
+import { useRegistrationStore } from '@/store/useRegistrationStore';
 import { finalizeOrganizationRegistrationAction } from '@/features/organization/organization.actions';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -27,7 +27,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const router = useRouter();
 
-  const { setData, data } = useOrgRegFormStore();
+  const { setData, data } = useRegistrationStore();
 
   const handleSubmit = async (
     values: typeof PasswordInitialValues,

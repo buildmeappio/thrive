@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 import { verifyPasswordToken } from '@/lib/jwt';
 import handler from './organization.handler';
-import { type FormData } from '@/store/useOrgRegFormStore';
+import { type FormData } from '@/store/useRegistrationStore';
 import ErrorMessages from '@/constants/ErrorMessages';
 
 const checkOrganizationNameService = async (name: string): Promise<boolean> => {

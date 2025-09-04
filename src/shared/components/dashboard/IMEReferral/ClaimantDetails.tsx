@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Label } from '@radix-ui/react-label';
@@ -18,6 +18,7 @@ import {
   type ClaimantDetails,
 } from '@/shared/validation/imeReferral/imeReferralValidation';
 import { IMEReferralFormProps } from '@/shared/types/imeReferral/imeReferralStepsProps';
+import { useIMEReferralStore } from '@/store/useIMEReferralStore';
 
 const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
   onNext,
@@ -25,21 +26,25 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
   currentStep,
   totalSteps,
 }) => {
+  const { data, setData } = useIMEReferralStore();
+
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<ClaimantDetails>({
     resolver: zodResolver(ClaimantDetailsSchema),
-    defaultValues: ClaimantDetailsInitialValues,
+    defaultValues: data.step1 || ClaimantDetailsInitialValues,
   });
 
   const watchedValues = watch();
 
   const onSubmit: SubmitHandler<ClaimantDetails> = async values => {
-    console.log('Form Submitted:', values);
+    setData('step1', values);
+
     if (onNext) onNext();
   };
 
@@ -112,11 +117,12 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                   <Dropdown
                     id="gender"
                     label=""
-                    value={watchedValues.gender}
+                    value={watchedValues.gender || ''}
                     onChange={(val: string) => setValue('gender', val)}
                     options={genderOptions}
                     placeholder="Select gender"
                     className={errors.gender ? 'border-red-500' : ''}
+                    icon={false}
                   />
                   {errors.gender && <p className="text-sm text-red-500">{errors.gender.message}</p>}
                 </div>
