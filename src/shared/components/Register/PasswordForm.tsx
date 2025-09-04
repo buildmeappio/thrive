@@ -1,5 +1,5 @@
 // Step 5
-import React from 'react';
+import React, { useState } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/shared/components/ui';
@@ -16,6 +16,8 @@ import {
   PasswordSchema,
 } from '@/shared/validation/register/registerValidation';
 import ErrorMessages from '@/constants/ErrorMessages';
+import SuccessMessages from '@/constants/SuccessMessages';
+import { toast } from 'sonner';
 
 const PasswordForm: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -25,6 +27,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
 }) => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
   const { setData, data } = useRegistrationStore();
@@ -33,34 +36,45 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
     values: typeof PasswordInitialValues,
     actions: FormikHelpers<typeof PasswordInitialValues>
   ) => {
-    setData('step5', values);
+    try {
+      setSubmitting(true);
+      setData('step5', values);
 
-    const res = await finalizeOrganizationRegistrationAction(data);
+      const updatedData = {
+        ...data,
+        step5: values,
+      };
 
-    if (res.success) {
-      if (onNext) onNext();
-    } else {
-      actions.setFieldError('code', 'Error');
-    }
+      const res = await finalizeOrganizationRegistrationAction(updatedData);
 
-    actions.setSubmitting(false);
+      if (res.success) {
+        if (onNext) onNext();
+      } else {
+        actions.setFieldError('code', 'Error');
+      }
 
-    const result = await signIn('credentials', {
-      email: data.step2?.officialEmailAddress,
-      password: values.password,
-      redirect: false,
-    });
+      actions.setSubmitting(false);
 
-    if (result?.ok) {
-      router.push('/dashboard');
-    } else {
-      throw new Error(ErrorMessages.LOGIN_FAILED);
+      const result = await signIn('credentials', {
+        email: data.step2?.officialEmailAddress,
+        password: values.password,
+        redirect: false,
+      });
+
+      if (result?.ok) {
+        router.push('/dashboard');
+      } else {
+        throw new Error(ErrorMessages.LOGIN_FAILED);
+      }
+      toast.success(SuccessMessages.REGISTRATION_SUCCESS);
+    } catch (error) {
+      console.log(error);
     }
   };
 
   return (
     <div
-      className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[450px] md:w-[970px] md:rounded-[30px] md:px-[75px]"
+      className="mt-4 w-full rounded-[20px] bg-white px-[10px] md:mt-6 md:min-h-[450px] md:w-[970px] md:rounded-[30px] md:px-[75px]"
       style={{
         boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
@@ -136,7 +150,11 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                   borderColor="#000080"
                   iconColor="#000080"
                 />
-                <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
+                <ContinueButton
+                  isSubmitting={submitting}
+                  isLastStep={currentStep === totalSteps}
+                  color="#000080"
+                />
               </div>
             </div>
           </Form>

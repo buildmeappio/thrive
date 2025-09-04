@@ -3,6 +3,4 @@ export interface OrganizationRegStepProps {
   onPrevious?: () => void;
   currentStep: number;
   totalSteps: number;
-  onResendCode?: () => void;
-  email?: string;
 }

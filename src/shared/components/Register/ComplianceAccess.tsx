@@ -1,5 +1,5 @@
 // Step 3
-import React from 'react';
+import React, { useState } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
@@ -19,29 +19,37 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
   currentStep,
   totalSteps,
 }) => {
+  const [submitting, setSubmitting] = useState(false);
   const { setData, data } = useRegistrationStore();
 
   const handleSubmit = async (
     values: typeof ComplianceAccessInitialValues,
     actions: FormikHelpers<typeof ComplianceAccessInitialValues>
   ) => {
-    setData('step3', values);
+    try {
+      setSubmitting(true);
+      setData('step3', values);
 
-    const email = data.step2?.officialEmailAddress;
-    if (email) {
-      await sendOtp(email);
-    }
+      const email = data.step2?.officialEmailAddress;
+      if (email) {
+        await sendOtp(email);
+      }
 
-    actions.setSubmitting(false);
+      actions.setSubmitting(false);
 
-    if (onNext) {
-      onNext();
+      if (onNext) {
+        onNext();
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div
-      className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[450px] md:w-[970px] md:rounded-[30px] md:px-[75px]"
+      className="mt-4 w-full rounded-[20px] bg-white px-[10px] md:mt-6 md:min-h-[450px] md:w-[970px] md:rounded-[30px] md:px-[75px]"
       style={{
         boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
@@ -70,19 +78,19 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                   >
                     Agree to{' '}
                     <a
-                      href="/terms-conditions"
+                      href="#"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="break-words text-[#00A8FF] underline hover:text-[#0088CC]"
+                      className="whitespace-nowrap text-[#00A8FF] underline hover:text-[#0088CC]"
                     >
                       Terms & Conditions
                     </a>{' '}
                     and{' '}
                     <a
-                      href="/privacy-policy"
+                      href="#"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="break-words text-[#00A8FF] underline hover:text-[#0088CC]"
+                      className="whitespace-nowrap text-[#00A8FF] underline hover:text-[#0088CC]"
                     >
                       Privacy Policy
                     </a>
@@ -137,7 +145,11 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                   borderColor="#000080"
                   iconColor="#000080"
                 />
-                <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
+                <ContinueButton
+                  isSubmitting={submitting}
+                  isLastStep={currentStep === totalSteps}
+                  color="#000080"
+                />
               </div>
             </div>
           </Form>

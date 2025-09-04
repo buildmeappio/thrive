@@ -1,7 +1,7 @@
 // Step 1
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Label } from '@/shared/components/ui/label';
 import { Globe, MapPin } from 'lucide-react';
 import { Input } from '@/shared/components/ui';
@@ -12,78 +12,61 @@ import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistrationStore';
-import {
-  checkOrganizationNameAction,
-  getOrganizationTypeAction,
-} from '@/features/organization.actions';
+import { checkOrganizationNameAction } from '@/features/organization.actions';
 import {
   OrganizationInfoInitialValues,
   OrganizationInfoSchema,
 } from '@/shared/validation/register/registerValidation';
 import ErrorMessages from '@/constants/ErrorMessages';
 
-interface OrganizationTypeOption {
+export interface OrganizationTypeOption {
   value: string;
   label: string;
 }
 
-const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
+type OrganizationInfoProps = OrganizationRegStepProps & {
+  organizationTypes: OrganizationTypeOption[];
+};
+
+const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
   onNext,
   onPrevious,
   currentStep = 1,
   totalSteps = 3,
+  organizationTypes: organizationTypeOptions,
 }) => {
+  const [submitting, setSubmitting] = useState(false);
   const { setData, data } = useRegistrationStore();
-
-  const [organizationTypeOptions, setOrganizationTypeOptions] = useState<OrganizationTypeOption[]>(
-    []
-  );
-  const [isLoadingOrgTypes, setIsLoadingOrgTypes] = useState(true);
-
-  useEffect(() => {
-    const fetchOrganizationTypes = async () => {
-      try {
-        setIsLoadingOrgTypes(true);
-        const response = await getOrganizationTypeAction();
-
-        if (response.success && response.result) {
-          const options = response.result.map(orgType => ({
-            value: orgType.id,
-            label: orgType.name,
-          }));
-          setOrganizationTypeOptions(options);
-        }
-      } catch (error) {
-        console.error(ErrorMessages.FAILED_GET_ORG_TYPE, error);
-      } finally {
-        setIsLoadingOrgTypes(false);
-      }
-    };
-
-    fetchOrganizationTypes();
-  }, []);
 
   const handleSubmit = async (
     values: typeof OrganizationInfoInitialValues,
     actions: FormikHelpers<typeof OrganizationInfoInitialValues>
   ) => {
-    const exists = await checkOrganizationNameAction(values.organizationName);
+    setSubmitting(true);
 
-    if (exists) {
-      actions.setFieldError('organizationName', ErrorMessages.ORG_NAME_ALREADY_EXISTS);
-      return;
-    }
+    try {
+      const exists = await checkOrganizationNameAction(values.organizationName);
 
-    setData('step1', values);
+      if (exists) {
+        actions.setFieldError('organizationName', ErrorMessages.ORG_NAME_ALREADY_EXISTS);
+        return;
+      }
 
-    if (onNext) {
-      onNext();
+      setData('step1', values);
+
+      if (onNext) {
+        onNext();
+      }
+    } catch (error) {
+      console.error('Error during submission:', error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div
-      className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[600px] md:w-[970px] md:rounded-[30px] md:px-[75px]"
+      className="mt-4 w-full rounded-[20px] bg-white px-[10px] pb-8 md:mt-6 md:min-h-[600px] md:w-[970px] md:rounded-[30px] md:px-[75px] md:pb-0"
       style={{
         boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
@@ -97,7 +80,7 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
       >
         {({ values, errors, handleChange, setFieldValue }) => (
           <Form>
-            <div className="space-y-6 px-4 md:space-y-12 md:px-0">
+            <div className="space-y-6 px-4 md:space-y-14 md:px-0">
               <div className="pt-1 md:pt-4">
                 <div className="mt-6 space-y-5 md:mt-8">
                   <div className="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2">
@@ -109,7 +92,7 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
                         onChange={(value: string) => setFieldValue('organizationType', value)}
                         options={organizationTypeOptions}
                         required={true}
-                        placeholder={isLoadingOrgTypes ? 'Loading...' : 'Select Organization Type'}
+                        placeholder={'Select Organization Type'}
                       />
                       {errors.organizationType && (
                         <p className="text-sm text-red-500">{errors.organizationType}</p>
@@ -117,7 +100,10 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="organizationName">
+                      <Label
+                        className="text-sm leading-relaxed font-normal"
+                        htmlFor="organizationName"
+                      >
                         Organization Name<span className="text-red-500">*</span>
                       </Label>
                       <Input
@@ -136,7 +122,10 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
 
                   <div className="grid grid-cols-1">
                     <div className="space-y-2">
-                      <Label htmlFor="addressLookup">
+                      <Label
+                        className="text-sm leading-relaxed font-normal"
+                        htmlFor="addressLookup"
+                      >
                         Address Lookup<span className="text-red-500">*</span>
                       </Label>
                       <div className="relative">
@@ -159,7 +148,12 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
 
                   <div className="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-4">
                     <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="streetAddress">Street Address</Label>
+                      <Label
+                        className="text-sm leading-relaxed font-normal"
+                        htmlFor="streetAddress"
+                      >
+                        Street Address
+                      </Label>
                       <Input
                         id="streetAddress"
                         name="streetAddress"
@@ -174,7 +168,9 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="aptUnitSuite">Apt / Unit / Suite</Label>
+                      <Label className="text-sm leading-relaxed font-normal" htmlFor="aptUnitSuite">
+                        Apt / Unit / Suite
+                      </Label>
                       <Input
                         id="aptUnitSuite"
                         name="aptUnitSuite"
@@ -185,7 +181,9 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
+                      <Label className="text-sm leading-relaxed font-normal" htmlFor="city">
+                        City
+                      </Label>
                       <Input
                         id="city"
                         name="city"
@@ -200,7 +198,9 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
 
                   <div className="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-3">
                     <div className="space-y-2">
-                      <Label htmlFor="postalCode">Postal Code</Label>
+                      <Label className="text-sm leading-relaxed font-normal" htmlFor="postalCode">
+                        Postal Code
+                      </Label>
                       <Input
                         id="postalCode"
                         name="postalCode"
@@ -229,7 +229,12 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="organizationWebsite">Organization Website</Label>
+                      <Label
+                        className="text-sm leading-relaxed font-normal"
+                        htmlFor="organizationWebsite"
+                      >
+                        Organization Website
+                      </Label>
                       <div className="relative">
                         <Globe className="pointer-events-none absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
                         <Input
@@ -250,14 +255,18 @@ const OrganizationInfo: React.FC<OrganizationRegStepProps> = ({
                 </div>
               </div>
 
-              <div className="mt:mb-0 mb-8 flex flex-row justify-center gap-4 md:justify-between">
+              <div className="flex flex-row justify-center gap-4 md:justify-between">
                 <BackButton
                   onClick={onPrevious}
                   disabled={currentStep === 1}
                   borderColor="#000080"
                   iconColor="#000080"
                 />
-                <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
+                <ContinueButton
+                  isSubmitting={submitting}
+                  isLastStep={currentStep === totalSteps}
+                  color="#000080"
+                />
               </div>
             </div>
           </Form>

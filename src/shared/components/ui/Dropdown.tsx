@@ -37,8 +37,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`space-y-1 ${className}`}>
-      <Label htmlFor={id} className="text-sm font-normal text-[#000000]">
+    <div className={`mt-1 space-y-1 ${className}`}>
+      <Label htmlFor={id} className="text-sm leading-relaxed font-normal text-[#000000]">
         {label}
         {required && <span className="text-red-500">*</span>}
       </Label>
@@ -46,7 +46,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger
           id={id}
-          className="relative h-[55px] w-full rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 pl-10 text-[14px] font-normal tracking-[0.5%] text-[#A4A4A4] shadow-none focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none [&>svg]:hidden" // Hide default chevron
+          className="relative h-[45px] w-full rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 pl-10 text-[14px] font-normal tracking-[0.5%] text-[#A4A4A4] shadow-none focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none md:h-[55px] [&>svg]:hidden"
         >
           <div className="absolute top-1/2 left-3 -translate-y-1/2">{icon}</div>
           <SelectValue placeholder={placeholder} />
@@ -55,9 +55,16 @@ export const Dropdown: React.FC<DropdownProps> = ({
           </div>
         </SelectTrigger>
 
-        <SelectContent>
+        <SelectContent
+          className="scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-500 hover:scrollbar-thumb-gray-500 z-50 max-h-[250px] overflow-y-scroll rounded-md border border-gray-200 bg-white shadow-lg"
+          position="popper"
+        >
           {options.map(option => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              className="cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+            >
               {option.label}
             </SelectItem>
           ))}

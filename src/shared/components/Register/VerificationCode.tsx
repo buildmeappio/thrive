@@ -10,18 +10,22 @@ import {
   VerificationCodeInitialValues,
   VerificationCodeSchema,
 } from '@/shared/validation/register/registerValidation';
+import { sendOtp } from '@/shared/lib/sendOtp';
+import { toast } from 'sonner';
+import SuccessMessages from '@/constants/SuccessMessages';
 
 const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   onNext,
   onPrevious,
   currentStep,
   totalSteps,
-  onResendCode,
-  email,
 }) => {
   const [code, setCode] = useState(['', '', '', '']);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [resending, setResending] = useState(false);
   const { setData, data } = useRegistrationStore();
+  const email = data.step2?.officialEmailAddress;
 
   const handleInputChange = (
     index: number,
@@ -40,6 +44,20 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
 
     if (value && index < 3) {
       inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const onResendCode = async () => {
+    try {
+      setResending(true);
+      if (email) {
+        await sendOtp(email);
+        toast.success(SuccessMessages.OTP_RESENT);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setResending(false);
     }
   };
 
@@ -69,30 +87,36 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
     values: typeof VerificationCodeInitialValues,
     actions: FormikHelpers<typeof VerificationCodeInitialValues>
   ) => {
-    setData('step4', values);
+    try {
+      setSubmitting(true);
+      setData('step4', values);
 
-    const emailAddress = data?.step2?.officialEmailAddress;
-    const otp = values.code;
+      const otp = values.code;
 
-    if (!emailAddress) {
+      if (!email) {
+        actions.setSubmitting(false);
+        return;
+      }
+
+      const res = await verifyOtp(otp, email);
+
+      if (res.success) {
+        if (onNext) onNext();
+      } else {
+        actions.setFieldError('code', res.message);
+      }
+
       actions.setSubmitting(false);
-      return;
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSubmitting(false);
     }
-
-    const res = await verifyOtp(otp, emailAddress);
-
-    if (res.success) {
-      if (onNext) onNext();
-    } else {
-      actions.setFieldError('code', res.message);
-    }
-
-    actions.setSubmitting(false);
   };
 
   return (
     <div
-      className="mt-4 w-full rounded-[20px] bg-white px-4 py-6 sm:px-6 md:mt-6 md:min-h-[500px] md:max-w-[970px] md:rounded-[30px] md:px-[75px]"
+      className="mt-4 w-full rounded-[20px] bg-white px-[10px] py-6 sm:px-6 md:mt-6 md:min-h-[500px] md:max-w-[970px] md:rounded-[30px] md:px-[75px]"
       style={{
         boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
@@ -154,7 +178,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                       onClick={onResendCode}
                       className="font-medium text-[#0B0BB0] underline hover:text-[#0088cc]"
                     >
-                      Resend OTP
+                      {resending ? 'Resending...' : 'Resend Code'}
                     </button>
                   </p>
                 </div>
@@ -167,7 +191,11 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                     borderColor="#000080"
                     iconColor="#000080"
                   />
-                  <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
+                  <ContinueButton
+                    isSubmitting={submitting}
+                    isLastStep={currentStep === totalSteps}
+                    color="#000080"
+                  />
                 </div>
               </div>
             </Form>

@@ -20,7 +20,7 @@ function Input({ className, type, icon: Icon, iconPosition = 'left', ...props }:
         type={type}
         data-slot="input"
         className={cn(
-          'mt-2 flex h-[55px] w-full items-center rounded-[10px] border-none bg-[#F2F5F6] px-3 text-sm text-[#333]',
+          'mt-2 flex h-[45px] w-full items-center rounded-[10px] border-none bg-[#F2F5F6] px-3 text-sm text-[#333] md:h-[55px]',
           'placeholder:text-[14px] placeholder:leading-none placeholder:font-normal placeholder:text-[#9EA9AA]',
           'focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none',
           'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',

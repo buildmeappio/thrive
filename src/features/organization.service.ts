@@ -18,12 +18,7 @@ const checkUserEmailService = async (email: string): Promise<boolean> => {
 };
 
 const registerOrganizationService = async (data: FormData) => {
-  if (!data.step1 || !data.step2 || !data.step3) {
-    throw new Error(ErrorMessages.STEPS_REQUIRED);
-  }
-
-  // this step
-  if (!data.step5) {
+  if (!data.step1 || !data.step2 || !data.step3 || !data.step4 || !data.step5) {
     throw new Error(ErrorMessages.STEPS_REQUIRED);
   }
 

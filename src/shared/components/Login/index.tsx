@@ -11,6 +11,8 @@ import { loginInitialValues, loginSchema } from '@/shared/validation/login/login
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ErrorMessages from '@/constants/ErrorMessages';
+import SuccessMessages from '@/constants/SuccessMessages';
+import { toast } from 'sonner';
 
 const LoginForm = () => {
   const router = useRouter();
@@ -23,6 +25,7 @@ const LoginForm = () => {
 
     if (result?.ok) {
       router.push('/dashboard');
+      toast.success(SuccessMessages.LOGIN_SUCCESS);
     } else {
       throw new Error(ErrorMessages.LOGIN_FAILED);
     }

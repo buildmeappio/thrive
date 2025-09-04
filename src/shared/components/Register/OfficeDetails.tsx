@@ -1,5 +1,5 @@
 // Step 2
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/shared/components/ui';
@@ -9,7 +9,7 @@ import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistrationStore';
-import { checkUserEmailAction, getDepartmentAction } from '@/features/organization.actions';
+import { checkUserEmailAction } from '@/features/organization.actions';
 import {
   OfficeDetailsInitialValues,
   OfficeDetailsSchema,
@@ -20,66 +20,47 @@ interface DepartmentOption {
   value: string;
   label: string;
 }
-
-const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
+type OfficeDetailProps = OrganizationRegStepProps & {
+  departmentTypes: DepartmentOption[];
+};
+const OfficeDetails: React.FC<OfficeDetailProps> = ({
   onNext,
   onPrevious,
   currentStep,
   totalSteps,
+  departmentTypes: departmentOptions,
 }) => {
+  const [submitting, setSubmitting] = useState(false);
   const { setData, data } = useRegistrationStore();
-
-  const [departmentOptions, setDepartmentOptions] = useState<DepartmentOption[]>([]);
-  const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
-  const [departmentError, setDepartmentError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        setIsLoadingDepartments(true);
-        setDepartmentError(null);
-
-        const response = await getDepartmentAction();
-
-        if (response.success && response.result) {
-          const options = response.result.map(department => ({
-            value: department.id,
-            label: department.name,
-          }));
-          setDepartmentOptions(options);
-        }
-      } catch (error) {
-        console.error(ErrorMessages.FAILED_GET_DEPARTMENTS, error);
-        setDepartmentError(ErrorMessages.FAILED_GET_DEPARTMENTS);
-      } finally {
-        setIsLoadingDepartments(false);
-      }
-    };
-
-    fetchDepartments();
-  }, []);
 
   const handleSubmit = async (
     values: typeof OfficeDetailsInitialValues,
     actions: FormikHelpers<typeof OfficeDetailsInitialValues>
   ) => {
-    const exists = await checkUserEmailAction(values.officialEmailAddress);
+    try {
+      setSubmitting(true);
+      const exists = await checkUserEmailAction(values.officialEmailAddress);
 
-    if (exists) {
-      actions.setFieldError('officialEmailAddress', ErrorMessages.EMAIL_ALREADY_EXISTS);
-      return;
-    }
+      if (exists) {
+        actions.setFieldError('officialEmailAddress', ErrorMessages.EMAIL_ALREADY_EXISTS);
+        return;
+      }
 
-    setData('step2', values);
+      setData('step2', values);
 
-    if (onNext) {
-      onNext();
+      if (onNext) {
+        onNext();
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div
-      className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[450px] md:w-[970px] md:rounded-[30px] md:px-[75px]"
+      className="mt-4 w-full rounded-[20px] bg-white px-[10px] md:mt-6 md:min-h-[450px] md:w-[970px] md:rounded-[30px] md:px-[75px]"
       style={{
         boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
@@ -179,27 +160,9 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
                     onChange={(value: string) => setFieldValue('department', value)}
                     options={departmentOptions}
                     required={true}
-                    placeholder={
-                      isLoadingDepartments
-                        ? 'Loading departments...'
-                        : departmentError
-                          ? 'Error loading departments'
-                          : 'Select Department'
-                    }
+                    placeholder={'Select Department'}
                   />
                   {errors.department && <p className="text-xs text-red-500">{errors.department}</p>}
-                  {departmentError && (
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-red-500">{departmentError}</p>
-                      <button
-                        type="button"
-                        onClick={() => window.location.reload()}
-                        className="text-xs text-blue-600 underline hover:text-blue-800"
-                      >
-                        Refresh Page
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -211,7 +174,11 @@ const OfficeDetails: React.FC<OrganizationRegStepProps> = ({
                 borderColor="#000080"
                 iconColor="#000080"
               />
-              <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
+              <ContinueButton
+                isSubmitting={submitting}
+                isLastStep={currentStep === totalSteps}
+                color="#000080"
+              />
             </div>
           </Form>
         )}

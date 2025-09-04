@@ -54,8 +54,8 @@ export const OfficeDetailsInitialValues = {
 // Step3
 export const ComplianceAccessSchema = Yup.object({
   agreeTermsConditions: Yup.boolean().oneOf([true], ErrorMessages.AGREEMENT_REQUIRED),
-  consentSecureDataHandling: Yup.boolean().oneOf([true], ErrorMessages.CONSENT_REQUIRED),
-  authorizedToCreateAccount: Yup.boolean().oneOf([true], ErrorMessages.AUTHORIZATION_REQUIRED),
+  consentSecureDataHandling: Yup.boolean().optional(),
+  authorizedToCreateAccount: Yup.boolean().optional(),
 });
 
 export const ComplianceAccessInitialValues = {
