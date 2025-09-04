@@ -1,5 +1,5 @@
 // Step 4
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
@@ -9,7 +9,7 @@ import { verifyOtp } from '@/shared/lib/verifyOtp';
 import {
   VerificationCodeInitialValues,
   VerificationCodeSchema,
-} from '@/shared/validation/registerValidation';
+} from '@/shared/validation/register/registerValidation';
 
 const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -21,14 +21,22 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
 }) => {
   const [code, setCode] = useState(['', '', '', '']);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const { setData, data } = useRegistrationStore();
 
-  const handleInputChange = (index: number, value: string) => {
+  const handleInputChange = (
+    index: number,
+    value: string,
+    setFieldValue: (field: string, value: any) => void
+  ) => {
     if (value.length > 1) return;
     if (!/^\d*$/.test(value)) return;
 
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
+
+    // Update Formik field value immediately
+    setFieldValue('code', newCode.join(''));
 
     if (value && index < 3) {
       inputRefs.current[index + 1]?.focus();
@@ -41,7 +49,10 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
     }
   };
 
-  const handlePaste = (e: React.ClipboardEvent) => {
+  const handlePaste = (
+    e: React.ClipboardEvent,
+    setFieldValue: (field: string, value: any) => void
+  ) => {
     e.preventDefault();
     const pasteData = e.clipboardData.getData('text');
     const digits = pasteData.replace(/\D/g, '').slice(0, 4);
@@ -49,11 +60,10 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
     if (digits.length === 4) {
       const newCode = digits.split('');
       setCode(newCode);
+      setFieldValue('code', newCode.join(''));
       inputRefs.current[3]?.focus();
     }
   };
-
-  const { setData, data } = useRegistrationStore();
 
   const handleSubmit = async (
     values: typeof VerificationCodeInitialValues,
@@ -61,15 +71,15 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   ) => {
     setData('step4', values);
 
-    const email = data?.step2?.officialEmailAddress;
+    const emailAddress = data?.step2?.officialEmailAddress;
     const otp = values.code;
 
-    if (!email) {
+    if (!emailAddress) {
       actions.setSubmitting(false);
       return;
     }
 
-    const res = await verifyOtp(otp, email);
+    const res = await verifyOtp(otp, emailAddress);
 
     if (res.success) {
       if (onNext) onNext();
@@ -94,11 +104,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
         validateOnChange={false}
         validateOnBlur={false}
       >
-        {({ setFieldValue, errors }) => {
-          useEffect(() => {
-            setFieldValue('code', code.join(''));
-          }, [code, setFieldValue]);
-
+        {({ setFieldValue, errors, setFieldError }) => {
           return (
             <Form>
               <div className="mt-6 flex min-h-[400px] flex-col items-center justify-center space-y-10 sm:mt-8 sm:space-y-12">
@@ -120,9 +126,15 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                       inputMode="numeric"
                       maxLength={1}
                       value={digit}
-                      onChange={e => handleInputChange(index, e.target.value)}
+                      onChange={e => handleInputChange(index, e.target.value, setFieldValue)}
                       onKeyDown={e => handleKeyDown(index, e)}
-                      onPaste={index === 0 ? handlePaste : undefined}
+                      onPaste={index === 0 ? e => handlePaste(e, setFieldValue) : undefined}
+                      onFocus={() => {
+                        // Clear error when user focuses on input
+                        if (errors.code) {
+                          setFieldError('code', '');
+                        }
+                      }}
                       className="aspect-square w-[60px] rounded-xl border-2 border-[#C2C2C282] bg-[#F9F9F9] text-center text-xl font-medium text-[#140047] focus:border-[#00A8FF] focus:outline-none sm:w-[80px] sm:text-2xl md:w-[100px] md:rounded-2xl md:text-[28px]"
                       style={{
                         boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.08)',
@@ -165,4 +177,5 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
     </div>
   );
 };
+
 export default VerificationCode;
