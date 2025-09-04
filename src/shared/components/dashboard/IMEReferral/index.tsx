@@ -4,8 +4,8 @@ import { useState } from 'react';
 import ClaimantDetails from './ClaimantDetails';
 import CaseInfo from './CaseInfo';
 import ConsentInfo from './ConsentInfo';
-import DocumentUpload from './DocumentUpload';
 import ReferralSubmitted from './ReferralSubmitted';
+import DocumentUpload from './DocumentUpload';
 
 interface StepConfig {
   component: React.ComponentType<StepProps>;
@@ -21,8 +21,8 @@ interface StepProps {
 const STEPS: StepConfig[] = [
   { component: ClaimantDetails },
   { component: CaseInfo },
-  { component: ConsentInfo },
   { component: DocumentUpload },
+  { component: ConsentInfo },
   { component: ReferralSubmitted },
 ];
 

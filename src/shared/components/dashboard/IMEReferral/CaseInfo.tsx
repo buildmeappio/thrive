@@ -1,8 +1,6 @@
 'use client';
-import React, { useCallback, useMemo } from 'react';
 import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button } from '@/shared/components/ui/button';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Label } from '@/shared/components/ui/label';
@@ -10,130 +8,51 @@ import { Dropdown } from '@/shared/components/ui/Dropdown';
 import ProgressIndicator from './ProgressIndicator';
 import BackButton from '../../ui/BackButton';
 import ContinueButton from '../../ui/ContinueButton';
+import { type IMEReferralFormProps } from '@/shared/types/imeReferral/imeReferralStepsProps';
+import { CaseType } from '@/shared/config/caseType.config';
+import { UrgencyLevels } from '@/shared/config/urgencyLevel.config';
+import { ExamFormat } from '@/shared/config/examFormat.config';
+import { provinceOptions } from '@/shared/config/ProvinceOptions';
+import { RequestedSpecialty } from '@/shared/config/requestedSpecialty.config';
+import {
+  type CaseInfo,
+  CaseInfoInitialValues,
+  CaseInfoSchema,
+} from '@/shared/validation/imeReferral/imeReferralValidation';
+import { useIMEReferralStore } from '@/store/useIMEReferralStore';
 
-// Types
-interface DropdownOption {
-  value: string;
-  label: string;
-}
-
-interface CaseInfoProps {
-  onNext?: (data: CaseInfoFormData) => void;
-  onPrevious?: () => void;
-  currentStep?: number;
-  totalSteps?: number;
-  initialData?: Partial<CaseInfoFormData>;
-  isLoading?: boolean;
-}
-
-// Validation Schema
-const caseInfoSchema = z.object({
-  reasonForReferral: z
-    .string()
-    .min(1, 'Reason for referral is required')
-    .min(10, 'Please provide a more detailed reason (minimum 10 characters)'),
-  caseType: z.string().min(1, 'Case type is required'),
-  urgencyLevel: z.string().min(1, 'Urgency level is required'),
-  examFormat: z.string().min(1, 'Exam format is required'),
-  requestedSpecialty: z.string().min(1, 'Requested specialty is required'),
-  preferredLocation: z.string().min(1, 'Preferred location is required'),
-});
-
-export type CaseInfoFormData = z.infer<typeof caseInfoSchema>;
-
-// Constants
-const CASE_TYPES: DropdownOption[] = [
-  { value: 'motor-vehicle-accident', label: 'Motor Vehicle Accident' },
-  { value: 'work-injury', label: 'Work Injury' },
-  { value: 'personal-injury', label: 'Personal Injury' },
-  { value: 'medical-malpractice', label: 'Medical Malpractice' },
-] as const;
-
-const URGENCY_LEVELS: DropdownOption[] = [
-  { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'high', label: 'High' },
-  { value: 'critical', label: 'Critical' },
-] as const;
-
-const EXAM_FORMATS: DropdownOption[] = [
-  { value: 'medical', label: 'Medical' },
-  { value: 'legal', label: 'Legal' },
-  { value: 'independent', label: 'Independent' },
-  { value: 'psychological', label: 'Psychological' },
-] as const;
-
-const SPECIALTIES: DropdownOption[] = [
-  { value: 'medical', label: 'Medical' },
-  { value: 'orthopedic', label: 'Orthopedic' },
-  { value: 'neurological', label: 'Neurological' },
-  { value: 'psychiatric', label: 'Psychiatric' },
-  { value: 'physical-therapy', label: 'Physical Therapy' },
-] as const;
-
-const LOCATIONS: DropdownOption[] = [
-  { value: 'ontario', label: 'Ontario' },
-  { value: 'alberta', label: 'Alberta' },
-  { value: 'british-columbia', label: 'British Columbia' },
-  { value: 'quebec', label: 'Quebec' },
-  { value: 'manitoba', label: 'Manitoba' },
-] as const;
-
-const DEFAULT_VALUES: CaseInfoFormData = {
-  reasonForReferral: '',
-  caseType: 'motor-vehicle-accident',
-  urgencyLevel: 'high',
-  examFormat: 'medical',
-  requestedSpecialty: 'medical',
-  preferredLocation: 'ontario',
-};
-
-const CaseInfo: React.FC<CaseInfoProps> = ({
+const CaseInfo: React.FC<IMEReferralFormProps> = ({
   onNext,
   onPrevious,
   currentStep = 1,
   totalSteps = 1,
-  initialData,
-  isLoading = false,
 }) => {
-  const defaultValues = useMemo(
-    () => ({
-      ...DEFAULT_VALUES,
-      ...initialData,
-    }),
-    [initialData]
-  );
+  const { data, setData } = useIMEReferralStore();
 
   const {
     control,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
-  } = useForm<CaseInfoFormData>({
-    defaultValues,
-    resolver: zodResolver(caseInfoSchema),
+  } = useForm<CaseInfo>({
+    defaultValues: data.step2 || CaseInfoInitialValues,
+    resolver: zodResolver(CaseInfoSchema),
     mode: 'onBlur',
   });
 
-  const handleAiRewrite = useCallback(() => {
-    // Implement AI rewrite functionality
+  const watchedValues = watch();
+
+  const handleAiRewrite = () => {
     console.log('AI Rewrite requested');
-    // This would typically call an API or open a modal
-  }, []);
+  };
 
-  const onSubmit: SubmitHandler<CaseInfoFormData> = useCallback(
-    async data => {
-      try {
-        console.log('Form Submitted:', data);
-        await onNext?.(data);
-      } catch (error) {
-        console.error('Error submitting form:', error);
-        // Handle error appropriately (show toast, etc.)
-      }
-    },
-    [onNext]
-  );
+  const onSubmit: SubmitHandler<CaseInfo> = values => {
+    setData('step2', values);
+    if (onNext) onNext();
+  };
 
-  const isFormDisabled = isLoading || isSubmitting;
+  const isFormDisabled = isSubmitting;
 
   return (
     <>
@@ -142,24 +61,16 @@ const CaseInfo: React.FC<CaseInfoProps> = ({
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           {/* Header */}
           <header className="mb-6 md:mb-8">
-            <h1 className="mb-2 text-2xl font-bold text-gray-900 sm:text-3xl md:text-[36.02px]">
+            <h2 className="text-[36.02px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000]">
               Case Information
-            </h1>
-            {totalSteps > 1 && (
-              <p className="text-sm text-gray-600">
-                Step {currentStep} of {totalSteps}
-              </p>
-            )}
+            </h2>
           </header>
 
           {/* Reason for referral */}
           <div className="mb-6 md:mb-8">
             <div className="mb-1 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <Label
-                htmlFor="reasonForReferral"
-                className="text-sm font-medium text-black md:text-[14.48px]"
-              >
-                Reason for referral *
+              <Label htmlFor="reason" className="text-sm font-medium text-black md:text-[14.48px]">
+                Reason for referral <span className="text-red-500">*</span>
               </Label>
               <Button
                 type="button"
@@ -173,21 +84,23 @@ const CaseInfo: React.FC<CaseInfoProps> = ({
               </Button>
             </div>
             <Controller
-              name="reasonForReferral"
+              name="reason"
               control={control}
               render={({ field }) => (
                 <>
                   <Textarea
                     {...field}
-                    id="reasonForReferral"
+                    id="reason"
                     placeholder="Provide a detailed reason for the referral..."
                     disabled={isFormDisabled}
-                    className="h-32 w-full resize-none rounded-lg border-0 bg-[#F2F5F6] disabled:opacity-50"
-                    aria-describedby={errors.reasonForReferral ? 'reason-error' : undefined}
+                    className={`h-32 w-full resize-none rounded-lg border-0 bg-[#F2F5F6] disabled:opacity-50 ${
+                      errors.reason ? 'border-red-500' : ''
+                    }`}
+                    aria-describedby={errors.reason ? 'reason-error' : undefined}
                   />
-                  {errors.reasonForReferral && (
+                  {errors.reason && (
                     <p id="reason-error" className="mt-1 text-sm text-red-600" role="alert">
-                      {errors.reasonForReferral.message}
+                      {errors.reason.message}
                     </p>
                   )}
                 </>
@@ -207,11 +120,20 @@ const CaseInfo: React.FC<CaseInfoProps> = ({
                     <Dropdown
                       id="caseType"
                       label="Case Type *"
-                      value={field.value}
-                      onChange={field.onChange}
-                      options={CASE_TYPES}
+                      value={watchedValues.caseType}
+                      onChange={(val: string) => {
+                        field.onChange(val);
+                        setValue('caseType', val);
+                      }}
+                      options={CaseType}
                       placeholder="Select case type"
+                      className={errors.caseType ? 'border-red-500' : ''}
                     />
+                    {errors.caseType && (
+                      <p className="mt-1 text-sm text-red-600" role="alert">
+                        {errors.caseType.message}
+                      </p>
+                    )}
                   </>
                 )}
               />
@@ -223,14 +145,25 @@ const CaseInfo: React.FC<CaseInfoProps> = ({
                 name="urgencyLevel"
                 control={control}
                 render={({ field }) => (
-                  <Dropdown
-                    id="urgencyLevel"
-                    label="Urgency Level *"
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={URGENCY_LEVELS}
-                    placeholder="Select urgency"
-                  />
+                  <>
+                    <Dropdown
+                      id="urgencyLevel"
+                      label="Urgency Level *"
+                      value={watchedValues.urgencyLevel}
+                      onChange={(val: string) => {
+                        field.onChange(val);
+                        setValue('urgencyLevel', val);
+                      }}
+                      options={UrgencyLevels}
+                      placeholder="Select urgency"
+                      className={errors.urgencyLevel ? 'border-red-500' : ''}
+                    />
+                    {errors.urgencyLevel && (
+                      <p className="mt-1 text-sm text-red-600" role="alert">
+                        {errors.urgencyLevel.message}
+                      </p>
+                    )}
+                  </>
                 )}
               />
             </div>
@@ -241,14 +174,25 @@ const CaseInfo: React.FC<CaseInfoProps> = ({
                 name="examFormat"
                 control={control}
                 render={({ field }) => (
-                  <Dropdown
-                    id="examFormat"
-                    label="Exam Format *"
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={EXAM_FORMATS}
-                    placeholder="Select exam format"
-                  />
+                  <>
+                    <Dropdown
+                      id="examFormat"
+                      label="Exam Format *"
+                      value={watchedValues.examFormat}
+                      onChange={(val: string) => {
+                        field.onChange(val);
+                        setValue('examFormat', val);
+                      }}
+                      options={ExamFormat}
+                      placeholder="Select exam format"
+                      className={errors.examFormat ? 'border-red-500' : ''}
+                    />
+                    {errors.examFormat && (
+                      <p className="mt-1 text-sm text-red-600" role="alert">
+                        {errors.examFormat.message}
+                      </p>
+                    )}
+                  </>
                 )}
               />
             </div>
@@ -262,14 +206,25 @@ const CaseInfo: React.FC<CaseInfoProps> = ({
                 name="requestedSpecialty"
                 control={control}
                 render={({ field }) => (
-                  <Dropdown
-                    id="requestedSpecialty"
-                    label="Requested Specialty *"
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={SPECIALTIES}
-                    placeholder="Select specialty"
-                  />
+                  <>
+                    <Dropdown
+                      id="requestedSpecialty"
+                      label="Requested Specialty *"
+                      value={watchedValues.requestedSpecialty}
+                      onChange={(val: string) => {
+                        field.onChange(val);
+                        setValue('requestedSpecialty', val);
+                      }}
+                      options={RequestedSpecialty}
+                      placeholder="Select specialty"
+                      className={errors.requestedSpecialty ? 'border-red-500' : ''}
+                    />
+                    {errors.requestedSpecialty && (
+                      <p className="mt-1 text-sm text-red-600" role="alert">
+                        {errors.requestedSpecialty.message}
+                      </p>
+                    )}
+                  </>
                 )}
               />
             </div>
@@ -280,14 +235,25 @@ const CaseInfo: React.FC<CaseInfoProps> = ({
                 name="preferredLocation"
                 control={control}
                 render={({ field }) => (
-                  <Dropdown
-                    id="preferredLocation"
-                    label="Preferred Location *"
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={LOCATIONS}
-                    placeholder="Select location"
-                  />
+                  <>
+                    <Dropdown
+                      id="preferredLocation"
+                      label="Preferred Location *"
+                      value={watchedValues.preferredLocation}
+                      onChange={(val: string) => {
+                        field.onChange(val);
+                        setValue('preferredLocation', val);
+                      }}
+                      options={provinceOptions}
+                      placeholder="Select location"
+                      className={errors.preferredLocation ? 'border-red-500' : ''}
+                    />
+                    {errors.preferredLocation && (
+                      <p className="mt-1 text-sm text-red-600" role="alert">
+                        {errors.preferredLocation.message}
+                      </p>
+                    )}
+                  </>
                 )}
               />
             </div>
@@ -301,7 +267,11 @@ const CaseInfo: React.FC<CaseInfoProps> = ({
               borderColor="#000080"
               iconColor="#000080"
             />
-            <ContinueButton isLastStep={currentStep === totalSteps} color="#000080" />
+            <ContinueButton
+              isLastStep={currentStep === totalSteps}
+              color="#000080"
+              disabled={isSubmitting}
+            />
           </div>
         </form>
       </div>

@@ -40,9 +40,8 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
 
   const watchedValues = watch();
 
-  const onSubmit: SubmitHandler<ClaimantDetails> = async values => {
+  const onSubmit: SubmitHandler<ClaimantDetails> = values => {
     setData('step1', values);
-
     if (onNext) onNext();
   };
 
@@ -50,7 +49,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
     <>
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
       <div
-        className="mt-4 w-full rounded-[20px] bg-white py-12 md:rounded-[30px] md:px-[75px]"
+        className="w-full rounded-[20px] bg-white py-12 md:rounded-[30px] md:px-[75px]"
         style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
       >
         <form onSubmit={handleSubmit(onSubmit)}>

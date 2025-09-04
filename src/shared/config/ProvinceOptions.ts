@@ -1,5 +1,4 @@
 export const provinceOptions = [
-  { value: 'ON', label: 'Ontario' },
   { value: 'BC', label: 'British Columbia' },
   { value: 'MB', label: 'Manitoba' },
   { value: 'NB', label: 'New Brunswick' },

@@ -24,10 +24,10 @@ export type FormData = {
     preferredLocation: string;
   };
   step3?: {
-    consentConfirmation: boolean;
+    files: File[];
   };
   step4?: {
-    files: string[];
+    consentConfirmation: boolean;
   };
 };
 

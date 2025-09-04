@@ -1,5 +1,7 @@
 import ErrorMessages from '@/constants/ErrorMessages';
 import { z } from 'zod';
+import { DocumentUploadConfig } from '@/shared/config/documentUpload.config';
+import { formatFileSize } from '@/shared/utils/documentUpload.utils';
 
 // step1
 export const ClaimantDetailsSchema = z.object({
@@ -57,6 +59,73 @@ export const CaseInfoInitialValues: CaseInfo = {
 
 // step3
 
+const FileSchema = z.instanceof(File).superRefine((file, ctx) => {
+  if (file.size <= 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `${ErrorMessages.FILE_CORRUPTED}: ${file.name || 'Unknown file'}`,
+    });
+  }
+
+  if (file.size > DocumentUploadConfig.MAX_FILE_SIZE) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `${file.name || 'Unknown file'}: ${ErrorMessages.FILE_TOO_LARGE} ${formatFileSize(DocumentUploadConfig.MAX_FILE_SIZE)}`,
+    });
+  }
+
+  type AllowedMimeType = (typeof DocumentUploadConfig.ALLOWED_FILE_TYPES)[number];
+
+  if (!(DocumentUploadConfig.ALLOWED_FILE_TYPES as readonly string[]).includes(file.type)) {
+    const _narrow: AllowedMimeType | undefined = file.type as AllowedMimeType;
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `${file.name || 'Unknown file'}: ${ErrorMessages.INVALID_FILE_TYPE} (${file.type || 'Unknown type'})`,
+    });
+  }
+
+  if (file.name.length > DocumentUploadConfig.MAX_FILENAME_LENGTH) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `${file.name || 'Unknown file'}: ${ErrorMessages.FILE_NAME_TOO_LONG}`,
+    });
+  }
+});
+
+export const DocumentUploadSchema = z.object({
+  files: z
+    .array(FileSchema)
+    .min(1, ErrorMessages.DOCUMENT_UPLOAD_REQUIRED)
+    .max(
+      DocumentUploadConfig.MAX_FILES_COUNT,
+      `${ErrorMessages.TOO_MANY_FILES} (maximum ${DocumentUploadConfig.MAX_FILES_COUNT} files allowed)`
+    )
+    .refine(
+      files => {
+        const seen = new Set();
+        for (const file of files) {
+          const key = `${file.name}-${file.size}`;
+          if (seen.has(key)) {
+            return false;
+          }
+          seen.add(key);
+        }
+        return true;
+      },
+      {
+        message: ErrorMessages.DUPLICATE_FILE,
+      }
+    ),
+});
+
+export type DocumentUploadFormData = z.infer<typeof DocumentUploadSchema>;
+
+export const DocumentUploadInitialValues: DocumentUploadFormData = {
+  files: [],
+};
+
+// step4
+
 export const ConsentSchema = z.object({
   consentConfirmation: z.boolean().refine(val => val === true, {
     message: ErrorMessages.CONSENT_REQUIRED,
@@ -67,16 +136,4 @@ export type Consent = z.infer<typeof ConsentSchema>;
 
 export const ConsentInitialValues: Consent = {
   consentConfirmation: false,
-};
-
-// step4
-
-export const DocumentUploadSchema = z.object({
-  files: z.array(z.instanceof(File)).nonempty(ErrorMessages.DOCUMENT_UPLOAD_REQUIRED),
-});
-
-export type DocumentUploadSchema = z.infer<typeof DocumentUploadSchema>;
-
-export const DocumentUploadInitialValues: DocumentUploadSchema = {
-  files: [],
 };

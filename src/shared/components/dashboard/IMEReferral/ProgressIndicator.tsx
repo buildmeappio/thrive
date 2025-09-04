@@ -15,7 +15,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   const steps = ['', 'Referral Info', 'Claimant Availability', 'Documents', 'Submit'];
 
   return (
-    <div className="mx-auto w-full">
+    <div className="mx-auto mb-4 w-full">
       {/* Progress bar */}
       <div className="relative mb-8 h-2 w-full rounded-full bg-gray-200">
         <div

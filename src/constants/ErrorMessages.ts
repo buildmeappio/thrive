@@ -72,4 +72,10 @@ export default Object.freeze({
   ORGANIZATION_TYPE_REQUIRED: 'Organization type is required',
   ORGANIZATION_NAME_REQUIRED: 'Organization name is required',
   JWT_SECRETS_REQUIRED: 'JWT secrets are not properly configured in environment variables',
+  FILE_TOO_LARGE: 'File size must be less than',
+  INVALID_FILE_TYPE: 'File type is not supported',
+  TOO_MANY_FILES: 'Maximum number of files exceeded',
+  DUPLICATE_FILE: 'Duplicate file detected',
+  FILE_NAME_TOO_LONG: 'File name is too long',
+  FILE_CORRUPTED: 'File appears to be corrupted or empty',
 });

@@ -6,6 +6,8 @@ export type ContinueButtonProps = {
   gradientFrom?: string;
   gradientTo?: string;
   color?: string;
+  disabled?: boolean;
+  isSubmitting?: boolean;
   onClick?: () => void;
 };
 
@@ -15,6 +17,8 @@ const ContinueButton: React.FC<ContinueButtonProps> = ({
   gradientTo = '#00A8FF',
   color,
   onClick,
+  disabled,
+  isSubmitting,
 }) => {
   const backgroundStyle = color
     ? { backgroundColor: color }
@@ -24,8 +28,11 @@ const ContinueButton: React.FC<ContinueButtonProps> = ({
     <button
       type="submit"
       onClick={onClick}
-      className="flex h-[45px] w-[182px] cursor-pointer items-center justify-center gap-1.5 rounded-[34px] px-4 py-3 text-white transition-all duration-300 ease-in-out hover:opacity-90"
+      className={`flex h-[45px] w-[182px] cursor-pointer items-center justify-center gap-1.5 rounded-[34px] px-4 py-3 text-white transition-all duration-300 ease-in-out hover:opacity-90 ${
+        isSubmitting ? 'cursor-not-allowed opacity-50' : ''
+      }`}
       style={backgroundStyle}
+      disabled={disabled || isSubmitting}
     >
       <span className="transition-all duration-300 ease-in-out">
         {isLastStep ? 'Submit' : 'Continue'}
