@@ -189,6 +189,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                     placeholder="50 Stephanie Street"
                     className="w-full"
                   />
+                  {errors.street && <p className="text-sm text-red-500">{errors.street.message}</p>}
                 </div>
 
                 {/* Apt / Unit / Suite (smaller, equal to City) */}
@@ -218,13 +219,18 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
               <div className="mt-6 grid w-full max-w-full grid-cols-1 gap-6 md:grid-cols-5">
                 {/* Postal Code */}
                 <div className="min-w-0 space-y-2 md:col-span-1">
-                  <Label htmlFor="postalCode">Postal Code</Label>
+                  <Label htmlFor="postalCode">
+                    Postal Code<span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     disabled={isSubmitting}
                     {...register('postalCode')}
-                    placeholder="7200"
+                    placeholder="A1A 1A1"
                     className="w-full"
                   />
+                  {errors.postalCode && (
+                    <p className="text-sm text-red-500">{errors.postalCode.message}</p>
+                  )}
                 </div>
 
                 {/* Province / State */}

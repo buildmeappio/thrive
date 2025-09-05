@@ -126,7 +126,8 @@ const CaseInfo: React.FC<IMEReferralFormProps> = ({
                   <>
                     <Dropdown
                       id="caseType"
-                      label="Case Type *"
+                      label="Case Type"
+                      required
                       value={watchedValues.caseType}
                       onChange={(val: string) => {
                         field.onChange(val);
@@ -155,7 +156,8 @@ const CaseInfo: React.FC<IMEReferralFormProps> = ({
                   <>
                     <Dropdown
                       id="urgencyLevel"
-                      label="Urgency Level *"
+                      label="Urgency Level"
+                      required
                       value={watchedValues.urgencyLevel}
                       onChange={(val: string) => {
                         field.onChange(val);
@@ -184,7 +186,8 @@ const CaseInfo: React.FC<IMEReferralFormProps> = ({
                   <>
                     <Dropdown
                       id="examFormat"
-                      label="Exam Format *"
+                      label="Exam Format"
+                      required
                       value={watchedValues.examFormat}
                       onChange={(val: string) => {
                         field.onChange(val);
@@ -216,7 +219,8 @@ const CaseInfo: React.FC<IMEReferralFormProps> = ({
                   <>
                     <Dropdown
                       id="requestedSpecialty"
-                      label="Requested Specialty *"
+                      label="Requested Specialty"
+                      required
                       value={watchedValues.requestedSpecialty}
                       onChange={(val: string) => {
                         field.onChange(val);
@@ -245,7 +249,8 @@ const CaseInfo: React.FC<IMEReferralFormProps> = ({
                   <>
                     <Dropdown
                       id="preferredLocation"
-                      label="Preferred Location *"
+                      label="Preferred Location"
+                      required
                       value={watchedValues.preferredLocation}
                       onChange={(val: string) => {
                         field.onChange(val);

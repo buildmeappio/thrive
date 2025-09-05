@@ -204,7 +204,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                         disabled={isSubmitting}
                         id="postalCode"
                         name="postalCode"
-                        placeholder="7200"
+                        placeholder="A1A 1A1"
                         required
                         onChange={handleChange}
                         value={values.postalCode}

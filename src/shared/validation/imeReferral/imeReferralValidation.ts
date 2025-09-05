@@ -5,17 +5,41 @@ import { formatFileSize } from '@/shared/utils/documentUpload.utils';
 
 // step1
 export const ClaimantDetailsSchema = z.object({
-  firstName: z.string().min(1, ErrorMessages.FIRST_NAME_REQUIRED),
-  lastName: z.string().min(1, ErrorMessages.LAST_NAME_REQUIRED),
-  dob: z.string().min(1, ErrorMessages.DOB_REQUIRED),
+  firstName: z
+    .string()
+    .min(1, ErrorMessages.FIRST_NAME_REQUIRED)
+    .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.FIRST_NAME_INVALID),
+
+  lastName: z
+    .string()
+    .min(1, ErrorMessages.LAST_NAME_REQUIRED)
+    .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.LAST_NAME_INVALID),
+
+  dob: z.string().refine(val => !isNaN(Date.parse(val)), {
+    message: ErrorMessages.DOB_INVALID,
+  }),
+
   gender: z.string().min(1, ErrorMessages.GENDER_REQUIRED),
-  phone: z.string().min(1, ErrorMessages.PHONE_REQUIRED),
+
+  phone: z
+    .string()
+    .min(1, ErrorMessages.PHONE_REQUIRED)
+    .regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_PHONE_NUMBER),
+
   email: z.string().email(ErrorMessages.INVALID_EMAIL).min(1, ErrorMessages.EMAIL_REQUIRED),
+
   addressLookup: z.string().min(5, ErrorMessages.ADDRESS_LOOKUP_REQUIRED),
+
   street: z.string().optional(),
   apt: z.string().optional(),
+
   city: z.string().optional(),
-  postalCode: z.string().optional(),
+
+  postalCode: z
+    .string()
+    .regex(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/, ErrorMessages.INVALID_POSTAL_CODE)
+    .optional(),
+
   province: z.string().optional(),
 });
 

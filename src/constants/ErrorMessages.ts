@@ -83,4 +83,12 @@ export default Object.freeze({
   STREET_REQUIRED: 'Street required',
   CITY_REQUIRED: 'City required',
   POSTAL_CODE_REQUIRED: 'Postal Code required',
+  INVALID_POSTAL_CODE: 'Postal code is invalid',
+  INVALID_CITY: 'City is invalid',
+  INVALID_NAME: 'Name is invalid',
+  FIRST_NAME_INVALID: 'First name should only contain alphabets, spaces, hyphens, or apostrophes',
+  LAST_NAME_INVALID: 'Last name should only contain alphabets, spaces, hyphens, or apostrophes',
+  JOB_TITLE_INVALID: 'Job title should only contain alphabets, spaces, hyphens, or apostrophes',
+  DEPARTMENT_INVALID: 'Department should only contain alphabets, spaces, hyphens, or apostrophes',
+  DOB_INVALID: 'Invalid Date of birth',
 });

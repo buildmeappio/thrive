@@ -33,6 +33,7 @@ const LoginForm = () => {
         router.push('/dashboard');
         toast.success(SuccessMessages.LOGIN_SUCCESS);
       } else {
+        toast.error(ErrorMessages.LOGIN_FAILED);
         throw new Error(ErrorMessages.LOGIN_FAILED);
       }
     } catch (error) {

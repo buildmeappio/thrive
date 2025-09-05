@@ -10,8 +10,8 @@ export type BackButtonProps = {
 
 const BackButton: React.FC<BackButtonProps> = ({
   disabled = false,
-  borderColor = '#00A8FF',
-  iconColor = '#00A8FF',
+  borderColor = '#000080',
+  iconColor = '#000080',
   onClick,
 }) => {
   return (

@@ -24,7 +24,7 @@ const DashboardLayoutInner = ({ children }: DashboardLayoutProps) => {
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div
-          className="bg-opacity-50 fixed inset-0 z-40 bg-black md:hidden"
+          className="bg-opacity-50 fixed inset-0 z-40 bg-black/30 md:hidden"
           onClick={closeSidebar}
         />
       )}
