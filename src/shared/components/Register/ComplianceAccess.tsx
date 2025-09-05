@@ -1,5 +1,4 @@
 // Step 3
-import React, { useState } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
@@ -19,7 +18,6 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const [submitting, setSubmitting] = useState(false);
   const { setData, data } = useRegistrationStore();
 
   const handleSubmit = async (
@@ -27,7 +25,6 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
     actions: FormikHelpers<typeof ComplianceAccessInitialValues>
   ) => {
     try {
-      setSubmitting(true);
       setData('step3', values);
 
       const email = data.step2?.officialEmailAddress;
@@ -42,8 +39,6 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
       }
     } catch (error) {
       console.log(error);
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -61,14 +56,14 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
         validateOnChange={false}
         validateOnBlur={false}
       >
-        {({ values, errors, setFieldValue }) => (
+        {({ values, errors, setFieldValue, isSubmitting }) => (
           <Form>
             <div className="space-y-6 px-4 pb-8 md:px-0">
               <div className="mt-8 flex flex-col items-start justify-center space-y-12 md:mt-12 md:items-center">
                 {/* Terms & Conditions Checkbox */}
                 <div className="flex items-start space-x-3 md:items-center">
                   <Checkbox
-                    disabled={submitting}
+                    disabled={isSubmitting}
                     id="agreeTermsConditions"
                     checked={values.agreeTermsConditions}
                     onCheckedChange={checked => setFieldValue('agreeTermsConditions', checked)}
@@ -105,7 +100,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                 {/* Secure Data Handling Checkbox */}
                 <div className="flex items-center space-x-3">
                   <Checkbox
-                    disabled={submitting}
+                    disabled={isSubmitting}
                     id="consentSecureDataHandling"
                     checked={values.consentSecureDataHandling}
                     onCheckedChange={checked => setFieldValue('consentSecureDataHandling', checked)}
@@ -124,7 +119,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                 {/* Authorization Checkbox */}
                 <div className="flex items-start space-x-3 md:items-center">
                   <Checkbox
-                    disabled={submitting}
+                    disabled={isSubmitting}
                     id="authorizedToCreateAccount"
                     checked={values.authorizedToCreateAccount}
                     onCheckedChange={checked => setFieldValue('authorizedToCreateAccount', checked)}
@@ -149,7 +144,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                   iconColor="#000080"
                 />
                 <ContinueButton
-                  isSubmitting={submitting}
+                  isSubmitting={isSubmitting}
                   isLastStep={currentStep === totalSteps}
                   color="#000080"
                 />

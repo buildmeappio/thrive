@@ -1,5 +1,4 @@
 // Step 2
-import { useState } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/shared/components/ui';
@@ -30,7 +29,6 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
   totalSteps,
   departmentTypes: departmentOptions,
 }) => {
-  const [submitting, setSubmitting] = useState(false);
   const { setData, data } = useRegistrationStore();
 
   const handleSubmit = async (
@@ -38,7 +36,6 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
     actions: FormikHelpers<typeof OfficeDetailsInitialValues>
   ) => {
     try {
-      setSubmitting(true);
       const exists = await checkUserEmailAction(values.officialEmailAddress);
 
       if (exists) {
@@ -53,8 +50,6 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
       }
     } catch (error) {
       console.error(error);
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -72,7 +67,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
         validateOnChange={false}
         validateOnBlur={false}
       >
-        {({ values, errors, handleChange, setFieldValue }) => (
+        {({ values, errors, handleChange, setFieldValue, isSubmitting }) => (
           <Form>
             <div className="space-y-6 px-4 pb-8 md:px-0">
               <div className="mt-6 grid grid-cols-1 gap-x-14 gap-y-5 md:mt-8 md:grid-cols-2">
@@ -81,7 +76,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                     First Name<span className="text-red-500">*</span>
                   </Label>
                   <Input
-                    disabled={submitting}
+                    disabled={isSubmitting}
                     name="firstName"
                     icon={User}
                     placeholder="Lois"
@@ -96,7 +91,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                     Last Name<span className="text-red-500">*</span>
                   </Label>
                   <Input
-                    disabled={submitting}
+                    disabled={isSubmitting}
                     name="lastName"
                     icon={User}
                     placeholder="Becket"
@@ -111,7 +106,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                     Phone Number<span className="text-red-500">*</span>
                   </Label>
                   <Input
-                    disabled={submitting}
+                    disabled={isSubmitting}
                     name="phoneNumber"
                     icon={Phone}
                     type="tel"
@@ -129,7 +124,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                     Official Email Address<span className="text-red-500">*</span>
                   </Label>
                   <Input
-                    disabled={submitting}
+                    disabled={isSubmitting}
                     name="officialEmailAddress"
                     icon={Mail}
                     type="email"
@@ -147,7 +142,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                     Job Title<span className="text-red-500">*</span>
                   </Label>
                   <Input
-                    disabled={submitting}
+                    disabled={isSubmitting}
                     name="jobTitle"
                     icon={Briefcase}
                     placeholder="Manager"
@@ -180,7 +175,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                 iconColor="#000080"
               />
               <ContinueButton
-                isSubmitting={submitting}
+                isSubmitting={isSubmitting}
                 isLastStep={currentStep === totalSteps}
                 color="#000080"
               />

@@ -92,10 +92,10 @@ const CaseInfo: React.FC<IMEReferralFormProps> = ({
               render={({ field }) => (
                 <>
                   <Textarea
+                    disabled={isSubmitting}
                     {...field}
                     id="reason"
                     placeholder="Provide a detailed reason for the referral..."
-                    disabled={isFormDisabled}
                     className={`h-32 w-full max-w-full resize-none rounded-lg border-0 bg-[#F2F5F6] disabled:opacity-50 ${
                       errors.reason ? 'border-red-500' : ''
                     }`}
@@ -275,7 +275,7 @@ const CaseInfo: React.FC<IMEReferralFormProps> = ({
               iconColor="#000080"
             />
             <ContinueButton
-              isSubmitting={false}
+              isSubmitting={isSubmitting}
               isLastStep={currentStep === totalSteps}
               color="#000080"
               disabled={isSubmitting}

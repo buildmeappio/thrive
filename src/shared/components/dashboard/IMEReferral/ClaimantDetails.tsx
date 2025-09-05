@@ -32,7 +32,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
     handleSubmit,
     watch,
     setValue,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<ClaimantDetails>({
     resolver: zodResolver(ClaimantDetailsSchema),
     defaultValues: data.step1 || ClaimantDetailsInitialValues,
@@ -66,6 +66,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                     First Name<span className="text-red-500">*</span>
                   </Label>
                   <Input
+                    disabled={isSubmitting}
                     {...register('firstName')}
                     placeholder="John"
                     className={`w-full ${errors.firstName ? 'border-red-500' : ''}`}
@@ -80,6 +81,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                     Last Name<span className="text-red-500">*</span>
                   </Label>
                   <Input
+                    disabled={isSubmitting}
                     {...register('lastName')}
                     placeholder="Doe"
                     className={`w-full ${errors.lastName ? 'border-red-500' : ''}`}
@@ -95,6 +97,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                   </Label>
                   <div className="relative">
                     <Input
+                      disabled={isSubmitting}
                       {...register('dob')}
                       placeholder="MM/DD/YYYY"
                       type="date"
@@ -132,6 +135,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                     Phone<span className="text-red-500">*</span>
                   </Label>
                   <Input
+                    disabled={isSubmitting}
                     {...register('phone')}
                     placeholder="123456789"
                     className={`w-full ${errors.phone ? 'border-red-500' : ''}`}
@@ -145,6 +149,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                     Email Address<span className="text-red-500">*</span>
                   </Label>
                   <Input
+                    disabled={isSubmitting}
                     {...register('email')}
                     type="email"
                     placeholder="johndoe20@gmail.com"
@@ -161,6 +166,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                 </Label>
                 <div className="relative">
                   <Input
+                    disabled={isSubmitting}
                     {...register('addressLookup')}
                     placeholder="150 John Street"
                     className={`w-full pl-10 ${errors.addressLookup ? 'border-red-500' : ''}`}
@@ -178,6 +184,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                 <div className="min-w-0 space-y-2 md:col-span-3">
                   <Label htmlFor="street">Street Address</Label>
                   <Input
+                    disabled={isSubmitting}
                     {...register('street')}
                     placeholder="50 Stephanie Street"
                     className="w-full"
@@ -187,13 +194,23 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                 {/* Apt / Unit / Suite (smaller, equal to City) */}
                 <div className="min-w-0 space-y-2 md:col-span-1">
                   <Label htmlFor="apt">Apt / Unit / Suite</Label>
-                  <Input {...register('apt')} placeholder="402" className="w-full" />
+                  <Input
+                    disabled={isSubmitting}
+                    {...register('apt')}
+                    placeholder="402"
+                    className="w-full"
+                  />
                 </div>
 
                 {/* City (smaller, equal to Apt) */}
                 <div className="min-w-0 space-y-2 md:col-span-1">
                   <Label htmlFor="city">City</Label>
-                  <Input {...register('city')} placeholder="Toronto" className="w-full" />
+                  <Input
+                    disabled={isSubmitting}
+                    {...register('city')}
+                    placeholder="Toronto"
+                    className="w-full"
+                  />
                 </div>
               </div>
 
@@ -202,7 +219,12 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                 {/* Postal Code */}
                 <div className="min-w-0 space-y-2 md:col-span-1">
                   <Label htmlFor="postalCode">Postal Code</Label>
-                  <Input {...register('postalCode')} placeholder="7200" className="w-full" />
+                  <Input
+                    disabled={isSubmitting}
+                    {...register('postalCode')}
+                    placeholder="7200"
+                    className="w-full"
+                  />
                 </div>
 
                 {/* Province / State */}
@@ -230,7 +252,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                 iconColor="#000080"
               />
               <ContinueButton
-                isSubmitting={false}
+                isSubmitting={isSubmitting}
                 isLastStep={currentStep === totalSteps}
                 color="#000080"
               />

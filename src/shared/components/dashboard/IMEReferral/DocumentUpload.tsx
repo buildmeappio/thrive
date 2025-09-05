@@ -68,11 +68,16 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
           </h2>
 
           {/* Upload Box */}
-          <div className="mb-6 flex w-full max-w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-[#F9FAFB] px-4 py-12 text-center sm:px-6">
+          <div
+            className={`mb-6 flex w-full max-w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-[#F9FAFB] px-4 py-12 text-center sm:px-6 ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}
+          >
             <Upload className="mb-3 h-12 w-12 flex-shrink-0 text-indigo-600" />
             <p className="px-2 font-medium break-words text-gray-700">
               Drag & drop files or{' '}
-              <label htmlFor="fileUpload" className="cursor-pointer text-indigo-600 underline">
+              <label
+                htmlFor="fileUpload"
+                className={`cursor-pointer text-indigo-600 underline ${isSubmitting ? 'cursor-not-allowed' : ''}`}
+              >
                 Browse
               </label>
             </p>
@@ -83,6 +88,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
               accept={DocumentUploadConfig.ALLOWED_FILE_TYPES.join(',')}
               className="hidden"
               onChange={handleFileChange}
+              disabled={isSubmitting}
             />
             <p className="mt-2 px-2 text-sm break-words text-gray-500">
               Supported formats: JPEG, PNG, GIF, MP4, PDF, PSD, AI, Word, PPT
@@ -106,8 +112,9 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
                     <span className="min-w-0 flex-1 truncate pr-2 text-gray-700">{file.name}</span>
                     <button
                       type="button"
-                      className="flex-shrink-0 text-red-500 hover:text-red-700"
+                      className={`flex-shrink-0 text-red-500 hover:text-red-700 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
                       onClick={() => handleRemoveFile(file)}
+                      disabled={isSubmitting}
                       aria-label={`Remove ${file.name}`}
                     >
                       <X className="h-5 w-5" />
@@ -122,13 +129,13 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
           <div className="mt-8 flex justify-between px-4 md:mt-0 md:mb-0 md:px-0">
             <BackButton
               onClick={onPrevious}
-              disabled={currentStep === 1}
+              disabled={currentStep === 1 || isSubmitting}
               borderColor="#000080"
               iconColor="#000080"
             />
 
             <ContinueButton
-              isSubmitting={false}
+              isSubmitting={isSubmitting}
               isLastStep={currentStep === totalSteps}
               color="#000080"
               disabled={isSubmitting}

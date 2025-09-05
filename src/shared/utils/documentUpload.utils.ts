@@ -93,8 +93,8 @@ export function validateSingleFile(file: File): FileValidationResult {
   }
 
   // Large file warning (not error, but heads up)
-  if (file.size > 5 * 1024 * 1024) {
-    // 5MB
+  if (file.size > 10 * 1024 * 1024) {
+    // 10MB
     warnings.push(
       `${file.name}: Large file size (${formatFileSize(file.size)}) - upload may take longer`
     );
@@ -145,8 +145,8 @@ export function validateFileArray(files: File[]): FileValidationResult {
 
   // Total size warning
   const totalSize = files.reduce((sum, file) => sum + file.size, 0);
-  if (totalSize > 50 * 1024 * 1024) {
-    // 50MB total
+  if (totalSize > 100 * 1024 * 1024) {
+    // 100MB total
     warnings.push(`Total upload size is ${formatFileSize(totalSize)} - this may take a while`);
   }
 

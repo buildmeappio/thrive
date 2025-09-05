@@ -1,7 +1,6 @@
 // Step 1
 'use client';
 
-import React, { useState } from 'react';
 import { Label } from '@/shared/components/ui/label';
 import { Globe, MapPin } from 'lucide-react';
 import { Input } from '@/shared/components/ui';
@@ -35,15 +34,12 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
   totalSteps = 3,
   organizationTypes: organizationTypeOptions,
 }) => {
-  const [submitting, setSubmitting] = useState(false);
   const { setData, data } = useRegistrationStore();
 
   const handleSubmit = async (
     values: typeof OrganizationInfoInitialValues,
     actions: FormikHelpers<typeof OrganizationInfoInitialValues>
   ) => {
-    setSubmitting(true);
-
     try {
       const exists = await checkOrganizationNameAction(values.organizationName);
 
@@ -59,8 +55,6 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
       }
     } catch (error) {
       console.error('Error during submission:', error);
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -78,7 +72,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
         validateOnChange={false}
         validateOnBlur={false}
       >
-        {({ values, errors, handleChange, setFieldValue }) => (
+        {({ values, errors, handleChange, setFieldValue, isSubmitting }) => (
           <Form>
             <div className="space-y-6 px-4 md:space-y-14 md:px-0">
               <div className="pt-1 md:pt-4">
@@ -107,7 +101,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                         Organization Name<span className="text-red-500">*</span>
                       </Label>
                       <Input
-                        disabled={submitting}
+                        disabled={isSubmitting}
                         id="organizationName"
                         name="organizationName"
                         placeholder="Desjardins"
@@ -132,7 +126,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                       <div className="relative">
                         <MapPin className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
                         <Input
-                          disabled={submitting}
+                          disabled={isSubmitting}
                           id="addressLookup"
                           name="addressLookup"
                           placeholder="150 John Street"
@@ -157,7 +151,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                         Street Address
                       </Label>
                       <Input
-                        disabled={submitting}
+                        disabled={isSubmitting}
                         id="streetAddress"
                         name="streetAddress"
                         placeholder="50 Stephanie Street"
@@ -175,7 +169,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                         Apt / Unit / Suite
                       </Label>
                       <Input
-                        disabled={submitting}
+                        disabled={isSubmitting}
                         id="aptUnitSuite"
                         name="aptUnitSuite"
                         placeholder="402"
@@ -189,7 +183,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                         City
                       </Label>
                       <Input
-                        disabled={submitting}
+                        disabled={isSubmitting}
                         id="city"
                         name="city"
                         placeholder="Toronto"
@@ -207,7 +201,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                         Postal Code
                       </Label>
                       <Input
-                        disabled={submitting}
+                        disabled={isSubmitting}
                         id="postalCode"
                         name="postalCode"
                         placeholder="7200"
@@ -244,7 +238,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                       <div className="relative">
                         <Globe className="pointer-events-none absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
                         <Input
-                          disabled={submitting}
+                          disabled={isSubmitting}
                           id="organizationWebsite"
                           name="organizationWebsite"
                           type="url"
@@ -270,7 +264,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                   iconColor="#000080"
                 />
                 <ContinueButton
-                  isSubmitting={submitting}
+                  isSubmitting={isSubmitting}
                   isLastStep={currentStep === totalSteps}
                   color="#000080"
                 />

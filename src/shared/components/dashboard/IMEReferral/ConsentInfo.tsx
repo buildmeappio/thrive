@@ -69,6 +69,7 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
           <div className="mb-8 w-full max-w-full md:mb-12">
             <div className="flex w-full max-w-full items-start gap-3">
               <Checkbox
+                disabled={isSubmitting}
                 id="consentConfirmation"
                 checked={isChecked}
                 onCheckedChange={(checked: boolean) =>
@@ -128,7 +129,7 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
                 </Button>
 
                 <ContinueButton
-                  isSubmitting={false}
+                  isSubmitting={isSubmitting}
                   isLastStep={currentStep === totalSteps}
                   color="#000080"
                   disabled={isSubmitting}

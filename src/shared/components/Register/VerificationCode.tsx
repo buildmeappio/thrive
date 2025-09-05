@@ -22,7 +22,6 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
 }) => {
   const [code, setCode] = useState(['', '', '', '']);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const [submitting, setSubmitting] = useState(false);
   const [resending, setResending] = useState(false);
   const { setData, data } = useRegistrationStore();
   const email = data.step2?.officialEmailAddress;
@@ -88,7 +87,6 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
     actions: FormikHelpers<typeof VerificationCodeInitialValues>
   ) => {
     try {
-      setSubmitting(true);
       setData('step4', values);
 
       const otp = values.code;
@@ -109,8 +107,6 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
       actions.setSubmitting(false);
     } catch (error) {
       console.log(error);
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -128,7 +124,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
         validateOnChange={false}
         validateOnBlur={false}
       >
-        {({ setFieldValue, errors, setFieldError }) => {
+        {({ setFieldValue, errors, setFieldError, isSubmitting }) => {
           return (
             <Form>
               <div className="mt-6 flex min-h-[400px] flex-col items-center justify-center space-y-10 sm:mt-8 sm:space-y-12">
@@ -142,7 +138,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                 <div className="flex w-full max-w-[400px] justify-between gap-2 sm:gap-4">
                   {code.map((digit, index) => (
                     <input
-                      disabled={submitting}
+                      disabled={isSubmitting}
                       key={index}
                       ref={el => {
                         inputRefs.current[index] = el;
@@ -175,7 +171,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                   <p className="text-base font-normal text-[#000000] sm:text-lg">
                     Didn't get OTP?{' '}
                     <button
-                      disabled={submitting}
+                      disabled={isSubmitting}
                       type="button"
                       onClick={onResendCode}
                       className="font-medium text-[#0B0BB0] underline hover:text-[#0088cc]"
@@ -194,7 +190,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                     iconColor="#000080"
                   />
                   <ContinueButton
-                    isSubmitting={submitting}
+                    isSubmitting={isSubmitting}
                     isLastStep={currentStep === totalSteps}
                     color="#000080"
                   />

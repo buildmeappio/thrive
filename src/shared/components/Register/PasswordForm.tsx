@@ -1,5 +1,5 @@
 // Step 5
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/shared/components/ui';
@@ -25,9 +25,8 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
   const { setData, data } = useRegistrationStore();
@@ -37,7 +36,6 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
     actions: FormikHelpers<typeof PasswordInitialValues>
   ) => {
     try {
-      setSubmitting(true);
       setData('step5', values);
 
       const updatedData = {
@@ -86,7 +84,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
         validateOnChange={false}
         validateOnBlur={false}
       >
-        {({ values, errors, handleChange }) => (
+        {({ values, errors, handleChange, isSubmitting }) => (
           <Form>
             <div className="md:space-y-24">
               <div className="mx-auto mt-4 w-full px-4 pb-8 md:mt-12 md:max-w-[460px] md:px-0">
@@ -97,7 +95,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                     </Label>
                     <div className="relative">
                       <Input
-                        disabled={submitting}
+                        disabled={isSubmitting}
                         name="password"
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Enter your password"
@@ -122,7 +120,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                     </Label>
                     <div className="relative">
                       <Input
-                        disabled={submitting}
+                        disabled={isSubmitting}
                         name="confirmPassword"
                         type={showConfirmPassword ? 'text' : 'password'}
                         placeholder="Enter your password"
@@ -153,7 +151,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                   iconColor="#000080"
                 />
                 <ContinueButton
-                  isSubmitting={submitting}
+                  isSubmitting={isSubmitting}
                   isLastStep={currentStep === totalSteps}
                   color="#000080"
                 />
