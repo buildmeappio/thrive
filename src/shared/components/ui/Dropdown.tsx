@@ -46,9 +46,11 @@ export const Dropdown: React.FC<DropdownProps> = ({
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger
           id={id}
-          className="relative h-[45px] w-full rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 pl-10 text-[14px] font-normal tracking-[0.5%] text-[#A4A4A4] shadow-none focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none md:h-[55px] [&>svg]:hidden"
+          className={`relative h-[45px] w-full rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 text-[14px] font-normal tracking-[0.5%] text-[#A4A4A4] shadow-none focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none md:h-[55px] [&>svg]:hidden ${
+            icon ? 'pl-10' : 'pl-3'
+          }`}
         >
-          <div className="absolute top-1/2 left-3 -translate-y-1/2">{icon}</div>
+          {icon && <div className="absolute top-1/2 left-3 -translate-y-1/2">{icon}</div>}
           <SelectValue placeholder={placeholder} />
           <div className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2">
             <ChevronDown className="h-4 w-4 text-[#A4A4A4]" />

@@ -42,7 +42,7 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
     const name = session?.user?.firstName || 'User';
     return (
       <span className="text-[#000000]">
-        Welcome, <span className="text-[#000093]">{name}</span> from Desjardins!
+        Welcome, <span className="text-[#000093]">{name}</span>!
       </span>
     );
   };
