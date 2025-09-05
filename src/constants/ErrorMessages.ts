@@ -80,4 +80,7 @@ export default Object.freeze({
   FILE_CORRUPTED: 'File appears to be corrupted or empty',
   UNAUTHORIZED: 'Unauthorized access',
   FAILED_TO_CREATE_IME_REFERRAL: 'Failed to create IME referral',
+  STREET_REQUIRED: 'Street required',
+  CITY_REQUIRED: 'City required',
+  POSTAL_CODE_REQUIRED: 'Postal Code required',
 });

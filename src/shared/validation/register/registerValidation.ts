@@ -8,10 +8,10 @@ export const OrganizationInfoSchema = Yup.object({
   addressLookup: Yup.string()
     .min(5, ErrorMessages.ADDRESS_LOOKUP_MIN)
     .required(ErrorMessages.ADDRESS_LOOKUP_REQUIRED),
-  streetAddress: Yup.string().optional(),
+  streetAddress: Yup.string().required(ErrorMessages.STREET_REQUIRED),
   aptUnitSuite: Yup.string().optional(),
-  city: Yup.string().optional(),
-  postalCode: Yup.string().optional(),
+  city: Yup.string().required(ErrorMessages.CITY_REQUIRED),
+  postalCode: Yup.string().required(ErrorMessages.POSTAL_CODE_REQUIRED),
   provinceOfResidence: Yup.string().optional(),
   organizationWebsite: Yup.string().url(ErrorMessages.INVALID_URL).optional(),
 });
