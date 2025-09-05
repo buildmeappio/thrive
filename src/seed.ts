@@ -5,12 +5,18 @@ import RoleSeeder from './seeders/role.seeder';
 import OrganizationTypeSeeder from './seeders/organizationType.seeder';
 import DepartmentSeeder from './seeders/department.seeder';
 import AdminSeeder from './seeders/admin.seeder';
+import CaseTypeSeeder from './seeders/caseType.seeder';
+import ExamFormatSeeder from './seeders/examFormat.seeder';
+import RequestedSpecialtySeeder from './seeders/RequestedSpecialty.seeder';
 
 const seeds = [
     RoleSeeder,
     OrganizationTypeSeeder,
     DepartmentSeeder,
     AdminSeeder,
+    CaseTypeSeeder,
+    ExamFormatSeeder,
+    RequestedSpecialtySeeder
 ];
 
 const prisma = new PrismaClient();

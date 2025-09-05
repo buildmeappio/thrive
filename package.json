@@ -7,7 +7,8 @@
     "migrate": "prisma migrate dev",
     "studio": "prisma studio",
     "seed": "prisma db seed",
-    "dev": "tsx watch src/seed.ts"
+    "dev": "tsx watch src/seed.ts",
+    "docker:up": "docker compose -f docker-compose.dev.yaml up -d"
   },
   "repository": {
     "type": "git",
