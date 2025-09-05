@@ -1,5 +1,6 @@
 import ErrorMessages from '@/constants/ErrorMessages';
 import prisma from '@/shared/lib/prisma';
+import { getCurrentUser, saveFileToStorage } from '@/shared/utils/imeCreation.utils';
 import {
   type Organization,
   type Department,
@@ -256,6 +257,148 @@ const getRequestedSpecialty = async (): Promise<RequestedSpecialty[]> => {
   });
 };
 
+interface CreateIMEReferralData {
+  firstName: string;
+  lastName: string;
+  dob: string;
+  gender: string;
+  phone: string;
+  email: string;
+  addressLookup: string;
+  street?: string;
+  apt?: string;
+  city?: string;
+  postalCode?: string;
+  province?: string;
+  reason: string;
+  caseType: string;
+  urgencyLevel: string;
+  examFormat: string;
+  requestedSpecialty: string;
+  preferredLocation: string;
+  files: File[];
+  consentConfirmation: boolean;
+}
+
+export const createIMEReferralWithClaimant = async (data: CreateIMEReferralData) => {
+  return prisma.$transaction(async tx => {
+    const address = await tx.address.create({
+      data: {
+        address: data.addressLookup,
+        street: data.street || '',
+        suite: data.apt || '',
+        city: data.city || '',
+        province: data.province || '',
+        postalCode: data.postalCode || '',
+      },
+    });
+
+    const claimant = await tx.claimant.create({
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        dateOfBirth: new Date(data.dob),
+        gender: data.gender,
+        phoneNumber: data.phone,
+        emailAddress: data.email,
+        addressId: address.id,
+      },
+    });
+
+    const caseNumber = `IME-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      throw new Error('User not authenticated');
+    }
+
+    const organizationManager = await tx.organizationManager.findFirst({
+      where: {
+        accountId: currentUser.accountId,
+      },
+    });
+
+    async function normalizeRelation(table: any, value: string) {
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+      if (uuidRegex.test(value)) {
+        return { connect: { id: value } };
+      }
+
+      let record = await table.findFirst({ where: { name: value } });
+
+      if (!record) {
+        record = await table.findFirst({
+          where: { name: { equals: value.replace(/_/g, ' '), mode: 'insensitive' } },
+        });
+      }
+
+      if (!record) {
+        const existing = await table.findMany({ select: { id: true, name: true } });
+        console.error(`❌ Invalid relation value: ${value}. Available:`, existing);
+        throw new Error(`Invalid relation value: ${value}`);
+      }
+
+      return { connect: { id: record.id } };
+    }
+
+    const caseTypeRelation = await normalizeRelation(tx.caseType, data.caseType);
+    const examFormatRelation = await normalizeRelation(tx.examFormat, data.examFormat);
+    const requestedSpecialtyRelation = await normalizeRelation(
+      tx.requestedSpecialty,
+      data.requestedSpecialty
+    );
+
+    const imeReferral = await tx.iMEReferral.create({
+      data: {
+        caseNumber,
+        examiner: { connect: { id: currentUser.accountId! } },
+        organization: organizationManager?.organizationId
+          ? { connect: { id: organizationManager.organizationId } }
+          : undefined,
+        claimant: { connect: { id: claimant.id } },
+
+        caseType: caseTypeRelation,
+        examFormat: examFormatRelation,
+        requestedSpecialty: requestedSpecialtyRelation,
+
+        reasonForReferral: data.reason,
+        bodyPartConcern: data.urgencyLevel,
+        preferredLocation: data.preferredLocation,
+      },
+    });
+
+    const documentIds: string[] = [];
+    for (const file of data.files) {
+      await saveFileToStorage(file);
+
+      const document = await tx.documents.create({
+        data: {
+          name: file.name,
+          type: file.type,
+          size: file.size,
+        },
+      });
+
+      await tx.referralDocument.create({
+        data: {
+          referralId: imeReferral.id,
+          documentId: document.id,
+        },
+      });
+
+      documentIds.push(document.id);
+    }
+
+    return {
+      referralId: imeReferral.id,
+      claimantId: claimant.id,
+      caseNumber,
+      documentIds,
+    };
+  });
+};
+
 const handler = {
   findOrganizationByName,
   findUserByEmail,
@@ -267,5 +410,6 @@ const handler = {
   getCaseType,
   getExamFormat,
   getRequestedSpecialty,
+  createIMEReferralWithClaimant,
 };
 export default handler;

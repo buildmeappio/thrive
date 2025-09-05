@@ -14,6 +14,9 @@ import {
 } from '@/shared/validation/imeReferral/imeReferralValidation';
 import { Button } from '../../ui';
 import { ArrowRight } from 'lucide-react';
+import { createIMEReferralAction } from '@/features/organization.actions';
+import { useIMEReferralStore } from '@/store/useIMEReferralStore';
+import { toast } from 'sonner';
 
 type ConsentInfoProps = {
   onNext?: () => void;
@@ -28,28 +31,59 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
   currentStep,
   totalSteps,
 }) => {
+  const { data, setData, reset } = useIMEReferralStore();
+
   const {
     watch,
     setValue,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<Consent>({
-    defaultValues: ConsentInitialValues,
+    defaultValues: {
+      ...ConsentInitialValues,
+      ...data.step4,
+    },
     resolver: zodResolver(ConsentSchema),
     mode: 'onBlur',
   });
 
   const isChecked = watch('consentConfirmation');
 
-  const handleFormSubmit = (values: Consent) => {
-    console.log('Form Submitted:', values);
-    if (onNext) onNext();
+  const handleFormSubmit = async (values: Consent) => {
+    try {
+      setData('step4', values);
+
+      const completeData = {
+        ...data,
+        step4: values,
+      };
+
+      if (
+        !completeData.step1 ||
+        !completeData.step2 ||
+        !completeData.step3 ||
+        !completeData.step4
+      ) {
+        toast.error('Please complete all steps before submitting');
+        return;
+      }
+
+      const result = await createIMEReferralAction(completeData);
+      if (result) {
+        toast.success('IME Referral submitted successfully');
+        reset();
+      }
+
+      if (onNext) onNext();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Submission failed');
+    }
   };
 
   const handleSaveDraft = () => {
     const currentValues = { consentConfirmation: isChecked };
-    console.log('Saving draft:', currentValues);
-    // add actual save logic
+    setData('step4', currentValues);
+    toast.success('Draft saved successfully');
   };
 
   return (
@@ -58,14 +92,12 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
 
       <div className="w-full max-w-full rounded-4xl bg-white p-4 sm:p-6 md:p-10">
         <form onSubmit={handleSubmit(handleFormSubmit)} noValidate className="w-full max-w-full">
-          {/* Header */}
           <header className="mb-6 w-full max-w-full md:mb-8">
             <h2 className="text-2xl leading-tight font-semibold tracking-[-0.02em] break-words text-[#000000] sm:text-3xl md:text-[36.02px] md:leading-[36.02px]">
               Consent Confirmation
             </h2>
           </header>
 
-          {/* Consent Checkbox */}
           <div className="mb-8 w-full max-w-full md:mb-12">
             <div className="flex w-full max-w-full items-start gap-3">
               <Checkbox
@@ -94,7 +126,6 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
             )}
           </div>
 
-          {/* Legal Disclaimer */}
           <div className="mb-10 w-full max-w-full md:mb-12">
             <h2 className="mb-4 text-lg font-medium break-words text-gray-900">Legal Disclaimer</h2>
             <p className="text-sm leading-relaxed break-words text-gray-600">
@@ -106,9 +137,7 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
             </p>
           </div>
 
-          {/* Navigation Buttons */}
           <div className="flex w-full max-w-full flex-col gap-4">
-            {/* Back and Continue Buttons - Side by side on all screens */}
             <div className="flex w-full flex-row items-center justify-between gap-2">
               <BackButton
                 onClick={onPrevious}
@@ -118,7 +147,6 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
               />
 
               <div className="flex gap-2">
-                {/* Save Draft Button - Hidden on small screens, visible on large screens */}
                 <Button
                   type="button"
                   onClick={handleSaveDraft}
@@ -137,7 +165,6 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
               </div>
             </div>
 
-            {/* Save Draft Button - Visible on small screens, hidden on large screens */}
             <Button
               type="button"
               onClick={handleSaveDraft}

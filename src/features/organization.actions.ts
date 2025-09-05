@@ -4,6 +4,7 @@ import ErrorMessages from '@/constants/ErrorMessages';
 import organizationService from './organization.service';
 import { type FormData } from '@/store/useRegistrationStore';
 import { getServerSession } from 'next-auth';
+import type { IMEFormData } from '@/store/useIMEReferralStore';
 
 export const checkOrganizationNameAction = async (name: string): Promise<boolean> => {
   try {
@@ -120,6 +121,17 @@ export const getRequestedSpecialtyAction = async () => {
     const message =
       error instanceof Error ? error.message : ErrorMessages.FAILED_GET_REQUESTED_SPECIALTY;
     console.error(ErrorMessages.FAILED_GET_REQUESTED_SPECIALTY, error);
+    throw new Error(message);
+  }
+};
+
+export const createIMEReferralAction = async (data: IMEFormData) => {
+  try {
+    return await organizationService.createIMEReferralService(data);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : ErrorMessages.FAILED_CREATE_IME_REFERRAL;
+    console.error(ErrorMessages.FAILED_CREATE_IME_REFERRAL, error);
     throw new Error(message);
   }
 };

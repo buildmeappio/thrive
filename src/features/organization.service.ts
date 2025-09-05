@@ -4,6 +4,7 @@ import { verifyPasswordToken } from '@/lib/jwt';
 import handler from './organization.handler';
 import { type FormData } from '@/store/useRegistrationStore';
 import ErrorMessages from '@/constants/ErrorMessages';
+import type { IMEFormData } from '@/store/useIMEReferralStore';
 
 const checkOrganizationNameService = async (name: string): Promise<boolean> => {
   if (!name) return false;
@@ -80,10 +81,40 @@ const getRequestedSpecialtyService = async () => {
   return { success: true, result: await handler.getRequestedSpecialty() };
 };
 
+const createIMEReferralService = async (data: IMEFormData) => {
+  if (!data.step1 || !data.step2 || !data.step3 || !data.step4) {
+    throw new Error(ErrorMessages.STEPS_REQUIRED);
+  }
+
+  return handler.createIMEReferralWithClaimant({
+    firstName: data.step1.firstName,
+    lastName: data.step1.lastName,
+    dob: data.step1.dob,
+    gender: data.step1.gender,
+    phone: data.step1.phone,
+    email: data.step1.email,
+    addressLookup: data.step1.addressLookup,
+    street: data.step1.street,
+    apt: data.step1.apt,
+    city: data.step1.city,
+    postalCode: data.step1.postalCode,
+    province: data.step1.province,
+    reason: data.step2.reason,
+    caseType: data.step2.caseType,
+    urgencyLevel: data.step2.urgencyLevel,
+    examFormat: data.step2.examFormat,
+    requestedSpecialty: data.step2.requestedSpecialty,
+    preferredLocation: data.step2.preferredLocation,
+    files: data.step3.files,
+    consentConfirmation: data.step4.consentConfirmation,
+  });
+};
+
 const organizationService = {
   checkOrganizationNameService,
   checkUserEmailService,
   registerOrganizationService,
+  createIMEReferralService,
   finalizeOrganizationRegistrationService,
   getOrganizationTypeService,
   getDepartmentService,

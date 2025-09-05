@@ -1,0 +1,59 @@
+'use client';
+
+import {
+  CaseInfo,
+  ConsentInfo,
+  DocumentUpload,
+  ReferralSubmitted,
+} from '@/shared/components/Dashboard';
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+
+export default function OrganizationDashboardPage() {
+  const [isLoading, setIsLoading] = useState(false);
+  const { data: session } = useSession();
+
+  console.log(session)
+  const handleAccept = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/organization/accept', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: 'your-org-id'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to accept organization');
+      }
+
+      const result = await response.json();
+      alert('Organization accepted!');
+    } catch (error) {
+      alert('Error accepting organization');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-6">
+      <button 
+        onClick={handleAccept} 
+        disabled={isLoading}
+        className="mb-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+      >
+        {isLoading ? 'Loading...' : 'Accept Organization'}
+      </button>
+      
+      <CaseInfo />
+      <DocumentUpload />
+      <ConsentInfo />
+      <ReferralSubmitted />
+    </div>
+  );
+}

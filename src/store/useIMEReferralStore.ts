@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type FormData = {
+export type IMEFormData = {
   step1?: {
     firstName: string;
     lastName: string;
@@ -32,8 +32,8 @@ export type FormData = {
 };
 
 type FormStore = {
-  data: FormData;
-  setData: <K extends keyof FormData>(step: K, value: FormData[K]) => void;
+  data: IMEFormData;
+  setData: <K extends keyof IMEFormData>(step: K, value: IMEFormData[K]) => void;
   reset: () => void;
 };
 

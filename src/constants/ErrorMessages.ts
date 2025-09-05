@@ -91,4 +91,5 @@ export default Object.freeze({
   JOB_TITLE_INVALID: 'Job title should only contain alphabets, spaces, hyphens, or apostrophes',
   DEPARTMENT_INVALID: 'Department should only contain alphabets, spaces, hyphens, or apostrophes',
   DOB_INVALID: 'Invalid Date of birth',
+  FAILED_CREATE_IME_REFERRAL: 'Failed to create IME referral',
 });
