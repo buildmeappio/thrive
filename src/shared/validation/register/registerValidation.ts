@@ -65,9 +65,7 @@ export const OfficeDetailsSchema = Yup.object({
     .matches(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.JOB_TITLE_INVALID)
     .required(ErrorMessages.JOB_TITLE_REQUIRED),
 
-  department: Yup.string()
-    .matches(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.DEPARTMENT_INVALID)
-    .required(ErrorMessages.DEPARTMENT_REQUIRED),
+  department: Yup.string().required(ErrorMessages.DEPARTMENT_REQUIRED),
 });
 
 export const OfficeDetailsInitialValues = {
