@@ -8,7 +8,6 @@ import {
   type User,
   type ExamFormat,
   type RequestedSpecialty,
-  OrganizationStatus,
 } from '@prisma/client';
 
 export const findOrganizationByName = async (name: string): Promise<Organization | null> => {
@@ -168,33 +167,50 @@ const getDepartments = async (): Promise<Department[]> => {
   });
 };
 
-const acceptOrganization = async (id: string): Promise<Organization | null> => {
+const acceptOrganization = async (userId: string) => {
   const organization = await prisma.organization.findFirst({
     where: {
-      id,
       deletedAt: null,
+      manager: {
+        some: {
+          account: {
+            userId,
+          },
+        },
+      },
+    },
+    include: {
+      manager: {
+        include: {
+          account: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      },
     },
   });
 
   if (!organization) throw new Error(ErrorMessages.ORG_NOT_FOUND);
 
-  if (organization.status === OrganizationStatus.ACCEPTED) {
-    throw new Error(ErrorMessages.ORG_ALREADY_ACCEPTED);
-  }
+  // if (organization.status === 'ACCEPTED') {
+  //   throw new Error(ErrorMessages.ORG_ALREADY_ACCEPTED);
+  // }
 
   const updatedOrganization = await prisma.organization.update({
     where: {
-      id,
-      deletedAt: null,
+      id: organization.id,
     },
     data: {
-      status: OrganizationStatus.ACCEPTED,
+      status: 'ACCEPTED',
     },
   });
+
   return updatedOrganization;
 };
 
-const getOrganization = async (id: string): Promise<Organization | null> => {
+const getOrganization = async (id: string): Promise<Organization> => {
   const organization = await prisma.organization.findFirst({
     where: {
       id,
@@ -203,10 +219,6 @@ const getOrganization = async (id: string): Promise<Organization | null> => {
   });
 
   if (!organization) throw new Error(ErrorMessages.ORG_NOT_FOUND);
-
-  if (organization.status === OrganizationStatus.ACCEPTED) {
-    throw new Error(ErrorMessages.ORG_ALREADY_ACCEPTED);
-  }
 
   return organization;
 };

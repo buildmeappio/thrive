@@ -18,7 +18,7 @@ const BackButton: React.FC<BackButtonProps> = ({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-[35px] w-[165px] items-center justify-center rounded-[34px] border px-4 py-3 transition-all duration-300 ease-in-out md:h-[45px] md:gap-1.5 ${
+      className={`flex h-[35px] w-[120px] items-center justify-center rounded-[34px] border px-4 py-3 transition-all duration-300 ease-in-out md:h-[45px] md:w-[165px] md:gap-1.5 ${
         disabled
           ? 'cursor-not-allowed bg-transparent text-[#555555]'
           : 'cursor-pointer hover:opacity-90'

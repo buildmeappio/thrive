@@ -59,18 +59,18 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
   };
 
   return (
-    <>
+    <div className="w-full max-w-full overflow-x-hidden">
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
-      <div className="rounded-4xl bg-white p-4 sm:p-6 md:p-10">
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <h2 className="mb-6 text-[36.02px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000] md:mb-8">
+      <div className="w-full max-w-full rounded-4xl bg-white p-4 sm:p-6 md:p-10">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-full">
+          <h2 className="mb-6 text-2xl leading-tight font-semibold tracking-[-0.02em] break-words text-[#000000] sm:text-3xl md:mb-8 md:text-[36.02px] md:leading-[36.02px]">
             Document Upload
           </h2>
 
           {/* Upload Box */}
-          <div className="mb-6 flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-[#F9FAFB] px-6 py-12 text-center">
-            <Upload className="mb-3 h-12 w-12 text-indigo-600" />
-            <p className="font-medium text-gray-700">
+          <div className="mb-6 flex w-full max-w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-[#F9FAFB] px-4 py-12 text-center sm:px-6">
+            <Upload className="mb-3 h-12 w-12 flex-shrink-0 text-indigo-600" />
+            <p className="px-2 font-medium break-words text-gray-700">
               Drag & drop files or{' '}
               <label htmlFor="fileUpload" className="cursor-pointer text-indigo-600 underline">
                 Browse
@@ -84,11 +84,11 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
               className="hidden"
               onChange={handleFileChange}
             />
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 px-2 text-sm break-words text-gray-500">
               Supported formats: JPEG, PNG, GIF, MP4, PDF, PSD, AI, Word, PPT
             </p>
             {errors.files && (
-              <p className="mt-2 text-sm text-red-600" role="alert">
+              <p className="mt-2 px-2 text-sm break-words text-red-600" role="alert">
                 {errors.files.message}
               </p>
             )}
@@ -96,27 +96,30 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
 
           {/* File List */}
           {files.length > 0 && (
-            <ul className="mb-6 space-y-2">
-              {files.map((file, idx) => (
-                <li
-                  key={idx}
-                  className="flex items-center justify-between rounded-lg border bg-white px-4 py-2 shadow-sm"
-                >
-                  <span className="truncate text-gray-700">{file.name}</span>
-                  <button
-                    type="button"
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => handleRemoveFile(file)}
+            <div className="mb-6 w-full max-w-full">
+              <ul className="space-y-2">
+                {files.map((file, idx) => (
+                  <li
+                    key={idx}
+                    className="flex w-full max-w-full min-w-0 items-center justify-between rounded-lg border bg-white px-4 py-2 shadow-sm"
                   >
-                    <X className="h-5 w-5" />
-                  </button>
-                </li>
-              ))}
-            </ul>
+                    <span className="min-w-0 flex-1 truncate pr-2 text-gray-700">{file.name}</span>
+                    <button
+                      type="button"
+                      className="flex-shrink-0 text-red-500 hover:text-red-700"
+                      onClick={() => handleRemoveFile(file)}
+                      aria-label={`Remove ${file.name}`}
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
           {/* Navigation Buttons */}
-          <div className="flex flex-row justify-center gap-4 md:justify-between">
+          <div className="mt-8 flex justify-between px-4 md:mt-0 md:mb-0 md:px-0">
             <BackButton
               onClick={onPrevious}
               disabled={currentStep === 1}
@@ -133,7 +136,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
           </div>
         </form>
       </div>
-    </>
+    </div>
   );
 };
 

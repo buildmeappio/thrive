@@ -1,11 +1,13 @@
 'use client';
 import React from 'react';
 import { Button } from '@/shared/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 const ReferralSubmitted: React.FC = () => {
+  const router = useRouter();
+
   const handleGoToDashboard = () => {
-    // Navigate to dashboard logic here
-    console.log('Navigating to dashboard...');
+    router.push('/dashboard');
   };
 
   return (
@@ -47,7 +49,7 @@ const ReferralSubmitted: React.FC = () => {
           <Button
             variant="outline"
             onClick={handleGoToDashboard}
-            className="flex w-full items-center justify-center rounded-full border-[#000093] bg-white px-6 py-2 whitespace-nowrap text-gray-600 hover:bg-gray-50 sm:w-auto sm:px-8 md:px-10"
+            className="flex h-[45px] w-full items-center justify-center rounded-full border-[#000093] bg-white px-6 py-2 whitespace-nowrap text-gray-600 hover:bg-gray-50 sm:w-auto sm:px-8 md:px-10"
           >
             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -62,7 +64,7 @@ const ReferralSubmitted: React.FC = () => {
 
           <Button
             onClick={handleGoToDashboard}
-            className="flex w-full items-center justify-center rounded-full bg-[#000093] px-6 py-2 whitespace-nowrap text-white hover:bg-blue-700 sm:w-auto sm:px-8 md:px-10"
+            className="flex h-[45px] w-[150px] items-center justify-center rounded-full bg-[#000093] whitespace-nowrap text-white hover:bg-blue-700 sm:w-auto sm:px-8 md:px-10"
           >
             Go to Dashboard
             <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

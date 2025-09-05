@@ -28,7 +28,7 @@ const ContinueButton: React.FC<ContinueButtonProps> = ({
     <button
       type="submit"
       onClick={onClick}
-      className={`flex h-[35px] w-[182px] items-center justify-center rounded-[34px] px-4 py-3 text-white transition-all duration-300 ease-in-out hover:opacity-90 md:h-[45px] md:gap-1.5 ${
+      className={`flex h-[35px] w-[120px] items-center justify-center rounded-[34px] px-4 py-3 text-white transition-all duration-300 ease-in-out hover:opacity-90 md:h-[45px] md:w-[182px] md:gap-1.5 ${
         isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
       }`}
       style={backgroundStyle}

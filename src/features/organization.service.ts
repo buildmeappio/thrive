@@ -29,6 +29,7 @@ const registerOrganizationService = async (data: FormData) => {
     ...data.step1,
     ...data.step2,
     ...data.step3,
+    ...data.step4,
     hashedPassword,
   });
 };

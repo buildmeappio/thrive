@@ -122,7 +122,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
           <div className="mb-4 px-8">
             <button
               onClick={handleNewReferral}
-              className="flex w-full items-center justify-center space-x-2 rounded-full bg-[#000093] px-6 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90"
+              className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#000093] px-6 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90"
             >
               <Plus size={20} strokeWidth={2} className="h-5 w-5 text-white" />
               <span className="text-sm">New IME Referral</span>

@@ -14,7 +14,6 @@ declare module 'next-auth' {
       lastName: string | null;
       role: Role | null;
       accountId: string | null;
-      organizationId: string | null;
     } & DefaultSession['user'];
   }
 
@@ -25,7 +24,6 @@ declare module 'next-auth' {
     lastName: string | null;
     role: Role | null;
     accountId: string | null;
-    organizationId: string | null;
   }
 }
 
@@ -43,10 +41,6 @@ const authorize = async (credentials: Record<'email' | 'password', string> | und
       accounts: {
         include: {
           role: true,
-          managers: {
-            where: { deletedAt: null },
-            select: { organizationId: true },
-          },
         },
       },
     },
@@ -58,7 +52,6 @@ const authorize = async (credentials: Record<'email' | 'password', string> | und
   if (!isPasswordValid) return null;
 
   const account = user.accounts[0];
-  const organizationId = account?.managers[0]?.organizationId || null;
 
   return {
     id: user.id,
@@ -67,7 +60,6 @@ const authorize = async (credentials: Record<'email' | 'password', string> | und
     lastName: user.lastName,
     role: account?.role || null,
     accountId: account?.id || null,
-    organizationId,
   };
 };
 
@@ -93,7 +85,6 @@ export const authOptions: NextAuthOptions = {
         token.lastName = user.lastName;
         token.role = user.role;
         token.accountId = user.accountId;
-        token.organizationId = user.organizationId;
       }
       return token;
     },
@@ -104,7 +95,6 @@ export const authOptions: NextAuthOptions = {
         session.user.lastName = token.lastName as string | null;
         session.user.role = token.role as Role | null;
         session.user.accountId = token.accountId as string | null;
-        session.user.organizationId = token.organizationId as string | null;
       }
       return session;
     },

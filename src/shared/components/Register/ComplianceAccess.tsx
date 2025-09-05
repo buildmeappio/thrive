@@ -68,6 +68,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                 {/* Terms & Conditions Checkbox */}
                 <div className="flex items-start space-x-3 md:items-center">
                   <Checkbox
+                    disabled={submitting}
                     id="agreeTermsConditions"
                     checked={values.agreeTermsConditions}
                     onCheckedChange={checked => setFieldValue('agreeTermsConditions', checked)}
@@ -104,6 +105,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                 {/* Secure Data Handling Checkbox */}
                 <div className="flex items-center space-x-3">
                   <Checkbox
+                    disabled={submitting}
                     id="consentSecureDataHandling"
                     checked={values.consentSecureDataHandling}
                     onCheckedChange={checked => setFieldValue('consentSecureDataHandling', checked)}
@@ -122,6 +124,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                 {/* Authorization Checkbox */}
                 <div className="flex items-start space-x-3 md:items-center">
                   <Checkbox
+                    disabled={submitting}
                     id="authorizedToCreateAccount"
                     checked={values.authorizedToCreateAccount}
                     onCheckedChange={checked => setFieldValue('authorizedToCreateAccount', checked)}

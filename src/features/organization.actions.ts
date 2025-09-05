@@ -3,6 +3,7 @@
 import ErrorMessages from '@/constants/ErrorMessages';
 import organizationService from './organization.service';
 import { type FormData } from '@/store/useRegistrationStore';
+import { getServerSession } from 'next-auth';
 
 export const checkOrganizationNameAction = async (name: string): Promise<boolean> => {
   try {
@@ -64,9 +65,13 @@ export const getDepartmentAction = async () => {
   }
 };
 
-export const acceptOrganizationAction = async (id: string) => {
+export const acceptOrganizationAction = async () => {
   try {
-    return await organizationService.acceptOrganizationService(id);
+    const session = await getServerSession();
+    if (!session) {
+      throw new Error(ErrorMessages.UNAUTHORIZED);
+    }
+    return await organizationService.acceptOrganizationService(session.user.id);
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_ACCEPT_ORG;
     console.error(ErrorMessages.FAILED_ACCEPT_ORG, error);
@@ -74,9 +79,13 @@ export const acceptOrganizationAction = async (id: string) => {
   }
 };
 
-export const getOrganizationAction = async (id: string) => {
+export const getOrganizationAction = async () => {
   try {
-    return await organizationService.getOrganizationService(id);
+    const session = await getServerSession();
+    if (!session) {
+      throw new Error(ErrorMessages.UNAUTHORIZED);
+    }
+    return await organizationService.getOrganizationService(session.user.id);
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_GET_ORG_STATUS;
     console.error(ErrorMessages.FAILED_GET_ORG_STATUS, error);

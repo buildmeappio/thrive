@@ -81,6 +81,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                     First Name<span className="text-red-500">*</span>
                   </Label>
                   <Input
+                    disabled={submitting}
                     name="firstName"
                     icon={User}
                     placeholder="Lois"
@@ -95,6 +96,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                     Last Name<span className="text-red-500">*</span>
                   </Label>
                   <Input
+                    disabled={submitting}
                     name="lastName"
                     icon={User}
                     placeholder="Becket"
@@ -109,6 +111,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                     Phone Number<span className="text-red-500">*</span>
                   </Label>
                   <Input
+                    disabled={submitting}
                     name="phoneNumber"
                     icon={Phone}
                     type="tel"
@@ -126,6 +129,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                     Official Email Address<span className="text-red-500">*</span>
                   </Label>
                   <Input
+                    disabled={submitting}
                     name="officialEmailAddress"
                     icon={Mail}
                     type="email"
@@ -143,6 +147,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                     Job Title<span className="text-red-500">*</span>
                   </Label>
                   <Input
+                    disabled={submitting}
                     name="jobTitle"
                     icon={Briefcase}
                     placeholder="Manager"

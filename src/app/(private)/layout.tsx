@@ -35,7 +35,7 @@ const DashboardLayoutInner = ({ children }: DashboardLayoutProps) => {
         <DashboardNavbar currentPath={pathname} />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 px-4 md:px-8">
+        <main className="flex-1 overflow-y-auto bg-gray-50 px-0 md:px-8">
           <div className="max-w-full p-6">
             <Suspense
               fallback={

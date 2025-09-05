@@ -78,4 +78,6 @@ export default Object.freeze({
   DUPLICATE_FILE: 'Duplicate file detected',
   FILE_NAME_TOO_LONG: 'File name is too long',
   FILE_CORRUPTED: 'File appears to be corrupted or empty',
+  UNAUTHORIZED: 'Unauthorized access',
+  FAILED_TO_CREATE_IME_REFERRAL: 'Failed to create IME referral',
 });

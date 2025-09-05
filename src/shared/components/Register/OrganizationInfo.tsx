@@ -107,6 +107,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                         Organization Name<span className="text-red-500">*</span>
                       </Label>
                       <Input
+                        disabled={submitting}
                         id="organizationName"
                         name="organizationName"
                         placeholder="Desjardins"
@@ -131,6 +132,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                       <div className="relative">
                         <MapPin className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
                         <Input
+                          disabled={submitting}
                           id="addressLookup"
                           name="addressLookup"
                           placeholder="150 John Street"
@@ -155,6 +157,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                         Street Address
                       </Label>
                       <Input
+                        disabled={submitting}
                         id="streetAddress"
                         name="streetAddress"
                         placeholder="50 Stephanie Street"
@@ -172,6 +175,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                         Apt / Unit / Suite
                       </Label>
                       <Input
+                        disabled={submitting}
                         id="aptUnitSuite"
                         name="aptUnitSuite"
                         placeholder="402"
@@ -185,6 +189,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                         City
                       </Label>
                       <Input
+                        disabled={submitting}
                         id="city"
                         name="city"
                         placeholder="Toronto"
@@ -202,6 +207,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                         Postal Code
                       </Label>
                       <Input
+                        disabled={submitting}
                         id="postalCode"
                         name="postalCode"
                         placeholder="7200"
@@ -238,6 +244,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                       <div className="relative">
                         <Globe className="pointer-events-none absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
                         <Input
+                          disabled={submitting}
                           id="organizationWebsite"
                           name="organizationWebsite"
                           type="url"

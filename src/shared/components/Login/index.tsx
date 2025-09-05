@@ -13,27 +13,37 @@ import { useRouter } from 'next/navigation';
 import ErrorMessages from '@/constants/ErrorMessages';
 import SuccessMessages from '@/constants/SuccessMessages';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
 const LoginForm = () => {
   const router = useRouter();
-  const handleSubmit = async (values: typeof loginInitialValues) => {
-    const result = await signIn('credentials', {
-      email: values.email,
-      password: values.password,
-      redirect: false,
-    });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    if (result?.ok) {
-      router.push('/dashboard');
-      toast.success(SuccessMessages.LOGIN_SUCCESS);
-    } else {
-      throw new Error(ErrorMessages.LOGIN_FAILED);
+  const handleSubmit = async (values: typeof loginInitialValues) => {
+    setIsSubmitting(true);
+
+    try {
+      const result = await signIn('credentials', {
+        email: values.email,
+        password: values.password,
+        redirect: false,
+      });
+
+      if (result?.ok) {
+        router.push('/dashboard');
+        toast.success(SuccessMessages.LOGIN_SUCCESS);
+      } else {
+        throw new Error(ErrorMessages.LOGIN_FAILED);
+      }
+    } catch (error) {
+      setIsSubmitting(false);
+      throw error;
     }
   };
 
   return (
     <div className="bg-[#F2F5F6] pt-10">
-      <div className="flex min-h-screen flex-col justify-between md:flex-row">
+      <div className="flex flex-col justify-between md:min-h-screen md:flex-row">
         <div className="flex flex-1 flex-col justify-center px-6 md:px-0 md:pl-30">
           <h1 className="mb-4 text-center text-3xl font-bold md:text-left md:text-[44px]">
             Welcome To <span>Thrive</span>{' '}
@@ -61,6 +71,7 @@ const LoginForm = () => {
                       onChange={handleChange}
                       placeholder="Enter your email address"
                       className="mt-1 border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0"
+                      disabled={isSubmitting}
                     />
                     {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
                   </div>
@@ -74,6 +85,7 @@ const LoginForm = () => {
                       placeholder="Enter your password"
                       value={values.password}
                       onChange={handleChange}
+                      disabled={isSubmitting}
                     />
                     {errors.password && (
                       <p className="mt-1 text-xs text-red-500">{errors.password}</p>
@@ -81,13 +93,24 @@ const LoginForm = () => {
                   </div>
 
                   <div className="mb-4 text-right">
-                    <a href="#" className="text-sm font-medium text-[#140047] hover:underline">
+                    <a
+                      href="#"
+                      className={`text-sm font-medium hover:underline ${
+                        isSubmitting
+                          ? 'pointer-events-none cursor-not-allowed text-gray-400'
+                          : 'text-[#140047]'
+                      }`}
+                    >
                       Forgot Password?
                     </a>
                   </div>
 
-                  <Button variant="organizationLogin" size="organizationLogin">
-                    Login{' '}
+                  <Button
+                    variant="organizationLogin"
+                    size="organizationLogin"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Logging in...' : 'Login'}{' '}
                     <span>
                       <ArrowRight strokeWidth={3} color="white" />
                     </span>

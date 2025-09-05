@@ -97,6 +97,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                     </Label>
                     <div className="relative">
                       <Input
+                        disabled={submitting}
                         name="password"
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Enter your password"
@@ -121,6 +122,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                     </Label>
                     <div className="relative">
                       <Input
+                        disabled={submitting}
                         name="confirmPassword"
                         type={showConfirmPassword ? 'text' : 'password'}
                         placeholder="Enter your password"

@@ -142,6 +142,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                 <div className="flex w-full max-w-[400px] justify-between gap-2 sm:gap-4">
                   {code.map((digit, index) => (
                     <input
+                      disabled={submitting}
                       key={index}
                       ref={el => {
                         inputRefs.current[index] = el;
@@ -174,6 +175,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                   <p className="text-base font-normal text-[#000000] sm:text-lg">
                     Didn't get OTP?{' '}
                     <button
+                      disabled={submitting}
                       type="button"
                       onClick={onResendCode}
                       className="font-medium text-[#0B0BB0] underline hover:text-[#0088cc]"
