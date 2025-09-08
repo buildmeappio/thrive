@@ -4,7 +4,6 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/shared/components/ui/input';
-import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { MapPin } from 'lucide-react';
 import { Dropdown } from '@/shared/components/ui/Dropdown';
@@ -21,7 +20,6 @@ import { useIMEReferralStore } from '@/store/useIMEReferralStore';
 
 const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
   onNext,
-  onPrevious,
   currentStep,
   totalSteps,
 }) => {
@@ -137,7 +135,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                   <Input
                     disabled={isSubmitting}
                     {...register('phone')}
-                    placeholder="123456789"
+                    placeholder="4444444444"
                     className={`w-full ${errors.phone ? 'border-red-500' : ''}`}
                   />
                   {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
@@ -250,13 +248,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
             </div>
 
             {/* Buttons */}
-            <div className="mt-8 flex justify-between px-4 md:mt-0 md:mb-0 md:px-0">
-              <BackButton
-                onClick={onPrevious}
-                disabled={currentStep === 1}
-                borderColor="#000080"
-                iconColor="#000080"
-              />
+            <div className="mt-8 flex justify-end px-4 md:mt-0 md:mb-0 md:px-0">
               <ContinueButton
                 isSubmitting={isSubmitting}
                 isLastStep={currentStep === totalSteps}

@@ -7,7 +7,6 @@ import { Input } from '@/shared/components/ui';
 import { provinceOptions } from '@/shared/config/ProvinceOptions';
 import { Dropdown } from '@/shared/components/ui/Dropdown';
 import { Form, Formik, type FormikHelpers } from 'formik';
-import BackButton from '@/shared/components/ui/BackButton';
 import ContinueButton from '@/shared/components/ui/ContinueButton';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistrationStore';
@@ -29,7 +28,6 @@ type OrganizationInfoProps = OrganizationRegStepProps & {
 
 const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
   onNext,
-  onPrevious,
   currentStep = 1,
   totalSteps = 3,
   organizationTypes: organizationTypeOptions,
@@ -242,7 +240,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                           id="organizationWebsite"
                           name="organizationWebsite"
                           type="url"
-                          placeholder="www.desjardins.com"
+                          placeholder="https://desjardins.com"
                           className="pl-10"
                           onChange={handleChange}
                           value={values.organizationWebsite}
@@ -256,13 +254,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                 </div>
               </div>
 
-              <div className="flex flex-row justify-center gap-4 md:justify-between">
-                <BackButton
-                  onClick={onPrevious}
-                  disabled={currentStep === 1}
-                  borderColor="#000080"
-                  iconColor="#000080"
-                />
+              <div className="flex justify-end">
                 <ContinueButton
                   isSubmitting={isSubmitting}
                   isLastStep={currentStep === totalSteps}
