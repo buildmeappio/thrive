@@ -110,7 +110,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                     name="phoneNumber"
                     icon={Phone}
                     type="tel"
-                    placeholder="(555) 123-4567"
+                    placeholder="4444444444"
                     value={values.phoneNumber}
                     onChange={handleChange}
                   />

@@ -1,14 +1,14 @@
 'use server';
 
 import ErrorMessages from '@/constants/ErrorMessages';
-import organizationService from './organization.service';
 import { type FormData } from '@/store/useRegistrationStore';
 import { getServerSession } from 'next-auth';
 import type { IMEFormData } from '@/store/useIMEReferralStore';
+import handler from './organization.handler';
 
 export const checkOrganizationNameAction = async (name: string): Promise<boolean> => {
   try {
-    return await organizationService.checkOrganizationNameService(name);
+    return await handler.checkOrganizationName(name);
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_CHECK_ORG_NAME;
     console.error(ErrorMessages.FAILED_CHECK_ORG_NAME, error);
@@ -18,7 +18,7 @@ export const checkOrganizationNameAction = async (name: string): Promise<boolean
 
 export const checkUserEmailAction = async (email: string): Promise<boolean> => {
   try {
-    return await organizationService.checkUserEmailService(email);
+    return await handler.checkUserEmail(email);
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_CHECK_ORG_EMAIL;
     console.error(ErrorMessages.FAILED_CHECK_ORG_EMAIL, error);
@@ -28,7 +28,7 @@ export const checkUserEmailAction = async (email: string): Promise<boolean> => {
 
 export const registerOrganizationAction = async (data: FormData) => {
   try {
-    return await organizationService.registerOrganizationService(data);
+    return await handler.registerOrganization(data);
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_REGISTER_ORG;
     console.error(ErrorMessages.FAILED_REGISTER_ORG, error);
@@ -38,7 +38,7 @@ export const registerOrganizationAction = async (data: FormData) => {
 
 export const finalizeOrganizationRegistrationAction = async (data: FormData) => {
   try {
-    return await organizationService.finalizeOrganizationRegistrationService(data);
+    return await handler.finalizeOrganizationRegistration(data);
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_FINALIZE_ORG_REG;
     console.error(ErrorMessages.FAILED_FINALIZE_ORG_REG, error);
@@ -48,7 +48,7 @@ export const finalizeOrganizationRegistrationAction = async (data: FormData) => 
 
 export const getOrganizationTypeAction = async () => {
   try {
-    return await organizationService.getOrganizationTypeService();
+    return await handler.getOrganizationType();
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_GET_ORG_TYPE;
     console.error(ErrorMessages.FAILED_GET_ORG_TYPE, error);
@@ -58,7 +58,7 @@ export const getOrganizationTypeAction = async () => {
 
 export const getDepartmentAction = async () => {
   try {
-    return await organizationService.getDepartmentService();
+    return await handler.getDepartment();
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_GET_DEPARTMENTS;
     console.error(ErrorMessages.FAILED_GET_DEPARTMENTS, error);
@@ -72,7 +72,7 @@ export const acceptOrganizationAction = async () => {
     if (!session) {
       throw new Error(ErrorMessages.UNAUTHORIZED);
     }
-    return await organizationService.acceptOrganizationService(session.user.id);
+    return await handler.acceptOrganization(session.user.id);
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_ACCEPT_ORG;
     console.error(ErrorMessages.FAILED_ACCEPT_ORG, error);
@@ -86,7 +86,7 @@ export const getOrganizationAction = async () => {
     if (!session) {
       throw new Error(ErrorMessages.UNAUTHORIZED);
     }
-    return await organizationService.getOrganizationService(session.user.id);
+    return await handler.getOrganization(session.user.id);
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_GET_ORG_STATUS;
     console.error(ErrorMessages.FAILED_GET_ORG_STATUS, error);
@@ -96,7 +96,7 @@ export const getOrganizationAction = async () => {
 
 export const getCaseTypeAction = async () => {
   try {
-    return await organizationService.getCaseTypeService();
+    return await handler.getCaseType();
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_GET_CASE_TYPE;
     console.error(ErrorMessages.FAILED_GET_CASE_TYPE, error);
@@ -106,7 +106,7 @@ export const getCaseTypeAction = async () => {
 
 export const getExamFormatAction = async () => {
   try {
-    return await organizationService.getExamFormatService();
+    return await handler.getExamFormat();
   } catch (error) {
     const message = error instanceof Error ? error.message : ErrorMessages.FAILED_GET_EXAM_FORMAT;
     console.error(ErrorMessages.FAILED_GET_EXAM_FORMAT, error);
@@ -116,7 +116,7 @@ export const getExamFormatAction = async () => {
 
 export const getRequestedSpecialtyAction = async () => {
   try {
-    return await organizationService.getRequestedSpecialtyService();
+    return await handler.getRequestedSpecialty();
   } catch (error) {
     const message =
       error instanceof Error ? error.message : ErrorMessages.FAILED_GET_REQUESTED_SPECIALTY;
@@ -127,7 +127,7 @@ export const getRequestedSpecialtyAction = async () => {
 
 export const createIMEReferralAction = async (data: IMEFormData) => {
   try {
-    return await organizationService.createIMEReferralService(data);
+    return await handler.createIMEReferral(data);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : ErrorMessages.FAILED_CREATE_IME_REFERRAL;
