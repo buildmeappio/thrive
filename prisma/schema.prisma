@@ -311,7 +311,7 @@ enum TimeBand {
 model ClaimantAvailabilitySlots {
   id             String    @id @unique @default(uuid()) @db.Uuid
   availabilityId String    @map("availability_id") @db.Uuid
-  date           DateTime  @map("date") @db.Daten
+  date           DateTime  @map("date") @db.Date
   startTime      String    @map("start_time") @db.VarChar(255)
   endTime        String    @map("end_time") @db.VarChar(255)
   start          DateTime  @map("start") @db.Timestamptz()
