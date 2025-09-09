@@ -1,12 +1,10 @@
-import { getServerAuthSession } from '@/utils/auth';
 import { writeFile, mkdir } from 'fs/promises';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/domains/auth/server/nextauth/options';
 import { join } from 'path';
 
 export const getCurrentUser = async () => {
-  const session = (await getServerAuthSession()) as {
-    user?: { accountId?: string; id?: string; email?: string };
-  };
-
+  const session = await getServerSession(authOptions);
   if (!session?.user?.accountId) {
     return null;
   }
