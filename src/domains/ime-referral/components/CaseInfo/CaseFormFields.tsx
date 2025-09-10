@@ -266,12 +266,12 @@ const CaseFormFields: React.FC<CaseFormFieldsProps> = ({
                   isSubmitting ? 'pointer-events-none opacity-50' : ''
                 } ${errors.files ? 'border-red-500' : ''}`}
               >
-                <Upload className="mb-3 h-10 w-10 flex-shrink-0 text-indigo-600" />
+                <Upload className="mb-3 h-10 w-10 flex-shrink-0 text-[#000093]" />
                 <p className="px-2 font-medium break-words text-gray-700">
                   Drag & drop files or{' '}
                   <label
                     htmlFor="fileUpload"
-                    className={`cursor-pointer text-indigo-600 underline ${
+                    className={`cursor-pointer text-[#000093] underline ${
                       isSubmitting ? 'cursor-not-allowed' : ''
                     }`}
                   >
@@ -310,9 +310,9 @@ const CaseFormFields: React.FC<CaseFormFieldsProps> = ({
                   className="flex w-full max-w-full min-w-0 items-center justify-between rounded-lg border bg-white px-4 py-2 shadow-sm"
                 >
                   <span className="min-w-0 flex-1 truncate pr-2 text-gray-700">{file.name}</span>
-                  <button
+                  <Button
                     type="button"
-                    className={`flex-shrink-0 text-red-500 hover:text-red-700 ${
+                    className={`flex-shrink-0 bg-white text-red-500 hover:bg-white hover:text-red-700 ${
                       isSubmitting ? 'cursor-not-allowed opacity-50' : ''
                     }`}
                     onClick={() => handleRemoveFile(file)}
@@ -320,7 +320,7 @@ const CaseFormFields: React.FC<CaseFormFieldsProps> = ({
                     aria-label={`Remove ${file.name}`}
                   >
                     <X className="h-5 w-5" />
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>

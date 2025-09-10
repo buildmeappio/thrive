@@ -76,7 +76,7 @@ const CaseForm: React.FC<CaseFormProps> = ({
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="rounded-full bg-blue-600 text-white hover:bg-blue-700"
+          className="rounded-full bg-[#000093] text-white hover:bg-[#000093]"
         >
           {isEditing ? 'Update Case' : 'Add Case'}
         </Button>

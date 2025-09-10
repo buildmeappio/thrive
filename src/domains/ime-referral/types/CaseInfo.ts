@@ -9,13 +9,6 @@ export interface CaseFormProps {
   isSubmitting?: boolean;
 }
 
-export interface CaseListProps {
-  cases: CaseInfo[];
-  onEdit: (index: number) => void;
-  onRemove: (index: number) => void;
-  isDisabled?: boolean;
-}
-
 export interface CaseItemProps {
   caseItem: CaseInfo;
   index: number;

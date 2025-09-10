@@ -8,7 +8,7 @@ import BackButton from '@/components/ui/BackButton';
 import ProgressIndicator from '../ProgressIndicator';
 import CaseList from './CaseList';
 import CaseForm from './CaseForm';
-import AddCaseButton from './AddCaseButton';
+import { toast } from 'sonner';
 
 const CaseInfo: React.FC<IMEReferralFormProps> = ({
   onNext,
@@ -42,6 +42,10 @@ const CaseInfo: React.FC<IMEReferralFormProps> = ({
   };
 
   const handleAddNewCase = () => {
+    if (isAddingCase) {
+      toast.error('Please complete the current case form before adding a new one.');
+      return;
+    }
     setEditingCase(undefined);
     setEditingIndex(null);
     setIsAddingCase(true);
@@ -83,10 +87,16 @@ const CaseInfo: React.FC<IMEReferralFormProps> = ({
         </header>
 
         {/* Existing Cases List */}
-        <CaseList cases={cases} onEdit={handleEditCase} onRemove={removeCase} isDisabled={false} />
+        <CaseList
+          cases={cases}
+          onEdit={handleEditCase}
+          handleAddNewCase={handleAddNewCase}
+          onRemove={removeCase}
+          isDisabled={false}
+        />
 
         {/* Add/Edit Case Form */}
-        {isAddingCase && (
+        {(isAddingCase || cases.length === 0) && (
           <CaseForm
             onSubmit={handleCaseSubmit}
             onCancel={handleCancelForm}
@@ -96,9 +106,6 @@ const CaseInfo: React.FC<IMEReferralFormProps> = ({
             isSubmitting={false}
           />
         )}
-
-        {/* Add Case Button */}
-        {!isAddingCase && <AddCaseButton onClick={handleAddNewCase} isDisabled={false} />}
 
         {/* Navigation Buttons */}
         <div className="mt-8 flex justify-between px-4 md:mt-0 md:mb-0 md:px-0">

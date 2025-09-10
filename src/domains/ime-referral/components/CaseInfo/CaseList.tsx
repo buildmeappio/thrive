@@ -1,11 +1,30 @@
 import React from 'react';
 import CaseItem from './CaseItem';
-import { type CaseListProps } from '../../types/CaseInfo';
+import AddCaseButton from './AddCaseButton';
+import { type CaseInfo } from '@/shared/validation/imeReferral/imeReferralValidation';
 
-const CaseList: React.FC<CaseListProps> = ({ cases, onEdit, onRemove, isDisabled = false }) => {
+type CaseListProps = {
+  cases: CaseInfo[];
+  onEdit: (index: number) => void;
+  handleAddNewCase: () => void;
+  onRemove: (index: number) => void;
+  isDisabled?: boolean;
+};
+
+const CaseList: React.FC<CaseListProps> = ({
+  cases,
+  onEdit,
+  handleAddNewCase,
+  onRemove,
+  isDisabled = false,
+}) => {
   return (
     <div className="mb-6 space-y-4">
-      <h3 className="text-lg font-medium text-gray-900">Added Cases ({cases.length})</h3>
+      <div className="flex justify-between">
+        <h3 className="text-lg font-medium text-gray-900">Added Cases ({cases.length})</h3>
+
+        <AddCaseButton onClick={handleAddNewCase} isDisabled={false} />
+      </div>
       {cases.map((caseItem, index) => (
         <CaseItem
           key={index}
