@@ -1,6 +1,7 @@
-import RegisterForm from '@/shared/components/Register';
+import RegisterForm from '@/domains/auth/components/Register';
+import getDepartments from '@/domains/auth/server/handlers/getDepartments';
+import getOrganizationTypes from '@/domains/organization/server/handlers/getOrganizationTypes';
 import { type Metadata } from 'next';
-import { getDepartmentAction, getOrganizationTypeAction } from '@/features/organization.actions';
 
 export const metadata: Metadata = {
   title: 'Register | Thrive',
@@ -8,8 +9,8 @@ export const metadata: Metadata = {
 };
 const RegisterPage = async () => {
   const [organizationTypes, departmentOptions] = await Promise.all([
-    getOrganizationTypeAction(),
-    getDepartmentAction(),
+    getOrganizationTypes(),
+    getDepartments(),
   ]);
   return (
     <RegisterForm

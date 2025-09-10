@@ -1,5 +1,5 @@
-import { getOrganizationAction } from '@/features/organization.actions';
-import OrganizationDashboard from '@/shared/components/dashboard';
+import getOrganization from '@/domains/organization/server/handlers/getOrganization';
+import OrganizationDashboard from '@/domains/organization/components';
 import { type Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 const DashboardPage = async () => {
-  const organization = await getOrganizationAction();
+  const organization = await getOrganization();
   if (!organization || !organization.result) {
     return <div className="p-4">Failed to load organization data.</div>;
   }

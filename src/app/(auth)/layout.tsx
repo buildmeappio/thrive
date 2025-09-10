@@ -1,6 +1,6 @@
 'use client';
 
-import { AuthNavbar } from '@/shared/components/layout';
+import { AuthNavbar } from '@/shared/layout';
 import type { ReactNode } from 'react';
 
 interface AuthLayoutProps {

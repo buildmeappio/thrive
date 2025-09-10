@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { degular, poppins } from '@/shared/lib/fonts';
-import { SessionProvider } from '@/shared/components/providers/SessionProvider';
+import { SessionProvider } from '@/shared/providers/SessionProvider';
 import './globals.css';
 import { Toaster } from 'sonner';
 

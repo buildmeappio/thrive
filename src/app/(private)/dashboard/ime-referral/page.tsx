@@ -1,4 +1,4 @@
-import IMEReferral from '@/shared/components/dashboard/IMEReferral';
+import IMEReferral from '@/domains/ime-referral/components';
 import { type Metadata } from 'next';
 
 export const metadata: Metadata = {

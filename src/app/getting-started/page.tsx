@@ -1,4 +1,4 @@
-import GettingStarted from '@/shared/components/GettingStarted';
+import GettingStarted from '@/components/GettingStarted';
 import { type Metadata } from 'next';
 
 export const metadata: Metadata = {

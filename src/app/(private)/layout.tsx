@@ -2,10 +2,10 @@
 
 import { type ReactNode, Suspense } from 'react';
 import { usePathname } from 'next/navigation';
-import SideBar from '@/shared/components/layout/Sidebar';
-import { SidebarProvider, useSidebar } from '@/shared/components/providers/SideBarProvider';
-import { DashboardNavbar } from '@/shared/components/layout';
-import { SearchProvider } from '@/shared/components/providers/SearchProvider';
+import SideBar from '@/shared/layout/Sidebar';
+import { SidebarProvider, useSidebar } from '@/shared/providers/SideBarProvider';
+import { DashboardNavbar } from '@/shared/layout';
+import { SearchProvider } from '@/shared/providers/SearchProvider';
 
 type DashboardLayoutProps = {
   children: ReactNode;
