@@ -1,6 +1,6 @@
 'use server';
 
-import { organizationHandlers } from '.';
+import { organizationHandlers } from './server';
 
 export const acceptOrganization = async () => {
   const result = await organizationHandlers.acceptOrganization();

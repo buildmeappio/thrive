@@ -46,14 +46,11 @@ const checkPassword = async (password: string, hashedPassword: string) => {
   }
 };
 
-const getOrganizationByName = async (name: string) => {
+const checkOrganizationByName = async (name: string) => {
   try {
     const org = await prisma.organization.findFirst({
       where: { name: { equals: name, mode: 'insensitive' } },
     });
-    if (!org) {
-      throw HttpError.notFound('Organization not found');
-    }
     return org;
   } catch (error) {
     throw HttpError.handleServiceError(error, 'Failed to get organization by name');
@@ -313,10 +310,23 @@ const verifyOtp = (otp: string, email: string, token: string) => {
   }
 };
 
+const checkUserByEmail = async (email: string) => {
+  try {
+    if (!email) return false;
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase(), deletedAt: null },
+    });
+    return !!user;
+  } catch (error) {
+    console.error('Check user by email error:', error);
+    return { success: false, message: 'Check user by email failed' };
+  }
+};
+
 const authService = {
   getUserByEmail,
   checkPassword,
-  getOrganizationByName,
+  checkOrganizationByName,
   createOrganizationWithUser,
   getOrganizationTypes,
   getDepartments,
@@ -326,6 +336,7 @@ const authService = {
   getRequestedSpecialties,
   sendOtp,
   verifyOtp,
+  checkUserByEmail,
 };
 
 export default authService;

@@ -1,7 +1,7 @@
 'use server';
 
 import { type FormData } from '@/store/useRegistrationStore';
-import { authHandlers } from '.';
+import { authHandlers } from './server';
 
 export const checkUserByEmail = async (email: string) => {
   const exists = await authHandlers.checkUserByEmail(email);

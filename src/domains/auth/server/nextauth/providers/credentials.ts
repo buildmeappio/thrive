@@ -1,5 +1,5 @@
-import { authHandlers } from '@/domains/auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { authHandlers } from '../..';
 
 export const credentials = CredentialsProvider({
   name: 'credentials',
