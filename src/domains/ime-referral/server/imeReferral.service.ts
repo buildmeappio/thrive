@@ -1,155 +1,199 @@
 import prisma from '@/shared/lib/prisma';
-import { type CreateIMEReferralData } from '../types/createIMEReferral';
 import { getCurrentUser } from '@/domains/auth/server/session';
 import { saveFileToStorage } from '@/shared/utils/imeCreation.utils';
-import { HttpError } from '@/utils/httpError';
+import { type IMEFormData } from '@/store/useIMEReferralStore';
+import { type UrgencyLevel } from '@prisma/client';
+import { CaseStatus } from '@/constants/CaseStatus';
 
-const createIMEReferralWithClaimant = async (data: CreateIMEReferralData) => {
-  try {
-    return await prisma.$transaction(async tx => {
-      try {
-        // Create address
-        const address = await tx.address.create({
-          data: {
-            address: data.addressLookup,
-            street: data.street || '',
-            suite: data.apt || '',
-            city: data.city || '',
-            province: data.province || '',
-            postalCode: data.postalCode || '',
-          },
-        });
+type CreateIMEReferralData = {
+  step1: NonNullable<IMEFormData['step1']>;
+  step2: NonNullable<IMEFormData['step2']>;
+  step3: NonNullable<IMEFormData['step3']>;
+  isDraft: boolean;
+};
 
-        // Create claimant
-        const claimant = await tx.claimant.create({
-          data: {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            dateOfBirth: new Date(data.dob),
-            gender: data.gender,
-            phoneNumber: data.phone,
-            emailAddress: data.email,
-            addressId: address.id,
-          },
-        });
+// Helper function to find relation by name or UUID
+const findRelationByName = async (
+  tx: any,
+  model: string,
+  value: string,
+  fieldName: string = 'name'
+) => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-        // Generate case number
-        const caseNumber = `IME-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-        // Get current user
-        const currentUser = await getCurrentUser();
-        if (!currentUser) {
-          throw new Error('User not authenticated');
-        }
-
-        // Get organization manager
-        const organizationManager = await tx.organizationManager.findFirst({
-          where: {
-            accountId: currentUser.accountId,
-          },
-        });
-
-        // Normalize relation helper function
-        async function normalizeRelation(table: any, value: string) {
-          try {
-            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-            if (uuidRegex.test(value)) {
-              return { connect: { id: value } };
-            }
-
-            let record = await table.findFirst({ where: { name: value } });
-
-            if (!record) {
-              record = await table.findFirst({
-                where: { name: { equals: value.replace(/_/g, ' '), mode: 'insensitive' } },
-              });
-            }
-
-            if (!record) {
-              const existing = await table.findMany({ select: { id: true, name: true } });
-              console.error(`❌ Invalid relation value: ${value}. Available:`, existing);
-              throw new Error(`Invalid relation value: ${value}`);
-            }
-
-            return { connect: { id: record.id } };
-          } catch (error) {
-            console.error(`Error normalizing relation for value "${value}":`, error);
-            throw new Error(`Failed to normalize relation for value "${value}"`);
-          }
-        }
-
-        // Get normalized relations
-        const caseTypeRelation = await normalizeRelation(tx.caseType, data.caseType);
-        const examFormatRelation = await normalizeRelation(tx.examFormat, data.examFormat);
-        const requestedSpecialtyRelation = await normalizeRelation(
-          tx.requestedSpecialty,
-          data.requestedSpecialty
-        );
-
-        // Create IME referral
-        const imeReferral = await tx.iMEReferral.create({
-          data: {
-            caseNumber,
-            examiner: { connect: { id: currentUser.accountId! } },
-            organization: organizationManager?.organizationId
-              ? { connect: { id: organizationManager.organizationId } }
-              : undefined,
-            claimant: { connect: { id: claimant.id } },
-            caseType: caseTypeRelation,
-            examFormat: examFormatRelation,
-            requestedSpecialty: requestedSpecialtyRelation,
-            reasonForReferral: data.reason,
-            bodyPartConcern: data.urgencyLevel,
-            preferredLocation: data.preferredLocation,
-          },
-        });
-
-        // Handle file uploads and document creation
-        const documentIds: string[] = [];
-        for (const file of data.files) {
-          try {
-            await saveFileToStorage(file);
-
-            const document = await tx.documents.create({
-              data: {
-                name: file.name,
-                type: file.type,
-                size: file.size,
-              },
-            });
-
-            await tx.referralDocument.create({
-              data: {
-                referralId: imeReferral.id,
-                documentId: document.id,
-              },
-            });
-
-            documentIds.push(document.id);
-          } catch (fileError) {
-            console.log(fileError);
-            throw new Error(`Failed to process file "${file.name}"`);
-          }
-        }
-
-        return {
-          referralId: imeReferral.id,
-          claimantId: claimant.id,
-          caseNumber,
-          documentIds,
-        };
-      } catch (transactionError) {
-        console.error('Transaction error:', transactionError);
-        throw new Error(`Unable to create IME referral`);
-      }
+  if (uuidRegex.test(value)) {
+    const record = await tx[model].findUnique({
+      where: { id: value },
     });
-  } catch (error) {
-    throw HttpError.handleServiceError(error, 'Failed to create IME referral with claimant');
+    if (!record) {
+      throw new Error(`${model} with ID ${value} not found`);
+    }
+    return record.id;
+  } else {
+    const record = await tx[model].findFirst({
+      where: {
+        [fieldName]: {
+          equals: value,
+          mode: 'insensitive',
+        },
+      },
+    });
+    if (!record) {
+      throw new Error(`${model} with ${fieldName} '${value}' not found`);
+    }
+    return record.id;
   }
 };
-const iMEReferralService = {
-  createIMEReferralWithClaimant,
+
+const createIMEReferralWithClaimant = async (data: CreateIMEReferralData) => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser?.accountId) {
+    throw new Error('User not authenticated');
+  }
+
+  const defaultStatus = await prisma.caseStatus.findFirst({
+    where: { name: CaseStatus.PENDING },
+  });
+
+  if (!defaultStatus) {
+    throw new Error('Default case status not found');
+  }
+
+  return await prisma.$transaction(async tx => {
+    // 1. Create Address
+    const address = await tx.address.create({
+      data: {
+        address: data.step1.addressLookup,
+        street: data.step1.street || '',
+        suite: data.step1.apt || '',
+        city: data.step1.city || '',
+        province: data.step1.province || '',
+        postalCode: data.step1.postalCode || '',
+      },
+    });
+
+    // 2. Create Claimant
+    const claimant = await tx.claimant.create({
+      data: {
+        firstName: data.step1.firstName,
+        lastName: data.step1.lastName,
+        dateOfBirth: new Date(data.step1.dob),
+        gender: data.step1.gender,
+        phoneNumber: data.step1.phone,
+        emailAddress: data.step1.email,
+        addressId: address.id,
+      },
+    });
+
+    // 3. Find organization manager
+    const organizationManager = await tx.organizationManager.findFirst({
+      where: { accountId: currentUser.accountId },
+    });
+
+    // 4. Create IMEReferral
+    const referral = await tx.iMEReferral.create({
+      data: {
+        caseNumber: `IME-${Date.now()}-${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
+        claimantId: claimant.id,
+        organizationId: organizationManager?.organizationId || null,
+        consentForSubmission: data.step3?.consentForSubmission ?? false,
+        isDraft: data.isDraft,
+      },
+    });
+
+    // 5. Create Cases
+    const createdCases = [];
+
+    for (const [_index, caseData] of data.step2.cases.entries()) {
+      // Find relations
+      const caseTypeId = await findRelationByName(tx, 'caseType', caseData.caseType);
+      const examFormatId = await findRelationByName(tx, 'examFormat', caseData.examFormat);
+      const requestedSpecialtyId = await findRelationByName(
+        tx,
+        'requestedSpecialty',
+        caseData.requestedSpecialty
+      );
+
+      // Create case
+      const caseRecord = await tx.case.create({
+        data: {
+          referralId: referral.id,
+          caseTypeId,
+          examFormatId,
+          requestedSpecialtyId,
+          urgencyLevel: caseData.urgencyLevel.toUpperCase() as UrgencyLevel,
+          reason: caseData.reason,
+          preferredLocation: caseData.preferredLocation || null,
+          statusId: defaultStatus.id,
+        },
+      });
+
+      // 6. Handle file uploads and create documents
+      const uploadedFiles = [];
+
+      for (const file of caseData.files) {
+        await saveFileToStorage(file);
+
+        const document = await tx.documents.create({
+          data: {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+          },
+        });
+
+        await tx.caseDocument.create({
+          data: {
+            caseId: caseRecord.id,
+            documentId: document.id,
+          },
+        });
+
+        uploadedFiles.push({
+          name: file.name,
+          documentId: document.id,
+        });
+      }
+
+      createdCases.push({
+        id: caseRecord.id,
+        files: uploadedFiles,
+      });
+    }
+
+    return {
+      referralId: referral.id,
+      caseNumber: referral.caseNumber,
+      claimantId: claimant.id,
+      cases: createdCases,
+      organizationId: organizationManager?.organizationId || null,
+    };
+  });
 };
 
-export default iMEReferralService;
+const getReferrals = async () => {
+  const referrals = await prisma.iMEReferral.findMany({
+    include: {
+      claimant: true,
+      cases: {
+        include: {
+          caseType: true,
+          examFormat: true,
+          requestedSpecialty: true,
+          status: true,
+          documents: {
+            include: {
+              document: true,
+            },
+          },
+        },
+      },
+      organization: true,
+    },
+  });
+  return { success: true, result: referrals };
+};
+export default {
+  createIMEReferralWithClaimant,
+  getReferrals,
+};

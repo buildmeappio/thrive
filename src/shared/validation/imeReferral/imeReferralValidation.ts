@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { DocumentUploadConfig } from '@/shared/config/documentUpload.config';
 import { formatFileSize } from '@/shared/utils/documentUpload.utils';
 
-// step1
+// step1 - claimant details schema
 export const ClaimantDetailsSchema = z.object({
   firstName: z
     .string()
@@ -60,29 +60,7 @@ export const ClaimantDetailsInitialValues: ClaimantDetails = {
   province: '',
 };
 
-// step2
-export const CaseInfoSchema = z.object({
-  reason: z.string().min(1, ErrorMessages.REFERRAL_REASON_REQUIRED),
-  caseType: z.string().min(1, ErrorMessages.CASE_TYPE_REQUIRED),
-  urgencyLevel: z.string().min(1, ErrorMessages.URGENCY_LEVEL_REQUIRED),
-  examFormat: z.string().min(1, ErrorMessages.EXAM_FORMAT_REQUIRED),
-  requestedSpecialty: z.string().min(1, ErrorMessages.REQUESTED_SPECIALTY_REQUIRED),
-  preferredLocation: z.string().min(1, ErrorMessages.PREFERRED_LOCATION_REQUIRED),
-});
-
-export type CaseInfo = z.infer<typeof CaseInfoSchema>;
-
-export const CaseInfoInitialValues: CaseInfo = {
-  reason: '',
-  caseType: '',
-  urgencyLevel: '',
-  examFormat: '',
-  requestedSpecialty: '',
-  preferredLocation: '',
-};
-
-// step3
-
+// File validation schema
 const FileSchema = z.instanceof(File).superRefine((file, ctx) => {
   if (file.size <= 0) {
     ctx.addIssue({
@@ -116,7 +94,14 @@ const FileSchema = z.instanceof(File).superRefine((file, ctx) => {
   }
 });
 
-export const DocumentUploadSchema = z.object({
+// step2 - CaseInfo schema
+export const CaseInfoSchema = z.object({
+  reason: z.string().min(1, 'Reason for referral is required'),
+  caseType: z.string().min(1, 'Case type is required'),
+  urgencyLevel: z.string().min(1, 'Urgency level is required'),
+  examFormat: z.string().min(1, 'Exam format is required'),
+  requestedSpecialty: z.string().min(1, 'Requested specialty is required'),
+  preferredLocation: z.string().min(1, 'Preferred location is required'),
   files: z
     .array(FileSchema)
     .min(1, ErrorMessages.DOCUMENT_UPLOAD_REQUIRED)
@@ -142,16 +127,21 @@ export const DocumentUploadSchema = z.object({
     ),
 });
 
-export type DocumentUploadFormData = z.infer<typeof DocumentUploadSchema>;
+export type CaseInfo = z.infer<typeof CaseInfoSchema>;
 
-export const DocumentUploadInitialValues: DocumentUploadFormData = {
+export const CaseInitialValues: CaseInfo = {
+  reason: '',
+  caseType: '',
+  urgencyLevel: '',
+  examFormat: '',
+  requestedSpecialty: '',
+  preferredLocation: '',
   files: [],
 };
 
-// step4
-
+// step3 - Consent
 export const ConsentSchema = z.object({
-  consentConfirmation: z.boolean().refine(val => val === true, {
+  consentForSubmission: z.boolean().refine(val => val === true, {
     message: ErrorMessages.CONSENT_REQUIRED,
   }),
 });
@@ -159,5 +149,5 @@ export const ConsentSchema = z.object({
 export type Consent = z.infer<typeof ConsentSchema>;
 
 export const ConsentInitialValues: Consent = {
-  consentConfirmation: false,
+  consentForSubmission: false,
 };

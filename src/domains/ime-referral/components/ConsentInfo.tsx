@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useState } from 'react';
+import { useForm, type SubmitHandler, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Checkbox } from '@/components/ui/checkbox';
 import ContinueButton from '@/components/ui/ContinueButton';
@@ -31,59 +31,76 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { data, setData, reset } = useIMEReferralStore();
+  const { data, setData } = useIMEReferralStore();
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
 
   const {
-    watch,
-    setValue,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<Consent>({
-    defaultValues: {
-      ...ConsentInitialValues,
-      ...data.step4,
-    },
     resolver: zodResolver(ConsentSchema),
-    mode: 'onBlur',
+    defaultValues: data.step3 || ConsentInitialValues,
   });
 
-  const isChecked = watch('consentConfirmation');
-
-  const handleFormSubmit = async (values: Consent) => {
+  // Handle final submission (with validation)
+  const onSubmit: SubmitHandler<Consent> = async values => {
     try {
-      setData('step4', values);
+      setData('step3', values);
 
       const completeData = {
         ...data,
-        step4: values,
+        step3: values,
       };
 
-      if (
-        !completeData.step1 ||
-        !completeData.step2 ||
-        !completeData.step3 ||
-        !completeData.step4
-      ) {
+      // Final submission requires all steps
+      if (!completeData.step1 || !completeData.step2 || !completeData.step3) {
         toast.error('Please complete all steps before submitting');
         return;
       }
 
-      const result = await createIMEReferral(completeData);
+      const result = await createIMEReferral(completeData, false);
       if (result) {
         toast.success('IME Referral submitted successfully');
-        reset();
+        if (onNext) onNext();
       }
-
-      if (onNext) onNext();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Submission failed');
     }
   };
 
-  const handleSaveDraft = () => {
-    const currentValues = { consentConfirmation: isChecked };
-    setData('step4', currentValues);
-    toast.success('Draft saved successfully');
+  // Handle draft saving (without validation)
+  const handleSaveDraft = async () => {
+    setIsSavingDraft(true);
+
+    try {
+      // Get current form values without validation
+      const currentValues = {
+        consentForSubmission: control._getWatch('consentForSubmission') || false,
+      };
+
+      setData('step3', currentValues);
+
+      const completeData = {
+        ...data,
+        step3: currentValues,
+      };
+
+      // For drafts, we need at least step1 to create a claimant
+      if (!completeData.step1) {
+        toast.error('Please complete claimant details before saving draft');
+        return;
+      }
+
+      const result = await createIMEReferral(completeData, true);
+      if (result) {
+        toast.success('Draft saved successfully');
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to save draft');
+    } finally {
+      setIsSavingDraft(false);
+    }
   };
 
   return (
@@ -91,44 +108,46 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
 
       <div className="w-full max-w-full rounded-4xl bg-white p-4 sm:p-6 md:p-10">
-        <form onSubmit={handleSubmit(handleFormSubmit)} noValidate className="w-full max-w-full">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-full">
           <header className="mb-6 w-full max-w-full md:mb-8">
-            <h2 className="text-2xl leading-tight font-semibold tracking-[-0.02em] break-words text-[#000000] sm:text-3xl md:text-[36.02px] md:leading-[36.02px]">
+            <h2 className="text-2xl font-semibold tracking-[-0.02em] text-[#000000] sm:text-3xl md:text-[36.02px] md:leading-[36.02px]">
               Consent Confirmation
             </h2>
           </header>
 
-          <div className="mb-8 w-full max-w-full md:mb-12">
-            <div className="flex w-full max-w-full items-start gap-3">
-              <Checkbox
-                disabled={isSubmitting}
-                id="consentConfirmation"
-                checked={isChecked}
-                onCheckedChange={(checked: boolean) =>
-                  setValue('consentConfirmation', checked, { shouldValidate: true })
-                }
-                className={`mt-1 flex-shrink-0 ${
-                  isChecked ? 'border-[#000080] bg-[#000080]' : 'border-gray-300'
-                }`}
-              />
-              <label
-                htmlFor="consentConfirmation"
-                className="min-w-0 flex-1 cursor-pointer text-sm leading-relaxed break-words text-gray-700"
-              >
-                I confirm that the claimant has provided informed consent for this medical
-                examination, and I am authorized to submit this referral on their behalf.
-              </label>
-            </div>
-            {errors.consentConfirmation && (
-              <p className="mt-2 text-sm break-words text-red-600">
-                {errors.consentConfirmation.message}
-              </p>
+          {/* Consent Checkbox */}
+          <div className="mb-8 w-full md:mb-12">
+            <Controller
+              name="consentForSubmission"
+              control={control}
+              render={({ field }) => (
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="consentForSubmission"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isSubmitting || isSavingDraft}
+                    className="mt-1 flex-shrink-0"
+                  />
+                  <label
+                    htmlFor="consentForSubmission"
+                    className="flex-1 cursor-pointer text-sm leading-relaxed text-gray-700"
+                  >
+                    I confirm that the claimant has provided informed consent for this medical
+                    examination, and I am authorized to submit this referral on their behalf.
+                  </label>
+                </div>
+              )}
+            />
+            {errors.consentForSubmission && (
+              <p className="mt-2 text-sm text-red-600">{errors.consentForSubmission.message}</p>
             )}
           </div>
 
-          <div className="mb-10 w-full max-w-full md:mb-12">
-            <h2 className="mb-4 text-lg font-medium break-words text-gray-900">Legal Disclaimer</h2>
-            <p className="text-sm leading-relaxed break-words text-gray-600">
+          {/* Disclaimer */}
+          <div className="mb-10 md:mb-12">
+            <h2 className="mb-4 text-lg font-medium text-gray-900">Legal Disclaimer</h2>
+            <p className="text-sm leading-relaxed text-gray-600">
               By submitting this referral, you acknowledge that the claimant has been informed of
               the purpose and scope of the independent medical examination (IME), and has consented
               to the collection, use, and disclosure of their personal health information in
@@ -137,11 +156,12 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
             </p>
           </div>
 
-          <div className="flex w-full max-w-full flex-col gap-4">
-            <div className="flex w-full flex-row items-center justify-between gap-2">
+          {/* Buttons */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-2">
               <BackButton
                 onClick={onPrevious}
-                disabled={currentStep === 1}
+                disabled={currentStep === 1 || isSubmitting || isSavingDraft}
                 borderColor="#000080"
                 iconColor="#000080"
               />
@@ -150,28 +170,31 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
                 <Button
                   type="button"
                   onClick={handleSaveDraft}
-                  className="hidden h-[45px] w-[182px] cursor-pointer items-center justify-center gap-1.5 rounded-[34px] bg-[#0000BA] px-4 py-3 text-white transition-all duration-300 ease-in-out hover:opacity-90 md:flex"
+                  disabled={isSubmitting || isSavingDraft}
+                  className="hidden h-[45px] w-[182px] items-center justify-center gap-1.5 rounded-[34px] bg-[#0000BA] px-4 py-3 text-white hover:opacity-90 disabled:opacity-50 md:flex"
                 >
-                  <span className="truncate">Save as Draft</span>
-                  <ArrowRight className="ml-2 h-4 w-4 flex-shrink-0 text-white transition-all duration-300 ease-in-out" />
+                  <span className="truncate">{isSavingDraft ? 'Saving...' : 'Save as Draft'}</span>
+                  <ArrowRight className="ml-2 h-4 w-4 flex-shrink-0 text-white" />
                 </Button>
 
                 <ContinueButton
                   isSubmitting={isSubmitting}
                   isLastStep={currentStep === totalSteps}
                   color="#000080"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isSavingDraft}
                 />
               </div>
             </div>
 
+            {/* Mobile Save Draft */}
             <Button
               type="button"
               onClick={handleSaveDraft}
-              className="flex h-[40px] w-full cursor-pointer items-center justify-center gap-1.5 rounded-[34px] bg-[#0000BA] px-4 py-3 text-white transition-all duration-300 ease-in-out hover:opacity-90 md:hidden"
+              disabled={isSubmitting || isSavingDraft}
+              className="flex h-[40px] w-full items-center justify-center gap-1.5 rounded-[34px] bg-[#0000BA] px-4 py-3 text-white hover:opacity-90 disabled:opacity-50 md:hidden"
             >
-              <span className="truncate">Save as Draft</span>
-              <ArrowRight className="ml-2 h-4 w-4 flex-shrink-0 text-white transition-all duration-300 ease-in-out" />
+              <span className="truncate">{isSavingDraft ? 'Saving...' : 'Save as Draft'}</span>
+              <ArrowRight className="ml-2 h-4 w-4 flex-shrink-0 text-white" />
             </Button>
           </div>
         </form>

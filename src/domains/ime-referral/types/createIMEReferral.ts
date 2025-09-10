@@ -18,5 +18,5 @@ export type CreateIMEReferralData = {
   requestedSpecialty: string;
   preferredLocation: string;
   files: File[];
-  consentConfirmation: boolean;
+  consentForSubmission: boolean;
 };

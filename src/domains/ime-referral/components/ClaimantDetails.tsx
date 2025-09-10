@@ -47,7 +47,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
     <div className="w-full max-w-full overflow-x-hidden">
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
       <div
-        className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[75px] md:py-12"
+        className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[60px] md:py-12"
         style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">

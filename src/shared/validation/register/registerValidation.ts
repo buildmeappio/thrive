@@ -6,7 +6,7 @@ export const OrganizationInfoSchema = Yup.object({
   organizationType: Yup.string().required(ErrorMessages.ORGANIZATION_TYPE_REQUIRED),
 
   organizationName: Yup.string()
-    .matches(/^[A-Za-z\s]+$/, ErrorMessages.INVALID_NAME)
+    .min(2, ErrorMessages.ADDRESS_LOOKUP_MIN)
     .required(ErrorMessages.ORGANIZATION_NAME_REQUIRED),
 
   addressLookup: Yup.string()
