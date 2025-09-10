@@ -224,7 +224,7 @@ model Case {
   preferredLocation    String?      @map("preferred_location") @db.VarChar(255)
   urgencyLevel         UrgencyLevel @map("urgency_level")
   reason               String       @map("reason") @db.Text
-  examinerId           String       @map("examiner_id") @db.Uuid
+  examinerId           String?      @map("examiner_id") @db.Uuid
   statusId             String       @map("status_id") @db.Uuid
 
   assignToId String?   @map("assign_to_id") @db.Uuid
@@ -239,7 +239,7 @@ model Case {
   examFormat           ExamFormat             @relation("ExamFormat", fields: [examFormatId], references: [id])
   requestedSpecialty   RequestedSpecialty     @relation("RequestedSpecialty", fields: [requestedSpecialtyId], references: [id])
   documents            CaseDocument[]         @relation("CaseDocuments")
-  examiner             Account                @relation("ExaminerCases", fields: [examinerId], references: [id])
+  examiner             Account?               @relation("ExaminerCases", fields: [examinerId], references: [id])  // ✅ Now optional
   status               CaseStatus             @relation("CaseStatus", fields: [statusId], references: [id])
   assignTo             Account?               @relation("AssignedCases", fields: [assignToId], references: [id])
   secureLinks          CaseSecureLink[]       @relation("CaseSecureLink")
