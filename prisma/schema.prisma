@@ -13,7 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model OrganizationType {
   id            String         @id @unique @default(uuid()) @db.Uuid
   name          String         @map("name") @db.VarChar(255)
@@ -86,12 +85,12 @@ model Organization {
   rejectedAt             DateTime?          @map("rejected_at") @db.Timestamptz()
   rejectedReason         String?            @map("rejected_reason") @db.Text
 
-  createdAt              DateTime           @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt              DateTime           @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt              DateTime?          @map("deleted_at") @db.Timestamptz()
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  manager                OrganizationManager[] @relation("OrganizationManager")
-  referrals              IMEReferral[]         @relation("OrganizationReferrals")
+  manager   OrganizationManager[] @relation("OrganizationManager")
+  referrals IMEReferral[]         @relation("OrganizationReferrals")
 
   @@map("organizations")
 }
@@ -147,142 +146,308 @@ model Account {
   user              User                  @relation(name: "AccountUser", fields: [userId], references: [id])
   verificationCodes VerificationCodes[]   @relation("AccountVerification")
   managers          OrganizationManager[] @relation("AccountManager")
-  referrals         IMEReferral[]         @relation("ExaminerReferrals")
+  cases             Case[]                @relation("ExaminerCases")
+  assignedCases     Case[]                @relation("AssignedCases")
 
   @@map("accounts")
 }
 
 model Address {
-  id            String         @id @unique @default(uuid()) @db.Uuid
-  address       String         @map("address") @db.Text
-  street        String         @map("street") @db.VarChar(255)
-  province      String         @map("province") @db.VarChar(255)
-  city          String         @map("city") @db.VarChar(255)
-  postalCode    String         @map("postal_code") @db.VarChar(255)
-  suite         String         @map("suite") @db.VarChar(255)
-  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt     DateTime?      @map("deleted_at") @db.Timestamptz()
-  organizations Organization[] @relation("Address")
-  claimants     Claimant[]     @relation("ClaimantAddress")
+  id                            String                          @id @unique @default(uuid()) @db.Uuid
+  address                       String                          @map("address") @db.Text
+  street                        String                          @map("street") @db.VarChar(255)
+  province                      String                          @map("province") @db.VarChar(255)
+  city                          String                          @map("city") @db.VarChar(255)
+  postalCode                    String                          @map("postal_code") @db.VarChar(255)
+  suite                         String                          @map("suite") @db.VarChar(255)
+  createdAt                     DateTime                        @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt                     DateTime                        @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt                     DateTime?                       @map("deleted_at") @db.Timestamptz()
+  organizations                 Organization[]                  @relation("Address")
+  claimants                     Claimant[]                      @relation("ClaimantAddress")
+  claimantAvailabilityTransport ClaimantAvailabilityTransport[] @relation("ClaimantAvailabilityTransport")
 
   @@map("addresses")
 }
 
 model Claimant {
-  id            String        @id @unique @default(uuid()) @db.Uuid
-  firstName     String        @map("first_name") @db.VarChar(255)
-  lastName      String        @map("last_name") @db.VarChar(255)
-  dateOfBirth   DateTime      @map("date_of_birth") @db.Date
-  gender        String        @map("gender") @db.VarChar(50)
-  phoneNumber   String        @map("phone_number") @db.VarChar(255)
-  emailAddress  String        @map("email_address") @db.VarChar(255)
-  addressId     String        @map("address_id") @db.Uuid
-  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz()
-  
-  address       Address       @relation("ClaimantAddress", fields: [addressId], references: [id])
-  referrals     IMEReferral[] @relation("ClaimantReferrals")
+  id           String    @id @unique @default(uuid()) @db.Uuid
+  firstName    String    @map("first_name") @db.VarChar(255)
+  lastName     String    @map("last_name") @db.VarChar(255)
+  dateOfBirth  DateTime  @map("date_of_birth") @db.Date
+  gender       String    @map("gender") @db.VarChar(50)
+  phoneNumber  String    @map("phone_number") @db.VarChar(255)
+  emailAddress String    @map("email_address") @db.VarChar(255)
+  addressId    String    @map("address_id") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz()
+
+  address              Address                @relation("ClaimantAddress", fields: [addressId], references: [id])
+  referrals            IMEReferral[]          @relation("ClaimantReferrals")
+  claimantAvailability ClaimantAvailability[] @relation("ClaimantAvailability")
 
   @@map("claimants")
 }
 
 model IMEReferral {
-  id                    String                @id @unique @default(uuid()) @db.Uuid
-  caseNumber            String                @map("case_number") @db.VarChar(255)
-  status                IMEReferralStatus     @default(PENDING) @map("status")
-  examinerId            String                @map("examiner_id") @db.Uuid
-  organizationId        String?               @map("organization_id") @db.Uuid
-  claimantId            String                @map("claimant_id") @db.Uuid
-  
-  // Foreign keys for the new models
-  caseTypeId            String                @map("case_type_id") @db.Uuid
-  examFormatId          String                @map("exam_format_id") @db.Uuid
-  requestedSpecialtyId  String                @map("requested_specialty_id") @db.Uuid
-  
-  // Case Information
-  reasonForReferral     String                @map("reason_for_referral") @db.Text
-  bodyPartConcern       String                @map("body_part_concern") @db.VarChar(255)
-  preferredLocation     String?               @map("preferred_location") @db.VarChar(255)
-  
-  createdAt             DateTime              @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt             DateTime              @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt             DateTime?             @map("deleted_at") @db.Timestamptz()
-  
-  // Relations
-  examiner              Account               @relation("ExaminerReferrals", fields: [examinerId], references: [id])
-  organization          Organization?         @relation("OrganizationReferrals", fields: [organizationId], references: [id])
-  claimant              Claimant              @relation("ClaimantReferrals", fields: [claimantId], references: [id])
-  documents             ReferralDocument[]    @relation("ReferralDocuments")
-  caseType              CaseType              @relation("CaseTypeReferrals", fields: [caseTypeId], references: [id])
-  examFormat            ExamFormat            @relation("ExamFormatReferrals", fields: [examFormatId], references: [id])
-  requestedSpecialty    RequestedSpecialty    @relation("RequestedSpecialtyReferrals", fields: [requestedSpecialtyId], references: [id])
-  
-  @@map("ime_referrals")
-}
+  id                   String  @id @unique @default(uuid()) @db.Uuid
+  caseNumber           String  @map("case_number") @db.VarChar(255)
+  examinerId           String  @map("examiner_id") @db.Uuid
+  organizationId       String? @map("organization_id") @db.Uuid
+  claimantId           String  @map("claimant_id") @db.Uuid
+  consentForSubmission Boolean @default(false) @map("consent_for_submission")
+  isDraft              Boolean @default(false) @map("is_draft")
 
-model ReferralDocument {
-  id            String        @id @unique @default(uuid()) @db.Uuid
-  referralId    String        @map("referral_id") @db.Uuid
-  documentId    String        @map("document_id") @db.Uuid
-  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz()
-  
-  referral      IMEReferral   @relation("ReferralDocuments", fields: [referralId], references: [id])
-  document      Documents     @relation("DocumentReferrals", fields: [documentId], references: [id])
-
-  @@unique([referralId, documentId])
-  @@map("referral_documents")
-}
-
-model Documents {
-  id        String    @id @unique @default(uuid()) @db.Uuid
-  name      String    @map("name") @db.VarChar(255)
-  type      String    @map("type") @db.VarChar(255)
-  size      Int       @map("size") @db.Integer
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
-  users     User[]    @relation("ProfilePhoto")
-  referrals ReferralDocument[] @relation("DocumentReferrals")
+
+  organization Organization? @relation("OrganizationReferrals", fields: [organizationId], references: [id])
+  claimant     Claimant      @relation("ClaimantReferrals", fields: [claimantId], references: [id])
+  cases        Case[]        @relation("CaseReferrals")
+
+  @@map("ime_referrals")
+}
+
+enum UrgencyLevel {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model Case {
+  id                   String       @id @unique @default(uuid()) @db.Uuid
+  referralId           String       @map("referral_id") @db.Uuid
+  caseTypeId           String       @map("case_type_id") @db.Uuid
+  examFormatId         String       @map("exam_format_id") @db.Uuid
+  requestedSpecialtyId String       @map("requested_specialty_id") @db.Uuid
+  preferredLocation    String?      @map("preferred_location") @db.VarChar(255)
+  urgencyLevel         UrgencyLevel @map("urgency_level")
+  reason               String       @map("reason") @db.Text
+  examinerId           String       @map("examiner_id") @db.Uuid
+  statusId             String       @map("status_id") @db.Uuid
+
+  assignToId String?   @map("assign_to_id") @db.Uuid
+  assignedAt DateTime? @map("assigned_at") @db.Timestamptz()
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  referral             IMEReferral            @relation("CaseReferrals", fields: [referralId], references: [id])
+  caseType             CaseType               @relation("CaseType", fields: [caseTypeId], references: [id])
+  examFormat           ExamFormat             @relation("ExamFormat", fields: [examFormatId], references: [id])
+  requestedSpecialty   RequestedSpecialty     @relation("RequestedSpecialty", fields: [requestedSpecialtyId], references: [id])
+  documents            CaseDocument[]         @relation("CaseDocuments")
+  examiner             Account                @relation("ExaminerCases", fields: [examinerId], references: [id])
+  status               CaseStatus             @relation("CaseStatus", fields: [statusId], references: [id])
+  assignTo             Account?               @relation("AssignedCases", fields: [assignToId], references: [id])
+  secureLinks          CaseSecureLink[]       @relation("CaseSecureLink")
+  claimantAvailability ClaimantAvailability[] @relation("CaseClaimantAvailability")
+
+  @@index([referralId])
+  @@map("cases")
+}
+
+enum CaseSecureLinkStatus {
+  PENDING
+  SUBMITTED
+  INVALID
+}
+
+model CaseSecureLink {
+  id           String               @id @unique @default(uuid()) @db.Uuid
+  caseId       String               @map("case_id") @db.Uuid
+  token        String               @map("token") @db.VarChar(255)
+  expiresAt    DateTime             @map("expires_at") @db.Timestamptz()
+  lastOpenedAt DateTime?            @map("last_opened_at") @db.Timestamptz()
+  submittedAt  DateTime?            @map("submitted_at") @db.Timestamptz()
+  status       CaseSecureLinkStatus @default(PENDING) @map("status")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  case Case @relation("CaseSecureLink", fields: [caseId], references: [id])
+
+  @@map("case_secure_links")
+}
+
+enum ClaimantPreference {
+  IN_PERSON
+  VIRTUAL
+  EITHER
+}
+
+model ClaimantAvailability {
+  id                 String             @id @unique @default(uuid()) @db.Uuid
+  caseId             String             @map("case_id") @db.Uuid
+  claimantId         String             @map("claimant_id") @db.Uuid
+  preference         ClaimantPreference @map("preference")
+  accessibilityNotes String?            @map("accessibility_notes") @db.Text
+  additionalNotes    String?            @map("additional_notes") @db.Text
+  consentAck         Boolean            @default(false) @map("consent_ack")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  case     Case                           @relation("CaseClaimantAvailability", fields: [caseId], references: [id])
+  claimant Claimant                       @relation("ClaimantAvailability", fields: [claimantId], references: [id])
+  slots    ClaimantAvailabilitySlots[]    @relation("ClaimantAvailabilitySlots")
+  services ClaimantAvailabilityServices[] @relation("ClaimantAvailabilityServices")
+
+  @@map("claimant_availability")
+}
+
+enum TimeBand {
+  MORNING
+  AFTERNOON
+  EVENING
+  EITHER
+}
+
+model ClaimantAvailabilitySlots {
+  id             String    @id @unique @default(uuid()) @db.Uuid
+  availabilityId String    @map("availability_id") @db.Uuid
+  date           DateTime  @map("date") @db.Date
+  startTime      String    @map("start_time") @db.VarChar(255)
+  endTime        String    @map("end_time") @db.VarChar(255)
+  start          DateTime  @map("start") @db.Timestamptz()
+  end            DateTime  @map("end") @db.Timestamptz()
+  timeBand       TimeBand  @map("time_band")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz()
+
+  availability ClaimantAvailability @relation("ClaimantAvailabilitySlots", fields: [availabilityId], references: [id])
+
+  @@map("claimant_availability_slots")
+}
+
+model ClaimantAvailabilityServices {
+  id             String  @id @unique @default(uuid()) @db.Uuid
+  availabilityId String  @map("availability_id") @db.Uuid
+  type           String  @map("type") @db.VarChar(255)
+  enabled        Boolean @default(false) @map("enabled")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  availability ClaimantAvailability             @relation("ClaimantAvailabilityServices", fields: [availabilityId], references: [id])
+  interpreter  ClaimantAvailabilityInterpreter? @relation("ClaimantAvailabilityInterpreter")
+  transport    ClaimantAvailabilityTransport?   @relation("ClaimantAvailabilityTransport")
+
+  @@map("claimant_availability_services")
+}
+
+model ClaimantAvailabilityInterpreter {
+  id                    String @id @unique @default(uuid()) @db.Uuid
+  availabilityServiceId String @unique @map("availability_service_id") @db.Uuid
+  languageId            String @map("language_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  availabilityService ClaimantAvailabilityServices @relation("ClaimantAvailabilityInterpreter", fields: [availabilityServiceId], references: [id])
+  language            Language                     @relation("ClaimantAvailabilityInterpreter", fields: [languageId], references: [id])
+
+  @@map("claimant_availability_interpreter")
+}
+
+model Language {
+  id        String    @id @unique @default(uuid()) @db.Uuid
+  name      String    @map("name") @db.VarChar(255)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  claimantAvailabilityInterpreter ClaimantAvailabilityInterpreter[] @relation("ClaimantAvailabilityInterpreter")
+
+  @@map("languages")
+}
+
+model ClaimantAvailabilityTransport {
+  id                    String  @id @unique @default(uuid()) @db.Uuid
+  availabilityServiceId String  @unique @map("availability_service_id") @db.Uuid
+  pickupAddressId       String? @map("pickup_address_id") @db.Uuid
+  rawLookup             String? @map("raw_lookup") @db.Text
+  notes                 String? @map("notes") @db.Text
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  availabilityService ClaimantAvailabilityServices @relation("ClaimantAvailabilityTransport", fields: [availabilityServiceId], references: [id])
+  pickupAddress       Address?                     @relation("ClaimantAvailabilityTransport", fields: [pickupAddressId], references: [id])
+
+  @@map("claimant_availability_transport")
+}
+
+model CaseDocument {
+  id         String    @id @unique @default(uuid()) @db.Uuid
+  caseId     String    @map("case_id") @db.Uuid
+  documentId String    @map("document_id") @db.Uuid
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz()
+
+  case     Case      @relation("CaseDocuments", fields: [caseId], references: [id])
+  document Documents @relation("DocumentCases", fields: [documentId], references: [id])
+
+  @@unique([caseId, documentId])
+  @@map("case_documents")
+}
+
+model Documents {
+  id        String         @id @unique @default(uuid()) @db.Uuid
+  name      String         @map("name") @db.VarChar(255)
+  type      String         @map("type") @db.VarChar(255)
+  size      Int            @map("size") @db.Integer
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime?      @map("deleted_at") @db.Timestamptz()
+  users     User[]         @relation("ProfilePhoto")
+  cases     CaseDocument[] @relation("DocumentCases")
 
   @@map("documents")
 }
 
 model CaseType {
-  id                    String                  @id @unique @default(uuid()) @db.Uuid
-  name                  String                  @map("name") @db.VarChar(255)
-  description           String?                 @map("description") @db.Text
-  createdAt             DateTime                @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt             DateTime                @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt             DateTime?               @map("deleted_at") @db.Timestamptz()
-  imeReferrals          IMEReferral[]           @relation("CaseTypeReferrals")
+  id          String    @id @unique @default(uuid()) @db.Uuid
+  name        String    @map("name") @db.VarChar(255)
+  description String?   @map("description") @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz()
+  cases       Case[]    @relation("CaseType")
 
   @@map("case_types")
 }
 
 model ExamFormat {
-  id                    String                  @id @unique @default(uuid()) @db.Uuid
-  name                  String                  @map("name") @db.VarChar(255)
-  description           String?                 @map("description") @db.Text
-  createdAt             DateTime                @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt             DateTime                @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt             DateTime?               @map("deleted_at") @db.Timestamptz()
-  imeReferrals          IMEReferral[]           @relation("ExamFormatReferrals")
+  id          String    @id @unique @default(uuid()) @db.Uuid
+  name        String    @map("name") @db.VarChar(255)
+  description String?   @map("description") @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz()
+  cases       Case[]    @relation("ExamFormat")
 
   @@map("exam_formats")
 }
 
 model RequestedSpecialty {
-  id                    String                  @id @unique @default(uuid()) @db.Uuid
-  name                  String                  @map("name") @db.VarChar(255)
-  description           String?                 @map("description") @db.Text
-  createdAt             DateTime                @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt             DateTime                @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt             DateTime?               @map("deleted_at") @db.Timestamptz()
-  imeReferrals          IMEReferral[]           @relation("RequestedSpecialtyReferrals")
+  id          String    @id @unique @default(uuid()) @db.Uuid
+  name        String    @map("name") @db.VarChar(255)
+  description String?   @map("description") @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz()
+  cases       Case[]    @relation("RequestedSpecialty")
 
   @@map("requested_specialties")
 }
@@ -298,11 +463,15 @@ model PrismaSeed {
   @@map("_prisma_seeds")
 }
 
-enum IMEReferralStatus {
-  PENDING
-  ASSIGNED
-  SCHEDULED
-  COMPLETED
-  CANCELLED
-  REJECTED
+model CaseStatus {
+  id          String    @id @unique @default(uuid()) @db.Uuid
+  name        String    @map("name") @db.VarChar(255)
+  description String?   @map("description") @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz()
+
+  cases Case[] @relation("CaseStatus")
+
+  @@map("case_statuses")
 }
