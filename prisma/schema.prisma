@@ -193,7 +193,6 @@ model Claimant {
 model IMEReferral {
   id                   String  @id @unique @default(uuid()) @db.Uuid
   caseNumber           String  @map("case_number") @db.VarChar(255)
-  examinerId           String  @map("examiner_id") @db.Uuid
   organizationId       String? @map("organization_id") @db.Uuid
   claimantId           String  @map("claimant_id") @db.Uuid
   consentForSubmission Boolean @default(false) @map("consent_for_submission")
