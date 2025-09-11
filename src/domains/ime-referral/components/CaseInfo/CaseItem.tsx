@@ -1,22 +1,48 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Edit, X } from 'lucide-react';
-import { type CaseItemProps } from '../../types/CaseInfo';
+import { type DropdownOption } from '../../types/CaseInfo';
 import { type CaseInfo } from '@/shared/validation/imeReferral/imeReferralValidation';
+
+type CaseItemProps = {
+  caseItem: CaseInfo;
+  index: number;
+  onEdit: (index: number) => void;
+  onRemove: (index: number) => void;
+  caseTypes?: DropdownOption[];
+  examFormats?: DropdownOption[];
+  requestedSpecialties?: DropdownOption[];
+  urgencyLevels?: DropdownOption[];
+  preferredLocations?: DropdownOption[];
+};
 
 const CaseItem: React.FC<CaseItemProps> = ({
   caseItem,
   index,
   onEdit,
   onRemove,
-  isDisabled = false,
+  caseTypes = [],
+  examFormats = [],
+  requestedSpecialties = [],
+  urgencyLevels = [],
+  preferredLocations = [],
 }) => {
+  const findLabel = (options: DropdownOption[], value: string) => {
+    if (!options || !Array.isArray(options) || !value) {
+      return value;
+    }
+    const option = options.find(opt => opt.value === value);
+    return option ? option.label : value;
+  };
+
   const formatCasePreview = (caseItem: CaseInfo) => ({
-    type: caseItem.caseType,
-    urgency: caseItem.urgencyLevel,
-    format: caseItem.examFormat,
-    specialty: caseItem.requestedSpecialty,
+    type: findLabel(caseTypes, caseItem.caseType),
+    urgency: findLabel(urgencyLevels, caseItem.urgencyLevel),
+    format: findLabel(examFormats, caseItem.examFormat),
+    specialty: findLabel(requestedSpecialties, caseItem.requestedSpecialty),
+    location: findLabel(preferredLocations, caseItem.preferredLocation),
   });
+
   const casePreview = formatCasePreview(caseItem);
 
   return (
@@ -30,6 +56,7 @@ const CaseItem: React.FC<CaseItemProps> = ({
             <span>Urgency: {casePreview.urgency}</span>
             <span>Format: {casePreview.format}</span>
             <span>Specialty: {casePreview.specialty}</span>
+            <span>Location: {casePreview.location}</span>
           </div>
         </div>
         <div className="ml-4 flex space-x-2">
@@ -38,7 +65,6 @@ const CaseItem: React.FC<CaseItemProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => onEdit(index)}
-            disabled={isDisabled}
             className="h-8 w-8 p-0"
             aria-label={`Edit case ${index + 1}`}
           >
@@ -49,7 +75,6 @@ const CaseItem: React.FC<CaseItemProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => onRemove(index)}
-            disabled={isDisabled}
             className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
             aria-label={`Remove case ${index + 1}`}
           >

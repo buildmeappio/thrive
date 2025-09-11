@@ -9,12 +9,22 @@ import ProgressIndicator from '../ProgressIndicator';
 import CaseList from './CaseList';
 import CaseForm from './CaseForm';
 import { toast } from 'sonner';
+import { type DropdownOption } from '../../types/CaseInfo';
 
-const CaseInfo: React.FC<IMEReferralFormProps> = ({
+type CaseInfoProps = IMEReferralFormProps & {
+  caseTypes: DropdownOption[];
+  examFormats: DropdownOption[];
+  requestedSpecialties: DropdownOption[];
+};
+
+const CaseInfo: React.FC<CaseInfoProps> = ({
   onNext,
   onPrevious,
   currentStep = 1,
   totalSteps = 1,
+  caseTypes: caseTypeOptions,
+  examFormats: examFormatOptions,
+  requestedSpecialties: requestedSpecialityOptions,
 }) => {
   const { data, addCase, updateCase, removeCase } = useIMEReferralStore();
   const cases = data.step2?.cases || [];
@@ -86,13 +96,15 @@ const CaseInfo: React.FC<IMEReferralFormProps> = ({
           </p>
         </header>
 
-        {/* Existing Cases List */}
+        {/* Cases List */}
         <CaseList
           cases={cases}
           onEdit={handleEditCase}
           handleAddNewCase={handleAddNewCase}
           onRemove={removeCase}
-          isDisabled={false}
+          caseTypes={caseTypeOptions}
+          examFormats={examFormatOptions}
+          requestedSpecialties={requestedSpecialityOptions}
         />
 
         {/* Add/Edit Case Form */}
@@ -104,6 +116,9 @@ const CaseInfo: React.FC<IMEReferralFormProps> = ({
             isEditing={editingIndex !== null}
             editIndex={editingIndex ?? 0}
             isSubmitting={false}
+            caseTypes={caseTypeOptions}
+            examFormats={examFormatOptions}
+            requestedSpecialties={requestedSpecialityOptions}
           />
         )}
 

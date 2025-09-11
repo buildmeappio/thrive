@@ -12,39 +12,6 @@ type CreateIMEReferralData = {
   isDraft: boolean;
 };
 
-// Helper function to find relation by name or UUID
-const findRelationByName = async (
-  tx: any,
-  model: string,
-  value: string,
-  fieldName: string = 'name'
-) => {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-  if (uuidRegex.test(value)) {
-    const record = await tx[model].findUnique({
-      where: { id: value },
-    });
-    if (!record) {
-      throw new Error(`${model} with ID ${value} not found`);
-    }
-    return record.id;
-  } else {
-    const record = await tx[model].findFirst({
-      where: {
-        [fieldName]: {
-          equals: value,
-          mode: 'insensitive',
-        },
-      },
-    });
-    if (!record) {
-      throw new Error(`${model} with ${fieldName} '${value}' not found`);
-    }
-    return record.id;
-  }
-};
-
 const createIMEReferralWithClaimant = async (data: CreateIMEReferralData) => {
   const currentUser = await getCurrentUser();
   if (!currentUser?.accountId) {
@@ -105,22 +72,13 @@ const createIMEReferralWithClaimant = async (data: CreateIMEReferralData) => {
     const createdCases = [];
 
     for (const [_index, caseData] of data.step2.cases.entries()) {
-      // Find relations
-      const caseTypeId = await findRelationByName(tx, 'caseType', caseData.caseType);
-      const examFormatId = await findRelationByName(tx, 'examFormat', caseData.examFormat);
-      const requestedSpecialtyId = await findRelationByName(
-        tx,
-        'requestedSpecialty',
-        caseData.requestedSpecialty
-      );
-
       // Create case
       const caseRecord = await tx.case.create({
         data: {
           referralId: referral.id,
-          caseTypeId,
-          examFormatId,
-          requestedSpecialtyId,
+          caseTypeId: caseData.caseType,
+          examFormatId: caseData.examFormat,
+          requestedSpecialtyId: caseData.requestedSpecialty,
           urgencyLevel: caseData.urgencyLevel.toUpperCase() as UrgencyLevel,
           reason: caseData.reason,
           preferredLocation: caseData.preferredLocation || null,
@@ -171,29 +129,6 @@ const createIMEReferralWithClaimant = async (data: CreateIMEReferralData) => {
   });
 };
 
-const getReferrals = async () => {
-  const referrals = await prisma.iMEReferral.findMany({
-    include: {
-      claimant: true,
-      cases: {
-        include: {
-          caseType: true,
-          examFormat: true,
-          requestedSpecialty: true,
-          status: true,
-          documents: {
-            include: {
-              document: true,
-            },
-          },
-        },
-      },
-      organization: true,
-    },
-  });
-  return { success: true, result: referrals };
-};
 export default {
   createIMEReferralWithClaimant,
-  getReferrals,
 };

@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import ClaimantDetails from './ClaimantDetails';
 import CaseInfo from './CaseInfo';
-import ReferralSubmitted from './ReferralSubmitted';
 import ConsentInfo from './ConsentInfo';
+import ReferralSubmitted from './ReferralSubmitted';
+
+import { formatLabel } from '@/shared/utils/labelFormat.utils';
+import type { getCaseTypes, getExamFormats, getRequestedSpecialties } from '@/domains/auth/actions';
 
 interface StepConfig {
   component: React.ComponentType<StepProps>;
@@ -17,15 +20,51 @@ interface StepProps {
   totalSteps: number;
 }
 
-const STEPS: StepConfig[] = [
-  { component: ClaimantDetails },
-  { component: CaseInfo },
-  { component: ConsentInfo },
-  { component: ReferralSubmitted },
-];
+interface IMEReferralProps {
+  caseTypes: Awaited<ReturnType<typeof getCaseTypes>>['result'];
+  examFormats: Awaited<ReturnType<typeof getExamFormats>>['result'];
+  requestedSpecialties: Awaited<ReturnType<typeof getRequestedSpecialties>>['result'];
+}
 
-const IMEReferral: React.FC = () => {
+const IMEReferral: React.FC<IMEReferralProps> = ({
+  caseTypes,
+  examFormats,
+  requestedSpecialties,
+}) => {
   const [currentStep, setCurrentStep] = useState(1);
+
+  const convertToTypeOptions = (
+    types:
+      | IMEReferralProps['caseTypes']
+      | IMEReferralProps['examFormats']
+      | IMEReferralProps['requestedSpecialties']
+  ) => {
+    return (
+      types?.map(type => ({
+        value: type.id,
+        label: formatLabel(type.name),
+      })) || []
+    );
+  };
+
+  const STEPS: StepConfig[] = useMemo(
+    () => [
+      { component: ClaimantDetails },
+      {
+        component: (props: StepProps) => (
+          <CaseInfo
+            caseTypes={convertToTypeOptions(caseTypes)}
+            examFormats={convertToTypeOptions(examFormats)}
+            requestedSpecialties={convertToTypeOptions(requestedSpecialties)}
+            {...props}
+          />
+        ),
+      },
+      { component: ConsentInfo },
+      { component: ReferralSubmitted },
+    ],
+    [caseTypes, examFormats, requestedSpecialties]
+  );
 
   const goToNext = (): void => {
     if (currentStep < STEPS.length) {
@@ -58,4 +97,5 @@ const IMEReferral: React.FC = () => {
 
   return <div>{renderCurrentStep()}</div>;
 };
+
 export default IMEReferral;

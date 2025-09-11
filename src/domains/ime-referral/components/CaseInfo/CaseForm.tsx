@@ -1,15 +1,27 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod'; // <-- important
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import CaseFormFields from './CaseFormFields';
-import { type CaseFormProps } from '../../types/CaseInfo';
+import type { DropdownOption } from '../../types/CaseInfo';
 import {
   type CaseInfo,
   CaseInfoSchema,
   CaseInitialValues,
 } from '@/shared/validation/imeReferral/imeReferralValidation';
+
+type CaseFormProps = {
+  onSubmit: (data: CaseInfo) => void;
+  onCancel: () => void;
+  initialValues?: CaseInfo;
+  isEditing?: boolean;
+  editIndex?: number;
+  isSubmitting?: boolean;
+  caseTypes: DropdownOption[];
+  examFormats: DropdownOption[];
+  requestedSpecialties: DropdownOption[];
+};
 
 const CaseForm: React.FC<CaseFormProps> = ({
   onSubmit,
@@ -18,6 +30,9 @@ const CaseForm: React.FC<CaseFormProps> = ({
   isEditing = false,
   editIndex = 0,
   isSubmitting = false,
+  caseTypes,
+  examFormats,
+  requestedSpecialties,
 }) => {
   const form = useForm<CaseInfo>({
     resolver: zodResolver(CaseInfoSchema),
@@ -60,6 +75,9 @@ const CaseForm: React.FC<CaseFormProps> = ({
         setValue={form.setValue}
         isSubmitting={isSubmitting}
         onAiRewrite={handleAiRewrite}
+        caseTypes={caseTypes}
+        examFormats={examFormats}
+        requestedSpecialties={requestedSpecialties}
       />
 
       {/* Form Buttons */}

@@ -2,13 +2,16 @@ import React from 'react';
 import CaseItem from './CaseItem';
 import AddCaseButton from './AddCaseButton';
 import { type CaseInfo } from '@/shared/validation/imeReferral/imeReferralValidation';
+import { type DropdownOption } from '../../types/CaseInfo';
 
 type CaseListProps = {
   cases: CaseInfo[];
   onEdit: (index: number) => void;
   handleAddNewCase: () => void;
   onRemove: (index: number) => void;
-  isDisabled?: boolean;
+  caseTypes: DropdownOption[];
+  examFormats: DropdownOption[];
+  requestedSpecialties: DropdownOption[];
 };
 
 const CaseList: React.FC<CaseListProps> = ({
@@ -16,14 +19,15 @@ const CaseList: React.FC<CaseListProps> = ({
   onEdit,
   handleAddNewCase,
   onRemove,
-  isDisabled = false,
+  caseTypes,
+  examFormats,
+  requestedSpecialties,
 }) => {
   return (
     <div className="mb-6 space-y-4">
       <div className="flex justify-between">
         <h3 className="text-lg font-medium text-gray-900">Added Cases ({cases.length})</h3>
-
-        <AddCaseButton onClick={handleAddNewCase} isDisabled={false} />
+        <AddCaseButton onClick={handleAddNewCase} />
       </div>
       {cases.map((caseItem, index) => (
         <CaseItem
@@ -32,7 +36,9 @@ const CaseList: React.FC<CaseListProps> = ({
           index={index}
           onEdit={onEdit}
           onRemove={onRemove}
-          isDisabled={isDisabled}
+          caseTypes={caseTypes}
+          examFormats={examFormats}
+          requestedSpecialties={requestedSpecialties}
         />
       ))}
     </div>

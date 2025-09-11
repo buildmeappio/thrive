@@ -6,10 +6,6 @@ import { useRouter } from 'next/navigation';
 const ReferralSubmitted: React.FC = () => {
   const router = useRouter();
 
-  const handleGoToDashboard = () => {
-    router.push('/dashboard');
-  };
-
   return (
     <div className="rounded-4xl bg-[#FFFFFF] p-6 sm:p-12 md:p-20 lg:p-25">
       <div className="flex flex-col items-center text-center">
@@ -47,15 +43,15 @@ const ReferralSubmitted: React.FC = () => {
         <div className="mt-8 flex w-full flex-col gap-4 px-2 sm:mt-12 sm:flex-row sm:justify-between sm:gap-0">
           <Button
             variant="outline"
-            onClick={handleGoToDashboard}
+            onClick={() => router.push('/dashboard')}
             className="flex h-[45px] w-full items-center justify-center rounded-full border-[#000093] bg-white px-6 py-2 whitespace-nowrap text-gray-600 hover:bg-gray-50 sm:w-auto sm:px-8 md:px-10"
           >
             Go to Dashboard
           </Button>
 
           <Button
-            onClick={handleGoToDashboard}
-            className="flex h-[45px] w-[150px] items-center justify-center rounded-full bg-[#000093] whitespace-nowrap text-white hover:bg-blue-700 sm:w-auto sm:px-8 md:px-10"
+            onClick={() => router.push('/dashboard/ime-referral')}
+            className="flex h-[45px] w-[150px] items-center justify-center rounded-full bg-[#000093] whitespace-nowrap text-white hover:bg-[#000093] sm:w-auto sm:px-8 md:px-10"
           >
             Submit another Referral
           </Button>

@@ -11,22 +11,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Upload, X } from 'lucide-react';
-import { CaseType } from '@/shared/config/caseType.config';
 import { UrgencyLevels } from '@/shared/config/urgencyLevel.config';
-import { ExamFormat } from '@/shared/config/examFormat.config';
 import { provinceOptions } from '@/shared/config/ProvinceOptions';
-import { RequestedSpecialty } from '@/shared/config/requestedSpecialty.config';
 import { DocumentUploadConfig } from '@/shared/config/documentUpload.config';
 import { type CaseInfo } from '@/shared/validation/imeReferral/imeReferralValidation';
+import { type DropdownOption } from '../../types/CaseInfo';
 
-interface CaseFormFieldsProps {
+type CaseFormFieldsProps = {
   control: Control<CaseInfo>;
   errors: FieldErrors<CaseInfo>;
   watch: UseFormWatch<CaseInfo>;
   setValue: UseFormSetValue<CaseInfo>;
   isSubmitting: boolean;
   onAiRewrite: () => void;
-}
+  caseTypes: DropdownOption[];
+  examFormats: DropdownOption[];
+  requestedSpecialties: DropdownOption[];
+};
 
 const CaseFormFields: React.FC<CaseFormFieldsProps> = ({
   control,
@@ -35,6 +36,9 @@ const CaseFormFields: React.FC<CaseFormFieldsProps> = ({
   setValue,
   isSubmitting,
   onAiRewrite,
+  caseTypes,
+  examFormats,
+  requestedSpecialties,
 }) => {
   // const watchedValues = watch();
   const files = watch('files');
@@ -115,7 +119,7 @@ const CaseFormFields: React.FC<CaseFormFieldsProps> = ({
                   onChange={(val: string) => {
                     field.onChange(val);
                   }}
-                  options={CaseType}
+                  options={caseTypes}
                   placeholder="Select case type"
                   className={`w-full ${errors.caseType ? 'border-red-500' : ''}`}
                 />
@@ -173,7 +177,7 @@ const CaseFormFields: React.FC<CaseFormFieldsProps> = ({
                   onChange={(val: string) => {
                     field.onChange(val);
                   }}
-                  options={ExamFormat}
+                  options={examFormats}
                   placeholder="Select exam format"
                   className={`w-full ${errors.examFormat ? 'border-red-500' : ''}`}
                 />
@@ -205,7 +209,7 @@ const CaseFormFields: React.FC<CaseFormFieldsProps> = ({
                   onChange={(val: string) => {
                     field.onChange(val);
                   }}
-                  options={RequestedSpecialty}
+                  options={requestedSpecialties}
                   placeholder="Select specialty"
                   className={`w-full ${errors.requestedSpecialty ? 'border-red-500' : ''}`}
                 />

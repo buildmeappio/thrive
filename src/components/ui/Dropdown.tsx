@@ -7,11 +7,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-
-export interface DropdownOption {
-  value: string;
-  label: string;
-}
+import { type DropdownOption } from '@/domains/ime-referral/types/CaseInfo';
 
 export interface DropdownProps {
   id: string;
