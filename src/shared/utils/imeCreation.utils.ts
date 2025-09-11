@@ -1,7 +1,5 @@
-import { writeFile, mkdir } from 'fs/promises';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/domains/auth/server/nextauth/options';
-import { join } from 'path';
 
 export const getCurrentUser = async () => {
   const session = await getServerSession(authOptions);
@@ -18,17 +16,18 @@ export const getCurrentUser = async () => {
 
 // need to change
 export const saveFileToStorage = async (file: File): Promise<string> => {
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
+  // const bytes = await file.arrayBuffer();
+  // const buffer = Buffer.from(bytes);
 
-  const uploadDir = join(process.cwd(), 'uploads', 'referrals');
-  await mkdir(uploadDir, { recursive: true });
+  // const uploadDir = join(process.cwd(), 'uploads', 'referrals');
+  // await mkdir(uploadDir, { recursive: true });
 
-  const filename = `${Date.now()}-${file.name}`;
-  const filepath = join(uploadDir, filename);
+  // const filename = `${Date.now()}-${file.name}`;
+  // const filepath = join(uploadDir, filename);
 
-  await writeFile(filepath, buffer);
-  return `/uploads/referrals/${filename}`;
+  // await writeFile(filepath, buffer);
+  // return `/uploads/referrals/${filename}`;
+  return file.name;
 };
 
 export const generateCaseNumber = (): string => {
