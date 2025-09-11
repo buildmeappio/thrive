@@ -77,7 +77,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                       href="#"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="whitespace-nowrap text-[#00A8FF] underline hover:text-[#0088CC]"
+                      className="whitespace-nowrap text-[#000093] underline hover:text-[#000093]"
                     >
                       Terms & Conditions
                     </a>{' '}
@@ -86,7 +86,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                       href="#"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="whitespace-nowrap text-[#00A8FF] underline hover:text-[#0088CC]"
+                      className="whitespace-nowrap text-[#000093] underline hover:text-[#000093]"
                     >
                       Privacy Policy
                     </a>
@@ -142,6 +142,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                   disabled={currentStep === 1}
                   borderColor="#000080"
                   iconColor="#000080"
+                  isSubmitting={isSubmitting}
                 />
                 <ContinueButton
                   isSubmitting={isSubmitting}

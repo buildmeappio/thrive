@@ -15,9 +15,22 @@ export const ClaimantDetailsSchema = z.object({
     .min(1, ErrorMessages.LAST_NAME_REQUIRED)
     .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.LAST_NAME_INVALID),
 
-  dob: z.string().refine(val => !isNaN(Date.parse(val)), {
-    message: ErrorMessages.DOB_INVALID,
-  }),
+  dob: z
+    .string()
+    .min(1, ErrorMessages.DOB_REQUIRED)
+    .refine(val => !isNaN(Date.parse(val)), {
+      message: ErrorMessages.DOB_INVALID,
+    })
+    .refine(
+      val => {
+        const selectedDate = new Date(val);
+        const today = new Date();
+        return selectedDate <= today;
+      },
+      {
+        message: ErrorMessages.DOB_FUTURE_DATE_NOT_ALLOWED,
+      }
+    ),
 
   gender: z.string().min(1, ErrorMessages.GENDER_REQUIRED),
 

@@ -149,6 +149,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                   disabled={currentStep === 1}
                   borderColor="#000080"
                   iconColor="#000080"
+                  isSubmitting={isSubmitting}
                 />
                 <ContinueButton
                   isSubmitting={isSubmitting}

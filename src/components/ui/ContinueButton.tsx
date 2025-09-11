@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 
 export type ContinueButtonProps = {
   isLastStep?: boolean;
@@ -37,7 +37,11 @@ const ContinueButton: React.FC<ContinueButtonProps> = ({
       <span className="transition-all duration-300 ease-in-out">
         {isLastStep ? 'Submit' : 'Continue'}
       </span>
-      <ArrowRight className="cup ml-2 h-4 w-4 text-white transition-all duration-300 ease-in-out" />
+      {isSubmitting ? (
+        <Loader2 className="ml-2 h-4 w-4 animate-spin text-white" />
+      ) : (
+        <ArrowRight className="cup ml-2 h-4 w-4 text-white transition-all duration-300 ease-in-out" />
+      )}
     </button>
   );
 };

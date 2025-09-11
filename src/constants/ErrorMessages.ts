@@ -92,4 +92,5 @@ export default Object.freeze({
   DEPARTMENT_INVALID: 'Department should only contain alphabets, spaces, hyphens, or apostrophes',
   DOB_INVALID: 'Invalid Date of birth',
   FAILED_CREATE_IME_REFERRAL: 'Failed to create IME referral',
+  DOB_FUTURE_DATE_NOT_ALLOWED: 'Date of birth cannot be a future date',
 });

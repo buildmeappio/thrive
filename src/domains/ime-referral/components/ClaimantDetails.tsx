@@ -53,7 +53,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
           <div className="w-full max-w-full md:space-y-12">
             <div className="w-full max-w-full px-4 md:px-0">
-              <h2 className="text-[23px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000] md:text-[36.02px]">
+              <h2 className="text-[23px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000] md:text-2xl">
                 Claimant Details
               </h2>
 
@@ -99,6 +99,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
                       {...register('dob')}
                       placeholder="MM/DD/YYYY"
                       type="date"
+                      max={new Date().toISOString().split('T')[0]}
                       className={`w-full pr-10 ${errors.dob ? 'border-red-500' : ''}`}
                       style={{ appearance: 'none' }}
                     />

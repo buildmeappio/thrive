@@ -13,7 +13,7 @@ interface CheckboxProps extends React.ComponentProps<typeof CheckboxPrimitive.Ro
 
 function Checkbox({
   className,
-  checkedColor = '#00A8FF',
+  checkedColor = '#000093',
   checkIconColor = 'white',
   ...props
 }: CheckboxProps) {

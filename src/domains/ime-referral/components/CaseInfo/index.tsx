@@ -87,13 +87,9 @@ const CaseInfo: React.FC<CaseInfoProps> = ({
       >
         {/* Header */}
         <header className="mb-6 w-full max-w-full md:mb-8">
-          <h2 className="text-2xl leading-tight font-semibold tracking-[-0.02em] break-words text-[#000000] sm:text-3xl md:text-[36.02px] md:leading-[36.02px]">
+          <h2 className="text-2xl leading-tight font-semibold tracking-[-0.02em] break-words text-[#000000] sm:text-3xl md:text-2xl md:leading-[36.02px]">
             Case Information
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Add one or more for this IME referral. Each case can have different requirements and
-            specialties.
-          </p>
         </header>
 
         {/* Cases List */}
@@ -129,6 +125,7 @@ const CaseInfo: React.FC<CaseInfoProps> = ({
             disabled={currentStep === 1}
             borderColor="#000080"
             iconColor="#000080"
+            isSubmitting={false}
           />
           <ContinueButton
             onClick={handleContinue}

@@ -6,6 +6,7 @@ export type BackButtonProps = {
   borderColor?: string;
   iconColor?: string;
   onClick?: () => void;
+  isSubmitting: boolean;
 };
 
 const BackButton: React.FC<BackButtonProps> = ({
@@ -13,13 +14,14 @@ const BackButton: React.FC<BackButtonProps> = ({
   borderColor = '#000080',
   iconColor = '#000080',
   onClick,
+  isSubmitting,
 }) => {
   return (
     <button
       onClick={onClick}
-      disabled={disabled}
+      disabled={isSubmitting}
       className={`flex h-[35px] w-[120px] items-center justify-center rounded-[34px] border px-4 py-3 transition-all duration-300 ease-in-out md:h-[45px] md:w-[165px] md:gap-1.5 ${
-        disabled
+        isSubmitting
           ? 'cursor-not-allowed bg-transparent text-[#555555]'
           : 'cursor-pointer hover:opacity-90'
       }`}

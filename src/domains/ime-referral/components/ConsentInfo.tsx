@@ -11,7 +11,7 @@ import {
   type Consent,
   ConsentInitialValues,
 } from '@/shared/validation/imeReferral/imeReferralValidation';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { useIMEReferralStore } from '@/store/useIMEReferralStore';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui';
@@ -110,7 +110,7 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
       <div className="w-full max-w-full rounded-4xl bg-white p-4 sm:p-6 md:p-10">
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-full">
           <header className="mb-6 w-full max-w-full md:mb-8">
-            <h2 className="text-2xl font-semibold tracking-[-0.02em] text-[#000000] sm:text-3xl md:text-[36.02px] md:leading-[36.02px]">
+            <h2 className="text-2xl font-semibold tracking-[-0.02em] text-[#000000] sm:text-3xl md:text-2xl md:leading-[36.02px]">
               Consent Confirmation
             </h2>
           </header>
@@ -135,6 +135,7 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
                   >
                     I confirm that the claimant has provided informed consent for this medical
                     examination, and I am authorized to submit this referral on their behalf.
+                    <span className="text-red-500">*</span>
                   </label>
                 </div>
               )}
@@ -164,21 +165,26 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
                 disabled={currentStep === 1 || isSubmitting || isSavingDraft}
                 borderColor="#000080"
                 iconColor="#000080"
+                isSubmitting={isSubmitting || isSavingDraft}
               />
 
               <div className="flex gap-2">
                 <Button
                   type="button"
                   onClick={handleSaveDraft}
-                  disabled={isSubmitting || isSavingDraft}
-                  className="hidden h-[45px] w-[182px] items-center justify-center gap-1.5 rounded-[34px] bg-[#0000BA] px-4 py-3 text-white hover:opacity-90 disabled:opacity-50 md:flex"
+                  disabled={isSavingDraft || isSubmitting}
+                  className="hidden h-[45px] w-[182px] items-center justify-center gap-1.5 rounded-[34px] bg-[#0000BA] px-4 py-3 text-white hover:bg-[#0000BA] hover:opacity-90 disabled:opacity-50 md:flex"
                 >
-                  <span className="truncate">{isSavingDraft ? 'Saving...' : 'Save as Draft'}</span>
-                  <ArrowRight className="ml-2 h-4 w-4 flex-shrink-0 text-white" />
+                  <span className="truncate">Save as Draft</span>
+                  {isSavingDraft ? (
+                    <Loader2 className="ml-2 h-4 w-4 animate-spin text-white" />
+                  ) : (
+                    <ArrowRight className="cup ml-2 h-4 w-4 text-white transition-all duration-300 ease-in-out" />
+                  )}
                 </Button>
 
                 <ContinueButton
-                  isSubmitting={isSubmitting}
+                  isSubmitting={isSubmitting || isSavingDraft}
                   isLastStep={currentStep === totalSteps}
                   color="#000080"
                   disabled={isSubmitting || isSavingDraft}
@@ -193,8 +199,12 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
               disabled={isSubmitting || isSavingDraft}
               className="flex h-[40px] w-full items-center justify-center gap-1.5 rounded-[34px] bg-[#0000BA] px-4 py-3 text-white hover:opacity-90 disabled:opacity-50 md:hidden"
             >
-              <span className="truncate">{isSavingDraft ? 'Saving...' : 'Save as Draft'}</span>
-              <ArrowRight className="ml-2 h-4 w-4 flex-shrink-0 text-white" />
+              <span className="truncate">Save as Draft</span>
+              {isSavingDraft ? (
+                <Loader2 className="ml-2 h-4 w-4 animate-spin text-white" />
+              ) : (
+                <ArrowRight className="cup ml-2 h-4 w-4 text-white transition-all duration-300 ease-in-out" />
+              )}
             </Button>
           </div>
         </form>
