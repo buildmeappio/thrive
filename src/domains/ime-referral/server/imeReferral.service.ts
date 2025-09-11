@@ -129,6 +129,11 @@ const createIMEReferralWithClaimant = async (data: CreateIMEReferralData) => {
   });
 };
 
+const getReferrals = async () => {
+  return;
+};
+
 export default {
   createIMEReferralWithClaimant,
+  getReferrals,
 };
