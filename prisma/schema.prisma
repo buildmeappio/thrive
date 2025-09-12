@@ -192,7 +192,6 @@ model Claimant {
 
 model IMEReferral {
   id                   String  @id @unique @default(uuid()) @db.Uuid
-  caseNumber           String  @map("case_number") @db.VarChar(255)
   organizationId       String? @map("organization_id") @db.Uuid
   claimantId           String  @map("claimant_id") @db.Uuid
   consentForSubmission Boolean @default(false) @map("consent_for_submission")
@@ -217,6 +216,7 @@ enum UrgencyLevel {
 
 model Case {
   id                   String       @id @unique @default(uuid()) @db.Uuid
+  caseNumber           String       @unique @map("case_number") @db.VarChar(255)
   referralId           String       @map("referral_id") @db.Uuid
   caseTypeId           String       @map("case_type_id") @db.Uuid
   examFormatId         String       @map("exam_format_id") @db.Uuid
@@ -246,6 +246,7 @@ model Case {
   claimantAvailability ClaimantAvailability[] @relation("CaseClaimantAvailability")
 
   @@index([referralId])
+  @@index([caseNumber])
   @@map("cases")
 }
 
