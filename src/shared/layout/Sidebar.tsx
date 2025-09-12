@@ -50,8 +50,20 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
     initializeSelectedSidebarIndex();
   }, []);
 
+  // Fixed function to handle route matching more precisely
   const checkIsPartOfSidebar = (pathname: string, href: string) => {
-    return pathname === href || (pathname.startsWith(href) && href !== '/dashboard');
+    // Exact match
+    if (pathname === href) {
+      return true;
+    }
+
+    // For dashboard route, only match exactly (not subroutes)
+    if (href === '/dashboard') {
+      return pathname === '/dashboard';
+    }
+
+    // For other routes, check if pathname starts with href
+    return pathname.startsWith(href);
   };
 
   useEffect(() => {
@@ -59,9 +71,12 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
       return;
     }
 
-    const matchedItem = medicalExaminerSidebarRoutes.find(item =>
-      checkIsPartOfSidebar(pathname, item.href)
+    // Sort routes by specificity (longest href first) to match most specific route first
+    const sortedRoutes = [...medicalExaminerSidebarRoutes].sort(
+      (a, b) => b.href.length - a.href.length
     );
+
+    const matchedItem = sortedRoutes.find(item => checkIsPartOfSidebar(pathname, item.href));
 
     if (matchedItem) {
       setSelectedSidebarIndex(matchedItem.index);
@@ -79,7 +94,13 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
     }
   };
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(href);
+  // Updated isActive function to match the same logic
+  const isActive = (href: string) => {
+    if (href === '/dashboard') {
+      return pathname === '/dashboard';
+    }
+    return pathname === href || pathname.startsWith(href);
+  };
 
   const handleLinkClick = (item: (typeof medicalExaminerSidebarRoutes)[0]) => {
     setSelectedSidebarIndex(item.index);

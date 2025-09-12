@@ -10,13 +10,15 @@ import {
   CaseInfoSchema,
   CaseInitialValues,
 } from '@/shared/validation/imeReferral/imeReferralValidation';
+import { toast } from 'sonner';
 
 type CaseFormProps = {
   onSubmit: (data: CaseInfo) => void;
   onCancel: () => void;
   initialValues?: CaseInfo;
   isEditing?: boolean;
-  editIndex?: number;
+  editIndex?: number | null;
+  cases: CaseInfo[];
   isSubmitting?: boolean;
   caseTypes: DropdownOption[];
   examFormats: DropdownOption[];
@@ -28,8 +30,9 @@ const CaseForm: React.FC<CaseFormProps> = ({
   onCancel,
   initialValues,
   isEditing = false,
-  editIndex = 0,
+  editIndex = null,
   isSubmitting = false,
+  cases,
   caseTypes,
   examFormats,
   requestedSpecialties,
@@ -44,11 +47,22 @@ const CaseForm: React.FC<CaseFormProps> = ({
     console.log('AI Rewrite requested');
   };
 
-  const getCaseTitle = (index: number, isEditing: boolean): string => {
-    return isEditing ? `Edit Case ${index + 1}` : 'Add New Case';
+  const getCaseTitle = (index: number | null, isEditing: boolean): string => {
+    return isEditing && index !== null ? `Edit Case ${index + 1}` : 'Add New Case';
   };
 
   const handleSubmit = form.handleSubmit((data: CaseInfo) => {
+    const duplicateCaseType: boolean = cases.some(
+      (caseItem: CaseInfo, idx: number) => caseItem.caseType === data.caseType && idx !== editIndex
+    );
+
+    if (duplicateCaseType) {
+      toast.error(
+        'A case with this Case Type already exists. Please choose a different Case Type.'
+      );
+      return;
+    }
+
     onSubmit(data);
   });
 

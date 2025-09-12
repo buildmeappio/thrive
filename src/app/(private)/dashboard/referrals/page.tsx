@@ -1,3 +1,5 @@
+import { getReferrals } from '@/domains/ime-referral/actions';
+import ReferralList from '@/domains/ime-referral/components/ReferralList';
 import { type Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -5,7 +7,8 @@ export const metadata: Metadata = {
   description: 'IME Referrals - Thrive',
 };
 
-const Page = () => {
-  return <div>Referrals Dashboard</div>;
+const Page = async () => {
+  const referrals = await getReferrals();
+  return <ReferralList referrals={referrals.result} />;
 };
 export default Page;

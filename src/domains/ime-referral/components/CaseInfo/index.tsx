@@ -110,7 +110,8 @@ const CaseInfo: React.FC<CaseInfoProps> = ({
             onCancel={handleCancelForm}
             initialValues={editingCase}
             isEditing={editingIndex !== null}
-            editIndex={editingIndex ?? 0}
+            editIndex={editingIndex}
+            cases={cases}
             isSubmitting={false}
             caseTypes={caseTypeOptions}
             examFormats={examFormatOptions}
