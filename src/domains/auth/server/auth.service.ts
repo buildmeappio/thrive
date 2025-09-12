@@ -103,6 +103,7 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
         agreeToTermsAndPrivacy: agreeTermsConditions,
         dataSharingConsent: consentSecureDataHandling,
         isAuthorized: authorizedToCreateAccount,
+        // status: 'PENDING',
       },
     });
 

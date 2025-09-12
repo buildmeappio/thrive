@@ -1,7 +1,7 @@
 const UserInfo = () => {
   return (
     <div className="bg-[#FAFAFF]">
-      <div className="mx-auto max-w-[1000px]">
+      <div className="mx-auto max-w-[1020px]">
         <div className="mb-6 flex items-start justify-between py-6">
           <div>
             <p className="">
@@ -24,7 +24,7 @@ const UserInfo = () => {
           <h2 className="mb-8 text-center text-[36px] leading-[100%] font-semibold tracking-normal">
             Hi Johnathan,
           </h2>
-          <p className="text-center text-[18.87px] leading-[100%] font-light tracking-normal">
+          <p className="mb-8 text-center text-[18.87px] leading-[100%] font-light tracking-normal">
             We've received a request to schedule your independent medical examination (IME). Please
             tell us when you're available. This will help us match you with the right specialist.
           </p>

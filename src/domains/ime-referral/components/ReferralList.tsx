@@ -38,22 +38,22 @@ const ReferralList: React.FC<ReferralListProps> = ({ referrals }) => {
         {/* Referrals List */}
         <div className="overflow-hidden rounded-2xl border border-white/50 bg-white shadow-md">
           {/* Table Header */}
-          <div className="border-b border-gray-200 bg-gradient-to-r from-slate-100 to-gray-100">
+          <div className="border-b border-gray-200 bg-[#000093]">
             <div className="grid grid-cols-12 gap-6 px-8 py-6">
               <div className="col-span-4 flex items-center gap-2">
-                <User className="h-5 w-5 text-gray-600" />
-                <span className="font-bold text-gray-900">Claimant Name</span>
+                <User className="h-5 w-5 text-[#FFFFFF]" />
+                <span className="font-bold text-[#FFFFFF]">Claimant Name</span>
               </div>
               <div className="col-span-3 flex items-center gap-2">
-                <FileText className="h-5 w-5 text-gray-600" />
-                <span className="font-bold text-gray-900">Number of Cases</span>
+                <FileText className="h-5 w-5 text-[#FFFFFF]" />
+                <span className="font-bold text-[#FFFFFF]">Number of Cases</span>
               </div>
               <div className="col-span-3 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-gray-600" />
-                <span className="font-bold text-gray-900">Submitted On</span>
+                <Calendar className="h-5 w-5 text-[#FFFFFF]" />
+                <span className="font-bold text-[#FFFFFF]">Submitted On</span>
               </div>
               <div className="col-span-2 flex justify-center">
-                <span className="font-bold text-gray-900">Action</span>
+                <span className="font-bold text-[#FFFFFF]">Action</span>
               </div>
             </div>
           </div>
@@ -81,11 +81,8 @@ const ReferralList: React.FC<ReferralListProps> = ({ referrals }) => {
                 >
                   {/* Claimant Name */}
                   <div className="col-span-4 flex items-center gap-4">
-                    {/* <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg">
-                      <User className="h-5 w-5 text-white" />
-                    </div> */}
                     <div>
-                      <p className="font-bold text-gray-900 transition-colors group-hover:text-blue-600">
+                      <p className="font-bold text-gray-900">
                         {referral.firstName} {referral.lastName}
                       </p>
                       <p className="text-sm text-gray-500">ID: {referral.referralId.slice(-8)}</p>
@@ -131,7 +128,7 @@ const ReferralList: React.FC<ReferralListProps> = ({ referrals }) => {
                         e.stopPropagation();
                         router.push(`/dashboard/referrals/${referral.referralId}`);
                       }}
-                      className="flex h-12 w-12 items-center justify-center rounded-full bg-[#000093] shadow-lg shadow-cyan-500/30 transition-all duration-300 group-hover:from-blue-500 group-hover:to-indigo-600 hover:scale-110 hover:shadow-xl hover:shadow-cyan-500/40"
+                      className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#000093] shadow-lg shadow-cyan-500/30 transition-all duration-300 group-hover:from-blue-500 group-hover:to-indigo-600 hover:scale-110 hover:shadow-xl hover:shadow-cyan-500/40"
                     >
                       <ChevronRight className="h-5 w-5 text-white" />
                     </button>

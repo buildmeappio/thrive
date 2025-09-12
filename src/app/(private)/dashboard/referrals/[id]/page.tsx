@@ -2,6 +2,7 @@ import { formatDate, formatDateTime } from '@/shared/utils/dateTime';
 import getReferralDetails from '@/domains/ime-referral/server/handlers/getReferralDetails';
 import { type Metadata } from 'next';
 import { type ReferralDetailsData } from '@/domains/ime-referral/types/referral';
+import { snakeToTitleCase } from '@/shared/utils/snakeToTitleCase';
 
 export const metadata: Metadata = {
   title: 'Referral Details | Thrive',
@@ -48,35 +49,18 @@ const ReferralDetails = async ({ params }: PageProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="mx-auto space-y-8">
+    <div className="">
+      <div className="space-y-8">
         {/* Header */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/50 bg-white backdrop-blur-sm">
-          <div className="absolute inset-0 opacity-5"></div>
-          <div className="relative p-8">
+        <div className="">
+          <div className="">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg">
-                    <svg
-                      className="h-6 w-6 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
                   <div>
                     <h1 className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-3xl font-semibold text-transparent">
                       Referral Details
                     </h1>
-                    <p className="font-medium text-gray-500">ID: {referral.id}</p>
                   </div>
                 </div>
               </div>
@@ -95,44 +79,9 @@ const ReferralDetails = async ({ params }: PageProps) => {
               </div>
             </div>
 
-            <div className="mt-6 rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 p-4">
-              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="h-4 w-4 text-blue-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4h8a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2z"
-                    />
-                  </svg>
-                  <span className="font-medium">Created:</span> {formatDateTime(referral.createdAt)}
-                </div>
-                {referral.updatedAt !== referral.createdAt && (
-                  <div className="flex items-center gap-2">
-                    <svg
-                      className="h-4 w-4 text-green-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                      />
-                    </svg>
-                    <span className="font-medium">Last Updated:</span>{' '}
-                    {formatDateTime(referral.updatedAt)}
-                  </div>
-                )}
-              </div>
+            <div className="mt-1 flex flex-wrap items-center text-sm text-gray-600">
+              <span className="font-medium">Submitted at: </span>{' '}
+              {formatDateTime(referral.createdAt)}
             </div>
           </div>
         </div>
@@ -165,9 +114,12 @@ const ReferralDetails = async ({ params }: PageProps) => {
               <div className="space-y-4 p-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900">
-                    {referral.organization.name}
+                    {referral.organization.name.charAt(0).toUpperCase() +
+                      referral.organization.name.slice(1)}
                   </h3>
-                  <p className="text-gray-600">{referral.organization.type.name}</p>
+                  <p className="text-gray-600">
+                    {snakeToTitleCase(referral.organization.type.name)}
+                  </p>
                   {referral.organization.website && (
                     <a
                       href={referral.organization.website}
@@ -263,8 +215,8 @@ const ReferralDetails = async ({ params }: PageProps) => {
                             {manager.account.user.firstName} {manager.account.user.lastName}
                           </p>
                           <p className="text-sm text-gray-600">
-                            {manager.jobTitle}
-                            {manager.department && ` • ${manager.department.name}`}
+                            {manager.department &&
+                              `${snakeToTitleCase(manager.department.name)} Department`}
                           </p>
                           <p className="text-sm text-blue-600">{manager.account.user.email}</p>
                         </div>
@@ -423,26 +375,11 @@ const ReferralDetails = async ({ params }: PageProps) => {
         <div className="overflow-hidden rounded-2xl border border-white/50 bg-white shadow-xl">
           <div className="bg-[#000093] px-8 py-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
-                <svg
-                  className="h-5 w-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-xl font-bold text-white">Cases ({referral.cases.length})</h2>
+              <h2 className="text-xl font-bold text-white">Cases</h2>
             </div>
           </div>
 
-          <div className="p-8">
+          <div>
             {referral.cases.length === 0 ? (
               <div className="py-16 text-center">
                 <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-gray-100 to-gray-200">
@@ -466,13 +403,9 @@ const ReferralDetails = async ({ params }: PageProps) => {
               </div>
             ) : (
               <div className="space-y-8">
-                {referral.cases.map((caseItem, index) => (
+                {referral.cases.map(caseItem => (
                   <div key={caseItem.id} className="relative">
-                    <div className="rounded-2xl border-2 border-gray-100 bg-gradient-to-br from-white to-gray-50 p-8 shadow-lg transition-all duration-300 hover:shadow-xl">
-                      <div className="absolute -top-3 -left-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 text-sm font-bold text-white shadow-lg">
-                        {index + 1}
-                      </div>
-
+                    <div className="p-8">
                       <div className="mb-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                         <div className="space-y-2">
                           <h3 className="text-2xl font-bold text-gray-900">
@@ -579,7 +512,7 @@ const ReferralDetails = async ({ params }: PageProps) => {
                                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                               />
                             </svg>
-                            <span className="font-medium">Created:</span>{' '}
+                            <span className="font-medium">Submitted at:</span>{' '}
                             {formatDateTime(caseItem.createdAt)}
                           </div>
                           {caseItem.assignedAt && (

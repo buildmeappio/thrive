@@ -45,28 +45,28 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
 
       const res = await registerOrganization(updatedData);
 
-      if (res.success) {
-        if (onNext) onNext();
-      } else {
+      if (!res.success) {
         actions.setFieldError('code', 'Error');
+        return;
       }
 
-      actions.setSubmitting(false);
-
       const result = await signIn('credentials', {
-        email: data.step2?.officialEmailAddress,
+        email: updatedData.step2?.officialEmailAddress,
         password: values.password,
         redirect: false,
       });
 
       if (result?.ok) {
         router.push('/dashboard');
+        toast.success(SuccessMessages.REGISTRATION_SUCCESS);
       } else {
         throw new Error(ErrorMessages.LOGIN_FAILED);
       }
+
       toast.success(SuccessMessages.REGISTRATION_SUCCESS);
     } catch (error) {
       console.log(error);
+      if (onNext) onNext();
     }
   };
 

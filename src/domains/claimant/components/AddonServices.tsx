@@ -129,7 +129,7 @@ const AddOnServices = () => {
   };
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden">
+    <div className="w-full max-w-full px-2">
       <div className="w-full md:py-12" style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}>
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
           <div className="w-full max-w-full md:space-y-8">

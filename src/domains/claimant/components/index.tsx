@@ -10,7 +10,7 @@ const ClaimantAvailability: React.FC = () => {
           Help Us Schedule Your IME
         </h1>
         <UserInfo />
-        <div className="mx-auto max-w-[1000px]">
+        <div className="mx-auto max-w-[1020px]">
           <AppointmentOptions />
           <AddOnServices />
         </div>
