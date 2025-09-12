@@ -1,17 +1,3 @@
-// import ClaimantAvailability from '@/domains/claimant/components';
-// import { Metadata } from 'next';
-
-// export const metadata: Metadata = {
-//   title: 'Set Availability - Thrive',
-//   description: 'Set your availability for appointments.',
-// };
-// const Page = () => {
-//   return (
-//     <ClaimantAvailability />
-//   );
-// };
-// export default Page;
-
 import { getCaseSummary } from '@/domains/claimant/actions';
 import ClaimantAvailability from '@/domains/claimant/components';
 import { type Metadata } from 'next';

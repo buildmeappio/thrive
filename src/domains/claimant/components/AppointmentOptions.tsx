@@ -2,6 +2,7 @@
 import React, { type JSX, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 interface TimeSlot {
   id: string;
@@ -105,6 +106,10 @@ const AppointmentOptions = (): JSX.Element => {
   };
 
   const handleAdd = (): void => {
+    if (appointments.length >= 3) {
+      toast.error('You can only add up to 3 appointment options.');
+      return;
+    }
     if (!selectedDate) return;
 
     const timeSlot = timeSlots.find(slot => slot.id === selectedTime);
@@ -117,9 +122,11 @@ const AppointmentOptions = (): JSX.Element => {
     };
 
     // Check if appointment already exists for this date
-    const exists = appointments.some(apt => apt.date === selectedDate);
+    const exists = appointments.some(apt => apt.date === selectedDate && apt.time === selectedTime);
     if (!exists) {
       setAppointments([...appointments, newAppointment]);
+    } else {
+      toast.error('This appointment option has already been added.');
     }
   };
 
@@ -212,7 +219,7 @@ const AppointmentOptions = (): JSX.Element => {
 
           <button
             onClick={handleAdd}
-            className="mt-4 h-[39px] w-[135px] rounded-[29px] bg-[#000080] text-white hover:opacity-90"
+            className="mt-4 h-[39px] w-[135px] cursor-pointer rounded-[29px] bg-[#000080] text-white hover:opacity-90"
           >
             Add →
           </button>
