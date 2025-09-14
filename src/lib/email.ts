@@ -1,4 +1,4 @@
-// lib/email.ts
+import { google } from 'googleapis';
 import nodemailer, { type Transporter } from "nodemailer";
 
 type SendArgs = {
@@ -15,14 +15,25 @@ type SendArgs = {
 
 let transporterPromise: Promise<Transporter> | null = null;
 
-function createTransporter(): Transporter {
+async function createTransporter(): Promise<Transporter> {
+  const oauth2 = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    'https://developers.google.com/oauthplayground',
+  );
+  oauth2.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
+  const { token } = await oauth2.getAccessToken();
+  if (!token) throw new Error('Failed to obtain access token');
+
   return nodemailer.createTransport({
-    service: "gmail",
+    service: 'gmail',
     auth: {
-      user: process.env.GMAIL_USER!,                 // e..g. you@gmail.com
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      refreshToken: process.env.GMAIL_REFRESH_TOKEN!,
+      type: 'OAuth2',
+      user: process.env.GMAIL_USER,
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+      accessToken: token,
     },
   });
 }
@@ -30,8 +41,8 @@ function createTransporter(): Transporter {
 async function getTransporter(): Promise<Transporter> {
   if (!transporterPromise) {
     transporterPromise = (async () => {
-      const t = createTransporter();
-      await t.verify(); // warms up and validates creds
+      const t = await createTransporter();
+      await t.verify();
       return t;
     })();
   }

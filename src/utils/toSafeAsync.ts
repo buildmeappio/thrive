@@ -3,9 +3,11 @@ import { HttpError } from "./httpError";
 type SafeAsyncResult<T> = {
   success: true;
   data: T;
+  error?: never;
 } | {
   success: false;
   error: HttpError;
+  data?: never;
 };
 
 const toSafeAsync = async <T>(promise: Promise<T>): Promise<SafeAsyncResult<T>> => {
