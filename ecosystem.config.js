@@ -1,12 +1,13 @@
 module.exports = {
   apps: [
     {
-      name: 'thrive-admin',
-      script: 'npm',
-      args: 'start',
-      exec_mode: 'cluster',
+      name: "thrive-admin",
+      script: "npm",
+      args: "run start -- -p 3000",
+      exec_mode: "fork",
       instances: 1,
-      cwd: './',
+      env: { NODE_ENV: "production" },
+      cwd: "./",
     },
   ],
 };
