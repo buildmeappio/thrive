@@ -1,5 +1,5 @@
 {
-  "name": "my-next-app",
+  "name": "thrive-admin",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,7 +11,14 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:pull": "prisma db pull"
+    "db:pull": "prisma db pull",
+    "predeploy": "chmod +x scripts/deploy.sh",
+    "deploy:dev": "npm run predeploy && scripts/deploy.sh dev --app thrive-admin --env .env.development --config ecosystem.config.js",
+    "deploy:staging": "npm run predeploy && scripts/deploy.sh staging --app thrive-admin --env .env.staging --config ecosystem.config.js",
+    "deploy:production": "npm run predeploy && scripts/deploy.sh production --app thrive-admin --env .env.production --config ecosystem.config.js",
+    "deploy:logs": "pm2 logs thrive-admin",
+    "deploy:stop": "pm2 stop thrive-admin",
+    "deploy:delete": "pm2 delete thrive-admin"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -29,6 +36,7 @@
     "next-auth": "^4.24.11",
     "next-themes": "^0.4.6",
     "nodemailer": "^6.10.1",
+    "pm2": "^6.0.10",
     "radix-ui": "^1.4.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",

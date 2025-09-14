@@ -1,26 +1,12 @@
-import { organizationHandlers } from "@/domains/organization";
 import { OrganizationRow } from "./columns";
 import OrganizationTableClient from "./OrganizationTableClient";
 import { DashboardShell } from "@/layouts/dashboard";
 
-const OrganizationList = async () => {
-  // Fetch organizations from the server
-  const orgs = await organizationHandlers.getOrganizations();
+type OrganizationListProps = {
+  data: OrganizationRow[];
+};
 
-  console.log("Raw organization query result:", orgs);
-  // Map to table row shape
-  const data: OrganizationRow[] = orgs.map((org) => ({
-    id: org.id,
-    name: org.name,
-    website: org.website,
-    status: org.status,
-    typeName: org.type?.name ?? "",
-    address: org.address ? `${org.address.street}, ${org.address.city}` : "",
-    managerName: org.manager?.[0]?.account?.user?.firstName
-      ? `${org.manager[0].account.user.firstName} ${org.manager[0].account.user.lastName}`
-      : "",
-  }));
-
+const OrganizationList = async ({ data }: OrganizationListProps) => {
   return (
     <DashboardShell
       title={
