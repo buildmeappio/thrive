@@ -1,20 +1,19 @@
 import { NavigateOptions, PrefetchOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useRouter as useNextRouter } from "next/navigation";
-
-const PREFIX = "/admin";
+import { createRoute } from "@/constants/route";
 
 const useRouter = () => {
 	const router = useNextRouter();
 
 	return {
 		replace: (url: string, options?: NavigateOptions) => {
-			router.replace(PREFIX + url, options);
+			router.replace(createRoute(url), options);
 		},
 		push: (url: string, options?: NavigateOptions) => {
-			router.push(PREFIX + url, options);
+			router.push(createRoute(url), options);
 		},
 		prefetch: (url: string, options?: PrefetchOptions) => {
-			router.prefetch(PREFIX + url, options);
+			router.prefetch(createRoute(url), options);
 		},
 		refresh: () => {
 			router.refresh();

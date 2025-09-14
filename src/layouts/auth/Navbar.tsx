@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "@/components/Image";
-import { URLS } from "@/constants/page";
+import { URLS } from "@/constants/route";
 import { getCurrentUser } from "@/domains/auth/server/session";
 
 const Navbar = async () => {

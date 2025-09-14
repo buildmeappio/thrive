@@ -9,7 +9,7 @@ import { loginSchema, LoginInput } from "@/domains/auth/schemas/auth.schemas";
 import useRouter from "@/hooks/useRouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { URLS } from "@/constants/page";
+import { createRoute, URLS } from "@/constants/route";
 import Link from "next/link";
 
 const LoginForm = () => {
@@ -29,13 +29,13 @@ const LoginForm = () => {
   const onSubmit = async (values: LoginInput) => {
     const res = await signIn("credentials", {
       redirect: false,
-      callbackUrl: URLS.DASHBOARD,
+      callbackUrl: createRoute(URLS.DASHBOARD),
       email: values.email,
       password: values.password,
     });
 
     if (res?.ok) {
-      router.replace(res?.url || URLS.DASHBOARD);
+      router.replace(res?.url || createRoute(URLS.DASHBOARD));
       console.log(`Login successful`);
       return;
     }
