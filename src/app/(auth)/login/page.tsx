@@ -34,7 +34,7 @@ const Page = () => {
           {/* Right (only on lg+) */}
           <div className="relative hidden lg:block">
             <Image
-              src="/admin/images/adminLogin.png"
+              src="/images/adminLogin.png"
               alt="Admin Dashboard Preview"
               fill
               sizes="(max-width: 1024px) 0px, 50vw"
