@@ -1,6 +1,6 @@
 import { LoginForm } from "@/domains/auth";
 import type { Metadata } from "next";
-import Image from "next/image";
+import Image from "@/components/Image";
 
 export const metadata: Metadata = {
   title: "Login | Thrive Admin",
@@ -34,7 +34,7 @@ const Page = () => {
           {/* Right (only on lg+) */}
           <div className="relative hidden lg:block">
             <Image
-              src="/images/adminLogin.png"
+              src="/admin/images/adminLogin.png"
               alt="Admin Dashboard Preview"
               fill
               sizes="(max-width: 1024px) 0px, 50vw"

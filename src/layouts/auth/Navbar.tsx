@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/Image";
 import { URLS } from "@/constants/page";
 import { getCurrentUser } from "@/domains/auth/server/session";
 

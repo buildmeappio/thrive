@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/PasswordInput";
 import { signIn } from "next-auth/react";
 import { loginSchema, LoginInput } from "@/domains/auth/schemas/auth.schemas";
-import { useRouter } from "next/navigation";
+import useRouter from "@/hooks/useRouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { URLS } from "@/constants/page";

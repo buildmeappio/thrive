@@ -44,7 +44,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
   }, [session?.user?.image]);
 
   const getProfileImageUrl = () => {
-    return session?.user?.image || '/images/avatar.png';
+    return session?.user?.image || '/admin/images/avatar.png';
   };
 
   const renderDropdown = () => {
