@@ -4,6 +4,8 @@ on:
   push:
     branches: [develop]
   workflow_dispatch: {}   # manual runs also go to dev
+  pull_request:
+    branches: [develop]
 
 concurrency:
   group: deploy-develop
@@ -12,6 +14,7 @@ concurrency:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,6 +28,7 @@ jobs:
   deploy:
     needs: ci
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     environment: dev   # <- always dev
     steps:
       - name: Add EC2 host to known_hosts
