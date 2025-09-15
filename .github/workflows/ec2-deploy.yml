@@ -1,20 +1,25 @@
-name: Ec2 Deploy (develop)
+name: EC2 Deploy
 
 on:
   push:
-    branches: [develop]
-  workflow_dispatch: {} # manual runs also go to dev
+    branches: [develop, staging, qa, main]
   pull_request:
-    branches: [develop]
+    branches: [develop, staging, qa, main]
+  workflow_dispatch: {}
 
 concurrency:
-  group: deploy-develop
+  group: deploy-${{ github.ref_name }}
   cancel-in-progress: false
+
+# Helper: branch→environment
+# main→prod, develop→dev, others 1:1
+env:
+  TARGET_ENV: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'develop' && 'dev' || github.ref_name }}
 
 jobs:
   ci:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    environment: ${{ env.TARGET_ENV }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,7 +34,7 @@ jobs:
     needs: ci
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    environment: dev # <- always dev
+    environment: ${{ env.TARGET_ENV }}
     steps:
       - name: Add EC2 host to known_hosts
         run: |
@@ -44,17 +49,13 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
           envs: |
-            ENVIRONMENT,APP_DIR,DATABASE_URL,NEXTAUTH_SECRET,NEXTAUTH_URL,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GMAIL_USER,GMAIL_REFRESH_TOKEN,NEXT_PUBLIC_APP_URL
+            ENVIRONMENT,APP_DIR,BRANCH,DATABASE_URL,NEXTAUTH_SECRET,NEXTAUTH_URL,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GMAIL_USER,GMAIL_REFRESH_TOKEN,NEXT_PUBLIC_APP_URL
           script: |
             set -euo pipefail
-            APP_DIR="${{ vars.APP_DIR || '/opt/myapp' }}"
             cd "$APP_DIR"
 
-            # Create .env file
             umask 077
             tmpfile="$(mktemp)"
-
-            # build into tmpfile
             printf 'ENVIRONMENT=%s\n'           "$ENVIRONMENT"           >> "$tmpfile"
             printf 'DATABASE_URL=%s\n'          "$DATABASE_URL"          >> "$tmpfile"
             printf 'NEXTAUTH_SECRET=%s\n'       "$NEXTAUTH_SECRET"       >> "$tmpfile"
@@ -64,24 +65,26 @@ jobs:
             printf 'GMAIL_USER=%s\n'            "$GMAIL_USER"            >> "$tmpfile"
             printf 'GMAIL_REFRESH_TOKEN=%s\n'   "$GMAIL_REFRESH_TOKEN"   >> "$tmpfile"
             printf 'NEXT_PUBLIC_APP_URL=%s\n'   "$NEXT_PUBLIC_APP_URL"   >> "$tmpfile"
-
             mv "$tmpfile" .env
 
             git fetch --prune origin
-            git checkout develop || git switch -c develop
-            git reset --hard origin/develop
+            git checkout "$BRANCH" || git switch -c "$BRANCH"
+            git reset --hard "origin/$BRANCH"
 
-            if [ -s "$HOME/.nvm/nvm.sh" ]; then . "$HOME/.nvm/nvm.sh"; fi
-
-            npm run deploy:dev
+            [ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh"
+            npm run deploy:${ENVIRONMENT}
         env:
-          ENVIRONMENT: ${{ vars.ENVIRONMENT || 'development' }}
-          APP_DIR: ${{ vars.APP_DIR || '/opt/myapp' }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          # Derived
+          ENVIRONMENT: ${{ env.TARGET_ENV }}                  # dev | staging | qa | prod
+          BRANCH:      ${{ github.ref_name }}                 # develop | staging | qa | main
+
+          # Per-environment secrets/vars (set under repo Settings → Environments)
+          APP_DIR:              ${{ vars.APP_DIR || '/opt/myapp' }}
+          DATABASE_URL:         ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET:      ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL:         ${{ secrets.NEXTAUTH_URL }}
+          GOOGLE_CLIENT_ID:     ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GMAIL_USER: ${{ secrets.GMAIL_USER }}
-          GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          GMAIL_USER:           ${{ secrets.GMAIL_USER }}
+          GMAIL_REFRESH_TOKEN:  ${{ secrets.GMAIL_REFRESH_TOKEN }}
+          NEXT_PUBLIC_APP_URL:  ${{ secrets.NEXT_PUBLIC_APP_URL }}
