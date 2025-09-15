@@ -132,6 +132,9 @@ resolve_env_file
 echo "📦 Installing dependencies..."
 npm install
 
+echo "🔧 Generating Prisma client..."
+npm run db:generate
+
 echo "🛠️ Building project..."
 npm run build
 
