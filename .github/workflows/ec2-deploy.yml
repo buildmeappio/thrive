@@ -50,7 +50,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-      - run: npm run build
+      - run: CI=true npm run build
 
   deploy:
     needs: [select, ci]

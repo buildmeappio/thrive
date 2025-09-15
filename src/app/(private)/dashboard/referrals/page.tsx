@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: 'IME Referrals - Thrive',
 };
 
+export const dynamic = 'force-dynamic';
+
 const Page = async () => {
   const referrals = await getReferrals();
   return <ReferralList referrals={referrals.result} />;
