@@ -4,16 +4,13 @@
 import { Label } from '@/components/ui/label';
 import { Globe, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui';
-import { provinceOptions } from '@/shared/config/ProvinceOptions';
+import { provinceOptions } from '@/config/ProvinceOptions';
 import { Dropdown } from '@/components/Dropdown';
 import { Form, Formik, type FormikHelpers } from 'formik';
 import ContinueButton from '@/components/ContinueButton';
-import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
-import { useRegistrationStore } from '@/store/useRegistrationStore';
-import {
-  OrganizationInfoInitialValues,
-  OrganizationInfoSchema,
-} from '@/shared/validation/register/registerValidation';
+import { type OrganizationRegStepProps } from '@/types/registerStepProps';
+import { useRegistrationStore } from '@/store/useRegistration';
+import { OrganizationInfoInitialValues, OrganizationInfoSchema } from '../../schemas/register';
 import ErrorMessages from '@/constants/ErrorMessages';
 import { checkOrganizationByName } from '@/domains/organization/actions';
 

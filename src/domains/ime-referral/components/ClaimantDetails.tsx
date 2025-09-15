@@ -6,23 +6,19 @@ import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui/input';
 import { MapPin } from 'lucide-react';
 import { Dropdown } from '@/components/Dropdown';
-import { provinceOptions } from '@/shared/config/ProvinceOptions';
-import { genderOptions } from '@/shared/config/GenderOptions';
+import { provinceOptions } from '@/config/ProvinceOptions';
+import { genderOptions } from '@/config/GenderOptions';
 import {
   ClaimantDetailsSchema,
   ClaimantDetailsInitialValues,
   type ClaimantDetails,
-} from '@/shared/validation/imeReferral/imeReferralValidation';
-import { type IMEReferralFormProps } from '@/shared/types/imeReferral/imeReferralStepsProps';
-import { useIMEReferralStore } from '@/store/useIMEReferralStore';
+} from '../schemas/imeReferral';
+import { useIMEReferralStore } from '@/store/useImeReferral';
 import ContinueButton from '@/components/ContinueButton';
 import ProgressIndicator from './ProgressIndicator';
+import { type IMEReferralProps } from '@/types/imeReferralProps';
 
-const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({
-  onNext,
-  currentStep,
-  totalSteps,
-}) => {
+const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, totalSteps }) => {
   const { data, setData } = useIMEReferralStore();
 
   const {

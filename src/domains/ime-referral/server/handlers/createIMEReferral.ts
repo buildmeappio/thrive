@@ -1,6 +1,6 @@
 import ErrorMessages from '@/constants/ErrorMessages';
 import iMEReferralService from '../imeReferral.service';
-import { type IMEFormData } from '@/store/useIMEReferralStore';
+import { type IMEFormData } from '@/store/useImeReferral';
 
 const createIMEReferral = async (data: IMEFormData, isDraft: boolean) => {
   if (!data.step1 || !data.step2 || !data.step3) {

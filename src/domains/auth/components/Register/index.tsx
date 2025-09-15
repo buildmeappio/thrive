@@ -1,13 +1,13 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { registerStepsTitles } from '@/shared/config/registerStepsTitles';
+import { registerStepsTitles } from '@/config/registerStepsTitles';
 import OrganizationInfo from './OrganizationInfo';
 import OfficeDetails from './OfficeDetails';
 import ComplianceAccess from './ComplianceAccess';
 import VerificationCode from './VerificationCode';
 import PasswordForm from './PasswordForm';
-import { formatLabel } from '@/shared/utils/labelFormat.utils';
+import { formatLabel } from '@/utils/labelFormat';
 import type getDepartments from '../../server/handlers/getDepartments';
 import type getOrganizationTypes from '../../../organization/server/handlers/getOrganizationTypes';
 

@@ -1,13 +1,14 @@
-import prisma from '@/shared/lib/prisma';
+import prisma from '@/lib/prisma';
 import { HttpError } from '@/utils/httpError';
 import bcrypt from 'bcryptjs';
 import { type CreateOrganizationWithUserData } from '../types/createOrganization';
 import { Roles } from '@/constants/role';
 import { getCurrentUser } from './session';
-import emailService from '@/shared/lib/emailService';
+import emailService from '@/services/emailService';
 import { signOtpToken, signPasswordToken } from '@/lib/jwt';
 import ErrorMessages from '@/constants/ErrorMessages';
 import jwt from 'jsonwebtoken';
+import { type Prisma } from '@prisma/client';
 
 const getUserByEmail = async (email: string) => {
   try {
@@ -58,7 +59,7 @@ const checkOrganizationByName = async (name: string) => {
 };
 
 const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) => {
-  return prisma.$transaction(async tx => {
+  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const {
       organizationType,
       organizationName,

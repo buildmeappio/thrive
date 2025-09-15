@@ -6,7 +6,7 @@ import CaseInfo from './CaseInfo';
 import ConsentInfo from './ConsentInfo';
 import ReferralSubmitted from './ReferralSubmitted';
 
-import { formatLabel } from '@/shared/utils/labelFormat.utils';
+import { formatLabel } from '@/utils/labelFormat';
 import type { getCaseTypes, getExamFormats, getRequestedSpecialties } from '@/domains/auth/actions';
 
 interface StepConfig {

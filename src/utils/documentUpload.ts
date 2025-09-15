@@ -1,5 +1,5 @@
 import ErrorMessages from '@/constants/ErrorMessages';
-import { DocumentUploadConfig } from '../config/documentUpload.config';
+import { DocumentUploadConfig } from '../config/documentUpload';
 
 export const FileTypeCategories: Record<string, string[]> = {
   images: [

@@ -3,7 +3,7 @@ import React from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSession } from 'next-auth/react';
-import { useSidebar } from '../providers/SideBarProvider';
+import { useSidebar } from '../../providers/SideBarProvider';
 import Searchbar from './SearchBar';
 import ProfileDropdown from './ProfileDropDown';
 

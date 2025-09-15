@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button';
 import { PasswordInput } from '@/components/PasswordInput';
 import { ArrowRight } from 'lucide-react';
 import { Form, Formik } from 'formik';
-import { loginInitialValues, loginSchema } from '@/shared/validation/login/loginValidation';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import useRouter from '@/hooks/useRouter';
 import ErrorMessages from '@/constants/ErrorMessages';
 import SuccessMessages from '@/constants/SuccessMessages';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { URLS } from '@/constants/routes';
+import { loginInitialValues, loginSchema } from '../schemas/login';
 
 const LoginForm = () => {
   const router = useRouter();
@@ -29,7 +30,7 @@ const LoginForm = () => {
       });
 
       if (result?.ok) {
-        router.push('/dashboard');
+        router.push(URLS.DASHBOARD);
         toast.success(SuccessMessages.LOGIN_SUCCESS);
       } else {
         toast.error(ErrorMessages.LOGIN_FAILED);

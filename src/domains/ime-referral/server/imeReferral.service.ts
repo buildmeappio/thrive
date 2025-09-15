@@ -1,7 +1,7 @@
-import prisma from '@/shared/lib/prisma';
+import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/domains/auth/server/session';
-import { saveFileToStorage } from '@/shared/utils/imeCreation.utils';
-import { type IMEFormData } from '@/store/useIMEReferralStore';
+import { saveFileToStorage } from '@/utils/imeCreation';
+import { type IMEFormData } from '@/store/useImeReferral';
 import { type UrgencyLevel } from '@prisma/client';
 import { CaseStatus } from '@/constants/CaseStatus';
 import { HttpError } from '@/utils/httpError';

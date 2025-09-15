@@ -1,7 +1,8 @@
 'use client';
-import { formatDate } from '@/shared/utils/dateTime';
+import { formatDate } from '@/utils/dateTime';
 import { ChevronRight, FileText, Calendar, User } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import useRouter from '@/hooks/useRouter';
+import { URLS } from '@/constants/routes';
 
 type ReferralListProps = {
   referrals: Array<{
@@ -76,7 +77,7 @@ const ReferralList: React.FC<ReferralListProps> = ({ referrals }) => {
                     index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
                   }`}
                   onClick={() => {
-                    router.push(`/dashboard/referrals/${referral.referralId}`);
+                    router.push(URLS.REFERRAL_BY_ID, { params: { id: referral.referralId } });
                   }}
                 >
                   {/* Claimant Name */}
@@ -126,7 +127,7 @@ const ReferralList: React.FC<ReferralListProps> = ({ referrals }) => {
                     <button
                       onClick={e => {
                         e.stopPropagation();
-                        router.push(`/dashboard/referrals/${referral.referralId}`);
+                        router.push(URLS.REFERRAL_BY_ID, { params: { id: referral.referralId } });
                       }}
                       className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-[#000093] shadow-lg shadow-cyan-500/30 transition-all duration-300 group-hover:from-blue-500 group-hover:to-indigo-600 hover:scale-110 hover:shadow-xl hover:shadow-cyan-500/40"
                     >

@@ -1,4 +1,4 @@
-import prisma from '@/shared/lib/prisma';
+import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 
 const getClaimant = async (token: string) => {

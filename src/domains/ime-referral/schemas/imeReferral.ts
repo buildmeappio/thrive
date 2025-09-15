@@ -1,7 +1,7 @@
 import ErrorMessages from '@/constants/ErrorMessages';
 import { z } from 'zod';
-import { DocumentUploadConfig } from '@/shared/config/documentUpload.config';
-import { formatFileSize } from '@/shared/utils/documentUpload.utils';
+import { DocumentUploadConfig } from '@/config/documentUpload';
+import { formatFileSize } from '@/utils/documentUpload';
 
 // step1 - claimant details schema
 export const ClaimantDetailsSchema = z.object({

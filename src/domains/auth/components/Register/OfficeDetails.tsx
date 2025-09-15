@@ -6,14 +6,11 @@ import { Mail, Phone, User, Briefcase } from 'lucide-react';
 import { Dropdown } from '@/components/Dropdown';
 import BackButton from '@/components/BackButton';
 import ContinueButton from '@/components/ContinueButton';
-import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
-import { useRegistrationStore } from '@/store/useRegistrationStore';
-import {
-  OfficeDetailsInitialValues,
-  OfficeDetailsSchema,
-} from '@/shared/validation/register/registerValidation';
+import { type OrganizationRegStepProps } from '@/types/registerStepProps';
+import { useRegistrationStore } from '@/store/useRegistration';
 import ErrorMessages from '@/constants/ErrorMessages';
 import { checkUserByEmail } from '../../actions';
+import { OfficeDetailsInitialValues, OfficeDetailsSchema } from '../../schemas/register';
 
 interface DepartmentOption {
   value: string;

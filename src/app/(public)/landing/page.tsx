@@ -1,7 +1,7 @@
 import { type Metadata } from 'next';
 import Image from '@/components/Image';
 import { ArrowRight, Check } from 'lucide-react';
-import { OrganizationFeatures } from '@/shared/config/GettingStartedFeatures.config';
+import { OrganizationFeatures } from '@/config/GettingStartedFeatures';
 import { URLS } from '@/constants/routes';
 import { redirect } from 'next/navigation';
 

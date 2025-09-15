@@ -6,18 +6,16 @@ import { Input } from '@/components/ui';
 import { Eye, EyeOff } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import ContinueButton from '@/components/ContinueButton';
-import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
-import { useRegistrationStore } from '@/store/useRegistrationStore';
+import { type OrganizationRegStepProps } from '@/types/registerStepProps';
+import { useRegistrationStore } from '@/store/useRegistration';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import {
-  PasswordInitialValues,
-  PasswordSchema,
-} from '@/shared/validation/register/registerValidation';
+import { PasswordInitialValues, PasswordSchema } from '../../schemas/register';
 import ErrorMessages from '@/constants/ErrorMessages';
 import SuccessMessages from '@/constants/SuccessMessages';
 import { toast } from 'sonner';
 import { registerOrganization } from '../../actions';
+import useRouter from '@/hooks/useRouter';
+import { URLS } from '@/constants/routes';
 
 const PasswordForm: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -57,13 +55,11 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
       });
 
       if (result?.ok) {
-        router.push('/dashboard');
+        router.push(URLS.DASHBOARD);
         toast.success(SuccessMessages.REGISTRATION_SUCCESS);
       } else {
         throw new Error(ErrorMessages.LOGIN_FAILED);
       }
-
-      toast.success(SuccessMessages.REGISTRATION_SUCCESS);
     } catch (error) {
       console.log(error);
       if (onNext) onNext();

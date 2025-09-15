@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Edit, X } from 'lucide-react';
 import { type DropdownOption } from '../../types/CaseInfo';
-import { type CaseInfo } from '@/shared/validation/imeReferral/imeReferralValidation';
+import { type CaseInfo } from '../../schemas/imeReferral';
 
 type CaseItemProps = {
   caseItem: CaseInfo;

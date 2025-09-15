@@ -1,6 +1,6 @@
 import ErrorMessages from '@/constants/ErrorMessages';
-import prisma from '@/shared/lib/prisma';
-import { getCurrentUser } from '@/shared/utils/imeCreation.utils';
+import prisma from '@/lib/prisma';
+import { getCurrentUser } from '@/utils/imeCreation';
 import { HttpError } from '@/utils/httpError';
 
 const acceptOrganization = async () => {

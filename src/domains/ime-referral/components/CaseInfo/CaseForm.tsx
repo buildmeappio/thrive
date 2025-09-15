@@ -5,11 +5,7 @@ import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import CaseFormFields from './CaseFormFields';
 import type { DropdownOption } from '../../types/CaseInfo';
-import {
-  type CaseInfo,
-  CaseInfoSchema,
-  CaseInitialValues,
-} from '@/shared/validation/imeReferral/imeReferralValidation';
+import { type CaseInfo, CaseInfoSchema, CaseInitialValues } from '../../schemas/imeReferral';
 import { toast } from 'sonner';
 
 type CaseFormProps = {

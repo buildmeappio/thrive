@@ -6,11 +6,11 @@ import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui/input';
 import { MapPin } from 'lucide-react';
 import { Dropdown } from '@/components/Dropdown';
-import { provinceOptions } from '@/shared/config/ProvinceOptions';
+import { provinceOptions } from '@/config/ProvinceOptions';
 import { toast } from 'sonner';
+import { languageOptions } from '@/config/languageOptions';
 
-// Types for the form
-interface AddOnServicesForm {
+type AddOnServicesForm = {
   interpreter: boolean;
   interpreterLanguage: string;
   transportation: boolean;
@@ -24,18 +24,8 @@ interface AddOnServicesForm {
   additionalNotes: boolean;
   additionalNotesText: string;
   agreement: boolean;
-}
+};
 
-// Language options
-const languageOptions = [
-  { label: 'English', value: 'english' },
-  { label: 'French', value: 'french' },
-  { label: 'Spanish', value: 'spanish' },
-  { label: 'Mandarin', value: 'mandarin' },
-  { label: 'Arabic', value: 'arabic' },
-];
-
-// Toggle Switch Component
 const ToggleSwitch = ({
   enabled,
   onChange,

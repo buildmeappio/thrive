@@ -3,23 +3,13 @@ import React, { type JSX, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-
-interface TimeSlot {
-  id: string;
-  label: string;
-}
+import { timeSlots } from '@/config/timeSlots';
 
 interface Appointment {
   date: string;
   time: string;
   timeLabel: string;
 }
-
-const timeSlots: TimeSlot[] = [
-  { id: 'morning', label: 'Morning (8:00 AM - 12:00 PM)' },
-  { id: 'afternoon', label: 'Afternoon (12:00 PM - 5:00 PM)' },
-  { id: 'either', label: 'Either' },
-];
 
 const AppointmentOptions = (): JSX.Element => {
   const [currentDate] = useState<Date>(new Date());

@@ -1,4 +1,4 @@
-import Footer from '@/shared/layout/Footer';
+import Footer from '@/layouts/private/Footer';
 import type { ReactNode } from 'react';
 
 interface AuthLayoutProps {

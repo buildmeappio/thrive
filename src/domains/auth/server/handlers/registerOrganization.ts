@@ -3,7 +3,7 @@ import ErrorMessages from '@/constants/ErrorMessages';
 import { verifyPasswordToken } from '@/lib/jwt';
 import { cookies } from 'next/headers';
 import authService from '../auth.service';
-import { type FormData } from '@/store/useRegistrationStore';
+import { type FormData } from '@/store/useRegistration';
 import bcrypt from 'bcryptjs';
 
 const registerOrganization = async (data: FormData) => {

@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import useRouter from '@/hooks/useRouter';
 import Link from 'next/link';
-import Image from 'next/image';
+import Image from '@/components/Image';
 import { Home, LifeBuoy, LogOut, Plus, UserPlus, X } from 'lucide-react';
 import { signOut } from 'next-auth/react';
+import { URLS } from '@/constants/routes';
 
 export const medicalExaminerSidebarRoutes = [
   { icon: Home, label: 'Dashboard', href: '/dashboard', index: 0 },
@@ -88,7 +90,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   };
 
   const handleNewReferral = () => {
-    router.push('/dashboard/ime-referral');
+    router.push(URLS.IME_REFERRAL);
     if (onMobileClose) {
       onMobileClose();
     }

@@ -1,8 +1,8 @@
-import { formatDate, formatDateTime } from '@/shared/utils/dateTime';
+import { formatDate, formatDateTime } from '@/utils/dateTime';
 import getReferralDetails from '@/domains/ime-referral/server/handlers/getReferralDetails';
 import { type Metadata } from 'next';
 import { type ReferralDetailsData } from '@/domains/ime-referral/types/referral';
-import { snakeToTitleCase } from '@/shared/utils/snakeToTitleCase';
+import { snakeToTitleCase } from '@/utils/snakeToTitleCase';
 
 export const metadata: Metadata = {
   title: 'Referral Details | Thrive',

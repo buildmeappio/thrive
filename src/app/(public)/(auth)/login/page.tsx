@@ -1,6 +1,6 @@
 import { LoginForm } from '@/domains/auth';
 import { type Metadata } from 'next';
-import Image from 'next/image';
+import Image from '@/components/Image';
 
 export const metadata: Metadata = {
   title: 'Login | Thrive',

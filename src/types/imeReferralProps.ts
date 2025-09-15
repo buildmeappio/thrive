@@ -1,4 +1,4 @@
-export type IMEReferralFormProps = {
+export type IMEReferralProps = {
   onNext?: () => void;
   onPrevious?: () => void;
   currentStep: number;

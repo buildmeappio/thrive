@@ -4,13 +4,10 @@ import BackButton from '@/components/BackButton';
 import ContinueButton from '@/components/ContinueButton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { useRegistrationStore } from '@/store/useRegistrationStore';
-import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
-import {
-  ComplianceAccessInitialValues,
-  ComplianceAccessSchema,
-} from '@/shared/validation/register/registerValidation';
+import { useRegistrationStore } from '@/store/useRegistration';
+import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { sendOtp } from '../../actions';
+import { ComplianceAccessInitialValues, ComplianceAccessSchema } from '../../schemas/register';
 
 const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
   onNext,

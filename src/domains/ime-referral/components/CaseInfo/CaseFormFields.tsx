@@ -11,10 +11,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dropdown } from '@/components/Dropdown';
 import { Upload, X } from 'lucide-react';
-import { UrgencyLevels } from '@/shared/config/urgencyLevel.config';
-import { provinceOptions } from '@/shared/config/ProvinceOptions';
-import { DocumentUploadConfig } from '@/shared/config/documentUpload.config';
-import { type CaseInfo } from '@/shared/validation/imeReferral/imeReferralValidation';
+import { UrgencyLevels } from '@/config/urgencyLevel.config';
+import { provinceOptions } from '@/config/ProvinceOptions';
+import { DocumentUploadConfig } from '@/config/documentUpload';
+import { type CaseInfo } from '../../schemas/imeReferral';
 import { type DropdownOption } from '../../types/CaseInfo';
 
 type CaseFormFieldsProps = {

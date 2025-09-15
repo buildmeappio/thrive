@@ -1,7 +1,7 @@
 'use client';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
-import { useSearch } from '../providers/SearchProvider';
+import { useSearch } from '../../providers/SearchProvider';
 
 const getSearchPlaceholder = (name: string | undefined) => {
   if (!name) return '';

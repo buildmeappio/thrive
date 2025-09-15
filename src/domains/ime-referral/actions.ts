@@ -1,6 +1,6 @@
 'use server';
 
-import { type IMEFormData } from '@/store/useIMEReferralStore';
+import { type IMEFormData } from '@/store/useImeReferral';
 import { imeReferralHandlers } from './server';
 
 export const createIMEReferral = async (data: IMEFormData, isDraft: boolean) => {

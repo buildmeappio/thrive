@@ -1,7 +1,8 @@
 'use client';
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import useRouter from '@/hooks/useRouter';
+import { URLS } from '@/constants/routes';
 
 const ReferralSubmitted: React.FC = () => {
   const router = useRouter();
@@ -43,14 +44,14 @@ const ReferralSubmitted: React.FC = () => {
         <div className="mt-8 flex w-full flex-col gap-4 px-2 sm:mt-12 sm:flex-row sm:justify-between sm:gap-0">
           <Button
             variant="outline"
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push(URLS.DASHBOARD)}
             className="flex h-[45px] w-full items-center justify-center rounded-full border-[#000093] bg-white px-6 py-2 whitespace-nowrap text-gray-600 hover:bg-gray-50 sm:w-auto sm:px-8 md:px-10"
           >
             Go to Dashboard
           </Button>
 
           <Button
-            onClick={() => router.push('/dashboard/ime-referral')}
+            onClick={() => router.push(URLS.IME_REFERRAL)}
             className="flex h-[45px] w-[150px] items-center justify-center rounded-full bg-[#000093] whitespace-nowrap text-white hover:bg-[#000093] sm:w-auto sm:px-8 md:px-10"
           >
             Submit another Referral

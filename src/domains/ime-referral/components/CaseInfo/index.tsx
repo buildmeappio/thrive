@@ -1,8 +1,7 @@
 'use client';
 import React, { useState } from 'react';
-import { type IMEReferralFormProps } from '@/shared/types/imeReferral/imeReferralStepsProps';
-import { useIMEReferralStore } from '@/store/useIMEReferralStore';
-import { type CaseInfo } from '@/shared/validation/imeReferral/imeReferralValidation';
+import { useIMEReferralStore } from '@/store/useImeReferral';
+import { type CaseInfo } from '../../schemas/imeReferral';
 import ContinueButton from '@/components/ContinueButton';
 import BackButton from '@/components/BackButton';
 import ProgressIndicator from '../ProgressIndicator';
@@ -10,8 +9,9 @@ import CaseList from './CaseList';
 import CaseForm from './CaseForm';
 import { toast } from 'sonner';
 import { type DropdownOption } from '../../types/CaseInfo';
+import { type IMEReferralProps } from '@/types/imeReferralProps';
 
-type CaseInfoProps = IMEReferralFormProps & {
+type CaseInfoProps = IMEReferralProps & {
   caseTypes: DropdownOption[];
   examFormats: DropdownOption[];
   requestedSpecialties: DropdownOption[];

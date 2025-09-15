@@ -1,7 +1,7 @@
 'use client';
 import { type Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
-import Image from 'next/image';
+import Image from '@/components/Image';
 import { useEffect, useRef, useState } from 'react';
 import { LogOut, Home, LifeBuoy, UserPlus } from 'lucide-react';
 

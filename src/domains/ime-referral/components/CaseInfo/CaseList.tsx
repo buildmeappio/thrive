@@ -1,7 +1,7 @@
 import React from 'react';
 import CaseItem from './CaseItem';
 import AddCaseButton from './AddCaseButton';
-import { type CaseInfo } from '@/shared/validation/imeReferral/imeReferralValidation';
+import { type CaseInfo } from '../../schemas/imeReferral';
 import { type DropdownOption } from '../../types/CaseInfo';
 
 type CaseListProps = {

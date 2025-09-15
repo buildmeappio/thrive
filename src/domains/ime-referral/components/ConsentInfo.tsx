@@ -6,13 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Checkbox } from '@/components/ui/checkbox';
 import ContinueButton from '@/components/ContinueButton';
 import BackButton from '@/components/BackButton';
-import {
-  ConsentSchema,
-  type Consent,
-  ConsentInitialValues,
-} from '@/shared/validation/imeReferral/imeReferralValidation';
+import { ConsentSchema, type Consent, ConsentInitialValues } from '../schemas/imeReferral';
 import { ArrowRight, Loader2 } from 'lucide-react';
-import { useIMEReferralStore } from '@/store/useIMEReferralStore';
+import { useIMEReferralStore } from '@/store/useImeReferral';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui';
 import ProgressIndicator from './ProgressIndicator';

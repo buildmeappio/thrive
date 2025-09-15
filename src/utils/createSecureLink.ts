@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
-import prisma from '@/shared/lib/prisma';
-import emailService from '../lib/emailService';
+import prisma from '@/lib/prisma';
+import emailService from '../services/emailService';
 
 const createSecureLink = async (caseId: string) => {
   const token = randomUUID();

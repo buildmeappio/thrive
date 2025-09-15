@@ -1,11 +1,7 @@
 import { useState } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  CaseInfoSchema,
-  CaseInitialValues,
-  type CaseInfo,
-} from '@/shared/validation/imeReferral/imeReferralValidation';
+import { type CaseInfo, CaseInfoSchema, CaseInitialValues } from '../../schemas/imeReferral';
 
 export const useCaseForm = (
   onSubmitCase: (values: CaseInfo, editIndex?: number) => void,
