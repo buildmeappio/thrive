@@ -1,0 +1,83 @@
+name: Prisma DB Deploy
+
+on:
+  push:
+    branches: [develop, staging, qa, main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: prisma-db-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  db:
+    runs-on: ubuntu-latest
+    # Map branch → environment: main→prod, others map 1:1
+    environment:
+      name: ${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
+
+    steps:
+      - name: Add EC2 host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: SSH → pull repo, write .env, migrate, seed
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          envs: |
+            REPO_DIR,REPO_URL,BRANCH,DATABASE_URL,PRISMA_LOG_LEVEL,SEED_CMD,EXTRA_ENV
+          script: |
+            set -euo pipefail
+            REPO_DIR="${REPO_DIR:-/srv/prisma-db}"
+            BRANCH="${BRANCH:-${{ github.ref_name }}}"
+            SEED_CMD="${SEED_CMD:-prisma db seed}"
+            PRISMA_LOG_LEVEL="${PRISMA_LOG_LEVEL:-info}"
+
+            echo "Repo dir: $REPO_DIR"
+            echo "Branch:   $BRANCH"
+
+            # clone or update
+            if [ ! -d "$REPO_DIR/.git" ]; then
+              test -n "${REPO_URL:-}" || { echo "REPO_URL secret required for first clone"; exit 1; }
+              mkdir -p "$(dirname "$REPO_DIR")"
+              git clone -b "$BRANCH" "$REPO_URL" "$REPO_DIR"
+            fi
+
+            cd "$REPO_DIR"
+            git fetch --prune origin
+            git checkout "$BRANCH" || git switch -c "$BRANCH"
+            git reset --hard "origin/$BRANCH"
+
+            # .env (atomic)
+            umask 077
+            tmpfile="$(mktemp)"
+            printf 'DATABASE_URL=%s\n'        "$DATABASE_URL"        >> "$tmpfile"
+            printf 'PRISMA_LOG_LEVEL=%s\n'    "$PRISMA_LOG_LEVEL"    >> "$tmpfile"
+            if [ -n "${EXTRA_ENV:-}" ]; then
+              while IFS= read -r line; do
+                [ -n "$line" ] && printf '%s\n' "$line" >> "$tmpfile"
+              done <<< "$EXTRA_ENV"
+            fi
+            mv "$tmpfile" .env
+
+            # Node via nvm if present
+            [ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh"
+
+            npm ci
+            npx prisma generate
+            npx prisma migrate deploy
+            npx $SEED_CMD
+        env:
+          # Per-environment secrets/vars (create in Environments: develop, staging, qa, prod)
+          REPO_DIR:          ${{ secrets.PRISMA_REPO_DIR }}         # e.g. /srv/prisma-db
+          REPO_URL:          ${{ secrets.PRISMA_REPO_URL }}         # needed only for first clone (SSH URL)
+          BRANCH:            ${{ github.ref_name }}                 # develop/staging/qa/main
+          DATABASE_URL:      ${{ secrets.DATABASE_URL }}
+          PRISMA_LOG_LEVEL:  ${{ secrets.PRISMA_LOG_LEVEL || 'info' }}
+          SEED_CMD:          ${{ secrets.SEED_CMD || 'prisma db seed' }}
+          EXTRA_ENV:         ${{ secrets.EXTRA_ENV || '' }}
