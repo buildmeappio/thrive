@@ -1,0 +1,109 @@
+name: EC2 Deploy (branch→env)
+
+on:
+  push:
+    branches: [develop, staging, qa, main]
+  pull_request:
+    branches: [develop, staging, qa, main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  select:
+    runs-on: ubuntu-latest
+    outputs:
+      target_env: ${{ steps.map.outputs.target_env }}
+      branch: ${{ steps.map.outputs.branch }}
+    steps:
+      - id: map
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            BRANCH="$GITHUB_BASE_REF"          # target branch of the PR
+          else
+            BRANCH="$GITHUB_REF_NAME"          # branch that pushed
+          fi
+
+          case "$BRANCH" in
+            main)     TARGET_ENV="prod"  ;;
+            develop)  TARGET_ENV="dev"   ;;
+            staging)  TARGET_ENV="staging" ;;
+            qa)       TARGET_ENV="qa"    ;;
+            *)        echo "Unsupported branch: $BRANCH"; exit 1 ;;
+          esac
+
+          echo "target_env=$TARGET_ENV" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+  ci:
+    needs: select
+    runs-on: ubuntu-latest
+    environment: ${{ needs.select.outputs.target_env }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || '22' }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  deploy:
+    needs: [select, ci]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    environment: ${{ needs.select.outputs.target_env }}
+    steps:
+      - name: Add EC2 host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          envs: |
+            ENVIRONMENT,APP_DIR,BRANCH,DATABASE_URL,NEXTAUTH_SECRET,NEXTAUTH_URL,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GMAIL_USER,GMAIL_REFRESH_TOKEN,NEXT_PUBLIC_APP_URL
+          script: |
+            set -euo pipefail
+            cd "$APP_DIR"
+
+            umask 077
+            tmpfile="$(mktemp)"
+            printf 'ENVIRONMENT=%s\n'           "$ENVIRONMENT"           >> "$tmpfile"
+            printf 'DATABASE_URL=%s\n'          "$DATABASE_URL"          >> "$tmpfile"
+            printf 'NEXTAUTH_SECRET=%s\n'       "$NEXTAUTH_SECRET"       >> "$tmpfile"
+            printf 'NEXTAUTH_URL=%s\n'          "$NEXTAUTH_URL"          >> "$tmpfile"
+            printf 'GOOGLE_CLIENT_ID=%s\n'      "$GOOGLE_CLIENT_ID"      >> "$tmpfile"
+            printf 'GOOGLE_CLIENT_SECRET=%s\n'  "$GOOGLE_CLIENT_SECRET"  >> "$tmpfile"
+            printf 'GMAIL_USER=%s\n'            "$GMAIL_USER"            >> "$tmpfile"
+            printf 'GMAIL_REFRESH_TOKEN=%s\n'   "$GMAIL_REFRESH_TOKEN"   >> "$tmpfile"
+            printf 'NEXT_PUBLIC_APP_URL=%s\n'   "$NEXT_PUBLIC_APP_URL"   >> "$tmpfile"
+            mv "$tmpfile" .env
+
+            git fetch --prune origin
+            git checkout "$BRANCH" || git switch -c "$BRANCH"
+            git reset --hard "origin/$BRANCH"
+
+            [ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh"
+            npm run deploy:${ENVIRONMENT}
+        env:
+          ENVIRONMENT:          ${{ needs.select.outputs.target_env }}
+          BRANCH:               ${{ needs.select.outputs.branch }}
+          APP_DIR:              ${{ vars.APP_DIR || '/opt/myapp' }}
+          DATABASE_URL:         ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET:      ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL:         ${{ secrets.NEXTAUTH_URL }}
+          GOOGLE_CLIENT_ID:     ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GMAIL_USER:           ${{ secrets.GMAIL_USER }}
+          GMAIL_REFRESH_TOKEN:  ${{ secrets.GMAIL_REFRESH_TOKEN }}
+          NEXT_PUBLIC_APP_URL:  ${{ secrets.NEXT_PUBLIC_APP_URL }}
