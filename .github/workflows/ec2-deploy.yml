@@ -1,4 +1,4 @@
-name: EC2 Deploy
+name: EC2 Deploy (branch→env)
 
 on:
   push:
@@ -11,15 +11,30 @@ concurrency:
   group: deploy-${{ github.ref_name }}
   cancel-in-progress: false
 
-# Helper: branch→environment
-# main→prod, develop→dev, others 1:1
-env:
-  TARGET_ENV: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'develop' && 'dev' || github.ref_name }}
-
 jobs:
-  ci:
+  select:
     runs-on: ubuntu-latest
-    environment: ${{ env.TARGET_ENV }}
+    outputs:
+      target_env: ${{ steps.map.outputs.target_env }}
+      branch: ${{ steps.map.outputs.branch }}
+    steps:
+      - id: map
+        run: |
+          BRANCH="${GITHUB_REF_NAME}"
+          case "$BRANCH" in
+            main)     TARGET_ENV="prod" ;;
+            develop)  TARGET_ENV="dev"  ;;
+            staging)  TARGET_ENV="staging" ;;
+            qa)       TARGET_ENV="qa" ;;
+            *)        echo "Unsupported branch: $BRANCH"; exit 1 ;;
+          esac
+          echo "target_env=$TARGET_ENV" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+  ci:
+    needs: select
+    runs-on: ubuntu-latest
+    environment: ${{ needs.select.outputs.target_env }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,10 +46,10 @@ jobs:
       - run: npm run build
 
   deploy:
-    needs: ci
+    needs: [select, ci]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    environment: ${{ env.TARGET_ENV }}
+    environment: ${{ needs.select.outputs.target_env }}
     steps:
       - name: Add EC2 host to known_hosts
         run: |
@@ -74,11 +89,8 @@ jobs:
             [ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh"
             npm run deploy:${ENVIRONMENT}
         env:
-          # Derived
-          ENVIRONMENT: ${{ env.TARGET_ENV }}                  # dev | staging | qa | prod
-          BRANCH:      ${{ github.ref_name }}                 # develop | staging | qa | main
-
-          # Per-environment secrets/vars (set under repo Settings → Environments)
+          ENVIRONMENT:          ${{ needs.select.outputs.target_env }}   # dev|staging|qa|prod
+          BRANCH:               ${{ needs.select.outputs.branch }}       # develop|staging|qa|main
           APP_DIR:              ${{ vars.APP_DIR || '/opt/myapp' }}
           DATABASE_URL:         ${{ secrets.DATABASE_URL }}
           NEXTAUTH_SECRET:      ${{ secrets.NEXTAUTH_SECRET }}
