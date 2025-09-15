@@ -1,12 +1,12 @@
 'use client';
-import React, { useRef } from 'react';
-import { Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip } from 'chart.js';
+import React from 'react';
+// import { Doughnut } from 'react-chartjs-2';
+// import { Chart as ChartJS, ArcElement, Tooltip } from 'chart.js';
 
-ChartJS.register(ArcElement, Tooltip);
+// ChartJS.register(ArcElement, Tooltip);
 
 const HomeStats = () => {
-  const chartRef = useRef(null);
+  // const chartRef = useRef(null);
   const legendItems = [
     { label: 'Awaiting Examiner', color: '#00A8FF' },
     { label: 'Assigned to Examiner', color: '#000093' },
@@ -68,7 +68,7 @@ const HomeStats = () => {
       </div>
 
       <div className="relative h-32 w-32">
-        <Doughnut ref={chartRef} data={chartData} options={chartOptions} />
+        {/* <Doughnut ref={chartRef} data={chartData} options={chartOptions} /> */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-xl font-bold text-[#25292A]">6.3K</span>
           <span className="text-sm text-[#8D9A9B]">Active Users</span>

@@ -2,13 +2,21 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
-import type { Language } from '@prisma/client';
 
 interface LanguageContextType {
-  language: Language;
-  setLanguage: (language: Language) => void;
+  language: string;
+  setLanguage: (language: string) => void;
   isEnglish: boolean;
   isFrench: boolean;
+  isSpanish: boolean;
+  isMandarin: boolean;
+  isCantonese: boolean;
+  isArabic: boolean;
+  isPunjabi: boolean;
+  isUrdu: boolean;
+  isHindi: boolean;
+  isTagalog: boolean;
+  isOther: boolean;
   t: (key: string) => string;
 }
 
@@ -55,26 +63,22 @@ const translations = {
 
 interface LanguageProviderProps {
   children: ReactNode;
-  defaultLanguage?: Language;
+  defaultLanguage?: string;
 }
 
 export function LanguageProvider({ children, defaultLanguage = 'EN' }: LanguageProviderProps) {
   const { data: session, update } = useSession();
-  const [language, setLanguageState] = useState<Language>(defaultLanguage);
+  const [language, setLanguageState] = useState<string>(defaultLanguage);
 
   // Initialize language from session or localStorage
   useEffect(() => {
-    if (session?.user?.preferredLanguage) {
-      setLanguageState(session.user.preferredLanguage);
-    } else {
-      const stored = localStorage.getItem('thrive-language') as Language;
-      if (stored && (stored === 'EN' || stored === 'FR')) {
-        setLanguageState(stored);
-      }
+    const stored = localStorage.getItem('thrive-language') as string;
+    if (stored && (stored === 'EN' || stored === 'FR')) {
+      setLanguageState(stored);
     }
   }, [session]);
 
-  const setLanguage = async (newLanguage: Language) => {
+  const setLanguage = async (newLanguage: string) => {
     setLanguageState(newLanguage);
     localStorage.setItem('thrive-language', newLanguage);
 
@@ -103,7 +107,7 @@ export function LanguageProvider({ children, defaultLanguage = 'EN' }: LanguageP
 
   const t = (key: string): string => {
     const keys = key.split('.');
-    let value: any = translations[language];
+    let value: any = translations[language as keyof typeof translations];
 
     for (const k of keys) {
       value = value?.[k];
@@ -117,12 +121,21 @@ export function LanguageProvider({ children, defaultLanguage = 'EN' }: LanguageP
     setLanguage,
     isEnglish: language === 'EN',
     isFrench: language === 'FR',
+    isSpanish: language === 'ES',
+    isMandarin: language === 'ZH',
+    isCantonese: language === 'YUE',
+    isArabic: language === 'AR',
+    isPunjabi: language === 'PA',
+    isUrdu: language === 'UR',
+    isHindi: language === 'HI',
+    isTagalog: language === 'TL',
+    isOther: language === 'OTHER',
     t,
   };
 
   return (
     <LanguageContext.Provider value={value}>
-      <div lang={language === 'EN' ? 'en-CA' : 'fr-CA'}>{children}</div>
+      <div lang={language === 'EN' ? 'en-CA' : language === 'FR' ? 'fr-CA' : language === 'ES' ? 'es-CA' : language === 'ZH' ? 'zh-CA' : language === 'YUE' ? 'yue-CA' : language === 'AR' ? 'ar-CA' : language === 'PA' ? 'pa-CA' : language === 'UR' ? 'ur-CA' : language === 'HI' ? 'hi-CA' : language === 'TL' ? 'tl-CA' : language === 'OTHER' ? 'other-CA' : 'en-CA'}>{children}</div>
     </LanguageContext.Provider>
   );
 }
@@ -143,21 +156,19 @@ export function LanguageSwitcher() {
     <div className="flex items-center space-x-2">
       <button
         onClick={() => setLanguage('EN')}
-        className={`rounded px-2 py-1 text-sm ${
-          isEnglish
+        className={`rounded px-2 py-1 text-sm ${isEnglish
             ? 'bg-primary text-primary-foreground'
             : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-        }`}
+          }`}
       >
         EN
       </button>
       <button
         onClick={() => setLanguage('FR')}
-        className={`rounded px-2 py-1 text-sm ${
-          isFrench
+        className={`rounded px-2 py-1 text-sm ${isFrench
             ? 'bg-primary text-primary-foreground'
             : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-        }`}
+          }`}
       >
         FR
       </button>
