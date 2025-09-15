@@ -19,7 +19,15 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "prepare": "husky",
-    "pre-commit": "lint-staged"
+    "pre-commit": "lint-staged",
+    "predeploy": "chmod +x scripts/deploy.sh",
+    "deploy:dev": "npm run predeploy && scripts/deploy.sh dev --app thrive-organization --env .env.development --config ecosystem.config.js",
+    "deploy:staging": "npm run predeploy && scripts/deploy.sh staging --app thrive-organization --env .env.staging --config ecosystem.config.js",
+    "deploy:qa": "npm run predeploy && scripts/deploy.sh qa --app thrive-organization --env .env.qa --config ecosystem.config.js",
+    "deploy:production": "npm run predeploy && scripts/deploy.sh production --app thrive-organization --env .env.production --config ecosystem.config.js",
+    "deploy:logs": "pm2 logs thrive-organization",
+    "deploy:stop": "pm2 stop thrive-organization",
+    "deploy:delete": "pm2 delete thrive-organization"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
@@ -50,6 +58,7 @@
     "next": "15.4.6",
     "next-auth": "^4.24.11",
     "nodemailer": "^6.10.1",
+    "pm2": "^6.0.11",
     "prisma": "^6.14.0",
     "react": "19.1.0",
     "react-chartjs-2": "^5.3.0",
