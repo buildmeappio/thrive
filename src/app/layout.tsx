@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { degular, poppins } from '@/shared/lib/fonts';
-import { SessionProvider } from '@/shared/components/providers/SessionProvider';
-import { ThemeProvider } from '@/shared/components/providers/ThemeProvider';
-import { AbilityProvider } from '@/shared/components/providers/AbilityProvider';
+import { SessionProvider } from '@/shared/providers/SessionProvider';
 import './globals.css';
+import { Toaster } from 'sonner';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -55,31 +54,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${poppins.variable} ${degular.variable}`}>
         <SessionProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <AbilityProvider>
-              <div className="bg-background text-foreground min-h-screen">
-                {/* Skip to main content for accessibility */}
-                <a
-                  href="#main-content"
-                  className="bg-primary text-primary-foreground sr-only z-50 rounded-md px-4 py-2 focus:not-sr-only focus:absolute focus:top-4 focus:left-4"
-                >
-                  Skip to main content
-                </a>
+          <div className="bg-background text-foreground min-h-screen">
+            <main id="main-content">
+              {children}
+              <Toaster richColors position="top-right" />
+            </main>
 
-                <main id="main-content">{children}</main>
-
-                {/* Canadian compliance footer note */}
-                <div className="text-muted-foreground bg-background/80 border-border fixed right-0 bottom-0 rounded-tl-md border-t border-l p-2 text-xs backdrop-blur-sm">
-                  <span className="flex items-center gap-1">🇨🇦 Canadian Privacy Compliant</span>
-                </div>
-              </div>
-            </AbilityProvider>
-          </ThemeProvider>
+            {/* Canadian compliance footer note */}
+            <div className="text-muted-foreground bg-background/80 border-border fixed right-0 bottom-0 rounded-tl-md border-t border-l p-2 text-xs backdrop-blur-sm">
+              <span className="flex items-center gap-1">🇨🇦 Canadian Privacy Compliant</span>
+            </div>
+          </div>
         </SessionProvider>
       </body>
     </html>

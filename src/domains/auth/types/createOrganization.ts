@@ -1,0 +1,21 @@
+export type CreateOrganizationWithUserData = {
+  organizationType: string;
+  organizationName: string;
+  addressLookup: string;
+  streetAddress: string;
+  aptUnitSuite?: string | null;
+  city: string;
+  provinceOfResidence: string;
+  postalCode: string;
+  organizationWebsite?: string | null;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  officialEmailAddress: string;
+  jobTitle?: string | null;
+  department?: string | null;
+  agreeTermsConditions: boolean;
+  consentSecureDataHandling: boolean;
+  authorizedToCreateAccount: boolean;
+  hashedPassword: string;
+};

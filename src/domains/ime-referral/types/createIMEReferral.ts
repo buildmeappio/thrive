@@ -1,0 +1,22 @@
+export type CreateIMEReferralData = {
+  firstName: string;
+  lastName: string;
+  dob: string;
+  gender: string;
+  phone: string;
+  email: string;
+  addressLookup: string;
+  street?: string;
+  apt?: string;
+  city?: string;
+  postalCode?: string;
+  province?: string;
+  reason: string;
+  caseType: string;
+  urgencyLevel: string;
+  examFormat: string;
+  requestedSpecialty: string;
+  preferredLocation: string;
+  files: File[];
+  consentForSubmission: boolean;
+};

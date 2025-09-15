@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 
-export default async function Home() {
-  redirect('/login/admin');
-}
+const Home = async () => {
+  redirect('/getting-started');
+};
+export default Home;
