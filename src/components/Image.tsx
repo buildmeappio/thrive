@@ -10,6 +10,8 @@ const Image = ({ src: srcProp, alt, ...props }: ImageProps) => {
 		src = createRoute(srcProp);
 	}
 
+	console.log(src, srcProp);
+
 	return <NextImage src={src} alt={alt} {...props} />;
 };
 
