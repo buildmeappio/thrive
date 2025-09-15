@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui/input';
 import { MapPin } from 'lucide-react';
-import { Dropdown } from '@/components/ui/Dropdown';
+import { Dropdown } from '@/components/Dropdown';
 import { provinceOptions } from '@/shared/config/ProvinceOptions';
 import { genderOptions } from '@/shared/config/GenderOptions';
 import {
@@ -15,7 +15,7 @@ import {
 } from '@/shared/validation/imeReferral/imeReferralValidation';
 import { type IMEReferralFormProps } from '@/shared/types/imeReferral/imeReferralStepsProps';
 import { useIMEReferralStore } from '@/store/useIMEReferralStore';
-import ContinueButton from '@/components/ui/ContinueButton';
+import ContinueButton from '@/components/ContinueButton';
 import ProgressIndicator from './ProgressIndicator';
 
 const ClaimantDetailsForm: React.FC<IMEReferralFormProps> = ({

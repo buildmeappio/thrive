@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { Input } from './input';
+import { Input } from './ui/input';
 import { cn } from '@/shared/lib/utils';
 
 export function PasswordInput({ className, ...props }: React.ComponentProps<'input'>) {

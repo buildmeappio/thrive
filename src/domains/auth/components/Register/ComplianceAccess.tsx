@@ -1,7 +1,7 @@
 // Step 3
 import { Formik, Form, type FormikHelpers } from 'formik';
-import BackButton from '@/components/ui/BackButton';
-import ContinueButton from '@/components/ui/ContinueButton';
+import BackButton from '@/components/BackButton';
+import ContinueButton from '@/components/ContinueButton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useRegistrationStore } from '@/store/useRegistrationStore';

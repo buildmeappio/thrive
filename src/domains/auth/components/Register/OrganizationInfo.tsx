@@ -5,9 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Globe, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui';
 import { provinceOptions } from '@/shared/config/ProvinceOptions';
-import { Dropdown } from '@/components/ui/Dropdown';
+import { Dropdown } from '@/components/Dropdown';
 import { Form, Formik, type FormikHelpers } from 'formik';
-import ContinueButton from '@/components/ui/ContinueButton';
+import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistrationStore';
 import {

@@ -5,7 +5,7 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui/input';
 import { MapPin } from 'lucide-react';
-import { Dropdown } from '@/components/ui/Dropdown';
+import { Dropdown } from '@/components/Dropdown';
 import { provinceOptions } from '@/shared/config/ProvinceOptions';
 import { toast } from 'sonner';
 

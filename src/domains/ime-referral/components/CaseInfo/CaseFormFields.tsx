@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Dropdown } from '@/components/ui/Dropdown';
+import { Dropdown } from '@/components/Dropdown';
 import { Upload, X } from 'lucide-react';
 import { UrgencyLevels } from '@/shared/config/urgencyLevel.config';
 import { provinceOptions } from '@/shared/config/ProvinceOptions';

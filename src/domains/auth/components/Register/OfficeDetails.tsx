@@ -3,9 +3,9 @@ import { Formik, Form, type FormikHelpers } from 'formik';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui';
 import { Mail, Phone, User, Briefcase } from 'lucide-react';
-import { Dropdown } from '@/components/ui/Dropdown';
-import BackButton from '@/components/ui/BackButton';
-import ContinueButton from '@/components/ui/ContinueButton';
+import { Dropdown } from '@/components/Dropdown';
+import BackButton from '@/components/BackButton';
+import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistrationStore';
 import {

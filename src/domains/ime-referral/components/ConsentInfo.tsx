@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { useForm, type SubmitHandler, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Checkbox } from '@/components/ui/checkbox';
-import ContinueButton from '@/components/ui/ContinueButton';
-import BackButton from '@/components/ui/BackButton';
+import ContinueButton from '@/components/ContinueButton';
+import BackButton from '@/components/BackButton';
 import {
   ConsentSchema,
   type Consent,

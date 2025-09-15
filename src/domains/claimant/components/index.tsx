@@ -4,9 +4,9 @@ import UserInfo from './UserInfo';
 
 type ClaimantAvailabilityProps = {
   caseId: string;
-  claimantFirstName: string;
-  claimantLastName: string;
-  organizationName?: string;
+  claimantFirstName: string | null;
+  claimantLastName: string | null;
+  organizationName?: string | null;
 };
 const ClaimantAvailability: React.FC<ClaimantAvailabilityProps> = ({
   caseId,
@@ -22,9 +22,9 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityProps> = ({
         </h1>
         <UserInfo
           caseId={caseId}
-          claimantFirstName={claimantFirstName}
-          claimantLastName={claimantLastName}
-          organizationName={organizationName}
+          claimantFirstName={claimantFirstName ?? ''}
+          claimantLastName={claimantLastName ?? ''}
+          organizationName={organizationName ?? ''}
         />
         <div className="mx-auto max-w-[1020px]">
           <AppointmentOptions />

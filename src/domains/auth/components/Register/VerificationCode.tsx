@@ -1,8 +1,8 @@
 // Step 4
 import { useState, useRef } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
-import BackButton from '@/components/ui/BackButton';
-import ContinueButton from '@/components/ui/ContinueButton';
+import BackButton from '@/components/BackButton';
+import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/shared/types/register/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistrationStore';
 import {

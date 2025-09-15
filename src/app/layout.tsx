@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'Thrive Team' }],
   robots: 'index, follow',
   icons: {
-    icon: '/images/favicon.ico',
+    icon: '/organization/images/favicon.ico',
   },
   openGraph: {
     title: 'Thrive - Canadian Compliant Platform',
