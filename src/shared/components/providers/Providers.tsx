@@ -1,0 +1,28 @@
+'use client';
+
+import type { ReactNode } from 'react';
+import type { Session } from 'next-auth';
+import { SessionProvider } from './SessionProvider';
+import { ThemeProvider } from './ThemeProvider';
+import { AbilityProvider } from './AbilityProvider';
+import { ToastProvider } from './ToastProvider';
+import { LanguageProvider } from './LanguageProvider';
+
+interface ProvidersProps {
+  children: ReactNode;
+  session?: Session | null;
+}
+
+export default function Providers({ children, session }: ProvidersProps) {
+  return (
+    <SessionProvider session={session}>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <LanguageProvider>
+          <AbilityProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </AbilityProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </SessionProvider>
+  );
+}

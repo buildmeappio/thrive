@@ -1,0 +1,16 @@
+export const regionOptions = [
+  { value: 'toronto', label: 'Toronto' },
+  { value: 'ottawa', label: 'Ottawa' },
+  { value: 'hamilton', label: 'Hamilton' },
+  { value: 'london', label: 'London' },
+  { value: 'kitchener', label: 'Kitchener' },
+  { value: 'windsor', label: 'Windsor' },
+  { value: 'kingston', label: 'Kingston' },
+  { value: 'barrie', label: 'Barrie' },
+  { value: 'thunder-bay', label: 'Thunder Bay' },
+  { value: 'sudbury', label: 'Sudbury' },
+  { value: 'sault-ste-marie', label: 'Sault Ste. Marie' },
+  { value: 'north-bay', label: 'North Bay' },
+  { value: 'timmins', label: 'Timmins' },
+  { value: 'other', label: 'Other' },
+];
