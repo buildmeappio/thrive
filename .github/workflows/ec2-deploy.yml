@@ -19,15 +19,22 @@ jobs:
       branch: ${{ steps.map.outputs.branch }}
     steps:
       - id: map
+        shell: bash
         run: |
-          BRANCH="${GITHUB_REF_NAME}"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            BRANCH="$GITHUB_BASE_REF"          # target branch of the PR
+          else
+            BRANCH="$GITHUB_REF_NAME"          # branch that pushed
+          fi
+
           case "$BRANCH" in
-            main)     TARGET_ENV="prod" ;;
-            develop)  TARGET_ENV="dev"  ;;
+            main)     TARGET_ENV="prod"  ;;
+            develop)  TARGET_ENV="dev"   ;;
             staging)  TARGET_ENV="staging" ;;
-            qa)       TARGET_ENV="qa" ;;
+            qa)       TARGET_ENV="qa"    ;;
             *)        echo "Unsupported branch: $BRANCH"; exit 1 ;;
           esac
+
           echo "target_env=$TARGET_ENV" >> "$GITHUB_OUTPUT"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
@@ -89,8 +96,8 @@ jobs:
             [ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh"
             npm run deploy:${ENVIRONMENT}
         env:
-          ENVIRONMENT:          ${{ needs.select.outputs.target_env }}   # dev|staging|qa|prod
-          BRANCH:               ${{ needs.select.outputs.branch }}       # develop|staging|qa|main
+          ENVIRONMENT:          ${{ needs.select.outputs.target_env }}
+          BRANCH:               ${{ needs.select.outputs.branch }}
           APP_DIR:              ${{ vars.APP_DIR || '/opt/myapp' }}
           DATABASE_URL:         ${{ secrets.DATABASE_URL }}
           NEXTAUTH_SECRET:      ${{ secrets.NEXTAUTH_SECRET }}
