@@ -1,7 +1,7 @@
 import React from 'react';
 import type { MedExaminerRegStepProps } from '@/shared/types';
 import { Check } from 'lucide-react';
-import ProgressIndicator from '../progressIndicator/ProgressIndicator';
+import ProgressIndicator from '@/shared/components/auth/register/progressIndicator/ProgressIndicator';
 export const Step8ThankYou: React.FC<MedExaminerRegStepProps> = ({ currentStep, totalSteps }) => {
   return (
     <div
@@ -30,7 +30,7 @@ export const Step8ThankYou: React.FC<MedExaminerRegStepProps> = ({ currentStep, 
             Your Profile Has Been Submitted.
           </h2>
           <p className="max-w-lg px-4 text-[14px] leading-relaxed font-light text-[#8A8A8A] md:text-base">
-            We've received your application and our team is now reviewing your information. You'll
+            We&apos;ve received your application and our team is now reviewing your information. You&apos;ll
             be notified by email once your profile has been verified.
           </p>
         </div>

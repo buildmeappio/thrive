@@ -1,6 +1,6 @@
 'use client';
-import { Label } from '@/shared/components/ui/label';
-import { Textarea } from '@/shared/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import React, { useState, useEffect } from 'react';
 
 const RejectOffer: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {

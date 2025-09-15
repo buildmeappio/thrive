@@ -1,15 +1,15 @@
 import React from 'react';
 import { Formik, Form } from 'formik';
-import { Label } from '@/shared/components/ui/label';
-import { Dropdown } from '@/shared/components/ui/Dropdown';
-import { Checkbox } from '@/shared/components/ui/checkbox';
-import ContinueButton from '@/shared/components/ui/ContinueButton';
-import BackButton from '@/shared/components/ui/BackButton';
+import { Label } from '@/components/ui/label';
+import { Dropdown } from '@/components/ui/Dropdown';
+import { Checkbox } from '@/components/ui/checkbox';
+import ContinueButton from '@/components/ui/ContinueButton';
+import BackButton from '@/components/ui/BackButton';
 import {
   step3IMEExperienceSchema,
   step3InitialValues,
 } from '@/shared/validation/medicalExaminer/examinerRegisterValidation';
-import ProgressIndicator from '../progressIndicator/ProgressIndicator';
+import ProgressIndicator from '../../../../shared/components/auth/register/progressIndicator/ProgressIndicator';
 import { languageOptions, provinceOptions, yearsOfExperienceOptions } from '@/shared/config/dropdownOptions/MedExaminerDropdownOptions';
 
 interface Step3IMEExperinceProps {

@@ -3,17 +3,17 @@
 import React, { useRef } from 'react';
 import { Formik, Form } from 'formik';
 import { FileText, Upload, Calendar, MapPin } from 'lucide-react';
-import { Label } from '@/shared/components/ui/label';
-import { Dropdown } from '@/shared/components/ui/Dropdown';
-import ContinueButton from '@/shared/components/ui/ContinueButton';
-import BackButton from '@/shared/components/ui/BackButton';
+import { Label } from '@/components/ui/label';
+import { Dropdown } from '@/components/ui/Dropdown';
+import ContinueButton from '@/components/ui/ContinueButton';
+import BackButton from '@/components/ui/BackButton';
 import type { MedExaminerRegStepProps } from '@/shared/types';
 import {
   step2MedicalCredentialsSchema,
   step2InitialValues,
 } from '@/shared/validation/medicalExaminer/examinerRegisterValidation';
-import ProgressIndicator from '../progressIndicator/ProgressIndicator';
-import { Input } from '@/shared/components/ui';
+import ProgressIndicator from '../../../../shared/components/auth/register/progressIndicator/ProgressIndicator';
+import { Input } from '@/components/ui';
 import { medicalSpecialtyOptions } from '@/shared/config/dropdownOptions/MedExaminerDropdownOptions';
 
 export const Step2MedicalCredentials: React.FC<MedExaminerRegStepProps> = ({

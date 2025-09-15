@@ -1,8 +1,8 @@
 import React from 'react';
-import ContinueButton from '@/shared/components/ui/ContinueButton';
-import BackButton from '@/shared/components/ui/BackButton';
+import ContinueButton from '@/components/ui/ContinueButton';
+import BackButton from '@/components/ui/BackButton';
 import type { MedExaminerRegStepProps } from '@/shared/types';
-import ProgressIndicator from '../progressIndicator/ProgressIndicator';
+import ProgressIndicator from '@/shared/components/auth/register/progressIndicator/ProgressIndicator';
 
 export const Step7SubmitConfirmation: React.FC<MedExaminerRegStepProps> = ({
   onNext,

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Formik, Form } from 'formik';
-import { Label } from '@/shared/components/ui/label';
-import ContinueButton from '@/shared/components/ui/ContinueButton';
-import { PasswordInput } from '@/shared/components/ui/PasswordInput';
+import { Label } from '@/components/ui/label';
+import ContinueButton from '@/components/ui/ContinueButton';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import {
   step9PasswordSchema,
   step9InitialValues,

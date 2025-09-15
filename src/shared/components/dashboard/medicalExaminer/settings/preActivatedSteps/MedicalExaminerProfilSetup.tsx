@@ -1,5 +1,5 @@
 "use client"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/components/ui/accordion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Check } from 'lucide-react';
 import React, { useState } from 'react'
 import { MedicalExaminerProfileSteps } from '@/shared/config/medicalExaminerdashboard/profileSetup/ProfileSteps';

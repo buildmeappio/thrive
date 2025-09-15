@@ -5,13 +5,13 @@ import {
   step1InitialValues,
   step1PersonalInfoSchema,
 } from '@/shared/validation/medicalExaminer/examinerRegisterValidation';
-import ProgressIndicator from '../progressIndicator/ProgressIndicator';
-import { Label } from '@/shared/components/ui/label';
-import { Input } from '@/shared/components/ui';
+import ProgressIndicator from '../../../../shared/components/auth/register/progressIndicator/ProgressIndicator';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui';
 import { Mail, MapPin, Phone, User } from 'lucide-react';
-import { Dropdown } from '@/shared/components/ui/Dropdown';
-import BackButton from '@/shared/components/ui/BackButton';
-import ContinueButton from '@/shared/components/ui/ContinueButton';
+import { Dropdown } from '@/components/ui/Dropdown';
+import BackButton from '@/components/ui/BackButton';
+import ContinueButton from '@/components/ui/ContinueButton';
 import { provinceOptions } from '@/shared/config/dropdownOptions/MedExaminerDropdownOptions';
 
 export const Step1PersonalInfo: React.FC<MedExaminerRegStepProps> = ({

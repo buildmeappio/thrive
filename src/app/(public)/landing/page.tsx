@@ -1,9 +1,7 @@
-"use client";
-
-import Image from "next/image";
 import { ArrowRight, Check } from "lucide-react";
 import { MedicalExaminerFeatures } from "@/constants/landing";
-
+import Image from "@/components/Image";
+import { createRoute, URLS } from "@/constants/route";
 
 const Page: React.FC = () => {
   return (
@@ -34,13 +32,15 @@ const Page: React.FC = () => {
             teams for expert medical evaluations.
           </p>
 
-          <button
-            className="mt-6 inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white transition-transform duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40 sm:px-8 sm:py-4 sm:text-base"
-            style={{ background: "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)" }}
-          >
-            Let&apos;s Get Started
-            <ArrowRight size={18} strokeWidth={3} className="sm:size-5" />
-          </button>
+          <form action={createRoute(URLS.LOGIN)}>
+            <button
+              className="mt-6 inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white transition-transform duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40 sm:px-8 sm:py-4 sm:text-base"
+              style={{ background: "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)" }}
+            >
+              Let&apos;s Get Started
+              <ArrowRight size={18} strokeWidth={3} className="sm:size-5" />
+            </button>
+          </form>
 
           <div className="mt-8 sm:mt-10">
             <h3 className="text-base font-semibold text-black sm:text-lg">

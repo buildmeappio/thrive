@@ -1,11 +1,11 @@
 'use client';
 import React, { useRef, useState } from 'react';
 import { User, Phone, Mail, MapPin } from 'lucide-react';
-import { Input } from '@/shared/components/ui/input';
-import { Dropdown } from '@/shared/components/ui/Dropdown';
-import { Textarea } from '@/shared/components/ui/textarea';
-import { Label } from '@/shared/components/ui/label';
-import { Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import { Dropdown } from '@/components/ui/Dropdown';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { provinceOptions } from '@/shared/config/dropdownOptions/MedExaminerDropdownOptions';
 
 const MedicalExaminerProfileStep1 = () => {

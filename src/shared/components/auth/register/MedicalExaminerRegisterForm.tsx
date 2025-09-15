@@ -9,11 +9,17 @@ import {
   Step6Legal,
   Step7SubmitConfirmation,
   Step8ThankYou,
-} from './medicalExaminerSteps';
+} from '../../../../domains/auth/components/RegisterationSteps';
+import { MedExaminerRegStepProps } from '@/shared/types';
+
+interface Step {
+  component: React.ComponentType<MedExaminerRegStepProps>;
+}
+
 export const MedicalExaminerRegisterForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
-  const steps: any[] = [
+  const steps: Step[] = [
     { component: Step1PersonalInfo },
     { component: Step2MedicalCredentials },
     { component: Step3IMEExperince },
@@ -52,11 +58,11 @@ export const MedicalExaminerRegisterForm: React.FC = () => {
 
   const showTitle = currentStep <= 6;
   return (
-    <div className="mx-auto max-w-[900px] p-4 md:min-h-screen md:p-0 md:py-6">
+    <div className="mx-auto max-w-[900px] p-4 md:min-h-screen md:p-0 md:py-6 bg-[#fafafa]">
       <div className="mb-6 flex h-[60px] items-center justify-between">
         {showTitle && (
           <h2 className="text-center text-[22px] leading-none font-semibold tracking-[-0.03em] whitespace-nowrap md:text-4xl lg:text-5xl xl:text-[54px]">
-            Let's complete your profile to join <span className="text-[#00A8FF]">Thrive.</span>
+            Let&apos;s complete your profile to join <span className="text-[#00A8FF]">Thrive.</span>
           </h2>
         )}
       </div>

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useParams } from 'next/navigation';
 
 import Header from '@/layouts/public/header';
-import { Step10Success, Step9Password } from '@/shared/components/auth/register/medicalExaminerSteps';
+import { Step10Success, Step9Password } from '@/domains/auth/components/RegisterationSteps';
 
 
 export default function SetPasswordPage() {
