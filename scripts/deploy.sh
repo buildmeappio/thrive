@@ -12,13 +12,13 @@ ENV="$1"
 shift
 
 if [[ -z "$ENV" ]]; then
-  echo "❌ Please provide the environment: dev, staging, or production"
+  echo "❌ Please provide the environment: dev, staging, qa, or production"
   exit 1
 fi
 
-if [[ "$ENV" != "dev" && "$ENV" != "staging" && "$ENV" != "production" ]]; then
+if [[ "$ENV" != "dev" && "$ENV" != "staging" && "$ENV" != "qa" && "$ENV" != "production" ]]; then
   echo "❌ Invalid environment: $ENV"
-  echo "✅ Allowed values: dev, staging, production"
+  echo "✅ Allowed values: dev, staging, qa, production"
   exit 1
 fi
 
@@ -56,6 +56,9 @@ case "$ENV" in
     ;;
   staging)
     BRANCH="staging"
+    ;;
+  qa)
+    BRANCH="qa"
     ;;
   production)
     BRANCH="main"
