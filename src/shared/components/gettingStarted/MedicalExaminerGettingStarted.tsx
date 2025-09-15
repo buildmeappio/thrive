@@ -32,7 +32,7 @@ export const MedicalExaminerGettingStarted: React.FC = () => {
               background: 'linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)',
             }}
           >
-            Let's Get Started
+            Let&apos;s Get Started
             <ArrowRight size={20} strokeWidth={3} />
           </button>
         </div>

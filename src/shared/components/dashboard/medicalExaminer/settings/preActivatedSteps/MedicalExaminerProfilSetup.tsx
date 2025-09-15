@@ -32,7 +32,7 @@ const MedicalExaminerProfilSetup = () => {
           Welcome, <span className="text-[#00A8FF]">Dr Sarah!</span>
         </h1>
         <p className="text-gray-600 text-[18px]">
-          Let's complete a few steps to activate your dashboard.
+          Let&apos;s complete a few steps to activate your dashboard.
         </p>
       </div>
       <Accordion

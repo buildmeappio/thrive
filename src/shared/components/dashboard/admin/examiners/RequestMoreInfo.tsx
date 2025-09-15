@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/consistent-type-imports */
 'use client';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';

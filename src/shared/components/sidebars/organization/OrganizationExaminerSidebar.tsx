@@ -5,7 +5,7 @@ interface OrganizationSidebarProps {
   isMobileOpen?: boolean;
   onMobileClose?: () => void;
 }
-  const OrganizationExaminerSidebar = ({ isMobileOpen = false, onMobileClose }: OrganizationSidebarProps) => {
+  const OrganizationExaminerSidebar = ({}: OrganizationSidebarProps) => {
 
   return (
     <div className="bg-sidebar border-sidebar-border w-64 border-r p-4">

@@ -60,7 +60,7 @@ const NewCaseReview: React.FC = () => {
                                 Why This Evaluation Is Required
                             </h3>
                             <div className="">
-                                <p className="text-[#005E8F] leading-relaxed">This evaluation is required to obtain an independent, expert medical opinion regarding the claimant's current condition, functional limitations, and prognosis. The findings will help determine causation, ongoing treatment needs, and eligibility for insurance benefits related to the reported incident.</p>
+                                <p className="text-[#005E8F] leading-relaxed">This evaluation is required to obtain an independent, expert medical opinion regarding the claimant&apos;s current condition, functional limitations, and prognosis. The findings will help determine causation, ongoing treatment needs, and eligibility for insurance benefits related to the reported incident.</p>
                             </div>
                         </div>
                         <div className="rounded-lg py-2 px-4 bg-white">
@@ -68,7 +68,7 @@ const NewCaseReview: React.FC = () => {
                                 Special Instructions Or Considerations
                             </h3>
                             <div className="">
-                                <p className="text-[#005E8F] leading-relaxed">Please review any pre-existing conditions that may affect the claimant's recovery. Ensure the report includes clear commentary on causation and objective findings. If functional limitations are identified, outline expected duration and any recommended restrictions. Report must be submitted no later than April 30, 2025.</p>
+                                <p className="text-[#005E8F] leading-relaxed">Please review any pre-existing conditions that may affect the claimant&apos;s recovery. Ensure the report includes clear commentary on causation and objective findings. If functional limitations are identified, outline expected duration and any recommended restrictions. Report must be submitted no later than April 30, 2025.</p>
                             </div>
                         </div>
                         <div className="rounded-lg py-2 px-4 flex items-start md:items-center justify-between bg-white md:flex-row flex-col">
