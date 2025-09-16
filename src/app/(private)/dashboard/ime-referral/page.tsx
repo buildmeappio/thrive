@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: 'Create a new IME Referral - Thrive',
 };
 
+export const dynamic = 'force-dynamic';
+
 const IMEReferralPage = async () => {
   const [caseTypes, examFormats, requestedSpecialties] = await Promise.all([
     getCaseTypes(),

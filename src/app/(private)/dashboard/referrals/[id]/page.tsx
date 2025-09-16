@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: 'Referral Details - Thrive',
 };
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{
     id: string;

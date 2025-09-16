@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: 'Register | Thrive',
   description: 'Register yourself on Thrive',
 };
+
+export const dynamic = 'force-dynamic';
+
 const RegisterPage = async () => {
   const [organizationTypes, departmentOptions] = await Promise.all([
     getOrganizationTypes(),

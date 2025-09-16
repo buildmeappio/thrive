@@ -1,0 +1,117 @@
+name: EC2 Deploy (branch→env)
+
+on:
+  push:
+    branches: [develop, staging, qa, main]
+  pull_request:
+    branches: [develop, staging, qa, main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  select:
+    runs-on: ubuntu-latest
+    outputs:
+      target_env: ${{ steps.map.outputs.target_env }}
+      branch: ${{ steps.map.outputs.branch }}
+    steps:
+      - id: map
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            BRANCH="$GITHUB_BASE_REF"          # target branch of the PR
+          else
+            BRANCH="$GITHUB_REF_NAME"          # branch that pushed
+          fi
+
+          case "$BRANCH" in
+            main)     TARGET_ENV="prod"  ;;
+            develop)  TARGET_ENV="dev"   ;;
+            staging)  TARGET_ENV="staging" ;;
+            qa)       TARGET_ENV="qa"    ;;
+            *)        echo "Unsupported branch: $BRANCH"; exit 1 ;;
+          esac
+
+          echo "target_env=$TARGET_ENV" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+  ci:
+    needs: select
+    runs-on: ubuntu-latest
+    environment: ${{ needs.select.outputs.target_env }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || '22' }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: CI=true npm run build
+
+  deploy:
+    needs: [select, ci]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    environment: ${{ needs.select.outputs.target_env }}
+    steps:
+      - name: Add EC2 host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          envs: |
+            ENVIRONMENT,APP_DIR,BRANCH,DATABASE_URL,NEXTAUTH_SECRET,NEXTAUTH_URL,OAUTH_CLIENT_ID,OAUTH_CLIENT_SECRET,OAUTH_REFRESH_TOKEN,OAUTH_USERNAME,JWT_SECRET,PASSWORD_JWT_SECRET,GOOGLE_API_KEY,GOOGLE_DISTANCE_MATRIX_API_ENABLE,GOOGLE_GEOCODE_API_ENABLE
+          script: |
+            set -euo pipefail
+            cd "$APP_DIR"
+
+            umask 077
+            tmpfile="$(mktemp)"
+            printf 'ENVIRONMENT=%s\n'           "$ENVIRONMENT"           >> "$tmpfile"
+            printf 'DATABASE_URL=%s\n'          "$DATABASE_URL"          >> "$tmpfile"
+            printf 'NEXTAUTH_SECRET=%s\n'       "$NEXTAUTH_SECRET"       >> "$tmpfile"
+            printf 'NEXTAUTH_URL=%s\n'          "$NEXTAUTH_URL"          >> "$tmpfile"
+            printf 'OAUTH_CLIENT_ID=%s\n'      "$OAUTH_CLIENT_ID"      >> "$tmpfile"
+            printf 'OAUTH_CLIENT_SECRET=%s\n'  "$OAUTH_CLIENT_SECRET"  >> "$tmpfile"
+            printf 'OAUTH_REFRESH_TOKEN=%s\n'   "$OAUTH_REFRESH_TOKEN"   >> "$tmpfile"
+            printf 'OAUTH_USERNAME=%s\n'            "$OAUTH_USERNAME"            >> "$tmpfile"
+            printf 'JWT_SECRET=%s\n'           "$JWT_SECRET"           >> "$tmpfile"
+            printf 'PASSWORD_JWT_SECRET=%s\n'  "$PASSWORD_JWT_SECRET"  >> "$tmpfile"
+            printf 'GOOGLE_API_KEY=%s\n'       "$GOOGLE_API_KEY"       >> "$tmpfile"
+            printf 'GOOGLE_DISTANCE_MATRIX_API_ENABLE=%s\n' "$GOOGLE_DISTANCE_MATRIX_API_ENABLE" >> "$tmpfile"
+            printf 'GOOGLE_GEOCODE_API_ENABLE=%s\n' "$GOOGLE_GEOCODE_API_ENABLE" >> "$tmpfile"
+            mv "$tmpfile" .env
+
+            git fetch --prune origin
+            git checkout "$BRANCH" || git switch -c "$BRANCH"
+            git reset --hard "origin/$BRANCH"
+
+            [ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh"
+            npm run deploy:${ENVIRONMENT}
+        env:
+          ENVIRONMENT: ${{ needs.select.outputs.target_env }}
+          BRANCH: ${{ needs.select.outputs.branch }}
+          APP_DIR: ${{ vars.APP_DIR || '/opt/myapp' }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
+          OAUTH_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
+          OAUTH_REFRESH_TOKEN: ${{ secrets.OAUTH_REFRESH_TOKEN }}
+          OAUTH_USERNAME: ${{ secrets.OAUTH_USERNAME }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          PASSWORD_JWT_SECRET: ${{ secrets.PASSWORD_JWT_SECRET }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_DISTANCE_MATRIX_API_ENABLE: ${{ secrets.GOOGLE_DISTANCE_MATRIX_API_ENABLE }}
+          GOOGLE_GEOCODE_API_ENABLE: ${{ secrets.GOOGLE_GEOCODE_API_ENABLE }}
