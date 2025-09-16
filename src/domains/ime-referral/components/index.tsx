@@ -5,8 +5,8 @@ import ClaimantDetails from './ClaimantDetails';
 import CaseInfo from './CaseInfo';
 import ConsentInfo from './ConsentInfo';
 import ReferralSubmitted from './ReferralSubmitted';
+import { convertToTypeOptions } from '@/utils/convertToTypeOptions';
 
-import { formatLabel } from '@/utils/labelFormat';
 import type { getCaseTypes, getExamFormats, getRequestedSpecialties } from '@/domains/auth/actions';
 
 interface StepConfig {
@@ -32,20 +32,6 @@ const IMEReferral: React.FC<IMEReferralProps> = ({
   requestedSpecialties,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
-
-  const convertToTypeOptions = (
-    types:
-      | IMEReferralProps['caseTypes']
-      | IMEReferralProps['examFormats']
-      | IMEReferralProps['requestedSpecialties']
-  ) => {
-    return (
-      types?.map(type => ({
-        value: type.id,
-        label: formatLabel(type.name),
-      })) || []
-    );
-  };
 
   const STEPS: StepConfig[] = useMemo(
     () => [

@@ -128,9 +128,12 @@ export function validateFileArray(files: File[]): FileValidationResult {
   files.forEach((file, index) => {
     const key = `${file.name}-${file.size}`;
     if (seen.has(key)) {
-      errors.push(
-        `${ErrorMessages.DUPLICATE_FILE}: ${file.name} (positions ${seen.get(key)! + 1} and ${index + 1})`
-      );
+      const previousPosition = seen.get(key);
+      if (previousPosition !== undefined) {
+        errors.push(
+          `${ErrorMessages.DUPLICATE_FILE}: ${file.name} (positions ${previousPosition + 1} and ${index + 1})`
+        );
+      }
     } else {
       seen.set(key, index);
     }
@@ -171,7 +174,10 @@ export function findDuplicateFiles(files: File[]): { file: File; duplicateIndexe
   files.forEach((file, index) => {
     const key = `${file.name}-${file.size}`;
     if (seen.has(key)) {
-      seen.get(key)!.push(index);
+      const existing = seen.get(key);
+      if (existing) {
+        existing.push(index);
+      }
     } else {
       seen.set(key, [index]);
     }

@@ -48,6 +48,12 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
         return;
       }
 
+      await new Promise<void>(resolve => {
+        setTimeout(() => {
+          resolve();
+        }, 1000);
+      });
+
       const result = await signIn('credentials', {
         email: updatedData.step2?.officialEmailAddress,
         password: values.password,

@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import useRouter from '@/hooks/useRouter';
 import Link from 'next/link';
 import Image from '@/components/Image';
 import { Home, LifeBuoy, LogOut, Plus, UserPlus, X } from 'lucide-react';
 import { signOut } from 'next-auth/react';
-import { URLS } from '@/constants/routes';
+import { createRoute, URLS } from '@/constants/routes';
 
 export const medicalExaminerSidebarRoutes = [
   { icon: Home, label: 'Dashboard', href: '/dashboard', index: 0 },
@@ -29,14 +29,14 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
     return index && !isNaN(Number(index)) && Number(index) >= 0;
   };
 
-  const setSelectedSidebarIndex = (index: number) => {
+  const setSelectedSidebarIndex = useCallback((index: number) => {
     setSelectedBtn(index);
     if (typeof window !== 'undefined') {
       localStorage.setItem('selectedSidebarIndex', index.toString());
     }
-  };
+  }, []);
 
-  const initializeSelectedSidebarIndex = () => {
+  const initializeSelectedSidebarIndex = useCallback(() => {
     if (typeof window === 'undefined') {
       return;
     }
@@ -46,14 +46,10 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
       return;
     }
     setSelectedSidebarIndex(Number(storedSelectedBtn));
-  };
-
-  useEffect(() => {
-    initializeSelectedSidebarIndex();
-  }, []);
+  }, [setSelectedSidebarIndex]);
 
   // Fixed function to handle route matching more precisely
-  const checkIsPartOfSidebar = (pathname: string, href: string) => {
+  const checkIsPartOfSidebar = useCallback((pathname: string, href: string) => {
     // Exact match
     if (pathname === href) {
       return true;
@@ -66,7 +62,11 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
 
     // For other routes, check if pathname starts with href
     return pathname.startsWith(href);
-  };
+  }, []);
+
+  useEffect(() => {
+    initializeSelectedSidebarIndex();
+  }, [initializeSelectedSidebarIndex]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !pathname) {
@@ -83,10 +83,10 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
     if (matchedItem) {
       setSelectedSidebarIndex(matchedItem.index);
     }
-  }, [pathname]);
+  }, [pathname, checkIsPartOfSidebar, setSelectedSidebarIndex]);
 
   const handleLogout = () => {
-    signOut({ callbackUrl: '/login' });
+    signOut({ callbackUrl: createRoute(URLS.LOGIN) });
   };
 
   const handleNewReferral = () => {
@@ -191,7 +191,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
           <div className="flex-shrink-0 p-4">
             <button
               onClick={handleLogout}
-              className="flex w-full items-center justify-center space-x-2 rounded-full bg-[#000093] px-6 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90"
+              className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#000093] px-6 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90"
             >
               <LogOut size={20} strokeWidth={2} className="text-white" />
               <span className="text-sm">Logout</span>

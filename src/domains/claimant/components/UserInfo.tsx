@@ -12,37 +12,41 @@ const UserInfo: React.FC<UserInfoProps> = ({
   organizationName,
 }) => {
   return (
-    <div className="bg-[#FAFAFF]">
+    <div className="bg-[#FAFAFF] px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1020px]">
-        <div className="mb-6 flex items-start justify-between py-6">
+        {/* Top section */}
+        <div className="mb-6 flex flex-col gap-4 py-6 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="">
-              <span className="text-[18.87px] leading-[100%] font-semibold tracking-normal text-[#000000]">
-                Case ID:
-              </span>{' '}
+            <p>
+              <span className="text-lg font-semibold text-black sm:text-[18.87px]">Case ID:</span>{' '}
               {caseId}
             </p>
           </div>
           <div>
-            <p className="">
-              <span className="text-[18.87px] leading-[100%] font-semibold tracking-normal text-[#000000]">
+            <p className="text-center sm:text-right">
+              <span className="text-lg font-semibold text-black sm:text-[18.87px]">
                 Referring Organization:
               </span>{' '}
-              {organizationName}
+              {organizationName || 'N/A'}
             </p>
           </div>
         </div>
-        <div className="flex w-[920px] flex-col justify-center">
-          <h2 className="mb-8 text-center text-[36px] leading-[100%] font-semibold tracking-normal">
+
+        {/* Message section */}
+        <div className="flex w-full flex-col items-center px-2 text-center sm:px-6">
+          <h2 className="mb-6 text-2xl font-semibold sm:text-3xl lg:text-[36px]">
             Hi {claimantFirstName} {claimantLastName},
           </h2>
-          <p className="mb-8 text-center text-[18.87px] leading-[100%] font-light tracking-normal">
-            We've received a request to schedule your independent medical examination (IME). Please
-            tell us when you're available. This will help us match you with the right specialist.
+          <p className="mb-8 text-base font-light sm:text-lg lg:text-[18.87px]">
+            We've received a request to schedule your independent medical examination (IME).
+            <br className="hidden sm:inline" />
+            Please tell us when you're available. This will help us match you with the right
+            specialist.
           </p>
         </div>
       </div>
     </div>
   );
 };
+
 export default UserInfo;

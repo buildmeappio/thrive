@@ -5,6 +5,7 @@ import { type IMEFormData } from '@/store/useImeReferral';
 import { type UrgencyLevel } from '@prisma/client';
 import { CaseStatus } from '@/constants/CaseStatus';
 import { HttpError } from '@/utils/httpError';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 type CreateIMEReferralData = {
   step1: NonNullable<IMEFormData['step1']>;
@@ -76,55 +77,70 @@ const createIMEReferralWithClaimant = async (data: CreateIMEReferralData) => {
         files: { name: string; documentId: string }[];
       }[] = [];
 
-      for (const [_index, caseData] of data.step2.cases.entries()) {
-        // Create case
-        const caseRecord = await tx.case.create({
-          data: {
-            referralId: referral.id,
-            caseNumber: `IME-${Date.now()}-${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
-            caseTypeId: caseData.caseType,
-            examFormatId: caseData.examFormat,
-            requestedSpecialtyId: caseData.requestedSpecialty,
-            urgencyLevel: caseData.urgencyLevel.toUpperCase() as UrgencyLevel,
-            reason: caseData.reason,
-            preferredLocation: caseData.preferredLocation || null,
-            statusId: defaultStatus.id,
-          },
-        });
-
-        // 6. Handle file uploads and create documents
-        const uploadedFiles: { name: string; documentId: string }[] = [];
-
-        for (const file of caseData.files) {
-          await saveFileToStorage(file);
-
-          const document = await tx.documents.create({
+      // Process all cases in parallel - mimicking original code structure exactly
+      await Promise.all(
+        data.step2.cases.map(async (caseData, _index) => {
+          // Create case
+          const caseRecord = await tx.case.create({
             data: {
-              name: file.name,
-              type: file.type,
-              size: file.size,
+              referralId: referral.id,
+              caseNumber: `IME-${Date.now()}-${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
+              caseTypeId: caseData.caseType,
+              examFormatId: caseData.examFormat,
+              requestedSpecialtyId: caseData.requestedSpecialty,
+              urgencyLevel: caseData.urgencyLevel.toUpperCase() as UrgencyLevel,
+              reason: caseData.reason,
+              preferredLocation: caseData.preferredLocation || null,
+              statusId: defaultStatus.id,
             },
           });
 
-          await tx.caseDocument.create({
-            data: {
-              caseId: caseRecord.id,
+          // 6. Handle file uploads and create documents
+          const uploadedFiles: { name: string; documentId: string }[] = [];
+
+          // Save all files to storage in parallel
+          await Promise.all(caseData.files.map(file => saveFileToStorage(file)));
+
+          // Create documents in parallel
+          const documents = await Promise.all(
+            caseData.files.map(file =>
+              tx.documents.create({
+                data: {
+                  name: file.name,
+                  type: file.type,
+                  size: file.size,
+                },
+              })
+            )
+          );
+
+          // Create case-document relationships in parallel
+          await Promise.all(
+            documents.map(document =>
+              tx.caseDocument.create({
+                data: {
+                  caseId: caseRecord.id,
+                  documentId: document.id,
+                },
+              })
+            )
+          );
+
+          // Build uploaded files array
+          uploadedFiles.push(
+            ...documents.map(document => ({
+              name: document.name,
               documentId: document.id,
-            },
-          });
+            }))
+          );
 
-          uploadedFiles.push({
-            name: file.name,
-            documentId: document.id,
+          createdCases.push({
+            id: caseRecord.id,
+            caseNumber: caseRecord.caseNumber,
+            files: uploadedFiles,
           });
-        }
-
-        createdCases.push({
-          id: caseRecord.id,
-          caseNumber: caseRecord.caseNumber,
-          files: uploadedFiles,
-        });
-      }
+        })
+      );
 
       return {
         referralId: referral.id,
@@ -140,7 +156,37 @@ const createIMEReferralWithClaimant = async (data: CreateIMEReferralData) => {
 
 const getReferrals = async () => {
   try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      throw new Error(ErrorMessages.UNAUTHORIZED);
+    }
+
+    const userAccount = await prisma.account.findFirst({
+      where: {
+        userId: user.id,
+      },
+      include: {
+        managers: {
+          select: {
+            organizationId: true,
+          },
+        },
+      },
+    });
+
+    if (!userAccount || !userAccount.managers.length) {
+      return [];
+    }
+
+    const organizationIds = userAccount.managers.map(manager => manager.organizationId);
+
     const referrals = await prisma.iMEReferral.findMany({
+      where: {
+        organizationId: {
+          in: organizationIds,
+        },
+      },
       select: {
         id: true,
         createdAt: true,
@@ -161,7 +207,6 @@ const getReferrals = async () => {
       },
     });
 
-    // Keep cases as array
     const formatted = referrals.map(referral => ({
       referralId: referral.id,
       firstName: referral.claimant.firstName,
@@ -263,8 +308,9 @@ const getReferralDetails = async (referralId: string) => {
   }
 };
 
-export default {
+const imeReferralService = {
   createIMEReferralWithClaimant,
   getReferrals,
   getReferralDetails,
 };
+export default imeReferralService;

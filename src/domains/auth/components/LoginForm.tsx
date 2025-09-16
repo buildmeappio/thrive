@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { PasswordInput } from '@/components/PasswordInput';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { Form, Formik } from 'formik';
 import { signIn } from 'next-auth/react';
 import useRouter from '@/hooks/useRouter';
@@ -96,9 +96,13 @@ const LoginForm = () => {
           </div>
 
           <Button variant="organizationLogin" size="organizationLogin" disabled={isSubmitting}>
-            {isSubmitting ? 'Logging in...' : 'Login'}{' '}
+            Login
             <span>
-              <ArrowRight strokeWidth={3} color="white" />
+              {isSubmitting ? (
+                <Loader2 className="ml-2 h-4 w-4 animate-spin text-white" />
+              ) : (
+                <ArrowRight className="cup ml-2 h-4 w-4 text-white transition-all duration-300 ease-in-out" />
+              )}
             </span>
           </Button>
         </Form>

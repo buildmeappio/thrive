@@ -7,9 +7,9 @@ import OfficeDetails from './OfficeDetails';
 import ComplianceAccess from './ComplianceAccess';
 import VerificationCode from './VerificationCode';
 import PasswordForm from './PasswordForm';
-import { formatLabel } from '@/utils/labelFormat';
 import type getDepartments from '../../server/handlers/getDepartments';
 import type getOrganizationTypes from '../../../organization/server/handlers/getOrganizationTypes';
+import { convertToTypeOptions } from '@/utils/convertToTypeOptions';
 
 interface StepConfig {
   component: React.ComponentType<StepProps>;
@@ -29,19 +29,6 @@ interface RegisterFormProps {
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ organizationTypes, departmentTypes }) => {
   const [currentStep, setCurrentStep] = useState(1);
-
-  const convertToTypeOptions = (
-    types: RegisterFormProps['organizationTypes'] | RegisterFormProps['departmentTypes']
-  ) => {
-    if (!Array.isArray(types)) {
-      return [];
-    }
-
-    return types.map(type => ({
-      value: type.id,
-      label: formatLabel(type.name),
-    }));
-  };
 
   const STEPS: StepConfig[] = useMemo(
     () => [

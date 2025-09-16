@@ -93,4 +93,12 @@ export default Object.freeze({
   DOB_INVALID: 'Invalid Date of birth',
   FAILED_CREATE_IME_REFERRAL: 'Failed to create IME referral',
   DOB_FUTURE_DATE_NOT_ALLOWED: 'Date of birth cannot be a future date',
+  CASE_NOT_FOUND: 'Case not found',
+  AVAILABILITY_SLOT_REQUIRED: 'At least one availability slot is required',
+  INVALID_CLAIMANT_PREFERENCE: 'Invalid claimant preference',
+  INVALID_CLAIMANT_ID: 'Claimant ID does not match the case claimant',
+  INVALID_TIME_BAND: 'Invalid time band',
+  FAILED_SUBMIT_AVAILABILITY: 'Failed to submit availability',
+  AVAILABILITY_ALREADY_SUBMITTED: 'Availability already submitted for this case',
+  LANGUAGES_NOT_FOUND: 'No languages found',
 });
