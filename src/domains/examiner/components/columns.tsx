@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
-import { OrganizationData } from "../types/OrganizationData";
+import { ExaminerData } from "../types/ExaminerData";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowRight } from "lucide-react";
+import { formatDate } from "@/utils/date";
 import Link from "next/link";
 
 const Header = ({
@@ -25,7 +26,7 @@ const Header = ({
 
 const ActionButton = ({ id }: { id: string }) => {
   return (
-    <Link href={`/organization/${id}`} className="w-full h-full cursor-pointer">
+    <Link href={`/examiner/${id}`} className="w-full h-full cursor-pointer">
       <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-2 w-[40px] h-[40px] flex items-center justify-center hover:opacity-80">
         <ArrowRight className="w-4 h-4 text-white" />
       </div>
@@ -52,7 +53,7 @@ const Content = ({
   );
 };
 
-const columns: ColumnDef<OrganizationData>[] = [
+const columns: ColumnDef<ExaminerData>[] = [
   {
     header: () => <Header first>Name</Header>,
     accessorKey: "name",
@@ -61,24 +62,31 @@ const columns: ColumnDef<OrganizationData>[] = [
     },
   },
   {
-    header: () => <Header>Type</Header>,
-    accessorKey: "typeName",
+    header: () => <Header>Specialty</Header>,
+    accessorKey: "specialties",
     cell: ({ row }) => {
-      return <Content>{row.original.typeName}</Content>;
+      return <Content>{row.original.specialties}</Content>;
     },
   },
   {
-    header: () => <Header>Manager</Header>,
-    accessorKey: "managerName",
+    header: () => <Header>License Number</Header>,
+    accessorKey: "licenseNumber",
     cell: ({ row }) => {
-      return <Content>{row.original.managerName}</Content>;
+      return <Content>{row.original.licenseNumber}</Content>;
     },
   },
   {
-    header: () => <Header>Address</Header>,
-    accessorKey: "address",
+    header: () => <Header>Province</Header>,
+    accessorKey: "province",
     cell: ({ row }) => {
-      return <Content>{row.original.address}</Content>;
+      return <Content>{row.original.province}</Content>;
+    },
+  },
+  {
+    header: () => <Header>Mailing Address</Header>,
+    accessorKey: "mailingAddress",
+    cell: ({ row }) => {
+      return <Content>{row.original.mailingAddress}</Content>;
     },
   },
   {

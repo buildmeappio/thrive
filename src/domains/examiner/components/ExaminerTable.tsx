@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { CaseData } from "../types/CaseData";
+import { ExaminerData } from "../types/ExaminerData";
 import {
   flexRender,
   getCoreRowModel,
@@ -22,11 +22,11 @@ import Pagination from "@/components/Pagination";
 import { cn } from "@/lib/utils";
 import SearchInput from "@/components/ui/SearchInput";
 
-interface CaseTableProps {
-  data: CaseData[];
+interface ExaminerTableProps {
+  data: ExaminerData[];
 }
 
-export default function CaseTable({ data }: CaseTableProps) {
+export default function ExaminerTable({ data }: ExaminerTableProps) {
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -34,18 +34,11 @@ export default function CaseTable({ data }: CaseTableProps) {
     if (!q) return data;
     return data.filter((d) =>
       [
-        d.number,
-        d.claimant,
-        d.organization,
-        d.caseType,
-        d.examFormat,
-        d.requestedSpecialty,
-        d.status,
-        d.preferredLocation,
-        d.urgencyLevel,
-        d.reason,
-        d.examinerId,
-        new Date(d.submittedAt).toLocaleString(),
+        d.name,
+        d.specialties,
+        d.licenseNumber,
+        d.province,
+        d.mailingAddress,
       ]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q))
@@ -69,7 +62,7 @@ export default function CaseTable({ data }: CaseTableProps) {
       <SearchInput
         value={query}
         onChange={setQuery}
-        placeholder="Search cases…"
+        placeholder="Search Examiners…"
         count={filtered.length}
         className="mb-4"
       />
@@ -120,7 +113,7 @@ export default function CaseTable({ data }: CaseTableProps) {
                 colSpan={columns.length}
                 className="h-24 text-center text-black font-poppins text-[16px] leading-none"
               >
-                No Cases Found
+                No Examiners Found
               </TableCell>
             </TableRow>
           )}

@@ -1,13 +1,13 @@
 "use client";
 
-import { OrganizationRow } from "./columns";
+import React, { useEffect, useMemo, useState } from "react";
+import { OrganizationData } from "../types/OrganizationData";
 import {
   flexRender,
   getCoreRowModel,
-  useReactTable,
   getPaginationRowModel,
+  useReactTable,
 } from "@tanstack/react-table";
-
 import {
   Table,
   TableBody,
@@ -17,53 +17,84 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import React from "react";
-import { columns } from "./columns";
-import { cn } from "@/lib/utils";
+import columns from "./columns";
 import Pagination from "@/components/Pagination";
+import { cn } from "@/lib/utils";
+import SearchInput from "@/components/ui/SearchInput";
 
 interface OrganizationTableProps {
-  data: OrganizationRow[];
+  data: OrganizationData[];
 }
 
-const OrganizationTable: React.FC<OrganizationTableProps> = ({ data }: OrganizationTableProps) => {
+export default function OrganizationTable({ data }: OrganizationTableProps) {
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return data;
+    return data.filter((d) =>
+      [
+        d.name,
+        d.address,
+        d.status,
+        d.managerName,
+        d.typeName,
+        d.website,
+      ]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(q))
+    );
+  }, [data, query]);
+
   const table = useReactTable({
-    data,
-    columns: columns,
+    data: filtered,
+    columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  // reset to first page when searching
+  useEffect(() => {
+    table.setPageIndex(0);
+  }, [query]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
-    <div className="overflow-hidden rounded-md outline-none">
+    <div className="overflow-hidden rounded-md o  utline-none">
+      <SearchInput
+        value={query}
+        onChange={setQuery}
+        placeholder="Search Organizations…"
+        count={filtered.length}
+        className="mb-4"
+      />
+
       <Table className="border-0">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead
-                    className={cn(
-                      header.index === 0 && "rounded-l-xl",
-                      header.index === headerGroup.headers.length - 1 &&
-                        "rounded-r-xl w-[60px]"
+              {headerGroup.headers.map((header) => (
+                <TableHead
+                  key={header.id}
+                  className={cn(
+                    header.index === 0 && "rounded-l-xl",
+                    header.index === headerGroup.headers.length - 1 &&
+                    "rounded-r-xl w-[60px]"
+                  )}
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
                     )}
-                    key={header.id}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                );
-              })}
+                </TableHead>
+              ))}
             </TableRow>
           ))}
         </TableHeader>
+
         <TableBody>
-          {table.getRowModel().rows?.length ? (
+          {table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
@@ -79,12 +110,16 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({ data }: Organizat
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center text-black font-poppins text-[16px] leading-none">
-                No Organizations Found
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center text-black font-poppins text-[16px] leading-none"
+              >
+                No Cases Found
               </TableCell>
             </TableRow>
           )}
         </TableBody>
+
         <TableFooter>
           <TableRow>
             <TableCell colSpan={columns.length} className="p-0">
@@ -95,6 +130,4 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({ data }: Organizat
       </Table>
     </div>
   );
-};
-
-export default OrganizationTable;
+}

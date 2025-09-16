@@ -1,5 +1,8 @@
 import { Organization, organizationHandlers } from "@/domains/organization";
-import { OrganizationRow } from "@/domains/organization/components/columns";
+import organizationActions from "@/domains/organization/actions";
+import OrganizationTable from "@/domains/organization/components/OrganizationTable";
+import { OrganizationData } from "@/domains/organization/types/OrganizationData";
+import { DashboardShell } from "@/layouts/dashboard";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -12,7 +15,7 @@ const Page = async () => {
   const orgs = await organizationHandlers.getOrganizations();
 
   // Map to table row shape
-  const data: OrganizationRow[] = orgs.map((org) => ({
+  const data: OrganizationData[] = orgs.map((org) => ({
     id: org.id,
     name: org.name,
     website: org.website,
@@ -22,9 +25,29 @@ const Page = async () => {
     managerName: org.manager?.[0]?.account?.user?.firstName
       ? `${org.manager[0].account.user.firstName} ${org.manager[0].account.user.lastName}`
       : "",
-  }));
+  } as OrganizationData));
 
-  return <Organization data={data} />;
+  return (
+    <DashboardShell
+      title={
+        <div className="flex flex-col items-start gap-2">
+          <h1 className="text-[36px] font-semibold text-black font-poppins">
+            New{" "}
+            <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
+              Organizations
+            </span>
+          </h1>
+          <p className="text-[#676767] font-poppins font-normal text-[18px] leading-none">
+            View all new organizations, manage requests and track statuses.
+          </p>
+        </div>
+      }
+    >
+      <div className="bg-white shadow-sm rounded-[30px] px-6 py-8">
+        <OrganizationTable data={data} />
+      </div>
+    </DashboardShell>
+  );
 };
 
 export default Page;
