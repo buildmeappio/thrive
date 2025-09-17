@@ -1,55 +1,67 @@
 /* eslint-disable no-console */
 import { PrismaClient } from '@prisma/client';
-import { RequestedSpecialty } from 'src/constants/RequestedSpecialty';
+import { ExamType } from 'src/constants/ExamType';
 
-interface RequestedSpecialtyData {
+interface ExamTypeData {
     name: string;
     description?: string;
 }
 
-class RequestedSpecialtySeeder {
-    private static instance: RequestedSpecialtySeeder | null = null;
+class ExamTypeSeeder {
+    private static instance: ExamTypeSeeder | null = null;
     private db: PrismaClient;
 
     private constructor(db: PrismaClient) {
         this.db = db;
     }
 
-    public static getInstance(db: PrismaClient): RequestedSpecialtySeeder {
-        if (!RequestedSpecialtySeeder.instance) {
-            RequestedSpecialtySeeder.instance = new RequestedSpecialtySeeder(db);
+    public static getInstance(db: PrismaClient): ExamTypeSeeder {
+        if (!ExamTypeSeeder.instance) {
+            ExamTypeSeeder.instance = new ExamTypeSeeder(db);
         }
-        return RequestedSpecialtySeeder.instance;
+        return ExamTypeSeeder.instance;
     }
 
     public async run() {
         console.log('🚀 Starting requested specialties seed process...');
 
-        const data: RequestedSpecialtyData[] = [
+        const data: ExamTypeData[] = [
             {
-                name: RequestedSpecialty.ORTHOPEDIC_SURGERY,
-                description: 'Specialty focused on musculoskeletal system disorders'
-            },
-            {
-                name: RequestedSpecialty.NEUROLOGY,
-                description: 'Specialty dealing with nervous system disorders'
-            },
-            {
-                name: RequestedSpecialty.PSYCHIATRY,
+                name: ExamType.PSYCHIATRY,
                 description: 'Medical specialty focused on mental health disorders'
             },
             {
-                name: RequestedSpecialty.PSYCHOLOGY,
-                description: 'Assessment and treatment of mental health and behavioral issues'
+                name: ExamType.PSYCHOLOGICAL,
+                description: 'Specialty dealing with psychological assessments and therapies'
             },
             {
-                name: RequestedSpecialty.PHYSICAL_MEDICINE_REHABILITATION,
-                description: 'Specialty focused on restoring function and mobility'
+                name: ExamType.NEUROLOGICAL,
+                description: 'Medical specialty focused on disorders of the nervous system'
             },
             {
-                name: RequestedSpecialty.PAIN_MANAGEMENT,
-                description: 'Specialized treatment of chronic and acute pain conditions'
-            }
+                name: ExamType.ORTHOPEDIC,
+                description: 'Medical specialty dealing with the musculoskeletal system'
+            },
+            {
+                name: ExamType.GENERAL_MEDICINE,
+                description: 'Comprehensive medical care for adults'
+            },
+            {
+                name: ExamType.PEDIATRIC_MEDICINE,
+                description: 'Medical specialty focused on the care of infants, children, and adolescents'
+            },
+            {
+                name: ExamType.GERIATRIC_MEDICINE,
+                description: 'Medical specialty focused on health care of elderly people'
+            },
+            {
+                name: ExamType.CARDIOLOGY,
+                description: 'Medical specialty dealing with disorders of the heart and blood vessels'
+            },
+            {
+                name: ExamType.OTHER,
+                description: 'Other medical specialties not specifically listed'
+            },
         ];
 
         await this.createRequestedSpecialties(data);
@@ -57,7 +69,7 @@ class RequestedSpecialtySeeder {
         console.log('✅ Requested specialties seed process completed.');
     }
 
-    private async createRequestedSpecialties(data: RequestedSpecialtyData[]): Promise<void> {
+    private async createRequestedSpecialties(data: ExamTypeData[]): Promise<void> {
         if (!data || !Array.isArray(data) || data.length === 0) {
             throw new Error('Requested specialty data must be a non-empty array');
         }
@@ -73,22 +85,22 @@ class RequestedSpecialtySeeder {
                 throw new Error('Requested specialty name is required');
             }
 
-            let RequestedSpecialty = await this.db.requestedSpecialty.findFirst({
+            let ExamType = await this.db.examType.findFirst({
                 where: { name },
             });
 
-            if (RequestedSpecialty) {
+            if (ExamType) {
                 console.log(
-                    `ℹ️ Requested specialty already exists: "${RequestedSpecialty.name}" (ID: ${RequestedSpecialty.id})`,
+                    `ℹ️ Requested specialty already exists: "${ExamType.name}" (ID: ${ExamType.id})`,
                 );
                 continue;
             }
 
-            RequestedSpecialty = await this.db.requestedSpecialty.create({
+            ExamType = await this.db.examType.create({
                 data: { name, description },
             });
 
-            console.log(`✅ Created new requested specialty: "${RequestedSpecialty.name}" (ID: ${RequestedSpecialty.id})`);
+            console.log(`✅ Created new requested specialty: "${ExamType.name}" (ID: ${ExamType.id})`);
         }
     }
 
@@ -99,9 +111,9 @@ class RequestedSpecialtySeeder {
     public async cleanupOldRequestedSpecialties() {
         console.log('🧹 Starting cleanup of old requested specialties...');
         
-        const currentSpecialtyNames = Object.values(RequestedSpecialty);
+        const currentSpecialtyNames = Object.values(ExamType);
 
-        const oldSpecialties = await this.db.requestedSpecialty.findMany({
+        const oldSpecialties = await this.db.examType.findMany({
             where: {
                 name: {
                     notIn: currentSpecialtyNames,
@@ -123,4 +135,4 @@ class RequestedSpecialtySeeder {
     }
 }
 
-export default RequestedSpecialtySeeder;
+export default ExamTypeSeeder;
