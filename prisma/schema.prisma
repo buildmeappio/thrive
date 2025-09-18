@@ -156,9 +156,9 @@ model Address {
   id                            String                          @id @unique @default(uuid()) @db.Uuid
   address                       String                          @map("address") @db.Text
   street                        String                          @map("street") @db.VarChar(255)
-  province                      String                          @map("province") @db.VarChar(255)
+  province                      String?                          @map("province") @db.VarChar(255)
   city                          String                          @map("city") @db.VarChar(255)
-  postalCode                    String                          @map("postal_code") @db.VarChar(255)
+  postalCode                    String?                          @map("postal_code") @db.VarChar(255)
   suite                         String                          @map("suite") @db.VarChar(255)
   createdAt                     DateTime                        @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt                     DateTime                        @updatedAt @map("updated_at") @db.Timestamptz()
@@ -213,15 +213,15 @@ model LegalRepresentative {
 
 model Insurance {
   id                        String    @id @unique @default(uuid()) @db.Uuid
-  emailAddress              String    @unique @map("email_address") @db.VarChar(255)
+  emailAddress              String    @map("email_address") @db.VarChar(255)
   companyName               String    @map("company_name") @db.VarChar(255)
   contactPersonName         String    @map("contact_person") @db.VarChar(255)
   policyNumber              String    @map("policy_number") @db.VarChar(255)
   claimNumber               String    @map("claim_number") @db.VarChar(255)
   dateOfLoss                DateTime  @map("date_of_loss") @db.Timestamptz()
   policyHolderIsClaimant    Boolean   @default(false) @map("policy_holder_is_claimant")
-  policyHolderFirstName     String?   @map("policy_holder_first_name") @db.VarChar(255)
-  policyHolderLastName      String?   @map("policy_holder_last_name") @db.VarChar(255)
+  policyHolderFirstName     String   @map("policy_holder_first_name") @db.VarChar(255)
+  policyHolderLastName      String   @map("policy_holder_last_name") @db.VarChar(255)
   phoneNumber               String    @map("phone_number") @db.VarChar(255)
   faxNumber                 String    @map("fax_number") @db.VarChar(255)
   addressId                 String    @map("address_id") @db.Uuid
@@ -271,8 +271,8 @@ model Examination {
   caseNumber           String       @unique @map("case_number") @db.VarChar(255)
   referralId           String       @map("referral_id") @db.Uuid
   examinationTypeId    String       @map("examination_type_id") @db.Uuid
-  dueDate              DateTime?    @map("due_date") @db.Timestamptz()
-  notes                String?      @map("notes") @db.Text
+  dueDate              DateTime    @map("due_date") @db.Timestamptz()
+  notes                String      @map("notes") @db.Text
   urgencyLevel         UrgencyLevel @map("urgency_level")
   reason               String       @map("reason") @db.Text
   examinerId           String?      @map("examiner_id") @db.Uuid
