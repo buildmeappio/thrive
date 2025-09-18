@@ -23,19 +23,9 @@ export const getDepartments = async () => {
   return departments;
 };
 
-export const getRequestedSpecialties = async () => {
-  const specialties = await authHandlers.getRequestedSpecialties();
-  return specialties;
-};
-
 export const getCaseTypes = async () => {
   const caseTypes = await authHandlers.getCaseTypes();
   return caseTypes;
-};
-
-export const getExamFormats = async () => {
-  const examFormats = await authHandlers.getExamFormats();
-  return examFormats;
 };
 
 export const registerOrganization = async (data: FormData) => {

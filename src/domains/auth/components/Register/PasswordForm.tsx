@@ -1,5 +1,5 @@
 // Step 5
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui';
@@ -11,7 +11,6 @@ import { useRegistrationStore } from '@/store/useRegistration';
 import { signIn } from 'next-auth/react';
 import { PasswordInitialValues, PasswordSchema } from '../../schemas/register';
 import ErrorMessages from '@/constants/ErrorMessages';
-import SuccessMessages from '@/constants/SuccessMessages';
 import { toast } from 'sonner';
 import { registerOrganization } from '../../actions';
 import useRouter from '@/hooks/useRouter';
@@ -25,9 +24,35 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const router = useRouter();
 
   const { setData, data } = useRegistrationStore();
+
+  useEffect(() => {
+    if (registrationSuccess) {
+      const attemptLogin = async () => {
+        try {
+          const result = await signIn('credentials', {
+            email: data.step2?.officialEmailAddress,
+            password: data.step5?.password,
+            redirect: false,
+          });
+
+          if (result?.ok) {
+            router.push(URLS.DASHBOARD);
+          } else {
+            console.error('Login failed after registration');
+            toast.error(ErrorMessages.LOGIN_FAILED);
+          }
+        } catch (error) {
+          console.error('Login error:', error);
+        }
+      };
+
+      attemptLogin();
+    }
+  }, [registrationSuccess, router]);
 
   const handleSubmit = async (
     values: typeof PasswordInitialValues,
@@ -48,26 +73,10 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
         return;
       }
 
-      await new Promise<void>(resolve => {
-        setTimeout(() => {
-          resolve();
-        }, 1000);
-      });
-
-      const result = await signIn('credentials', {
-        email: updatedData.step2?.officialEmailAddress,
-        password: values.password,
-        redirect: false,
-      });
-
-      if (result?.ok) {
-        router.push(URLS.DASHBOARD);
-        toast.success(SuccessMessages.REGISTRATION_SUCCESS);
-      } else {
-        throw new Error(ErrorMessages.LOGIN_FAILED);
-      }
+      setRegistrationSuccess(true);
     } catch (error) {
-      console.log(error);
+      console.error('Registration error:', error);
+      toast.error(ErrorMessages.REGISTRATION_FAILED);
       if (onNext) onNext();
     }
   };

@@ -1,4 +1,5 @@
-import { getCaseTypes, getExamFormats, getRequestedSpecialties } from '@/domains/auth/actions';
+import { getCaseTypes } from '@/domains/auth/actions';
+import { getExamTypes } from '@/domains/ime-referral/actions';
 import IMEReferral from '@/domains/ime-referral/components';
 import { type Metadata } from 'next';
 
@@ -10,19 +11,9 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 const IMEReferralPage = async () => {
-  const [caseTypes, examFormats, requestedSpecialties] = await Promise.all([
-    getCaseTypes(),
-    getExamFormats(),
-    getRequestedSpecialties(),
-  ]);
+  const [caseTypes, examTypes] = await Promise.all([getCaseTypes(), getExamTypes()]);
 
-  return (
-    <IMEReferral
-      caseTypes={caseTypes.result}
-      examFormats={examFormats.result}
-      requestedSpecialties={requestedSpecialties.result}
-    />
-  );
+  return <IMEReferral caseTypes={caseTypes.result} examTypes={examTypes.result} />;
 };
 
 export default IMEReferralPage;

@@ -104,7 +104,6 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
         agreeToTermsAndPrivacy: agreeTermsConditions,
         dataSharingConsent: consentSecureDataHandling,
         isAuthorized: authorizedToCreateAccount,
-        // status: 'PENDING',
       },
     });
 
@@ -156,7 +155,13 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
       },
     });
 
-    return { organizationId: organization.id, userId: user.id, accountId: account.id };
+    return {
+      organizationId: organization.id,
+      userId: user.id,
+      accountId: account.id,
+      email: user.email,
+      hashedPassword: hashedPassword,
+    };
   });
 };
 
@@ -234,37 +239,6 @@ const getCaseTypes = async () => {
   }
 };
 
-const getExamFormats = async () => {
-  try {
-    const examFormats = await prisma.examFormat.findMany({
-      where: {
-        deletedAt: null,
-      },
-    });
-    if (!examFormats) throw HttpError.notFound('Exam formats not found');
-    return examFormats;
-  } catch (error) {
-    throw HttpError.handleServiceError(error, 'Failed to get exam formats');
-  }
-};
-
-const getRequestedSpecialties = async () => {
-  try {
-    const requestedSpecialties = await prisma.requestedSpecialty.findMany({
-      where: {
-        deletedAt: null,
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    });
-    if (!requestedSpecialties) throw HttpError.notFound('Requested specialties not found');
-    return requestedSpecialties;
-  } catch (error) {
-    throw HttpError.handleServiceError(error, 'Failed to get requested specialties');
-  }
-};
-
 const sendOtp = async (email: string) => {
   const otp = Math.floor(1000 + Math.random() * 9000).toString();
   const token = signOtpToken({ email, otp }, '5m');
@@ -334,8 +308,6 @@ const authService = {
   getDepartments,
   getOrganization,
   getCaseTypes,
-  getExamFormats,
-  getRequestedSpecialties,
   sendOtp,
   verifyOtp,
   checkUserByEmail,

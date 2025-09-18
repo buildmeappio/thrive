@@ -12,7 +12,15 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   color = '#000093',
 }) => {
   const progressPercent = (currentStep / (totalSteps - 1)) * 100;
-  const steps = ['', 'Claimant Details', 'Case Info', 'Submit'];
+  const steps = [
+    '',
+    'Claimant Details',
+    'Legal Details',
+    'Exam Types',
+    'Case Info',
+    'Consent',
+    'Submit',
+  ];
 
   return (
     <div className="mx-auto mb-10 w-full">
@@ -24,15 +32,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
             width: `${progressPercent}%`,
             backgroundColor: color,
           }}
-        >
-          {/* Small gray circle at the end of progress */}
-          <div
-            className="absolute top-0 right-0 h-2 w-2 rounded-full bg-gray-400"
-            style={{
-              transform: 'translateX(50%)',
-            }}
-          />
-        </div>
+        ></div>
 
         {/* Step circles positioned equally across the progress bar */}
         {steps.map((step, index) => {

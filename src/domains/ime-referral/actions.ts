@@ -6,14 +6,14 @@ import { getCurrentUser } from '../auth/server/session';
 import { redirect } from 'next/navigation';
 import { URLS } from '@/constants/routes';
 
-export const createIMEReferral = async (data: IMEFormData, isDraft: boolean) => {
+export const createIMEReferral = async (data: IMEFormData) => {
   const user = await getCurrentUser();
 
   if (!user) {
     redirect(URLS.LOGIN);
   }
 
-  const result = await imeReferralHandlers.createIMEReferral(data, isDraft);
+  const result = await imeReferralHandlers.createIMEReferral(data);
   return result;
 };
 
@@ -36,5 +36,16 @@ export const getReferralDetails = async (referralId: string) => {
   }
 
   const result = await imeReferralHandlers.getReferralDetails(referralId);
+  return result;
+};
+
+export const getExamTypes = async () => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+
+  const result = await imeReferralHandlers.getExamTypes();
   return result;
 };

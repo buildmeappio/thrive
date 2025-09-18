@@ -40,6 +40,10 @@ export interface ReferralDetailsData {
           email: string;
           phone: string | null;
         };
+        role: {
+          id: string;
+          name: string;
+        };
       };
       department: {
         id: string;
@@ -108,29 +112,19 @@ export interface ReferralDetailsData {
     }>;
   };
 
-  cases: Array<{
+  examinations: Array<{
     id: string;
     caseNumber: string;
-    preferredLocation: string | null;
+    dueDate: Date | null;
+    notes: string | null;
     urgencyLevel: 'HIGH' | 'MEDIUM' | 'LOW';
     reason: string;
     assignedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
+    deletedAt: Date | null;
 
-    caseType: {
-      id: string;
-      name: string;
-      description: string | null;
-    };
-
-    examFormat: {
-      id: string;
-      name: string;
-      description: string | null;
-    };
-
-    requestedSpecialty: {
+    examinationType: {
       id: string;
       name: string;
       description: string | null;
@@ -164,19 +158,13 @@ export interface ReferralDetailsData {
         firstName: string;
         lastName: string;
         email: string;
+        phone: string | null;
       };
-    } | null;
-
-    documents: Array<{
-      id: string;
-      document: {
+      role: {
         id: string;
         name: string;
-        type: string;
-        size: number;
-        createdAt: Date;
       };
-    }>;
+    } | null;
 
     claimantAvailability: Array<{
       id: string;
@@ -192,5 +180,61 @@ export interface ReferralDetailsData {
         timeBand: 'MORNING' | 'AFTERNOON' | 'EVENING' | 'EITHER';
       }>;
     }>;
+  }>;
+
+  insurance: {
+    id: string;
+    companyName: string;
+    contactPersonName: string;
+    policyNumber: string;
+    claimNumber: string;
+    dateOfLoss: Date;
+    address: {
+      id: string;
+      address: string;
+      street: string;
+      province: string;
+      city: string;
+      postalCode: string;
+    };
+  } | null;
+
+  legalRepresentative: {
+    id: string;
+    companyName: string;
+    contactPersonName: string;
+    phoneNumber: string;
+    faxNumber: string;
+    address: {
+      id: string;
+      address: string;
+      street: string;
+      province: string;
+      city: string;
+      postalCode: string;
+    };
+  } | null;
+
+  caseType: {
+    id: string;
+    name: string;
+    description: string | null;
+  } | null;
+
+  examType: {
+    id: string;
+    name: string;
+    description: string | null;
+  } | null;
+
+  documents: Array<{
+    id: string;
+    document: {
+      id: string;
+      name: string;
+      type: string;
+      size: number;
+      createdAt: Date;
+    };
   }>;
 }

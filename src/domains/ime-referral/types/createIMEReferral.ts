@@ -14,7 +14,6 @@ export type CreateIMEReferralData = {
   reason: string;
   caseType: string;
   urgencyLevel: string;
-  examFormat: string;
   requestedSpecialty: string;
   preferredLocation: string;
   files: File[];

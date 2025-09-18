@@ -36,26 +36,29 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
     formState: { errors, isSubmitting },
   } = useForm<Consent>({
     resolver: zodResolver(ConsentSchema),
-    defaultValues: data.step3 || ConsentInitialValues,
+    defaultValues: data.step6 || ConsentInitialValues,
   });
 
-  // Handle final submission (with validation)
   const onSubmit: SubmitHandler<Consent> = async values => {
     try {
-      setData('step3', values);
+      setData('step6', values);
 
       const completeData = {
         ...data,
-        step3: values,
+        step6: values,
       };
 
-      // Final submission requires all steps
-      if (!completeData.step1 || !completeData.step2 || !completeData.step3) {
+      if (
+        !completeData.step1 ||
+        !completeData.step2 ||
+        !completeData.step3 ||
+        !completeData.step4
+      ) {
         toast.error('Please complete all steps before submitting');
         return;
       }
 
-      const result = await createIMEReferral(completeData, false);
+      const result = await createIMEReferral(completeData);
       if (result) {
         toast.success('IME Referral submitted successfully');
         if (onNext) onNext();
@@ -75,20 +78,25 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
         consentForSubmission: control._getWatch('consentForSubmission') || false,
       };
 
-      setData('step3', currentValues);
+      setData('step6', currentValues);
 
       const completeData = {
         ...data,
-        step3: currentValues,
+        step6: currentValues,
       };
 
       // For drafts, we need at least step1 to create a claimant
-      if (!completeData.step1) {
+      if (
+        !completeData.step1 ||
+        !completeData.step2 ||
+        !completeData.step3 ||
+        !completeData.step4
+      ) {
         toast.error('Please complete claimant details before saving draft');
         return;
       }
 
-      const result = await createIMEReferral(completeData, true);
+      const result = await createIMEReferral(completeData);
       if (result) {
         toast.success('Draft saved successfully');
       }

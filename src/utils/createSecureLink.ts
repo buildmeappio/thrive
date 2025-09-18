@@ -2,22 +2,22 @@ import { randomUUID } from 'crypto';
 import prisma from '@/lib/prisma';
 import emailService from '../services/emailService';
 
-const createSecureLink = async (caseId: string) => {
+const createSecureLink = async (examinationId: string) => {
   const token = randomUUID();
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24 hours
 
   // 1. Create secure link record
-  const secureLink = await prisma.caseSecureLink.create({
+  const secureLink = await prisma.examinationSecureLink.create({
     data: {
-      caseId,
+      examinationId,
       token,
       expiresAt,
     },
   });
 
   // 2. Fetch claimant email through referral
-  const caseData = await prisma.case.findUnique({
-    where: { caseNumber: caseId },
+  const examinationData = await prisma.examination.findUnique({
+    where: { caseNumber: examinationId },
     include: {
       referral: {
         include: {
@@ -27,10 +27,10 @@ const createSecureLink = async (caseId: string) => {
     },
   });
 
-  const claimantEmail = caseData?.referral?.claimant?.emailAddress;
+  const claimantEmail = examinationData?.referral?.claimant?.emailAddress;
 
   if (!claimantEmail) {
-    throw new Error(`No claimant email found for case ${caseId}`);
+    throw new Error(`No claimant email found for examination ${examinationId}`);
   }
 
   // 3. Send email with secure link
