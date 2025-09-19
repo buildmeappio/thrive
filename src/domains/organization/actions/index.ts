@@ -6,12 +6,12 @@ import requestMoreInfo from "./requesMoreInfo";
 import getOrganizationTypes from "./getOrganizationTypes";
 
 const organizationActions = {
-    getOrganizations,
-    getOrganizationDetails,
-    approveOrganization,
-    rejectOrganization,
-    requestMoreInfo,
-    getOrganizationTypes,
-}
+  getOrganizations,
+  getOrganizationDetails,
+  approveOrganization,
+  rejectOrganization,
+  requestMoreInfo,
+  getOrganizationTypes,
+};
 
 export default organizationActions;

@@ -22,8 +22,7 @@ const SaveCaseDetails = ({ caseId, status, assignTo, statusOptions }: SaveCaseDe
     },
   });
 
-  const onSubmit = async (data) => {
-    console.log(status, currentStatus);
+  const onSubmit = async () => {
     try {
       // Check if status changed from "Pending" to "Ready to Appointment"
       if (status === CaseStatus.PENDING && currentStatus === CaseStatus.READY_TO_APPOINTMENT) {
