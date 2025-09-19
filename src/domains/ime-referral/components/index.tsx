@@ -5,12 +5,12 @@ import ClaimantDetails from './ClaimantDetails';
 import ConsentInfo from './ConsentInfo';
 import ReferralSubmitted from './ReferralSubmitted';
 import ExaminationDetails from './ExaminationDetails';
-import type { getCaseTypes } from '@/domains/auth/actions';
 import LegalAndInsuranceDetailsForm from './LegalAndInsuranceDetails';
 import ExamType from './ExamType';
 import { type getExamTypes } from '../actions';
 import { convertToTypeOptions } from '@/utils/convertToTypeOptions';
 import DocumentUpload from './DocumentUpload';
+import { type getExaminationTypes } from '@/domains/auth/actions';
 
 interface StepConfig {
   component: React.ComponentType<StepProps>;
@@ -24,11 +24,11 @@ interface StepProps {
 }
 
 interface IMEReferralProps {
-  caseTypes: Awaited<ReturnType<typeof getCaseTypes>>['result'];
+  examinationTypes: Awaited<ReturnType<typeof getExaminationTypes>>['result'];
   examTypes: Awaited<ReturnType<typeof getExamTypes>>['result'];
 }
 
-const IMEReferral: React.FC<IMEReferralProps> = ({ caseTypes, examTypes }) => {
+const IMEReferral: React.FC<IMEReferralProps> = ({ examinationTypes, examTypes }) => {
   const [currentStep, setCurrentStep] = useState(1);
 
   const STEPS: StepConfig[] = useMemo(
@@ -42,14 +42,17 @@ const IMEReferral: React.FC<IMEReferralProps> = ({ caseTypes, examTypes }) => {
       },
       {
         component: (props: StepProps) => (
-          <ExaminationDetails caseTypes={convertToTypeOptions(caseTypes)} {...props} />
+          <ExaminationDetails
+            examinationTypes={convertToTypeOptions(examinationTypes)}
+            {...props}
+          />
         ),
       },
       { component: DocumentUpload },
       { component: ConsentInfo },
       { component: ReferralSubmitted },
     ],
-    [examTypes, caseTypes]
+    [examTypes, examinationTypes]
   );
 
   const goToNext = (): void => {

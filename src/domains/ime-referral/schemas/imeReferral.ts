@@ -236,7 +236,7 @@ export const ExamTypeInitialValues: ExamType = {
 
 const BaseExaminationSchema = z.object({
   reasonForReferral: z.string().min(1, ErrorMessages.REASON_FOR_REFERRAL_REQUIRED),
-  caseType: z.string().min(1, ErrorMessages.CASE_TYPE_REQUIRED),
+  examinationType: z.string().min(1, ErrorMessages.CASE_TYPE_REQUIRED),
 });
 
 export const createExaminationSchema = (examTypes: { id: string; label: string }[] = []) => {
@@ -265,12 +265,12 @@ export type Examination = z.infer<typeof ExaminationSchema> & Record<string, any
 // Initial values
 export const ExaminationInitialValues = {
   reasonForReferral: '',
-  caseType: '',
+  examinationType: '',
 };
 
 export type ExaminationBase = {
   reasonForReferral: string;
-  caseType: string;
+  examinationType: string;
 };
 
 export type DynamicExaminationFields = {

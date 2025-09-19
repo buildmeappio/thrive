@@ -23,9 +23,9 @@ export const getDepartments = async () => {
   return departments;
 };
 
-export const getCaseTypes = async () => {
-  const caseTypes = await authHandlers.getCaseTypes();
-  return caseTypes;
+export const getExaminationTypes = async () => {
+  const examinationTypes = await authHandlers.getExaminationTypes();
+  return examinationTypes;
 };
 
 export const registerOrganization = async (data: FormData) => {

@@ -21,7 +21,7 @@ import { UrgencyLevels } from '@/config/urgencyLevel.config';
 import { type DropdownOption } from '../types/CaseInfo';
 
 type ExaminationProps = IMEReferralProps & {
-  caseTypes: DropdownOption[];
+  examinationTypes: DropdownOption[];
 };
 
 const ExaminationDetails: React.FC<ExaminationProps> = ({
@@ -29,7 +29,7 @@ const ExaminationDetails: React.FC<ExaminationProps> = ({
   onPrevious,
   currentStep,
   totalSteps,
-  caseTypes: caseTypeOptions,
+  examinationTypes: examinationTypeOptions,
 }) => {
   const { data, setData } = useIMEReferralStore();
 
@@ -61,8 +61,8 @@ const ExaminationDetails: React.FC<ExaminationProps> = ({
     if (data.step4?.reasonForReferral) {
       baseValues.reasonForReferral = data.step4.reasonForReferral;
     }
-    if (data.step4?.caseType) {
-      baseValues.caseType = data.step4.caseType;
+    if (data.step4?.examinationType) {
+      baseValues.examinationType = data.step4.examinationType;
     }
 
     return baseValues;
@@ -103,22 +103,24 @@ const ExaminationDetails: React.FC<ExaminationProps> = ({
               {/* Case Type and Reason for Referral */}
               <div className="mb-8 grid w-full max-w-full grid-cols-1 gap-4">
                 <div className="w-1/3 space-y-2">
-                  <Label htmlFor="caseType">
+                  <Label htmlFor="examinationType">
                     Case Type<span className="text-red-500">*</span>
                   </Label>
                   <Dropdown
-                    id="caseType"
+                    id="examinationType"
                     label=""
-                    value={watchedValues.caseType || ''}
-                    onChange={(val: string) => setValue('caseType', val)}
-                    options={caseTypeOptions}
-                    placeholder="Select Case Type"
+                    value={watchedValues.examinationType || ''}
+                    onChange={(val: string) => setValue('examinationType', val)}
+                    options={examinationTypeOptions}
+                    placeholder="Select Examination Type"
                     className="w-full"
                     icon={false}
                   />
-                  {errors.caseType && (
+                  {errors.examinationType && (
                     <p className="text-sm text-red-500">
-                      {typeof errors.caseType?.message === 'string' ? errors.caseType.message : ''}
+                      {typeof errors.examinationType?.message === 'string'
+                        ? errors.examinationType.message
+                        : ''}
                     </p>
                   )}
                 </div>

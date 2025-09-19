@@ -131,7 +131,6 @@ const createIMEReferralWithClaimant = async (data: IMEFormData) => {
           organizationId: organizationManager?.organizationId || '',
           insuranceId: insurance?.id || '',
           legalRepresentativeId: legalRepresentative?.id,
-          caseTypeId: data.step4?.caseType || '',
           examTypeId: data.step3?.examTypes?.[0]?.id || '',
           reason: data.step4?.reasonForReferral || '',
           consentForSubmission: data.step6?.consentForSubmission ?? false,
@@ -349,68 +348,6 @@ const getReferralDetails = async (referralId: string) => {
         claimant: {
           include: {
             address: true,
-            claimantAvailability: {
-              include: {
-                slots: true,
-                services: {
-                  include: {
-                    interpreter: {
-                      include: {
-                        language: true,
-                      },
-                    },
-                    transport: {
-                      include: {
-                        pickupAddress: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        examinations: {
-          include: {
-            examinationType: true,
-            status: true,
-            examiner: {
-              include: {
-                user: true,
-                role: true,
-              },
-            },
-            assignTo: {
-              include: {
-                user: true,
-                role: true,
-              },
-            },
-            claimantAvailability: {
-              include: {
-                claimant: true,
-                slots: true,
-                services: {
-                  include: {
-                    interpreter: {
-                      include: {
-                        language: true,
-                      },
-                    },
-                    transport: {
-                      include: {
-                        pickupAddress: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        insurance: {
-          include: {
-            address: true,
           },
         },
         legalRepresentative: {
@@ -418,14 +355,23 @@ const getReferralDetails = async (referralId: string) => {
             address: true,
           },
         },
-        caseType: true,
-        examType: true,
+        insurance: {
+          include: {
+            address: true,
+          },
+        },
         documents: {
-          // Corrected relation name from iMEReferralDocuments to documents
           include: {
             document: true,
           },
         },
+        examinations: {
+          include: {
+            examinationType: true,
+            status: true,
+          },
+        },
+        examType: true,
       },
     });
 

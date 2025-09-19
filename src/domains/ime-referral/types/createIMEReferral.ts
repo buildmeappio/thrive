@@ -12,7 +12,6 @@ export type CreateIMEReferralData = {
   postalCode?: string;
   province?: string;
   reason: string;
-  caseType: string;
   urgencyLevel: string;
   requestedSpecialty: string;
   preferredLocation: string;

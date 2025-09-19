@@ -225,17 +225,17 @@ const getOrganization = async () => {
   }
 };
 
-const getCaseTypes = async () => {
+const getExaminationTypes = async () => {
   try {
-    const caseTypes = await prisma.caseType.findMany({
+    const examinationTypes = await prisma.examinationType.findMany({
       where: {
         deletedAt: null,
       },
     });
-    if (!caseTypes) throw HttpError.notFound('Case types not found');
-    return caseTypes;
+    if (!examinationTypes) throw HttpError.notFound('Examination types not found');
+    return examinationTypes;
   } catch (error) {
-    throw HttpError.handleServiceError(error, 'Failed to get case types');
+    throw HttpError.handleServiceError(error, 'Failed to get examination types');
   }
 };
 
@@ -307,7 +307,7 @@ const authService = {
   getOrganizationTypes,
   getDepartments,
   getOrganization,
-  getCaseTypes,
+  getExaminationTypes,
   sendOtp,
   verifyOtp,
   checkUserByEmail,
