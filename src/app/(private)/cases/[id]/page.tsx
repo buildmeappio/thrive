@@ -54,12 +54,12 @@ const Page: React.FC<PageProps> = async ({ params }) => {
             <p className="font-poppins text-[15px] leading-none tracking-0 font-normal">
               {formatDate(
                 caseDetails.updatedAt.toISOString() ||
-                  caseDetails.createdAt.toISOString()
+                caseDetails.createdAt.toISOString()
               )}{" "}
               -{" "}
               {convertTo12HourFormat(
                 caseDetails.updatedAt.toISOString() ||
-                  caseDetails.createdAt.toISOString()
+                caseDetails.createdAt.toISOString()
               )}
             </p>
           </div>
@@ -89,11 +89,6 @@ const Page: React.FC<PageProps> = async ({ params }) => {
                 <FieldRow
                   label="Last name"
                   value={caseDetails.claimant.lastName}
-                  type="text"
-                />
-                <FieldRow
-                  label="Requested Specialty"
-                  value={caseDetails.requestedSpecialty.name}
                   type="text"
                 />
                 <FieldRow
@@ -146,22 +141,6 @@ const Page: React.FC<PageProps> = async ({ params }) => {
                   type="text"
                 />
                 <FieldRow
-                  label="Requested Specialty"
-                  value={caseDetails.requestedSpecialty.name}
-                  type="text"
-                />
-                <FieldRow
-                  label="Exam Format"
-                  value={caseDetails.examFormat.name}
-                  type="text"
-                />
-
-                <FieldRow
-                  label="Preferred Location"
-                  value={caseDetails.preferredLocation}
-                  type="text"
-                />
-                <FieldRow
                   label="Urgency Level"
                   value={
                     caseDetails.urgencyLevel.charAt(0).toUpperCase() +
@@ -173,15 +152,30 @@ const Page: React.FC<PageProps> = async ({ params }) => {
             </div>
             <div className="flex flex-col gap-6 w-full">
               <Section title="Submitted Documents" isEditable={true}>
-                {caseDetails.documents.map((document) => (
+                {caseDetails.referral.documents.map((document) => (
                   <FieldRow
-                    label={document.documentName}
+                    label={document.name}
                     key={document.id}
-                    value={document.documentName}
+                    value={document.name}
                     type="document"
                   />
                 ))}
               </Section>
+              <Section title="Internal Notes" isEditable={true}>
+                <div className="relative">
+                  <textarea
+                    className="w-full min-h-[180px] rounded-2xl bg-[#F7F7F7] border border-[#E6E6E6] px-4 py-3 text-[14px] font-poppins placeholder:text-[#A1A1A1] outline-none focus:outline-none focus:ring-0 focus:ring-transparent focus:border-[#E6E6E6]"
+                    placeholder="Type here"
+                    defaultValue={caseDetails.notes ?? ""}
+                    readOnly
+                  />
+                  <span className="absolute bottom-3 right-4 text-xs text-[#A1A1A1]">
+                    {(caseDetails.notes?.length ?? 0)}/200
+                  </span>
+                </div>
+              </Section>
+
+
             </div>
           </div>
         </div>
@@ -198,3 +192,4 @@ const Page: React.FC<PageProps> = async ({ params }) => {
 };
 
 export default Page;
+

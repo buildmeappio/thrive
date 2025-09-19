@@ -1,3 +1,5 @@
+import { OrganizationType } from "@prisma/client";
+
 export class OrganizationDto {
   static toOrganization(data: any) {
     return {
@@ -12,5 +14,12 @@ export class OrganizationDto {
       updatedAt: data.updatedAt,
       // Add other fields as needed
     };
+  }
+
+  static toOrganizationTypes(data: OrganizationType){
+    return {
+      id: data.id,
+      name: data.name,
+    }
   }
 }

@@ -8,6 +8,10 @@ import RequestInfoModal from "@/components/modal/RequestInfoModal";
 import { DashboardShell } from "@/layouts/dashboard";
 import getOrganizationById from "../server/handlers/getOrganizationById";
 import { cn } from "@/lib/utils";
+import RejectModal from "@/components/modal/RejectModal";
+
+import { useRouter } from "next/navigation";
+import organizationActions from "../actions";
 
 const mapStatus = { PENDING: "pending", ACCEPTED: "approved", REJECTED: "rejected" } as const;
 
@@ -16,7 +20,9 @@ type OrganizationDetailProps = {
 };
 
 const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
+  const router = useRouter();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
   const [status, setStatus] = useState(mapStatus[organization.status as keyof typeof mapStatus]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,20 +32,42 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ") || "-";
 
-  const handleRequestSubmit = async (_text: string) => {
-    setIsRequestOpen(false);
+  const handleRequestSubmit = async (text: string) => {
+    try {
+      setIsLoading(true);
+      await organizationActions.requestMoreInfo(organization.id, text);
+      setIsRequestOpen(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleApproveExaminer = async () => {
-    setIsLoading(true);
-    setIsLoading(false);
-    setStatus("approved");
+    try {
+      setIsLoading(true);
+      await organizationActions.approveOrganization(organization.id);
+      setStatus("approved");
+      router.refresh();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleRejectExaminer = async () => {
-    setIsLoading(true);
-    setIsLoading(false);
-    setStatus("rejected");
+  // open modal only; real submit happens in handleRejectSubmit
+  const handleRejectExaminer = () => {
+    setIsRejectOpen(true);
+  };
+
+  const handleRejectSubmit = async (reason: string) => {
+    try {
+      setIsLoading(true);
+      await organizationActions.rejectOrganization(organization.id, reason);
+      setIsRejectOpen(false);
+      setStatus("rejected");
+      router.refresh();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isTerminal = status === "approved" || status === "rejected";
@@ -168,6 +196,15 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
           onSubmit={handleRequestSubmit}
           title="Request More Info"
           placeholder="Type here"
+          maxLength={200}
+        />
+
+        <RejectModal
+          open={isRejectOpen}
+          onClose={() => setIsRejectOpen(false)}
+          onSubmit={handleRejectSubmit}
+          title="Rejection Reason"
+          placeholder="Type Here"
           maxLength={200}
         />
       </div>

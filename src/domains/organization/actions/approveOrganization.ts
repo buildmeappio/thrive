@@ -1,4 +1,4 @@
-// domains/organization/actions/requestMoreInfo.ts
+// domains/organization/actions/approveOrganization.ts
 "use server";
 
 import { redirect } from "next/navigation";
@@ -10,7 +10,7 @@ type OrganizationView = {
   id: string;
   name: string;
   manager: Array<{
-    account?: { user?: { email?: string | null } | null } | null;
+    account?: { user?: { email?: string | null; firstName?: string | null; lastName?: string | null } | null } | null;
   }>;
 };
 
@@ -18,26 +18,29 @@ const BRAND = {
   logo: process.env.NEXT_PUBLIC_EMAIL_LOGO_URL || "https://localhost:3000/logo.png",
   primary: "#1a237e",
   supportEmail: "support@thrivenetwork.ca",
+  appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://thrivenetwork.ca",
 };
 
-const requestMoreInfo = async (id: string, message: string) => {
+const approveOrganization = async (id: string) => {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  // No DB change. Only fetch to get recipients.
-  const org = (await handlers.getOrganizationById(id)) as OrganizationView;
+  const organization = (await handlers.approveOrganization(id, user.accountId)) as OrganizationView;
 
-  const recipients = extractManagerEmails(org);
-  if (recipients.length > 0) {
-    await sendMail({
-      to: recipients,
-      subject: "More information required for your organization application",
-      html: requestMoreInfoEmailHtml(org.name, message),
-    });
-  }
-
-  return org;
+//   await sendApprovalEmailToOrganization(organization);
+  return organization;
 };
+
+async function sendApprovalEmailToOrganization(org: OrganizationView) {
+  const recipients = extractManagerEmails(org);
+  if (recipients.length === 0) return;
+
+  await sendMail({
+    to: recipients,
+    subject: "Your organization has been approved",
+    html: approvalEmailHtml(org.name, BRAND.appUrl),
+  });
+}
 
 function extractManagerEmails(org: OrganizationView): string[] {
   const emails = (org.manager ?? [])
@@ -46,22 +49,21 @@ function extractManagerEmails(org: OrganizationView): string[] {
   return Array.from(new Set(emails));
 }
 
-function requestMoreInfoEmailHtml(orgName: string, msg: string) {
-  const safeOrg = escapeHtml(orgName ?? "your organization");
-  const safeMsg = escapeHtml(msg?.trim() || "Please provide the missing details.");
+function approvalEmailHtml(orgName: string, link: string) {
   const content = `
     <p style="font-family:'Poppins',Arial,sans-serif;font-size:16px;line-height:1.5;color:#333;">
-      We reviewed the application for <strong>${safeOrg}</strong> and require more information.
+      Your organization <strong>${escapeHtml(orgName)}</strong> has been <strong>approved</strong>.
     </p>
     <p style="font-family:'Poppins',Arial,sans-serif;font-size:16px;line-height:1.5;color:#333;">
-      <strong>Requested details:</strong>
+      You can now sign in and start using the platform.
     </p>
-    <blockquote style="margin:0;padding:12px;background:#f6f7f9;border-left:4px solid #ccc">
-      ${safeMsg}
-    </blockquote>
-    <p style="font-family:'Poppins',Arial,sans-serif;font-size:14px;color:#555;">
-      Reply to this email with the requested information, or contact
-      <a href="mailto:${BRAND.supportEmail}" style="color:${BRAND.primary};">${BRAND.supportEmail}</a>.
+    <div style="text-align:center; margin:24px 0;">
+      <a href="${link}" style="background:${BRAND.primary}; color:#fff; padding:12px 32px; border-radius:24px; text-decoration:none; font-weight:600; display:inline-block; font-family:'Poppins',Arial,sans-serif;">
+        Go to Dashboard &rarr;
+      </a>
+    </div>
+    <p style="font-family:'Poppins',Arial,sans-serif;font-size:14px;color:#555;text-align:center;">
+      Need help? <a href="mailto:${BRAND.supportEmail}" style="color:${BRAND.primary};">${BRAND.supportEmail}</a>
     </p>
   `;
   return emailShell(content);
@@ -87,4 +89,4 @@ function escapeHtml(input: string) {
     .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-export default requestMoreInfo;
+export default approveOrganization;

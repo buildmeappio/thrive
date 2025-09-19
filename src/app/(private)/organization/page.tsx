@@ -1,4 +1,3 @@
-import { Organization, organizationHandlers } from "@/domains/organization";
 import organizationActions from "@/domains/organization/actions";
 import OrganizationTable from "@/domains/organization/components/OrganizationTable";
 import { OrganizationData } from "@/domains/organization/types/OrganizationData";
@@ -11,11 +10,14 @@ export const metadata: Metadata = {
 };
 
 const Page = async () => {
-  // Fetch organizations from the server
-  const orgs = await organizationHandlers.getOrganizations();
+  const [orgs, types] = await Promise.all([
+    organizationActions.getOrganizations(),
+    organizationActions.getOrganizationTypes(),
+  ]);
 
-  // Map to table row shape
-  const data: OrganizationData[] = orgs.map((org) => ({
+  const typeNames = types.map((t) => t.name);
+
+  const data = orgs.map((org) => ({
     id: org.id,
     name: org.name,
     website: org.website,
@@ -44,7 +46,7 @@ const Page = async () => {
       }
     >
       <div className="bg-white shadow-sm rounded-[30px] px-6 py-8">
-        <OrganizationTable data={data} />
+        <OrganizationTable data={data} types={typeNames} />
       </div>
     </DashboardShell>
   );

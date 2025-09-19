@@ -1,13 +1,28 @@
+// app/(private)/dashboard/page.tsx
 import { Metadata } from "next";
-import { Dashboard } from "@/domains/dashboard";
+import Dashboard from "@/domains/dashboard/components/Dashboard";
 import { DashboardShell } from "@/layouts/dashboard";
-
+import {
+  getOrganizationCount,
+  getCaseCount,
+  getCases,
+  getExaminerCount,
+  getExaminers,
+} from "@/domains/dashboard/actions/dashboard.actions";
 export const metadata: Metadata = {
   title: "Dashboard | Thrive Admin",
   description: "Dashboard",
 };
 
-const page = () => {
+const Page = async () => {
+  const [orgCount, caseCount, examinerCount, cases, examiners] = await Promise.all([
+    getOrganizationCount(),
+    getCaseCount(),
+    getExaminerCount(),
+    getCases(),
+    getExaminers(),
+  ]);
+
   return (
     <DashboardShell
       title={
@@ -20,9 +35,15 @@ const page = () => {
         </h1>
       }
     >
-      <Dashboard />
+      <Dashboard
+        caseRows={cases}
+        examinerRows={examiners}
+        orgCount={orgCount}
+        caseCount={caseCount}
+        examinerCount={examinerCount}
+      />
     </DashboardShell>
   );
 };
 
-export default page;
+export default Page;

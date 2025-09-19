@@ -1,4 +1,4 @@
-// domains/organization/actions/requestMoreInfo.ts
+// domains/organization/actions/rejectOrganization.ts
 "use server";
 
 import { redirect } from "next/navigation";
@@ -9,9 +9,15 @@ import { sendMail } from "@/lib/email";
 type OrganizationView = {
   id: string;
   name: string;
+  website?: string | null;
+  status: "PENDING" | "ACCEPTED" | "REJECTED";
+  type: any;
+  address: any;
   manager: Array<{
     account?: { user?: { email?: string | null } | null } | null;
   }>;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 };
 
 const BRAND = {
@@ -20,24 +26,26 @@ const BRAND = {
   supportEmail: "support@thrivenetwork.ca",
 };
 
-const requestMoreInfo = async (id: string, message: string) => {
+const rejectOrganization = async (id: string, reason: string) => {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  // No DB change. Only fetch to get recipients.
-  const org = (await handlers.getOrganizationById(id)) as OrganizationView;
+  const organization = (await handlers.rejectOrganization(id, user.accountId, reason)) as OrganizationView;
 
-  const recipients = extractManagerEmails(org);
-  if (recipients.length > 0) {
-    await sendMail({
-      to: recipients,
-      subject: "More information required for your organization application",
-      html: requestMoreInfoEmailHtml(org.name, message),
-    });
-  }
-
-  return org;
+//   await sendRejectReasonToOrganization(organization, reason);
+  return organization;
 };
+
+async function sendRejectReasonToOrganization(org: OrganizationView, reason: string) {
+  const recipients = extractManagerEmails(org);
+  if (recipients.length === 0) return;
+
+  await sendMail({
+    to: recipients,
+    subject: "Your organization application was rejected",
+    html: rejectOrganizationEmailHtml(org.name, reason),
+  });
+}
 
 function extractManagerEmails(org: OrganizationView): string[] {
   const emails = (org.manager ?? [])
@@ -46,21 +54,21 @@ function extractManagerEmails(org: OrganizationView): string[] {
   return Array.from(new Set(emails));
 }
 
-function requestMoreInfoEmailHtml(orgName: string, msg: string) {
+function rejectOrganizationEmailHtml(orgName: string, reason: string) {
   const safeOrg = escapeHtml(orgName ?? "your organization");
-  const safeMsg = escapeHtml(msg?.trim() || "Please provide the missing details.");
+  const safeReason = escapeHtml(reason?.trim() || "No reason provided.");
   const content = `
     <p style="font-family:'Poppins',Arial,sans-serif;font-size:16px;line-height:1.5;color:#333;">
-      We reviewed the application for <strong>${safeOrg}</strong> and require more information.
+      Your application for <strong>${safeOrg}</strong> has been <strong>rejected</strong>.
     </p>
     <p style="font-family:'Poppins',Arial,sans-serif;font-size:16px;line-height:1.5;color:#333;">
-      <strong>Requested details:</strong>
+      <strong>Reason:</strong>
     </p>
     <blockquote style="margin:0;padding:12px;background:#f6f7f9;border-left:4px solid #ccc">
-      ${safeMsg}
+      ${safeReason}
     </blockquote>
     <p style="font-family:'Poppins',Arial,sans-serif;font-size:14px;color:#555;">
-      Reply to this email with the requested information, or contact
+      You may revise your submission and reapply. If you believe this is an error, reply to this email or contact
       <a href="mailto:${BRAND.supportEmail}" style="color:${BRAND.primary};">${BRAND.supportEmail}</a>.
     </p>
   `;
@@ -87,4 +95,4 @@ function escapeHtml(input: string) {
     .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-export default requestMoreInfo;
+export default rejectOrganization;
