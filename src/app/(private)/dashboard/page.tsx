@@ -1,4 +1,3 @@
-// app/(private)/dashboard/page.tsx
 import { Metadata } from "next";
 import Dashboard from "@/domains/dashboard/components/Dashboard";
 import { DashboardShell } from "@/layouts/dashboard";
@@ -13,6 +12,8 @@ export const metadata: Metadata = {
   title: "Dashboard | Thrive Admin",
   description: "Dashboard",
 };
+
+export const dynamic = "force-dynamic";
 
 const Page = async () => {
   const [orgCount, caseCount, examinerCount, cases, examiners] = await Promise.all([

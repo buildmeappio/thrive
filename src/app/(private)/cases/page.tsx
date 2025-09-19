@@ -1,4 +1,3 @@
-// app/(private)/cases/page.tsx
 import { Metadata } from "next";
 import listAllCases from "@/domains/case/actions/listAllCases";
 import listCaseTypes from "@/domains/case/actions/listCaseTypes";
@@ -11,6 +10,8 @@ export const metadata: Metadata = {
   title: "Cases | Thrive Admin",
   description: "Cases",
 };
+
+export const dynamic = "force-dynamic";
 
 const Page = async () => {
   const [cases, types, statuses] = await Promise.all([

@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "Medical Examiner",
 };
 
+export const dynamic = "force-dynamic";
+
 const Page = async () => {
 
   return (

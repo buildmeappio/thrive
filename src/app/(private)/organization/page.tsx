@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: "Organization",
 };
 
+export const dynamic = "force-dynamic";
+
 const Page = async () => {
   const [orgs, types] = await Promise.all([
     organizationActions.getOrganizations(),
