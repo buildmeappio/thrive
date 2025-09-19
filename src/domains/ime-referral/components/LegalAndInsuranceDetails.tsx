@@ -104,6 +104,12 @@ const LegalAndInsuranceDetailsForm: React.FC<IMEReferralProps> = ({
                       {...register('legalPhone')}
                       placeholder="4444444444"
                       className="w-full"
+                      type="tel"
+                      onKeyPress={e => {
+                        if (!/[0-9]/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                     {errors.legalPhone && (
                       <p className="text-sm text-red-500">{errors.legalPhone.message}</p>
@@ -119,6 +125,12 @@ const LegalAndInsuranceDetailsForm: React.FC<IMEReferralProps> = ({
                       {...register('legalFaxNo')}
                       placeholder="4444444444"
                       className="w-full"
+                      type="tel"
+                      onKeyPress={e => {
+                        if (!/[0-9]/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                     {errors.legalFaxNo && (
                       <p className="text-sm text-red-500">{errors.legalFaxNo.message}</p>
@@ -400,6 +412,12 @@ const LegalAndInsuranceDetailsForm: React.FC<IMEReferralProps> = ({
                       {...register('insurancePhone')}
                       placeholder="4444444444"
                       className={`w-full ${errors.insurancePhone ? 'border-red-500' : ''}`}
+                      type="tel"
+                      onKeyPress={e => {
+                        if (!/[0-9]/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                     {errors.insurancePhone && (
                       <p className="text-sm text-red-500">{errors.insurancePhone.message}</p>
@@ -415,6 +433,12 @@ const LegalAndInsuranceDetailsForm: React.FC<IMEReferralProps> = ({
                       {...register('insuranceFaxNo')}
                       placeholder="4444444444"
                       className={`w-full ${errors.insuranceFaxNo ? 'border-red-500' : ''}`}
+                      type="tel"
+                      onKeyPress={e => {
+                        if (!/[0-9]/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                     {errors.insuranceFaxNo && (
                       <p className="text-sm text-red-500">{errors.insuranceFaxNo.message}</p>
