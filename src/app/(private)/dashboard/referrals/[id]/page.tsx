@@ -524,7 +524,7 @@ const ReferralDetails = async ({ params }: PageProps) => {
                       />
                     </svg>
                   </div>
-                  <h2 className="text-xl font-semibold text-white">Examination Types</h2>
+                  <h2 className="text-xl font-semibold text-white">Examination Type</h2>
                 </div>
               </div>
               <div className="p-6">

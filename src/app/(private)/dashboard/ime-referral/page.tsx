@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 const IMEReferralPage = async () => {
-  const [examinationTypes, examTypes] = await Promise.all([getExaminationTypes(), getExamTypes()]);
+  const [examTypes, examinationTypes] = await Promise.all([getExaminationTypes(), getExamTypes()]);
 
   return <IMEReferral examinationTypes={examinationTypes.result} examTypes={examTypes.result} />;
 };

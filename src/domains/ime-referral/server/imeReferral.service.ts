@@ -131,7 +131,7 @@ const createIMEReferralWithClaimant = async (data: IMEFormData) => {
           organizationId: organizationManager?.organizationId || '',
           insuranceId: insurance?.id || '',
           legalRepresentativeId: legalRepresentative?.id,
-          examTypeId: data.step3?.examTypes?.[0]?.id || '',
+          examTypeId: data.step4?.examinationType || '',
           reason: data.step4?.reasonForReferral || '',
           consentForSubmission: data.step6?.consentForSubmission ?? false,
           isDraft: data.step6?.isDraft ?? false,
@@ -187,7 +187,7 @@ const createIMEReferralWithClaimant = async (data: IMEFormData) => {
           const examType = data.step3.examTypes[i];
 
           // Validate the exam type exists
-          const validExamType = await tx.examType.findUnique({
+          const validExamType = await tx.examinationType.findUnique({
             where: { id: examType.id },
           });
 
@@ -201,14 +201,11 @@ const createIMEReferralWithClaimant = async (data: IMEFormData) => {
           const dueDateField = `${fieldPrefix}DueDate` as keyof typeof data.step4;
           const instructionsField = `${fieldPrefix}Instructions` as keyof typeof data.step4;
 
-          // Use available examination types
-          const examinationType = availableExaminationTypes[i % availableExaminationTypes.length];
-
           const examination = await tx.examination.create({
             data: {
               caseNumber: `IME-${Date.now()}-${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
               referralId: referral.id,
-              examinationTypeId: examinationType.id,
+              examinationTypeId: examType.id,
               dueDate: data.step4?.[dueDateField]
                 ? new Date(data.step4[dueDateField] as string)
                 : null,
