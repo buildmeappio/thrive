@@ -30,6 +30,9 @@ const StatusBadge = ({ status }: { status: OrganizationData["status"] }) => {
   );
 };
 
+const prettyType = (s: string) =>
+  s.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+
 const ActionButton = ({ id }: { id: string }) => (
   <Link href={`/organization/${id}`} className="w-full h-full cursor-pointer">
     <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-2 w-[40px] h-[40px] flex items-center justify-center hover:opacity-80">
@@ -62,7 +65,7 @@ const columns: ColumnDef<OrganizationData>[] = [
     header: () => <Header>Type</Header>,
     accessorKey: "typeName",
     enableSorting: true,
-    cell: ({ row }) => <Content>{row.original.typeName}</Content>,
+    cell: ({ row }) => <Content>{prettyType(row.original.typeName)}</Content>,
   },
   {
     header: () => <Header>Status</Header>,
