@@ -57,11 +57,10 @@ const Footer = () => {
           {/* Logo & Description */}
           <div>
             <Image
-              src="/images/footerLogo.png"
-              alt="Thrive Logo"
-              width={120}
-              height={82}
-              className="mb-6"
+              src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/footerLogo.png"
+              alt="Thrive Footer Logo"
+              width={150}
+              height={50}
               priority
             />
             <p className="text-sm leading-relaxed text-gray-300">

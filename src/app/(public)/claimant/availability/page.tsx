@@ -11,7 +11,7 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ tkn: string }> }
   const caseSummary = await getCaseSummary(tkn);
   if (caseSummary.success === false || !caseSummary.result) {
     return (
-      <div className="p-4 text-red-600">
+      <div className="flex h-[500px] items-center justify-center p-4 text-red-600">
         Invalid or expired token. Please check your link or contact support.
       </div>
     );

@@ -110,7 +110,13 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                     placeholder="4444444444"
                     value={values.phoneNumber}
                     onChange={handleChange}
+                    onKeyPress={e => {
+                      if (!/[0-9]/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
                   />
+
                   {errors.phoneNumber && (
                     <p className="text-xs text-red-500">{errors.phoneNumber}</p>
                   )}

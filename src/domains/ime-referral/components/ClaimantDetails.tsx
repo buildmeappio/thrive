@@ -132,6 +132,12 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                     {...register('phoneNumber')}
                     placeholder="444444444"
                     className={`w-full ${errors.phoneNumber ? 'border-red-500' : ''}`}
+                    type="tel"
+                    onKeyPress={e => {
+                      if (!/[0-9]/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
                   />
                   {errors.phoneNumber && (
                     <p className="text-sm text-red-500">{errors.phoneNumber.message}</p>
@@ -313,6 +319,12 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                       {...register('familyDoctorPhone')}
                       placeholder="4444444444"
                       className="w-full"
+                      type="tel"
+                      onKeyPress={e => {
+                        if (!/[0-9]/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                     {errors.familyDoctorPhone && (
                       <p className="text-sm text-red-500">{errors.familyDoctorPhone.message}</p>
@@ -328,6 +340,12 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                       {...register('familyDoctorFax')}
                       placeholder="4444444444"
                       className="w-full"
+                      type="tel"
+                      onKeyPress={e => {
+                        if (!/[0-9]/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                     {errors.familyDoctorFax && (
                       <p className="text-sm text-red-500">{errors.familyDoctorFax.message}</p>

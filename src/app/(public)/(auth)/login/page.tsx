@@ -24,7 +24,7 @@ const LoginPage = () => {
         <div className="pl- relative hidden flex-1 overflow-hidden md:block">
           <div className="absolute inset-0">
             <Image
-              src="/images/org-gettingStarted.png"
+              src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/org-gettingStarted.png"
               alt="Organization Dashboard Preview"
               width={200}
               height={200}

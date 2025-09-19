@@ -2,11 +2,6 @@
 
 import { organizationHandlers } from './server';
 
-export const acceptOrganization = async () => {
-  const result = await organizationHandlers.acceptOrganization();
-  return result;
-};
-
 export const getOrganization = async () => {
   const result = await organizationHandlers.getOrganization();
   return result;

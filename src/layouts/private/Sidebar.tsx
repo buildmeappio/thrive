@@ -130,7 +130,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
         {/* Logo Section */}
         <div className="mb-2 flex items-center justify-center p-6">
           <Image
-            src="/images/thriveLogo.png"
+            src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png"
             alt="Thrive"
             width={160}
             height={80}
