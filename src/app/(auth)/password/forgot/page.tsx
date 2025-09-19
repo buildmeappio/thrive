@@ -28,7 +28,7 @@ const Page = () => {
 
           <div className="relative hidden lg:block">
             <Image
-              src="/images/adminLogin.png"
+              src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/adminLogin.png"
               alt="Admin Dashboard Preview"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"

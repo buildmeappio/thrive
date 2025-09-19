@@ -8,11 +8,11 @@ const Navbar = async () => {
   const href = user ? URLS.DASHBOARD : URLS.LOGIN;
 
   return (
-    <nav className="h-[5rem] md:h-[7.5rem] bg-white shadow-sm z-50 shadow-sm">
+    <nav className="h-[5rem] md:h-[7.5rem] bg-white z-50 shadow-sm">
       <div className="flex h-full items-center justify-center">
         <Link href={href}>
           <Image
-            src="/images/thriveLogo.png"
+            src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png"
             alt="Thrive"
             sizes="(max-width: 768px) 100vw, 50vw"
             width={120}
