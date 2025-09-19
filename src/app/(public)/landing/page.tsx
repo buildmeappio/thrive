@@ -63,7 +63,7 @@ const Page: React.FC = () => {
         <div className="order-first md:order-none md:h-full w-full flex justify-end items-end">
           <div className="relative z-[1] h-full w-full">
             <Image
-              src="/images/home.png"
+              src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/examiner-home.png"
               alt="Hero"
               fill
               priority

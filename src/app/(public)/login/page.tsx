@@ -22,7 +22,7 @@ const Page = () => {
 				</div>
 				<div className="pl- relative hidden flex-1 overflow-hidden md:block">
 					<div className="absolute inset-0">
-						<Image src="/images/home.png" alt="Admin Dashboard Preview" fill />
+						<Image src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/examiner-home.png" alt="Admin Dashboard Preview" fill />
 					</div>
 				</div>
 			</div>
