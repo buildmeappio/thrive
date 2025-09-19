@@ -1,14 +1,15 @@
 export const ExamType = Object.freeze({
-  ORTHOPEDIC: "Orthopedic",
-  GENERAL_MEDICINE: "General Medicine",
-  PSYCHOLOGICAL: "Psychological",
-  PSYCHIATRY: "Psychiatry",
-  NEUROLOGICAL: "Neurological",
-  PEDIATRIC_MEDICINE: "Pediatric Medicine",
-  GERIATRIC_MEDICINE: "Geriatric Medicine",
-  CARDIOLOGY: "Cardiology",
-  OTHER: "Other",
+  MOTOR_VEHICLE_ACCIDENT: "Motor Vehicle Accident",
+  WORKPLACE_INJURY: "Workplace Injury",
+  SLIP_AND_FALL: "Slip and Fall",
+  PRODUCT_LIABILITY: "Product Liability",
+  MEDICAL_MALPRACTICE: "Medical Malpractice",
+  DISABILITY_CLAIM: "Disability Claim",
+  WORKERS_COMPENSATION: "Workers Compensation",
+  PERSONAL_INJURY: "Personal Injury",
+  INSURANCE_CLAIM: "Insurance Claim",
+  REHABILITATION_ASSESSMENT: "Rehabilitation Assessment",
 } as const);
 
-export type ExamTypeType =
-  (typeof ExamType)[keyof typeof ExamType];
+export type ExamType = (typeof ExamType)[keyof typeof ExamType];
+

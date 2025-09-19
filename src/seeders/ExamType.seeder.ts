@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
+import { ExamType } from '../constants/ExamType';
 import { PrismaClient } from '@prisma/client';
-import { ExamType } from 'src/constants/ExamType';
 
 interface ExamTypeData {
     name: string;
@@ -23,112 +23,116 @@ class ExamTypeSeeder {
     }
 
     public async run() {
-        console.log('🚀 Starting requested specialties seed process...');
+        console.log('🚀 Starting examination types seed process...');
 
         const data: ExamTypeData[] = [
             {
-                name: ExamType.PSYCHIATRY,
-                description: 'Medical specialty focused on mental health disorders'
+                name: ExamType.MOTOR_VEHICLE_ACCIDENT,
+                description: 'Examinations involving injuries from motor vehicle accidents'
             },
             {
-                name: ExamType.PSYCHOLOGICAL,
-                description: 'Specialty dealing with psychological assessments and therapies'
+                name: ExamType.WORKPLACE_INJURY,
+                description: 'Injuries sustained in the workplace environment'
             },
             {
-                name: ExamType.NEUROLOGICAL,
-                description: 'Medical specialty focused on disorders of the nervous system'
+                name: ExamType.SLIP_AND_FALL,
+                description: 'Injuries from slip and fall incidents'
             },
             {
-                name: ExamType.ORTHOPEDIC,
-                description: 'Medical specialty dealing with the musculoskeletal system'
+                name: ExamType.PRODUCT_LIABILITY,
+                description: 'Injuries caused by defective or dangerous products'
             },
             {
-                name: ExamType.GENERAL_MEDICINE,
-                description: 'Comprehensive medical care for adults'
+                name: ExamType.MEDICAL_MALPRACTICE,
+                description: 'Examinations involving medical negligence or malpractice'
             },
             {
-                name: ExamType.PEDIATRIC_MEDICINE,
-                description: 'Medical specialty focused on the care of infants, children, and adolescents'
+                name: ExamType.DISABILITY_CLAIM,
+                description: 'Claims for disability benefits and assessments'
             },
             {
-                name: ExamType.GERIATRIC_MEDICINE,
-                description: 'Medical specialty focused on health care of elderly people'
+                name: ExamType.WORKERS_COMPENSATION,
+                description: 'Workers compensation claims and assessments'
             },
             {
-                name: ExamType.CARDIOLOGY,
-                description: 'Medical specialty dealing with disorders of the heart and blood vessels'
+                name: ExamType.PERSONAL_INJURY,
+                description: 'General personal injury examinations'
             },
             {
-                name: ExamType.OTHER,
-                description: 'Other medical specialties not specifically listed'
+                name: ExamType.INSURANCE_CLAIM,
+                description: 'Insurance-related medical examinations'
             },
+            {
+                name: ExamType.REHABILITATION_ASSESSMENT,
+                description: 'Assessments for rehabilitation needs and progress'
+            }
         ];
 
-        await this.createRequestedSpecialties(data);
+        await this.createExamTypes(data);
 
-        console.log('✅ Requested specialties seed process completed.');
+        console.log('✅ Examination types seed process completed.');
     }
 
-    private async createRequestedSpecialties(data: ExamTypeData[]): Promise<void> {
+    private async createExamTypes(data: ExamTypeData[]): Promise<void> {
         if (!data || !Array.isArray(data) || data.length === 0) {
-            throw new Error('Requested specialty data must be a non-empty array');
+            throw new Error('Examination type data must be a non-empty array');
         }
 
-        console.log(`📝 Processing ${data.length} requested specialties...`);
+        console.log(`📝 Processing ${data.length} examination types...`);
 
-        for (const specialtyData of data) {
-            const { name, description } = specialtyData;
+        for (const examTypeData of data) {
+            const { name, description } = examTypeData;
 
-            console.log(`\n📦 Processing requested specialty: "${name}"`);
+            console.log(`\n📦 Processing examination type: "${name}"`);
 
             if (!name) {
-                throw new Error('Requested specialty name is required');
+                throw new Error('Examination type name is required');
             }
 
-            let ExamType = await this.db.examType.findFirst({
+            let examType = await this.db.examType.findFirst({
                 where: { name },
             });
 
-            if (ExamType) {
+            if (examType) {
                 console.log(
-                    `ℹ️ Requested specialty already exists: "${ExamType.name}" (ID: ${ExamType.id})`,
+                    `ℹ️ Examination type already exists: "${examType.name}" (ID: ${examType.id})`,
                 );
                 continue;
             }
 
-            ExamType = await this.db.examType.create({
+            examType = await this.db.examType.create({
                 data: { name, description },
             });
 
-            console.log(`✅ Created new requested specialty: "${ExamType.name}" (ID: ${ExamType.id})`);
+            console.log(`✅ Created new examination type: "${examType.name}" (ID: ${examType.id})`);
         }
     }
 
     /**
-     * Clean up old requested specialties that are no longer in use
-     * Use with caution - only run if you're sure old specialties are not referenced anywhere
+     * Clean up old examination types that are no longer in use
+     * Use with caution - only run if you're sure old examination types are not referenced anywhere
      */
-    public async cleanupOldRequestedSpecialties() {
-        console.log('🧹 Starting cleanup of old requested specialties...');
+    public async cleanupOldExamTypes() {
+        console.log('🧹 Starting cleanup of old examination types...');
         
-        const currentSpecialtyNames = Object.values(ExamType);
+        const currentExamTypeNames = Object.values(ExamType);
 
-        const oldSpecialties = await this.db.examType.findMany({
+        const oldExamTypes = await this.db.examType.findMany({
             where: {
                 name: {
-                    notIn: currentSpecialtyNames,
+                    notIn: currentExamTypeNames,
                 },
             },
         });
 
-        if (oldSpecialties.length === 0) {
-            console.log('ℹ️ No old requested specialties found to cleanup.');
+        if (oldExamTypes.length === 0) {
+            console.log('ℹ️ No old examination types found to cleanup.');
             return;
         }
 
-        console.log(`⚠️ Found ${oldSpecialties.length} old requested specialties that might need cleanup:`);
-        oldSpecialties.forEach((specialty: {name: string, id: string}) => {
-            console.log(`   - "${specialty.name}" (ID: ${specialty.id})`);
+        console.log(`⚠️ Found ${oldExamTypes.length} old examination types that might need cleanup:`);
+        oldExamTypes.forEach((examType: { name: string; id: string }) => {
+            console.log(`   - "${examType.name}" (ID: ${examType.id})`);
         });
 
         console.log('⚠️ Manual cleanup required - please review and delete if safe.');
