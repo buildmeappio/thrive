@@ -1,45 +1,50 @@
+// domains/dashboard/index.tsx
 "use client";
 
-  import StatCard from "./StatCard";
+import StatCard from "./StatCard";
 import UpdatesPanel from "./UpdatesPanel";
 import NewExaminers from "./NewExaminers";
+import NewCases, { CaseRow } from "./NewCases";
+import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 
-const Dashboard = () => {
+type Props = {
+  caseRows: CaseRow[],
+  examinerRows: ExaminerData[],
+  orgCount: number;
+  caseCount: number;
+  examinerCount: number;
+};
+
+export default function Dashboard({ caseRows, examinerRows, orgCount, caseCount, examinerCount }: Props) {
   return (
     <div className="pb-10">
-      {/* 1440 grid: cards row + body */}
-      <div className="flex flex-row gap-6">
-        {/* Stat cards — exact sizes at xl, fluid below */}
-        <div className="flex flex-col gap-6 xl:w-8/12 w-full">
-          <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <StatCard
-              title="New Examiners"
-              value="20"
-              badge="This Month"
-              iconSrc="/icons/examiner-card-icon.svg"
-              intent="primary"
-            />
-            <StatCard
-              title="New Insurers"
-              value="6"
-              badge="This Month"
-              iconSrc="/icons/insurers-card-icon.svg"
-              intent="indigo"
-            />
-            <StatCard
-              title="Active IME Cases"
-              value="16"
-              badge="All Time"
-              iconSrc="/icons/ime-card-icon.svg"
-              intent="aqua"
-            />
-          </div>
+      {/* Row 1: Stat cards */}
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <StatCard title="New Organizations" value={orgCount} badge="This Month" iconSrc="/icons/org-card-icon.svg" intent="primary" />
+        <StatCard title="New Examiners" value={examinerCount} badge="This Month" iconSrc="/icons/examiner-card-icon.svg" intent="indigo" />
+        <StatCard title="New Insurers" value="6" badge="This Month" iconSrc="/icons/insurers-card-icon.svg" intent="primary" />
+        <StatCard title="Active IME Cases" value={caseCount} badge="All Time" iconSrc="/icons/ime-card-icon.svg" intent="aqua" />
+      </div>
 
-          <NewExaminers />
+      {/* Row 2: Left tables + Right rail */}
+      <div className="flex flex-col xl:flex-row gap-6">
+        {/* Left: two stacked tables */}
+        <div className="w-full xl:w-8/12 flex flex-col gap-6">
+          <NewCases
+            items={caseRows}
+            listHref="/cases"
+          />
+          <NewExaminers
+            items={examinerRows}
+            listHref="/examiner"
+          />
+
+
+
         </div>
 
-        {/* Right rail updates */}
-        <div className="w-full xl:w-4/12 w-full flex flex-col gap-6">
+        {/* Right: recent updates + donut */}
+        <div className="w-full xl:w-4/12 flex flex-col gap-6">
           <UpdatesPanel
             items={[
               "New insurer onboarded: Maple Life",
@@ -49,10 +54,7 @@ const Dashboard = () => {
               "New insurer onboarded: Easy Life",
             ]}
           />
-
-          {/* Placeholder analytics tile for the donut chart area */}
           <div className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6 h-[327px] flex items-center justify-center">
-            {/* Keep light DOM to preserve performance until chart is required */}
             <span className="text-sm text-neutral-500 tracking-[-0.02em]">
               Analytics donut placeholder
             </span>
@@ -61,6 +63,4 @@ const Dashboard = () => {
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}

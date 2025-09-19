@@ -1,66 +1,107 @@
+// domains/dashboard/NewExaminers.tsx
 "use client";
 
+import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 
-const rows = [
-  ["Dr. Emily Ross", "Physiatry", "Apr 15, 2025", "Ontario"],
-  ["Dr. Michael Chen", "Cardiology", "May 22, 2025", "British Columbia"],
-  ["Nurse Sarah", "Pediatrics", "Jun 10, 2025", "Alberta"],
-  ["Dr. Aisha Khan", "Neurology", "Jul 30, 2025", "Quebec"],
-  ["Dr. Robert Lee", "Oncology", "Aug 12, 2025", "Nova Scotia"],
-  ["Dr. Mia Patel", "Gastroenterology", "Sep 5, 2025", "Saskatchewan"],
-  ["Nurse James Smith", "Emergency Medicine", "Oct 18, 2025", "Manitoba"],
-];
+export type ExaminerRow = {
+  id: string;
+  name: string;
+  specialties: string;
+  licenseNumber: string;
+  province: string;
+};
 
-export default function NewExaminers() {
+type Props = {
+  items: ExaminerData[];                 // rows to show
+  listHref: string;                     // e.g. "/examiners"
+  buildDetailHref?: (id: string) => string; // defaults to `${listHref}/${id}`
+  visibleCount?: number;                // optional slice on dashboard
+  title?: string;
+  subtitle?: string;
+};
+
+export default function NewExaminers({
+  items,
+  listHref,
+  buildDetailHref = (id) => `${listHref}/${id}`,
+  visibleCount = 7,
+  title = (
+    <>
+      New <span className="bg-[linear-gradient(270deg,#01F4C8_50%,#00A8FF_65.19%)] bg-clip-text text-transparent">Medical</span> Examiners
+    </>
+  ) as unknown as string, // TS appeasement for inline JSX below
+  subtitle = "Pending for verification",
+}: Props) {
+  const rows = items.slice(0, visibleCount);
+
   return (
     <section
       className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
       aria-labelledby="new-examiners-heading"
-      style={{ fontFamily: "Poppins, system-ui" }}
     >
-      <div className="flex items-center justify-between">
+      {/* Title + CTA */}
+      <div className="flex items-center justify-between gap-3">
         <h3
           id="new-examiners-heading"
-          className="text-[22px] font-semibold tracking-[-0.02em]"
+          className="font-degular font-[600] text-[29.01px] leading-[100%] tracking-[-0.02em] text-black"
         >
-          New <span className="bg-[linear-gradient(270deg,#01F4C8_50%,#00A8FF_65.19%)] bg-clip-text text-transparent">Medical</span> Examiners
+          New Medical Examiners to be Reviewed
         </h3>
 
-        <button
-          type="button"
-          className="h-[34px] rounded-[20px] bg-[#0C108B] px-4 text-white text-sm"
+        <Link
+          href={listHref}
+          className="h-[34px] rounded-[20px] bg-[#0C108B] px-4 text-white text-sm grid place-items-center"
         >
           View All
-        </button>
+        </Link>
       </div>
 
-      <p className="mt-1 text-xs text-neutral-500">Pending for verification</p>
+      {/* Subline */}
+      <p className="mt-1 font-poppins font-[300] text-[13.26px] leading-[100%] text-[#7A7A7A]">
+        {subtitle}
+      </p>
 
       {/* Table */}
-      <div className="mt-4 overflow-hidden rounded-2xl border border-neutral-200">
-        <div className="grid grid-cols-5 bg-neutral-100/70 px-4 py-3 text-sm font-medium tracking-[-0.02em]">
-          <div className="col-span-2">Name</div>
+      <div className="mt-4 overflow-hidden rounded-2xl border border-[#E8E8E8]">
+        {/* Header */}
+        <div className="grid grid-cols-4 bg-[#F3F3F3] px-4 py-3 text-sm font-medium tracking-[-0.02em] text-[#1A1A1A]">
+          <div>Name</div>
           <div>Specialty</div>
-          <div>Submitted On</div>
+          <div>License Number</div>
           <div>Province</div>
         </div>
 
-        <ul className="divide-y divide-neutral-200">
-          {rows.map((r, i) => (
-            <li
-              key={i}
-              className="grid grid-cols-5 items-center px-4 py-3 text-sm tracking-[-0.01em]"
-            >
-              <span className="col-span-2 text-[#1A1A1A]">{r[0]}</span>
-              <span className="text-neutral-700">{r[1]}</span>
-              <span className="text-neutral-700">{r[2]}</span>
-              <span className="flex items-center justify-between text-neutral-700">
-                {r[3]}
-                <ChevronRight className="h-4 w-4 text-[#00A8FF]" />
-              </span>
-            </li>
-          ))}
+        {/* Rows */}
+        <ul className="divide-y divide-[#EDEDED]">
+          {rows.map((r) => {
+            const href = buildDetailHref(r.id);
+            return (
+              <li
+                key={r.id}
+                className="grid grid-cols-4 items-center px-4 py-[12px] text-[14px] tracking-[-0.01em] hover:bg-[#FAFAFF]"
+              >
+                <span className="text-[#1A1A1A] truncate">{r.name}</span>
+                <span className="text-[#5B5B5B] truncate">{r.specialties}</span>
+                <span className="text-[#5B5B5B] font-mono tabular-nums truncate">
+                  {r.licenseNumber}
+                </span>
+
+                <span className="flex items-center justify-between text-[#5B5B5B]">
+                  <span className="truncate">{r.province}</span>
+
+                  <Link
+                    href={href}
+                    aria-label={`Open ${r.name}`}
+                    className="ml-3 grid h-5 w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
+                  >
+                    <ChevronRight className="h-3.5 w-3.5 text-[#00A8FF]" />
+                  </Link>
+                </span>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>

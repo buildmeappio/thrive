@@ -1,107 +1,83 @@
-import * as React from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import Link from "next/link";
+// domains/organization/components/columns.tsx
 import { cn } from "@/lib/utils";
+import { OrganizationData } from "../types/OrganizationData";
+import { ColumnDef } from "@tanstack/react-table";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
-export type OrganizationRow = {
-  id: string;
-  name: string;
-  website?: string;
-  status: string;
-  typeName?: string;
-  address?: string;
-  managerName?: string;
-};
-const Header = ({
-  children,
-  first,
-}: {
-  children: React.ReactNode;
-  first?: boolean;
-}) => {
+const Header = ({ children, first }: { children: React.ReactNode; first?: boolean }) => (
+  <p className={cn("text-left text-black font-poppins font-semibold text-[18px] leading-none py-4", first && "pl-4")}>
+    {children}
+  </p>
+);
+
+const Content = ({ children, first }: { children: React.ReactNode; first?: boolean }) => (
+  <p className={cn("text-left text-black font-poppins text-[#4D4D4D] font-regular text-[16px] leading-none py-2", first && "pl-4")}>
+    {children}
+  </p>
+);
+
+const StatusBadge = ({ status }: { status: OrganizationData["status"] }) => {
+  const map = {
+    PENDING: "bg-yellow-100 text-yellow-800",
+    ACCEPTED: "bg-green-100 text-green-800",
+    REJECTED: "bg-red-100 text-red-800",
+  } as const;
   return (
-    <p
-      className={cn(
-        "text-left text-black font-poppins font-semibold text-[18px] leading-none py-4",
-        first && "pl-4"
-      )}
-    >
-      {children}
-    </p>
+    <span className={cn("px-2 py-1 rounded-full text-xs font-medium", map[status])}>
+      {status.charAt(0) + status.slice(1).toLowerCase()}
+    </span>
   );
 };
 
-const ActionButton = ({ id }: { id: string }) => {
-  return (
-    <Link href={`/organization/${id}`} className="w-full h-full cursor-pointer">
-      <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-2 w-[40px] h-[40px] flex items-center justify-center hover:opacity-80">
-        <ArrowRight className="w-4 h-4 text-white" />
-      </div>
-    </Link>
-  );
-};
+const ActionButton = ({ id }: { id: string }) => (
+  <Link href={`/organization/${id}`} className="w-full h-full cursor-pointer">
+    <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-2 w-[40px] h-[40px] flex items-center justify-center hover:opacity-80">
+      <ArrowRight className="w-4 h-4 text-white" />
+    </div>
+  </Link>
+);
 
-const Content = ({
-  children,
-  first,
-}: {
-  children: React.ReactNode;
-  first?: boolean;
-}) => {
-  return (
-    <p
-      className={cn(
-        "text-left text-black font-poppins text-[#4D4D4D] font-regular text-[16px] leading-none py-2",
-        first && "pl-4"
-      )}
-    >
-      {children}
-    </p>
-  );
-};
-
-const capitalize = (str: string) => {
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-};
-
-const replaceUnderscoreAndCapitalize = (str: string) => {
-  const t = str.split("_").map(capitalize).join(" ");
-  return t;
-};
-
-export const columns: ColumnDef<OrganizationRow>[] = [
+// Enable sorting per-column via 'enableSorting: true'
+const columns: ColumnDef<OrganizationData>[] = [
   {
-    accessorKey: "name",
     header: () => <Header first>Name</Header>,
-    cell: ({ row }) => (
-      <Content first>
-        <Link href={row.original.website} target="_blank">
-          {row.original.name}
-        </Link>
-      </Content>
-    ),
+    accessorKey: "name",
+    enableSorting: true,
+    cell: ({ row }) => <Content first>{row.original.name}</Content>,
   },
   {
-    accessorKey: "typeName",
-    header: () => <Header>Type</Header>,
-    cell: ({ row }) => (
-      <Content>{replaceUnderscoreAndCapitalize(row.original.typeName)}</Content>
-    ),
+    header: () => <Header>Address</Header>,
+    accessorKey: "address",
+    enableSorting: true,
+    cell: ({ row }) => <Content>{row.original.address}</Content>,
   },
   {
-    accessorKey: "managerName",
     header: () => <Header>Manager</Header>,
+    accessorKey: "managerName",
+    enableSorting: true,
     cell: ({ row }) => <Content>{row.original.managerName}</Content>,
   },
   {
-    accessorKey: "status",
-    header: () => <Header>Status</Header>,
-    cell: ({ row }) => <Content>{capitalize(row.original.status)}</Content>,
+    header: () => <Header>Type</Header>,
+    accessorKey: "typeName",
+    enableSorting: true,
+    cell: ({ row }) => <Content>{row.original.typeName}</Content>,
   },
   {
-    id: "arrow",
+    header: () => <Header>Status</Header>,
+    accessorKey: "status",
+    enableSorting: true,
+    cell: ({ row }) => <div className="py-2"><StatusBadge status={row.original.status} /></div>,
+    sortingFn: "alphanumeric",
+  },
+  {
     header: "",
+    accessorKey: "id",
     cell: ({ row }) => <ActionButton id={row.original.id} />,
+    maxSize: 60,
+    enableSorting: false,
   },
 ];
+
+export default columns;

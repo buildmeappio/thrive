@@ -1,55 +1,42 @@
 import {
-  Case,
+  Examination,
   Organization,
-  ExamFormat,
-  RequestedSpecialty,
+  ExaminationType,
   CaseStatus,
   IMEReferral,
-  CaseType,
+  IMEReferralDocument,
   Claimant,
   Address,
   Account,
   User,
   Documents,
-  CaseDocument,
+  ExaminationSecureLink,
 } from "@prisma/client";
 
-type CaseDetailWithRelations = Case & {
+type ReferralDoc = IMEReferralDocument & { document: Documents };
+
+type CaseDetailWithRelations = Examination & {
   referral: IMEReferral & {
-    claimant: Claimant & {
-      address?: Address | null;
-    };
+    claimant: Claimant & { address?: Address | null };
     organization?: Organization | null;
+    documents: ReferralDoc[];
   };
-  caseType: CaseType;
-  examFormat: ExamFormat;
-  requestedSpecialty: RequestedSpecialty;
+  examinationType: ExaminationType;
   status: CaseStatus;
   assignTo?: (Account & {
-    user?: (User & {
-      profilePhoto?: Documents | null;
-    }) | null;
+    user?: (User & { profilePhoto?: Documents | null }) | null;
   }) | null;
-  documents: Array<
-    CaseDocument & {
-      document: Documents;
-    }
-  >;
+  secureLinks?: ExaminationSecureLink[];
 };
 
-type CaseWithRelations = Case & {
+type CaseWithRelations = Examination & {
   status: CaseStatus;
-  caseType: CaseType;
-  examFormat: ExamFormat;
-  requestedSpecialty: RequestedSpecialty;
-  assignTo?:
-    | (Account & {
-        user: User;
-      })
-    | null;
+  examinationType: ExaminationType;
+  assignTo?: (Account & { user: User }) | null;
   referral: IMEReferral & {
     claimant: Claimant;
     organization?: Organization | null;
+    documents: ReferralDoc[];
   };
 };
 
@@ -60,49 +47,51 @@ class CaseDto {
       referral: {
         id: c.referral.id,
         number: c.caseNumber,
+        documents: c.referral.documents.map(d => ({
+          id: d.document.id,
+          name: d.document.name,
+          type: d.document.type,
+          size: d.document.size,
+          linkedAt: d.createdAt,
+        })),
       },
       claimant: {
         id: c.referral.claimant.id,
-        name: c.referral.claimant.firstName + ' ' + c.referral.claimant.lastName,
+        name: `${c.referral.claimant.firstName} ${c.referral.claimant.lastName}`,
         email: c.referral.claimant.emailAddress,
         phone: c.referral.claimant.phoneNumber,
         gender: c.referral.claimant.gender,
         dateOfBirth: c.referral.claimant.dateOfBirth,
       },
-      organization: c.referral.organization ? {
-        id: c.referral.organization?.id,
-        name: c.referral.organization?.name,
-        website: c.referral.organization?.website,
-        status: c.referral.organization?.status,
-      } : null,
+      organization: c.referral.organization
+        ? {
+          id: c.referral.organization.id,
+          name: c.referral.organization.name,
+          website: c.referral.organization.website,
+          status: c.referral.organization.status,
+        }
+        : null,
       caseType: {
-        id: c.caseType.id,
-        name: c.caseType.name,
-      },
-      examFormat: {
-        id: c.examFormat.id,
-        name: c.examFormat.name,
-      },
-      requestedSpecialty: {
-        id: c.requestedSpecialty.id,
-        name: c.requestedSpecialty.name,
+        id: c.examinationType.id,
+        name: c.examinationType.name,
       },
       status: {
         id: c.status.id,
         name: c.status.name,
       },
-      preferredLocation: c.preferredLocation,
       urgencyLevel: c.urgencyLevel,
       reason: c.reason,
       examinerId: c.examinerId,
-      assignTo: c.assignTo ? {
-        id: c.assignTo?.id,
-        name: c.assignTo?.user.firstName + " " + c.assignTo?.user.lastName,
-        email: c.assignTo?.user.email,
-        phone: c.assignTo?.user.phone,
-        gender: c.assignTo?.user.gender,
-        dateOfBirth: c.assignTo?.user.dateOfBirth,
-      } : null,
+      assignTo: c.assignTo
+        ? {
+          id: c.assignTo.id,
+          name: `${c.assignTo.user.firstName} ${c.assignTo.user.lastName}`,
+          email: c.assignTo.user.email,
+          phone: c.assignTo.user.phone,
+          gender: c.assignTo.user.gender,
+          dateOfBirth: c.assignTo.user.dateOfBirth,
+        }
+        : null,
       assignedAt: c.assignedAt,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
@@ -116,6 +105,15 @@ class CaseDto {
       referral: {
         id: c.referral.id,
         number: c.caseNumber,
+        documents: c.referral.documents.map(d => ({
+          id: d.document.id,
+          name: d.document.name,
+          type: d.document.type,
+          size: d.document.size,
+          linkedAt: d.createdAt,
+          // include raw link row id if you need to manage unlinking:
+          linkId: d.id,
+        })),
       },
       claimant: {
         id: c.referral.claimant.id,
@@ -125,59 +123,49 @@ class CaseDto {
         phone: c.referral.claimant.phoneNumber,
         gender: c.referral.claimant.gender,
         dateOfBirth: c.referral.claimant.dateOfBirth,
-        address: c.referral.claimant.address ? {
-          id: c.referral.claimant.address?.id,
-          address: c.referral.claimant.address.address,
-          street: c.referral.claimant.address.street,
-          province: c.referral.claimant.address?.province,
-          city: c.referral.claimant.address?.city,
-          postalCode: c.referral.claimant.address?.postalCode,
-        } : null,
+        address: c.referral.claimant.address
+          ? {
+            id: c.referral.claimant.address.id,
+            address: c.referral.claimant.address.address,
+            street: c.referral.claimant.address.street,
+            province: c.referral.claimant.address.province,
+            city: c.referral.claimant.address.city,
+            postalCode: c.referral.claimant.address.postalCode,
+          }
+          : null,
       },
       caseType: {
-        id: c.caseType.id,
-        name: c.caseType.name,
+        id: c.examinationType.id,
+        name: c.examinationType.name,
       },
-      organization: c.referral.organization ? {
-        id: c.referral.organization?.id,
-        name: c.referral.organization?.name,
-        website: c.referral.organization?.website,
-        status: c.referral.organization?.status,
-      } : null,
-      examFormat: {
-        id: c.examFormat.id,
-        name: c.examFormat.name,
-      },
-      requestedSpecialty: {
-        id: c.requestedSpecialty.id,
-        name: c.requestedSpecialty.name,
-      },
+      organization: c.referral.organization
+        ? {
+          id: c.referral.organization.id,
+          name: c.referral.organization.name,
+          website: c.referral.organization.website,
+          status: c.referral.organization.status,
+        }
+        : null,
       status: {
         id: c.status.id,
         name: c.status.name,
       },
-      preferredLocation: c.preferredLocation,
       urgencyLevel: c.urgencyLevel,
       reason: c.reason,
       examinerId: c.examinerId,
-      assignTo: c.assignTo && c.assignTo.user ? {
-        id: c.assignTo?.id,
-        name: c.assignTo?.user.firstName + " " + c.assignTo?.user.lastName,
-        email: c.assignTo?.user.email,
-        phone: c.assignTo?.user.phone,
-        gender: c.assignTo?.user.gender,
-        dateOfBirth: c.assignTo?.user.dateOfBirth,
-        profileImage: c.assignTo?.user.profilePhoto?.name,
-      } : null,
-      documents: c.documents.map((d) => ({
-        id: d.id,
-        documentId: d.document.id,
-        documentName: d.document.name,
-        documentType: d.document.type,
-        documentSize: d.document.size,
-        createdAt: d.createdAt,
-        updatedAt: d.updatedAt,
-      })),
+      notes: c.notes,
+      assignTo:
+        c.assignTo && c.assignTo.user
+          ? {
+            id: c.assignTo.id,
+            name: `${c.assignTo.user.firstName} ${c.assignTo.user.lastName}`,
+            email: c.assignTo.user.email,
+            phone: c.assignTo.user.phone,
+            gender: c.assignTo.user.gender,
+            dateOfBirth: c.assignTo.user.dateOfBirth,
+            profileImage: c.assignTo.user.profilePhoto?.name,
+          }
+          : null,
       assignedAt: c.assignedAt,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,

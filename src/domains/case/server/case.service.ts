@@ -1,54 +1,46 @@
 import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
-import { Case, Prisma } from "@prisma/client";
+import { Examination, Prisma, ExaminationSecureLinkStatus } from "@prisma/client";
 import { Roles } from "@/domains/auth/constants/roles";
 import { isAllowedRole } from "@/lib/rbac";
-import { CaseSecureLinkStatus } from "@prisma/client";
 import { v4 } from "uuid";
 
 export type ListCasesFilter = {
   assignToUserId?: string | undefined;
-  caseTypes?: string[] | undefined;
+  caseTypes?: string[] | undefined; // keep naming as caseTypes
   statuses?: string[] | undefined;
 };
 
 class CaseService {
-  async getCaseTypes(caseTypeNames: string[]) {
+  async getCaseTypes(typeNames: string[]) {
     try {
-      const caseTypes = await prisma.caseType.findMany({
+      const types = await prisma.examinationType.findMany({
         where: {
-          name: {
-            in: caseTypeNames,
-          },
+          name: { in: typeNames },
         },
       });
 
-      if (caseTypes.length === 0) {
+      if (types.length === 0) {
         throw HttpError.notFound("Case type not found");
       }
 
-      return caseTypes;
+      return types;
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to get case type");
+      throw HttpError.fromError(error, "Failed to get case types");
     }
   }
 
-  async doesCaseBelongToUser(caseItem: Case, userId: string) {
-    // if user is super admin, return true
+  async doesCaseBelongToUser(exam: Examination, userId: string) {
     const user = await prisma.account.findFirst({
-      where: {
-        userId: userId,
-      },
-      include: {
-        role: true,
-      },
+      where: { userId },
+      include: { role: true },
     });
 
     if (!user) throw HttpError.notFound("User not found");
 
     if (user.role.name === Roles.SUPER_ADMIN) return true;
 
-    if (caseItem.assignToId !== user.id) {
+    if (exam.assignToId !== user.id) {
       throw HttpError.notFound("Case does not belong to user");
     }
 
@@ -57,12 +49,8 @@ class CaseService {
 
   async getAssignTo(userId: string) {
     const accounts = await prisma.account.findMany({
-      where: {
-        userId: userId,
-      },
-      include: {
-        role: true,
-      },
+      where: { userId },
+      include: { role: true },
     });
 
     const isInvalidRole = accounts.some(
@@ -93,9 +81,7 @@ class CaseService {
   async getStatuses(statusNames: string[]) {
     try {
       const statuses = await prisma.caseStatus.findMany({
-        where: {
-          name: { in: statusNames },
-        },
+        where: { name: { in: statusNames } },
       });
 
       if (statuses.length === 0) {
@@ -111,14 +97,9 @@ class CaseService {
   async getAllStatuses() {
     try {
       const statuses = await prisma.caseStatus.findMany({
-        where: {
-          deletedAt: null,
-        },
-        orderBy: {
-          name: "asc",
-        },
+        where: { deletedAt: null },
+        orderBy: { name: "asc" },
       });
-
       return statuses;
     } catch (error) {
       throw HttpError.fromError(error, "Failed to get all statuses");
@@ -126,7 +107,7 @@ class CaseService {
   }
 
   async convertFilterToWhere(filter?: ListCasesFilter) {
-    const where: Prisma.CaseWhereInput = {};
+    const where: Prisma.ExaminationWhereInput = {};
 
     if (filter?.assignToUserId) {
       const assignToId = await this.getAssignTo(filter.assignToUserId);
@@ -134,9 +115,9 @@ class CaseService {
     }
 
     if (filter?.caseTypes) {
-      const caseTypes = await this.getCaseTypes(filter.caseTypes);
-      where.caseTypeId = {
-        in: caseTypes.map((caseType) => caseType.id),
+      const types = await this.getCaseTypes(filter.caseTypes);
+      where.examinationTypeId = {
+        in: types.map((t) => t.id),
       };
     }
 
@@ -152,83 +133,73 @@ class CaseService {
 
   async getCaseById(id: string) {
     try {
-      const caseItem = await prisma.case.findUnique({
-        where: {
-          id,
-        },
+      const exam = await prisma.examination.findUnique({
+        where: { id },
         include: {
           status: true,
-          examFormat: true,
-          caseType: true,
+          examinationType: true,
           assignTo: {
             include: {
-              user: {
-                include: {
-                  profilePhoto: true,
-                },
-              },
+              user: { include: { profilePhoto: true } },
             },
-          },
-          referral: {
+          }, referral: {
             include: {
               organization: true,
-              claimant: {
+              claimant: { include: { address: true } },
+              insurance: true,
+              legalRepresentative: true,
+              examType: true,
+              documents: {
                 include: {
-                  address: true,
+                  document: true, // this gives you access to full document info
                 },
               },
             },
           },
-          documents: {
-            include: {
-              document: true,
-            },
-          },
-          requestedSpecialty: true,
         },
+
       });
-      if (!caseItem) {
+
+      if (!exam) {
         throw HttpError.notFound("Case not found");
       }
 
-      return caseItem;
+      return exam;
     } catch (error) {
       throw HttpError.fromError(error, "Failed to get case");
     }
   }
 
-  async listCases(where?: Prisma.CaseWhereInput) {
+  async listCases(where?: Prisma.ExaminationWhereInput) {
     try {
-      const cases = await prisma.case.findMany({
+      const exams = await prisma.examination.findMany({
         where: {
           ...where,
           deletedAt: null,
-          referral: {
-            isDraft: false,
-          },
+          referral: { isDraft: false },
         },
         include: {
           status: true,
-          caseType: true,
-          examFormat: true,
-          requestedSpecialty: true,
-          assignTo: {
-            include: {
-              user: true,
-            },
-          },
+          examinationType: true,
+          assignTo: { include: { user: true } },
           referral: {
             include: {
               organization: true,
               claimant: true,
+              insurance: true,
+              legalRepresentative: true,
+              examType: true,
+              documents: {
+                include: {
+                  document: true, // this gives you access to full document info
+                },
+              },
             },
           },
         },
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: { createdAt: "desc" },
       });
-      return cases;
+      return exams;
     } catch (error) {
       throw HttpError.fromError(error, "Failed to list cases");
     }
@@ -243,12 +214,12 @@ class CaseService {
         throw HttpError.notFound("Status not found");
       }
 
-      const caseItem = await prisma.case.update({
+      const exam = await prisma.examination.update({
         where: { id: caseId },
         data: { statusId: statusItem.id },
       });
 
-      return caseItem;
+      return exam;
     } catch (error) {
       throw HttpError.fromError(error, "Failed to update status");
     }
@@ -256,22 +227,23 @@ class CaseService {
 
   async generateSecureLink(caseId: string) {
     try {
-      const caseItem = await prisma.case.findUnique({
+      const exam = await prisma.examination.findUnique({
         where: { id: caseId },
       });
 
-      if (!caseItem) {
+      if (!exam) {
         throw HttpError.notFound("Case not found");
       }
 
       const token = v4();
       const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
-      await prisma.caseSecureLink.create({
+
+      await prisma.examinationSecureLink.create({
         data: {
-          caseId: caseId,
-          token: token,
-          expiresAt: expiresAt,
-          status: CaseSecureLinkStatus.PENDING,
+          examinationId: caseId,
+          token,
+          expiresAt,
+          status: ExaminationSecureLinkStatus.PENDING,
           lastOpenedAt: null,
           submittedAt: null,
         },

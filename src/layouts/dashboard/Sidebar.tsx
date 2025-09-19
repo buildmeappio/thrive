@@ -32,12 +32,18 @@ export const routes: Route[] = [
     index: 1,
   },
   {
+    icon: Building,
+    label: "Examiner",
+    href: "/examiner",
+    index: 2,
+  },
+  {
     icon: CaseUpper,
     label: "Cases",
     href: "/cases",
-    index: 2,
+    index: 3,
   },
-  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 3 },
+  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 4 },
 ];
 
 type SideBarItemProps = {
@@ -161,7 +167,7 @@ const Sidebar = () => {
   }, [pathname]);
 
   const handleLogout = () => {
-    signOut({ callbackUrl: "/login" });
+    signOut({ callbackUrl: "/admin/login" });
   };
 
   return (

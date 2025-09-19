@@ -18,7 +18,7 @@ const Header = ({ title }: HeaderProps) => {
     <header className="px-8">
       <div className="relative flex w-full flex-col gap-4 p-4">
         {/* Mobile Header Row */}
-        <div className="flex items-center pt-4 justify-between bg-black md:hidden">
+        <div className="flex items-center pt-4 justify-between md:hidden">
           {/* Mobile Menu Button */}
           <Button
             variant="ghost"
