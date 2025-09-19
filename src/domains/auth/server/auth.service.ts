@@ -104,7 +104,6 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
         agreeToTermsAndPrivacy: agreeTermsConditions,
         dataSharingConsent: consentSecureDataHandling,
         isAuthorized: authorizedToCreateAccount,
-        // status: 'PENDING',
       },
     });
 
@@ -156,7 +155,13 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
       },
     });
 
-    return { organizationId: organization.id, userId: user.id, accountId: account.id };
+    return {
+      organizationId: organization.id,
+      userId: user.id,
+      accountId: account.id,
+      email: user.email,
+      hashedPassword: hashedPassword,
+    };
   });
 };
 
@@ -220,48 +225,17 @@ const getOrganization = async () => {
   }
 };
 
-const getCaseTypes = async () => {
+const getExaminationTypes = async () => {
   try {
-    const caseTypes = await prisma.caseType.findMany({
+    const examinationTypes = await prisma.examinationType.findMany({
       where: {
         deletedAt: null,
       },
     });
-    if (!caseTypes) throw HttpError.notFound('Case types not found');
-    return caseTypes;
+    if (!examinationTypes) throw HttpError.notFound('Examination types not found');
+    return examinationTypes;
   } catch (error) {
-    throw HttpError.handleServiceError(error, 'Failed to get case types');
-  }
-};
-
-const getExamFormats = async () => {
-  try {
-    const examFormats = await prisma.examFormat.findMany({
-      where: {
-        deletedAt: null,
-      },
-    });
-    if (!examFormats) throw HttpError.notFound('Exam formats not found');
-    return examFormats;
-  } catch (error) {
-    throw HttpError.handleServiceError(error, 'Failed to get exam formats');
-  }
-};
-
-const getRequestedSpecialties = async () => {
-  try {
-    const requestedSpecialties = await prisma.requestedSpecialty.findMany({
-      where: {
-        deletedAt: null,
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    });
-    if (!requestedSpecialties) throw HttpError.notFound('Requested specialties not found');
-    return requestedSpecialties;
-  } catch (error) {
-    throw HttpError.handleServiceError(error, 'Failed to get requested specialties');
+    throw HttpError.handleServiceError(error, 'Failed to get examination types');
   }
 };
 
@@ -333,9 +307,7 @@ const authService = {
   getOrganizationTypes,
   getDepartments,
   getOrganization,
-  getCaseTypes,
-  getExamFormats,
-  getRequestedSpecialties,
+  getExaminationTypes,
   sendOtp,
   verifyOtp,
   checkUserByEmail,

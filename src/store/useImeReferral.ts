@@ -1,100 +1,81 @@
+import { type ExaminationData } from '@/domains/ime-referral/schemas/imeReferral';
 import { create } from 'zustand';
-
-export type CaseData = {
-  id?: string;
-  reason: string;
-  caseType: string;
-  urgencyLevel: string;
-  examFormat: string;
-  requestedSpecialty: string;
-  preferredLocation: string;
-  files: File[];
-};
 
 export type IMEFormData = {
   step1?: {
     firstName: string;
     lastName: string;
-    dob: string;
+    dateOfBirth: string;
     gender: string;
-    phone: string;
-    email: string;
+    phoneNumber: string;
+    emailAddress: string;
     addressLookup: string;
-    street?: string;
-    apt?: string;
-    city?: string;
-    postalCode?: string;
-    province?: string;
+    street: string;
+    suite: string;
+    city: string;
+    province: string;
+    postalCode: string;
+    relatedCasesDetails: string;
+    familyDoctorName: string;
+    familyDoctorEmail: string;
+    familyDoctorPhone: string;
+    familyDoctorFax: string;
   };
   step2?: {
-    cases: CaseData[];
+    legalCompanyName: string;
+    legalContactPerson: string;
+    legalPhone: string;
+    legalFaxNo: string;
+    legalAddressLookup: string;
+    legalStreetAddress: string;
+    legalAptUnitSuite: string;
+    legalCity: string;
+    legalPostalCode: string;
+    legalProvinceState: string;
+
+    // Insurance fields
+    insuranceCompanyName: string;
+    insuranceAdjusterContact: string;
+    insurancePolicyNo: string;
+    insuranceClaimNo: string;
+    insuranceDateOfLoss: string;
+    insuranceAddressLookup: string;
+    insuranceStreetAddress: string;
+    insuranceAptUnitSuite: string;
+    insuranceCity: string;
+    insurancePhone: string;
+    insuranceFaxNo: string;
+    insuranceEmailAddress: string;
+
+    // Policy holder fields
+    policyHolderSameAsClaimant?: boolean;
+    policyHolderFirstName: string;
+    policyHolderLastName: string;
   };
   step3?: {
+    examTypes: { id: string; label: string }[];
+  };
+  step4?: ExaminationData;
+  step5?: {
+    files: File[];
+  };
+  step6?: {
     consentForSubmission: boolean;
+    isDraft?: boolean;
   };
 };
 
 type FormStore = {
   data: IMEFormData;
-  currentCaseIndex: number;
   setData: <K extends keyof IMEFormData>(step: K, value: IMEFormData[K]) => void;
-  addCase: (caseData: CaseData) => void;
-  updateCase: (index: number, caseData: CaseData) => void;
-  removeCase: (index: number) => void;
-  setCurrentCaseIndex: (index: number) => void;
   reset: () => void;
 };
 
 export const useIMEReferralStore = create<FormStore>(set => ({
   data: {},
-  currentCaseIndex: 0,
-
   setData: (step, value) =>
     set(state => ({
       data: { ...state.data, [step]: value },
     })),
-
-  addCase: caseData =>
-    set(state => ({
-      data: {
-        ...state.data,
-        step2: {
-          cases: [...(state.data.step2?.cases || []), caseData],
-        },
-      },
-    })),
-
-  updateCase: (index, caseData) =>
-    set(state => {
-      const cases = state.data.step2?.cases || [];
-      const updatedCases = [...cases];
-      updatedCases[index] = caseData;
-
-      return {
-        data: {
-          ...state.data,
-          step2: { cases: updatedCases },
-        },
-      };
-    }),
-
-  removeCase: index =>
-    set(state => {
-      const cases = state.data.step2?.cases || [];
-      const updatedCases = cases.filter((_, i) => i !== index);
-      const currentIndex = state.currentCaseIndex;
-
-      return {
-        data: {
-          ...state.data,
-          step2: { cases: updatedCases },
-        },
-        currentCaseIndex:
-          currentIndex >= updatedCases.length ? Math.max(0, updatedCases.length - 1) : currentIndex,
-      };
-    }),
-
-  setCurrentCaseIndex: index => set({ currentCaseIndex: index }),
-
-  reset: () => set({ data: {}, currentCaseIndex: 0 }),
+  reset: () => set({ data: {} }),
 }));

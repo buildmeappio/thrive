@@ -12,9 +12,7 @@ export type CreateIMEReferralData = {
   postalCode?: string;
   province?: string;
   reason: string;
-  caseType: string;
   urgencyLevel: string;
-  examFormat: string;
   requestedSpecialty: string;
   preferredLocation: string;
   files: File[];

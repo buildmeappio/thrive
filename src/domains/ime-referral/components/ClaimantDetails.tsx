@@ -17,6 +17,7 @@ import { useIMEReferralStore } from '@/store/useImeReferral';
 import ContinueButton from '@/components/ContinueButton';
 import ProgressIndicator from './ProgressIndicator';
 import { type IMEReferralProps } from '@/types/imeReferralProps';
+import { Textarea } from '@/components/ui/textarea';
 
 const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, totalSteps }) => {
   const { data, setData } = useIMEReferralStore();
@@ -47,15 +48,15 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
         style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
-          <div className="w-full max-w-full md:space-y-12">
+          <div className="w-full max-w-full space-y-6">
             <div className="w-full max-w-full px-4 md:px-0">
-              <h2 className="text-[23px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000] md:text-2xl">
+              <h2 className="mb-6 text-[23px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000] md:text-2xl">
                 Claimant Details
               </h2>
 
-              {/* Top Row */}
-              <div className="mt-4 grid w-full max-w-full grid-cols-1 gap-6 md:grid-cols-5">
-                <div className="min-w-0 space-y-2 md:col-span-2">
+              {/* First Row: First Name, Last Name, Date of Birth */}
+              <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-5">
+                <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="firstName">
                     First Name<span className="text-red-500">*</span>
                   </Label>
@@ -70,7 +71,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                   )}
                 </div>
 
-                <div className="min-w-0 space-y-2 md:col-span-2">
+                <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="lastName">
                     Last Name<span className="text-red-500">*</span>
                   </Label>
@@ -85,29 +86,27 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                   )}
                 </div>
 
-                <div className="min-w-0 space-y-2 md:col-span-1">
-                  <Label htmlFor="dob">
+                <div className="space-y-2 md:col-span-1">
+                  <Label htmlFor="dateOfBirth">
                     Date of Birth<span className="text-red-500">*</span>
                   </Label>
-                  <div className="relative">
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('dob')}
-                      placeholder="MM/DD/YYYY"
-                      type="date"
-                      max={new Date().toISOString().split('T')[0]}
-                      className={`w-full pr-10 ${errors.dob ? 'border-red-500' : ''}`}
-                      style={{ appearance: 'none' }}
-                    />
-                  </div>
-                  {errors.dob && <p className="text-sm text-red-500">{errors.dob.message}</p>}
+                  <Input
+                    disabled={isSubmitting}
+                    {...register('dateOfBirth')}
+                    placeholder="MM/DD/YYYY"
+                    type="date"
+                    max={new Date().toISOString().split('T')[0]}
+                    className={`w-full ${errors.dateOfBirth ? 'border-red-500' : ''}`}
+                  />
+                  {errors.dateOfBirth && (
+                    <p className="text-sm text-red-500">{errors.dateOfBirth.message}</p>
+                  )}
                 </div>
               </div>
 
-              {/* Second Row */}
-              <div className="mt-6 grid w-full max-w-full grid-cols-1 gap-6 md:grid-cols-5">
-                {/* Gender (smaller) */}
-                <div className="min-w-0 space-y-2 md:col-span-1">
+              {/* Second Row: Gender, Phone, Email */}
+              <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-5">
+                <div className="space-y-2 md:col-span-1">
                   <Label htmlFor="gender">
                     Gender<span className="text-red-500">*</span>
                   </Label>
@@ -117,45 +116,47 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                     value={watchedValues.gender || ''}
                     onChange={(val: string) => setValue('gender', val)}
                     options={genderOptions}
-                    placeholder="Select gender"
-                    className={`w-full ${errors.gender ? 'border-red-500' : ''}`}
+                    placeholder="Select"
+                    className="w-full"
                     icon={false}
                   />
                   {errors.gender && <p className="text-sm text-red-500">{errors.gender.message}</p>}
                 </div>
 
-                {/* Phone (bigger) */}
-                <div className="min-w-0 space-y-2 md:col-span-2">
-                  <Label htmlFor="phone">
-                    Phone<span className="text-red-500">*</span>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="phoneNumber">
+                    Phone No.<span className="text-red-500">*</span>
                   </Label>
                   <Input
                     disabled={isSubmitting}
-                    {...register('phone')}
-                    placeholder="4444444444"
-                    className={`w-full ${errors.phone ? 'border-red-500' : ''}`}
+                    {...register('phoneNumber')}
+                    placeholder="444444444"
+                    className={`w-full ${errors.phoneNumber ? 'border-red-500' : ''}`}
                   />
-                  {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
+                  {errors.phoneNumber && (
+                    <p className="text-sm text-red-500">{errors.phoneNumber.message}</p>
+                  )}
                 </div>
 
-                {/* Email (bigger) */}
-                <div className="min-w-0 space-y-2 md:col-span-2">
-                  <Label htmlFor="email">
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="emailAddress">
                     Email Address<span className="text-red-500">*</span>
                   </Label>
                   <Input
                     disabled={isSubmitting}
-                    {...register('email')}
+                    {...register('emailAddress')}
                     type="email"
                     placeholder="johndoe20@gmail.com"
-                    className={`w-full ${errors.email ? 'border-red-500' : ''}`}
+                    className={`w-full ${errors.emailAddress ? 'border-red-500' : ''}`}
                   />
-                  {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+                  {errors.emailAddress && (
+                    <p className="text-sm text-red-500">{errors.emailAddress.message}</p>
+                  )}
                 </div>
               </div>
 
               {/* Address Lookup */}
-              <div className="mt-6 w-full max-w-full space-y-2">
+              <div className="mb-4 w-full max-w-full space-y-2">
                 <Label htmlFor="addressLookup">
                   Address Lookup<span className="text-red-500">*</span>
                 </Label>
@@ -173,11 +174,12 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                 )}
               </div>
 
-              {/* Street / Apt / City */}
-              <div className="mt-6 grid w-full max-w-full grid-cols-1 gap-6 md:grid-cols-5">
-                {/* Street (wider) */}
-                <div className="min-w-0 space-y-2 md:col-span-3">
-                  <Label htmlFor="street">Street Address</Label>
+              {/* Third Row: Street Address, Apt/Unit/Suite, City */}
+              <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-5">
+                <div className="space-y-2 md:col-span-3">
+                  <Label htmlFor="street">
+                    Street Address<span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     disabled={isSubmitting}
                     {...register('street')}
@@ -187,33 +189,36 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                   {errors.street && <p className="text-sm text-red-500">{errors.street.message}</p>}
                 </div>
 
-                {/* Apt / Unit / Suite (smaller, equal to City) */}
-                <div className="min-w-0 space-y-2 md:col-span-1">
-                  <Label htmlFor="apt">Apt / Unit / Suite</Label>
+                <div className="space-y-2 md:col-span-1">
+                  <Label htmlFor="suite">
+                    Apt / Unit / Suite<span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     disabled={isSubmitting}
-                    {...register('apt')}
+                    {...register('suite')}
                     placeholder="402"
                     className="w-full"
                   />
+                  {errors.suite && <p className="text-sm text-red-500">{errors.suite.message}</p>}
                 </div>
 
-                {/* City (smaller, equal to Apt) */}
-                <div className="min-w-0 space-y-2 md:col-span-1">
-                  <Label htmlFor="city">City</Label>
+                <div className="space-y-2 md:col-span-1">
+                  <Label htmlFor="city">
+                    City<span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     disabled={isSubmitting}
                     {...register('city')}
                     placeholder="Toronto"
                     className="w-full"
                   />
+                  {errors.city && <p className="text-sm text-red-500">{errors.city.message}</p>}
                 </div>
               </div>
 
-              {/* Postal Code / Province */}
-              <div className="mt-6 grid w-full max-w-full grid-cols-1 gap-6 md:grid-cols-5">
-                {/* Postal Code */}
-                <div className="min-w-0 space-y-2 md:col-span-1">
+              {/* Fourth Row: Postal Code, Province */}
+              <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="space-y-2">
                   <Label htmlFor="postalCode">
                     Postal Code<span className="text-red-500">*</span>
                   </Label>
@@ -227,25 +232,115 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                     <p className="text-sm text-red-500">{errors.postalCode.message}</p>
                   )}
                 </div>
-
-                {/* Province / State */}
-                <div className="min-w-0 space-y-2 md:col-span-1">
-                  <Label htmlFor="province">Province / State</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="province">
+                    Province / State<span className="text-red-500">*</span>
+                  </Label>
                   <Dropdown
                     id="province"
                     label=""
                     value={watchedValues.province ?? ''}
                     onChange={(val: string) => setValue('province', val)}
                     options={provinceOptions}
-                    placeholder="Select province"
+                    placeholder="Select"
                     className="w-full"
                   />
+                  {errors.province && (
+                    <p className="text-sm text-red-500">{errors.province.message}</p>
+                  )}
+                </div>
+                <div></div>
+              </div>
+
+              {/* Family Doctor Section */}
+              <div className="w-full max-w-full space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="relatedCasesDetails">
+                    Related Cases Details<span className="text-red-500">*</span>
+                  </Label>
+                  <Textarea
+                    disabled={isSubmitting}
+                    {...register('relatedCasesDetails')}
+                    placeholder="Type here"
+                    className={`mt-2 min-h-[100px] w-full resize-none ${errors.relatedCasesDetails ? 'border-red-500' : ''}`}
+                  />
+                  {errors.relatedCasesDetails && (
+                    <p className="text-sm text-red-500">{errors.relatedCasesDetails.message}</p>
+                  )}
+                </div>
+                {/* Family Doctor Address and Email */}
+                <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="familyDoctorName">
+                      Family Doctor<span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      disabled={isSubmitting}
+                      {...register('familyDoctorName')}
+                      placeholder="Dr. John Doe"
+                      className="w-full"
+                    />
+                    {errors.familyDoctorName && (
+                      <p className="text-sm text-red-500">{errors.familyDoctorName.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="familyDoctorEmail">
+                      Email Address<span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      disabled={isSubmitting}
+                      {...register('familyDoctorEmail')}
+                      type="email"
+                      placeholder="johndoe20@gmail.com"
+                      className="w-full"
+                    />
+                    {errors.familyDoctorEmail && (
+                      <p className="text-sm text-red-500">{errors.familyDoctorEmail.message}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Phone and Fax */}
+                <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="familyDoctorPhone">
+                      Phone No.<span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      disabled={isSubmitting}
+                      {...register('familyDoctorPhone')}
+                      placeholder="4444444444"
+                      className="w-full"
+                    />
+                    {errors.familyDoctorPhone && (
+                      <p className="text-sm text-red-500">{errors.familyDoctorPhone.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="familyDoctorFax">
+                      Fax No.<span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      disabled={isSubmitting}
+                      {...register('familyDoctorFax')}
+                      placeholder="4444444444"
+                      className="w-full"
+                    />
+                    {errors.familyDoctorFax && (
+                      <p className="text-sm text-red-500">{errors.familyDoctorFax.message}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Buttons */}
-            <div className="mt-8 flex justify-end px-4 md:mt-0 md:mb-0 md:px-0">
+            <div className="flex justify-between px-4 md:px-0">
+              <div></div>
+
               <ContinueButton
                 isSubmitting={isSubmitting}
                 isLastStep={currentStep === totalSteps}

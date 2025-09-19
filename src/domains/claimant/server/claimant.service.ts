@@ -7,10 +7,10 @@ import ErrorMessages from '@/constants/ErrorMessages';
 
 const getClaimant = async (token: string) => {
   try {
-    const link = await prisma.caseSecureLink.findFirst({
+    const link = await prisma.examinationSecureLink.findFirst({
       where: { token },
       include: {
-        case: {
+        examination: {
           include: {
             claimantAvailability: {
               include: {
@@ -29,19 +29,19 @@ const getClaimant = async (token: string) => {
     }
 
     // Optionally: mark last opened
-    await prisma.caseSecureLink.update({
+    await prisma.examinationSecureLink.update({
       where: { id: link.id },
       data: { lastOpenedAt: new Date() },
     });
 
-    return link.case.claimantAvailability;
+    return link.examination.claimantAvailability;
   } catch (error) {
     throw HttpError.handleServiceError(error, 'Error fetching claimant');
   }
 };
 
 export const getCaseSummary = async (caseId: string) => {
-  const caseData = await prisma.case.findUnique({
+  const caseData = await prisma.examination.findUnique({
     where: { caseNumber: caseId },
     select: {
       id: true,
@@ -92,7 +92,7 @@ const createClaimantAvailability = async (data: CreateClaimantAvailabilityData) 
     }
   });
 
-  const caseData = await prisma.case.findUnique({
+  const caseData = await prisma.examination.findUnique({
     where: { id: data.caseId },
     include: {
       referral: {
@@ -113,7 +113,7 @@ const createClaimantAvailability = async (data: CreateClaimantAvailabilityData) 
 
   const existingAvailability = await prisma.claimantAvailability.findFirst({
     where: {
-      caseId: data.caseId,
+      examinationId: data.caseId,
       claimantId: data.claimantId,
     },
   });
@@ -126,7 +126,7 @@ const createClaimantAvailability = async (data: CreateClaimantAvailabilityData) 
     const result = await prisma.$transaction(async tx => {
       const availability = await tx.claimantAvailability.create({
         data: {
-          caseId: data.caseId,
+          examinationId: data.caseId,
           claimantId: data.claimantId,
           preference: data.preference,
           accessibilityNotes: data.accessibilityNotes,

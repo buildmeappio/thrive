@@ -2,12 +2,15 @@
 
 import { useMemo, useState } from 'react';
 import ClaimantDetails from './ClaimantDetails';
-import CaseInfo from './CaseInfo';
 import ConsentInfo from './ConsentInfo';
 import ReferralSubmitted from './ReferralSubmitted';
+import ExaminationDetails from './ExaminationDetails';
+import LegalAndInsuranceDetailsForm from './LegalAndInsuranceDetails';
+import ExamType from './ExamType';
+import { type getExamTypes } from '../actions';
 import { convertToTypeOptions } from '@/utils/convertToTypeOptions';
-
-import type { getCaseTypes, getExamFormats, getRequestedSpecialties } from '@/domains/auth/actions';
+import DocumentUpload from './DocumentUpload';
+import { type getExaminationTypes } from '@/domains/auth/actions';
 
 interface StepConfig {
   component: React.ComponentType<StepProps>;
@@ -21,35 +24,35 @@ interface StepProps {
 }
 
 interface IMEReferralProps {
-  caseTypes: Awaited<ReturnType<typeof getCaseTypes>>['result'];
-  examFormats: Awaited<ReturnType<typeof getExamFormats>>['result'];
-  requestedSpecialties: Awaited<ReturnType<typeof getRequestedSpecialties>>['result'];
+  examinationTypes: Awaited<ReturnType<typeof getExaminationTypes>>['result'];
+  examTypes: Awaited<ReturnType<typeof getExamTypes>>['result'];
 }
 
-const IMEReferral: React.FC<IMEReferralProps> = ({
-  caseTypes,
-  examFormats,
-  requestedSpecialties,
-}) => {
+const IMEReferral: React.FC<IMEReferralProps> = ({ examinationTypes, examTypes }) => {
   const [currentStep, setCurrentStep] = useState(1);
 
   const STEPS: StepConfig[] = useMemo(
     () => [
       { component: ClaimantDetails },
+      { component: LegalAndInsuranceDetailsForm },
       {
         component: (props: StepProps) => (
-          <CaseInfo
-            caseTypes={convertToTypeOptions(caseTypes)}
-            examFormats={convertToTypeOptions(examFormats)}
-            requestedSpecialties={convertToTypeOptions(requestedSpecialties)}
+          <ExamType examTypes={convertToTypeOptions(examTypes)} {...props} />
+        ),
+      },
+      {
+        component: (props: StepProps) => (
+          <ExaminationDetails
+            examinationTypes={convertToTypeOptions(examinationTypes)}
             {...props}
           />
         ),
       },
+      { component: DocumentUpload },
       { component: ConsentInfo },
       { component: ReferralSubmitted },
     ],
-    [caseTypes, examFormats, requestedSpecialties]
+    [examTypes, examinationTypes]
   );
 
   const goToNext = (): void => {
