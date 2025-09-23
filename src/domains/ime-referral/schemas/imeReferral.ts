@@ -39,6 +39,7 @@ const FileSchema = z.instanceof(File).superRefine((file, ctx) => {
 
 // Step 1 - Claimant Details Schema
 export const ClaimantDetailsSchema = z.object({
+  // Required fields
   firstName: z
     .string()
     .min(1, ErrorMessages.FIRST_NAME_REQUIRED)
@@ -49,14 +50,17 @@ export const ClaimantDetailsSchema = z.object({
     .min(1, ErrorMessages.LAST_NAME_REQUIRED)
     .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.LAST_NAME_INVALID),
 
+  addressLookup: z.string().min(5, ErrorMessages.ADDRESS_LOOKUP_REQUIRED),
+
+  // Optional fields - use .optional() to make them not required
   dateOfBirth: z
     .string()
-    .min(1, ErrorMessages.DOB_REQUIRED)
-    .refine(val => !isNaN(Date.parse(val)), {
+    .refine(val => val === '' || !isNaN(Date.parse(val)), {
       message: ErrorMessages.DOB_INVALID,
     })
     .refine(
       val => {
+        if (val === '') return true; // Allow empty string
         const selectedDate = new Date(val);
         const today = new Date();
         return selectedDate <= today;
@@ -64,51 +68,63 @@ export const ClaimantDetailsSchema = z.object({
       {
         message: ErrorMessages.DOB_FUTURE_DATE_NOT_ALLOWED,
       }
-    ),
+    )
+    .optional(),
 
-  gender: z.string().min(1, ErrorMessages.GENDER_REQUIRED),
+  gender: z.string().optional(),
 
   phoneNumber: z
     .string()
-    .min(1, ErrorMessages.PHONE_REQUIRED)
-    .regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_PHONE_NUMBER),
+    .refine(val => val === '' || /^\+?1?\d{10}$/.test(val), {
+      message: ErrorMessages.INVALID_PHONE_NUMBER,
+    })
+    .optional(),
 
-  emailAddress: z.string().email(ErrorMessages.INVALID_EMAIL).min(1, ErrorMessages.EMAIL_REQUIRED),
+  emailAddress: z
+    .string()
+    .refine(val => val === '' || z.string().email().safeParse(val).success, {
+      message: ErrorMessages.INVALID_EMAIL,
+    })
+    .optional(),
 
-  addressLookup: z.string().min(5, ErrorMessages.ADDRESS_LOOKUP_REQUIRED),
-
-  street: z.string().min(1, ErrorMessages.STREET_ADDRESS_REQUIRED),
-  suite: z.string().min(1, ErrorMessages.SUITE_REQUIRED),
-  city: z.string().min(1, ErrorMessages.CITY_REQUIRED),
+  street: z.string().optional(),
+  suite: z.string().optional(),
+  city: z.string().optional(),
 
   postalCode: z
     .string()
-    .regex(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/, ErrorMessages.INVALID_POSTAL_CODE)
-    .min(1, ErrorMessages.POSTAL_CODE_REQUIRED),
+    .refine(val => val === '' || /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(val), {
+      message: ErrorMessages.INVALID_POSTAL_CODE,
+    })
+    .optional(),
 
-  province: z.string().min(1, ErrorMessages.PROVINCE_REQUIRED),
+  province: z.string().optional(),
 
-  // family doctor fields
-  relatedCasesDetails: z.string().min(1, ErrorMessages.RELATED_CASES_DETAILS_REQUIRED),
-  familyDoctorName: z.string().min(1, ErrorMessages.FAMILY_DOCTOR_NAME_REQUIRED),
+  // Optional family doctor fields
+  relatedCasesDetails: z.string().optional(),
+  familyDoctorName: z.string().optional(),
   familyDoctorEmail: z
     .string()
-    .email(ErrorMessages.INVALID_EMAIL)
-    .min(1, ErrorMessages.FAMILY_DOCTOR_EMAIL_REQUIRED),
-  familyDoctorPhone: z.string().min(1, ErrorMessages.FAMILY_DOCTOR_PHONE_REQUIRED),
-  familyDoctorFax: z.string().min(1, ErrorMessages.FAMILY_DOCTOR_FAX_REQUIRED),
+    .refine(val => val === '' || z.string().email().safeParse(val).success, {
+      message: ErrorMessages.INVALID_EMAIL,
+    })
+    .optional(),
+
+  familyDoctorPhone: z.string().optional(),
+  familyDoctorFax: z.string().optional(),
 });
 
 export type ClaimantDetails = z.infer<typeof ClaimantDetailsSchema>;
 
+// initial values
 export const ClaimantDetailsInitialValues: ClaimantDetails = {
   firstName: '',
   lastName: '',
+  addressLookup: '',
   dateOfBirth: '',
   gender: '',
   phoneNumber: '',
   emailAddress: '',
-  addressLookup: '',
   street: '',
   suite: '',
   city: '',
@@ -121,49 +137,20 @@ export const ClaimantDetailsInitialValues: ClaimantDetails = {
   familyDoctorFax: '',
 };
 
-// Step 2 - Organization Details Schema
-export const LegalInsuranceDetailsSchema = z.object({
-  // Legal Representative fields
-  legalCompanyName: z
-    .string()
-    .min(1, ErrorMessages.COMPANY_NAME_REQUIRED)
-    .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.COMPANY_NAME_INVALID),
-
-  legalContactPerson: z
-    .string()
-    .min(1, ErrorMessages.CONTACT_PERSON_REQUIRED)
-    .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.CONTACT_PERSON_INVALID),
-
-  legalPhone: z
-    .string()
-    .min(1, ErrorMessages.PHONE_REQUIRED)
-    .regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_PHONE_NUMBER),
-
-  legalFaxNo: z
-    .string()
-    .min(1, ErrorMessages.FAX_REQUIRED)
-    .regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_FAX_NUMBER),
-
-  legalAddressLookup: z.string().min(5, ErrorMessages.ADDRESS_LOOKUP_REQUIRED),
-  legalStreetAddress: z.string().min(1, ErrorMessages.STREET_ADDRESS_REQUIRED),
-  legalAptUnitSuite: z.string().min(1, ErrorMessages.SUITE_REQUIRED),
-  legalCity: z.string().min(1, ErrorMessages.CITY_REQUIRED),
-  legalPostalCode: z
-    .string()
-    .regex(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/, ErrorMessages.INVALID_POSTAL_CODE)
-    .min(1, ErrorMessages.POSTAL_CODE_REQUIRED),
-  legalProvinceState: z.string().min(1, ErrorMessages.PROVINCE_REQUIRED),
-
-  // Insurance Details fields
+// Step 2 - Insurance Details Schema
+export const InsuranceDetailsSchema = z.object({
   insuranceCompanyName: z.string().min(1, 'Insurance company name is required'),
   insuranceAdjusterContact: z.string().min(1, 'Adjuster/contact is required'),
   insurancePolicyNo: z.string().min(1, 'Policy number is required'),
   insuranceClaimNo: z.string().min(1, 'Claim number is required'),
   insuranceDateOfLoss: z.string().min(1, 'Date of loss is required'),
-  insuranceAddressLookup: z.string().min(5, ErrorMessages.ADDRESS_LOOKUP_REQUIRED),
-  insuranceStreetAddress: z.string().min(1, ErrorMessages.STREET_ADDRESS_REQUIRED),
-  insuranceAptUnitSuite: z.string().min(1, ErrorMessages.SUITE_REQUIRED),
-  insuranceCity: z.string().min(1, ErrorMessages.CITY_REQUIRED),
+
+  // Optional address fields
+  insuranceAddressLookup: z.string().optional(),
+  insuranceStreetAddress: z.string().optional(),
+  insuranceAptUnitSuite: z.string().optional(),
+  insuranceCity: z.string().optional(),
+
   insurancePhone: z
     .string()
     .min(1, 'Phone is required')
@@ -180,9 +167,63 @@ export const LegalInsuranceDetailsSchema = z.object({
   policyHolderLastName: z.string().min(1, 'Last name is required'),
 });
 
-export type LegalInsuranceDetails = z.infer<typeof LegalInsuranceDetailsSchema>;
+export type InsuranceDetails = z.infer<typeof InsuranceDetailsSchema>;
 
-export const LegalInsuranceDetailsInitialValues: LegalInsuranceDetails = {
+export const InsuranceDetailsInitialValues: InsuranceDetails = {
+  insuranceCompanyName: '',
+  insuranceAdjusterContact: '',
+  insurancePolicyNo: '',
+  insuranceClaimNo: '',
+  insuranceDateOfLoss: '',
+  // Optional address fields - can be undefined or empty strings
+  insuranceAddressLookup: '',
+  insuranceStreetAddress: '',
+  insuranceAptUnitSuite: '',
+  insuranceCity: '',
+  insurancePhone: '',
+  insuranceFaxNo: '',
+  insuranceEmailAddress: '',
+  // Policy holder fields
+  policyHolderSameAsClaimant: false,
+  policyHolderFirstName: '',
+  policyHolderLastName: '',
+};
+export const LegalDetailsSchema = z.object({
+  // Legal Representative fields - all optional
+  legalCompanyName: z
+    .string()
+    .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.COMPANY_NAME_INVALID)
+    .optional(),
+
+  legalContactPerson: z
+    .string()
+    .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.CONTACT_PERSON_INVALID)
+    .optional(),
+
+  legalPhone: z
+    .string()
+    .regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_PHONE_NUMBER)
+    .optional(),
+
+  legalFaxNo: z
+    .string()
+    .regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_FAX_NUMBER)
+    .optional(),
+
+  legalAddressLookup: z.string().optional(),
+  legalStreetAddress: z.string().optional(),
+  legalAptUnitSuite: z.string().optional(),
+  legalCity: z.string().optional(),
+  legalPostalCode: z
+    .string()
+    .regex(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/, ErrorMessages.INVALID_POSTAL_CODE)
+    .optional(),
+  legalProvinceState: z.string().optional(),
+});
+
+export type LegalDetails = z.infer<typeof LegalDetailsSchema>;
+
+export const LegalDetailsInitialValues: LegalDetails = {
   legalCompanyName: '',
   legalContactPerson: '',
   legalPhone: '',
@@ -193,27 +234,7 @@ export const LegalInsuranceDetailsInitialValues: LegalInsuranceDetails = {
   legalCity: '',
   legalPostalCode: '',
   legalProvinceState: '',
-
-  // Insurance fields
-  insuranceCompanyName: '',
-  insuranceAdjusterContact: '',
-  insurancePolicyNo: '',
-  insuranceClaimNo: '',
-  insuranceDateOfLoss: '',
-  insuranceAddressLookup: '',
-  insuranceStreetAddress: '',
-  insuranceAptUnitSuite: '',
-  insuranceCity: '',
-  insurancePhone: '',
-  insuranceFaxNo: '',
-  insuranceEmailAddress: '',
-
-  // Policy holder fields
-  policyHolderSameAsClaimant: false,
-  policyHolderFirstName: '',
-  policyHolderLastName: '',
 };
-
 // Step 3 - Exam Type Selection Schema
 export const ExamTypeItemSchema = z.object({
   id: z.string(),

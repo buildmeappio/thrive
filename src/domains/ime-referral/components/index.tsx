@@ -5,12 +5,13 @@ import ClaimantDetails from './ClaimantDetails';
 import ConsentInfo from './ConsentInfo';
 import ReferralSubmitted from './ReferralSubmitted';
 import ExaminationDetails from './ExaminationDetails';
-import LegalAndInsuranceDetailsForm from './LegalAndInsuranceDetails';
+import LegalAndInsuranceDetailsForm from './LegalDetails';
 import ExamType from './ExamType';
 import { type getExamTypes } from '../actions';
 import { convertToTypeOptions } from '@/utils/convertToTypeOptions';
 import DocumentUpload from './DocumentUpload';
 import { type getExaminationTypes } from '@/domains/auth/actions';
+import InsuranceDetails from './InsuranceDetails';
 
 interface StepConfig {
   component: React.ComponentType<StepProps>;
@@ -34,6 +35,7 @@ const IMEReferral: React.FC<IMEReferralProps> = ({ examinationTypes, examTypes }
   const STEPS: StepConfig[] = useMemo(
     () => [
       { component: ClaimantDetails },
+      { component: InsuranceDetails },
       { component: LegalAndInsuranceDetailsForm },
       {
         component: (props: StepProps) => (

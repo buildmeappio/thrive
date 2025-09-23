@@ -2,7 +2,6 @@
 
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui/input';
 import { MapPin } from 'lucide-react';
 import { Dropdown } from '@/components/Dropdown';
@@ -18,6 +17,7 @@ import ContinueButton from '@/components/ContinueButton';
 import ProgressIndicator from './ProgressIndicator';
 import { type IMEReferralProps } from '@/types/imeReferralProps';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, totalSteps }) => {
   const { data, setData } = useIMEReferralStore();
@@ -87,9 +87,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                 </div>
 
                 <div className="space-y-2 md:col-span-1">
-                  <Label htmlFor="dateOfBirth">
-                    Date of Birth<span className="text-red-500">*</span>
-                  </Label>
+                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
                   <Input
                     disabled={isSubmitting}
                     {...register('dateOfBirth')}
@@ -107,9 +105,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
               {/* Second Row: Gender, Phone, Email */}
               <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-5">
                 <div className="space-y-2 md:col-span-1">
-                  <Label htmlFor="gender">
-                    Gender<span className="text-red-500">*</span>
-                  </Label>
+                  <Label htmlFor="gender">Gender</Label>
                   <Dropdown
                     id="gender"
                     label=""
@@ -124,9 +120,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="phoneNumber">
-                    Phone No.<span className="text-red-500">*</span>
-                  </Label>
+                  <Label htmlFor="phoneNumber">Phone No.</Label>
                   <Input
                     disabled={isSubmitting}
                     {...register('phoneNumber')}
@@ -145,9 +139,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="emailAddress">
-                    Email Address<span className="text-red-500">*</span>
-                  </Label>
+                  <Label htmlFor="emailAddress">Email Address</Label>
                   <Input
                     disabled={isSubmitting}
                     {...register('emailAddress')}
@@ -183,9 +175,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
               {/* Third Row: Street Address, Apt/Unit/Suite, City */}
               <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-5">
                 <div className="space-y-2 md:col-span-3">
-                  <Label htmlFor="street">
-                    Street Address<span className="text-red-500">*</span>
-                  </Label>
+                  <Label htmlFor="street">Street Address</Label>
                   <Input
                     disabled={isSubmitting}
                     {...register('street')}
@@ -196,9 +186,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                 </div>
 
                 <div className="space-y-2 md:col-span-1">
-                  <Label htmlFor="suite">
-                    Apt / Unit / Suite<span className="text-red-500">*</span>
-                  </Label>
+                  <Label htmlFor="suite">Apt / Unit / Suite</Label>
                   <Input
                     disabled={isSubmitting}
                     {...register('suite')}
@@ -209,9 +197,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                 </div>
 
                 <div className="space-y-2 md:col-span-1">
-                  <Label htmlFor="city">
-                    City<span className="text-red-500">*</span>
-                  </Label>
+                  <Label htmlFor="city">City</Label>
                   <Input
                     disabled={isSubmitting}
                     {...register('city')}
@@ -225,9 +211,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
               {/* Fourth Row: Postal Code, Province */}
               <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="postalCode">
-                    Postal Code<span className="text-red-500">*</span>
-                  </Label>
+                  <Label htmlFor="postalCode">Postal Code</Label>
                   <Input
                     disabled={isSubmitting}
                     {...register('postalCode')}
@@ -239,9 +223,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="province">
-                    Province / State<span className="text-red-500">*</span>
-                  </Label>
+                  <Label htmlFor="province">Province / State</Label>
                   <Dropdown
                     id="province"
                     label=""
@@ -261,9 +243,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
               {/* Family Doctor Section */}
               <div className="w-full max-w-full space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="relatedCasesDetails">
-                    Related Cases Details<span className="text-red-500">*</span>
-                  </Label>
+                  <Label htmlFor="relatedCasesDetails">Related Cases Details</Label>
                   <Textarea
                     disabled={isSubmitting}
                     {...register('relatedCasesDetails')}
@@ -277,9 +257,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                 {/* Family Doctor Address and Email */}
                 <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="familyDoctorName">
-                      Family Doctor<span className="text-red-500">*</span>
-                    </Label>
+                    <Label htmlFor="familyDoctorName">Family Doctor</Label>
                     <Input
                       disabled={isSubmitting}
                       {...register('familyDoctorName')}
@@ -292,9 +270,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="familyDoctorEmail">
-                      Email Address<span className="text-red-500">*</span>
-                    </Label>
+                    <Label htmlFor="familyDoctorEmail">Email Address</Label>
                     <Input
                       disabled={isSubmitting}
                       {...register('familyDoctorEmail')}
@@ -311,9 +287,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                 {/* Phone and Fax */}
                 <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="familyDoctorPhone">
-                      Phone No.<span className="text-red-500">*</span>
-                    </Label>
+                    <Label htmlFor="familyDoctorPhone">Phone No.</Label>
                     <Input
                       disabled={isSubmitting}
                       {...register('familyDoctorPhone')}
@@ -332,9 +306,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="familyDoctorFax">
-                      Fax No.<span className="text-red-500">*</span>
-                    </Label>
+                    <Label htmlFor="familyDoctorFax">Fax No.</Label>
                     <Input
                       disabled={isSubmitting}
                       {...register('familyDoctorFax')}

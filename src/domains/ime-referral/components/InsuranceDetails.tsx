@@ -2,23 +2,21 @@
 
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui/input';
 import { MapPin } from 'lucide-react';
-import { Dropdown } from '@/components/Dropdown';
-import { provinceOptions } from '@/config/ProvinceOptions';
 import {
-  LegalInsuranceDetailsSchema,
-  LegalInsuranceDetailsInitialValues,
-  type LegalInsuranceDetails,
+  InsuranceDetailsSchema,
+  InsuranceDetailsInitialValues,
+  type InsuranceDetails,
 } from '../schemas/imeReferral';
 import { useIMEReferralStore } from '@/store/useImeReferral';
 import ContinueButton from '@/components/ContinueButton';
 import ProgressIndicator from './ProgressIndicator';
 import { type IMEReferralProps } from '@/types/imeReferralProps';
 import BackButton from '@/components/BackButton';
+import { Label } from '@/components/ui/label';
 
-const LegalAndInsuranceDetailsForm: React.FC<IMEReferralProps> = ({
+const InsuranceDetails: React.FC<IMEReferralProps> = ({
   onNext,
   onPrevious,
   currentStep,
@@ -29,17 +27,13 @@ const LegalAndInsuranceDetailsForm: React.FC<IMEReferralProps> = ({
   const {
     register,
     handleSubmit,
-    watch,
-    setValue,
     formState: { errors, isSubmitting },
-  } = useForm<LegalInsuranceDetails>({
-    resolver: zodResolver(LegalInsuranceDetailsSchema),
-    defaultValues: data.step2 || LegalInsuranceDetailsInitialValues,
+  } = useForm<InsuranceDetails>({
+    resolver: zodResolver(InsuranceDetailsSchema),
+    defaultValues: data.step2 || InsuranceDetailsInitialValues,
   });
 
-  const watchedValues = watch();
-
-  const onSubmit: SubmitHandler<LegalInsuranceDetails> = values => {
+  const onSubmit: SubmitHandler<InsuranceDetails> = values => {
     setData('step2', values);
     if (onNext) onNext();
   };
@@ -55,194 +49,6 @@ const LegalAndInsuranceDetailsForm: React.FC<IMEReferralProps> = ({
           <div className="w-full max-w-full">
             <div className="w-full max-w-full space-y-8">
               <div className="w-full max-w-full px-4 md:px-0">
-                {/* Legal Representative Section */}
-                <h2 className="mb-6 text-[23px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000] md:text-2xl">
-                  Legal Representative
-                </h2>
-
-                {/* Company Name and Contact Person */}
-                <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="legalCompanyName">
-                      Company Name<span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('legalCompanyName')}
-                      placeholder="WSH"
-                      className="w-full"
-                    />
-                    {errors.legalCompanyName && (
-                      <p className="text-sm text-red-500">{errors.legalCompanyName.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="legalContactPerson">
-                      Contact Person<span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('legalContactPerson')}
-                      placeholder="John Doe"
-                      className="w-full"
-                    />
-                    {errors.legalContactPerson && (
-                      <p className="text-sm text-red-500">{errors.legalContactPerson.message}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Phone and Fax */}
-                <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="legalPhone">
-                      Phone<span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('legalPhone')}
-                      placeholder="4444444444"
-                      className="w-full"
-                      type="tel"
-                      onKeyPress={e => {
-                        if (!/[0-9]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
-                    />
-                    {errors.legalPhone && (
-                      <p className="text-sm text-red-500">{errors.legalPhone.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="legalFaxNo">
-                      Fax No.<span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('legalFaxNo')}
-                      placeholder="4444444444"
-                      className="w-full"
-                      type="tel"
-                      onKeyPress={e => {
-                        if (!/[0-9]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
-                    />
-                    {errors.legalFaxNo && (
-                      <p className="text-sm text-red-500">{errors.legalFaxNo.message}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Legal Address Lookup */}
-                <div className="mb-4 w-full max-w-full space-y-2">
-                  <Label htmlFor="legalAddressLookup">
-                    Address Lookup<span className="text-red-500">*</span>
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('legalAddressLookup')}
-                      placeholder="150 John Street"
-                      className="w-full pl-10"
-                    />
-                    <MapPin className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  </div>
-                  {errors.legalAddressLookup && (
-                    <p className="text-sm text-red-500">{errors.legalAddressLookup.message}</p>
-                  )}
-                </div>
-
-                {/* Legal Street Address, Apt/Unit/Suite, City */}
-                <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="legalStreetAddress">
-                      Street Address<span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('legalStreetAddress')}
-                      placeholder="50 Stephanie Street"
-                      className="w-full"
-                    />
-                    {errors.legalStreetAddress && (
-                      <p className="text-sm text-red-500">{errors.legalStreetAddress.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="legalAptUnitSuite">
-                      Apt / Unit / Suite<span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('legalAptUnitSuite')}
-                      placeholder="402"
-                      className="w-full"
-                    />
-                    {errors.legalAptUnitSuite && (
-                      <p className="text-sm text-red-500">{errors.legalAptUnitSuite.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="legalCity">
-                      City<span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('legalCity')}
-                      placeholder="Toronto"
-                      className="w-full"
-                    />
-                    {errors.legalCity && (
-                      <p className="text-sm text-red-500">{errors.legalCity.message}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Legal Postal Code and Province */}
-                <div className="mb-8 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="legalPostalCode">
-                      Postal Code<span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('legalPostalCode')}
-                      placeholder="A1A 1A1"
-                      className="w-full"
-                    />
-                    {errors.legalPostalCode && (
-                      <p className="text-sm text-red-500">{errors.legalPostalCode.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="legalProvinceState">
-                      Province / State<span className="text-red-500">*</span>
-                    </Label>
-                    <Dropdown
-                      id="legalProvinceState"
-                      label=""
-                      value={watchedValues.legalProvinceState ?? ''}
-                      onChange={(val: string) => setValue('legalProvinceState', val)}
-                      options={provinceOptions}
-                      placeholder="Select"
-                      className="w-full"
-                    />
-                    {errors.legalProvinceState && (
-                      <p className="text-sm text-red-500">{errors.legalProvinceState.message}</p>
-                    )}
-                  </div>
-
-                  <div></div>
-                </div>
-
                 {/* Insurance Details Section */}
                 <h2 className="mb-6 text-[23px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000] md:text-2xl">
                   Insurance Details
@@ -334,9 +140,7 @@ const LegalAndInsuranceDetailsForm: React.FC<IMEReferralProps> = ({
 
                 {/* Insurance Address Lookup */}
                 <div className="mb-4 w-full max-w-full space-y-2">
-                  <Label htmlFor="insuranceAddressLookup">
-                    Address Lookup<span className="text-red-500">*</span>
-                  </Label>
+                  <Label htmlFor="insuranceAddressLookup">Address Lookup</Label>
                   <div className="relative">
                     <Input
                       disabled={isSubmitting}
@@ -354,9 +158,7 @@ const LegalAndInsuranceDetailsForm: React.FC<IMEReferralProps> = ({
                 {/* Insurance Street Address, Apt/Unit/Suite, City */}
                 <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
                   <div className="space-y-2">
-                    <Label htmlFor="insuranceStreetAddress">
-                      Street Address<span className="text-red-500">*</span>
-                    </Label>
+                    <Label htmlFor="insuranceStreetAddress">Street Address</Label>
                     <Input
                       disabled={isSubmitting}
                       {...register('insuranceStreetAddress')}
@@ -371,9 +173,7 @@ const LegalAndInsuranceDetailsForm: React.FC<IMEReferralProps> = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="insuranceAptUnitSuite">
-                      Apt / Unit / Suite<span className="text-red-500">*</span>
-                    </Label>
+                    <Label htmlFor="insuranceAptUnitSuite">Apt / Unit / Suite</Label>
                     <Input
                       disabled={isSubmitting}
                       {...register('insuranceAptUnitSuite')}
@@ -386,9 +186,7 @@ const LegalAndInsuranceDetailsForm: React.FC<IMEReferralProps> = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="insuranceCity">
-                      City<span className="text-red-500">*</span>
-                    </Label>
+                    <Label htmlFor="insuranceCity">City</Label>
                     <Input
                       disabled={isSubmitting}
                       {...register('insuranceCity')}
@@ -531,4 +329,4 @@ const LegalAndInsuranceDetailsForm: React.FC<IMEReferralProps> = ({
   );
 };
 
-export default LegalAndInsuranceDetailsForm;
+export default InsuranceDetails;
