@@ -6,7 +6,6 @@ import OrganizationTypeSeeder from './seeders/organizationType.seeder';
 import DepartmentSeeder from './seeders/department.seeder';
 import AdminSeeder from './seeders/admin.seeder';
 import CaseTypeSeeder from './seeders/caseType.seeder';
-import ExamTypeSeeder from './seeders/ExamType.seeder';
 import CaseStatusSeeder from './seeders/caseStatus.seeder';
 import LanguageSeeder from './seeders/language.seeder';
 import ExaminationTypeSeeder from './seeders/examinationType.seeder';
@@ -17,7 +16,6 @@ const seeds = [
     DepartmentSeeder,
     AdminSeeder,
     CaseTypeSeeder,
-    ExamTypeSeeder,
     CaseStatusSeeder,
     LanguageSeeder,
     ExaminationTypeSeeder,
