@@ -1,5 +1,3 @@
-import { getReferrals } from '@/domains/ime-referral/actions';
-import ReferralList from '@/domains/ime-referral/components/ReferralList';
 import { type Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -10,7 +8,8 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 const Page = async () => {
-  const referrals = await getReferrals();
-  return <ReferralList referrals={referrals.result} />;
+  // const referrals = await getReferrals();
+  // return <ReferralList referrals={referrals.result} />;
+  return <div>referral list page</div>;
 };
 export default Page;

@@ -191,23 +191,25 @@ export const InsuranceDetailsInitialValues: InsuranceDetails = {
 export const LegalDetailsSchema = z.object({
   // Legal Representative fields - all optional
   legalCompanyName: z
-    .string()
-    .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.COMPANY_NAME_INVALID)
+    .union([
+      z.string().regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.COMPANY_NAME_INVALID),
+      z.literal(''),
+    ])
     .optional(),
 
   legalContactPerson: z
-    .string()
-    .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.CONTACT_PERSON_INVALID)
+    .union([
+      z.string().regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.CONTACT_PERSON_INVALID),
+      z.literal(''),
+    ])
     .optional(),
 
   legalPhone: z
-    .string()
-    .regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_PHONE_NUMBER)
+    .union([z.string().regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_PHONE_NUMBER), z.literal('')])
     .optional(),
 
   legalFaxNo: z
-    .string()
-    .regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_FAX_NUMBER)
+    .union([z.string().regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_FAX_NUMBER), z.literal('')])
     .optional(),
 
   legalAddressLookup: z.string().optional(),
@@ -215,9 +217,12 @@ export const LegalDetailsSchema = z.object({
   legalAptUnitSuite: z.string().optional(),
   legalCity: z.string().optional(),
   legalPostalCode: z
-    .string()
-    .regex(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/, ErrorMessages.INVALID_POSTAL_CODE)
+    .union([
+      z.string().regex(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/, ErrorMessages.INVALID_POSTAL_CODE),
+      z.literal(''),
+    ])
     .optional(),
+
   legalProvinceState: z.string().optional(),
 });
 
@@ -235,74 +240,179 @@ export const LegalDetailsInitialValues: LegalDetails = {
   legalPostalCode: '',
   legalProvinceState: '',
 };
+
 // Step 3 - Exam Type Selection Schema
+const ExaminationServiceSchema = z.object({
+  type: z.enum(['transportation', 'interpreter', 'chaperone', 'additionalNotes']),
+  enabled: z.boolean(),
+  details: z
+    .object({
+      // Transportation
+      pickupAddress: z.string().optional(),
+      streetAddress: z.string().optional(),
+      aptUnitSuite: z.string().optional(),
+      city: z.string().optional(),
+      postalCode: z.string().optional(),
+      province: z.string().optional(),
+      // Interpreter
+      language: z.string().optional(),
+      // Additional notes
+      notes: z.string().optional(),
+    })
+    .optional(),
+});
+
+// Individual Examination Details Schema
+const ExaminationDetailsSchema = z.object({
+  examinationTypeId: z.string().min(1, 'Examination type is required'),
+  urgencyLevel: z.string().min(1, 'Urgency level is required'),
+  dueDate: z.string().min(1, 'Due date is required'),
+  instructions: z.string().min(1, 'Instructions are required'),
+  services: z.array(ExaminationServiceSchema),
+});
+
+// Main Examination Schema (Step 5)
+export const ExaminationSchema = z
+  .object({
+    reasonForReferral: z.string().min(1, 'Reason for referral is required'),
+    examinationType: z.string().min(1, 'Case type is required'),
+    examinations: z.array(ExaminationDetailsSchema).min(1, 'At least one examination is required'),
+  })
+  .refine(
+    data => {
+      // Validate transportation services have required fields
+      return data.examinations.every(exam =>
+        exam.services.every(service => {
+          if (service.type === 'transportation' && service.enabled) {
+            return (
+              service.details?.pickupAddress && service.details.pickupAddress.trim().length > 0
+            );
+          }
+          return true;
+        })
+      );
+    },
+    {
+      message: 'Pickup address is required when transportation is enabled',
+      path: ['examinations'],
+    }
+  )
+  .refine(
+    data => {
+      // Validate interpreter services have required fields
+      return data.examinations.every(exam =>
+        exam.services.every(service => {
+          if (service.type === 'interpreter' && service.enabled) {
+            return service.details?.language && service.details.language.trim().length > 0;
+          }
+          return true;
+        })
+      );
+    },
+    {
+      message: 'Language is required when interpreter is enabled',
+      path: ['examinations'],
+    }
+  );
+
+// Exam Type Item Schema (for step 4)
 export const ExamTypeItemSchema = z.object({
   id: z.string(),
   label: z.string(),
 });
 
-// Step 3 - Exam Type Selection Schema
 export const ExamTypeSchema = z.object({
-  examTypes: z.array(ExamTypeItemSchema).min(1, 'At least one exam type must be selected'),
+  caseTypes: z.array(ExamTypeItemSchema).min(1, 'At least one exam type must be selected'),
 });
 
+// Types
+export type ExaminationService = z.infer<typeof ExaminationServiceSchema>;
+export type ExaminationDetails = z.infer<typeof ExaminationDetailsSchema>;
+export type ExaminationData = z.infer<typeof ExaminationSchema>;
 export type ExamTypeItem = z.infer<typeof ExamTypeItemSchema>;
 export type ExamType = z.infer<typeof ExamTypeSchema>;
 
-export const ExamTypeInitialValues: ExamType = {
-  examTypes: [],
-};
+export interface ExaminationType {
+  id: string;
+  label: string;
+}
 
-// step 4 - Exam Details Schema
-
-const BaseExaminationSchema = z.object({
-  reasonForReferral: z.string().min(1, ErrorMessages.REASON_FOR_REFERRAL_REQUIRED),
-  examinationType: z.string().min(1, ErrorMessages.CASE_TYPE_REQUIRED),
-});
-
-export const createExaminationSchema = (examTypes: { id: string; label: string }[] = []) => {
-  const dynamicFields: Record<string, z.ZodTypeAny> = {};
-
-  examTypes.forEach(examType => {
-    const fieldPrefix = examType.label.toLowerCase().replace(/\s+/g, '');
-
-    // Required fields
-    dynamicFields[`${fieldPrefix}UrgencyLevel`] = z
-      .string()
-      .min(1, ErrorMessages.URGENCY_LEVEL_REQUIRED);
-    dynamicFields[`${fieldPrefix}DueDate`] = z.string().min(1, ErrorMessages.DUE_DATE_REQUIRED);
-    dynamicFields[`${fieldPrefix}Instructions`] = z
-      .string()
-      .min(1, ErrorMessages.INSTRUCTIONS_REQUIRED);
-  });
-
-  return BaseExaminationSchema.extend(dynamicFields);
-};
-
-export const ExaminationSchema = BaseExaminationSchema.catchall(z.any());
-
-export type Examination = z.infer<typeof ExaminationSchema> & Record<string, any>;
-
-// Initial values
-export const ExaminationInitialValues = {
+// Initial Values
+export const ExaminationInitialValues: ExaminationData = {
   reasonForReferral: '',
   examinationType: '',
+  examinations: [],
 };
 
-export type ExaminationBase = {
-  reasonForReferral: string;
-  examinationType: string;
+export const ExamTypeInitialValues: ExamType = {
+  caseTypes: [],
 };
 
-export type DynamicExaminationFields = {
-  [K: `${string}UrgencyLevel`]: string;
-} & {
-  [K: `${string}DueDate`]: string;
-} & {
-  [K: `${string}Instructions`]: string | undefined;
+// Helper functions to create services
+export const createTransportationService = (enabled: boolean = false): ExaminationService => ({
+  type: 'transportation',
+  enabled,
+  details: {
+    pickupAddress: '',
+    streetAddress: '',
+    aptUnitSuite: '',
+    city: '',
+    postalCode: '',
+    province: '',
+  },
+});
+
+export const createInterpreterService = (enabled: boolean = false): ExaminationService => ({
+  type: 'interpreter',
+  enabled,
+  details: {
+    language: '',
+  },
+});
+
+export const createChaperoneService = (enabled: boolean = false): ExaminationService => ({
+  type: 'chaperone',
+  enabled,
+  details: {},
+});
+
+export const createAdditionalNotesService = (enabled: boolean = false): ExaminationService => ({
+  type: 'additionalNotes',
+  enabled,
+  details: {
+    notes: '',
+  },
+});
+
+// Helper function to create default examination details
+export const createExaminationDetails = (examinationTypeId: string): ExaminationDetails => ({
+  examinationTypeId,
+  urgencyLevel: '',
+  dueDate: '',
+  instructions: '',
+  services: [
+    createTransportationService(),
+    createInterpreterService(),
+    createChaperoneService(),
+    createAdditionalNotesService(),
+  ],
+});
+
+// Helper functions for form data transformation
+export const getServiceByType = (
+  services: ExaminationService[],
+  type: ExaminationService['type']
+): ExaminationService | undefined => {
+  return services.find(service => service.type === type);
 };
 
-export type ExaminationData = ExaminationBase & Partial<DynamicExaminationFields>;
+export const updateServiceInArray = (
+  services: ExaminationService[],
+  type: ExaminationService['type'],
+  updates: Partial<ExaminationService>
+): ExaminationService[] => {
+  return services.map(service => (service.type === type ? { ...service, ...updates } : service));
+};
 
 // step5 - Document Upload Schema
 

@@ -16,7 +16,6 @@ const getClaimant = async (token: string) => {
               include: {
                 claimant: true,
                 slots: true,
-                services: true,
               },
             },
           },
@@ -43,25 +42,6 @@ const getClaimant = async (token: string) => {
 export const getCaseSummary = async (caseId: string) => {
   const caseData = await prisma.examination.findUnique({
     where: { caseNumber: caseId },
-    select: {
-      id: true,
-      referral: {
-        select: {
-          claimant: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
-          organization: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      },
-    },
   });
 
   if (!caseData) {
@@ -69,11 +49,7 @@ export const getCaseSummary = async (caseId: string) => {
   }
 
   return {
-    caseId: caseData.id,
-    claimantId: caseData.referral.claimant.id,
-    claimantFirstName: caseData.referral.claimant.firstName,
-    claimantLastName: caseData.referral.claimant.lastName,
-    organizationName: caseData.referral.organization?.name ?? null,
+    caseData,
   };
 };
 
@@ -94,21 +70,10 @@ const createClaimantAvailability = async (data: CreateClaimantAvailabilityData) 
 
   const caseData = await prisma.examination.findUnique({
     where: { id: data.caseId },
-    include: {
-      referral: {
-        include: {
-          claimant: true,
-        },
-      },
-    },
   });
 
   if (!caseData) {
     throw HttpError.notFound(ErrorMessages.CASE_NOT_FOUND);
-  }
-
-  if (caseData.referral.claimant.id !== data.claimantId) {
-    throw new Error(ErrorMessages.INVALID_CLAIMANT_ID);
   }
 
   const existingAvailability = await prisma.claimantAvailability.findFirst({
@@ -130,7 +95,6 @@ const createClaimantAvailability = async (data: CreateClaimantAvailabilityData) 
           claimantId: data.claimantId,
           preference: data.preference,
           accessibilityNotes: data.accessibilityNotes,
-          additionalNotes: data.additionalNotes,
           consentAck: data.consentAck,
         },
       });
@@ -151,44 +115,9 @@ const createClaimantAvailability = async (data: CreateClaimantAvailabilityData) 
         )
       );
 
-      const services = await Promise.all(
-        data.services.map(async service => {
-          const createdService = await tx.claimantAvailabilityServices.create({
-            data: {
-              availabilityId: availability.id,
-              type: service.type,
-              enabled: service.enabled,
-            },
-          });
-
-          if (service.type === 'interpreter' && service.interpreter && service.enabled) {
-            await tx.claimantAvailabilityInterpreter.create({
-              data: {
-                availabilityServiceId: createdService.id,
-                languageId: service.interpreter.languageId,
-              },
-            });
-          }
-
-          if (service.type === 'transport' && service.transport && service.enabled) {
-            await tx.claimantAvailabilityTransport.create({
-              data: {
-                availabilityServiceId: createdService.id,
-                pickupAddressId: service.transport.pickupAddressId,
-                rawLookup: service.transport.rawLookup,
-                notes: service.transport.notes,
-              },
-            });
-          }
-
-          return createdService;
-        })
-      );
-
       return {
         availability,
         slots,
-        services,
       };
     });
 

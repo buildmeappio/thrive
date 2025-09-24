@@ -36,27 +36,26 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
     formState: { errors, isSubmitting },
   } = useForm<Consent>({
     resolver: zodResolver(ConsentSchema),
-    defaultValues: data.step6 || ConsentInitialValues,
+    defaultValues: data.step7 || ConsentInitialValues,
   });
 
   const onSubmit: SubmitHandler<Consent> = async values => {
     try {
-      setData('step6', values);
+      setData('step7', values);
 
       const completeData = {
         ...data,
-        step6: values,
+        step7: values,
       };
 
-      if (
-        !completeData.step1 ||
-        !completeData.step2 ||
-        !completeData.step3 ||
-        !completeData.step4
-      ) {
-        toast.error('Please complete all steps before submitting');
-        return;
-      }
+      // if (
+      //   !completeData.step1 ||
+      //   !completeData.step2 ||
+      //   !completeData.step4
+      // ) {
+      //   toast.error('Please complete all steps before submitting');
+      //   return;
+      // }
 
       const result = await createIMEReferral(completeData);
       if (result) {
@@ -78,11 +77,11 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
         consentForSubmission: control._getWatch('consentForSubmission') || false,
       };
 
-      setData('step6', currentValues);
+      setData('step7', currentValues);
 
       const completeData = {
         ...data,
-        step6: currentValues,
+        step7: currentValues,
       };
 
       // For drafts, we need at least step1 to create a claimant

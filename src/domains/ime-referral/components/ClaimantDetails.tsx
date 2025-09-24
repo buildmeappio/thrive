@@ -113,7 +113,6 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                     onChange={(val: string) => setValue('gender', val)}
                     options={genderOptions}
                     placeholder="Select"
-                    className="w-full"
                     icon={false}
                   />
                   {errors.gender && <p className="text-sm text-red-500">{errors.gender.message}</p>}
@@ -231,7 +230,6 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                     onChange={(val: string) => setValue('province', val)}
                     options={provinceOptions}
                     placeholder="Select"
-                    className="w-full"
                   />
                   {errors.province && (
                     <p className="text-sm text-red-500">{errors.province.message}</p>

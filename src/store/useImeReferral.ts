@@ -1,5 +1,30 @@
-import { type ExaminationData } from '@/domains/ime-referral/schemas/imeReferral';
 import { create } from 'zustand';
+
+export interface ExaminationService {
+  type: 'transportation' | 'interpreter' | 'chaperone' | 'additionalNotes';
+  enabled: boolean;
+  details?: {
+    // Transportation
+    pickupAddress?: string;
+    streetAddress?: string;
+    aptUnitSuite?: string;
+    city?: string;
+    postalCode?: string;
+    province?: string;
+    // Interpreter
+    language?: string;
+    // Additional notes
+    notes?: string;
+  };
+}
+
+export interface ExaminationDetails {
+  examinationTypeId: string;
+  urgencyLevel: string;
+  dueDate: string;
+  instructions: string;
+  services: ExaminationService[];
+}
 
 export type IMEFormData = {
   step1?: {
@@ -53,9 +78,13 @@ export type IMEFormData = {
     legalProvinceState?: string;
   };
   step4?: {
-    examTypes: { id: string; label: string }[];
+    caseTypes: { id: string; label: string }[];
   };
-  step5?: ExaminationData;
+  step5?: {
+    reasonForReferral: string;
+    examinationType: string;
+    examinations: ExaminationDetails[];
+  };
   step6?: {
     files: File[];
   };

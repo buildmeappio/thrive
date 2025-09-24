@@ -3,7 +3,7 @@
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
-import { MapPin } from 'lucide-react';
+import { ArrowRight, Loader2, MapPin } from 'lucide-react';
 import { Dropdown } from '@/components/Dropdown';
 import { provinceOptions } from '@/config/ProvinceOptions';
 import {
@@ -17,6 +17,7 @@ import ProgressIndicator from './ProgressIndicator';
 import { type IMEReferralProps } from '@/types/imeReferralProps';
 import BackButton from '@/components/BackButton';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui';
 
 const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
   onNext,
@@ -213,7 +214,6 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                       onChange={(val: string) => setValue('legalProvinceState', val)}
                       options={provinceOptions}
                       placeholder="Select"
-                      className="w-full"
                     />
                     {errors.legalProvinceState && (
                       <p className="text-sm text-red-500">{errors.legalProvinceState.message}</p>
@@ -234,11 +234,24 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
               iconColor="#000080"
               isSubmitting={false}
             />
-            <ContinueButton
-              isSubmitting={isSubmitting}
-              isLastStep={currentStep === totalSteps}
-              color="#000080"
-            />
+            <div className="flex gap-4">
+              <Button
+                className="h-[45px] w-[136px] rounded-full bg-blue-500 bg-gradient-to-l from-[#01F4C8] to-[#00A8FF] text-white"
+                onClick={onNext}
+              >
+                Skip
+                {isSubmitting ? (
+                  <Loader2 className="ml-2 h-4 w-4 animate-spin text-white" />
+                ) : (
+                  <ArrowRight className="cup ml-2 h-4 w-4 text-white transition-all duration-300 ease-in-out" />
+                )}
+              </Button>
+              <ContinueButton
+                isSubmitting={isSubmitting}
+                isLastStep={currentStep === totalSteps}
+                color="#000080"
+              />
+            </div>
           </div>
         </form>
       </div>

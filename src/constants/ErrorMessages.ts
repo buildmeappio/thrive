@@ -123,4 +123,8 @@ export default Object.freeze({
   SUITE_REQUIRED: 'Apt / Unit / Suite is required',
   PROVINCE_REQUIRED: 'Province / State is required',
   REGISTRATION_FAILED: 'Registration failed, please try again later',
+  PICKUP_ADDRESS_REQUIRED: 'Pickup address is required',
+  INTERPRETER_LANGUAGE_REQUIRED: 'Interpreter language is required',
+  ADDITIONAL_NOTES_TEXT_REQUIRED: 'Additional notes text is required',
+  DEFAULT_STATUS_NOT_FOUND: 'Default status not found',
 });
