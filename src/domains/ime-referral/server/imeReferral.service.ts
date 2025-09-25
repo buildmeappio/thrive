@@ -3,7 +3,6 @@ import { getCurrentUser } from '@/domains/auth/server/session';
 import { HttpError } from '@/utils/httpError';
 import ErrorMessages from '@/constants/ErrorMessages';
 import type { IMEFormData } from '@/store/useImeReferral';
-import { createCaseNumber } from '@/utils/createCaseNumber';
 import type { ClaimantPreference } from '@prisma/client';
 
 export const createCase = async (formData: IMEFormData) => {
@@ -164,7 +163,8 @@ export const createCase = async (formData: IMEFormData) => {
 
         if (!caseTypeInput) throw new Error('Case type is required for each examination');
 
-        const caseNumber = await createCaseNumber(tx, caseTypeInput);
+        const caseNumber = await getNextCaseNumberForExamType(caseTypeInput.id);
+        console.log('generate case number', caseNumber);
 
         const examination = await tx.examination.create({
           data: {
@@ -310,6 +310,7 @@ const getCaseTypes = async () => {
 
 const getCaseDetails = async (caseId: string) => {
   try {
+    console.log('Searching for case with ID:', caseId);
     const caseDetails = await prisma.case.findUnique({
       where: { id: caseId },
       include: {
@@ -328,8 +329,18 @@ const getCaseDetails = async (caseId: string) => {
         },
       },
     });
+    console.log('Found case details:', !!caseDetails);
+    if (caseDetails) {
+      console.log('Case details preview:', {
+        id: caseDetails.id,
+        claimantName: `${caseDetails.claimant.firstName} ${caseDetails.claimant.lastName}`,
+        hasInsurance: !!caseDetails.insurance,
+        examinationsCount: caseDetails.examinations.length,
+      });
+    }
     return caseDetails;
   } catch (error) {
+    console.error('Database error in getCaseDetails:', error);
     throw HttpError.handleServiceError(error, 'Error fetching case details');
   }
 };
@@ -342,11 +353,67 @@ const getCases = async () => {
       insurance: true,
       legalRepresentative: true,
       caseType: true,
-      examinations: true,
+      examinations: {
+        include: {
+          examinationType: true,
+          status: true,
+        },
+      },
     },
     orderBy: { createdAt: 'desc' },
   });
   return cases;
+};
+
+const getNextCaseNumberForExamType = async (examTypeId: string) => {
+  const latestExams = await prisma.examination.findMany({
+    where: { examinationTypeId: examTypeId },
+    select: {
+      caseNumber: true,
+      examinationType: {
+        select: {
+          id: true,
+          shortForm: true,
+        },
+      },
+    },
+    take: 1,
+    orderBy: { createdAt: 'desc' },
+  });
+  if (latestExams.length === 0) {
+    return getInitialCaseNumberForExamType(examTypeId);
+  }
+
+  const lastCaseNumber = latestExams[0]?.caseNumber;
+  if (!lastCaseNumber) {
+    return getInitialCaseNumberForExamType(examTypeId);
+  }
+
+  const [shortForm, year, seq] = lastCaseNumber.split('-');
+  const currentYear = new Date().getFullYear().toString();
+  const isSameYear = year === currentYear;
+
+  if (!isSameYear) {
+    return getInitialCaseNumberForExamType(examTypeId);
+  }
+
+  const lastSeq = parseInt(seq, 10);
+
+  return `${shortForm}-${currentYear}-${isNaN(lastSeq) ? 1 : lastSeq + 1}`;
+};
+
+const getInitialCaseNumberForExamType = async (examTypeId: string) => {
+  const examType = await prisma.examinationType.findFirst({
+    where: { id: examTypeId },
+  });
+
+  if (!examType) {
+    throw HttpError.notFound('Exam Type not found');
+  }
+
+  const year = new Date().getFullYear().toString();
+
+  return `${examType.shortForm}-${year}-1`;
 };
 
 const imeReferralService = {

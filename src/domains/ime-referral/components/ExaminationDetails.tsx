@@ -474,7 +474,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                     >
                       {/* Section Header */}
                       <div className="mb-6 flex items-center justify-between">
-                        <h3 className="text-lg font-medium text-[#000000]">
+                        <h3 className="text-xl font-medium text-[#000000]">
                           {index + 1}. {examType.label}
                         </h3>
                         <CollapsibleTrigger asChild>

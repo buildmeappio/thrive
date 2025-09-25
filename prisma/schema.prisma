@@ -467,7 +467,8 @@ model Documents {
 
 model ExaminationType {
   id          String    @id @unique @default(uuid()) @db.Uuid
-  name        String    @map("name") @db.VarChar(255)
+  name        String    @unique @map("name") @db.VarChar(255)
+  shortForm   String?    @map("short_form") @db.VarChar(255)
   description String?   @map("description") @db.Text
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz()

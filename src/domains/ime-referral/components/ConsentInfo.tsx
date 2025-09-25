@@ -27,7 +27,7 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { setData, data, _hasHydrated } = useIMEReferralStore();
+  const { setData, data, _hasHydrated, reset } = useIMEReferralStore();
 
   const [isSavingDraft, setIsSavingDraft] = useState(false);
 
@@ -54,6 +54,7 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
         toast.success('IME Referral submitted successfully');
         if (onNext) onNext();
       }
+      reset();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Submission failed');
     }
