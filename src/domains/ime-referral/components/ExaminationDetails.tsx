@@ -545,13 +545,26 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                             <Dropdown
                               id="locationType"
                               label="Location Type"
-                              value=""
-                              onChange={() => {}}
+                              value={examination.locationType || ''}
+                              onChange={(val: string) => {
+                                const updatedExaminations = [...(watchedValues.examinations || [])];
+                                updatedExaminations[index] = {
+                                  ...examination,
+                                  locationType: val,
+                                };
+                                setValue('examinations', updatedExaminations);
+                              }}
                               options={locationOptions}
                               placeholder="Select"
                               className="bg-white"
                               icon={false}
+                              required
                             />
+                            {errors.examinations?.[index]?.locationType && (
+                              <p className="text-sm text-red-500">
+                                {getErrorMessage(errors.examinations[index]?.locationType)}
+                              </p>
+                            )}
                           </div>
                         </div>
 

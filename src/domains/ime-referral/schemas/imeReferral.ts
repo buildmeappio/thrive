@@ -268,6 +268,7 @@ const ExaminationDetailsSchema = z.object({
   urgencyLevel: z.string().min(1, 'Urgency level is required'),
   dueDate: z.string().min(1, 'Due date is required'),
   instructions: z.string().min(1, 'Instructions are required'),
+  locationType: z.string().optional(),
   services: z.array(ExaminationServiceSchema),
 });
 
@@ -390,6 +391,7 @@ export const createExaminationDetails = (examinationTypeId: string): Examination
   urgencyLevel: '',
   dueDate: '',
   instructions: '',
+  locationType: '',
   services: [
     createTransportationService(),
     createInterpreterService(),

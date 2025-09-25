@@ -4,6 +4,7 @@ import { HttpError } from '@/utils/httpError';
 import ErrorMessages from '@/constants/ErrorMessages';
 import type { IMEFormData } from '@/store/useImeReferral';
 import { createCaseNumber } from '@/utils/createCaseNumber';
+import type { ClaimantPreference } from '@prisma/client';
 
 export const createCase = async (formData: IMEFormData) => {
   const currentUser = await getCurrentUser();
@@ -130,7 +131,7 @@ export const createCase = async (formData: IMEFormData) => {
             })
           : Promise.resolve(null),
         tx.caseType.findFirst({
-          where: { id: formData.step4?.caseTypes?.[0]?.id },
+          where: { id: formData.step5?.examinationType },
         }),
         tx.account.findUnique({
           where: { id: currentUser.accountId },
@@ -159,34 +160,22 @@ export const createCase = async (formData: IMEFormData) => {
       const createdExaminations = [];
       for (let i = 0; i < (formData.step5?.examinations || []).length; i++) {
         const examData = formData.step5?.examinations[i];
+        const caseTypeInput = formData.step4?.caseTypes?.[i];
 
-        console.log('caseType', formData.step4?.caseTypes?.[0]);
+        if (!caseTypeInput) throw new Error('Case type is required for each examination');
 
-        if (!formData.step4?.caseTypes?.[i]) {
-          throw new Error('Case type is required for each examination');
-        }
-
-        const caseNumber = await createCaseNumber(formData.step4?.caseTypes?.[i]);
-
-        let urgencyLevel: 'HIGH' | 'MEDIUM' | 'LOW' | null = null;
-        if (examData?.urgencyLevel) {
-          const upper = examData?.urgencyLevel.toUpperCase();
-          if (upper === 'HIGH' || upper === 'MEDIUM' || upper === 'LOW') {
-            urgencyLevel = upper;
-          }
-        }
+        const caseNumber = await createCaseNumber(tx, caseTypeInput);
 
         const examination = await tx.examination.create({
           data: {
             case: { connect: { id: caseRecord.id } },
             caseNumber,
             examinationType: { connect: { id: examData?.examinationTypeId } },
-            dueDate: examData?.dueDate ? new Date(examData?.dueDate) : null,
+            dueDate: examData?.dueDate ? new Date(examData.dueDate) : null,
             notes: examData?.instructions || null,
-            additionalNotes: null,
-            urgencyLevel,
+            urgencyLevel: examData?.urgencyLevel?.toUpperCase() as 'HIGH' | 'MEDIUM' | 'LOW' | null,
             status: { connect: { id: defaultStatus.id } },
-            preference: 'EITHER',
+            preference: (examData?.locationType?.toUpperCase() as ClaimantPreference) || '',
             supportPerson: false,
           },
         });
