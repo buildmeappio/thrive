@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { PrismaClient } from '@prisma/client';
-import { ExaminationType } from 'src/constants/examinationType';
+import { ExaminationType } from '../constants/examinationType';
 
 interface ExaminationTypeData {
     name: string;

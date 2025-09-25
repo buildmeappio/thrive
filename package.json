@@ -6,6 +6,7 @@
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
     "studio": "prisma generate && prisma studio",
+    "reset": "prisma migrate reset",
     "seed": "prisma db seed",
     "docker:up": "docker compose -f docker-compose.dev.yaml up -d",
     "docker:down": "docker compose -f docker-compose.dev.yaml down"

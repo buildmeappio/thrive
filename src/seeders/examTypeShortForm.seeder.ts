@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 import { PrismaClient } from '@prisma/client';
-import { ExaminationType } from 'src/constants/examinationType';
+import { ExaminationType } from '../constants/examinationType';
 
 type ExamTypeShortFormData = {
-  name: ExaminationType;
+  name: typeof ExaminationType[keyof typeof ExaminationType];
   shortForm: string;
 };
 
