@@ -148,7 +148,7 @@ model Account {
   managers             OrganizationManager[] @relation("AccountManager")
   examinations         Examination[]         @relation("ExaminerCases")
   assignedExaminations Examination[]         @relation("AssignedCases")
-  ExaminerProfile      ExaminerProfile[]
+  examinerProfiles     ExaminerProfile[]
 
   @@map("accounts")
 }
@@ -416,7 +416,7 @@ model Language {
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
   examinationInterpreter ExaminationInterpreter[] @relation("ExaminationInterpreter")
-  ExaminerLanguage       ExaminerLanguage[]
+  examinerLanguages      ExaminerLanguage[]
 
   @@map("languages")
 }
@@ -463,7 +463,7 @@ model Documents {
   deletedAt         DateTime?         @map("deleted_at") @db.Timestamptz()
   users             User[]            @relation("ProfilePhoto")
   cases             CaseDocument[]    @relation("DocumentCases")
-  medicalLicense    ExaminerProfile[] @relation(name: "ExmainerMedicalLicenseDocument")
+  medicalLicenses   ExaminerProfile[] @relation(name: "ExmainerMedicalLicenseDocument")
   examinerResume    ExaminerProfile[] @relation(name: "ExmainerResumeDocument")
   examinerNDA       ExaminerProfile[] @relation(name: "ExmainerNDADocument")
   examinerInsurance ExaminerProfile[] @relation(name: "ExmainerInsuranceDocument")
@@ -473,7 +473,8 @@ model Documents {
 
 model ExaminationType {
   id           String        @id @unique @default(uuid()) @db.Uuid
-  name         String        @map("name") @db.VarChar(255)
+  name         String        @unique @map("name") @db.VarChar(255)
+  shortForm    String?       @map("short_form") @db.VarChar(255)
   description  String?       @map("description") @db.Text
   createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
@@ -541,11 +542,10 @@ model ExaminerLanguage {
 }
 
 model ExaminerProfile {
-  id                  String @id @default(uuid()) @db.Uuid
-  accountId           String @map("account_id") @db.Uuid
-  provinceOfResidence String @map("province_of_residence") @db.VarChar(255)
-  mailingAddress      String @map("mailing_address") @db.Text
-
+  id                                String         @id @default(uuid()) @db.Uuid
+  accountId                         String         @map("account_id") @db.Uuid
+  provinceOfResidence               String         @map("province_of_residence") @db.VarChar(255)
+  mailingAddress                    String         @map("mailing_address") @db.Text
   specialties                       String[]       @map("specialties")
   licenseNumber                     String         @map("license_number") @db.VarChar(255)
   provinceOfLicensure               String         @map("province_of_licensure") @db.VarChar(255)
@@ -574,7 +574,7 @@ model ExaminerProfile {
   resumeDocument         Documents          @relation(name: "ExmainerResumeDocument", references: [id], fields: [resumeDocumentId])
   ndaDocument            Documents          @relation(name: "ExmainerNDADocument", references: [id], fields: [NdaDocumentId])
   insuranceDocument      Documents          @relation(name: "ExmainerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
-  ExaminerLanguage       ExaminerLanguage[]
+  examinerLanguages      ExaminerLanguage[]
 
   @@map("examiner_profiles")
 }
