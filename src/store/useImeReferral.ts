@@ -22,6 +22,7 @@ export interface ExaminationDetails {
   urgencyLevel: string;
   dueDate: string;
   instructions: string;
+  locationType?: string;
   services: ExaminationService[];
 }
 

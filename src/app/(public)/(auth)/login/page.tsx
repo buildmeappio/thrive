@@ -21,7 +21,7 @@ const LoginPage = () => {
           </div>
         </div>
 
-        <div className="pl- relative hidden flex-1 overflow-hidden md:block">
+        <div className="relative hidden flex-1 overflow-hidden md:block">
           <div className="absolute inset-0">
             <Image
               src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/org-gettingStarted.png"

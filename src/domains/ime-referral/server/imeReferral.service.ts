@@ -25,6 +25,8 @@ export const createCase = async (formData: IMEFormData) => {
     throw new Error('Policy holder first name and last name are required');
   }
 
+  console.log('formData', formData.step4?.caseTypes);
+
   return prisma.$transaction(
     async tx => {
       // 1. Get default status
@@ -146,7 +148,7 @@ export const createCase = async (formData: IMEFormData) => {
           claimantId: claimant.id,
           insuranceId: insurance.id,
           legalRepresentativeId: legalRepId,
-          caseTypeId: caseType?.id || null,
+          caseTypeId: caseType?.id,
           reason: formData.step5?.reasonForReferral || null,
           consentForSubmission: formData.step7?.consentForSubmission || false,
           isDraft: formData.step7?.isDraft || false,
@@ -158,10 +160,13 @@ export const createCase = async (formData: IMEFormData) => {
       for (let i = 0; i < (formData.step5?.examinations || []).length; i++) {
         const examData = formData.step5?.examinations[i];
 
-        if (!caseType?.id) {
-          throw new Error('Case type is required for creating examinations');
+        console.log('caseType', formData.step4?.caseTypes?.[0]);
+
+        if (!formData.step4?.caseTypes?.[i]) {
+          throw new Error('Case type is required for each examination');
         }
-        const caseNumber = await createCaseNumber(caseType?.id);
+
+        const caseNumber = await createCaseNumber(formData.step4?.caseTypes?.[i]);
 
         let urgencyLevel: 'HIGH' | 'MEDIUM' | 'LOW' | null = null;
         if (examData?.urgencyLevel) {
