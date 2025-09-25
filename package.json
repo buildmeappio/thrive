@@ -11,7 +11,7 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:pull": "prisma db pull",
+    "db:pull": "chmod +x scripts/pull-schema.sh && scripts/pull-schema.sh && npx prisma generate",
     "predeploy": "chmod +x scripts/deploy.sh",
     "deploy:dev": "npm run predeploy && scripts/deploy.sh dev --app thrive-admin --env .env.development --config ecosystem.config.js",
     "deploy:staging": "npm run predeploy && scripts/deploy.sh staging --app thrive-admin --env .env.staging --config ecosystem.config.js",
