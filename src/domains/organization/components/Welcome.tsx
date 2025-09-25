@@ -3,7 +3,7 @@ import { Button } from '@/components/ui';
 const Welcome = () => {
   return (
     <div>
-      <div className="min-h-[270px] w-full max-w-[640px] rounded-[25px] bg-white px-6 py-6 sm:px-8 lg:px-12">
+      <div className="min-h-[250px] w-full max-w-[640px] rounded-[25px] bg-white px-4 py-6 sm:px-8 lg:px-8">
         <h1 className="text-xl font-semibold tracking-[-0.01em] text-[#000093] sm:text-2xl lg:text-[30px]">
           Verification in progress!
         </h1>

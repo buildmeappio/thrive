@@ -26,7 +26,11 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
   totalSteps,
   departmentTypes: departmentOptions,
 }) => {
-  const { setData, data } = useRegistrationStore();
+  const { setData, data, _hasHydrated } = useRegistrationStore();
+
+  if (!_hasHydrated) {
+    return null;
+  }
 
   const handleSubmit = async (
     values: typeof OfficeDetailsInitialValues,
@@ -63,6 +67,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}
+        enableReinitialize={true}
       >
         {({ values, errors, handleChange, setFieldValue, isSubmitting }) => (
           <Form>

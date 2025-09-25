@@ -35,7 +35,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
   return (
     <div className={`mt-1 space-y-1`}>
       <Label htmlFor={id} className="text-sm leading-relaxed font-normal text-[#000000]">
-        {label}
+        {label || 'Select'}
         {required && <span className="text-red-500">*</span>}
       </Label>
 

@@ -29,7 +29,11 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
   totalSteps = 3,
   organizationTypes: organizationTypeOptions,
 }) => {
-  const { setData, data } = useRegistrationStore();
+  const { setData, data, _hasHydrated } = useRegistrationStore();
+
+  if (!_hasHydrated) {
+    return null;
+  }
 
   const handleSubmit = async (
     values: typeof OrganizationInfoInitialValues,
@@ -66,6 +70,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}
+        enableReinitialize={true}
       >
         {({ values, errors, handleChange, setFieldValue, isSubmitting }) => (
           <Form>

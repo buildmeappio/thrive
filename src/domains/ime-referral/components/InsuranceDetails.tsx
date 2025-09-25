@@ -22,7 +22,7 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { data, setData } = useIMEReferralStore();
+  const { data, setData, _hasHydrated } = useIMEReferralStore();
 
   const {
     register,
@@ -37,6 +37,10 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
     setData('step2', values);
     if (onNext) onNext();
   };
+
+  if (!_hasHydrated) {
+    return null;
+  }
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">

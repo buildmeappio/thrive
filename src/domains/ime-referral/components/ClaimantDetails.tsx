@@ -20,7 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, totalSteps }) => {
-  const { data, setData } = useIMEReferralStore();
+  const { data, setData, _hasHydrated } = useIMEReferralStore();
 
   const {
     register,
@@ -31,15 +31,23 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
   } = useForm<ClaimantDetails>({
     resolver: zodResolver(ClaimantDetailsSchema),
     defaultValues: data.step1 || ClaimantDetailsInitialValues,
+    mode: 'onChange',
   });
 
   const watchedValues = watch();
 
   const onSubmit: SubmitHandler<ClaimantDetails> = values => {
     setData('step1', values);
-    if (onNext) onNext();
+
+    if (onNext) {
+      onNext();
+    }
   };
 
+  if (!_hasHydrated) {
+    console.log('⏳ Waiting for hydration...');
+    return null;
+  }
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
@@ -196,20 +204,6 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                 </div>
 
                 <div className="space-y-2 md:col-span-1">
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    disabled={isSubmitting}
-                    {...register('city')}
-                    placeholder="Toronto"
-                    className="w-full"
-                  />
-                  {errors.city && <p className="text-sm text-red-500">{errors.city.message}</p>}
-                </div>
-              </div>
-
-              {/* Fourth Row: Postal Code, Province */}
-              <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
-                <div className="space-y-2">
                   <Label htmlFor="postalCode">Postal Code</Label>
                   <Input
                     disabled={isSubmitting}
@@ -221,6 +215,10 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                     <p className="text-sm text-red-500">{errors.postalCode.message}</p>
                   )}
                 </div>
+              </div>
+
+              {/* Fourth Row: Postal Code, Province */}
+              <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="province">Province / State</Label>
                   <Dropdown
@@ -234,6 +232,16 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                   {errors.province && (
                     <p className="text-sm text-red-500">{errors.province.message}</p>
                   )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    disabled={isSubmitting}
+                    {...register('city')}
+                    placeholder="Toronto"
+                    className="w-full"
+                  />
+                  {errors.city && <p className="text-sm text-red-500">{errors.city.message}</p>}
                 </div>
                 <div></div>
               </div>

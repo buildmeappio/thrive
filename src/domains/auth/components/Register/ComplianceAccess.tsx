@@ -8,6 +8,7 @@ import { useRegistrationStore } from '@/store/useRegistration';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { sendOtp } from '../../actions';
 import { ComplianceAccessInitialValues, ComplianceAccessSchema } from '../../schemas/register';
+import Link from 'next/link';
 
 const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -15,7 +16,11 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { setData, data } = useRegistrationStore();
+  const { setData, data, _hasHydrated } = useRegistrationStore();
+
+  if (!_hasHydrated) {
+    return null;
+  }
 
   const handleSubmit = async (
     values: typeof ComplianceAccessInitialValues,
@@ -52,6 +57,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}
+        enableReinitialize={true}
       >
         {({ values, errors, setFieldValue, isSubmitting }) => (
           <Form>
@@ -70,23 +76,23 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                     className="cursor-pointer text-xs leading-relaxed break-words text-black sm:text-sm"
                   >
                     Agree to{' '}
-                    <a
-                      href="#"
+                    <Link
+                      href="/terms-and-conditions"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="whitespace-nowrap text-[#000093] underline hover:text-[#000093]"
                     >
                       Terms & Conditions
-                    </a>{' '}
+                    </Link>{' '}
                     and{' '}
-                    <a
-                      href="#"
+                    <Link
+                      href="/privacy-policy"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="whitespace-nowrap text-[#000093] underline hover:text-[#000093]"
                     >
                       Privacy Policy
-                    </a>
+                    </Link>
                     <span className="text-red-500">*</span>
                   </Label>
                 </div>

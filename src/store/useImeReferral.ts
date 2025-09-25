@@ -1,7 +1,8 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface ExaminationService {
-  type: 'transportation' | 'interpreter' | 'chaperone' | 'additionalNotes';
+  type: 'transportation' | 'interpreter' | 'additionalNotes' | 'chaperone';
   enabled: boolean;
   details?: {
     // Transportation
@@ -13,8 +14,6 @@ export interface ExaminationService {
     province?: string;
     // Interpreter
     language?: string;
-    // Additional notes
-    notes?: string;
   };
 }
 
@@ -96,15 +95,29 @@ export type IMEFormData = {
 
 type FormStore = {
   data: IMEFormData;
+  _hasHydrated: boolean;
   setData: <K extends keyof IMEFormData>(step: K, value: IMEFormData[K]) => void;
   reset: () => void;
+  setHasHydrated: (state: boolean) => void;
 };
 
-export const useIMEReferralStore = create<FormStore>(set => ({
-  data: {},
-  setData: (step, value) =>
-    set(state => ({
-      data: { ...state.data, [step]: value },
-    })),
-  reset: () => set({ data: {} }),
-}));
+export const useIMEReferralStore = create<FormStore>()(
+  persist(
+    set => ({
+      data: {},
+      _hasHydrated: false,
+      setData: (step, value) =>
+        set(state => ({
+          data: { ...state.data, [step]: value },
+        })),
+      reset: () => set({ data: {} }),
+      setHasHydrated: state => set({ _hasHydrated: state }),
+    }),
+    {
+      name: 'ime-referral-form',
+      onRehydrateStorage: () => state => {
+        state?.setHasHydrated(true);
+      },
+    }
+  )
+);

@@ -44,7 +44,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
   examinationTypes: examinationTypeOptions,
   languages: languageOptions,
 }) => {
-  const { data, setData } = useIMEReferralStore();
+  const { data, setData, _hasHydrated } = useIMEReferralStore();
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
 
   // Get selected exam types from step4
@@ -385,6 +385,10 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
     },
     [handleServiceToggle, isSubmitting]
   );
+
+  if (!_hasHydrated) {
+    return null;
+  }
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">

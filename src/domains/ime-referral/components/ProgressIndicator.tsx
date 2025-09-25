@@ -11,7 +11,6 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   totalSteps,
   color = '#000093',
 }) => {
-  const progressPercent = (currentStep / (totalSteps - 1)) * 100;
   const steps = [
     '',
     'Claimant Details',
@@ -23,6 +22,9 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
     'Consent',
     '',
   ];
+
+  // Fixed progress calculation - first step shows as reached
+  const progressPercent = (currentStep / totalSteps) * 100;
 
   return (
     <div className="mx-auto mb-10 w-full">
@@ -56,14 +58,16 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
               />
               {/* Step label positioned directly under the dot */}
               <div
-                className={`mt-2 text-center text-sm font-medium whitespace-nowrap ${
+                className={`mt-2 text-center font-medium ${
                   index + 1 <= currentStep ? 'text-gray-900' : 'text-gray-400'
                 }`}
                 style={{
                   transform: isLastIndex ? 'translateX(-50%)' : 'translateX(0)',
                 }}
               >
-                {step}
+                {/* Responsive text handling */}
+                <span className="hidden text-sm whitespace-nowrap sm:inline">{step}</span>
+                <span className="text-xs sm:hidden">{step && index}</span>
               </div>
             </div>
           );

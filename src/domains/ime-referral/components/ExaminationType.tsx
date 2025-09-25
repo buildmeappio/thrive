@@ -27,7 +27,7 @@ const ExaminationTypeForm: React.FC<CaseTypeProps> = ({
   totalSteps,
   caseTypes: caseTypeOptions,
 }) => {
-  const { data, setData } = useIMEReferralStore();
+  const { data, setData, _hasHydrated } = useIMEReferralStore();
 
   const {
     handleSubmit,
@@ -64,6 +64,10 @@ const ExaminationTypeForm: React.FC<CaseTypeProps> = ({
     setData('step4', values);
     if (onNext) onNext();
   };
+
+  if (!_hasHydrated) {
+    return null;
+  }
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">

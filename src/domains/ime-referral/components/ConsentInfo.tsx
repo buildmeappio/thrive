@@ -27,7 +27,8 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { data, setData } = useIMEReferralStore();
+  const { setData, data, _hasHydrated } = useIMEReferralStore();
+
   const [isSavingDraft, setIsSavingDraft] = useState(false);
 
   const {
@@ -47,15 +48,6 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
         ...data,
         step7: values,
       };
-
-      // if (
-      //   !completeData.step1 ||
-      //   !completeData.step2 ||
-      //   !completeData.step4
-      // ) {
-      //   toast.error('Please complete all steps before submitting');
-      //   return;
-      // }
 
       const result = await createIMEReferral(completeData);
       if (result) {
@@ -84,17 +76,6 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
         step7: currentValues,
       };
 
-      // For drafts, we need at least step1 to create a claimant
-      if (
-        !completeData.step1 ||
-        !completeData.step2 ||
-        !completeData.step3 ||
-        !completeData.step4
-      ) {
-        toast.error('Please complete claimant details before saving draft');
-        return;
-      }
-
       const result = await createIMEReferral(completeData);
       if (result) {
         toast.success('Draft saved successfully');
@@ -105,6 +86,10 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
       setIsSavingDraft(false);
     }
   };
+
+  if (!_hasHydrated) {
+    return null;
+  }
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">

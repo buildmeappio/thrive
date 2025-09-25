@@ -23,7 +23,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
   currentStep = 1,
   totalSteps = 1,
 }) => {
-  const { data, setData } = useIMEReferralStore();
+  const { data, setData, _hasHydrated } = useIMEReferralStore();
 
   const {
     handleSubmit,
@@ -54,6 +54,10 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
     setData('step6', values);
     onNext();
   };
+
+  if (!_hasHydrated) {
+    return null;
+  }
 
   return (
     <>

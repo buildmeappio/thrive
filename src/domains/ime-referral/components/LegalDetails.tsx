@@ -25,7 +25,7 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { data, setData } = useIMEReferralStore();
+  const { data, setData, _hasHydrated } = useIMEReferralStore();
 
   const {
     register,
@@ -44,6 +44,10 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
     setData('step3', values);
     if (onNext) onNext();
   };
+
+  if (!_hasHydrated) {
+    return null;
+  }
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
@@ -175,7 +179,39 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                       <p className="text-sm text-red-500">{errors.legalAptUnitSuite.message}</p>
                     )}
                   </div>
+                  <div>
+                    <Label htmlFor="legalPostalCode">Postal Code</Label>
+                    <Input
+                      disabled={isSubmitting}
+                      {...register('legalPostalCode')}
+                      placeholder="A1A 1A1"
+                      className="w-full"
+                    />
+                  </div>
+                  {errors.legalPostalCode && (
+                    <p className="text-sm text-red-500">{errors.legalPostalCode.message}</p>
+                  )}
+                </div>
+              </div>
 
+              {/* Legal Postal Code and Province */}
+              <div className="mb-8 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="legalProvinceState">Province / State</Label>
+                  <Dropdown
+                    id="legalProvinceState"
+                    label=""
+                    value={watchedValues.legalProvinceState ?? ''}
+                    onChange={(val: string) => setValue('legalProvinceState', val)}
+                    options={provinceOptions}
+                    placeholder="Select"
+                  />
+                  {errors.legalProvinceState && (
+                    <p className="text-sm text-red-500">{errors.legalProvinceState.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
                   <div className="space-y-2">
                     <Label htmlFor="legalCity">City</Label>
                     <Input
@@ -186,37 +222,6 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                     />
                     {errors.legalCity && (
                       <p className="text-sm text-red-500">{errors.legalCity.message}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Legal Postal Code and Province */}
-                <div className="mb-8 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="legalPostalCode">Postal Code</Label>
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('legalPostalCode')}
-                      placeholder="A1A 1A1"
-                      className="w-full"
-                    />
-                    {errors.legalPostalCode && (
-                      <p className="text-sm text-red-500">{errors.legalPostalCode.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="legalProvinceState">Province / State</Label>
-                    <Dropdown
-                      id="legalProvinceState"
-                      label=""
-                      value={watchedValues.legalProvinceState ?? ''}
-                      onChange={(val: string) => setValue('legalProvinceState', val)}
-                      options={provinceOptions}
-                      placeholder="Select"
-                    />
-                    {errors.legalProvinceState && (
-                      <p className="text-sm text-red-500">{errors.legalProvinceState.message}</p>
                     )}
                   </div>
 
