@@ -12,7 +12,6 @@ export type { ILoginConfig } from './login/Login.interface';
 export type { LoginPageProps } from './login/LoginPageProps';
 export type { BackButtonProps } from './buttons/BackButtonProps';
 export type { ContinueButtonProps } from './buttons/ContinueButtonProps';
-export type { MedExaminerRegStepProps } from './register/medicalExaminer/MedExaminerRegStepProps';
 export type { ISidebarRoutes } from './sidebar/ISidebarRoutes';
 export type { IMedicalExaminersData } from './dashboard/admin/HomeMedExaminers.interface';
 export type { IReviewExaminerData } from './dashboard/admin/ReviewExaminer.interface';

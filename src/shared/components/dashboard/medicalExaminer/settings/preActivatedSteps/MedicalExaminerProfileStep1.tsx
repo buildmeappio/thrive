@@ -6,7 +6,7 @@ import { Dropdown } from '@/components/ui/Dropdown';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { provinceOptions } from '@/shared/config/dropdownOptions/MedExaminerDropdownOptions';
+import { provinceOptions } from '@/shared/config/MedExaminerDropdownOptions';
 
 const MedicalExaminerProfileStep1 = () => {
   const [values, setValues] = React.useState({

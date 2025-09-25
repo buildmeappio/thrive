@@ -2,7 +2,7 @@
 import React from 'react'
 import { ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { ReportsToSubmitData, UpcomingAppointmentsData } from '@/shared/config/medicalExaminerdashboard/home/MedExamTablesData';
+import { ReportsToSubmitData, UpcomingAppointmentsData } from '@/shared/config/dashboard/home/MedExamTablesData';
 
 const ReportsSubmitTable = () => {
     const router = useRouter();

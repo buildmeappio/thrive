@@ -1,6 +1,7 @@
 const URLS = Object.freeze({
-	HOME: "/",
+	HOME: "/landing",
 	LOGIN: "/login",
+	REGISTER: "/register",
 	DASHBOARD: "/dashboard",
 	FORBIDDEN: "/forbidden",
 	PASSWORD_FORGOT: "/password/forgot",
@@ -14,6 +15,8 @@ const PUBLIC_ROUTES = Object.freeze([
 	URLS.PASSWORD_RESET,
 	URLS.PASSWORD_VERIFY,
 	URLS.FORBIDDEN,
+	URLS.HOME,
+	URLS.REGISTER,
 ]);
 
 export const PREFIX = "/examiner";

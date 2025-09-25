@@ -1,5 +1,5 @@
 'use client';
-import { newCaseclaimantInformation, newCaseInformation } from '@/shared/config/medicalExaminerdashboard/cases/NewCaseReviewData';
+import { newCaseclaimantInformation, newCaseInformation } from '@/shared/config/dashboard/cases/NewCaseReviewData';
 import { NewCaseField } from '@/shared/types';
 import { ArrowRight } from 'lucide-react';
 import React, { useState } from 'react';

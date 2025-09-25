@@ -2,7 +2,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Check } from 'lucide-react';
 import React, { useState } from 'react'
-import { MedicalExaminerProfileSteps } from '@/shared/config/medicalExaminerdashboard/profileSetup/ProfileSteps';
+import { MedicalExaminerProfileSteps } from '@/shared/config/dashboard/profileSetup/ProfileSteps';
 import MedicalExaminerProfileStep1 from './MedicalExaminerProfileStep1';
 import MedicalExaminerProfileStep2 from './MedicalExaminerProfileStep2';
 import MedicalExaminerProfileStep3 from './MedicalExaminerProfileStep3';

@@ -1,7 +1,7 @@
 'use client';
 import React from 'react'
 import { ArrowRight } from 'lucide-react';
-import { NewCaseOffersData } from '@/shared/config/medicalExaminerdashboard/home/MedExamTablesData';
+import { NewCaseOffersData } from '@/shared/config/dashboard/home/MedExamTablesData';
 import { useRouter } from 'next/navigation';
 
 const NewCasesTable = () => {

@@ -1,4 +1,4 @@
-import { MedExamRecentUpdates } from '@/shared/config/medicalExaminerdashboard/home/MedExamRecentUpdates'
+import { MedExamRecentUpdates } from '@/shared/config/dashboard/home/MedExamRecentUpdates'
 import Image from 'next/image'
 import React from 'react'
 

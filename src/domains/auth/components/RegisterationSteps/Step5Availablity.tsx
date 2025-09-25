@@ -6,15 +6,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import ContinueButton from "@/components/ui/ContinueButton";
 import BackButton from "@/components/ui/BackButton";
-import type { MedExaminerRegStepProps } from "@/shared/types";
 import {
   step5AvailabilitySchema,
   step5InitialValues,
-} from "@/shared/validation/medicalExaminer/examinerRegisterValidation";
-import ProgressIndicator from "../../../../shared/components/auth/register/progressIndicator/ProgressIndicator";
-import { daysOptions, regionOptions, travelDistanceOptions } from "@/shared/config/dropdownOptions/MedExaminerDropdownOptions";
-
-export const Step5Availablity: React.FC<MedExaminerRegStepProps> = ({
+} from "@/domains/auth/validations/register.validation";
+import ProgressIndicator from "../../../../components/ProgressBar/ProgressIndicator";
+import { RegStepProps } from "../../types/RegStepProps";
+import { daysOptions, travelDistanceOptions,regionOptions } from "@/shared/config/register";
+export const Step5Availablity: React.FC<RegStepProps> = ({
   onNext,
   onPrevious,
   currentStep,

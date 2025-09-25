@@ -5,15 +5,14 @@ import {
   Step2MedicalCredentials,
   Step3IMEExperince,
   Step4ExperienceDetails,
-  Step5Availablity,
   Step6Legal,
-  Step7SubmitConfirmation,
+  Step7SubmitConfirmation,  
   Step8ThankYou,
 } from './RegisterationSteps';
-import { MedExaminerRegStepProps } from '@/shared/types';
+import { RegStepProps } from '../types/RegStepProps';
 
 interface Step {
-  component: React.ComponentType<MedExaminerRegStepProps>;
+  component: React.ComponentType<RegStepProps>;
 }
 
 const RegisterForm: React.FC = () => {
@@ -24,7 +23,6 @@ const RegisterForm: React.FC = () => {
     { component: Step2MedicalCredentials },
     { component: Step3IMEExperince },
     { component: Step4ExperienceDetails },
-    { component: Step5Availablity },
     { component: Step6Legal },
     { component: Step7SubmitConfirmation },
     { component: Step8ThankYou },

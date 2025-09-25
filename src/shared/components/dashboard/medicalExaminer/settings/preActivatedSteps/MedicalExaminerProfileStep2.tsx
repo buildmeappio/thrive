@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { Dropdown } from '@/components/ui/Dropdown';
-import { assessmentTypesOptions, languageOptions, preferredFormatOptions, primarySpecialtyOptions, regionOptions, subspecialtyOptions } from '@/shared/config/dropdownOptions/MedExaminerDropdownOptions';
+import { assessmentTypesOptions, languageOptions, preferredFormatOptions, primarySpecialtyOptions, regionOptions, subspecialtyOptions } from '@/shared/config/MedExaminerDropdownOptions';
 
 const MedicalExaminerProfileStep2 = () => {
   const [values, setValues] = React.useState({

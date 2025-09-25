@@ -6,8 +6,8 @@ import { PasswordInput } from '@/components/ui/PasswordInput';
 import {
   step9PasswordSchema,
   step9InitialValues,
-} from '@/shared/validation/medicalExaminer/examinerRegisterValidation';
-import type { Step9PasswordProps } from '@/shared/types/register/medicalExaminer/MedExaminerSetPasswordProps';
+} from '@/domains/auth/validations/register.validation';
+import type { Step9PasswordProps } from '@/domains/auth/types/SetPasswordProps';
 
 export const Step9Password: React.FC<Step9PasswordProps> = ({ onNext }) => {
   const handleSubmit = (values: typeof step9InitialValues) => {

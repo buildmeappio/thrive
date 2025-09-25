@@ -1,8 +1,8 @@
 import React from 'react';
-import type { MedExaminerRegStepProps } from '@/shared/types';
+import { RegStepProps } from '@/domains/auth/types/RegStepProps';
 import { Check } from 'lucide-react';
-import ProgressIndicator from '@/shared/components/auth/register/progressIndicator/ProgressIndicator';
-export const Step8ThankYou: React.FC<MedExaminerRegStepProps> = ({ currentStep, totalSteps }) => {
+import ProgressIndicator from '@/components/ProgressBar/ProgressIndicator';
+export const Step8ThankYou: React.FC<RegStepProps> = ({ currentStep, totalSteps }) => {
   return (
     <div
       className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[450px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
