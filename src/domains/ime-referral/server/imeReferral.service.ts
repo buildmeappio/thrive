@@ -181,8 +181,10 @@ export const createCase = async (formData: IMEFormData) => {
         });
 
         // Create services for this exam in parallel
-        if (examData?.services?.length) {
-          const enabledServices = examData.services.filter(service => service.enabled);
+        if (formData.step5?.examinations[i].services) {
+          const enabledServices = formData.step5.examinations[i].services.filter(
+            service => service.enabled
+          );
 
           // Pre-fetch languages to avoid multiple queries
           const languageNames = enabledServices

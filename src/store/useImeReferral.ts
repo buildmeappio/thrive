@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export interface ExaminationService {
-  type: 'transportation' | 'interpreter' | 'additionalNotes' | 'chaperone';
+  type: 'transportation' | 'interpreter' | 'chaperone';
   enabled: boolean;
   details?: {
     // Transportation
@@ -22,7 +22,7 @@ export interface ExaminationDetails {
   urgencyLevel: string;
   dueDate: string;
   instructions: string;
-  locationType?: string;
+  locationType: string;
   services: ExaminationService[];
 }
 

@@ -243,7 +243,7 @@ export const LegalDetailsInitialValues: LegalDetails = {
 
 // Step 3 - Exam Type Selection Schema
 const ExaminationServiceSchema = z.object({
-  type: z.enum(['transportation', 'interpreter', 'chaperone', 'additionalNotes']),
+  type: z.enum(['transportation', 'interpreter', 'chaperone']),
   enabled: z.boolean(),
   details: z
     .object({
@@ -268,7 +268,7 @@ const ExaminationDetailsSchema = z.object({
   urgencyLevel: z.string().min(1, 'Urgency level is required'),
   dueDate: z.string().min(1, 'Due date is required'),
   instructions: z.string().min(1, 'Instructions are required'),
-  locationType: z.string().optional(),
+  locationType: z.string().min(1, 'Location type is required'),
   services: z.array(ExaminationServiceSchema),
 });
 
@@ -377,14 +377,6 @@ export const createChaperoneService = (enabled: boolean = false): ExaminationSer
   details: {},
 });
 
-export const createAdditionalNotesService = (enabled: boolean = false): ExaminationService => ({
-  type: 'additionalNotes',
-  enabled,
-  details: {
-    notes: '',
-  },
-});
-
 // Helper function to create default examination details
 export const createExaminationDetails = (examinationTypeId: string): ExaminationDetails => ({
   examinationTypeId,
@@ -392,12 +384,7 @@ export const createExaminationDetails = (examinationTypeId: string): Examination
   dueDate: '',
   instructions: '',
   locationType: '',
-  services: [
-    createTransportationService(),
-    createInterpreterService(),
-    createChaperoneService(),
-    createAdditionalNotesService(),
-  ],
+  services: [createTransportationService(), createInterpreterService(), createChaperoneService()],
 });
 
 // Helper functions for form data transformation

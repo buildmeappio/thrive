@@ -8,9 +8,7 @@ export const createCaseNumber = async (tx: Prisma.TransactionClient, { id, label
 
   const lastExam = await tx.examination.findFirst({
     where: {
-      case: {
-        caseTypeId: id,
-      },
+      case: { caseTypeId: id },
       caseNumber: { startsWith: `${prefix}-${year}-` },
     },
     orderBy: { createdAt: 'desc' },
@@ -26,6 +24,5 @@ export const createCaseNumber = async (tx: Prisma.TransactionClient, { id, label
     }
   }
 
-  const seqStr = String(nextSeq).padStart(4, '0');
-  return `${prefix}-${year}-${seqStr}`;
+  return `${prefix}-${year}-${nextSeq}`;
 };
