@@ -15,7 +15,7 @@ type OrganizationView = {
 };
 
 const BRAND = {
-  logo: process.env.NEXT_PUBLIC_EMAIL_LOGO_URL || "https://localhost:3000/logo.png",
+  logo: "https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png",
   primary: "#1a237e",
   supportEmail: "support@thrivenetwork.ca",
 };

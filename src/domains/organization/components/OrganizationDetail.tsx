@@ -12,6 +12,7 @@ import RejectModal from "@/components/modal/RejectModal";
 
 import { useRouter } from "next/navigation";
 import organizationActions from "../actions";
+import { toast } from "sonner";
 
 const mapStatus = { PENDING: "pending", ACCEPTED: "approved", REJECTED: "rejected" } as const;
 
@@ -37,6 +38,8 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
       setIsLoading(true);
       await organizationActions.requestMoreInfo(organization.id, text);
       setIsRequestOpen(false);
+      toast.success("Request More Info email send Successfully!");
+
     } finally {
       setIsLoading(false);
     }
@@ -47,6 +50,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
       setIsLoading(true);
       await organizationActions.approveOrganization(organization.id);
       setStatus("approved");
+      toast.success("Organization Status Approved Successfully!");
       router.refresh();
     } finally {
       setIsLoading(false);
@@ -64,6 +68,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
       await organizationActions.rejectOrganization(organization.id, reason);
       setIsRejectOpen(false);
       setStatus("rejected");
+      toast.success("Organization Status Rejected Successfully!");
       router.refresh();
     } finally {
       setIsLoading(false);
