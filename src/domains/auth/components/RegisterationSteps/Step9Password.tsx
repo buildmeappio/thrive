@@ -1,16 +1,18 @@
 import React from 'react';
 import { Formik, Form } from 'formik';
 import { Label } from '@/components/ui/label';
-import ContinueButton from '@/components/ui/ContinueButton';
-import { PasswordInput } from '@/components/ui/PasswordInput';
+import { ContinueButton } from '@/components';
+import { PasswordInput } from '@/components/PasswordInput';
 import {
   step9PasswordSchema,
-  step9InitialValues,
-} from '@/domains/auth/validations/register.validation';
-import type { Step9PasswordProps } from '@/domains/auth/types/SetPasswordProps';
+  Step9PasswordInput,
+} from '@/domains/auth/schemas/auth.schemas';
+import { Step9PasswordProps } from '@/domains/auth/types/index';
+import { step9InitialValues } from '@/domains/auth/constants/initialValues';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
 
 export const Step9Password: React.FC<Step9PasswordProps> = ({ onNext }) => {
-  const handleSubmit = (values: typeof step9InitialValues) => {
+  const handleSubmit = (values: Step9PasswordInput) => {
     console.log('Step 9 Form Data:', values);
     onNext();
   };
@@ -18,7 +20,7 @@ export const Step9Password: React.FC<Step9PasswordProps> = ({ onNext }) => {
   return (
     <Formik
       initialValues={step9InitialValues}
-      validationSchema={step9PasswordSchema}
+      validationSchema={toFormikValidationSchema(step9PasswordSchema)}
       onSubmit={handleSubmit}
       validateOnChange={false}
       validateOnBlur={false}

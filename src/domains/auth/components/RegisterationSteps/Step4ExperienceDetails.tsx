@@ -1,17 +1,16 @@
 import React from 'react';
 import { Formik, Form } from 'formik';
-import BackButton from '@/components/ui/BackButton';
-import ContinueButton from '@/components/ui/ContinueButton';
+import { BackButton, ContinueButton, ProgressIndicator } from '@/components';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   step4ExperienceDetailsSchema,
-  step4InitialValues,
-} from '@/domains/auth/validations/register.validation';
-import ProgressIndicator from '@/components/ProgressBar/ProgressIndicator';
-import { RegStepProps } from '@/domains/auth/types/RegStepProps';
+  Step4ExperienceDetailsInput,
+} from '@/domains/auth/schemas/auth.schemas';
+import { RegStepProps } from '@/domains/auth/types/index';
 import { useRegistrationStore, RegistrationData } from '@/domains/auth/state/useRegistrationStore';
-import { useAutoPersist } from '@/domains/auth/state/useAutoPersist';
+import { step4InitialValues } from '@/domains/auth/constants/initialValues';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
 
 export const Step4ExperienceDetails: React.FC<RegStepProps> = ({
   onNext,
@@ -21,7 +20,7 @@ export const Step4ExperienceDetails: React.FC<RegStepProps> = ({
 }) => {
   const { data, merge } = useRegistrationStore();
 
-  const handleSubmit = (values: typeof step4InitialValues) => {
+  const handleSubmit = (values: Step4ExperienceDetailsInput) => {
     merge(values as Partial<RegistrationData>);
     onNext();
   };
@@ -42,14 +41,14 @@ export const Step4ExperienceDetails: React.FC<RegStepProps> = ({
           ...step4InitialValues,
           experienceDetails: data.experienceDetails,
         }}
-        validationSchema={step4ExperienceDetailsSchema}
+        validationSchema={toFormikValidationSchema(step4ExperienceDetailsSchema)}
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}
         enableReinitialize
       >
         {({ values, errors, handleChange, submitForm }) => {
-          useAutoPersist(values, (p) => merge(p as Partial<RegistrationData>));
+          // useAutoPersist(values, (p) => merge(p as Partial<RegistrationData>));
           return (
             <Form className="flex flex-grow flex-col">
               <div className="flex-grow px-4 pt-4 sm:px-4 sm:py-6 sm:pt-0 md:px-0">

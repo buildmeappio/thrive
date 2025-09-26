@@ -1,18 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import React, { useRef } from 'react';
 import { Formik, Form } from 'formik';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import ContinueButton from '@/components/ui/ContinueButton';
-import BackButton from '@/components/ui/BackButton';
-import { Upload, Download } from 'lucide-react';
+import { ContinueButton, BackButton, ProgressIndicator } from '@/components';  
+import { Download } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { RegStepProps } from '@/domains/auth/types/RegStepProps';
-import { step6LegalSchema, step6InitialValues } from '@/domains/auth/validations/register.validation';
-import ProgressIndicator from '@/components/ProgressBar/ProgressIndicator';
+import { RegStepProps } from '@/domains/auth/types/index';
+import { step6LegalSchema, Step6LegalInput } from '@/domains/auth/schemas/auth.schemas';
 import { useRegistrationStore, RegistrationData } from '@/domains/auth/state/useRegistrationStore';
-import { useAutoPersist } from '@/domains/auth/state/useAutoPersist';
+import { step6InitialValues } from '@/domains/auth/constants/initialValues';
+import { toFormikValidationSchema } from 'zod-formik-adapter';
 
 export const Step6Legal: React.FC<RegStepProps> = ({
   onNext,
@@ -25,7 +23,7 @@ export const Step6Legal: React.FC<RegStepProps> = ({
 
   const { data, merge } = useRegistrationStore();
 
-  const handleSubmit = (values: typeof step6InitialValues) => {
+  const handleSubmit = (values: Step6LegalInput) => {
     merge(values as Partial<RegistrationData>);
     onNext();
   };
@@ -52,14 +50,14 @@ export const Step6Legal: React.FC<RegStepProps> = ({
           consentBackgroundVerification: data.consentBackgroundVerification,
           agreeTermsConditions: data.agreeTermsConditions,
         }}
-        validationSchema={step6LegalSchema}
+        validationSchema={toFormikValidationSchema(step6LegalSchema)}
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}
         enableReinitialize
       >
         {({ values, errors, setFieldValue, submitForm }) => {
-          useAutoPersist(values, (p) => merge(p as Partial<RegistrationData>));
+          // useAutoPersist(values, (p) => merge(p as Partial<RegistrationData>));
           return (
             <Form className="flex flex-grow flex-col">
               <div className="flex-grow space-y-4 px-4 pb-8 md:space-y-6 md:px-0">

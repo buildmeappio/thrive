@@ -5,6 +5,7 @@ import React from 'react';
 
 export const Step10Success: React.FC<{ onNext: () => void }> = () => {
   const router = useRouter();
+  
   const handleClick = () => {
     router.push('/login/medicalExaminer');
   };

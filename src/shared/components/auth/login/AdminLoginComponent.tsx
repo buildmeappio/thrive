@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { PasswordInput } from '@/components/ui/PasswordInput';
+import { PasswordInput } from '@/components/PasswordInput';
 import { Form, Formik } from 'formik';
 import { loginInitialValues, loginSchema } from '@/shared/validation/login/loginValidation';
 export function AdminLoginComponent() {

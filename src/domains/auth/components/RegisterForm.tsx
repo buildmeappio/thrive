@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Step1PersonalInfo,
   Step2MedicalCredentials,
@@ -9,14 +9,26 @@ import {
   Step7SubmitConfirmation,  
   Step8ThankYou,
 } from './RegisterationSteps';
-import { RegStepProps } from '../types/RegStepProps';
+import { RegStepProps } from '@/domains/auth/types/index';
+import { Language } from '@prisma/client';
+import { useRegistrationStore } from '@/domains/auth/state/useRegistrationStore';
+
 
 interface Step {
   component: React.ComponentType<RegStepProps>;
 }
 
-const RegisterForm: React.FC = () => {
+const RegisterForm: React.FC<{ languages: Language[] }> = ({ languages }) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const { setLanguages, data } = useRegistrationStore();
+
+  useEffect(() => {
+    if (languages.length > 0) {
+      setLanguages(languages);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [languages]);
+
 
   const steps: Step[] = [
     { component: Step1PersonalInfo },
@@ -29,14 +41,16 @@ const RegisterForm: React.FC = () => {
   ];
 
   const goToNext = () => {
+    console.log('goToNext', currentStep);
+    console.log('data', data);
     if (currentStep < steps.length) {
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep(currentStep + 1);
     }
   };
 
   const goToPrevious = () => {
     if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
+      setCurrentStep(currentStep - 1);
     }
   };
 

@@ -1,0 +1,123 @@
+import prisma from "@/lib/db";
+import HttpError from "@/utils/httpError";
+import { Roles } from "../../constants/roles";
+import { ExaminerStatus } from "@prisma/client";
+
+type CreateMedicalExaminerInput = {
+  // step 1
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  provinceOfResidence: string;
+  mailingAddress: string;
+
+  // step 2
+  specialties: string[];
+  licenseNumber: string;
+  provinceOfLicensure: string;
+  licenseExpiryDate: Date;
+  medicalLicenseDocumentId: string;
+  resumeDocumentId: string;
+
+  // step 3
+  yearsOfIMEExperience: number;
+  languagesSpoken: string[];
+  forensicAssessmentTrained: boolean;
+
+  // step 4
+  experienceDetails: string;
+
+  // step 5
+  signedNDADocumentId: string;
+  insuranceProofDocumentId: string;
+  agreeTermsConditions: boolean;
+  consentBackgroundVerification: boolean;
+};
+
+const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
+  try {
+    // TODO: Implement create medical examiner and then send otp
+    // Get user by email
+    let user = await prisma.user.findUnique({
+      where: {
+        email: payload.email,
+      },
+    });
+
+    // get role
+    const role = await prisma.role.findFirst({
+      where: {
+        name: Roles.MEDICAL_EXAMINER,
+      },
+    });
+
+    if (!role) {
+      throw HttpError.notFound("MEDICAL_EXAMINER role not found");
+    }
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          email: payload.email,
+          phone: payload.phone,
+          password: "invalid",
+        },
+      });
+    }
+
+    // Create account
+    const account = await prisma.account.create({
+      data: {
+        userId: user.id,
+        roleId: role?.id,
+        isVerified: false,
+      },
+    });
+
+    // Create examiner profile
+    const examinerProfile = await prisma.examinerProfile.create({
+      data: {
+        accountId: account.id,
+        provinceOfResidence: payload.provinceOfResidence,
+        mailingAddress: payload.mailingAddress,
+        specialties: payload.specialties,
+        licenseNumber: payload.licenseNumber,
+        provinceOfLicensure: payload.provinceOfLicensure,
+        licenseExpiryDate: payload.licenseExpiryDate,
+        medicalLicenseDocumentId: payload.medicalLicenseDocumentId,
+        resumeDocumentId: payload.resumeDocumentId,
+        yearsOfIMEExperience: payload.yearsOfIMEExperience,
+        isForensicAssessmentTrained: payload.forensicAssessmentTrained,
+        NdaDocumentId: payload.signedNDADocumentId,
+        agreeToTerms: payload.agreeTermsConditions,
+        isConsentToBackgroundVerification:
+          payload.consentBackgroundVerification,
+        bio: payload.experienceDetails,
+        insuranceDocumentId: payload.insuranceProofDocumentId,
+        status: ExaminerStatus.PENDING,
+      },
+    });
+
+    await prisma.examinerLanguage.createMany({
+      data: payload.languagesSpoken.map((language) => ({
+        examinerProfileId: examinerProfile.id,
+        languageId: language,
+      })),
+    });
+
+    // now send otp
+      
+
+    return {
+      success: true,
+      message: "Medical examiner created successfully",
+    };
+  } catch (error) {
+    throw HttpError.fromError(error, "Failed to create medical examiner", 500);
+  }
+};
+
+export default createMedicalExaminer;

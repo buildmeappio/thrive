@@ -70,3 +70,14 @@ export type VerifyCodeInput = {
 };
 
 
+export interface RegStepProps {
+  onNext: () => void;
+  onPrevious: () => void;
+  currentStep: number;
+  totalSteps: number;
+}
+
+export interface Step9PasswordProps {
+  userId?: string;
+  onNext: () => void;
+}

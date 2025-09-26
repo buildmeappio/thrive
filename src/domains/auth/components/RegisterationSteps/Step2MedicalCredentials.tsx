@@ -1,22 +1,29 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-'use client';
-import React, { useRef } from 'react';
-import { Formik, Form } from 'formik';
-import { FileText, Upload, Calendar, MapPin } from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import { Dropdown } from '@/components/ui/Dropdown';
-import ContinueButton from '@/components/ui/ContinueButton';
-import BackButton from '@/components/ui/BackButton';
+"use client";
+import React from "react";
+import { Formik, Form } from "formik";
+import { FileText } from "lucide-react";
+import { Label, Input } from "@/components/ui";
+import {
+  Dropdown,
+  BackButton,
+  ContinueButton,
+  ProgressIndicator,
+  FileUploadInput,
+} from "@/components";
 import {
   step2MedicalCredentialsSchema,
-  step2InitialValues,
-} from '@/domains/auth/validations/register.validation';
-import ProgressIndicator from '@/components/ProgressBar/ProgressIndicator';
-import { Input } from '@/components/ui';
-import { RegStepProps } from '../../types/RegStepProps';
-import { medicalSpecialtyOptions } from '@/shared/config/register/MedicalSpecialtyDropdownOptions';
-import { RegistrationData, useRegistrationStore } from '@/domains/auth/state/useRegistrationStore';
-import { useAutoPersist } from '@/domains/auth/state/useAutoPersist';
+  Step2MedicalCredentialsInput,
+} from "@/domains/auth/schemas/auth.schemas";
+import { step2InitialValues } from "@/domains/auth/constants/initialValues";
+import { RegStepProps } from "@/domains/auth/types/index";
+import { medicalSpecialtyOptions } from "@/shared/config/register/MedicalSpecialtyDropdownOptions";
+import {
+  RegistrationData,
+  useRegistrationStore,
+} from "@/domains/auth/state/useRegistrationStore";
+import { toFormikValidationSchema } from "zod-formik-adapter";
+import DatePickerInput from "@/components/DatePickerInput";
+import { provinceOptions } from "@/shared/config/register/ProvinceDropdownOptions";
 
 export const Step2MedicalCredentials: React.FC<RegStepProps> = ({
   onNext,
@@ -24,33 +31,17 @@ export const Step2MedicalCredentials: React.FC<RegStepProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const medicalLicenseRef = useRef<HTMLInputElement>(null);
-  const cvResumeRef = useRef<HTMLInputElement>(null);
-  const licenseExpiryRef = useRef<HTMLInputElement>(null);
-
   const { data, merge } = useRegistrationStore();
 
-  const handleSubmit = (values: typeof step2InitialValues) => {
+  const handleSubmit = (values: Step2MedicalCredentialsInput) => {
     merge(values as Partial<RegistrationData>);
     onNext();
-  };
-
-  const handleMedicalLicenseClick = (setFieldValue: any) => () => {
-    medicalLicenseRef.current?.click();
-  };
-
-  const handleCvResumeClick = (setFieldValue: any) => () => {
-    cvResumeRef.current?.click();
-  };
-
-  const handleLicenseExpiryClick = () => {
-    licenseExpiryRef.current?.showPicker();
   };
 
   return (
     <div
       className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
+      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
     >
       <ProgressIndicator
         currentStep={currentStep}
@@ -69,14 +60,15 @@ export const Step2MedicalCredentials: React.FC<RegStepProps> = ({
           medicalLicense: data.medicalLicense,
           cvResume: data.cvResume,
         }}
-        validationSchema={step2MedicalCredentialsSchema}
+        validationSchema={toFormikValidationSchema(
+          step2MedicalCredentialsSchema
+        )}
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}
         enableReinitialize
       >
         {({ values, errors, handleChange, setFieldValue, submitForm }) => {
-          useAutoPersist(values, (p) => merge(p as Partial<RegistrationData>));
           return (
             <Form>
               <div className="space-y-4 px-4 pb-8 md:space-y-6 md:px-0">
@@ -92,13 +84,22 @@ export const Step2MedicalCredentials: React.FC<RegStepProps> = ({
                       id="medicalSpecialty"
                       label="Medical Specialties"
                       value={values.medicalSpecialty}
-                      onChange={(value) => setFieldValue('medicalSpecialty', value)}
+                      onChange={(value) => {
+                        if (Array.isArray(value)) {
+                          setFieldValue("medicalSpecialty", value);
+                        } else {
+                          setFieldValue("medicalSpecialty", [value]);
+                        }
+                      }}
+                      multiSelect={true}
                       options={medicalSpecialtyOptions}
                       required
                       placeholder="Select Specialty"
                     />
                     {errors.medicalSpecialty && (
-                      <p className="text-xs text-red-500">{errors.medicalSpecialty}</p>
+                      <p className="text-xs text-red-500">
+                        {errors.medicalSpecialty}
+                      </p>
                     )}
                   </div>
 
@@ -114,101 +115,68 @@ export const Step2MedicalCredentials: React.FC<RegStepProps> = ({
                       onChange={handleChange}
                     />
                     {errors.licenseNumber && (
-                      <p className="text-xs text-red-500">{errors.licenseNumber}</p>
+                      <p className="text-xs text-red-500">
+                        {errors.licenseNumber}
+                      </p>
                     )}
                   </div>
+
+                  <Dropdown
+                    id="provinceOfLicensure"
+                    label="Province of Licensure"
+                    value={values.provinceOfLicensure}
+                    onChange={(v) => setFieldValue("provinceOfLicensure", v)}
+                    options={provinceOptions}
+                    required
+                    placeholder="Select Province"
+                    error={errors.provinceOfLicensure}
+                  />
 
                   <div className="space-y-2">
-                    <Label htmlFor="provinceOfLicensure" className="text-black">
-                      Province of Licensure<span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      name="provinceOfLicensure"
-                      icon={MapPin}
-                      placeholder="Enter Province"
-                      value={values.provinceOfLicensure}
-                      onChange={handleChange}
-                    />
-                    {errors.provinceOfLicensure && (
-                      <p className="text-xs text-red-500">{errors.provinceOfLicensure}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2" onClick={handleLicenseExpiryClick}>
-                    <Label htmlFor="licenseExpiryDate" className="text-black">
-                      License Expiry Date<span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      ref={licenseExpiryRef}
+                    <DatePickerInput
                       name="licenseExpiryDate"
-                      icon={Calendar}
-                      type="date"
+                      label="License Expiry Date"
                       placeholder="December 31, 2025"
                       value={values.licenseExpiryDate}
-                      onChange={handleChange}
-                    />
-                    {errors.licenseExpiryDate && (
-                      <p className="text-xs text-red-500">{errors.licenseExpiryDate}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="medicalLicense" className="text-black">
-                      Upload Medical License<span className="text-red-500">*</span>
-                    </Label>
-                    <div>
-                      <Input
-                        onClick={handleMedicalLicenseClick(setFieldValue)}
-                        icon={Upload}
-                        type="text"
-                        placeholder="Upload Medical License"
-                        value={values.medicalLicense ? values.medicalLicense.name : ''}
-                        readOnly
-                      />
-                      {/* Hidden real file input */}
-                      <input
-                        type="file"
-                        ref={medicalLicenseRef}
-                        accept=".pdf,.doc,.docx"
-                        style={{ display: 'none' }}
-                        onChange={(e) => {
-                          const f = e.target.files?.[0] || null;
-                          setFieldValue('medicalLicense', f);
-                          // optional immediate merge; hook will also sync
-                          merge({ medicalLicense: f });
-                        }}
-                      />
-                    </div>
-                    {errors.medicalLicense && (
-                      <p className="text-xs text-red-500">{errors.medicalLicense}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cvResume" className="text-black">
-                      Upload CV / Resume<span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      type="text"
-                      onClick={handleCvResumeClick(setFieldValue)}
-                      icon={Upload}
-                      placeholder="Upload CV / Resume"
-                      value={values.cvResume ? values.cvResume.name : ''}
-                      readOnly
-                    />
-                    {/* Hidden real file input */}
-                    <input
-                      type="file"
-                      ref={cvResumeRef}
-                      accept=".pdf,.doc,.docx"
-                      style={{ display: 'none' }}
-                      onChange={(e) => {
-                        const f = e.target.files?.[0] || null;
-                        setFieldValue('cvResume', f);
-                        merge({ cvResume: f });
+                      onChange={(date) => {
+                        const dateString = date ? date.toISOString() : "";
+                        setFieldValue("licenseExpiryDate", dateString);
                       }}
+                      error={errors.licenseExpiryDate}
+                      required
                     />
-                    {errors.cvResume && <p className="text-xs text-red-500">{errors.cvResume}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <FileUploadInput
+                      name="medicalLicense"
+                      label="Upload Medical License"
+                      value={values.medicalLicense}
+                      onChange={(file) => {
+                        setFieldValue("medicalLicense", file);
+                        // merge({ medicalLicense: file });
+                      }}
+                      accept=".pdf,.doc,.docx"
+                      required
+                      placeholder="Upload Medical License"
+                      error={errors.medicalLicense}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <FileUploadInput
+                      name="cvResume"
+                      label="Upload CV / Resume"
+                      value={values.cvResume}
+                      onChange={(file) => {
+                        setFieldValue("cvResume", file);
+                        // merge({ cvResume: file });
+                      }}
+                      accept=".pdf,.doc,.docx"
+                      required
+                      placeholder="Upload CV / Resume"
+                      error={errors.cvResume}
+                    />
                   </div>
                 </div>
 

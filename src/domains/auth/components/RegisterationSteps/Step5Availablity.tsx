@@ -1,25 +1,25 @@
 import React from "react";
 import { Formik, Form } from "formik";
 import { Label } from "@/components/ui/label";
-import { Dropdown } from "@/components/ui/Dropdown";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@/components/ui";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import ContinueButton from "@/components/ui/ContinueButton";
-import BackButton from "@/components/ui/BackButton";
+import { ContinueButton, BackButton, Dropdown, ProgressIndicator } from "@/components";
 import {
   step5AvailabilitySchema,
-  step5InitialValues,
-} from "@/domains/auth/validations/register.validation";
-import ProgressIndicator from "../../../../components/ProgressBar/ProgressIndicator";
-import { RegStepProps } from "../../types/RegStepProps";
+  Step5AvailabilityInput,
+} from "@/domains/auth/schemas/auth.schemas";
+import { RegStepProps } from "@/domains/auth/types/index";
 import { daysOptions, travelDistanceOptions,regionOptions } from "@/shared/config/register";
+import { step5InitialValues } from "@/domains/auth/constants/initialValues";
+import { toFormikValidationSchema } from "zod-formik-adapter";
+
 export const Step5Availablity: React.FC<RegStepProps> = ({
   onNext,
   onPrevious,
   currentStep,
   totalSteps,
 }) => {
-  const handleSubmit = (values: typeof step5InitialValues) => {
+  const handleSubmit = (values: Step5AvailabilityInput) => {
     console.log('Step 5 Form Data:', values);
     onNext();
   };
@@ -40,7 +40,7 @@ export const Step5Availablity: React.FC<RegStepProps> = ({
 
       <Formik
         initialValues={step5InitialValues}
-        validationSchema={step5AvailabilitySchema}
+        validationSchema={toFormikValidationSchema(step5AvailabilitySchema)}
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}

@@ -1,7 +1,8 @@
 import React from 'react';
-import { RegStepProps } from '@/domains/auth/types/RegStepProps';
+import { RegStepProps } from '@/domains/auth/types/index';
 import { Check } from 'lucide-react';
-import ProgressIndicator from '@/components/ProgressBar/ProgressIndicator';
+import { ProgressIndicator } from '@/components';
+
 export const Step8ThankYou: React.FC<RegStepProps> = ({ currentStep, totalSteps }) => {
   return (
     <div

@@ -2,7 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { User, Phone, Mail, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Dropdown } from '@/components/ui/Dropdown';
+import { Dropdown } from '@/components/Dropdown';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';

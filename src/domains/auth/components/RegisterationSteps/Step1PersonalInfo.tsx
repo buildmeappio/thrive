@@ -1,19 +1,27 @@
-import React from 'react';
-import { Formik, Form } from 'formik';
+"use client";
+import React, { useState } from "react";
+import { Formik, Form, FormikHelpers } from "formik";
+import { Input, Label } from "@/components/ui";
+import { Mail, MapPin, Phone, User } from "lucide-react";
 import {
-  step1InitialValues,
+  Dropdown,
+  BackButton,
+  ContinueButton,
+  ProgressIndicator,
+} from "@/components";
+import {
+  useRegistrationStore,
+  RegistrationData,
+} from "@/domains/auth/state/useRegistrationStore";
+import { RegStepProps } from "@/domains/auth/types/index";
+import { provinceOptions } from "@/shared/config/register/ProvinceDropdownOptions";
+import { step1InitialValues } from "@/domains/auth/constants/initialValues";
+import {
   step1PersonalInfoSchema,
-} from '@/domains/auth/validations/register.validation';
-import ProgressIndicator from '@/components/ProgressBar/ProgressIndicator';
-import { Input, Label } from '@/components/ui';
-import { Mail, MapPin, Phone, User } from 'lucide-react';
-import { Dropdown } from '@/components/ui/Dropdown';
-import BackButton from '@/components/ui/BackButton';
-import { useRegistrationStore, RegistrationData } from '@/domains/auth/state/useRegistrationStore';
-import ContinueButton from '@/components/ui/ContinueButton';
-import { RegStepProps } from '@/domains/auth/types/RegStepProps';
-import { provinceOptions } from '@/shared/config/register/ProvinceDropdownOptions';
-import { useAutoPersist } from '@/domains/auth/state/useAutoPersist';
+  Step1PersonalInfoInput,
+} from "@/domains/auth/schemas/auth.schemas";
+import { toFormikValidationSchema } from "zod-formik-adapter";
+import authActions from "../../actions";
 
 export const Step1PersonalInfo: React.FC<RegStepProps> = ({
   onNext,
@@ -22,16 +30,35 @@ export const Step1PersonalInfo: React.FC<RegStepProps> = ({
   totalSteps,
 }) => {
   const { data, merge } = useRegistrationStore();
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (values: typeof step1InitialValues) => {
-    merge(values as Partial<RegistrationData>);
-    onNext();
+  const handleSubmit = async (
+    values: Step1PersonalInfoInput,
+    helpers: FormikHelpers<Step1PersonalInfoInput>
+  ) => {
+    setLoading(true);
+    try {
+      const { exists } = await authActions.checkUserExists(values.emailAddress);
+      if (exists) {
+        helpers.setFieldError(
+          "emailAddress",
+          "An account with this email already exists"
+        );
+      } else {
+        merge(values as Partial<RegistrationData>);
+        onNext();
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div
       className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
+      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
     >
       <ProgressIndicator
         currentStep={currentStep}
@@ -50,14 +77,13 @@ export const Step1PersonalInfo: React.FC<RegStepProps> = ({
           provinceOfResidence: data.provinceOfResidence,
           mailingAddress: data.mailingAddress,
         }}
-        validationSchema={step1PersonalInfoSchema}
+        validationSchema={toFormikValidationSchema(step1PersonalInfoSchema)}
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}
         enableReinitialize
       >
         {({ values, errors, handleChange, setFieldValue, submitForm }) => {
-          useAutoPersist(values, (p) => merge(p as Partial<RegistrationData>));
           return (
             <Form>
               <div className="space-y-6 px-4 pb-8 md:px-0">
@@ -77,7 +103,11 @@ export const Step1PersonalInfo: React.FC<RegStepProps> = ({
                         value={values.firstName}
                         onChange={handleChange}
                       />
-                      {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
+                      {errors.firstName && (
+                        <p className="text-xs text-red-500">
+                          {errors.firstName}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -91,11 +121,18 @@ export const Step1PersonalInfo: React.FC<RegStepProps> = ({
                         value={values.lastName}
                         onChange={handleChange}
                       />
-                      {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
+                      {errors.lastName && (
+                        <p className="text-xs text-red-500">
+                          {errors.lastName}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="phoneNumber" className="text-sm text-black">
+                      <Label
+                        htmlFor="phoneNumber"
+                        className="text-sm text-black"
+                      >
                         Phone Number<span className="text-red-500">*</span>
                       </Label>
                       <Input
@@ -106,11 +143,18 @@ export const Step1PersonalInfo: React.FC<RegStepProps> = ({
                         value={values.phoneNumber}
                         onChange={handleChange}
                       />
-                      {errors.phoneNumber && <p className="text-xs text-red-500">{errors.phoneNumber}</p>}
+                      {errors.phoneNumber && (
+                        <p className="text-xs text-red-500">
+                          {errors.phoneNumber}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="emailAddress" className="text-sm text-black">
+                      <Label
+                        htmlFor="emailAddress"
+                        className="text-sm text-black"
+                      >
                         Email Address<span className="text-red-500">*</span>
                       </Label>
                       <Input
@@ -121,26 +165,35 @@ export const Step1PersonalInfo: React.FC<RegStepProps> = ({
                         value={values.emailAddress}
                         onChange={handleChange}
                       />
-                      {errors.emailAddress && <p className="text-xs text-red-500">{errors.emailAddress}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Dropdown
-                        id="provinceOfResidence"
-                        label="Province of Residence"
-                        value={values.provinceOfResidence}
-                        onChange={(v) => setFieldValue('provinceOfResidence', v)}
-                        options={provinceOptions}
-                        required
-                        placeholder="Select Province"
-                      />
-                      {errors.provinceOfResidence && (
-                        <p className="text-xs text-red-500">{errors.provinceOfResidence}</p>
+                      {errors.emailAddress && (
+                        <p className="text-xs text-red-500">
+                          {errors.emailAddress}
+                        </p>
                       )}
                     </div>
 
+                    <Dropdown
+                      id="provinceOfResidence"
+                      label="Province of Residence"
+                      value={values.provinceOfResidence}
+                      onChange={(v) => {
+                        if (Array.isArray(v)) {
+                          setFieldValue("provinceOfResidence", v[0]);
+                        } else {
+                          setFieldValue("provinceOfResidence", v);
+                        }
+                      }}
+                      options={provinceOptions}
+                      required
+                      placeholder="Select Province"
+                      error={errors.provinceOfResidence}
+                    />
+
                     <div className="space-y-2">
-                      <Label htmlFor="mailingAddress" className="text-sm text-black">
+                      <Label
+                        htmlFor="mailingAddress"
+                        className="text-sm text-black"
+                      >
                         Mailing Address<span className="text-red-500">*</span>
                       </Label>
                       <Input
@@ -151,7 +204,9 @@ export const Step1PersonalInfo: React.FC<RegStepProps> = ({
                         onChange={handleChange}
                       />
                       {errors.mailingAddress && (
-                        <p className="text-xs text-red-500">{errors.mailingAddress}</p>
+                        <p className="text-xs text-red-500">
+                          {errors.mailingAddress}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -169,6 +224,7 @@ export const Step1PersonalInfo: React.FC<RegStepProps> = ({
                     isLastStep={currentStep === totalSteps}
                     gradientFrom="#89D7FF"
                     gradientTo="#00A8FF"
+                    loading={loading}
                   />
                 </div>
               </div>

@@ -1,18 +1,20 @@
-import React from 'react';
-import { Formik, Form } from 'formik';
-import { Label } from '@/components/ui/label';
-import { Dropdown } from '@/components/ui/Dropdown';
-import { Checkbox } from '@/components/ui/checkbox';
-import ContinueButton from '@/components/ui/ContinueButton';
-import BackButton from '@/components/ui/BackButton';
+import React from "react";
+import { Formik, Form } from "formik";
+import { Label } from "@/components/ui/label";
+import { BackButton, ContinueButton, ProgressIndicator } from "@/components";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   step3IMEExperienceSchema,
-  step3InitialValues,
-} from '@/domains/auth/validations/register.validation';
-import ProgressIndicator from '@/components/ProgressBar/ProgressIndicator';
-import { languageOptions, provinceOptions, yearsOfExperienceOptions } from '@/shared/config/register';
-import { useRegistrationStore, RegistrationData } from '@/domains/auth/state/useRegistrationStore';
-import { useAutoPersist } from '@/domains/auth/state/useAutoPersist';
+  Step3IMEExperienceInput,
+} from "@/domains/auth/schemas/auth.schemas";
+import { step3InitialValues } from "@/domains/auth/constants/initialValues";
+import {
+  useRegistrationStore,
+  RegistrationData,
+} from "@/domains/auth/state/useRegistrationStore";
+import { toFormikValidationSchema } from "zod-formik-adapter";
+import { Dropdown } from "@/components";
 
 interface Step3IMEExperinceProps {
   onNext: () => void;
@@ -27,17 +29,17 @@ export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { data, merge } = useRegistrationStore();
+  const { data, merge, languages } = useRegistrationStore();
 
-  const handleSubmit = (values: typeof step3InitialValues) => {
-    merge(values as Partial<RegistrationData>);
+  const handleSubmit = (values: Step3IMEExperienceInput) => {
+    merge(values as unknown as Partial<RegistrationData>);
     onNext();
   };
 
   return (
     <div
       className="mt-4 flex w-full flex-col justify-between rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
+      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
     >
       <ProgressIndicator
         currentStep={currentStep}
@@ -50,17 +52,16 @@ export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
           ...step3InitialValues,
           yearsOfIMEExperience: data.yearsOfIMEExperience,
           provinceOfLicensure: data.provinceOfLicensure, // shared with Step 2
-          languagesSpoken: data.languagesSpoken,
+          languagesSpoken: data.languagesSpoken || [],
           forensicAssessmentTrained: data.forensicAssessmentTrained,
         }}
-        validationSchema={step3IMEExperienceSchema}
+        validationSchema={toFormikValidationSchema(step3IMEExperienceSchema)}
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}
         enableReinitialize
       >
         {({ values, errors, setFieldValue, submitForm }) => {
-          useAutoPersist(values, (p) => merge(p as Partial<RegistrationData>));
           return (
             <Form className="flex flex-grow flex-col pb-8">
               <div className="flex-grow px-4 pb-8 md:px-0 md:pb-10">
@@ -72,80 +73,98 @@ export const Step3IMEExperince: React.FC<Step3IMEExperinceProps> = ({
 
                 <div className="mt-6 grid flex-1 grid-cols-1 gap-x-14 gap-y-6 md:mt-8 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Dropdown
+                    <Label
+                      htmlFor="yearsOfIMEExperience"
+                      className="text-black"
+                    >
+                      Years of IME Experience{" "}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
                       id="yearsOfIMEExperience"
-                      label="Years of IME Experience"
-                      value={values.yearsOfIMEExperience}
-                      onChange={(v) => setFieldValue('yearsOfIMEExperience', v)}
-                      options={yearsOfExperienceOptions}
-                      required
-                      placeholder="12 Years"
+                      name="yearsOfIMEExperience"
+                      type="text"
+                      placeholder="Enter number of years"
+                      value={values.yearsOfIMEExperience ?? 0}
+                      onChange={(e) => {
+                        const number = Number(e.target.value);
+                        if (isNaN(number)) {
+                          return;
+                        }
+                        setFieldValue("yearsOfIMEExperience", number);
+                      }}
                     />
                     {errors.yearsOfIMEExperience && (
-                      <p className="text-xs text-red-500">{errors.yearsOfIMEExperience}</p>
+                      <p className="text-xs text-red-500">
+                        {errors.yearsOfIMEExperience}
+                      </p>
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Dropdown
-                      id="provinceOfLicensure"
-                      label="Province of Licensure"
-                      value={values.provinceOfLicensure}
-                      onChange={(v) => setFieldValue('provinceOfLicensure', v)}
-                      options={provinceOptions}
-                      required
-                      placeholder="Select Province"
-                    />
-                    {errors.provinceOfLicensure && (
-                      <p className="text-xs text-red-500">{errors.provinceOfLicensure}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Dropdown
-                      id="languagesSpoken"
-                      label="Languages Spoken"
-                      value={values.languagesSpoken}
-                      onChange={(v) => setFieldValue('languagesSpoken', v)}
-                      options={languageOptions}
-                      required
-                      placeholder="Select Language"
-                    />
-                    {errors.languagesSpoken && (
-                      <p className="text-xs text-red-500">{errors.languagesSpoken}</p>
-                    )}
-                  </div>
+                  <Dropdown
+                    id="languagesSpoken"
+                    label="Languages Spoken"
+                    value={values.languagesSpoken}
+                    onChange={(v) => {
+                      if (Array.isArray(v)) {
+                        setFieldValue("languagesSpoken", v);
+                      } else {
+                        setFieldValue("languagesSpoken", [v]);
+                      }
+                    }}
+                    multiSelect
+                    options={languages.map((language) => ({
+                      value: language.id,
+                      label: language.name,
+                    }))}
+                    required
+                    placeholder="Select Language"
+                    error={errors.languagesSpoken as string | undefined}
+                  />
 
                   <div className="space-y-2">
                     <Label className="text-black">
-                      Forensic Assessment Trained <span className="text-red-500">*</span>
+                      Forensic Assessment Trained{" "}
+                      <span className="text-red-500">*</span>
                     </Label>
                     <div className="flex items-center space-x-6 pt-2">
                       <label className="flex cursor-pointer items-center space-x-2">
                         <Checkbox
-                          checked={values.forensicAssessmentTrained === 'yes'}
+                          checked={values.forensicAssessmentTrained === "yes"}
                           onCheckedChange={(checked) =>
-                            setFieldValue('forensicAssessmentTrained', checked ? 'yes' : '')
+                            setFieldValue(
+                              "forensicAssessmentTrained",
+                              checked ? "yes" : ""
+                            )
                           }
                           checkedColor="#00A8FF"
                           checkIconColor="white"
                         />
-                        <span className="text-sm font-medium text-gray-700">Yes</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          Yes
+                        </span>
                       </label>
                       <label className="flex cursor-pointer items-center space-x-2">
                         <Checkbox
-                          checked={values.forensicAssessmentTrained === 'no'}
+                          checked={values.forensicAssessmentTrained === "no"}
                           onCheckedChange={(checked) =>
-                            setFieldValue('forensicAssessmentTrained', checked ? 'no' : '')
+                            setFieldValue(
+                              "forensicAssessmentTrained",
+                              checked ? "no" : ""
+                            )
                           }
                           checkedColor="#00A8FF"
                           checkIconColor="white"
                         />
-                        <span className="text-sm font-medium text-gray-700">No</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          No
+                        </span>
                       </label>
                     </div>
                     {errors.forensicAssessmentTrained && (
-                      <p className="text-xs text-red-500">{errors.forensicAssessmentTrained}</p>
+                      <p className="text-xs text-red-500">
+                        {errors.forensicAssessmentTrained}
+                      </p>
                     )}
                   </div>
                 </div>
