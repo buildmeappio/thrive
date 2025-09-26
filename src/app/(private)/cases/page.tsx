@@ -32,7 +32,7 @@ const Page = async () => {
     status: c.status.name,
     urgencyLevel: c.urgencyLevel,
     reason: c.notes,
-    examinerId: c.examiner.id || "Unknown",
+    examinerId: c.examiner ? c.examiner.id : "Unknown",
     submittedAt: new Date(c.createdAt).toISOString(),
     assignedAt: c.assignedAt ? new Date(c.assignedAt).toISOString() : undefined,
   }));
