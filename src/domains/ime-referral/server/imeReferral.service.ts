@@ -4,7 +4,7 @@ import { HttpError } from '@/utils/httpError';
 import ErrorMessages from '@/constants/ErrorMessages';
 import type { IMEFormData } from '@/store/useImeReferral';
 import type { ClaimantPreference } from '@prisma/client';
-import { uploadFilesToS3 } from '@/lib/s3-actions';
+import { DocumentService } from '@/services/fileUploadService';
 
 export const createCase = async (formData: IMEFormData) => {
   const currentUser = await getCurrentUser();
@@ -26,30 +26,21 @@ export const createCase = async (formData: IMEFormData) => {
     throw new Error('Policy holder first name and last name are required');
   }
 
-  let uploadedFiles: { name: string; originalName: string; type: string; size: number }[] = [];
+  // Handle file uploads using DocumentService
+  let uploadResult: { success: boolean; documents: any[]; uploadedFiles: any[]; error?: string } = {
+    success: true,
+    documents: [],
+    uploadedFiles: [],
+  };
 
   if (formData.step6?.files && formData.step6.files.length > 0) {
     try {
-      const uploadFormData = new FormData();
-      formData.step6.files.forEach(file => {
-        uploadFormData.append('files', file);
+      uploadResult = await DocumentService.uploadAndCreateDocuments({
+        files: formData.step6.files,
       });
 
-      // Upload files to S3
-      const uploadResult = await uploadFilesToS3(uploadFormData);
-
-      if (uploadResult.error) {
+      if (!uploadResult.success) {
         throw new Error(`File upload failed: ${uploadResult.error}`);
-      }
-
-      if (uploadResult.success && uploadResult.files) {
-        // Map uploaded files with additional metadata
-        uploadedFiles = uploadResult.files.map((file, index) => ({
-          name: file.name,
-          originalName: file.originalName,
-          type: formData.step6!.files[index].type,
-          size: formData.step6!.files[index].size,
-        }));
       }
     } catch (error) {
       console.error('Error uploading files:', error);
@@ -283,26 +274,19 @@ export const createCase = async (formData: IMEFormData) => {
         createdExaminations.push(examination);
       }
 
-      // 6. Create documents in parallel (only if files were uploaded)
-      const createdDocuments = await Promise.all(
-        uploadedFiles.map(async fileMetadata => {
-          const document = await tx.documents.create({
-            data: {
-              name: fileMetadata.name,
-              // originalName: fileMetadata.originalName,
-              type: fileMetadata.type,
-              size: fileMetadata.size,
-            },
-          });
-          await tx.caseDocument.create({
-            data: {
-              caseId: caseRecord.id,
-              documentId: document.id,
-            },
-          });
-          return document;
-        })
-      );
+      // 6. Associate uploaded documents with the case
+      if (uploadResult.success && uploadResult.documents.length > 0) {
+        await Promise.all(
+          uploadResult.documents.map(async document => {
+            await tx.caseDocument.create({
+              data: {
+                caseId: caseRecord.id,
+                documentId: document.id,
+              },
+            });
+          })
+        );
+      }
 
       return {
         success: true,
@@ -312,8 +296,8 @@ export const createCase = async (formData: IMEFormData) => {
           insuranceId: insurance.id,
           legalRepresentativeId: legalRepId,
           examinations: createdExaminations,
-          documents: createdDocuments,
-          uploadedFiles: uploadedFiles,
+          documents: uploadResult.documents,
+          uploadedFiles: uploadResult.uploadedFiles,
         },
       };
     },
@@ -446,7 +430,6 @@ const imeReferralService = {
   getCaseTypes,
   getCaseDetails,
   getCases,
-  uploadFilesToS3,
 };
 
 export default imeReferralService;

@@ -30,6 +30,7 @@ import ToggleSwitch from '@/components/ToggleSwtch';
 import { locationOptions } from '@/config/locationType';
 import { Button } from '@/components/ui';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import CustomDatePicker from '@/components/CustomDatePicker';
 
 interface ExaminationProps extends IMEReferralProps {
   examinationTypes: DropdownOption[];
@@ -518,21 +519,20 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                             <Label>
                               Due Date<span className="text-red-500">*</span>
                             </Label>
-                            <Input
-                              disabled={isSubmitting}
-                              value={examination.dueDate || ''}
-                              onChange={e => {
+                            <CustomDatePicker
+                              selectedDate={
+                                examination.dueDate ? new Date(examination.dueDate) : null
+                              }
+                              datePickLoading={false}
+                              onDateChange={date => {
                                 const updatedExaminations = [...(watchedValues.examinations || [])];
                                 updatedExaminations[index] = {
                                   ...examination,
-                                  dueDate: e.target.value,
+                                  dueDate: date ? date.toISOString().split('T')[0] : '',
                                 };
                                 setValue('examinations', updatedExaminations);
                               }}
-                              type="date"
-                              className={`w-full bg-white ${
-                                errors.examinations?.[index]?.dueDate ? 'border-red-500' : ''
-                              }`}
+                              className="bg-white"
                             />
                             {errors.examinations?.[index]?.dueDate && (
                               <p className="text-sm text-red-500">
