@@ -530,7 +530,9 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                   ...examination,
                                   dueDate: date ? date.toISOString().split('T')[0] : '',
                                 };
-                                setValue('examinations', updatedExaminations);
+                                setValue('examinations', updatedExaminations, {
+                                  shouldValidate: true,
+                                });
                               }}
                               className="bg-white"
                             />

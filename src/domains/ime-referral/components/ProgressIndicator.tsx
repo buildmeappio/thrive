@@ -14,8 +14,8 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   const steps = [
     '',
     'Claimant Details',
-    'Legal Details',
     'Insurance Details',
+    'Legal Details',
     'Exam Types',
     'Case Info',
     'Document',

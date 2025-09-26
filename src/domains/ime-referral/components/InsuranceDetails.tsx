@@ -150,14 +150,15 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                         watch('insuranceDateOfLoss') ? new Date(watch('insuranceDateOfLoss')) : null
                       }
                       datePickLoading={false}
-                      onDateChange={date =>
-                        setValue(
-                          'insuranceDateOfLoss',
-                          date ? date.toISOString().split('T')[0] : ''
-                        )
-                      }
+                      onDateChange={date => {
+                        const dateValue = date ? date.toISOString().split('T')[0] : '';
+                        setValue('insuranceDateOfLoss', dateValue, { shouldValidate: true });
+                      }}
                       dateRestriction="past"
                     />
+                    {errors.insuranceDateOfLoss && (
+                      <p className="text-sm text-red-500">{errors.insuranceDateOfLoss.message}</p>
+                    )}
                   </div>
                 </div>
 
