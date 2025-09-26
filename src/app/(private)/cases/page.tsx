@@ -16,20 +16,23 @@ export const dynamic = "force-dynamic";
 const Page = async () => {
   const [cases, types, statuses] = await Promise.all([
     listAllCases(),
-    listCaseTypes(),    
+    listCaseTypes(),
     listCaseStatuses(),
   ]);
 
-  const data: CaseData[] = cases.map((c) => ({
+
+
+  const flattenedCases = cases.flat();
+  const data: CaseData[] = flattenedCases.map((c) => ({
     id: c.id,
-    number: c.referral.number,
-    claimant: c.claimant.name,
-    organization: c.organization?.name || "Unknown",
-    caseType: c.caseType.name,
+    number: c.caseNumber,
+    claimant: c.case.claimant.firstName + " " + c.case.claimant.lastName,
+    organization: c.case.organization?.name || "Unknown",
+    caseType: c.case.caseType.name,
     status: c.status.name,
     urgencyLevel: c.urgencyLevel,
-    reason: c.reason,
-    examinerId: c.examinerId || "Unknown",
+    reason: c.notes,
+    examinerId: c.examiner.id || "Unknown",
     submittedAt: new Date(c.createdAt).toISOString(),
     assignedAt: c.assignedAt ? new Date(c.assignedAt).toISOString() : undefined,
   }));

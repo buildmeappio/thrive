@@ -22,3 +22,4 @@ export type ExaminerData = {
 };
 
 type ServerStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+  

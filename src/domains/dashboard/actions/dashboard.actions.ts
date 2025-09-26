@@ -5,6 +5,7 @@ import { fakeExaminers } from "@/domains/examiner/constants/fakeData";
 import dashboardService from "../server/dashboard.service";
 import { CaseRowDTO } from "../types/dashboard.types";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
+import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
 
 
 export async function getOrganizationCount(): Promise<number> {
@@ -15,7 +16,7 @@ export async function getCaseCount(): Promise<number> {
   return dashboardService.getActiveCaseCount();
 }
 
-export async function getCases(limit = 7): Promise<CaseRowDTO[]> {
+export async function getCases(limit = 7): Promise<CaseDetailDtoType[]> {
   return dashboardService.getRecentCases(limit);
 }
 

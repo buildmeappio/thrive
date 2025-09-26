@@ -5,6 +5,7 @@ import { Dropdown } from "@/components/Dropdown";
 import caseActions from "../actions";
 import { CaseStatus } from "../constants/case-status";
 import { CaseStatus as PrismaCaseStatus } from "@prisma/client";
+import { toast } from "sonner";
 
 type SaveCaseDetailsProps = {
   caseId: string;
@@ -28,8 +29,11 @@ const SaveCaseDetails = ({ caseId, status, assignTo, statusOptions }: SaveCaseDe
       if (status === CaseStatus.PENDING && currentStatus === CaseStatus.READY_TO_APPOINTMENT) {
         await caseActions.readyForAppointment(caseId);
       }
+
+      toast.success("Case Status updated successfully!")
       // Add other status update logic here if needed
     } catch (error) {
+      toast.error("Error Updating Case Status")
       console.error("Error updating case status:", error);
     } 
   };

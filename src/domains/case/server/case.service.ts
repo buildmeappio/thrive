@@ -1,17 +1,18 @@
 import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
-import { Examination, Prisma, ExaminationSecureLinkStatus } from "@prisma/client";
+import { Examination, Prisma, Case, CaseStatus, ExaminationSecureLinkStatus } from "@prisma/client";
 import { Roles } from "@/domains/auth/constants/roles";
 import { isAllowedRole } from "@/lib/rbac";
 import { v4 } from "uuid";
 
 export type ListCasesFilter = {
-  assignToUserId?: string | undefined;
-  caseTypes?: string[] | undefined; // keep naming as caseTypes
-  statuses?: string[] | undefined;
+  assignToUserId?: string;
+  caseTypes?: string[];
+  statuses?: string[];
 };
 
 class CaseService {
+  // Get case types based on provided names
   async getCaseTypes(typeNames: string[]) {
     try {
       const types = await prisma.examinationType.findMany({
@@ -30,6 +31,7 @@ class CaseService {
     }
   }
 
+  // Check if the case belongs to the user
   async doesCaseBelongToUser(exam: Examination, userId: string) {
     const user = await prisma.account.findFirst({
       where: { userId },
@@ -47,15 +49,22 @@ class CaseService {
     return true;
   }
 
+  // Retrieve a user's assignable account ID based on their roles
   async getAssignTo(userId: string) {
+    console.log("userId", userId);
+
     const accounts = await prisma.account.findMany({
       where: { userId },
       include: { role: true },
     });
 
+    console.log("roles", accounts);
     const isInvalidRole = accounts.some(
       (account) => !isAllowedRole(account.role.name)
     );
+
+    console.log("isInvalidRole", isInvalidRole);
+
     if (accounts.length === 0 || isInvalidRole) {
       throw HttpError.badRequest("Invalid role");
     }
@@ -69,7 +78,7 @@ class CaseService {
 
     const account = accounts.find(
       (account) =>
-        account.role.name == Roles.STAFF || account.role.name == Roles.ADMIN
+        account.role.name === Roles.STAFF || account.role.name === Roles.ADMIN
     );
 
     if (!account) {
@@ -78,11 +87,10 @@ class CaseService {
     return account.id;
   }
 
-  async getStatuses(statusNames: string[]) {
+  // Get the statuses for case types
+  async getStatuses() {
     try {
-      const statuses = await prisma.caseStatus.findMany({
-        where: { name: { in: statusNames } },
-      });
+      const statuses = await prisma.caseStatus.findMany();
 
       if (statuses.length === 0) {
         throw HttpError.notFound("Status not found");
@@ -94,18 +102,7 @@ class CaseService {
     }
   }
 
-  async getAllStatuses() {
-    try {
-      const statuses = await prisma.caseStatus.findMany({
-        where: { deletedAt: null },
-        orderBy: { name: "asc" },
-      });
-      return statuses;
-    } catch (error) {
-      throw HttpError.fromError(error, "Failed to get all statuses");
-    }
-  }
-
+  // Convert filter object to a Prisma `where` clause
   async convertFilterToWhere(filter?: ListCasesFilter) {
     const where: Prisma.ExaminationWhereInput = {};
 
@@ -116,13 +113,13 @@ class CaseService {
 
     if (filter?.caseTypes) {
       const types = await this.getCaseTypes(filter.caseTypes);
-      where.examinationTypeId = {
-        in: types.map((t) => t.id),
-      };
+      // where.caseTypeId = {
+      //   in: types.map((t) => t.id),
+      // };
     }
 
     if (filter?.statuses) {
-      const statuses = await this.getStatuses(filter.statuses);
+      const statuses = await this.getStatuses();
       where.statusId = {
         in: statuses.map((status) => status.id),
       };
@@ -131,80 +128,91 @@ class CaseService {
     return where;
   }
 
-  async getCaseById(id: string) {
+  // Get case by ID
+  async listCases(assignToId?: string) {
     try {
-      const exam = await prisma.examination.findUnique({
-        where: { id },
+      const cases = await prisma.examination.findMany({
+        where: {
+          ...(assignToId ? { assignToId } : {}),
+          case: {
+            deletedAt: null,
+            isDraft: false,
+          },
+        },
         include: {
-          status: true,
+          examiner: { include: { user: true } },
           examinationType: true,
-          assignTo: {
+          status: true,
+          services: {
             include: {
-              user: { include: { profilePhoto: true } },
+              interpreter: { include: { language: true } },
+              transport: { include: { pickupAddress: true } },
             },
-          }, referral: {
+          },
+          case: {
             include: {
-              organization: true,
+              caseType: true,
+              documents: { include: { document: true } },
               claimant: { include: { address: true } },
-              insurance: true,
-              legalRepresentative: true,
-              examType: true,
-              documents: {
-                include: {
-                  document: true, // this gives you access to full document info
-                },
-              },
+              organization: true,
+              legalRepresentative: { include: { address: true } },
+              insurance: { include: { address: true } },
             },
           },
         },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+      console.log("list cases", cases);
+      return cases;
+    } catch (error) {
+      console.log("list cases", error);
+      throw HttpError.fromError(error, "Failed to list cases");
+    }
+  }
 
+
+  async getCaseById(id: string) {
+    try {
+      const caseItem = await prisma.examination.findUnique({
+        where: { id },
+        include: {
+          examiner: { include: { user: true } },  // Include examiner details
+          examinationType: true,  // Include examination type
+          status: true,
+          services: {
+            include: {
+              interpreter: { include: { language: true } },  // Include interpreter language
+              transport: { include: { pickupAddress: true } },  // Include transport details
+            },
+          },
+          case: {
+            include: {
+              caseType: true,  // Include case type
+              documents: { include: { document: true } },  // Include documents
+              claimant: { include: { address: true } },  // Include claimant details
+              organization: true,  // Include organization
+              legalRepresentative: { include: { address: true } },  // Include legal representative
+              insurance: { include: { address: true } },
+            },
+          },
+        },
       });
 
-      if (!exam) {
+      if (!caseItem) {
         throw HttpError.notFound("Case not found");
       }
 
-      return exam;
+      return caseItem;
     } catch (error) {
       throw HttpError.fromError(error, "Failed to get case");
     }
   }
 
-  async listCases(where?: Prisma.ExaminationWhereInput) {
-    try {
-      const exams = await prisma.examination.findMany({
-        where: {
-          ...where,
-          deletedAt: null,
-          referral: { isDraft: false },
-        },
-        include: {
-          status: true,
-          examinationType: true,
-          assignTo: { include: { user: true } },
-          referral: {
-            include: {
-              organization: true,
-              claimant: true,
-              insurance: true,
-              legalRepresentative: true,
-              examType: true,
-              documents: {
-                include: {
-                  document: true, // this gives you access to full document info
-                },
-              },
-            },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      });
-      return exams;
-    } catch (error) {
-      throw HttpError.fromError(error, "Failed to list cases");
-    }
-  }
 
+
+  // Update case status
   async updateStatus(caseId: string, status: string) {
     try {
       const statusItem = await prisma.caseStatus.findFirst({
@@ -225,6 +233,7 @@ class CaseService {
     }
   }
 
+  // Generate a secure link for the case
   async generateSecureLink(caseId: string) {
     try {
       const exam = await prisma.examination.findUnique({

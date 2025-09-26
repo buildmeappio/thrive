@@ -2,10 +2,12 @@
 
 import Image from "@/components/Image";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 type Props = {
   title: string;
   value: string | number;
+  href: string;
   badge: string;
   iconSrc: string;
   iconAlt?: string;
@@ -21,6 +23,7 @@ const INTENTS = {
 export default function StatCard({
   title,
   value,
+  href,
   badge,
   iconSrc,
   iconAlt = "",
@@ -60,14 +63,14 @@ export default function StatCard({
         </span>
       </div>
 
-      {/* title left-aligned */}
+      {/* title */}
       <div className="mt-3">
         <p className="text-white text-[18px] font-semibold tracking-[-0.03em] leading-none">
           {title}
         </p>
       </div>
 
-      {/* value with faint box + arrow */}
+      {/* value + arrow */}
       <div className="mt-2 flex items-end justify-between">
         <span className="relative inline-block leading-none">
           <span className="absolute -left-[10px] -top-[6px] h-[43px] w-[35px] rounded-[8px]" />
@@ -76,8 +79,8 @@ export default function StatCard({
           </span>
         </span>
 
-        <button
-          type="button"
+        <Link
+          href={href}
           aria-label="Open"
           className={cn(
             "grid place-items-center h-[28px] w-[28px] rounded-full",
@@ -98,8 +101,7 @@ export default function StatCard({
           >
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
-        </button>
-
+        </Link>
       </div>
     </div>
   );

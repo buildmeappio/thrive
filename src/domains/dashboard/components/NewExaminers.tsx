@@ -46,7 +46,7 @@ export default function NewExaminers({
           id="new-examiners-heading"
           className="font-degular font-[600] text-[29.01px] leading-[100%] tracking-[-0.02em] text-black"
         >
-          New Medical Examiners to be Reviewed
+          New Medical Examiners
         </h3>
 
         <Link

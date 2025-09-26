@@ -6,9 +6,10 @@ import UpdatesPanel from "./UpdatesPanel";
 import NewExaminers from "./NewExaminers";
 import NewCases, { CaseRow } from "./NewCases";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
+import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
 
 type Props = {
-  caseRows: CaseRow[],
+  caseRows: CaseDetailDtoType[],
   examinerRows: ExaminerData[],
   orgCount: number;
   caseCount: number;
@@ -20,10 +21,10 @@ export default function Dashboard({ caseRows, examinerRows, orgCount, caseCount,
     <div className="pb-10">
       {/* Row 1: Stat cards */}
       <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <StatCard title="New Organizations" value={orgCount} badge="This Month" iconSrc="/icons/org-card-icon.svg" intent="primary" />
-        <StatCard title="New Examiners" value={examinerCount} badge="This Month" iconSrc="/icons/examiner-card-icon.svg" intent="indigo" />
-        <StatCard title="New Insurers" value="6" badge="This Month" iconSrc="/icons/insurers-card-icon.svg" intent="primary" />
-        <StatCard title="Active IME Cases" value={caseCount} badge="All Time" iconSrc="/icons/ime-card-icon.svg" intent="aqua" />
+        <StatCard title="New Organizations" value={orgCount} href="/organization" badge="This Month" iconSrc="/icons/org-card-icon.svg" intent="primary" />
+        <StatCard title="New Examiners" value={examinerCount} href="/examiner" badge="This Month" iconSrc="/icons/examiner-card-icon.svg" intent="indigo" />
+        <StatCard title="New Insurers" value="6" href="" badge="This Month" iconSrc="/icons/insurers-card-icon.svg" intent="primary" />
+        <StatCard title="Active IME Cases" value={caseCount} href="/cases" badge="All Time" iconSrc="/icons/ime-card-icon.svg" intent="aqua" />
       </div>
 
       {/* Row 2: Left tables + Right rail */}

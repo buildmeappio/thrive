@@ -3,6 +3,8 @@ import prisma from "@/lib/db";
 import { endOfMonth, startOfMonth } from "date-fns";
 import { CaseRowDTO } from "../types/dashboard.types";
 import { toCaseRowDTO } from "./dto/dashboard.dto";
+import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
+import { CaseDto } from "@/domains/case/server/dto/case.dto";
 
 class DashboardService {
     // New organizations "this month"
@@ -19,21 +21,43 @@ class DashboardService {
 
     // Active cases = not deleted + referral not draft
     async getActiveCaseCount(): Promise<number> {
-        return prisma.examination.count({
-            where: { deletedAt: null, referral: { isDraft: false } },
+        return await prisma.examination.count({
+            where: {
+                case: {
+                    deletedAt: null,
+                    isDraft: false,
+                },
+            },
         });
     }
 
     // Recent cases for the dashboard table
-    async getRecentCases(limit = 7): Promise<CaseRowDTO[]> {
+    async getRecentCases(limit = 7): Promise<CaseDetailDtoType[]> {
         const rows = await prisma.examination.findMany({
-            where: { deletedAt: null, referral: { isDraft: false } },
+            where: {
+                case: {
+                    deletedAt: null,
+                    isDraft: false,
+                },
+            },
             include: {
+                examiner: { include: { user: true } },
+                examinationType: true,
                 status: true,
-                referral: {
+                services: {
                     include: {
-                        claimant: true,
+                        interpreter: { include: { language: true } },
+                        transport: { include: { pickupAddress: true } },
+                    },
+                },
+                case: {
+                    include: {
+                        caseType: true,
+                        documents: { include: { document: true } },
+                        claimant: { include: { address: true } },
                         organization: true,
+                        legalRepresentative: { include: { address: true } },
+                        insurance: { include: { address: true } },
                     },
                 },
             },
@@ -41,7 +65,8 @@ class DashboardService {
             take: limit,
         });
 
-        return rows.map(toCaseRowDTO );
+        return CaseDto.toCaseDto(rows);
+
     }
 }
 

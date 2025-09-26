@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: PageProps) {
   const { id } = await params;
   const caseDetails = await caseActions.getCaseDetails(id);
   return {
-    title: `Case ${caseDetails.referral.number} | Thrive Admin`,
-    description: `Case ${caseDetails.referral.number}`,
+    title: `Case ${caseDetails.caseNumber} | Thrive Admin`,
+    description: `Case ${caseDetails.caseNumber}`,
   };
 }
 
@@ -32,160 +32,272 @@ const Page: React.FC<PageProps> = async ({ params }) => {
           <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
             Case
           </span>{" "}
-          #{caseDetails.referral.number}
+          #{caseDetails.caseNumber}
         </span>
       }
     >
       <div className="flex flex-col gap-6 mb-20">
-        <div className="flex items-center gap-2 shadow-sm mt-[-10px] bg-white h-[55px] rounded-full px-10 justify-between w-full">
+        <div className="flex items-center justify-center shadow-sm bg-white h-[55px] rounded-full px-10 w-full">
+          {/* Left side: Created by, at, Due on */}
           <div className="flex items-center gap-2">
-            <p className="font-poppins text-[15px] leading-none tracking-0 font-normal">
-              {caseDetails.referral.number}
-            </p>
             <p className="font-poppins text-[15px] leading-none tracking-0 font-normal text-[#676767]">
-              by
+              Created by
             </p>
-            <p className="font-poppins text-[15px] leading-none tracking-0 font-normal">
-              {caseDetails.claimant.firstName} {caseDetails.claimant.lastName}
+            <p className="font-poppins text-[15px] leading-none tracking-0 font-medium">
+              {caseDetails.case.claimant.firstName} {caseDetails.case.claimant.lastName}
             </p>
             <p className="font-poppins text-[15px] pl-6 leading-none tracking-0 font-normal text-[#676767]">
-              Updated at
+              at
             </p>
-            <p className="font-poppins text-[15px] leading-none tracking-0 font-normal">
-              {formatDate(
-                caseDetails.updatedAt.toISOString() ||
-                caseDetails.createdAt.toISOString()
-              )}{" "}
-              -{" "}
-              {convertTo12HourFormat(
-                caseDetails.updatedAt.toISOString() ||
-                caseDetails.createdAt.toISOString()
-              )}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <p className="font-poppins text-[15px] leading-none tracking-0 font-normal">
-              Assigned to:
-            </p>
-            <p className="font-poppins text-[15px] leading-none tracking-0 font-normal text-[#676767]">
-              {caseDetails.assignTo?.name || "Not assigned"}
+            <p className="font-poppins text-[15px] leading-none tracking-0 font-medium">
+              {formatDate(caseDetails.createdAt.toISOString())} -{" "}
+              {convertTo12HourFormat(caseDetails.createdAt.toISOString())}
             </p>
 
-            <button className="font-poppins text-[14px] border border-[#676767] border-solid border-1 leading-none tracking-0 font-normal text-[#3C3C3C] bg-[#F3F3F3] px-4 py-2 rounded-full">
-              {caseDetails.status.name}
-            </button>
+            <p className="font-poppins text-[15px] pl-6 leading-none tracking-0 font-normal text-[#676767]">
+              Due on
+            </p>
+            <p className="font-poppins text-[15px] leading-none tracking-0 font-medium">
+              {formatDate(caseDetails.dueDate.toISOString())} -{" "}
+              {convertTo12HourFormat(caseDetails.dueDate.toISOString())}
+            </p>
           </div>
         </div>
+
 
         <div className="bg-white rounded-3xl shadow-sm px-10 py-8 w-full">
-          <div className="flex flex-col lg:flex-row overflow-hidden gap-10 h-full w-full">
-            <div className="flex flex-col gap-6 w-full">
-              <Section title="Claimant Overview" isEditable={true}>
-                <FieldRow
-                  label="First name"
-                  value={caseDetails.claimant.firstName}
-                  type="text"
-                />
-                <FieldRow
-                  label="Last name"
-                  value={caseDetails.claimant.lastName}
-                  type="text"
-                />
-                <FieldRow
-                  label="Date of Birth"
-                  value={formatDate(
-                    caseDetails.claimant.dateOfBirth.toISOString()
-                  )}
-                  type="text"
-                />
-                <FieldRow
-                  label="Phone number"
-                  value={caseDetails.claimant.phone}
-                  type="text"
-                />
-                <FieldRow
-                  label="Gender"
-                  value={caseDetails.claimant.gender}
-                  type="text"
-                />
-                <FieldRow
-                  label="Email address"
-                  value={caseDetails.claimant.email}
-                  type="text"
-                />
-                <FieldRow
-                  label="Address"
-                  value={[
-                    caseDetails.claimant.address.address,
-                    caseDetails.claimant.address.street,
-                    caseDetails.claimant.address.city,
-                    caseDetails.claimant.address.province,
-                    caseDetails.claimant.address.postalCode,
-                  ]
-                    .filter(Boolean)
-                    .join(", ")}
-                  type="text"
-                />
-              </Section>
+          <div className="flex flex-col gap-12">
+            <Section title="Claimant Overview" isEditable={true}>
+              <FieldRow
+                label="First name"
+                value={caseDetails.case.claimant.firstName}
+                type="text"
+              />
+              <FieldRow
+                label="Last name"
+                value={caseDetails.case.claimant.lastName}
+                type="text"
+              />
+              <FieldRow
+                label="Date of Birth"
+                value={formatDate(
+                  caseDetails.case.claimant.dateOfBirth.toISOString()
+                )}
+                type="text"
+              />
+              <FieldRow
+                label="Phone number"
+                value={caseDetails.case.claimant.phoneNumber}
+                type="text"
+              />
+              <FieldRow
+                label="Gender"
+                value={caseDetails.case.claimant.gender}
+                type="text"
+              />
+              <FieldRow
+                label="Email address"
+                value={caseDetails.case.claimant.emailAddress}
+                type="text"
+              />
+              <FieldRow
+                label="Address"
+                value={[
+                  caseDetails.case.claimant.address.address,
+                  caseDetails.case.claimant.address.street,
+                  caseDetails.case.claimant.address.city,
+                  caseDetails.case.claimant.address.province,
+                  caseDetails.case.claimant.address.postalCode,
+                ]
+                  .filter(Boolean)
+                  .join(", ")}
+                type="text"
+              />
+              <FieldRow
+                label="Related Cases"
+                value={caseDetails.case.claimant.relatedCases}
+                type="text"
+              />
+              <FieldRow
+                label="Family Doctor"
+                value={caseDetails.case.familyDoctor.name}
+                type="text"
+              />
+              <FieldRow
+                label="Phone"
+                value={caseDetails.case.familyDoctor.phoneNumber}
+                type="text"
+              />
+              <FieldRow
+                label="Email address"
+                value={caseDetails.case.familyDoctor.email}
+                type="text"
+              />
+              <FieldRow
+                label="Fax No."
+                value={caseDetails.case.familyDoctor.faxNumber}
+                type="text"
+              />
+            </Section>
 
-              <Section title="Case Details" isEditable={true}>
-                <FieldRow
-                  label="Case Type"
-                  value={caseDetails.caseType.name}
-                  type="text"
-                />
+            <Section title="Insurance Details" isEditable={true}>
+              <FieldRow
+                label="Company Name"
+                value={caseDetails.case.insurance.companyName}
+                type="text"
+              />
+              <FieldRow
+                label="Email Address"
+                value={caseDetails.case.insurance.emailAddress}
+                type="text"
+              />
+              <FieldRow
+                label="Contact Person"
+                value={caseDetails.case.insurance.contactPersonName}
+                type="text"
+              />
+              <FieldRow
+                label="Policy Number"
+                value={caseDetails.case.insurance.policyNumber}
+                type="text"
+              />
+              <FieldRow
+                label="Claim Number"
+                value={caseDetails.case.insurance.claimNumber}
+                type="text"
+              />
+              <FieldRow
+                label="Date of Loss"
+                value={formatDate(
+                  caseDetails.case.insurance.dateOfLoss.toISOString()
+                )}
+                type="text"
+              />
+              <FieldRow
+                label="Policy Holder is Claimant"
+                value={caseDetails.case.insurance.policyHolderIsClaimant ? "Yes" : "No"}
+                type="text"
+              />
+              <FieldRow
+                label="Policy Holder First Name"
+                value={caseDetails.case.insurance.policyHolderFirstName}
+                type="text"
+              />
+              <FieldRow
+                label="Policy Holder Last Name"
+                value={caseDetails.case.insurance.policyHolderLastName}
+                type="text"
+              />
+              <FieldRow
+                label="Phone Number"
+                value={caseDetails.case.insurance.phoneNumber}
+                type="text"
+              />
+              <FieldRow
+                label="Fax Number"
+                value={caseDetails.case.insurance.faxNumber}
+                type="text"
+              />
+              <FieldRow
+                label="Address"
+                value={
+                  caseDetails.case.insurance.address
+                    ? [
+                      caseDetails.case.insurance.address.address,
+                      caseDetails.case.insurance.address.street,
+                      caseDetails.case.insurance.address.city,
+                      caseDetails.case.insurance.address.province,
+                      caseDetails.case.insurance.address.postalCode,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")
+                    : "N/A"
+                }
+                type="text"
+              />
+            </Section>
 
-                <FieldRow
-                  label="Reason for referral"
-                  value={caseDetails.reason}
-                  type="text"
-                />
-                <FieldRow
-                  label="Urgency Level"
-                  value={
-                    caseDetails.urgencyLevel.charAt(0).toUpperCase() +
-                    caseDetails.urgencyLevel.toLowerCase().slice(1)
-                  }
-                  type="text"
-                />
-              </Section>
-            </div>
-            <div className="flex flex-col gap-6 w-full">
-              <Section title="Submitted Documents" isEditable={true}>
-                {caseDetails.referral.documents.map((document) => (
-                  <FieldRow
-                    label={document.name}
-                    key={document.id}
-                    value={document.name}
-                    type="document"
-                  />
-                ))}
-              </Section>
-              <Section title="Internal Notes" isEditable={true}>
-                <div className="relative">
-                  <textarea
-                    className="w-full min-h-[180px] rounded-2xl bg-[#F7F7F7] border border-[#E6E6E6] px-4 py-3 text-[14px] font-poppins placeholder:text-[#A1A1A1] outline-none focus:outline-none focus:ring-0 focus:ring-transparent focus:border-[#E6E6E6]"
-                    placeholder="Type here"
-                    defaultValue={caseDetails.notes ?? ""}
-                    readOnly
-                  />
-                  <span className="absolute bottom-3 right-4 text-xs text-[#A1A1A1]">
-                    {(caseDetails.notes?.length ?? 0)}/200
-                  </span>
-                </div>
-              </Section>
+            <Section title="Legal Representative" isEditable={true}>
+              <FieldRow
+                label="Company Name"
+                value={caseDetails.case.legalRepresentative.companyName}
+                type="text"
+              />
+              <FieldRow
+                label="Contact Person"
+                value={caseDetails.case.legalRepresentative.contactPersonName}
+                type="text"
+              />
+              <FieldRow
+                label="Phone Number"
+                value={caseDetails.case.legalRepresentative.phoneNumber}
+                type="text"
+              />
+              <FieldRow
+                label="Fax Number"
+                value={caseDetails.case.legalRepresentative.faxNumber}
+                type="text"
+              />
+              <FieldRow
+                label="Address"
+                value={
+                  caseDetails.case.legalRepresentative.address
+                    ? [
+                      caseDetails.case.legalRepresentative.address.address,
+                      caseDetails.case.legalRepresentative.address.street,
+                      caseDetails.case.legalRepresentative.address.city,
+                      caseDetails.case.legalRepresentative.address.province,
+                      caseDetails.case.legalRepresentative.address.postalCode,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")
+                    : "N/A"
+                }
+                type="text"
+              />
+            </Section>
 
 
-            </div>
+            <Section title="Type Of Examination" isEditable={true}>
+              <FieldRow
+                label="Name"
+                value={caseDetails.examinationType.name}
+                type="text"
+              />
+              <FieldRow
+                label="Short Form"
+                value={caseDetails.examinationType.shortForm}
+                type="text"
+              />
+            </Section>
+
+            <Section title="Submitted Documents" isEditable={true}>
+              {caseDetails.case.documents.map((document) => (
+                <FieldRow
+                  label={document.name}
+                  key={document.id}
+                  value={document.name}
+                  type="document"
+                />
+              ))}
+            </Section>
           </div>
+
+
         </div>
 
-        <SaveCaseDetails
+        {/* <SaveCaseDetails
           caseId={id}
           status={caseDetails.status.name}
-          assignTo={caseDetails.assignTo?.name}
+          assignTo={caseDetails.examiner.firstName}
           statusOptions={statusOptions}
-        />
+        /> */}
+
+        <button
+          className="font-poppins text-[18px] bg-[#000093] leading-none tracking-0 font-normal text-white px-6 py-2.5 rounded-full cursor-pointer hover:bg-[#000093]/80 ml-auto disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Assign Provider
+        </button>
       </div>
     </DashboardShell>
   );

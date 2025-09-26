@@ -118,64 +118,65 @@ export default function CaseTable({ data, statuses, types, urgencies = ["HIGH", 
         onClear={clearAll}
         className="mb-4"
       />
-
-      <Table className="border-0">
-        <TableHeader>
-          {table.getHeaderGroups().map((hg) => (
-            <TableRow className="bg-[#F3F3F3] border-b-0" key={hg.id}>
-              {hg.headers.map((h) => {
-                const isSortable = h.column.getCanSort();
-                const sort = h.column.getIsSorted(); // false | 'asc' | 'desc'
-                return (
-                  <TableHead
-                    key={h.id}
-                    onClick={isSortable ? h.column.getToggleSortingHandler() : undefined}
-                    className={cn(
-                      "select-none",
-                      h.index === 0 && "rounded-l-xl",
-                      h.index === hg.headers.length - 1 && "rounded-r-xl w-[60px]",
-                      isSortable && "cursor-pointer"
-                    )}
-                  >
-                    <div className="flex items-center gap-1">
-                      {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
-                      {isSortable && (
-                        <span className="text-xs text-gray-500">{sort === "asc" ? "▲" : sort === "desc" ? "▼" : ""}</span>
+      <div className="overflow-x-auto">
+        <Table className="border-0">
+          <TableHeader>
+            {table.getHeaderGroups().map((hg) => (
+              <TableRow className="bg-[#F3F3F3] border-b-0" key={hg.id}>
+                {hg.headers.map((h) => {
+                  const isSortable = h.column.getCanSort();
+                  const sort = h.column.getIsSorted(); // false | 'asc' | 'desc'
+                  return (
+                    <TableHead
+                      key={h.id}
+                      onClick={isSortable ? h.column.getToggleSortingHandler() : undefined}
+                      className={cn(
+                        "select-none",
+                        h.index === 0 && "rounded-l-xl",
+                        h.index === hg.headers.length - 1 && "rounded-r-xl w-[60px]",
+                        isSortable && "cursor-pointer"
                       )}
-                    </div>
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-
-        <TableBody>
-          {table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className="bg-white border-0 border-b-1">
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                ))}
+                    >
+                      <div className="flex items-center gap-1">
+                        {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
+                        {isSortable && (
+                          <span className="text-xs text-gray-500">{sort === "asc" ? "▲" : sort === "desc" ? "▼" : ""}</span>
+                        )}
+                      </div>
+                    </TableHead>
+                  );
+                })}
               </TableRow>
-            ))
-          ) : (
+            ))}
+          </TableHeader>
+
+          <TableBody>
+            {table.getRowModel().rows.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className="bg-white border-0 border-b-1">
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center text-black font-poppins text-[16px] leading-none">
+                  No Cases Found
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+
+          <TableFooter>
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center text-black font-poppins text-[16px] leading-none">
-                No Cases Found
+              <TableCell colSpan={columns.length} className="p-0">
+                <Pagination table={table} />
               </TableCell>
             </TableRow>
-          )}
-        </TableBody>
-
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={columns.length} className="p-0">
-              <Pagination table={table} />
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+          </TableFooter>
+        </Table>
+      </div>
     </div>
   );
 }

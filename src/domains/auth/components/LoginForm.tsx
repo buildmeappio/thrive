@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { URLS } from "@/constants/route";
 import Link from "next/link";
+import { toast } from "sonner";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -34,8 +35,8 @@ const LoginForm = () => {
     });
 
     if (res?.ok) {
+      toast.success('Login successful');
       router.replace(URLS.DASHBOARD);
-      console.log(`Login successful`);
       return;
     }
 
@@ -53,9 +54,8 @@ const LoginForm = () => {
           type="email"
           placeholder="Enter your email address"
           disabled={isSubmitting}
-          className={`mt-1 h-11 md:h-12 border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed ${
-            errors.email ? "ring-1 ring-red-500" : ""
-          }`}
+          className={`mt-1 h-11 md:h-12 border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed ${errors.email ? "ring-1 ring-red-500" : ""
+            }`}
           {...register("email")}
         />
         <p className="min-h-[16px] text-xs text-red-500">
@@ -71,9 +71,8 @@ const LoginForm = () => {
           id="password"
           placeholder="Enter your password"
           disabled={isSubmitting}
-          className={`h-11 md:h-12 ${
-            errors.password ? "ring-1 ring-red-500" : ""
-          }`}
+          className={`h-11 md:h-12 ${errors.password ? "ring-1 ring-red-500" : ""
+            }`}
           {...register("password")}
         />
         <p className="min-h-[16px] text-xs text-red-500">
