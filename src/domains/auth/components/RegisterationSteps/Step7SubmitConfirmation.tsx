@@ -4,6 +4,8 @@ import { ContinueButton, BackButton, ProgressIndicator } from "@/components";
 import { RegStepProps } from "@/domains/auth/types/index";
 import { useRegistrationStore } from "@/domains/auth/state/useRegistrationStore";
 import { uploadFileToS3 } from "@/lib/s3";
+import authActions from "@/domains/auth/actions";
+import { CreateMedicalExaminerInput } from "@/domains/auth/server/handlers/createMedicalExaminer";
 
 export const Step7SubmitConfirmation: React.FC<RegStepProps> = ({
   onNext,
@@ -55,7 +57,7 @@ export const Step7SubmitConfirmation: React.FC<RegStepProps> = ({
         return;
       }
 
-      const payload = {
+      const payload: CreateMedicalExaminerInput = {
         // step 1
         firstName: data.firstName,
         lastName: data.lastName,
@@ -68,14 +70,14 @@ export const Step7SubmitConfirmation: React.FC<RegStepProps> = ({
         specialties: data.medicalSpecialty,
         licenseNumber: data.licenseNumber,
         provinceOfLicensure: data.provinceOfLicensure,
-        licenseExpiryDate: data.licenseExpiryDate,
+        licenseExpiryDate: new Date(data.licenseExpiryDate),
         medicalLicenseDocumentId: medicalLicenseDocument.document.id,
-        cvResumeDocumentId: cvResumeDocument.document.id,
+        resumeDocumentId: cvResumeDocument.document.id,
 
         // Step3
         yearsOfIMEExperience: data.yearsOfIMEExperience,
         languagesSpoken: data.languagesSpoken,
-        forensicAssessmentTrained: data.forensicAssessmentTrained,
+        forensicAssessmentTrained: data.forensicAssessmentTrained.toLowerCase() === "yes",
 
         // Step4
         experienceDetails: data.experienceDetails,
@@ -87,7 +89,7 @@ export const Step7SubmitConfirmation: React.FC<RegStepProps> = ({
         consentBackgroundVerification: data.consentBackgroundVerification,  
       };
 
-        
+      await authActions.createMedicalExaminer(payload);
 
       onNext?.();
     } catch (e: unknown) {

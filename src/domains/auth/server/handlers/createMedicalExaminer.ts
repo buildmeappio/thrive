@@ -2,8 +2,9 @@ import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
 import { Roles } from "../../constants/roles";
 import { ExaminerStatus } from "@prisma/client";
+import sendOtp from "./sendOtp";
 
-type CreateMedicalExaminerInput = {
+export type CreateMedicalExaminerInput = {
   // step 1
   firstName: string;
   lastName: string;
@@ -109,7 +110,8 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
     });
 
     // now send otp
-      
+
+    await sendOtp(payload.email);
 
     return {
       success: true,
