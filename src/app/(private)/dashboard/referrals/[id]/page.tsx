@@ -11,11 +11,12 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 interface Props {
-  params: { [key: string]: string };
+  params: Promise<{ [key: string]: string }>;
 }
 
 const Page = async ({ params }: Props) => {
-  const caseDetails = await getReferralDetails(params.id);
+  const resolvedParams = await params;
+  const caseDetails = await getReferralDetails(resolvedParams.id);
   if (!caseDetails.result) notFound();
   return <IMEDetails caseData={caseDetails.result} />;
 };

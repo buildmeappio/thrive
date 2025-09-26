@@ -27,25 +27,12 @@ const IMEDetails = ({ caseData }: IMEDetailsProps) => {
     <div className="min-h-screen overflow-x-hidden">
       <div className="w-full space-y-6">
         {/* Header */}
-        <div
-          className="relative overflow-hidden rounded-xl p-6 text-white shadow-xl"
-          style={{ background: 'linear-gradient(270deg, #01F4C8 0%, #00A8FF 100%)' }}
-        >
-          <div className="absolute inset-0 bg-black/10"></div>
-          <div className="relative z-10">
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <div className="rounded-full bg-white/20 p-2">
-                  <User className="h-6 w-6" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">Case Details</h1>
-                  <p className="text-sm text-blue-100 lg:text-base">
-                    {caseData.examinations[0]?.caseNumber || 'N/A'}
-                  </p>
-                </div>
-              </div>
-            </div>
+
+        <div className="relative z-10">
+          <div className="space-y-3">
+            <h2 className="mb-6 text-[23px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000] md:text-2xl">
+              Case Details
+            </h2>
           </div>
         </div>
 

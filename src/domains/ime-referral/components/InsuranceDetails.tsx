@@ -15,6 +15,7 @@ import ProgressIndicator from './ProgressIndicator';
 import { type IMEReferralProps } from '@/types/imeReferralProps';
 import BackButton from '@/components/BackButton';
 import { Label } from '@/components/ui/label';
+import { useEffect } from 'react';
 
 const InsuranceDetails: React.FC<IMEReferralProps> = ({
   onNext,
@@ -28,10 +29,24 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    setValue,
+    watch,
   } = useForm<InsuranceDetails>({
     resolver: zodResolver(InsuranceDetailsSchema),
     defaultValues: data.step2 || InsuranceDetailsInitialValues,
   });
+
+  const policyHolderSameAsClaimant = watch('policyHolderSameAsClaimant');
+
+  useEffect(() => {
+    if (policyHolderSameAsClaimant && data.step1) {
+      setValue('policyHolderFirstName', data.step1.firstName || '');
+      setValue('policyHolderLastName', data.step1.lastName || '');
+    } else if (!policyHolderSameAsClaimant) {
+      setValue('policyHolderFirstName', '');
+      setValue('policyHolderLastName', '');
+    }
+  }, [policyHolderSameAsClaimant, data.step1, setValue]);
 
   const onSubmit: SubmitHandler<InsuranceDetails> = values => {
     setData('step2', values);
@@ -284,10 +299,12 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                       First Name<span className="text-red-500">*</span>
                     </Label>
                     <Input
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || policyHolderSameAsClaimant}
                       {...register('policyHolderFirstName')}
                       placeholder="John"
-                      className={`w-full ${errors.policyHolderFirstName ? 'border-red-500' : ''}`}
+                      className={`w-full ${errors.policyHolderFirstName ? 'border-red-500' : ''} ${
+                        policyHolderSameAsClaimant ? 'bg-gray-100' : ''
+                      }`}
                     />
                     {errors.policyHolderFirstName && (
                       <p className="text-sm text-red-500">{errors.policyHolderFirstName.message}</p>
@@ -299,10 +316,12 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                       Last Name<span className="text-red-500">*</span>
                     </Label>
                     <Input
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || policyHolderSameAsClaimant}
                       {...register('policyHolderLastName')}
                       placeholder="Doe"
-                      className={`w-full ${errors.policyHolderLastName ? 'border-red-500' : ''}`}
+                      className={`w-full ${errors.policyHolderLastName ? 'border-red-500' : ''} ${
+                        policyHolderSameAsClaimant ? 'bg-gray-100' : ''
+                      }`}
                     />
                     {errors.policyHolderLastName && (
                       <p className="text-sm text-red-500">{errors.policyHolderLastName.message}</p>

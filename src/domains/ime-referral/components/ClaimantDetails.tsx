@@ -45,7 +45,6 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
   };
 
   if (!_hasHydrated) {
-    console.log('⏳ Waiting for hydration...');
     return null;
   }
   return (

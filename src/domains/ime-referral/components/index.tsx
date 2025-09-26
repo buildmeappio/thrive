@@ -26,8 +26,8 @@ interface StepProps {
 }
 
 interface IMEReferralProps {
-  examinationTypes: Awaited<ReturnType<typeof getExaminationTypes>>['result'];
-  caseTypes: Awaited<ReturnType<typeof getCaseTypes>>['result'];
+  examinationTypes: Awaited<ReturnType<typeof getCaseTypes>>['result'];
+  caseTypes: Awaited<ReturnType<typeof getExaminationTypes>>['result'];
   languages: Awaited<ReturnType<typeof getLanguages>>['result'];
 }
 

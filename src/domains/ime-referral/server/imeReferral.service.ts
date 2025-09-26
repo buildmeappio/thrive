@@ -4,6 +4,7 @@ import { HttpError } from '@/utils/httpError';
 import ErrorMessages from '@/constants/ErrorMessages';
 import type { IMEFormData } from '@/store/useImeReferral';
 import type { ClaimantPreference } from '@prisma/client';
+import { uploadFilesToS3 } from '@/lib/s3-actions';
 
 export const createCase = async (formData: IMEFormData) => {
   const currentUser = await getCurrentUser();
@@ -25,7 +26,36 @@ export const createCase = async (formData: IMEFormData) => {
     throw new Error('Policy holder first name and last name are required');
   }
 
-  console.log('formData', formData.step4?.caseTypes);
+  let uploadedFiles: { name: string; originalName: string; type: string; size: number }[] = [];
+
+  if (formData.step6?.files && formData.step6.files.length > 0) {
+    try {
+      const uploadFormData = new FormData();
+      formData.step6.files.forEach(file => {
+        uploadFormData.append('files', file);
+      });
+
+      // Upload files to S3
+      const uploadResult = await uploadFilesToS3(uploadFormData);
+
+      if (uploadResult.error) {
+        throw new Error(`File upload failed: ${uploadResult.error}`);
+      }
+
+      if (uploadResult.success && uploadResult.files) {
+        // Map uploaded files with additional metadata
+        uploadedFiles = uploadResult.files.map((file, index) => ({
+          name: file.name,
+          originalName: file.originalName,
+          type: formData.step6!.files[index].type,
+          size: formData.step6!.files[index].size,
+        }));
+      }
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      throw new Error('Failed to upload documents. Please try again.');
+    }
+  }
 
   return prisma.$transaction(
     async tx => {
@@ -83,6 +113,7 @@ export const createCase = async (formData: IMEFormData) => {
       if (!formData.step2?.insuranceDateOfLoss) {
         throw new Error('Insurance date of loss is required');
       }
+
       // 3. Create entities in parallel
       const [claimant, insurance, legalRep, caseType, currentAccount] = await Promise.all([
         tx.claimant.create({
@@ -155,7 +186,7 @@ export const createCase = async (formData: IMEFormData) => {
         },
       });
 
-      // 5. OPTIMIZED: Create examinations sequentially but services in parallel
+      // 5. Create examinations sequentially but services in parallel
       const createdExaminations = [];
       for (let i = 0; i < (formData.step5?.examinations || []).length; i++) {
         const examData = formData.step5?.examinations[i];
@@ -164,7 +195,6 @@ export const createCase = async (formData: IMEFormData) => {
         if (!caseTypeInput) throw new Error('Case type is required for each examination');
 
         const caseNumber = await getNextCaseNumberForExamType(caseTypeInput.id);
-        console.log('generate case number', caseNumber);
 
         const examination = await tx.examination.create({
           data: {
@@ -253,14 +283,15 @@ export const createCase = async (formData: IMEFormData) => {
         createdExaminations.push(examination);
       }
 
-      // 6. Create documents in parallel (but limit concurrency if many files)
+      // 6. Create documents in parallel (only if files were uploaded)
       const createdDocuments = await Promise.all(
-        (formData.step6?.files || []).map(async file => {
+        uploadedFiles.map(async fileMetadata => {
           const document = await tx.documents.create({
             data: {
-              name: file.name,
-              type: file.type || 'application/octet-stream',
-              size: file.size,
+              name: fileMetadata.name,
+              // originalName: fileMetadata.originalName,
+              type: fileMetadata.type,
+              size: fileMetadata.size,
             },
           });
           await tx.caseDocument.create({
@@ -282,12 +313,13 @@ export const createCase = async (formData: IMEFormData) => {
           legalRepresentativeId: legalRepId,
           examinations: createdExaminations,
           documents: createdDocuments,
+          uploadedFiles: uploadedFiles,
         },
       };
     },
     {
-      timeout: 30000,
-      maxWait: 30000,
+      timeout: 60000,
+      maxWait: 60000,
     }
   );
 };
@@ -310,7 +342,6 @@ const getCaseTypes = async () => {
 
 const getCaseDetails = async (caseId: string) => {
   try {
-    console.log('Searching for case with ID:', caseId);
     const caseDetails = await prisma.case.findUnique({
       where: { id: caseId },
       include: {
@@ -329,14 +360,8 @@ const getCaseDetails = async (caseId: string) => {
         },
       },
     });
-    console.log('Found case details:', !!caseDetails);
-    if (caseDetails) {
-      console.log('Case details preview:', {
-        id: caseDetails.id,
-        claimantName: `${caseDetails.claimant.firstName} ${caseDetails.claimant.lastName}`,
-        hasInsurance: !!caseDetails.insurance,
-        examinationsCount: caseDetails.examinations.length,
-      });
+    if (!caseDetails) {
+      throw HttpError.notFound('Case details not found');
     }
     return caseDetails;
   } catch (error) {
@@ -421,6 +446,7 @@ const imeReferralService = {
   getCaseTypes,
   getCaseDetails,
   getCases,
+  uploadFilesToS3,
 };
 
 export default imeReferralService;

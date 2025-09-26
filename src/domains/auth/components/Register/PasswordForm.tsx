@@ -27,7 +27,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const router = useRouter();
 
-  const { setData, data, _hasHydrated } = useRegistrationStore();
+  const { setData, data, _hasHydrated, reset } = useRegistrationStore();
 
   useEffect(() => {
     if (registrationSuccess) {
@@ -40,6 +40,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
           });
 
           if (result?.ok) {
+            reset();
             router.push(URLS.DASHBOARD);
           } else {
             console.error('Login failed after registration');
