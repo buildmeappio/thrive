@@ -18,6 +18,7 @@ import ProgressIndicator from './ProgressIndicator';
 import { type IMEReferralProps } from '@/types/imeReferralProps';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import CustomDatePicker from '@/components/CustomDatePicker';
 
 const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, totalSteps }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
@@ -94,18 +95,22 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                 </div>
 
                 <div className="space-y-2 md:col-span-1">
-                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Input
-                    disabled={isSubmitting}
-                    {...register('dateOfBirth')}
-                    placeholder="MM/DD/YYYY"
-                    type="date"
-                    max={new Date().toISOString().split('T')[0]}
-                    className={`w-full ${errors.dateOfBirth ? 'border-red-500' : ''}`}
-                  />
-                  {errors.dateOfBirth && (
-                    <p className="text-sm text-red-500">{errors.dateOfBirth.message}</p>
-                  )}
+                  <div className="space-y-2 md:col-span-1">
+                    <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                    <CustomDatePicker
+                      selectedDate={
+                        watchedValues.dateOfBirth ? new Date(watchedValues.dateOfBirth) : null
+                      }
+                      datePickLoading={false}
+                      onDateChange={date =>
+                        setValue('dateOfBirth', date ? date.toISOString().split('T')[0] : '')
+                      }
+                      dateRestriction="past"
+                    />
+                    {errors.dateOfBirth && (
+                      <p className="text-sm text-red-500">{errors.dateOfBirth.message}</p>
+                    )}
+                  </div>
                 </div>
               </div>
 

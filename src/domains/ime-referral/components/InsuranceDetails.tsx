@@ -16,6 +16,7 @@ import { type IMEReferralProps } from '@/types/imeReferralProps';
 import BackButton from '@/components/BackButton';
 import { Label } from '@/components/ui/label';
 import { useEffect } from 'react';
+import CustomDatePicker from '@/components/CustomDatePicker';
 
 const InsuranceDetails: React.FC<IMEReferralProps> = ({
   onNext,
@@ -144,16 +145,19 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                     <Label htmlFor="insuranceDateOfLoss">
                       Date of Loss<span className="text-red-500">*</span>
                     </Label>
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('insuranceDateOfLoss')}
-                      placeholder="Select Date"
-                      type="date"
-                      className={`w-full ${errors.insuranceDateOfLoss ? 'border-red-500' : ''}`}
+                    <CustomDatePicker
+                      selectedDate={
+                        watch('insuranceDateOfLoss') ? new Date(watch('insuranceDateOfLoss')) : null
+                      }
+                      datePickLoading={false}
+                      onDateChange={date =>
+                        setValue(
+                          'insuranceDateOfLoss',
+                          date ? date.toISOString().split('T')[0] : ''
+                        )
+                      }
+                      dateRestriction="past"
                     />
-                    {errors.insuranceDateOfLoss && (
-                      <p className="text-sm text-red-500">{errors.insuranceDateOfLoss.message}</p>
-                    )}
                   </div>
                 </div>
 
