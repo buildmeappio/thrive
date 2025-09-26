@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export type FormData = {
   step1?: {
@@ -36,15 +37,29 @@ export type FormData = {
 
 type FormStore = {
   data: FormData;
+  _hasHydrated: boolean;
   setData: <K extends keyof FormData>(step: K, value: FormData[K]) => void;
   reset: () => void;
+  setHasHydrated: (state: boolean) => void;
 };
 
-export const useRegistrationStore = create<FormStore>(set => ({
-  data: {},
-  setData: (step, value) =>
-    set(state => ({
-      data: { ...state.data, [step]: value },
-    })),
-  reset: () => set({ data: {} }),
-}));
+export const useRegistrationStore = create<FormStore>()(
+  persist(
+    set => ({
+      data: {},
+      _hasHydrated: false,
+      setData: (step, value) =>
+        set(state => ({
+          data: { ...state.data, [step]: value },
+        })),
+      reset: () => set({ data: {} }),
+      setHasHydrated: state => set({ _hasHydrated: state }),
+    }),
+    {
+      name: 'registration-form',
+      onRehydrateStorage: () => state => {
+        state?.setHasHydrated(true);
+      },
+    }
+  )
+);

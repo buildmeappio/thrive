@@ -1,5 +1,4 @@
-import { getCaseSummary, getLanguages } from '@/domains/claimant/actions';
-import ClaimantAvailability from '@/domains/claimant/components';
+import { getCaseSummary } from '@/domains/claimant/actions';
 import { type Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Set Availability - Thrive',
@@ -7,7 +6,7 @@ export const metadata: Metadata = {
 };
 const Page = async ({ searchParams }: { searchParams: Promise<{ tkn: string }> }) => {
   const { tkn } = await searchParams;
-  const languages = await getLanguages();
+  // const languages = await getLanguages();
   const caseSummary = await getCaseSummary(tkn);
   if (caseSummary.success === false || !caseSummary.result) {
     return (
@@ -16,6 +15,7 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ tkn: string }> }
       </div>
     );
   }
-  return <ClaimantAvailability caseSummary={caseSummary.result} languages={languages.result} />;
+  // return <ClaimantAvailability caseSummary={caseSummary.result} languages={languages.result} />;
+  return <div>claimant availability page</div>;
 };
 export default Page;

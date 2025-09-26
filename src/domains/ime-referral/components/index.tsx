@@ -5,12 +5,14 @@ import ClaimantDetails from './ClaimantDetails';
 import ConsentInfo from './ConsentInfo';
 import ReferralSubmitted from './ReferralSubmitted';
 import ExaminationDetails from './ExaminationDetails';
-import LegalAndInsuranceDetailsForm from './LegalAndInsuranceDetails';
-import ExamType from './ExamType';
-import { type getExamTypes } from '../actions';
+import LegalAndInsuranceDetailsForm from './LegalDetails';
+import ExaminationType from './ExaminationType';
+import { type getCaseTypes } from '../actions';
 import { convertToTypeOptions } from '@/utils/convertToTypeOptions';
 import DocumentUpload from './DocumentUpload';
 import { type getExaminationTypes } from '@/domains/auth/actions';
+import InsuranceDetails from './InsuranceDetails';
+import type { getLanguages } from '@/domains/claimant/actions';
 
 interface StepConfig {
   component: React.ComponentType<StepProps>;
@@ -24,26 +26,29 @@ interface StepProps {
 }
 
 interface IMEReferralProps {
-  examinationTypes: Awaited<ReturnType<typeof getExaminationTypes>>['result'];
-  examTypes: Awaited<ReturnType<typeof getExamTypes>>['result'];
+  examinationTypes: Awaited<ReturnType<typeof getCaseTypes>>['result'];
+  caseTypes: Awaited<ReturnType<typeof getExaminationTypes>>['result'];
+  languages: Awaited<ReturnType<typeof getLanguages>>['result'];
 }
 
-const IMEReferral: React.FC<IMEReferralProps> = ({ examinationTypes, examTypes }) => {
+const IMEReferral: React.FC<IMEReferralProps> = ({ examinationTypes, caseTypes, languages }) => {
   const [currentStep, setCurrentStep] = useState(1);
 
   const STEPS: StepConfig[] = useMemo(
     () => [
       { component: ClaimantDetails },
+      { component: InsuranceDetails },
       { component: LegalAndInsuranceDetailsForm },
       {
         component: (props: StepProps) => (
-          <ExamType examTypes={convertToTypeOptions(examTypes)} {...props} />
+          <ExaminationType caseTypes={convertToTypeOptions(caseTypes)} {...props} />
         ),
       },
       {
         component: (props: StepProps) => (
           <ExaminationDetails
             examinationTypes={convertToTypeOptions(examinationTypes)}
+            languages={convertToTypeOptions(languages)}
             {...props}
           />
         ),
@@ -52,7 +57,7 @@ const IMEReferral: React.FC<IMEReferralProps> = ({ examinationTypes, examTypes }
       { component: ConsentInfo },
       { component: ReferralSubmitted },
     ],
-    [examTypes, examinationTypes]
+    [caseTypes, examinationTypes]
   );
 
   const goToNext = (): void => {

@@ -39,13 +39,13 @@ export const getReferralDetails = async (referralId: string) => {
   return result;
 };
 
-export const getExamTypes = async () => {
+export const getCaseTypes = async () => {
   const user = await getCurrentUser();
 
   if (!user) {
     redirect(URLS.LOGIN);
   }
 
-  const result = await imeReferralHandlers.getExamTypes();
+  const result = await imeReferralHandlers.getCaseTypes();
   return result;
 };

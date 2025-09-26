@@ -16,18 +16,18 @@ import { type OrganizationTypeOption } from '@/domains/auth/components/Register/
 import BackButton from '@/components/BackButton';
 import { Button } from '@/components/ui';
 
-type ExamTypeProps = IMEReferralProps & {
-  examTypes: OrganizationTypeOption[];
+type CaseTypeProps = IMEReferralProps & {
+  caseTypes: OrganizationTypeOption[];
 };
 
-const ExamTypeForm: React.FC<ExamTypeProps> = ({
+const ExaminationTypeForm: React.FC<CaseTypeProps> = ({
   onNext,
   onPrevious,
   currentStep,
   totalSteps,
-  examTypes: examTypeOptions,
+  caseTypes: caseTypeOptions,
 }) => {
-  const { data, setData } = useIMEReferralStore();
+  const { data, setData, _hasHydrated } = useIMEReferralStore();
 
   const {
     handleSubmit,
@@ -36,13 +36,13 @@ const ExamTypeForm: React.FC<ExamTypeProps> = ({
     formState: { errors, isSubmitting },
   } = useForm<ExamType>({
     resolver: zodResolver(ExamTypeSchema),
-    defaultValues: data.step3 || ExamTypeInitialValues,
+    defaultValues: data.step4 || ExamTypeInitialValues,
   });
 
-  const selectedExamTypes = watch('examTypes') || [];
+  const selectedExamTypes = watch('caseTypes') || [];
 
   const toggleExamType = (option: OrganizationTypeOption) => {
-    const examTypeItem: ExamTypeItem = {
+    const caseTypeItem: ExamTypeItem = {
       id: option.value,
       label: option.label,
     };
@@ -51,9 +51,9 @@ const ExamTypeForm: React.FC<ExamTypeProps> = ({
 
     const updated = isSelected
       ? selectedExamTypes.filter(item => item.id !== option.value)
-      : [...selectedExamTypes, examTypeItem];
+      : [...selectedExamTypes, caseTypeItem];
 
-    setValue('examTypes', updated, { shouldValidate: true });
+    setValue('caseTypes', updated, { shouldValidate: true });
   };
 
   const isExamTypeSelected = (optionValue: string): boolean => {
@@ -61,9 +61,13 @@ const ExamTypeForm: React.FC<ExamTypeProps> = ({
   };
 
   const onSubmit: SubmitHandler<ExamType> = values => {
-    setData('step3', values);
+    setData('step4', values);
     if (onNext) onNext();
   };
+
+  if (!_hasHydrated) {
+    return null;
+  }
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
@@ -83,7 +87,7 @@ const ExamTypeForm: React.FC<ExamTypeProps> = ({
             {/* Exam Type Selection Grid */}
             <div className="w-full max-w-full px-4 md:px-0">
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
-                {examTypeOptions.map(option => {
+                {caseTypeOptions.map(option => {
                   const isSelected = isExamTypeSelected(option.value);
                   return (
                     <Button
@@ -101,8 +105,8 @@ const ExamTypeForm: React.FC<ExamTypeProps> = ({
                   );
                 })}
               </div>
-              {errors.examTypes && (
-                <p className="mt-2 text-sm text-red-500">{errors.examTypes.message}</p>
+              {errors.caseTypes && (
+                <p className="mt-2 text-sm text-red-500">{errors.caseTypes.message}</p>
               )}
             </div>
 
@@ -127,4 +131,4 @@ const ExamTypeForm: React.FC<ExamTypeProps> = ({
   );
 };
 
-export default ExamTypeForm;
+export default ExaminationTypeForm;

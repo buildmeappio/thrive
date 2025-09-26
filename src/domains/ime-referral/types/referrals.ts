@@ -1,6 +1,6 @@
 import type { Prisma } from '@prisma/client';
 
-export type ReferralDetailsData = Prisma.IMEReferralGetPayload<{
+export type ReferralDetailsData = Prisma.CaseGetPayload<{
   include: {
     organization: {
       include: {

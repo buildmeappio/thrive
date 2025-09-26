@@ -33,7 +33,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`mt-1 space-y-1 ${className}`}>
+    <div className={`mt-1 space-y-1`}>
       <Label htmlFor={id} className="text-sm leading-relaxed font-normal text-[#000000]">
         {label}
         {required && <span className="text-red-500">*</span>}
@@ -42,7 +42,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger
           id={id}
-          className={`relative h-[45px] w-full rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 text-[14px] font-normal tracking-[0.5%] shadow-none focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none md:h-[55px] [&>svg]:hidden ${
+          className={`relative h-[45px] w-full rounded-[7.56px] border-none ${className ? className : 'bg-[#F2F5F6]'} pr-8 text-[14px] font-normal tracking-[0.5%] shadow-none focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none md:h-[55px] [&>svg]:hidden ${
             icon ? 'pl-10' : 'pl-3'
           } ${value ? 'text-[#333]' : 'text-[#A4A4A4]'}`}
         >

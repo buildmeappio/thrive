@@ -23,7 +23,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
   currentStep = 1,
   totalSteps = 1,
 }) => {
-  const { data, setData } = useIMEReferralStore();
+  const { data, setData, _hasHydrated } = useIMEReferralStore();
 
   const {
     handleSubmit,
@@ -32,7 +32,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
     formState: { errors, isSubmitting },
   } = useForm<DocumentUploadFormData>({
     resolver: zodResolver(DocumentUploadSchema),
-    defaultValues: data.step5 || { files: [] },
+    defaultValues: data.step6 || { files: [] },
   });
 
   const files = watch('files');
@@ -51,9 +51,13 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
   };
 
   const onSubmit = (values: DocumentUploadFormData) => {
-    setData('step5', values);
+    setData('step6', values);
     onNext();
   };
+
+  if (!_hasHydrated) {
+    return null;
+  }
 
   return (
     <>

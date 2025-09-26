@@ -27,7 +27,8 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { data, setData } = useIMEReferralStore();
+  const { setData, data, _hasHydrated, reset } = useIMEReferralStore();
+
   const [isSavingDraft, setIsSavingDraft] = useState(false);
 
   const {
@@ -36,33 +37,24 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
     formState: { errors, isSubmitting },
   } = useForm<Consent>({
     resolver: zodResolver(ConsentSchema),
-    defaultValues: data.step6 || ConsentInitialValues,
+    defaultValues: data.step7 || ConsentInitialValues,
   });
 
   const onSubmit: SubmitHandler<Consent> = async values => {
     try {
-      setData('step6', values);
+      setData('step7', values);
 
       const completeData = {
         ...data,
-        step6: values,
+        step7: values,
       };
-
-      if (
-        !completeData.step1 ||
-        !completeData.step2 ||
-        !completeData.step3 ||
-        !completeData.step4
-      ) {
-        toast.error('Please complete all steps before submitting');
-        return;
-      }
 
       const result = await createIMEReferral(completeData);
       if (result) {
         toast.success('IME Referral submitted successfully');
         if (onNext) onNext();
       }
+      reset();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Submission failed');
     }
@@ -78,23 +70,12 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
         consentForSubmission: control._getWatch('consentForSubmission') || false,
       };
 
-      setData('step6', currentValues);
+      setData('step7', currentValues);
 
       const completeData = {
         ...data,
-        step6: currentValues,
+        step7: currentValues,
       };
-
-      // For drafts, we need at least step1 to create a claimant
-      if (
-        !completeData.step1 ||
-        !completeData.step2 ||
-        !completeData.step3 ||
-        !completeData.step4
-      ) {
-        toast.error('Please complete claimant details before saving draft');
-        return;
-      }
 
       const result = await createIMEReferral(completeData);
       if (result) {
@@ -106,6 +87,10 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
       setIsSavingDraft(false);
     }
   };
+
+  if (!_hasHydrated) {
+    return null;
+  }
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">

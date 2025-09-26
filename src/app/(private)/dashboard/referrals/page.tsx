@@ -1,6 +1,6 @@
-import { getReferrals } from '@/domains/ime-referral/actions';
-import ReferralList from '@/domains/ime-referral/components/ReferralList';
 import { type Metadata } from 'next';
+import ReferralList from '@/domains/ime-referral/components/ReferralList';
+import { getReferrals } from '@/domains/ime-referral/server/handlers';
 
 export const metadata: Metadata = {
   title: 'IME Referrals | Thrive',

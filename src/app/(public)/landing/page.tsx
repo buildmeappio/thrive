@@ -57,7 +57,7 @@ const GettingStartedPage: React.FC = () => {
 
         <div className="relative -mx-6 mt-8 mb-8 md:hidden">
           <Image
-            src="/images/org-gettingStarted.png"
+            src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/org-gettingStarted.png"
             alt="Organization Dashboard Preview"
             width={400}
             height={400}
@@ -88,7 +88,7 @@ const GettingStartedPage: React.FC = () => {
       <div className="relative mt-16 hidden flex-1 overflow-hidden md:block">
         <div className="absolute inset-0">
           <Image
-            src="/images/org-gettingStarted.png"
+            src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/org-gettingStarted.png"
             alt="Organization Dashboard Preview"
             width={200}
             height={200}

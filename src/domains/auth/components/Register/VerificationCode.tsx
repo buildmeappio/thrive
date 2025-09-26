@@ -97,7 +97,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
       if (res.success) {
         if (onNext) onNext();
       } else {
-        actions.setFieldError('code', res.message);
+        toast.error('Invalid Otp');
       }
 
       actions.setSubmitting(false);
