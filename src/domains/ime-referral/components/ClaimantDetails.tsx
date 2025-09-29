@@ -350,17 +350,14 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                 <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="familyDoctorPhone">Phone No.</Label>
-                    <Input
+                    <PhoneInput
                       disabled={isSubmitting}
-                      {...register('familyDoctorPhone')}
-                      placeholder="4444444444"
+                      name="familyDoctorPhone"
+                      value={watch('familyDoctorPhone') || ''}
+                      onChange={e =>
+                        setValue('familyDoctorPhone', e.target.value, { shouldValidate: true })
+                      }
                       className="w-full"
-                      type="tel"
-                      onKeyPress={e => {
-                        if (!/[0-9]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
                     />
                     {errors.familyDoctorPhone && (
                       <p className="text-sm text-red-500">{errors.familyDoctorPhone.message}</p>
@@ -369,17 +366,14 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
 
                   <div className="space-y-2">
                     <Label htmlFor="familyDoctorFax">Fax No.</Label>
-                    <Input
+                    <PhoneInput
                       disabled={isSubmitting}
-                      {...register('familyDoctorFax')}
-                      placeholder="4444444444"
+                      name="familyDoctorFax"
+                      value={watch('familyDoctorFax') || ''}
+                      onChange={e =>
+                        setValue('familyDoctorFax', e.target.value, { shouldValidate: true })
+                      }
                       className="w-full"
-                      type="tel"
-                      onKeyPress={e => {
-                        if (!/[0-9]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
                     />
                     {errors.familyDoctorFax && (
                       <p className="text-sm text-red-500">{errors.familyDoctorFax.message}</p>

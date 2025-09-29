@@ -281,17 +281,14 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                     <Label htmlFor="insuranceFaxNo">
                       Fax No.<span className="text-red-500">*</span>
                     </Label>
-                    <Input
+                    <PhoneInput
                       disabled={isSubmitting}
-                      {...register('insuranceFaxNo')}
-                      placeholder="4444444444"
+                      name="insuranceFaxNo"
+                      value={watch('insuranceFaxNo') || ''}
+                      onChange={e =>
+                        setValue('insuranceFaxNo', e.target.value, { shouldValidate: true })
+                      }
                       className={`w-full ${errors.insuranceFaxNo ? 'border-red-500' : ''}`}
-                      type="tel"
-                      onKeyPress={e => {
-                        if (!/[0-9]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
                     />
                     {errors.insuranceFaxNo && (
                       <p className="text-sm text-red-500">{errors.insuranceFaxNo.message}</p>

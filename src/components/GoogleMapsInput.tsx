@@ -33,7 +33,6 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
   className = '',
   error = null,
   onPlaceSelect,
-  from,
 }) => {
   const autoCompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -212,9 +211,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
   return (
     <div className={className}>
       {label && (
-        <label
-          className={`mb-2 block text-sm font-medium ${from === 'store' ? '' : 'text-gray-700'}`}
-        >
+        <label className={`mb-2 block text-sm`}>
           {label}
           {required && <span className="text-red-500">*</span>}
         </label>

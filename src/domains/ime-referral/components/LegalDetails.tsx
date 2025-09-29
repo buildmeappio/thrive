@@ -165,17 +165,14 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
 
                   <div className="space-y-2">
                     <Label htmlFor="legalFaxNo">Fax No.</Label>
-                    <Input
+                    <PhoneInput
                       disabled={isSubmitting}
-                      {...register('legalFaxNo')}
-                      placeholder="4444444444"
+                      name="legalFaxNo"
+                      value={watch('legalFaxNo') || ''}
+                      onChange={e =>
+                        setValue('legalFaxNo', e.target.value, { shouldValidate: true })
+                      }
                       className="w-full"
-                      type="tel"
-                      onKeyPress={e => {
-                        if (!/[0-9]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
                     />
                     {errors.legalFaxNo && (
                       <p className="text-sm text-red-500">{errors.legalFaxNo.message}</p>

@@ -118,7 +118,12 @@ export const ClaimantDetailsSchema = z.object({
     })
     .optional(),
 
-  familyDoctorFax: z.string().optional(),
+  familyDoctorFax: z
+    .string()
+    .refine(val => val === '' || validateCanadianPhoneNumber(val), {
+      message: ErrorMessages.INVALID_FAX_NUMBER,
+    })
+    .optional(),
 });
 
 export type ClaimantDetails = z.infer<typeof ClaimantDetailsSchema>;
@@ -165,10 +170,9 @@ export const InsuranceDetailsSchema = z.object({
     })
     .min(1, 'Phone number is required'),
 
-  insuranceFaxNo: z
-    .string()
-    .min(1, 'Fax number is required')
-    .regex(/^\+?1?\d{10}$/, 'Invalid fax number'),
+  insuranceFaxNo: z.string().min(1, 'Fax number is required').refine(validateCanadianPhoneNumber, {
+    message: ErrorMessages.INVALID_FAX_NUMBER,
+  }),
   insuranceEmailAddress: z.string().email('Invalid email address').min(1, 'Email is required'),
 
   // Policy Holder fields
@@ -215,11 +219,17 @@ export const LegalDetailsSchema = z.object({
     .optional(),
 
   legalPhone: z
-    .union([z.string().regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_PHONE_NUMBER), z.literal('')])
+    .string()
+    .refine(val => val === '' || validateCanadianPhoneNumber(val), {
+      message: ErrorMessages.INVALID_PHONE_NUMBER,
+    })
     .optional(),
 
   legalFaxNo: z
-    .union([z.string().regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_FAX_NUMBER), z.literal('')])
+    .string()
+    .refine(val => val === '' || validateCanadianPhoneNumber(val), {
+      message: ErrorMessages.INVALID_FAX_NUMBER,
+    })
     .optional(),
 
   legalAddressLookup: z.string().optional(),
