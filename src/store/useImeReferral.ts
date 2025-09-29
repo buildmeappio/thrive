@@ -24,6 +24,7 @@ export interface ExaminationDetails {
   instructions: string;
   locationType: string;
   services: ExaminationService[];
+  additionalNotes?: string;
 }
 
 export type IMEFormData = {

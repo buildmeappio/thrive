@@ -270,6 +270,7 @@ const ExaminationDetailsSchema = z.object({
   instructions: z.string().min(1, 'Instructions are required'),
   locationType: z.string().min(1, 'Location type is required'),
   services: z.array(ExaminationServiceSchema),
+  additionalNotes: z.string().optional(),
 });
 
 // Main Examination Schema (Step 5)
@@ -385,6 +386,7 @@ export const createExaminationDetails = (examinationTypeId: string): Examination
   instructions: '',
   locationType: '',
   services: [createTransportationService(), createInterpreterService(), createChaperoneService()],
+  additionalNotes: '',
 });
 
 // Helper functions for form data transformation

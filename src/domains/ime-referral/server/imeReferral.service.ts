@@ -198,6 +198,7 @@ export const createCase = async (formData: IMEFormData) => {
             status: { connect: { id: defaultStatus.id } },
             preference: (examData?.locationType?.toUpperCase() as ClaimantPreference) || '',
             supportPerson: false,
+            additionalNotes: examData?.additionalNotes || '',
           },
         });
 

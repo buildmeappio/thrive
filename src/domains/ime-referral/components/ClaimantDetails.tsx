@@ -1,9 +1,8 @@
 'use client';
 
-import { useForm, type SubmitHandler } from 'react-hook-form';
+import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
-import { MapPin } from 'lucide-react';
 import { Dropdown } from '@/components/Dropdown';
 import { provinceOptions } from '@/config/ProvinceOptions';
 import { genderOptions } from '@/config/GenderOptions';
@@ -19,6 +18,7 @@ import { type IMEReferralProps } from '@/types/imeReferralProps';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import CustomDatePicker from '@/components/CustomDatePicker';
+import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
 
 const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, totalSteps }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
@@ -28,6 +28,8 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
     handleSubmit,
     watch,
     setValue,
+    control,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<ClaimantDetails>({
     resolver: zodResolver(ClaimantDetailsSchema),
@@ -48,6 +50,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
   if (!_hasHydrated) {
     return null;
   }
+
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
@@ -164,23 +167,74 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                 </div>
               </div>
 
-              {/* Address Lookup */}
+              {/* Address Lookup - NOW WITH GOOGLE MAPS */}
               <div className="mb-4 w-full max-w-full space-y-2">
-                <Label htmlFor="addressLookup">
-                  Address Lookup<span className="text-red-500">*</span>
-                </Label>
-                <div className="relative">
-                  <Input
-                    disabled={isSubmitting}
-                    {...register('addressLookup')}
-                    placeholder="150 John Street"
-                    className={`w-full pl-10 ${errors.addressLookup ? 'border-red-500' : ''}`}
-                  />
-                  <MapPin className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                </div>
-                {errors.addressLookup && (
-                  <p className="text-sm text-red-500">{errors.addressLookup.message}</p>
-                )}
+                <Controller
+                  name="addressLookup"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <GoogleMapsInput
+                      name="addressLookup"
+                      label="Address Lookup"
+                      placeholder="150 John Street, Toronto"
+                      required
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={fieldState.error}
+                      setValue={setValue}
+                      trigger={trigger}
+                      onPlaceSelect={placeData => {
+                        // Auto-populate address fields
+                        const components = placeData.components;
+                        if (components) {
+                          let streetNumber = '';
+                          let route = '';
+                          let city = '';
+                          let postalCode = '';
+                          let province = '';
+
+                          components.forEach((component: any) => {
+                            const types = component.types;
+                            if (types.includes('street_number')) {
+                              streetNumber = component.long_name;
+                            }
+                            if (types.includes('route')) {
+                              route = component.long_name;
+                            }
+                            if (
+                              types.includes('locality') ||
+                              types.includes('administrative_area_level_3')
+                            ) {
+                              city = component.long_name;
+                            }
+                            if (types.includes('postal_code')) {
+                              postalCode = component.long_name;
+                            }
+                            if (types.includes('administrative_area_level_1')) {
+                              province = component.short_name;
+                            }
+                          });
+
+                          // Auto-populate form fields
+                          if (streetNumber && route) {
+                            setValue('street', `${streetNumber} ${route}`, {
+                              shouldValidate: true,
+                            });
+                          }
+                          if (city) {
+                            setValue('city', city, { shouldValidate: true });
+                          }
+                          if (postalCode) {
+                            setValue('postalCode', postalCode, { shouldValidate: true });
+                          }
+                          if (province) {
+                            setValue('province', province, { shouldValidate: true });
+                          }
+                        }
+                      }}
+                    />
+                  )}
+                />
               </div>
 
               {/* Third Row: Street Address, Apt/Unit/Suite, City */}
@@ -221,7 +275,7 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
                 </div>
               </div>
 
-              {/* Fourth Row: Postal Code, Province */}
+              {/* Fourth Row: Province, City */}
               <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="province">Province / State</Label>

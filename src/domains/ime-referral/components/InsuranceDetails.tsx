@@ -3,7 +3,6 @@
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
-import { MapPin } from 'lucide-react';
 import {
   InsuranceDetailsSchema,
   InsuranceDetailsInitialValues,
@@ -17,6 +16,7 @@ import BackButton from '@/components/BackButton';
 import { Label } from '@/components/ui/label';
 import { useEffect } from 'react';
 import CustomDatePicker from '@/components/CustomDatePicker';
+import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
 
 const InsuranceDetails: React.FC<IMEReferralProps> = ({
   onNext,
@@ -32,6 +32,7 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
     formState: { errors, isSubmitting },
     setValue,
     watch,
+    trigger,
   } = useForm<InsuranceDetails>({
     resolver: zodResolver(InsuranceDetailsSchema),
     defaultValues: data.step2 || InsuranceDetailsInitialValues,
@@ -48,6 +49,40 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
       setValue('policyHolderLastName', '');
     }
   }, [policyHolderSameAsClaimant, data.step1, setValue]);
+
+  const handlePlaceSelect = (placeData: any) => {
+    // Parse address components and populate fields
+    const components = placeData.components;
+
+    let streetNumber = '';
+    let route = '';
+    let city = '';
+
+    components?.forEach((component: any) => {
+      const types = component.types;
+
+      if (types.includes('street_number')) {
+        streetNumber = component.long_name;
+      }
+      if (types.includes('route')) {
+        route = component.long_name;
+      }
+      if (types.includes('locality')) {
+        city = component.long_name;
+      }
+    });
+
+    // Construct street address
+    const streetAddress = `${streetNumber} ${route}`.trim();
+
+    // Update form fields
+    if (streetAddress) {
+      setValue('insuranceStreetAddress', streetAddress, { shouldValidate: true });
+    }
+    if (city) {
+      setValue('insuranceCity', city, { shouldValidate: true });
+    }
+  };
 
   const onSubmit: SubmitHandler<InsuranceDetails> = values => {
     setData('step2', values);
@@ -162,21 +197,19 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                   </div>
                 </div>
 
-                {/* Insurance Address Lookup */}
-                <div className="mb-4 w-full max-w-full space-y-2">
-                  <Label htmlFor="insuranceAddressLookup">Address Lookup</Label>
-                  <div className="relative">
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('insuranceAddressLookup')}
-                      placeholder="150 John Street"
-                      className="w-full pl-10"
-                    />
-                    <MapPin className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  </div>
-                  {errors.insuranceAddressLookup && (
-                    <p className="text-sm text-red-500">{errors.insuranceAddressLookup.message}</p>
-                  )}
+                {/* Insurance Address Lookup - NOW USING GoogleMapsInput */}
+                <div className="mb-4 w-full max-w-full">
+                  <GoogleMapsInput
+                    name="insuranceAddressLookup"
+                    value={watch('insuranceAddressLookup')}
+                    label="Address Lookup"
+                    placeholder="150 John Street, Toronto"
+                    setValue={setValue}
+                    trigger={trigger}
+                    error={errors.insuranceAddressLookup}
+                    onPlaceSelect={handlePlaceSelect}
+                    className="space-y-2"
+                  />
                 </div>
 
                 {/* Insurance Street Address, Apt/Unit/Suite, City */}
