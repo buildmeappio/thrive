@@ -2,6 +2,7 @@ import ErrorMessages from '@/constants/ErrorMessages';
 import { z } from 'zod';
 import { DocumentUploadConfig } from '@/config/documentUpload';
 import { formatFileSize } from '@/utils/documentUpload';
+import { validateCanadianPhoneNumber } from '@/components/PhoneNumber';
 
 // File validation schema
 const FileSchema = z.instanceof(File).superRefine((file, ctx) => {
@@ -75,7 +76,7 @@ export const ClaimantDetailsSchema = z.object({
 
   phoneNumber: z
     .string()
-    .refine(val => val === '' || /^\+?1?\d{10}$/.test(val), {
+    .refine(val => val === '' || validateCanadianPhoneNumber(val), {
       message: ErrorMessages.INVALID_PHONE_NUMBER,
     })
     .optional(),
@@ -110,7 +111,13 @@ export const ClaimantDetailsSchema = z.object({
     })
     .optional(),
 
-  familyDoctorPhone: z.string().optional(),
+  familyDoctorPhone: z
+    .string()
+    .refine(val => val === '' || validateCanadianPhoneNumber(val), {
+      message: ErrorMessages.INVALID_PHONE_NUMBER,
+    })
+    .optional(),
+
   familyDoctorFax: z.string().optional(),
 });
 
@@ -153,8 +160,11 @@ export const InsuranceDetailsSchema = z.object({
 
   insurancePhone: z
     .string()
-    .min(1, 'Phone is required')
-    .regex(/^\+?1?\d{10}$/, 'Invalid phone number'),
+    .refine(val => val === '' || validateCanadianPhoneNumber(val), {
+      message: ErrorMessages.INVALID_PHONE_NUMBER,
+    })
+    .min(1, 'Phone number is required'),
+
   insuranceFaxNo: z
     .string()
     .min(1, 'Fax number is required')

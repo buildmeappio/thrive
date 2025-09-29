@@ -19,6 +19,7 @@ import BackButton from '@/components/BackButton';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui';
 import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
+import PhoneInput from '@/components/PhoneNumber';
 
 const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
   onNext,
@@ -148,17 +149,14 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                 <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="legalPhone">Phone</Label>
-                    <Input
+                    <PhoneInput
                       disabled={isSubmitting}
-                      {...register('legalPhone')}
-                      placeholder="4444444444"
+                      name="legalPhone"
+                      value={watch('legalPhone') || ''}
+                      onChange={e =>
+                        setValue('legalPhone', e.target.value, { shouldValidate: true })
+                      }
                       className="w-full"
-                      type="tel"
-                      onKeyPress={e => {
-                        if (!/[0-9]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
                     />
                     {errors.legalPhone && (
                       <p className="text-sm text-red-500">{errors.legalPhone.message}</p>

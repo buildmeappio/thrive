@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { useEffect } from 'react';
 import CustomDatePicker from '@/components/CustomDatePicker';
 import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
+import PhoneInput from '@/components/PhoneNumber';
 
 const InsuranceDetails: React.FC<IMEReferralProps> = ({
   onNext,
@@ -262,17 +263,14 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                     <Label htmlFor="insurancePhone">
                       Phone<span className="text-red-500">*</span>
                     </Label>
-                    <Input
+                    <PhoneInput
                       disabled={isSubmitting}
-                      {...register('insurancePhone')}
-                      placeholder="4444444444"
+                      name="insurancePhone"
+                      value={watch('insurancePhone') || ''}
+                      onChange={e =>
+                        setValue('insurancePhone', e.target.value, { shouldValidate: true })
+                      }
                       className={`w-full ${errors.insurancePhone ? 'border-red-500' : ''}`}
-                      type="tel"
-                      onKeyPress={e => {
-                        if (!/[0-9]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
                     />
                     {errors.insurancePhone && (
                       <p className="text-sm text-red-500">{errors.insurancePhone.message}</p>

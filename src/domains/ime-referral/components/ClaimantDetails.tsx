@@ -19,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import CustomDatePicker from '@/components/CustomDatePicker';
 import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
+import PhoneInput from '@/components/PhoneNumber';
 
 const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, totalSteps }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
@@ -135,17 +136,14 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
 
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="phoneNumber">Phone No.</Label>
-                  <Input
+                  <PhoneInput
                     disabled={isSubmitting}
-                    {...register('phoneNumber')}
-                    placeholder="444444444"
+                    name="phoneNumber"
+                    value={watch('phoneNumber') || ''}
+                    onChange={e =>
+                      setValue('phoneNumber', e.target.value, { shouldValidate: true })
+                    }
                     className={`w-full ${errors.phoneNumber ? 'border-red-500' : ''}`}
-                    type="tel"
-                    onKeyPress={e => {
-                      if (!/[0-9]/.test(e.key)) {
-                        e.preventDefault();
-                      }
-                    }}
                   />
                   {errors.phoneNumber && (
                     <p className="text-sm text-red-500">{errors.phoneNumber.message}</p>
