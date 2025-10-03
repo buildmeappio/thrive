@@ -271,7 +271,7 @@ enum UrgencyLevel {
 
 model Examination {
   id                String             @id @unique @default(uuid()) @db.Uuid
-  caseNumber        String             @unique @map("case_number") @db.VarChar(255)
+  caseNumber        String             @map("case_number") @db.VarChar(255)
   caseId            String             @map("case_id") @db.Uuid
   examinationTypeId String             @map("examination_type_id") @db.Uuid
   dueDate           DateTime?          @map("due_date") @db.Timestamptz()
