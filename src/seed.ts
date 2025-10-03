@@ -10,6 +10,7 @@ import CaseStatusSeeder from './seeders/caseStatus.seeder';
 import LanguageSeeder from './seeders/language.seeder';
 import ExaminationTypeSeeder from './seeders/examinationType.seeder';
 import ExaminationTypeShortFormSeeder from './seeders/examTypeShortForm.seeder';
+import ClaimTypeSeeder from './seeders/claimType.seeder';
 
 const seeds = [
     RoleSeeder,
@@ -20,7 +21,8 @@ const seeds = [
     CaseStatusSeeder,
     LanguageSeeder,
     ExaminationTypeSeeder,
-    ExaminationTypeShortFormSeeder
+    ExaminationTypeShortFormSeeder,
+    ClaimTypeSeeder,
 ];
 
 const prisma = new PrismaClient();
