@@ -7,7 +7,7 @@ import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dropdown } from '@/components/Dropdown';
-import { ChevronDown, MapPin } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import {
   ExaminationSchema,
   type ExaminationData,
@@ -28,9 +28,11 @@ import { provinceOptions } from '@/config/ProvinceOptions';
 import { type DropdownOption } from '../types/CaseInfo';
 import ToggleSwitch from '@/components/ToggleSwtch';
 import { locationOptions } from '@/config/locationType';
-import { Button } from '@/components/ui';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import CustomDatePicker from '@/components/CustomDatePicker';
+import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
+import { getExaminationBenefits } from '../actions';
+import MultiSelectBenefits from '@/components/MultiSelectDropDown';
 
 interface ExaminationProps extends IMEReferralProps {
   examinationTypes: DropdownOption[];
@@ -47,12 +49,45 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [benefitsByType, setBenefitsByType] = useState<
+    Record<string, Array<{ id: string; benefit: string }>>
+  >({});
+  const [loadingBenefits, setLoadingBenefits] = useState(false);
 
   // Get selected exam types from step4
   const selectedExamTypes: ExaminationType[] = useMemo(
     () => data.step4?.caseTypes || [],
     [data.step4?.caseTypes]
   );
+
+  useEffect(() => {
+    const fetchBenefits = async () => {
+      if (selectedExamTypes.length === 0) return;
+
+      setLoadingBenefits(true);
+      try {
+        const benefitsPromises = selectedExamTypes.map(async examType => {
+          const benefits = await getExaminationBenefits(examType.id);
+          return { typeId: examType.id, benefits };
+        });
+
+        const results = await Promise.all(benefitsPromises);
+
+        const benefitsMap: Record<string, Array<{ id: string; benefit: string }>> = {};
+        results.forEach(({ typeId, benefits }) => {
+          benefitsMap[typeId] = benefits.result;
+        });
+
+        setBenefitsByType(benefitsMap);
+      } catch (error) {
+        console.error('Error fetching benefits:', error);
+      } finally {
+        setLoadingBenefits(false);
+      }
+    };
+
+    fetchBenefits();
+  }, [selectedExamTypes]);
 
   // Create initial values with proper structure
   const initialValues = useMemo((): ExaminationData => {
@@ -77,6 +112,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
     handleSubmit,
     watch,
     setValue,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<ExaminationData>({
     resolver: zodResolver(ExaminationSchema),
@@ -169,6 +205,61 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
     [watchedValues.examinations, setValue]
   );
 
+  // Handle Google Maps place selection for transportation
+  const handleTransportationPlaceSelect = useCallback(
+    (examinationIndex: number, placeData: any) => {
+      const components = placeData.components;
+
+      let streetNumber = '';
+      let route = '';
+      let city = '';
+      let postalCode = '';
+      let province = '';
+
+      components?.forEach((component: any) => {
+        const types = component.types;
+
+        if (types.includes('street_number')) {
+          streetNumber = component.long_name;
+        }
+        if (types.includes('route')) {
+          route = component.long_name;
+        }
+        if (types.includes('locality')) {
+          city = component.long_name;
+        }
+        if (types.includes('postal_code')) {
+          postalCode = component.long_name;
+        }
+        if (types.includes('administrative_area_level_1')) {
+          province = component.short_name;
+        }
+      });
+
+      const streetAddress = `${streetNumber} ${route}`.trim();
+
+      // Update all transportation fields
+      if (streetAddress) {
+        handleServiceDetailUpdate(
+          examinationIndex,
+          'transportation',
+          'streetAddress',
+          streetAddress
+        );
+      }
+      if (city) {
+        handleServiceDetailUpdate(examinationIndex, 'transportation', 'city', city);
+      }
+      if (postalCode) {
+        handleServiceDetailUpdate(examinationIndex, 'transportation', 'postalCode', postalCode);
+      }
+      if (province) {
+        handleServiceDetailUpdate(examinationIndex, 'transportation', 'province', province);
+      }
+    },
+    [handleServiceDetailUpdate]
+  );
+
   // Toggle section collapse state
   const toggleSectionCollapse = useCallback((examTypeId: string) => {
     setCollapsedSections(prev => ({
@@ -201,29 +292,21 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 
       return (
         <div className="space-y-4">
-          {/* Address Lookup */}
-          <div className="space-y-2">
-            <Label className="text-sm text-gray-600">
-              Pick-Up Address Lookup<span className="text-red-500">*</span>
-            </Label>
-            <div className="relative">
-              <Input
-                value={details.pickupAddress || ''}
-                onChange={e =>
-                  handleServiceDetailUpdate(
-                    examinationIndex,
-                    'transportation',
-                    'pickupAddress',
-                    e.target.value
-                  )
-                }
-                disabled={isSubmitting}
-                placeholder="150 John Street"
-                className="w-full bg-white pl-10"
-              />
-              <MapPin className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            </div>
-          </div>
+          <GoogleMapsInput
+            name={`examinations.${examinationIndex}.services.transportation.pickupAddress`}
+            value={details.pickupAddress || ''}
+            label="Pick-Up Address Lookup"
+            placeholder="150 John Street, Toronto"
+            required
+            setValue={(name, value) =>
+              handleServiceDetailUpdate(examinationIndex, 'transportation', 'pickupAddress', value)
+            }
+            trigger={trigger}
+            onPlaceSelect={placeData =>
+              handleTransportationPlaceSelect(examinationIndex, placeData)
+            }
+            className="space-y-2 bg-white"
+          />
 
           {/* Street / Apt / City */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -294,7 +377,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
         </div>
       );
     },
-    [handleServiceDetailUpdate, isSubmitting]
+    [handleServiceDetailUpdate, handleTransportationPlaceSelect, isSubmitting, trigger]
   );
 
   // Render interpreter fields
@@ -329,36 +412,6 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
     [handleServiceDetailUpdate, languageOptions]
   );
 
-  // Render additional notes fields
-  // const renderAdditionalNotesFields = useCallback(
-  //   (examination: ExaminationDetails, examinationIndex: number) => {
-  //     const additionalNotesService = getServiceByType(examination.services, 'additionalNotes');
-
-  //     if (!additionalNotesService?.enabled) return null;
-
-  //     const details = additionalNotesService.details || {};
-
-  //     return (
-  //       <div className="space-y-2 rounded-md bg-white p-4">
-  //         <textarea
-  //           value={details.notes || ''}
-  //           onChange={e =>
-  //             handleServiceDetailUpdate(
-  //               examinationIndex,
-  //               'additionalNotes',
-  //               'notes',
-  //               e.target.value
-  //             )
-  //           }
-  //           placeholder="Type here"
-  //           className="min-h-[120px] w-full resize-none rounded-md border border-gray-300 p-3 focus:border-[#000080] focus:ring-1 focus:ring-[#000080] focus:outline-none"
-  //           disabled={isSubmitting}
-  //         />
-  //       </div>
-  //     );
-  //   },
-  //   [handleServiceDetailUpdate, isSubmitting]
-  // );
   const renderToggleSection = useCallback(
     (
       title: string,
@@ -467,7 +520,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                 return (
                   <div
                     key={examType.id}
-                    className="mb-8 w-full rounded-[20px] border border-[#C1C1C1] bg-[#F2F5F6] md:px-[40px] md:py-8"
+                    className="mb-8 w-full rounded-[30px] border border-[#C1C1C1] bg-[#F2F5F6] md:px-[40px] md:py-6"
                   >
                     <Collapsible
                       open={!isCollapsed}
@@ -475,23 +528,21 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                     >
                       {/* Section Header */}
                       <div className="mb-6 flex items-center justify-between">
-                        <h3 className="text-xl font-medium text-[#000000]">
+                        <h3 className="text-2xl font-medium text-[#000000]">
                           {index + 1}. {examType.label}
                         </h3>
                         <CollapsibleTrigger asChild>
-                          <Button type="button" variant="ghost">
-                            <ChevronDown
-                              className={`h-5 w-5 text-black transition-transform ${
-                                isCollapsed ? 'rotate-180' : 'rotate-0'
-                              }`}
-                            />
-                          </Button>
+                          <ChevronDown
+                            className={`h-6 w-6 cursor-pointer text-[#000000] ${
+                              isCollapsed ? 'rotate-180' : 'rotate-0'
+                            }`}
+                          />
                         </CollapsibleTrigger>
                       </div>
 
-                      <CollapsibleContent className="space-y-6">
+                      <CollapsibleContent className="space-y-4">
                         {/* Basic Fields */}
-                        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                           <div className="space-y-2">
                             <Dropdown
                               id="urgencyLevel"
@@ -515,8 +566,8 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                             )}
                           </div>
 
-                          <div className="space-y-2">
-                            <Label>
+                          <div className="mt-2 space-y-2">
+                            <Label className="text-sm font-normal text-[#000000]">
                               Due Date<span className="text-red-500">*</span>
                             </Label>
                             <CustomDatePicker
@@ -530,7 +581,9 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                   ...examination,
                                   dueDate: date ? date.toISOString().split('T')[0] : '',
                                 };
-                                setValue('examinations', updatedExaminations);
+                                setValue('examinations', updatedExaminations, {
+                                  shouldValidate: true,
+                                });
                               }}
                               className="bg-white"
                             />
@@ -568,8 +621,8 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                           </div>
                         </div>
 
-                        <div className="mb-6 space-y-2">
-                          <Label>
+                        <div>
+                          <Label className="text-sm leading-relaxed font-normal text-[#000000]">
                             Specific Instructions/Notes<span className="text-red-500">*</span>
                           </Label>
                           <Textarea
@@ -595,6 +648,34 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                           )}
                         </div>
 
+                        <div className="space-y-2">
+                          <Label className="text-sm leading-relaxed font-normal text-[#000000]">
+                            Benefits<span className="text-red-500">*</span>
+                          </Label>
+
+                          <MultiSelectBenefits
+                            benefits={benefitsByType[examType.id] || []}
+                            selectedIds={examination.selectedBenefits || []}
+                            onChange={selectedIds => {
+                              const updatedExaminations = [...(watchedValues.examinations || [])];
+                              updatedExaminations[index] = {
+                                ...examination,
+                                selectedBenefits: selectedIds,
+                              };
+                              setValue('examinations', updatedExaminations, {
+                                shouldValidate: true,
+                              });
+                            }}
+                            disabled={isSubmitting}
+                            loadingBenefits={loadingBenefits}
+                          />
+                          {errors.examinations?.[index]?.selectedBenefits && (
+                            <p className="text-sm text-red-500">
+                              {getErrorMessage(errors.examinations[index]?.selectedBenefits)}
+                            </p>
+                          )}
+                        </div>
+
                         {/* Add-On Services */}
                         <div className="space-y-6">
                           {renderToggleSection(
@@ -614,6 +695,27 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                           )}
 
                           {renderToggleSection('Support Person', 'chaperone', examination, index)}
+                        </div>
+                        <div className="mb-6 space-y-2">
+                          <Label className="text-base font-semibold text-black">
+                            Additional Notes
+                          </Label>
+                          <Textarea
+                            disabled={isSubmitting}
+                            value={examination.additionalNotes || ''}
+                            onChange={e => {
+                              const updatedExaminations = [...(watchedValues.examinations || [])];
+                              updatedExaminations[index] = {
+                                ...examination,
+                                instructions: e.target.value,
+                              };
+                              setValue('examinations', updatedExaminations);
+                            }}
+                            placeholder="Type here"
+                            className={`mt-2 min-h-[100px] w-full resize-none bg-white ${
+                              errors.examinations?.[index]?.instructions ? 'border-red-500' : ''
+                            }`}
+                          />
                         </div>
                       </CollapsibleContent>
                     </Collapsible>

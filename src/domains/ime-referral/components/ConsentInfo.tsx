@@ -56,7 +56,8 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
       }
       reset();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Submission failed');
+      console.error(error instanceof Error ? error.message : 'Submission failed');
+      toast.error('Failed to submit referral');
     }
   };
 
@@ -82,7 +83,8 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
         toast.success('Draft saved successfully');
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to save draft');
+      console.error(error instanceof Error ? error.message : 'Failed to save draft');
+      toast.error('Failed to save draft');
     } finally {
       setIsSavingDraft(false);
     }

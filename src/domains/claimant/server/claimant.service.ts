@@ -40,16 +40,18 @@ const getClaimant = async (token: string) => {
 };
 
 export const getCaseSummary = async (caseId: string) => {
-  const caseData = await prisma.examination.findUnique({
-    where: { caseNumber: caseId },
-  });
+  // const caseData = await prisma.examination.findUnique({
+  //   where: { caseNumber: caseId },
+  // });
 
-  if (!caseData) {
-    throw new Error(ErrorMessages.CASE_NOT_FOUND);
-  }
+  // if (!caseData) {
+  //   throw new Error(ErrorMessages.CASE_NOT_FOUND);
+  // }
 
   return {
-    caseData,
+    success: true,
+    caseId: caseId,
+    // caseData,
   };
 };
 

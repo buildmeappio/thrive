@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import useRouter from '@/hooks/useRouter';
 import { URLS } from '@/constants/routes';
+import { ArrowRight } from 'lucide-react';
 
 const ReferralSubmitted: React.FC = () => {
   const router = useRouter();
@@ -40,21 +41,15 @@ const ReferralSubmitted: React.FC = () => {
           <span className="block sm:inline"> claimant's appointment is scheduled.</span>
         </p>
 
-        {/* Action Buttons */}
-        <div className="mt-8 flex w-full flex-col gap-4 px-2 sm:mt-12 sm:flex-row sm:justify-between sm:gap-0">
+        {/* Action Button */}
+        <div className="mt-8 flex w-full justify-center px-2 sm:mt-12">
           <Button
             variant="outline"
             onClick={() => router.push(URLS.DASHBOARD)}
-            className="flex h-[45px] w-full items-center justify-center rounded-full border-[#000093] bg-white px-6 py-2 whitespace-nowrap text-gray-600 hover:bg-gray-50 sm:w-auto sm:px-8 md:px-10"
+            className="flex h-[45px] w-[200px] items-center justify-center rounded-full bg-[#000093] text-[14px] whitespace-nowrap text-[#FFFFFF] hover:bg-[#000093] sm:w-auto sm:px-8 md:px-10"
           >
             Go to Dashboard
-          </Button>
-
-          <Button
-            onClick={() => router.push(URLS.IME_REFERRAL)}
-            className="flex h-[45px] w-[150px] items-center justify-center rounded-full bg-[#000093] whitespace-nowrap text-white hover:bg-[#000093] sm:w-auto sm:px-8 md:px-10"
-          >
-            Submit another Referral
+            <ArrowRight className="h-4 w-6 text-[#FFFFFF]" />
           </Button>
         </div>
       </div>

@@ -2,6 +2,7 @@ import ErrorMessages from '@/constants/ErrorMessages';
 import { z } from 'zod';
 import { DocumentUploadConfig } from '@/config/documentUpload';
 import { formatFileSize } from '@/utils/documentUpload';
+import { validateCanadianPhoneNumber } from '@/components/PhoneNumber';
 
 // File validation schema
 const FileSchema = z.instanceof(File).superRefine((file, ctx) => {
@@ -40,6 +41,7 @@ const FileSchema = z.instanceof(File).superRefine((file, ctx) => {
 // Step 1 - Claimant Details Schema
 export const ClaimantDetailsSchema = z.object({
   // Required fields
+  claimType: z.string().min(1, 'Claim type is required'),
   firstName: z
     .string()
     .min(1, ErrorMessages.FIRST_NAME_REQUIRED)
@@ -75,7 +77,7 @@ export const ClaimantDetailsSchema = z.object({
 
   phoneNumber: z
     .string()
-    .refine(val => val === '' || /^\+?1?\d{10}$/.test(val), {
+    .refine(val => val === '' || validateCanadianPhoneNumber(val), {
       message: ErrorMessages.INVALID_PHONE_NUMBER,
     })
     .optional(),
@@ -110,14 +112,26 @@ export const ClaimantDetailsSchema = z.object({
     })
     .optional(),
 
-  familyDoctorPhone: z.string().optional(),
-  familyDoctorFax: z.string().optional(),
+  familyDoctorPhone: z
+    .string()
+    .refine(val => val === '' || validateCanadianPhoneNumber(val), {
+      message: ErrorMessages.INVALID_PHONE_NUMBER,
+    })
+    .optional(),
+
+  familyDoctorFax: z
+    .string()
+    .refine(val => val === '' || validateCanadianPhoneNumber(val), {
+      message: ErrorMessages.INVALID_FAX_NUMBER,
+    })
+    .optional(),
 });
 
 export type ClaimantDetails = z.infer<typeof ClaimantDetailsSchema>;
 
 // initial values
 export const ClaimantDetailsInitialValues: ClaimantDetails = {
+  claimType: '',
   firstName: '',
   lastName: '',
   addressLookup: '',
@@ -153,12 +167,14 @@ export const InsuranceDetailsSchema = z.object({
 
   insurancePhone: z
     .string()
-    .min(1, 'Phone is required')
-    .regex(/^\+?1?\d{10}$/, 'Invalid phone number'),
-  insuranceFaxNo: z
-    .string()
-    .min(1, 'Fax number is required')
-    .regex(/^\+?1?\d{10}$/, 'Invalid fax number'),
+    .refine(val => val === '' || validateCanadianPhoneNumber(val), {
+      message: ErrorMessages.INVALID_PHONE_NUMBER,
+    })
+    .min(1, 'Phone number is required'),
+
+  insuranceFaxNo: z.string().min(1, 'Fax number is required').refine(validateCanadianPhoneNumber, {
+    message: ErrorMessages.INVALID_FAX_NUMBER,
+  }),
   insuranceEmailAddress: z.string().email('Invalid email address').min(1, 'Email is required'),
 
   // Policy Holder fields
@@ -205,11 +221,17 @@ export const LegalDetailsSchema = z.object({
     .optional(),
 
   legalPhone: z
-    .union([z.string().regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_PHONE_NUMBER), z.literal('')])
+    .string()
+    .refine(val => val === '' || validateCanadianPhoneNumber(val), {
+      message: ErrorMessages.INVALID_PHONE_NUMBER,
+    })
     .optional(),
 
   legalFaxNo: z
-    .union([z.string().regex(/^\+?1?\d{10}$/, ErrorMessages.INVALID_FAX_NUMBER), z.literal('')])
+    .string()
+    .refine(val => val === '' || validateCanadianPhoneNumber(val), {
+      message: ErrorMessages.INVALID_FAX_NUMBER,
+    })
     .optional(),
 
   legalAddressLookup: z.string().optional(),
@@ -268,8 +290,11 @@ const ExaminationDetailsSchema = z.object({
   urgencyLevel: z.string().min(1, 'Urgency level is required'),
   dueDate: z.string().min(1, 'Due date is required'),
   instructions: z.string().min(1, 'Instructions are required'),
+  selectedBenefits: z.array(z.string()).optional(),
   locationType: z.string().min(1, 'Location type is required'),
   services: z.array(ExaminationServiceSchema),
+  additionalNotes: z.string().optional(),
+  supportPerson: z.boolean().optional(),
 });
 
 // Main Examination Schema (Step 5)
@@ -383,8 +408,11 @@ export const createExaminationDetails = (examinationTypeId: string): Examination
   urgencyLevel: '',
   dueDate: '',
   instructions: '',
+  selectedBenefits: [],
   locationType: '',
   services: [createTransportationService(), createInterpreterService(), createChaperoneService()],
+  additionalNotes: '',
+  supportPerson: false,
 });
 
 // Helper functions for form data transformation

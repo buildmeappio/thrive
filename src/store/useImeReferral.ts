@@ -23,11 +23,15 @@ export interface ExaminationDetails {
   dueDate: string;
   instructions: string;
   locationType: string;
+  selectedBenefits?: string[];
   services: ExaminationService[];
+  additionalNotes?: string;
+  supportPerson?: boolean;
 }
 
 export type IMEFormData = {
   step1?: {
+    claimType: string;
     firstName: string;
     lastName: string;
     dateOfBirth?: string;

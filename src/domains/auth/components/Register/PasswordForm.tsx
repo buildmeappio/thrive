@@ -1,5 +1,5 @@
 // Step 5
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui';
@@ -24,36 +24,9 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const router = useRouter();
 
   const { setData, data, _hasHydrated, reset } = useRegistrationStore();
-
-  useEffect(() => {
-    if (registrationSuccess) {
-      const attemptLogin = async () => {
-        try {
-          const result = await signIn('credentials', {
-            email: data.step2?.officialEmailAddress,
-            password: data.step5?.password,
-            redirect: false,
-          });
-
-          if (result?.ok) {
-            reset();
-            router.push(URLS.DASHBOARD);
-          } else {
-            console.error('Login failed after registration');
-            toast.error(ErrorMessages.LOGIN_FAILED);
-          }
-        } catch (error) {
-          console.error('Login error:', error);
-        }
-      };
-
-      attemptLogin();
-    }
-  }, [registrationSuccess, router]);
 
   const handleSubmit = async (
     values: typeof PasswordInitialValues,
@@ -67,18 +40,35 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
         step5: values,
       };
 
+      // Register the organization
       const res = await registerOrganization(updatedData);
 
       if (!res.success) {
-        actions.setFieldError('code', 'Error');
+        toast.error('Registration failed');
         return;
       }
 
-      setRegistrationSuccess(true);
+      // Login immediately after successful registration
+      const loginResult = await signIn('credentials', {
+        email: data.step2?.officialEmailAddress,
+        password: values.password,
+        redirect: false,
+      });
+
+      if (loginResult?.ok) {
+        reset();
+        router.push(URLS.DASHBOARD);
+      } else {
+        toast.error(ErrorMessages.LOGIN_FAILED);
+      }
+
+      if (onNext) {
+        onNext();
+      }
     } catch (error) {
       console.error('Registration error:', error);
       toast.error(ErrorMessages.REGISTRATION_FAILED);
-      if (onNext) onNext();
+      actions.setSubmitting(false);
     }
   };
 
@@ -124,6 +114,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                         type="button"
                         className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         onClick={() => setShowPassword(!showPassword)}
+                        disabled={isSubmitting}
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
@@ -149,6 +140,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                         type="button"
                         className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        disabled={isSubmitting}
                       >
                         {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
@@ -163,7 +155,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
               <div className="mb-8 flex flex-row justify-center gap-4 md:mb-0 md:justify-between">
                 <BackButton
                   onClick={onPrevious}
-                  disabled={currentStep === 1}
+                  disabled={currentStep === 1 || isSubmitting}
                   borderColor="#000080"
                   iconColor="#000080"
                   isSubmitting={isSubmitting}
@@ -181,4 +173,5 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
     </div>
   );
 };
+
 export default PasswordForm;

@@ -1,3 +1,4 @@
+import { validateCanadianPhoneNumber } from '@/components/PhoneNumber';
 import ErrorMessages from '@/constants/ErrorMessages';
 import * as Yup from 'yup';
 
@@ -53,9 +54,10 @@ export const OfficeDetailsSchema = Yup.object({
     .required(ErrorMessages.LAST_NAME_REQUIRED),
 
   phoneNumber: Yup.string()
-    // Canadian numbers: optional +, then 10–15 digits total
-    .matches(/^\+?[1-9]\d{9,14}$/, ErrorMessages.INVALID_PHONE_NUMBER)
-    .required(ErrorMessages.PHONE_REQUIRED),
+    .required('Phone number is required')
+    .test('is-valid-canadian-phone', 'Please enter a valid Canadian phone number', value => {
+      return validateCanadianPhoneNumber(value);
+    }),
 
   officialEmailAddress: Yup.string()
     .email(ErrorMessages.INVALID_EMAIL)

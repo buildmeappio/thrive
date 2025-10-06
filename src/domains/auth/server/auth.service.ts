@@ -155,6 +155,16 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
       },
     });
 
+    await emailService.sendEmail(
+      'Welcome to Our Platform!',
+      'welcome.html',
+      {
+        firstName: firstName,
+        lastName: lastName,
+      },
+      officialEmailAddress
+    );
+
     return {
       organizationId: organization.id,
       userId: user.id,

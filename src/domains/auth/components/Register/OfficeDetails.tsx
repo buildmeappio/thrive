@@ -2,7 +2,7 @@
 import { Formik, Form, type FormikHelpers } from 'formik';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui';
-import { Mail, Phone, User, Briefcase } from 'lucide-react';
+import { Mail, User, Briefcase } from 'lucide-react';
 import { Dropdown } from '@/components/Dropdown';
 import BackButton from '@/components/BackButton';
 import ContinueButton from '@/components/ContinueButton';
@@ -11,6 +11,7 @@ import { useRegistrationStore } from '@/store/useRegistration';
 import ErrorMessages from '@/constants/ErrorMessages';
 import { checkUserByEmail } from '../../actions';
 import { OfficeDetailsInitialValues, OfficeDetailsSchema } from '../../schemas/register';
+import PhoneInput from '@/components/PhoneNumber';
 
 interface DepartmentOption {
   value: string;
@@ -107,21 +108,12 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                   <Label htmlFor="phoneNumber" className="text-sm text-black">
                     Phone Number<span className="text-red-500">*</span>
                   </Label>
-                  <Input
+                  <PhoneInput
                     disabled={isSubmitting}
                     name="phoneNumber"
-                    icon={Phone}
-                    type="tel"
-                    placeholder="4444444444"
                     value={values.phoneNumber}
                     onChange={handleChange}
-                    onKeyPress={e => {
-                      if (!/[0-9]/.test(e.key)) {
-                        e.preventDefault();
-                      }
-                    }}
                   />
-
                   {errors.phoneNumber && (
                     <p className="text-xs text-red-500">{errors.phoneNumber}</p>
                   )}
