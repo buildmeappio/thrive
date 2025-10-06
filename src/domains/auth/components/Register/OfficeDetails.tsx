@@ -1,16 +1,27 @@
 // Step 2
+import { useState } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui';
-import { Mail, Phone, User, Briefcase } from 'lucide-react';
+import { Mail, User, Briefcase } from 'lucide-react';
 import { Dropdown } from '@/components/Dropdown';
 import BackButton from '@/components/BackButton';
 import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistration';
-import ErrorMessages from '@/constants/ErrorMessages';
 import { checkUserByEmail } from '../../actions';
 import { OfficeDetailsInitialValues, OfficeDetailsSchema } from '../../schemas/register';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import useRouter from '@/hooks/useRouter';
+import { URLS } from '@/constants/routes';
+import PhoneInput from '@/components/PhoneNumber';
 
 interface DepartmentOption {
   value: string;
@@ -27,6 +38,8 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
   departmentTypes: departmentOptions,
 }) => {
   const { setData, data, _hasHydrated } = useRegistrationStore();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const router = useRouter();
 
   if (!_hasHydrated) {
     return null;
@@ -40,7 +53,8 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
       const exists = await checkUserByEmail(values.officialEmailAddress);
 
       if (exists) {
-        actions.setFieldError('officialEmailAddress', ErrorMessages.EMAIL_ALREADY_EXISTS);
+        setShowLoginPrompt(true);
+        actions.setSubmitting(false);
         return;
       }
 
@@ -107,21 +121,12 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                   <Label htmlFor="phoneNumber" className="text-sm text-black">
                     Phone Number<span className="text-red-500">*</span>
                   </Label>
-                  <Input
+                  <PhoneInput
                     disabled={isSubmitting}
                     name="phoneNumber"
-                    icon={Phone}
-                    type="tel"
-                    placeholder="4444444444"
                     value={values.phoneNumber}
                     onChange={handleChange}
-                    onKeyPress={e => {
-                      if (!/[0-9]/.test(e.key)) {
-                        e.preventDefault();
-                      }
-                    }}
                   />
-
                   {errors.phoneNumber && (
                     <p className="text-xs text-red-500">{errors.phoneNumber}</p>
                   )}
@@ -192,6 +197,34 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
           </Form>
         )}
       </Formik>
+      <Dialog open={showLoginPrompt} onOpenChange={setShowLoginPrompt}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Email Already Exists</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600">
+            This email is already registered. Would you like to log in instead?
+          </p>
+          <DialogFooter className="mt-4 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowLoginPrompt(false)}
+              className="cursor-pointrer rounded-lg"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setShowLoginPrompt(false);
+                router.push(URLS.LOGIN);
+              }}
+              className="cursor-pointer rounded-lg bg-[#000093] hover:bg-[#000093]"
+            >
+              Go to Login
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

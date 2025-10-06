@@ -47,17 +47,6 @@ const checkPassword = async (password: string, hashedPassword: string) => {
   }
 };
 
-const checkOrganizationByName = async (name: string) => {
-  try {
-    const org = await prisma.organization.findFirst({
-      where: { name: { equals: name, mode: 'insensitive' } },
-    });
-    return org;
-  } catch (error) {
-    throw HttpError.handleServiceError(error, 'Failed to get organization by name');
-  }
-};
-
 const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) => {
   return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const {
@@ -79,7 +68,6 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
       agreeTermsConditions,
       consentSecureDataHandling,
       authorizedToCreateAccount,
-      hashedPassword,
     } = data;
 
     // Address
@@ -114,7 +102,6 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
         lastName,
         email: officialEmailAddress,
         phone: phoneNumber,
-        password: hashedPassword,
       },
     });
 
@@ -160,7 +147,6 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
       userId: user.id,
       accountId: account.id,
       email: user.email,
-      hashedPassword: hashedPassword,
     };
   });
 };
@@ -299,10 +285,26 @@ const checkUserByEmail = async (email: string) => {
   }
 };
 
+const createPassword = async (email: string, password: string) => {
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const updatedUser = await prisma.user.update({
+      where: { email },
+      data: { password: hashedPassword },
+      select: { id: true, email: true },
+    });
+
+    return { success: true, user: updatedUser };
+  } catch (error) {
+    console.error('Update password error:', error);
+    return { success: false, message: 'Update password failed' };
+  }
+};
+
 const authService = {
   getUserByEmail,
   checkPassword,
-  checkOrganizationByName,
   createOrganizationWithUser,
   getOrganizationTypes,
   getDepartments,
@@ -311,6 +313,7 @@ const authService = {
   sendOtp,
   verifyOtp,
   checkUserByEmail,
+  createPassword,
 };
 
 export default authService;

@@ -5,3 +5,4 @@ export { default as verifyOtp } from './verifyOtp';
 export { default as getDepartments } from './getDepartments';
 export { default as registerOrganization } from './registerOrganization';
 export { default as getExaminationTypes } from './getExaminationTypes';
+export { default as createPassword } from './createPassword';

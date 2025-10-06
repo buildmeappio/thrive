@@ -32,3 +32,8 @@ export const registerOrganization = async (data: FormData) => {
   const result = await authHandlers.registerOrganization(data);
   return result;
 };
+
+export const createPassword = async (email: string, password: string) => {
+  const result = await authHandlers.createPassword(email, password);
+  return result;
+};

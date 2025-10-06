@@ -1,3 +1,4 @@
+import { HttpError } from '@/utils/httpError';
 import authService from '../auth.service';
 import AuthDto from '../dto/auth.dto';
 
@@ -8,6 +9,9 @@ type LoginData = {
 
 const login = async (data: LoginData) => {
   const user = await authService.getUserByEmail(data.email);
+  if (!user.password) {
+    throw HttpError.notFound('User password not found');
+  }
   await authService.checkPassword(data.password, user.password);
 
   return AuthDto.toLoginResponse({ user });

@@ -6,13 +6,11 @@ import { Globe, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui';
 import { provinceOptions } from '@/config/ProvinceOptions';
 import { Dropdown } from '@/components/Dropdown';
-import { Form, Formik, type FormikHelpers } from 'formik';
+import { Form, Formik } from 'formik';
 import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistration';
 import { OrganizationInfoInitialValues, OrganizationInfoSchema } from '../../schemas/register';
-import ErrorMessages from '@/constants/ErrorMessages';
-import { checkOrganizationByName } from '@/domains/organization/actions';
 
 export interface OrganizationTypeOption {
   value: string;
@@ -35,18 +33,8 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
     return null;
   }
 
-  const handleSubmit = async (
-    values: typeof OrganizationInfoInitialValues,
-    actions: FormikHelpers<typeof OrganizationInfoInitialValues>
-  ) => {
+  const handleSubmit = async (values: typeof OrganizationInfoInitialValues) => {
     try {
-      const exists = await checkOrganizationByName(values.organizationName);
-
-      if (exists) {
-        actions.setFieldError('organizationName', ErrorMessages.ORG_NAME_ALREADY_EXISTS);
-        return;
-      }
-
       setData('step1', values);
 
       if (onNext) {

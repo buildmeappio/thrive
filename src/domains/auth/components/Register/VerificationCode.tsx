@@ -8,7 +8,8 @@ import { useRegistrationStore } from '@/store/useRegistration';
 import { VerificationCodeInitialValues, VerificationCodeSchema } from '../../schemas/register';
 import { toast } from 'sonner';
 import SuccessMessages from '@/constants/SuccessMessages';
-import { sendOtp, verifyOtp } from '../../actions';
+import { registerOrganization, sendOtp, verifyOtp } from '../../actions';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -95,6 +96,17 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
       const res = await verifyOtp(otp, email);
 
       if (res.success) {
+        const updatedData = {
+          ...data,
+          step4: values,
+        };
+
+        const res = await registerOrganization(updatedData);
+
+        if (!res.success) {
+          actions.setFieldError('code', 'Error');
+          return;
+        }
         if (onNext) onNext();
       } else {
         toast.error('Invalid Otp');
@@ -103,6 +115,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
       actions.setSubmitting(false);
     } catch (error) {
       console.log(error);
+      toast.error(ErrorMessages.REGISTRATION_FAILED);
     }
   };
 

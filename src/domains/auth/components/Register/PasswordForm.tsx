@@ -1,5 +1,5 @@
 // Step 5
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui';
@@ -12,9 +12,10 @@ import { signIn } from 'next-auth/react';
 import { PasswordInitialValues, PasswordSchema } from '../../schemas/register';
 import ErrorMessages from '@/constants/ErrorMessages';
 import { toast } from 'sonner';
-import { registerOrganization } from '../../actions';
 import useRouter from '@/hooks/useRouter';
 import { URLS } from '@/constants/routes';
+import { createPassword } from '../../actions';
+import { HttpError } from '@/utils/httpError';
 
 const PasswordForm: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -24,36 +25,9 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const router = useRouter();
 
   const { setData, data, _hasHydrated, reset } = useRegistrationStore();
-
-  useEffect(() => {
-    if (registrationSuccess) {
-      const attemptLogin = async () => {
-        try {
-          const result = await signIn('credentials', {
-            email: data.step2?.officialEmailAddress,
-            password: data.step5?.password,
-            redirect: false,
-          });
-
-          if (result?.ok) {
-            reset();
-            router.push(URLS.DASHBOARD);
-          } else {
-            console.error('Login failed after registration');
-            toast.error(ErrorMessages.LOGIN_FAILED);
-          }
-        } catch (error) {
-          console.error('Login error:', error);
-        }
-      };
-
-      attemptLogin();
-    }
-  }, [registrationSuccess, router]);
 
   const handleSubmit = async (
     values: typeof PasswordInitialValues,
@@ -62,22 +36,33 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
     try {
       setData('step5', values);
 
-      const updatedData = {
-        ...data,
-        step5: values,
-      };
+      if (!data.step2?.officialEmailAddress || !data.step5?.password) {
+        throw HttpError.notFound('Email and password are required');
+      }
 
-      const res = await registerOrganization(updatedData);
+      const res = await createPassword(data.step2?.officialEmailAddress, data.step5?.password);
 
       if (!res.success) {
         actions.setFieldError('code', 'Error');
         return;
       }
 
-      setRegistrationSuccess(true);
+      const result = await signIn('credentials', {
+        email: data.step2?.officialEmailAddress,
+        password: data.step5?.password,
+        redirect: false,
+      });
+
+      if (result?.ok) {
+        reset();
+        router.push(URLS.DASHBOARD);
+      } else {
+        console.error(result?.error);
+        toast.error(ErrorMessages.LOGIN_FAILED);
+      }
     } catch (error) {
-      console.error('Registration error:', error);
-      toast.error(ErrorMessages.REGISTRATION_FAILED);
+      console.error('error:', error);
+      toast.error(ErrorMessages.PASSWORD_CREATION_FAILED);
       if (onNext) onNext();
     }
   };

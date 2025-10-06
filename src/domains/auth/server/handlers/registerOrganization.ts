@@ -4,7 +4,6 @@ import { verifyPasswordToken } from '@/lib/jwt';
 import { cookies } from 'next/headers';
 import authService from '../auth.service';
 import { type FormData } from '@/store/useRegistration';
-import bcrypt from 'bcryptjs';
 
 const registerOrganization = async (data: FormData) => {
   const token = (await cookies()).get('password_token')?.value;
@@ -21,15 +20,11 @@ const registerOrganization = async (data: FormData) => {
     throw new Error(ErrorMessages.STEPS_REQUIRED);
   }
 
-  const { password } = data.step5;
-  const hashedPassword = await bcrypt.hash(password, 10);
-
   const result = await authService.createOrganizationWithUser({
     ...data.step1,
     ...data.step2,
     ...data.step3,
     ...data.step4,
-    hashedPassword,
   });
 
   (await cookies()).set('password_token', '', { maxAge: 0 });

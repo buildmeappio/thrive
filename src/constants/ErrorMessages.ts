@@ -127,4 +127,5 @@ export default Object.freeze({
   INTERPRETER_LANGUAGE_REQUIRED: 'Interpreter language is required',
   ADDITIONAL_NOTES_TEXT_REQUIRED: 'Additional notes text is required',
   DEFAULT_STATUS_NOT_FOUND: 'Default status not found',
+  PASSWORD_CREATION_FAILED: 'Failed to create password',
 });
