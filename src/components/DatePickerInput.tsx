@@ -8,6 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { format } from "date-fns";
 
 interface DatePickerInputProps {
   value?: Date | string | null;
@@ -60,7 +61,7 @@ const DatePickerInput: React.FC<DatePickerInputProps> = ({
             icon={CalendarIcon}
             type="text"
             placeholder={placeholder}
-            value={selectedDate ? selectedDate.toLocaleDateString() : ""}
+            value={selectedDate ? format(selectedDate, "MMMM dd, yyyy") : ""}
             readOnly
             disabled={disabled}
           />

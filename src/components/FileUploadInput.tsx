@@ -1,3 +1,4 @@
+'use client'
 import React, { useRef } from "react";
 import { Upload, File, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -73,20 +74,20 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
           error && "ring-2 ring-red-500/30"
         )}
       >
-        <Upload
+        {!value && <Upload
           className="mr-3 h-5 w-5 text-[#A4A4A4] flex-shrink-0"
           strokeWidth={2}
-        />
+        /> }
         
         <div className="flex-1 flex items-center justify-between min-w-0">
           {value ? (
             <div className="flex items-center min-w-0 flex-1">
-              <File className="mr-2 h-4 w-4 text-[#00A8FF] flex-shrink-0" />
+              <File className="mr-3 h-5 w-5 text-[#00A8FF] flex-shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-[#333] font-medium truncate">
+                <p className="text-[#333] text-[13px] font-medium truncate">
                   {value.name}
                 </p>
-                <p className="text-xs text-[#9EA9AA]">
+                <p className="text-[11px] text-[#9EA9AA]">
                   {formatFileSize(value.size)}
                 </p>
               </div>

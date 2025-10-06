@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { cn } from '@/shared/lib/utils';
+import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
 
 interface TextareaProps extends React.ComponentProps<'textarea'> {

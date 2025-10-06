@@ -1,14 +1,6 @@
 import type { NextAuthOptions } from "next-auth";
-import { handleGoogleSignIn } from "./providers/google";
 
 export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
-  async signIn({ account, user }) {
-    if (account?.provider === "google") {
-      return handleGoogleSignIn(user.email || "");
-    }
-    return true;
-  },
-
   async jwt({ token, user }) {
     if (user) {
       const u = user;

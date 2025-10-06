@@ -2,7 +2,8 @@ import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
 import { Roles } from "../../constants/roles";
 import { ExaminerStatus } from "@prisma/client";
-import sendOtp from "./sendOtp";
+import emailService from "@/services/email.service";
+import { signPasswordToken } from "@/lib/jwt";
 
 export type CreateMedicalExaminerInput = {
   // step 1
@@ -38,8 +39,6 @@ export type CreateMedicalExaminerInput = {
 
 const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
   try {
-    // TODO: Implement create medical examiner and then send otp
-    // Get user by email
     let user = await prisma.user.findUnique({
       where: {
         email: payload.email,
@@ -109,9 +108,13 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
       })),
     });
 
-    // now send otp
+    const token = signPasswordToken({ email: payload.email, id: user.id, accountId: account.id, role: Roles.MEDICAL_EXAMINER });
 
-    await sendOtp(payload.email);
+    await emailService.sendEmail("Welcome to Thrive", "welcome.html", {
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      createAccountLink: `${process.env.NEXT_PUBLIC_APP_URL}/create-account?token=${token}`,
+    }, payload.email);
 
     return {
       success: true,

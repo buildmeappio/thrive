@@ -1,10 +1,8 @@
-export { Step1PersonalInfo } from './Step1PersonalInfo';
-export { Step2MedicalCredentials } from './Step2MedicalCredentials';
-export { Step3IMEExperince } from './Step3IMEExperience';
-export { Step4ExperienceDetails } from './Step4ExperienceDetails';
-export { Step5Availablity } from './Step5Availablity';
-export { Step6Legal } from './Step6Legal';
-export { Step7SubmitConfirmation } from './Step7SubmitConfirmation';
-export { Step8ThankYou } from './Step8ThankYou';
-export { Step9Password } from './Step9Password';
-export { Step10Success } from './Step10Success';
+export { default as PersonalInfo } from './PersonalInfo';
+export { default as MedicalCredentials } from './MedicalCredentials';
+export { default as IMEExperince } from './IMEExperience';
+export { default as ExperienceDetails } from './ExperienceDetails';
+export { default as Availablity } from './Availablity';
+export { default as Legal } from './Legal';
+export { default as SubmitConfirmation } from './SubmitConfirmation';
+export { default as ThankYou } from './ThankYou';

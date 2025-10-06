@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import { PasswordInput } from '@/components/PasswordInput';
 import { ArrowRight } from 'lucide-react';
 import { Form, Formik } from 'formik';
-import { loginInitialValues, loginSchema } from '@/shared/validation/login/loginValidation';
+import { loginInitialValues } from '@/domains/auth/constants/initialValues';
 import Link from 'next/link';
 import { createRoute, URLS } from '@/constants/route';
+import { LoginInput, loginSchema } from '@/domains/auth/schemas/auth.schemas';
 
 
 const LoginForm = () => {
-	const handleSubmit = (values: typeof loginInitialValues) => {
+	const handleSubmit = (values: LoginInput) => {
 		console.log(values);
 	}
 

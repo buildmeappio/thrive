@@ -7,6 +7,7 @@ export interface ContinueButtonProps {
   gradientTo?: string;
   onClick?: () => void;
   loading?: boolean;
+  disabled?: boolean;
 }
 
 const ContinueButton: React.FC<ContinueButtonProps> = ({
@@ -15,6 +16,7 @@ const ContinueButton: React.FC<ContinueButtonProps> = ({
   gradientTo = '#00A8FF',
   onClick,
   loading,
+  disabled,
 }) => {
   return (
     <button
@@ -23,6 +25,7 @@ const ContinueButton: React.FC<ContinueButtonProps> = ({
       style={{
         backgroundImage: `linear-gradient(to left, ${gradientFrom}, ${gradientTo})`,
       }}
+      disabled={disabled}
     >
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" />

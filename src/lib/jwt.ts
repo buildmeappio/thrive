@@ -37,7 +37,7 @@ export function verifyOtpToken(token: string): JwtPayload | null {
 // ----- Password Tokens -----
 export function signPasswordToken(
   payload: object,
-  expiresIn: SignOptions['expiresIn'] = '15m'
+  expiresIn: SignOptions['expiresIn'] = '7d'
 ): string {
   const options: SignOptions = { expiresIn };
   return jwt.sign(payload, passwordSecret, options);

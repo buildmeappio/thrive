@@ -1,3 +1,4 @@
+'use client'
 import { createRoute } from "@/constants/route";
 import NextImage, { ImageProps as NextImageProps } from "next/image";
 
@@ -9,9 +10,6 @@ const Image = ({ src: srcProp, alt, ...props }: ImageProps) => {
 	if (typeof srcProp === "string" && srcProp.startsWith("/")) {
 		src = createRoute(srcProp);
 	}
-
-	console.log(src, srcProp);
-
 	return <NextImage src={src} alt={alt} {...props} />;
 };
 

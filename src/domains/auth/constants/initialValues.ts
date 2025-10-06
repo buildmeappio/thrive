@@ -6,6 +6,7 @@ import {
   Step5AvailabilityInput,
   Step6LegalInput,
   Step9PasswordInput,
+  LoginInput,
 } from "../schemas/auth.schemas";
 
 export const step1InitialValues: Omit<Step1PersonalInfoInput, "provinceOfResidence"> & {
@@ -61,4 +62,9 @@ export const step6InitialValues: Step6LegalInput = {
 export const step9InitialValues: Step9PasswordInput = {
   password: "",
   confirmPassword: "",
+};
+
+export const loginInitialValues: LoginInput = {
+  email: "",
+  password: "",
 };

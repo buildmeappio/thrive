@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Input } from './ui/input';
-import { cn } from '@/shared/lib/utils';
+import { cn } from '@/lib/utils';
 
 export function PasswordInput({ className, ...props }: React.ComponentProps<'input'>) {
   const [show, setShow] = React.useState(false);

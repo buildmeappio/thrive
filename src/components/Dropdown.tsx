@@ -1,3 +1,4 @@
+'use client'
 import React, { useState } from 'react';
 import { MapPin } from 'lucide-react';
 import {
@@ -7,6 +8,7 @@ import {
   SelectContent,
   SelectItem,
 } from './ui/select';
+import { Checkbox } from './ui';
 
 // For multi-select, we use checkboxes in the dropdown and display selected values as comma-separated
 export interface DropdownProps {
@@ -65,15 +67,10 @@ const Dropdown: React.FC<DropdownProps> = ({
 
   // For multiSelect, handle checkbox change
   const handleMultiSelectChange = (optionValue: string) => {
-    let newSelected: string[];
-    if (selectedValues.includes(optionValue)) {
-      newSelected = selectedValues.filter(v => v !== optionValue);
-    } else {
-      newSelected = [...selectedValues, optionValue];
-    }
-    setSelectedValues(newSelected);
-    onChange(newSelected);
+    setSelectedValues((prev) => (prev.includes(optionValue) ? prev.filter(v => v !== optionValue) : [...prev, optionValue]));
+    onChange(selectedValues);
   };
+
 
   // For single select, just pass through
   const handleSingleSelectChange = (val: string) => {
@@ -83,11 +80,11 @@ const Dropdown: React.FC<DropdownProps> = ({
   // Display value for SelectValue in multiSelect mode
   const displayValue = multiSelect
     ? (selectedValues.length === 0
-        ? ''
-        : uniqueOptions
-            .filter(opt => selectedValues.includes(opt.value))
-            .map(opt => opt.label)
-            .join(', '))
+      ? ''
+      : uniqueOptions
+        .filter(opt => selectedValues.includes(opt.value))
+        .map(opt => opt.label)
+        .join(', '))
     : (uniqueOptions.find(opt => opt.value === value)?.label || '');
 
   return (
@@ -96,7 +93,7 @@ const Dropdown: React.FC<DropdownProps> = ({
         {label}
         {required && <span className="text-red-500">*</span>}
       </label>
-      <div className="relative mt-2">
+      <div className="relative mt-1">
         {!multiSelect ? (
           <Select
             value={typeof value === 'string' ? value || undefined : undefined}
@@ -105,7 +102,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           >
             <SelectTrigger
               id={id}
-              className={`h-[50px] w-full rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 pl-10 text-[14px] leading-[120%] font-normal tracking-[0.5%] text focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50`}
+              className={`h-[55px] w-full text-[#000000] rounded-[7.56px] border-none shadow-none bg-[#F2F5F6] pl-10  text-[14px] leading-[120%] font-normal tracking-[0.5%] text focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50`}
               aria-required={required}
             >
               <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -113,7 +110,7 @@ const Dropdown: React.FC<DropdownProps> = ({
               </div>
               <SelectValue
                 placeholder={placeholder}
-                className={value === '' ? 'text-[#000000]' : 'text-[#000000]'}
+                className={'text-[#000000] shadow-none'}
               />
             </SelectTrigger>
             <SelectContent style={contentStyle}>
@@ -130,8 +127,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             <button
               type="button"
               id={id}
-              className={`h-[50px] w-full rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 pl-10 text-[14px] leading-[120%] font-normal tracking-[0.5%] text-left focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 relative`}
-              aria-required={required}
+              className={`h-[55px] w-full rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 pl-10 text-[14px] leading-[120%] font-normal tracking-[0.5%] text-left focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 relative`}
               onClick={() => setOpen(o => !o)}
               tabIndex={0}
             >
@@ -159,7 +155,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                 }
               `}</style>
               <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5" stroke="#A4A4A4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5" stroke="#A4A4A4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </span>
             </button>
             {open && (
@@ -176,18 +172,21 @@ const Dropdown: React.FC<DropdownProps> = ({
                       className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
                       onClick={e => {
                         e.preventDefault();
+                        e.stopPropagation();
                         handleMultiSelectChange(option.value);
                       }}
                     >
-                      <input
-                        type="checkbox"
+
+                      <Checkbox
                         checked={selectedValues.includes(option.value)}
-                        onChange={() => handleMultiSelectChange(option.value)}
-                        className="mr-2 accent-[#00A8FF]"
-                        tabIndex={-1}
-                        readOnly
+                        onCheckedChange={() => {
+                          // Prevent double triggering by not calling handleMultiSelectChange here
+                          // The onClick on the li will handle the change
+                        }}
+                        checkedColor="#00A8FF"
+                        checkIconColor="white"
                       />
-                      <span>{option.label}</span>
+                      <span className="ml-2">{option.label}</span>
                     </li>
                   ))}
                 </ul>

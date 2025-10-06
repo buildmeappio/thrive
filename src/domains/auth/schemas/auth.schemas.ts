@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parsePhoneNumberWithError } from 'libphonenumber-js'
 
 export const loginSchema = z.object({
   email: z.string().email({ message: "Enter a valid email address" }),
@@ -20,7 +21,20 @@ export const step1PersonalInfoSchema = z.object({
     .max(50, { message: "Last name must be less than 50 characters" }),
   phoneNumber: z
     .string()
-    .min(5, { message: "Please enter a valid phone number" }),
+    .min(5, { message: "Please enter a valid phone number" })
+    .refine((val) => {
+      try {
+        const phone = parsePhoneNumberWithError(`+1${val}`)
+        if (phone.countryCallingCode === "1") {
+          return true
+        }
+        return false
+      } catch (error) {
+        console.error(error)
+        return false
+      }
+    }, { message: "Please enter a valid phone number" }),
+
   emailAddress: z
     .string()
     .email({ message: "Please enter a valid email address" }),

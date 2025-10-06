@@ -9,7 +9,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="light">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Force light mode on page load
+              document.documentElement.classList.remove('dark');
+              document.documentElement.classList.add('light');
+            `,
+          }}
+        />
+      </head>
       <body className="font-degular antialiased">
         <Provider>
           {children}

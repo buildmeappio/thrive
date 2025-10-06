@@ -2,7 +2,6 @@
 
 import type { ReactNode } from 'react';
 import type { Session } from 'next-auth';
-import { SessionProvider } from './SessionProvider';
 import { ThemeProvider } from './ThemeProvider';
 
 interface ProvidersProps {
@@ -10,13 +9,11 @@ interface ProvidersProps {
   session?: Session | null;
 }
 
-const Provider = ({ children, session }: ProvidersProps) => {
+const Provider = ({ children }: ProvidersProps) => {
   return (
-
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-        {children}
-      </ThemeProvider>
- 
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+      {children}
+    </ThemeProvider>
   );
 }
 
