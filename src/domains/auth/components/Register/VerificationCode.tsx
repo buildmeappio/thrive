@@ -1,7 +1,6 @@
 // Step 4
 import { useState, useRef } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
-import BackButton from '@/components/BackButton';
 import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistration';
@@ -13,7 +12,6 @@ import ErrorMessages from '@/constants/ErrorMessages';
 
 const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   onNext,
-  onPrevious,
   currentStep,
   totalSteps,
 }) => {
@@ -191,14 +189,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                 </div>
 
                 {/* Buttons */}
-                <div className="flex w-full items-center gap-4 pt-8 sm:flex-row sm:justify-between">
-                  <BackButton
-                    onClick={onPrevious}
-                    disabled={currentStep === 1}
-                    borderColor="#000080"
-                    iconColor="#000080"
-                    isSubmitting={isSubmitting}
-                  />
+                <div className="flex justify-end">
                   <ContinueButton
                     isSubmitting={isSubmitting}
                     isLastStep={currentStep === totalSteps}

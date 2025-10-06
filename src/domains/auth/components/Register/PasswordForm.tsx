@@ -4,7 +4,6 @@ import { Formik, Form, type FormikHelpers } from 'formik';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui';
 import { Eye, EyeOff } from 'lucide-react';
-import BackButton from '@/components/BackButton';
 import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistration';
@@ -17,12 +16,7 @@ import { URLS } from '@/constants/routes';
 import { createPassword } from '../../actions';
 import { HttpError } from '@/utils/httpError';
 
-const PasswordForm: React.FC<OrganizationRegStepProps> = ({
-  onNext,
-  onPrevious,
-  currentStep,
-  totalSteps,
-}) => {
+const PasswordForm: React.FC<OrganizationRegStepProps> = ({ onNext, currentStep, totalSteps }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
@@ -145,14 +139,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                 </div>
               </div>
 
-              <div className="mb-8 flex flex-row justify-center gap-4 md:mb-0 md:justify-between">
-                <BackButton
-                  onClick={onPrevious}
-                  disabled={currentStep === 1}
-                  borderColor="#000080"
-                  iconColor="#000080"
-                  isSubmitting={isSubmitting}
-                />
+              <div className="flex justify-end">
                 <ContinueButton
                   isSubmitting={isSubmitting}
                   isLastStep={currentStep === totalSteps}
