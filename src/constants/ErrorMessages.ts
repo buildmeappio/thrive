@@ -127,4 +127,8 @@ export default Object.freeze({
   INTERPRETER_LANGUAGE_REQUIRED: 'Interpreter language is required',
   ADDITIONAL_NOTES_TEXT_REQUIRED: 'Additional notes text is required',
   DEFAULT_STATUS_NOT_FOUND: 'Default status not found',
+  EXAMINATION_TYPE_NOT_FOUND: 'Examination type not found',
+  FAILED_TO_GET_EXAMINATION_TYPES: 'Failed to get examination type benefits',
+  CLAIM_TYPE_NOT_FOUND: 'Claim type not found',
+  FAILED_TO_GET_CLAIM_TYPES: 'Failed to get claim types',
 });

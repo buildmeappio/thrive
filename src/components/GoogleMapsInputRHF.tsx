@@ -35,7 +35,6 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
   className = '',
   error,
   onPlaceSelect,
-  from,
   setValue,
   trigger,
 }) => {
@@ -215,9 +214,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
   return (
     <div className="space-y-2">
       {label && (
-        <label
-          className={`mb-2 block text-sm font-medium ${from === 'store' ? '' : 'text-gray-700'}`}
-        >
+        <label className={`mb-2 block text-sm`}>
           {label}
           {required && <span className="text-red-500">*</span>}
         </label>

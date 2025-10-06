@@ -4,6 +4,7 @@ import { uploadFilesToS3, type UploadedFile } from '@/lib/s3-actions';
 
 export interface CreateDocumentInput {
   name: string;
+  displayName?: string;
   type: string;
   size: number;
   caseId?: string;
@@ -17,6 +18,7 @@ export interface UploadAndCreateDocumentInput {
 export interface Document {
   id: string;
   name: string;
+  displayName: string | null;
   type: string;
   size: number;
   createdAt: Date;
@@ -84,7 +86,8 @@ export class DocumentService {
           uploadResult.files!.map(async file => {
             const document = await tx.documents.create({
               data: {
-                name: file.name, // Store the unique S3 filename
+                name: file.name,
+                displayName: file.originalName,
                 type: file.type,
                 size: file.size,
               },
@@ -102,7 +105,7 @@ export class DocumentService {
 
             return {
               ...document,
-              originalName: file.originalName, // Include for frontend display
+              originalName: file.originalName,
             };
           })
         );
@@ -133,7 +136,8 @@ export class DocumentService {
     try {
       const document = await prisma.documents.create({
         data: {
-          name: input.name, // The S3 filename
+          name: input.name,
+          displayName: input.displayName ?? input.name,
           type: input.type,
           size: input.size,
         },

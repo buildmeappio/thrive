@@ -41,6 +41,7 @@ const FileSchema = z.instanceof(File).superRefine((file, ctx) => {
 // Step 1 - Claimant Details Schema
 export const ClaimantDetailsSchema = z.object({
   // Required fields
+  claimType: z.string().min(1, 'Claim type is required'),
   firstName: z
     .string()
     .min(1, ErrorMessages.FIRST_NAME_REQUIRED)
@@ -130,6 +131,7 @@ export type ClaimantDetails = z.infer<typeof ClaimantDetailsSchema>;
 
 // initial values
 export const ClaimantDetailsInitialValues: ClaimantDetails = {
+  claimType: '',
   firstName: '',
   lastName: '',
   addressLookup: '',
@@ -288,9 +290,11 @@ const ExaminationDetailsSchema = z.object({
   urgencyLevel: z.string().min(1, 'Urgency level is required'),
   dueDate: z.string().min(1, 'Due date is required'),
   instructions: z.string().min(1, 'Instructions are required'),
+  selectedBenefits: z.array(z.string()).optional(),
   locationType: z.string().min(1, 'Location type is required'),
   services: z.array(ExaminationServiceSchema),
   additionalNotes: z.string().optional(),
+  supportPerson: z.boolean().optional(),
 });
 
 // Main Examination Schema (Step 5)
@@ -404,9 +408,11 @@ export const createExaminationDetails = (examinationTypeId: string): Examination
   urgencyLevel: '',
   dueDate: '',
   instructions: '',
+  selectedBenefits: [],
   locationType: '',
   services: [createTransportationService(), createInterpreterService(), createChaperoneService()],
   additionalNotes: '',
+  supportPerson: false,
 });
 
 // Helper functions for form data transformation

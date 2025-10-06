@@ -20,8 +20,18 @@ import { Label } from '@/components/ui/label';
 import CustomDatePicker from '@/components/CustomDatePicker';
 import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
 import PhoneInput from '@/components/PhoneNumber';
+import type { OrganizationTypeOption } from '@/domains/auth/components/Register/OrganizationInfo';
 
-const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, totalSteps }) => {
+type CLaimTypeProps = IMEReferralProps & {
+  claimTypes: OrganizationTypeOption[];
+};
+
+const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
+  onNext,
+  currentStep,
+  totalSteps,
+  claimTypes: claimTypeOptions,
+}) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
 
   const {
@@ -65,9 +75,28 @@ const ClaimantDetailsForm: React.FC<IMEReferralProps> = ({ onNext, currentStep, 
               <h2 className="mb-6 text-[23px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000] md:text-2xl">
                 Claimant Details
               </h2>
+              <div className="mb-4">
+                <div className="space-y-2 md:col-span-1">
+                  <Label htmlFor="claimType">
+                    Type of Claim<span className="text-red-500">*</span>
+                  </Label>
+                  <Dropdown
+                    id="claimType"
+                    label=""
+                    value={watchedValues.claimType || ''}
+                    onChange={(val: string) => setValue('claimType', val)}
+                    options={claimTypeOptions}
+                    placeholder="Select type of claim"
+                    icon={false}
+                  />
+                  {errors.claimType && (
+                    <p className="text-sm text-red-500">{errors.claimType.message}</p>
+                  )}
+                </div>
+              </div>
 
               {/* First Row: First Name, Last Name, Date of Birth */}
-              <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-5">
+              <div className="grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-5">
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="firstName">
                     First Name<span className="text-red-500">*</span>

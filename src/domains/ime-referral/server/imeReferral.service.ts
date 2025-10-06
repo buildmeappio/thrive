@@ -25,6 +25,10 @@ export const createCase = async (formData: IMEFormData) => {
   if (!formData.step2?.policyHolderFirstName || !formData.step2?.policyHolderLastName) {
     throw new Error('Policy holder first name and last name are required');
   }
+  if (!formData.step1?.claimType) {
+    throw new Error('Claim Type is required');
+  }
+  const claimTypeId = formData.step1.claimType;
 
   // Handle file uploads using DocumentService
   let uploadResult: { success: boolean; documents: any[]; uploadedFiles: any[]; error?: string } = {
@@ -121,6 +125,7 @@ export const createCase = async (formData: IMEFormData) => {
             familyDoctorPhoneNumber: formData.step1?.familyDoctorPhone || null,
             familyDoctorFaxNumber: formData.step1?.familyDoctorFax || null,
             addressId: claimantAddress.id,
+            claimTypeId: claimTypeId,
           },
         }),
 
@@ -197,10 +202,19 @@ export const createCase = async (formData: IMEFormData) => {
             urgencyLevel: examData?.urgencyLevel?.toUpperCase() as 'HIGH' | 'MEDIUM' | 'LOW' | null,
             status: { connect: { id: defaultStatus.id } },
             preference: (examData?.locationType?.toUpperCase() as ClaimantPreference) || '',
-            supportPerson: false,
+            supportPerson: examData?.supportPerson,
             additionalNotes: examData?.additionalNotes || '',
           },
         });
+
+        if (examData?.selectedBenefits && examData.selectedBenefits.length > 0) {
+          await tx.examinationSelectedBenefit.createMany({
+            data: examData.selectedBenefits.map(benefitId => ({
+              examinationId: examination.id,
+              benefitId,
+            })),
+          });
+        }
 
         // Create services for this exam in parallel
         if (formData.step5?.examinations[i].services) {
@@ -426,11 +440,56 @@ const getInitialCaseNumberForExamType = async (examTypeId: string) => {
   return `${examType.shortForm}-${year}-1`;
 };
 
+const getClaimTypes = async () => {
+  try {
+    const claimTypes = await prisma.claimType.findMany({
+      where: {
+        deletedAt: null,
+      },
+    });
+    return claimTypes;
+  } catch (error) {
+    throw HttpError.handleServiceError(error, ErrorMessages.FAILED_TO_GET_CLAIM_TYPES);
+  }
+};
+
+const getExaminationBenefits = async (examinationTypeId: string) => {
+  try {
+    const examinationType = await prisma.examinationType.findFirst({
+      where: {
+        id: examinationTypeId,
+        deletedAt: null,
+      },
+      select: {
+        benefits: {
+          where: {
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            benefit: true,
+          },
+        },
+      },
+    });
+
+    if (!examinationType) {
+      throw HttpError.notFound(ErrorMessages.EXAMINATION_TYPE_NOT_FOUND);
+    }
+
+    return examinationType.benefits;
+  } catch (error) {
+    throw HttpError.handleServiceError(error, ErrorMessages.FAILED_TO_GET_EXAMINATION_TYPES);
+  }
+};
+
 const imeReferralService = {
   createCase,
   getCaseTypes,
   getCaseDetails,
   getCases,
+  getClaimTypes,
+  getExaminationBenefits,
 };
 
 export default imeReferralService;

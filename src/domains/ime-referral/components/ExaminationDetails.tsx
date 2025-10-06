@@ -31,6 +31,8 @@ import { locationOptions } from '@/config/locationType';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import CustomDatePicker from '@/components/CustomDatePicker';
 import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
+import { getExaminationBenefits } from '../actions';
+import MultiSelectBenefits from '@/components/MultiSelectDropDown';
 
 interface ExaminationProps extends IMEReferralProps {
   examinationTypes: DropdownOption[];
@@ -47,12 +49,45 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [benefitsByType, setBenefitsByType] = useState<
+    Record<string, Array<{ id: string; benefit: string }>>
+  >({});
+  const [loadingBenefits, setLoadingBenefits] = useState(false);
 
   // Get selected exam types from step4
   const selectedExamTypes: ExaminationType[] = useMemo(
     () => data.step4?.caseTypes || [],
     [data.step4?.caseTypes]
   );
+
+  useEffect(() => {
+    const fetchBenefits = async () => {
+      if (selectedExamTypes.length === 0) return;
+
+      setLoadingBenefits(true);
+      try {
+        const benefitsPromises = selectedExamTypes.map(async examType => {
+          const benefits = await getExaminationBenefits(examType.id);
+          return { typeId: examType.id, benefits };
+        });
+
+        const results = await Promise.all(benefitsPromises);
+
+        const benefitsMap: Record<string, Array<{ id: string; benefit: string }>> = {};
+        results.forEach(({ typeId, benefits }) => {
+          benefitsMap[typeId] = benefits.result;
+        });
+
+        setBenefitsByType(benefitsMap);
+      } catch (error) {
+        console.error('Error fetching benefits:', error);
+      } finally {
+        setLoadingBenefits(false);
+      }
+    };
+
+    fetchBenefits();
+  }, [selectedExamTypes]);
 
   // Create initial values with proper structure
   const initialValues = useMemo((): ExaminationData => {
@@ -257,7 +292,6 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 
       return (
         <div className="space-y-4">
-          {/* Address Lookup - NOW USING GoogleMapsInput */}
           <GoogleMapsInput
             name={`examinations.${examinationIndex}.services.transportation.pickupAddress`}
             value={details.pickupAddress || ''}
@@ -506,9 +540,9 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                         </CollapsibleTrigger>
                       </div>
 
-                      <CollapsibleContent className="space-y-6">
+                      <CollapsibleContent className="space-y-4">
                         {/* Basic Fields */}
-                        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                           <div className="space-y-2">
                             <Dropdown
                               id="urgencyLevel"
@@ -532,8 +566,8 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                             )}
                           </div>
 
-                          <div className="space-y-2">
-                            <Label>
+                          <div className="mt-2 space-y-2">
+                            <Label className="text-sm font-normal text-[#000000]">
                               Due Date<span className="text-red-500">*</span>
                             </Label>
                             <CustomDatePicker
@@ -587,8 +621,8 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                           </div>
                         </div>
 
-                        <div className="mb-6 space-y-2">
-                          <Label>
+                        <div>
+                          <Label className="text-sm leading-relaxed font-normal text-[#000000]">
                             Specific Instructions/Notes<span className="text-red-500">*</span>
                           </Label>
                           <Textarea
@@ -610,6 +644,34 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                           {errors.examinations?.[index]?.instructions && (
                             <p className="text-sm text-red-500">
                               {getErrorMessage(errors.examinations[index]?.instructions)}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-sm leading-relaxed font-normal text-[#000000]">
+                            Benefits<span className="text-red-500">*</span>
+                          </Label>
+
+                          <MultiSelectBenefits
+                            benefits={benefitsByType[examType.id] || []}
+                            selectedIds={examination.selectedBenefits || []}
+                            onChange={selectedIds => {
+                              const updatedExaminations = [...(watchedValues.examinations || [])];
+                              updatedExaminations[index] = {
+                                ...examination,
+                                selectedBenefits: selectedIds,
+                              };
+                              setValue('examinations', updatedExaminations, {
+                                shouldValidate: true,
+                              });
+                            }}
+                            disabled={isSubmitting}
+                            loadingBenefits={loadingBenefits}
+                          />
+                          {errors.examinations?.[index]?.selectedBenefits && (
+                            <p className="text-sm text-red-500">
+                              {getErrorMessage(errors.examinations[index]?.selectedBenefits)}
                             </p>
                           )}
                         </div>
