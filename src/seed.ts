@@ -11,6 +11,7 @@ import LanguageSeeder from './seeders/language.seeder';
 import ExaminationTypeSeeder from './seeders/examinationType.seeder';
 import ExaminationTypeShortFormSeeder from './seeders/examTypeShortForm.seeder';
 import ClaimTypeSeeder from './seeders/claimType.seeder';
+import ExaminationTypeBenefitSeeder from './seeders/examinationTypeBenefits.seeder';
 
 const seeds = [
     RoleSeeder,
@@ -23,6 +24,7 @@ const seeds = [
     ExaminationTypeSeeder,
     ExaminationTypeShortFormSeeder,
     ClaimTypeSeeder,
+    ExaminationTypeBenefitSeeder,
 ];
 
 const prisma = new PrismaClient();
