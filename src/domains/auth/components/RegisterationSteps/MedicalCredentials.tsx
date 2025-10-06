@@ -16,7 +16,10 @@ import {
 } from "@/domains/auth/schemas/auth.schemas";
 import { step2InitialValues } from "@/domains/auth/constants/initialValues";
 import { RegStepProps } from "@/domains/auth/types/index";
-import { medicalSpecialtyOptions, provinceOptions } from "../../constants/options";
+import {
+  medicalSpecialtyOptions,
+  provinceOptions,
+} from "../../constants/options";
 import {
   RegistrationData,
   useRegistrationStore,
@@ -31,17 +34,41 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
   totalSteps,
 }) => {
   const { data, merge } = useRegistrationStore();
+  const [isClient, setIsClient] = React.useState(false);
+
+  // Ensure component only renders on client to avoid hydration mismatch
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleSubmit = (values: Step2MedicalCredentialsInput) => {
     merge(values as Partial<RegistrationData>);
     onNext();
   };
 
+  // Show loading state during hydration
+  if (!isClient) {
+    return (
+      <div
+        className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
+        style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+        <ProgressIndicator
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          gradientFrom="#89D7FF"
+          gradientTo="#00A8FF"
+        />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-gray-400">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
-    >
+      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
       <ProgressIndicator
         currentStep={currentStep}
         totalSteps={totalSteps}
@@ -64,9 +91,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
         )}
         onSubmit={handleSubmit}
         validateOnChange={false}
-        validateOnBlur={false}
-        enableReinitialize
-      >
+        validateOnBlur={false}>
         {({ values, errors, handleChange, setFieldValue, submitForm }) => {
           return (
             <Form>
@@ -78,7 +103,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 gap-x-14 gap-y-6 md:mt-8 md:grid-cols-2">
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <Dropdown
                       id="medicalSpecialty"
                       label="Medical Specialties"
@@ -94,6 +119,29 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
                       options={medicalSpecialtyOptions}
                       required
                       placeholder="Select Specialty"
+                    />
+                    {errors.medicalSpecialty && (
+                      <p className="text-xs text-red-500">
+                        {errors.medicalSpecialty}
+                      </p>
+                    )}
+                  </div> */}
+                  <div className="space-y-2">
+                    <Dropdown
+                      id="medicalSpecialty"
+                      label="Medical Specialties"
+                      value={values.medicalSpecialty}
+                      onChange={(v) => {
+                        if (Array.isArray(v)) {
+                          setFieldValue("medicalSpecialty", v);
+                        } else {
+                          setFieldValue("medicalSpecialty", [v]);
+                        }
+                      }}
+                      options={medicalSpecialtyOptions}
+                      required
+                      placeholder="Select Specialty"
+                      multiSelect={true}
                     />
                     {errors.medicalSpecialty && (
                       <p className="text-xs text-red-500">
@@ -153,7 +201,6 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
                       value={values.medicalLicense}
                       onChange={(file) => {
                         setFieldValue("medicalLicense", file);
-                        // merge({ medicalLicense: file });
                       }}
                       accept=".pdf,.doc,.docx"
                       required
@@ -169,7 +216,6 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
                       value={values.cvResume}
                       onChange={(file) => {
                         setFieldValue("cvResume", file);
-                        // merge({ cvResume: file });
                       }}
                       accept=".pdf,.doc,.docx"
                       required
