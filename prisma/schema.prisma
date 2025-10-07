@@ -189,6 +189,7 @@ model Claimant {
   familyDoctorPhoneNumber  String?   @map("family_doctor_phone_number") @db.VarChar(255)
   familyDoctorFaxNumber    String?   @map("family_doctor_fax_number") @db.VarChar(255)
   addressId                String    @map("address_id") @db.Uuid
+  claimTypeId              String   @map("claim_type_id") @db.Uuid
   createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt                DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt                DateTime? @map("deleted_at") @db.Timestamptz()
@@ -196,6 +197,7 @@ model Claimant {
   address              Address                @relation("ClaimantAddress", fields: [addressId], references: [id])
   cases                Case[]                 @relation("ClaimantCases")
   claimantAvailability ClaimantAvailability[] @relation("ClaimantAvailability")
+  claimType            ClaimType             @relation("ClaimantClaimType", fields: [claimTypeId], references: [id])
 
   @@map("claimants")
 }
@@ -269,7 +271,7 @@ enum UrgencyLevel {
 
 model Examination {
   id                String             @id @unique @default(uuid()) @db.Uuid
-  caseNumber        String             @unique @map("case_number") @db.VarChar(255)
+  caseNumber        String             @map("case_number") @db.VarChar(255)
   caseId            String             @map("case_id") @db.Uuid
   examinationTypeId String             @map("examination_type_id") @db.Uuid
   dueDate           DateTime?          @map("due_date") @db.Timestamptz()
@@ -296,6 +298,7 @@ model Examination {
   secureLinks          ExaminationSecureLink[] @relation("ExaminationSecureLink")
   claimantAvailability ClaimantAvailability[]  @relation("ExaminationClaimantAvailability")
   services             ExaminationServices[]   @relation("ExaminationServices")
+  selectedBenefits     ExaminationSelectedBenefit[] @relation("ExaminationSelectedBenefits")
 
   @@index([caseId])
   @@index([caseNumber])
@@ -456,6 +459,7 @@ model CaseDocument {
 model Documents {
   id                String            @id @unique @default(uuid()) @db.Uuid
   name              String            @map("name") @db.VarChar(255)
+  displayName       String?           @map("display_name") @db.VarChar(255)
   type              String            @map("type") @db.VarChar(255)
   size              Int               @map("size") @db.Integer
   createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz()
@@ -480,8 +484,41 @@ model ExaminationType {
   updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt    DateTime?     @map("deleted_at") @db.Timestamptz()
   examinations Examination[] @relation("ExaminationType")
+  benefits     ExaminationTypeBenefit[] @relation("ExaminationTypeBenefits")
 
   @@map("examination_types")
+}
+
+model ExaminationTypeBenefit {
+  id                String   @id @unique @default(uuid()) @db.Uuid
+  examinationTypeId String   @map("examination_type_id") @db.Uuid
+  benefit           String   @map("benefit") @db.VarChar(500)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()
+
+  examinationType   ExaminationType              @relation("ExaminationTypeBenefits", fields: [examinationTypeId], references: [id], onDelete: Cascade)
+  selectedByExams   ExaminationSelectedBenefit[] @relation("SelectedBenefits")
+
+  @@index([examinationTypeId])
+  @@map("examination_type_benefits")
+}
+
+model ExaminationSelectedBenefit {
+  id            String   @id @unique @default(uuid()) @db.Uuid
+  examinationId String   @map("examination_id") @db.Uuid
+  benefitId     String   @map("benefit_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz()
+
+  examination Examination            @relation("ExaminationSelectedBenefits", fields: [examinationId], references: [id], onDelete: Cascade)
+  benefit     ExaminationTypeBenefit @relation("SelectedBenefits", fields: [benefitId], references: [id], onDelete: Cascade)
+
+  @@unique([examinationId, benefitId])
+  @@index([examinationId])
+  @@index([benefitId])
+  @@map("examination_selected_benefits")
 }
 
 model CaseType {
@@ -494,6 +531,19 @@ model CaseType {
   cases       Case[]    @relation("CaseTypeCases")
 
   @@map("case_types")
+}
+
+model ClaimType {
+  id          String    @id @unique @default(uuid()) @db.Uuid
+  name        String    @map("name") @db.VarChar(255)
+  description String?   @map("description") @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz()
+  
+  claimants   Claimant[] @relation("ClaimantClaimType")
+
+  @@map("claim_types")
 }
 
 model PrismaSeed {

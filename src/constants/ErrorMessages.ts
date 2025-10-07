@@ -132,4 +132,8 @@ export default Object.freeze({
   INVALID_OR_EXPIRED_TOKEN: 'The token is expired or invalid',
   ERROR_VERIFYING_TOKEN: 'Error verifying token',
   ERROR_RESETTING_PASSWORD: 'Error resetting password',
+  EXAMINATION_TYPE_NOT_FOUND: 'Examination type not found',
+  FAILED_TO_GET_EXAMINATION_TYPES: 'Failed to get examination type benefits',
+  CLAIM_TYPE_NOT_FOUND: 'Claim type not found',
+  FAILED_TO_GET_CLAIM_TYPES: 'Failed to get claim types',
 });

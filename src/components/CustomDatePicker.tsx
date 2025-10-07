@@ -4,16 +4,22 @@ import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from './ui';
 
+type DateRestriction = 'future' | 'past' | 'all';
+
 interface CustomDatePickerProps {
   selectedDate: Date | null;
   onDateChange: (date: Date | null) => void;
   datePickLoading: boolean;
+  dateRestriction?: DateRestriction;
+  className?: string;
 }
 
 const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
   selectedDate,
   datePickLoading,
   onDateChange,
+  dateRestriction = 'future',
+  className = '',
 }) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -69,14 +75,33 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
     return new Date(year, month, 1).getDay();
   };
 
-  const isDateInPast = (date: Date) => {
+  const isDateDisabled = (date: Date) => {
     const checkDate = new Date(date);
     checkDate.setHours(0, 0, 0, 0);
-    return checkDate < today;
+
+    switch (dateRestriction) {
+      case 'future':
+        return checkDate < today;
+      case 'past':
+        return checkDate > today;
+      case 'all':
+        return false;
+      default:
+        return false;
+    }
   };
 
-  const showPastDateToast = () => {
-    toast.error('Cannot select dates in the past');
+  const showDisabledDateToast = () => {
+    const message =
+      dateRestriction === 'future'
+        ? 'Cannot select dates in the past'
+        : dateRestriction === 'past'
+          ? 'Cannot select dates in the future'
+          : '';
+
+    if (message) {
+      toast.error(message);
+    }
   };
 
   const generateCalendarDays = (currentMonth: Date) => {
@@ -105,7 +130,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
         date,
         day: i,
         isToday,
-        isPast: isDateInPast(date),
+        isDisabled: isDateDisabled(date),
       });
     }
 
@@ -113,8 +138,8 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
   };
 
   const handleDateSelection = (date: Date) => {
-    if (isDateInPast(date)) {
-      showPastDateToast();
+    if (isDateDisabled(date)) {
+      showDisabledDateToast();
       return;
     }
 
@@ -151,7 +176,8 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
-  const toggleCalendar = () => {
+  const toggleCalendar = (event?: React.MouseEvent<HTMLButtonElement>) => {
+    event?.preventDefault();
     setShowCalendar(!showCalendar);
   };
 
@@ -184,7 +210,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
           ))}
 
           {calendarDays.map((day, index) => {
-            const isInvalid = !day || day.isPast;
+            const isInvalid = !day || day.isDisabled;
 
             return (
               <div
@@ -193,8 +219,8 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
                 onClick={() =>
                   day &&
                   (isInvalid
-                    ? day.isPast
-                      ? showPastDateToast()
+                    ? day.isDisabled
+                      ? showDisabledDateToast()
                       : null
                     : handleDateSelection(day.date))
                 }
@@ -223,15 +249,15 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
           <div className="relative flex-grow">
             <Input
               type="text"
-              className="rounded-lg text-[14.72px] font-normal"
+              className={`rounded-lg pr-10 text-[14.72px] font-normal ${className ? className : ''}`}
               value={formatShortDate(selectedDate)}
               readOnly
-              onClick={toggleCalendar}
+              onClick={() => toggleCalendar()}
               placeholder="Select a date"
             />
             <button
               ref={buttonRef}
-              className="absolute top-1/2 right-0 left-[135px] -translate-y-1/2 text-gray-500"
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               onClick={toggleCalendar}
             >
               <svg
@@ -249,7 +275,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
             </button>
 
             {showCalendar && (
-              <div ref={calendarRef} className="absolute z-10 w-64 rounded-3xl">
+              <div ref={calendarRef} className="absolute z-10 mt-1 w-64 rounded-3xl">
                 {renderCalendar()}
               </div>
             )}

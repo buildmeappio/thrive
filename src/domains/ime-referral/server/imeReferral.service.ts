@@ -4,7 +4,7 @@ import { HttpError } from '@/utils/httpError';
 import ErrorMessages from '@/constants/ErrorMessages';
 import type { IMEFormData } from '@/store/useImeReferral';
 import type { ClaimantPreference } from '@prisma/client';
-import { uploadFilesToS3 } from '@/lib/s3-actions';
+import { DocumentService } from '@/services/fileUploadService';
 
 export const createCase = async (formData: IMEFormData) => {
   const currentUser = await getCurrentUser();
@@ -25,31 +25,26 @@ export const createCase = async (formData: IMEFormData) => {
   if (!formData.step2?.policyHolderFirstName || !formData.step2?.policyHolderLastName) {
     throw new Error('Policy holder first name and last name are required');
   }
+  if (!formData.step1?.claimType) {
+    throw new Error('Claim Type is required');
+  }
+  const claimTypeId = formData.step1.claimType;
 
-  let uploadedFiles: { name: string; originalName: string; type: string; size: number }[] = [];
+  // Handle file uploads using DocumentService
+  let uploadResult: { success: boolean; documents: any[]; uploadedFiles: any[]; error?: string } = {
+    success: true,
+    documents: [],
+    uploadedFiles: [],
+  };
 
   if (formData.step6?.files && formData.step6.files.length > 0) {
     try {
-      const uploadFormData = new FormData();
-      formData.step6.files.forEach(file => {
-        uploadFormData.append('files', file);
+      uploadResult = await DocumentService.uploadAndCreateDocuments({
+        files: formData.step6.files,
       });
 
-      // Upload files to S3
-      const uploadResult = await uploadFilesToS3(uploadFormData);
-
-      if (uploadResult.error) {
+      if (!uploadResult.success) {
         throw new Error(`File upload failed: ${uploadResult.error}`);
-      }
-
-      if (uploadResult.success && uploadResult.files) {
-        // Map uploaded files with additional metadata
-        uploadedFiles = uploadResult.files.map((file, index) => ({
-          name: file.name,
-          originalName: file.originalName,
-          type: formData.step6!.files[index].type,
-          size: formData.step6!.files[index].size,
-        }));
       }
     } catch (error) {
       console.error('Error uploading files:', error);
@@ -130,6 +125,7 @@ export const createCase = async (formData: IMEFormData) => {
             familyDoctorPhoneNumber: formData.step1?.familyDoctorPhone || null,
             familyDoctorFaxNumber: formData.step1?.familyDoctorFax || null,
             addressId: claimantAddress.id,
+            claimTypeId: claimTypeId,
           },
         }),
 
@@ -206,9 +202,19 @@ export const createCase = async (formData: IMEFormData) => {
             urgencyLevel: examData?.urgencyLevel?.toUpperCase() as 'HIGH' | 'MEDIUM' | 'LOW' | null,
             status: { connect: { id: defaultStatus.id } },
             preference: (examData?.locationType?.toUpperCase() as ClaimantPreference) || '',
-            supportPerson: false,
+            supportPerson: examData?.supportPerson,
+            additionalNotes: examData?.additionalNotes || '',
           },
         });
+
+        if (examData?.selectedBenefits && examData.selectedBenefits.length > 0) {
+          await tx.examinationSelectedBenefit.createMany({
+            data: examData.selectedBenefits.map(benefitId => ({
+              examinationId: examination.id,
+              benefitId,
+            })),
+          });
+        }
 
         // Create services for this exam in parallel
         if (formData.step5?.examinations[i].services) {
@@ -283,26 +289,19 @@ export const createCase = async (formData: IMEFormData) => {
         createdExaminations.push(examination);
       }
 
-      // 6. Create documents in parallel (only if files were uploaded)
-      const createdDocuments = await Promise.all(
-        uploadedFiles.map(async fileMetadata => {
-          const document = await tx.documents.create({
-            data: {
-              name: fileMetadata.name,
-              // originalName: fileMetadata.originalName,
-              type: fileMetadata.type,
-              size: fileMetadata.size,
-            },
-          });
-          await tx.caseDocument.create({
-            data: {
-              caseId: caseRecord.id,
-              documentId: document.id,
-            },
-          });
-          return document;
-        })
-      );
+      // 6. Associate uploaded documents with the case
+      if (uploadResult.success && uploadResult.documents.length > 0) {
+        await Promise.all(
+          uploadResult.documents.map(async document => {
+            await tx.caseDocument.create({
+              data: {
+                caseId: caseRecord.id,
+                documentId: document.id,
+              },
+            });
+          })
+        );
+      }
 
       return {
         success: true,
@@ -312,8 +311,8 @@ export const createCase = async (formData: IMEFormData) => {
           insuranceId: insurance.id,
           legalRepresentativeId: legalRepId,
           examinations: createdExaminations,
-          documents: createdDocuments,
-          uploadedFiles: uploadedFiles,
+          documents: uploadResult.documents,
+          uploadedFiles: uploadResult.uploadedFiles,
         },
       };
     },
@@ -441,12 +440,56 @@ const getInitialCaseNumberForExamType = async (examTypeId: string) => {
   return `${examType.shortForm}-${year}-1`;
 };
 
+const getClaimTypes = async () => {
+  try {
+    const claimTypes = await prisma.claimType.findMany({
+      where: {
+        deletedAt: null,
+      },
+    });
+    return claimTypes;
+  } catch (error) {
+    throw HttpError.handleServiceError(error, ErrorMessages.FAILED_TO_GET_CLAIM_TYPES);
+  }
+};
+
+const getExaminationBenefits = async (examinationTypeId: string) => {
+  try {
+    const examinationType = await prisma.examinationType.findFirst({
+      where: {
+        id: examinationTypeId,
+        deletedAt: null,
+      },
+      select: {
+        benefits: {
+          where: {
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            benefit: true,
+          },
+        },
+      },
+    });
+
+    if (!examinationType) {
+      throw HttpError.notFound(ErrorMessages.EXAMINATION_TYPE_NOT_FOUND);
+    }
+
+    return examinationType.benefits;
+  } catch (error) {
+    throw HttpError.handleServiceError(error, ErrorMessages.FAILED_TO_GET_EXAMINATION_TYPES);
+  }
+};
+
 const imeReferralService = {
   createCase,
   getCaseTypes,
   getCaseDetails,
   getCases,
-  uploadFilesToS3,
+  getClaimTypes,
+  getExaminationBenefits,
 };
 
 export default imeReferralService;

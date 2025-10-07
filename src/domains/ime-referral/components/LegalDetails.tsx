@@ -3,7 +3,7 @@
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
-import { ArrowRight, Loader2, MapPin } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { Dropdown } from '@/components/Dropdown';
 import { provinceOptions } from '@/config/ProvinceOptions';
 import {
@@ -18,6 +18,8 @@ import { type IMEReferralProps } from '@/types/imeReferralProps';
 import BackButton from '@/components/BackButton';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui';
+import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
+import PhoneInput from '@/components/PhoneNumber';
 
 const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
   onNext,
@@ -32,6 +34,7 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
     handleSubmit,
     watch,
     setValue,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<LegalDetails>({
     resolver: zodResolver(LegalDetailsSchema),
@@ -39,6 +42,54 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
   });
 
   const watchedValues = watch();
+
+  const handlePlaceSelect = (placeData: any) => {
+    // Parse address components and populate fields
+    const components = placeData.components;
+
+    let streetNumber = '';
+    let route = '';
+    let city = '';
+    let postalCode = '';
+    let province = '';
+
+    components?.forEach((component: any) => {
+      const types = component.types;
+
+      if (types.includes('street_number')) {
+        streetNumber = component.long_name;
+      }
+      if (types.includes('route')) {
+        route = component.long_name;
+      }
+      if (types.includes('locality')) {
+        city = component.long_name;
+      }
+      if (types.includes('postal_code')) {
+        postalCode = component.long_name;
+      }
+      if (types.includes('administrative_area_level_1')) {
+        province = component.short_name; // e.g., "ON" for Ontario
+      }
+    });
+
+    // Construct street address
+    const streetAddress = `${streetNumber} ${route}`.trim();
+
+    // Update form fields
+    if (streetAddress) {
+      setValue('legalStreetAddress', streetAddress, { shouldValidate: true });
+    }
+    if (city) {
+      setValue('legalCity', city, { shouldValidate: true });
+    }
+    if (postalCode) {
+      setValue('legalPostalCode', postalCode, { shouldValidate: true });
+    }
+    if (province) {
+      setValue('legalProvinceState', province, { shouldValidate: true });
+    }
+  };
 
   const onSubmit: SubmitHandler<LegalDetails> = values => {
     setData('step3', values);
@@ -98,17 +149,14 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                 <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="legalPhone">Phone</Label>
-                    <Input
+                    <PhoneInput
                       disabled={isSubmitting}
-                      {...register('legalPhone')}
-                      placeholder="4444444444"
+                      name="legalPhone"
+                      value={watch('legalPhone') || ''}
+                      onChange={e =>
+                        setValue('legalPhone', e.target.value, { shouldValidate: true })
+                      }
                       className="w-full"
-                      type="tel"
-                      onKeyPress={e => {
-                        if (!/[0-9]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
                     />
                     {errors.legalPhone && (
                       <p className="text-sm text-red-500">{errors.legalPhone.message}</p>
@@ -117,17 +165,14 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
 
                   <div className="space-y-2">
                     <Label htmlFor="legalFaxNo">Fax No.</Label>
-                    <Input
+                    <PhoneInput
                       disabled={isSubmitting}
-                      {...register('legalFaxNo')}
-                      placeholder="4444444444"
+                      name="legalFaxNo"
+                      value={watch('legalFaxNo') || ''}
+                      onChange={e =>
+                        setValue('legalFaxNo', e.target.value, { shouldValidate: true })
+                      }
                       className="w-full"
-                      type="tel"
-                      onKeyPress={e => {
-                        if (!/[0-9]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
                     />
                     {errors.legalFaxNo && (
                       <p className="text-sm text-red-500">{errors.legalFaxNo.message}</p>
@@ -135,24 +180,22 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                   </div>
                 </div>
 
-                {/* Legal Address Lookup */}
-                <div className="mb-4 w-full max-w-full space-y-2">
-                  <Label htmlFor="legalAddressLookup">Address Lookup</Label>
-                  <div className="relative">
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('legalAddressLookup')}
-                      placeholder="150 John Street"
-                      className="w-full pl-10"
-                    />
-                    <MapPin className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  </div>
-                  {errors.legalAddressLookup && (
-                    <p className="text-sm text-red-500">{errors.legalAddressLookup.message}</p>
-                  )}
+                {/* Legal Address Lookup - NOW USING GoogleMapsInput */}
+                <div className="mb-4 w-full max-w-full">
+                  <GoogleMapsInput
+                    name="legalAddressLookup"
+                    value={watch('legalAddressLookup')}
+                    label="Address Lookup"
+                    placeholder="150 John Street, Toronto"
+                    setValue={setValue}
+                    trigger={trigger}
+                    error={errors.legalAddressLookup}
+                    onPlaceSelect={handlePlaceSelect}
+                    className="space-y-2"
+                  />
                 </div>
 
-                {/* Legal Street Address, Apt/Unit/Suite, City */}
+                {/* Legal Street Address, Apt/Unit/Suite, Postal Code */}
                 <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
                   <div className="space-y-2">
                     <Label htmlFor="legalStreetAddress">Street Address</Label>
@@ -179,7 +222,8 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                       <p className="text-sm text-red-500">{errors.legalAptUnitSuite.message}</p>
                     )}
                   </div>
-                  <div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="legalPostalCode">Postal Code</Label>
                     <Input
                       disabled={isSubmitting}
@@ -187,31 +231,29 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                       placeholder="A1A 1A1"
                       className="w-full"
                     />
+                    {errors.legalPostalCode && (
+                      <p className="text-sm text-red-500">{errors.legalPostalCode.message}</p>
+                    )}
                   </div>
-                  {errors.legalPostalCode && (
-                    <p className="text-sm text-red-500">{errors.legalPostalCode.message}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Legal Postal Code and Province */}
-              <div className="mb-8 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
-                <div className="space-y-2">
-                  <Label htmlFor="legalProvinceState">Province / State</Label>
-                  <Dropdown
-                    id="legalProvinceState"
-                    label=""
-                    value={watchedValues.legalProvinceState ?? ''}
-                    onChange={(val: string) => setValue('legalProvinceState', val)}
-                    options={provinceOptions}
-                    placeholder="Select"
-                  />
-                  {errors.legalProvinceState && (
-                    <p className="text-sm text-red-500">{errors.legalProvinceState.message}</p>
-                  )}
                 </div>
 
-                <div className="space-y-2">
+                {/* Legal Province and City */}
+                <div className="mb-8 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="legalProvinceState">Province / State</Label>
+                    <Dropdown
+                      id="legalProvinceState"
+                      label=""
+                      value={watchedValues.legalProvinceState ?? ''}
+                      onChange={(val: string) => setValue('legalProvinceState', val)}
+                      options={provinceOptions}
+                      placeholder="Select"
+                    />
+                    {errors.legalProvinceState && (
+                      <p className="text-sm text-red-500">{errors.legalProvinceState.message}</p>
+                    )}
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="legalCity">City</Label>
                     <Input
@@ -224,8 +266,6 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                       <p className="text-sm text-red-500">{errors.legalCity.message}</p>
                     )}
                   </div>
-
-                  <div></div>
                 </div>
               </div>
             </div>

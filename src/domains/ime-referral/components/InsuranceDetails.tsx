@@ -3,7 +3,6 @@
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
-import { MapPin } from 'lucide-react';
 import {
   InsuranceDetailsSchema,
   InsuranceDetailsInitialValues,
@@ -16,6 +15,9 @@ import { type IMEReferralProps } from '@/types/imeReferralProps';
 import BackButton from '@/components/BackButton';
 import { Label } from '@/components/ui/label';
 import { useEffect } from 'react';
+import CustomDatePicker from '@/components/CustomDatePicker';
+import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
+import PhoneInput from '@/components/PhoneNumber';
 
 const InsuranceDetails: React.FC<IMEReferralProps> = ({
   onNext,
@@ -31,6 +33,7 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
     formState: { errors, isSubmitting },
     setValue,
     watch,
+    trigger,
   } = useForm<InsuranceDetails>({
     resolver: zodResolver(InsuranceDetailsSchema),
     defaultValues: data.step2 || InsuranceDetailsInitialValues,
@@ -47,6 +50,40 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
       setValue('policyHolderLastName', '');
     }
   }, [policyHolderSameAsClaimant, data.step1, setValue]);
+
+  const handlePlaceSelect = (placeData: any) => {
+    // Parse address components and populate fields
+    const components = placeData.components;
+
+    let streetNumber = '';
+    let route = '';
+    let city = '';
+
+    components?.forEach((component: any) => {
+      const types = component.types;
+
+      if (types.includes('street_number')) {
+        streetNumber = component.long_name;
+      }
+      if (types.includes('route')) {
+        route = component.long_name;
+      }
+      if (types.includes('locality')) {
+        city = component.long_name;
+      }
+    });
+
+    // Construct street address
+    const streetAddress = `${streetNumber} ${route}`.trim();
+
+    // Update form fields
+    if (streetAddress) {
+      setValue('insuranceStreetAddress', streetAddress, { shouldValidate: true });
+    }
+    if (city) {
+      setValue('insuranceCity', city, { shouldValidate: true });
+    }
+  };
 
   const onSubmit: SubmitHandler<InsuranceDetails> = values => {
     setData('step2', values);
@@ -144,12 +181,16 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                     <Label htmlFor="insuranceDateOfLoss">
                       Date of Loss<span className="text-red-500">*</span>
                     </Label>
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('insuranceDateOfLoss')}
-                      placeholder="Select Date"
-                      type="date"
-                      className={`w-full ${errors.insuranceDateOfLoss ? 'border-red-500' : ''}`}
+                    <CustomDatePicker
+                      selectedDate={
+                        watch('insuranceDateOfLoss') ? new Date(watch('insuranceDateOfLoss')) : null
+                      }
+                      datePickLoading={false}
+                      onDateChange={date => {
+                        const dateValue = date ? date.toISOString().split('T')[0] : '';
+                        setValue('insuranceDateOfLoss', dateValue, { shouldValidate: true });
+                      }}
+                      dateRestriction="past"
                     />
                     {errors.insuranceDateOfLoss && (
                       <p className="text-sm text-red-500">{errors.insuranceDateOfLoss.message}</p>
@@ -157,21 +198,19 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                   </div>
                 </div>
 
-                {/* Insurance Address Lookup */}
-                <div className="mb-4 w-full max-w-full space-y-2">
-                  <Label htmlFor="insuranceAddressLookup">Address Lookup</Label>
-                  <div className="relative">
-                    <Input
-                      disabled={isSubmitting}
-                      {...register('insuranceAddressLookup')}
-                      placeholder="150 John Street"
-                      className="w-full pl-10"
-                    />
-                    <MapPin className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  </div>
-                  {errors.insuranceAddressLookup && (
-                    <p className="text-sm text-red-500">{errors.insuranceAddressLookup.message}</p>
-                  )}
+                {/* Insurance Address Lookup - NOW USING GoogleMapsInput */}
+                <div className="mb-4 w-full max-w-full">
+                  <GoogleMapsInput
+                    name="insuranceAddressLookup"
+                    value={watch('insuranceAddressLookup')}
+                    label="Address Lookup"
+                    placeholder="150 John Street, Toronto"
+                    setValue={setValue}
+                    trigger={trigger}
+                    error={errors.insuranceAddressLookup}
+                    onPlaceSelect={handlePlaceSelect}
+                    className="space-y-2"
+                  />
                 </div>
 
                 {/* Insurance Street Address, Apt/Unit/Suite, City */}
@@ -224,17 +263,14 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                     <Label htmlFor="insurancePhone">
                       Phone<span className="text-red-500">*</span>
                     </Label>
-                    <Input
+                    <PhoneInput
                       disabled={isSubmitting}
-                      {...register('insurancePhone')}
-                      placeholder="4444444444"
+                      name="insurancePhone"
+                      value={watch('insurancePhone') || ''}
+                      onChange={e =>
+                        setValue('insurancePhone', e.target.value, { shouldValidate: true })
+                      }
                       className={`w-full ${errors.insurancePhone ? 'border-red-500' : ''}`}
-                      type="tel"
-                      onKeyPress={e => {
-                        if (!/[0-9]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
                     />
                     {errors.insurancePhone && (
                       <p className="text-sm text-red-500">{errors.insurancePhone.message}</p>
@@ -245,17 +281,14 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                     <Label htmlFor="insuranceFaxNo">
                       Fax No.<span className="text-red-500">*</span>
                     </Label>
-                    <Input
+                    <PhoneInput
                       disabled={isSubmitting}
-                      {...register('insuranceFaxNo')}
-                      placeholder="4444444444"
+                      name="insuranceFaxNo"
+                      value={watch('insuranceFaxNo') || ''}
+                      onChange={e =>
+                        setValue('insuranceFaxNo', e.target.value, { shouldValidate: true })
+                      }
                       className={`w-full ${errors.insuranceFaxNo ? 'border-red-500' : ''}`}
-                      type="tel"
-                      onKeyPress={e => {
-                        if (!/[0-9]/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
                     />
                     {errors.insuranceFaxNo && (
                       <p className="text-sm text-red-500">{errors.insuranceFaxNo.message}</p>
