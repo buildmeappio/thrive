@@ -4,7 +4,6 @@ import { Formik, Form, type FormikHelpers } from 'formik';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui';
 import { Eye, EyeOff } from 'lucide-react';
-import BackButton from '@/components/BackButton';
 import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistration';
@@ -12,16 +11,12 @@ import { signIn } from 'next-auth/react';
 import { PasswordInitialValues, PasswordSchema } from '../../schemas/register';
 import ErrorMessages from '@/constants/ErrorMessages';
 import { toast } from 'sonner';
-import { registerOrganization } from '../../actions';
 import useRouter from '@/hooks/useRouter';
 import { URLS } from '@/constants/routes';
+import { createPassword } from '../../actions';
+import { HttpError } from '@/utils/httpError';
 
-const PasswordForm: React.FC<OrganizationRegStepProps> = ({
-  onNext,
-  onPrevious,
-  currentStep,
-  totalSteps,
-}) => {
+const PasswordForm: React.FC<OrganizationRegStepProps> = ({ onNext, currentStep, totalSteps }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
@@ -35,40 +30,37 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
     try {
       setData('step5', values);
 
-      const updatedData = {
-        ...data,
-        step5: values,
-      };
+      if (!data.step2?.officialEmailAddress || !data.step5?.password) {
+        console.log('email', data.step2?.officialEmailAddress);
+        console.log('password', data.step5?.password);
+        console.log(data);
+        throw HttpError.notFound('Email and password are required');
+      }
 
-      // Register the organization
-      const res = await registerOrganization(updatedData);
+      const res = await createPassword(data.step2?.officialEmailAddress, data.step5?.password);
 
       if (!res.success) {
-        toast.error('Registration failed');
+        actions.setFieldError('code', 'Error');
         return;
       }
 
-      // Login immediately after successful registration
-      const loginResult = await signIn('credentials', {
+      const result = await signIn('credentials', {
         email: data.step2?.officialEmailAddress,
-        password: values.password,
+        password: data.step5?.password,
         redirect: false,
       });
 
-      if (loginResult?.ok) {
-        reset();
+      if (result?.ok) {
         router.push(URLS.DASHBOARD);
+        reset();
       } else {
+        console.error(result?.error);
         toast.error(ErrorMessages.LOGIN_FAILED);
       }
-
-      if (onNext) {
-        onNext();
-      }
     } catch (error) {
-      console.error('Registration error:', error);
-      toast.error(ErrorMessages.REGISTRATION_FAILED);
-      actions.setSubmitting(false);
+      console.error('error:', error);
+      toast.error(ErrorMessages.PASSWORD_CREATION_FAILED);
+      if (onNext) onNext();
     }
   };
 
@@ -114,7 +106,6 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                         type="button"
                         className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         onClick={() => setShowPassword(!showPassword)}
-                        disabled={isSubmitting}
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
@@ -140,7 +131,6 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                         type="button"
                         className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        disabled={isSubmitting}
                       >
                         {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
@@ -152,14 +142,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
                 </div>
               </div>
 
-              <div className="mb-8 flex flex-row justify-center gap-4 md:mb-0 md:justify-between">
-                <BackButton
-                  onClick={onPrevious}
-                  disabled={currentStep === 1 || isSubmitting}
-                  borderColor="#000080"
-                  iconColor="#000080"
-                  isSubmitting={isSubmitting}
-                />
+              <div className="flex justify-end">
                 <ContinueButton
                   isSubmitting={isSubmitting}
                   isLastStep={currentStep === totalSteps}
@@ -173,5 +156,4 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({
     </div>
   );
 };
-
 export default PasswordForm;

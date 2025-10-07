@@ -17,5 +17,4 @@ export type CreateOrganizationWithUserData = {
   agreeTermsConditions: boolean;
   consentSecureDataHandling: boolean;
   authorizedToCreateAccount: boolean;
-  hashedPassword: string;
 };

@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import { URLS } from '@/constants/routes';
 import { loginInitialValues, loginSchema } from '../schemas/login';
+import Link from 'next/link';
 
 const LoginForm = () => {
   const router = useRouter();
@@ -83,8 +84,8 @@ const LoginForm = () => {
           </div>
 
           <div className="mb-4 text-right">
-            <a
-              href="#"
+            <Link
+              href={URLS.PASSWORD_FORGOT}
               className={`text-sm font-medium hover:underline ${
                 isSubmitting
                   ? 'pointer-events-none cursor-not-allowed text-gray-400'
@@ -92,7 +93,7 @@ const LoginForm = () => {
               }`}
             >
               Forgot Password?
-            </a>
+            </Link>
           </div>
 
           <Button variant="organizationLogin" size="organizationLogin" disabled={isSubmitting}>

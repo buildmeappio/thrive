@@ -50,3 +50,20 @@ export function verifyPasswordToken(token: string): JwtPayload | null {
     return null;
   }
 }
+
+// ----- Reset Password Tokens -----
+export function signResetPasswordToken(
+  payload: object,
+  expiresIn: SignOptions['expiresIn'] = '24h'
+): string {
+  const options: SignOptions = { expiresIn };
+  return jwt.sign(payload, passwordSecret, options);
+}
+
+export function verifyResetPasswordToken(token: string): JwtPayload | null {
+  try {
+    return jwt.verify(token, passwordSecret) as JwtPayload;
+  } catch {
+    return null;
+  }
+}

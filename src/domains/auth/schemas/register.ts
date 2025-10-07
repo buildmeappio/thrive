@@ -54,10 +54,10 @@ export const OfficeDetailsSchema = Yup.object({
     .required(ErrorMessages.LAST_NAME_REQUIRED),
 
   phoneNumber: Yup.string()
-    .required('Phone number is required')
-    .test('is-valid-canadian-phone', 'Please enter a valid Canadian phone number', value => {
-      return validateCanadianPhoneNumber(value);
-    }),
+    .required(ErrorMessages.PHONE_REQUIRED)
+    .test('is-valid-ca-phone', ErrorMessages.INVALID_PHONE_NUMBER, value =>
+      validateCanadianPhoneNumber(value)
+    ),
 
   officialEmailAddress: Yup.string()
     .email(ErrorMessages.INVALID_EMAIL)

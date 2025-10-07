@@ -1,18 +1,17 @@
 // Step 4
 import { useState, useRef } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
-import BackButton from '@/components/BackButton';
 import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistration';
 import { VerificationCodeInitialValues, VerificationCodeSchema } from '../../schemas/register';
 import { toast } from 'sonner';
 import SuccessMessages from '@/constants/SuccessMessages';
-import { sendOtp, verifyOtp } from '../../actions';
+import { registerOrganization, sendOtp, verifyOtp } from '../../actions';
+import ErrorMessages from '@/constants/ErrorMessages';
 
 const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   onNext,
-  onPrevious,
   currentStep,
   totalSteps,
 }) => {
@@ -34,7 +33,6 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
     newCode[index] = value;
     setCode(newCode);
 
-    // Update Formik field value immediately
     setFieldValue('code', newCode.join(''));
 
     if (value && index < 3) {
@@ -95,6 +93,17 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
       const res = await verifyOtp(otp, email);
 
       if (res.success) {
+        const updatedData = {
+          ...data,
+          step4: values,
+        };
+
+        const res = await registerOrganization(updatedData);
+
+        if (!res.success) {
+          actions.setFieldError('code', 'Error');
+          return;
+        }
         if (onNext) onNext();
       } else {
         toast.error('Invalid Otp');
@@ -103,6 +112,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
       actions.setSubmitting(false);
     } catch (error) {
       console.log(error);
+      toast.error(ErrorMessages.REGISTRATION_FAILED);
     }
   };
 
@@ -178,14 +188,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                 </div>
 
                 {/* Buttons */}
-                <div className="flex w-full items-center gap-4 pt-8 sm:flex-row sm:justify-between">
-                  <BackButton
-                    onClick={onPrevious}
-                    disabled={currentStep === 1}
-                    borderColor="#000080"
-                    iconColor="#000080"
-                    isSubmitting={isSubmitting}
-                  />
+                <div className="flex w-full justify-end">
                   <ContinueButton
                     isSubmitting={isSubmitting}
                     isLastStep={currentStep === totalSteps}
