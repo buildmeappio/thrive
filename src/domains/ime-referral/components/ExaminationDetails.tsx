@@ -707,13 +707,13 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                               const updatedExaminations = [...(watchedValues.examinations || [])];
                               updatedExaminations[index] = {
                                 ...examination,
-                                instructions: e.target.value,
+                                additionalNotes: e.target.value,
                               };
                               setValue('examinations', updatedExaminations);
                             }}
                             placeholder="Type here"
                             className={`mt-2 min-h-[100px] w-full resize-none bg-white ${
-                              errors.examinations?.[index]?.instructions ? 'border-red-500' : ''
+                              errors.examinations?.[index]?.additionalNotes ? 'border-red-500' : ''
                             }`}
                           />
                         </div>

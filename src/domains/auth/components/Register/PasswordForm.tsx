@@ -21,23 +21,21 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({ onNext, currentStep,
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
-  const { setData, data, _hasHydrated, reset } = useRegistrationStore();
+  const { data, _hasHydrated, reset } = useRegistrationStore();
 
   const handleSubmit = async (
     values: typeof PasswordInitialValues,
     actions: FormikHelpers<typeof PasswordInitialValues>
   ) => {
     try {
-      setData('step5', values);
+      const email = data.step2?.officialEmailAddress;
+      const password = values.password;
 
-      if (!data.step2?.officialEmailAddress || !data.step5?.password) {
-        console.log('email', data.step2?.officialEmailAddress);
-        console.log('password', data.step5?.password);
-        console.log(data);
+      if (!email || !password) {
         throw HttpError.notFound('Email and password are required');
       }
 
-      const res = await createPassword(data.step2?.officialEmailAddress, data.step5?.password);
+      const res = await createPassword(email, password);
 
       if (!res.success) {
         actions.setFieldError('code', 'Error');

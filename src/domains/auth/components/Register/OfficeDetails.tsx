@@ -54,7 +54,6 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
     try {
       console.log('Checking email:', values.officialEmailAddress);
       const exists = await checkUserByEmail(values.officialEmailAddress);
-      console.log('Email exists:', exists);
 
       if (exists) {
         setShowLoginPrompt(true);

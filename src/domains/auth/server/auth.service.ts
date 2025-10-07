@@ -13,7 +13,6 @@ import {
 } from '@/lib/jwt';
 import ErrorMessages from '@/constants/ErrorMessages';
 import jwt from 'jsonwebtoken';
-import { type Prisma } from '@prisma/client';
 import SuccessMessages from '@/constants/SuccessMessages';
 
 const getUserByEmail = async (email: string) => {
@@ -54,7 +53,7 @@ const checkPassword = async (password: string, hashedPassword: string) => {
 };
 
 const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) => {
-  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  const result = await prisma.$transaction(async tx => {
     const {
       organizationType,
       organizationName,
@@ -122,7 +121,7 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
       departmentId = dept.id;
     }
 
-    // Account
+    // Role
     const orgManagerRole = await tx.role.findFirst({
       where: { name: Roles.ORGANIZATION_MANAGER },
     });
@@ -131,6 +130,7 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
       throw new Error('Organization Manager role not found');
     }
 
+    // Account
     const account = await tx.account.create({
       data: {
         userId: user.id,
@@ -148,23 +148,28 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
       },
     });
 
-    await emailService.sendEmail(
-      'Welcome to Our Platform!',
-      'welcome.html',
-      {
-        firstName: firstName,
-        lastName: lastName,
-      },
-      officialEmailAddress
-    );
-
     return {
       organizationId: organization.id,
       userId: user.id,
       accountId: account.id,
       email: user.email,
+      firstName,
+      lastName,
     };
   });
+
+  try {
+    await emailService.sendEmail(
+      'Welcome to Our Platform!',
+      'welcome.html',
+      { firstName: result.firstName, lastName: result.lastName },
+      result.email
+    );
+  } catch (error) {
+    console.error('❌ Failed to send welcome email:', error);
+  }
+
+  return result;
 };
 
 const getDepartments = async () => {
