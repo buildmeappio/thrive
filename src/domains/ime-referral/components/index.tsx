@@ -67,7 +67,7 @@ const IMEReferral: React.FC<IMEReferralProps> = ({
       { component: ConsentInfo },
       { component: ReferralSubmitted },
     ],
-    [claimTypes, caseTypes, examinationTypes]
+    [claimTypes, caseTypes, examinationTypes, languages]
   );
 
   const goToNext = (): void => {

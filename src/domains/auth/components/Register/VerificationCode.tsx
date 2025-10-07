@@ -175,7 +175,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                 {/* Resend link */}
                 <div className="text-center">
                   <p className="text-base font-normal text-[#000000] sm:text-lg">
-                    Didn't get OTP?{' '}
+                    Didn&apos;t get OTP?{' '}
                     <button
                       disabled={isSubmitting}
                       type="button"

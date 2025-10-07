@@ -49,7 +49,7 @@ const GettingStartedPage: React.FC = () => {
                 background: 'linear-gradient(90deg, #000080 0%, #5151B9 100%)',
               }}
             >
-              Let's Get Started
+              Let&apos;s Get Started
               <ArrowRight size={20} strokeWidth={3} />
             </button>
           </form>

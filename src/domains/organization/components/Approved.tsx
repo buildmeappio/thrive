@@ -47,7 +47,7 @@ const Approved = () => {
 
       <div className="space-y-3">
         <p className="text-sm font-medium tracking-[-0.03em] text-[#000000] sm:text-base lg:text-[16px]">
-          Let's get your first independent medical examination started.
+          Let&apos;s get your first independent medical examination started.
         </p>
         <Button
           onClick={() => router.push(URLS.IME_REFERRAL)}

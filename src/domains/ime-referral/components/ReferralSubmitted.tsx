@@ -38,7 +38,7 @@ const ReferralSubmitted: React.FC = () => {
         {/* Case Information */}
         <p className="mb-6 px-4 text-base leading-relaxed text-gray-600 sm:mb-8 sm:text-lg md:text-[20px]">
           You will be notified once the
-          <span className="block sm:inline"> claimant's appointment is scheduled.</span>
+          <span className="block sm:inline"> claimant&apos;s appointment is scheduled.</span>
         </p>
 
         {/* Action Button */}
