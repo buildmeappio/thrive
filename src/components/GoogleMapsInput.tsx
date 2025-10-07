@@ -207,7 +207,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
     }
   };
 
-  const errorMessage = error || (formik?.touched[name!] && formik?.errors[name!]);
+  const errorMessage = error || (name && formik?.touched[name] && formik?.errors[name]);
 
   return (
     <div className={className}>

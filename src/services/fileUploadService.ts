@@ -82,8 +82,12 @@ export class DocumentService {
 
       // Create document records in database
       const createdDocuments = await prisma.$transaction(async tx => {
+        if (!uploadResult.files) {
+          return [];
+        }
+
         const documents = await Promise.all(
-          uploadResult.files!.map(async file => {
+          uploadResult.files.map(async file => {
             const document = await tx.documents.create({
               data: {
                 name: file.name,
