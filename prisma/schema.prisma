@@ -599,7 +599,7 @@ model ExaminerProfile {
   specialties                       String[]       @map("specialties")
   licenseNumber                     String         @map("license_number") @db.VarChar(255)
   provinceOfLicensure               String         @map("province_of_licensure") @db.VarChar(255)
-  licenseExpiryDate                 DateTime       @map("license_expiry_date") @db.Date
+  licenseExpiryDate                 DateTime?      @map("license_expiry_date") @db.Date
   medicalLicenseDocumentId          String         @map("medical_license_document_id") @db.Uuid
   resumeDocumentId                  String         @map("resume_document_id") @db.Uuid
   NdaDocumentId                     String         @map("nda_document_id") @db.Uuid
