@@ -68,6 +68,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
     } catch (error) {
       console.error('Error initializing Google Maps Autocomplete:', error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded]);
 
   const addDropdownStyles = () => {
