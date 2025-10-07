@@ -27,9 +27,11 @@ interface DepartmentOption {
   value: string;
   label: string;
 }
+
 type OfficeDetailProps = OrganizationRegStepProps & {
   departmentTypes: DepartmentOption[];
 };
+
 const OfficeDetails: React.FC<OfficeDetailProps> = ({
   onNext,
   onPrevious,
@@ -50,7 +52,9 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
     actions: FormikHelpers<typeof OfficeDetailsInitialValues>
   ) => {
     try {
+      console.log('Checking email:', values.officialEmailAddress);
       const exists = await checkUserByEmail(values.officialEmailAddress);
+      console.log('Email exists:', exists);
 
       if (exists) {
         setShowLoginPrompt(true);
@@ -64,7 +68,8 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
         onNext();
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error in handleSubmit:', error);
+      actions.setSubmitting(false);
     }
   };
 
@@ -209,12 +214,13 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
             <Button
               variant="outline"
               onClick={() => setShowLoginPrompt(false)}
-              className="cursor-pointrer rounded-lg"
+              className="cursor-pointer rounded-lg"
             >
               Cancel
             </Button>
             <Button
-              onClick={() => {
+              onClick={e => {
+                e.preventDefault();
                 setShowLoginPrompt(false);
                 router.push(URLS.LOGIN);
               }}

@@ -45,6 +45,9 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
 
     try {
       setData('step3', pendingValues);
+      if (onNext) {
+        onNext();
+      }
 
       const email = data.step2?.officialEmailAddress;
       if (email) {
@@ -52,10 +55,6 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
       }
 
       pendingActions.setSubmitting(false);
-
-      if (onNext) {
-        onNext();
-      }
     } catch (error) {
       console.log(error);
       pendingActions.setSubmitting(false);
@@ -214,8 +213,15 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmProceed}>Proceed</AlertDialogAction>
+            <AlertDialogCancel className="cursor-pointrer rounded-lg" onClick={handleCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="cursor-pointer rounded-lg bg-[#000093] hover:bg-[#000093]"
+              onClick={handleConfirmProceed}
+            >
+              Proceed
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

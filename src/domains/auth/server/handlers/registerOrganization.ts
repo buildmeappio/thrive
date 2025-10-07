@@ -16,7 +16,7 @@ const registerOrganization = async (data: FormData) => {
     throw new Error(ErrorMessages.MISMATCH_EMAIL);
   }
 
-  if (!data.step1 || !data.step2 || !data.step3 || !data.step4 || !data.step5) {
+  if (!data.step1 || !data.step2 || !data.step3 || !data.step4) {
     throw new Error(ErrorMessages.STEPS_REQUIRED);
   }
 

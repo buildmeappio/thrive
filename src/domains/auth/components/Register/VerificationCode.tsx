@@ -33,7 +33,6 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
     newCode[index] = value;
     setCode(newCode);
 
-    // Update Formik field value immediately
     setFieldValue('code', newCode.join(''));
 
     if (value && index < 3) {
@@ -189,7 +188,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                 </div>
 
                 {/* Buttons */}
-                <div className="flex justify-end">
+                <div className="flex w-full justify-end">
                   <ContinueButton
                     isSubmitting={isSubmitting}
                     isLastStep={currentStep === totalSteps}

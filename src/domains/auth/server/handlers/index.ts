@@ -6,3 +6,6 @@ export { default as getDepartments } from './getDepartments';
 export { default as registerOrganization } from './registerOrganization';
 export { default as getExaminationTypes } from './getExaminationTypes';
 export { default as createPassword } from './createPassword';
+export { default as sendResetPasswordLink } from './sendResetPasswordLink';
+export { default as resetPassword } from './resetPassword';
+export { default as verifyResetToken } from './verifyResetToken';

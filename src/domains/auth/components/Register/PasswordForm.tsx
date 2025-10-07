@@ -31,6 +31,9 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({ onNext, currentStep,
       setData('step5', values);
 
       if (!data.step2?.officialEmailAddress || !data.step5?.password) {
+        console.log('email', data.step2?.officialEmailAddress);
+        console.log('password', data.step5?.password);
+        console.log(data);
         throw HttpError.notFound('Email and password are required');
       }
 
@@ -48,8 +51,8 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({ onNext, currentStep,
       });
 
       if (result?.ok) {
-        reset();
         router.push(URLS.DASHBOARD);
+        reset();
       } else {
         console.error(result?.error);
         toast.error(ErrorMessages.LOGIN_FAILED);

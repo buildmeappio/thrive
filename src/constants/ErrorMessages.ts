@@ -128,4 +128,8 @@ export default Object.freeze({
   ADDITIONAL_NOTES_TEXT_REQUIRED: 'Additional notes text is required',
   DEFAULT_STATUS_NOT_FOUND: 'Default status not found',
   PASSWORD_CREATION_FAILED: 'Failed to create password',
+  ERROR_SENDING_RESET_LINK: 'Error sending reset link',
+  INVALID_OR_EXPIRED_TOKEN: 'The token is expired or invalid',
+  ERROR_VERIFYING_TOKEN: 'Error verifying token',
+  ERROR_RESETTING_PASSWORD: 'Error resetting password',
 });

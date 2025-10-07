@@ -3,4 +3,6 @@ export default Object.freeze({
   OTP_RESENT: 'OTP has been resent successfully',
   REGISTRATION_SUCCESS: 'Registration completed successfully',
   LOGIN_SUCCESS: 'Login successful',
+  PASSWORD_RESET_LINK_SENT: 'Password reset link sent to email',
+  PASSWORD_RESET_SUCCESS: 'Password reset successfully',
 });

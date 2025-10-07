@@ -5,10 +5,16 @@ import { type CreateOrganizationWithUserData } from '../types/createOrganization
 import { Roles } from '@/constants/role';
 import { getCurrentUser } from './session';
 import emailService from '@/services/emailService';
-import { signOtpToken, signPasswordToken } from '@/lib/jwt';
+import {
+  signOtpToken,
+  signPasswordToken,
+  verifyResetPasswordToken,
+  signResetPasswordToken,
+} from '@/lib/jwt';
 import ErrorMessages from '@/constants/ErrorMessages';
 import jwt from 'jsonwebtoken';
 import { type Prisma } from '@prisma/client';
+import SuccessMessages from '@/constants/SuccessMessages';
 
 const getUserByEmail = async (email: string) => {
   try {
@@ -302,6 +308,117 @@ const createPassword = async (email: string, password: string) => {
   }
 };
 
+const sendResetPasswordLink = async (email: string) => {
+  try {
+    const isUserExists = await prisma.user.findUnique({
+      where: {
+        email: email,
+        deletedAt: null,
+      },
+      select: {
+        email: true,
+      },
+    });
+    if (!isUserExists) {
+      throw HttpError.notFound(ErrorMessages.USER_NOT_FOUND);
+    }
+    if (email.toLowerCase().trim() !== isUserExists.email.toLowerCase().trim()) {
+      throw new Error(ErrorMessages.UNAUTHORIZED);
+    }
+
+    // Sign the token with user email
+    const token = signResetPasswordToken({ email: email });
+
+    const resetLink = `${process.env.FRONTEND_URL}/organization/password/reset?token=${token}`;
+
+    await emailService.sendEmail(
+      'Reset your password - Thrive',
+      'reset-link.html',
+      {
+        resetLink: resetLink,
+      },
+      email
+    );
+  } catch (error) {
+    console.error(ErrorMessages.ERROR_SENDING_RESET_LINK, error);
+    return { success: false, message: ErrorMessages.ERROR_SENDING_RESET_LINK };
+  }
+};
+
+const verifyResetToken = async (token: string) => {
+  try {
+    const decoded = verifyResetPasswordToken(token);
+
+    if (!decoded || !decoded.email) {
+      return { success: false, message: ErrorMessages.INVALID_OR_EXPIRED_TOKEN };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email: decoded.email,
+        deletedAt: null,
+      },
+      select: {
+        email: true,
+      },
+    });
+
+    if (!user) {
+      return { success: false, message: ErrorMessages.USER_NOT_FOUND };
+    }
+
+    return { success: true, email: decoded.email };
+  } catch (error) {
+    console.error('Error verifying reset token:', error);
+    return { success: false, message: ErrorMessages.ERROR_VERIFYING_TOKEN };
+  }
+};
+
+const resetPassword = async (token: string, password: string) => {
+  try {
+    const decoded = verifyResetPasswordToken(token);
+
+    if (!decoded || !decoded.email) {
+      return { success: false, message: ErrorMessages.INVALID_OR_EXPIRED_TOKEN };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email: decoded.email,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        email: true,
+      },
+    });
+
+    if (!user) {
+      return { success: false, message: ErrorMessages.USER_NOT_FOUND };
+    }
+
+    if (decoded.email.toLowerCase().trim() !== user.email.toLowerCase().trim()) {
+      return { success: false, message: ErrorMessages.UNAUTHORIZED };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    return { success: true, message: SuccessMessages.PASSWORD_RESET_SUCCESS };
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    return { success: false, message: ErrorMessages.ERROR_RESETTING_PASSWORD };
+  }
+};
+
 const authService = {
   getUserByEmail,
   checkPassword,
@@ -314,6 +431,9 @@ const authService = {
   verifyOtp,
   checkUserByEmail,
   createPassword,
+  sendResetPasswordLink,
+  verifyResetToken,
+  resetPassword,
 };
 
 export default authService;
