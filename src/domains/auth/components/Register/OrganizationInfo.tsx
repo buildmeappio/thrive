@@ -11,6 +11,7 @@ import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistration';
 import { OrganizationInfoInitialValues, OrganizationInfoSchema } from '../../schemas/register';
+import GoogleMapsInput from '@/components/GoogleMapsInput';
 
 export interface OrganizationTypeOption {
   value: string;
