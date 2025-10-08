@@ -1,8 +1,9 @@
-export const formatDate = (date: Date) => {
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
+export const formatDate = (date: string) => {
+  const dateObj = new Date(date);
+  return dateObj.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
+    year: '2-digit',
   });
 };
 

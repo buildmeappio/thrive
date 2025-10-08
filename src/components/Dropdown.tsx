@@ -42,7 +42,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger
           id={id}
-          className={`relative h-[45px] w-full rounded-[7.56px] border-none ${className ? className : 'bg-[#F2F5F6]'} pr-8 text-[14px] font-normal tracking-[0.5%] shadow-none focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none md:h-[55px] [&>svg]:hidden ${
+          className={`relative w-full rounded-[7.56px] ${className ? className : 'h-[45px] bg-[#F2F5F6] md:h-[55px]'} pr-8 text-[14px] font-normal tracking-[0.5%] shadow-none focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none [&>svg]:hidden ${
             icon ? 'pl-10' : 'pl-3'
           } ${value ? 'text-[#333]' : 'text-[#A4A4A4]'}`}
         >

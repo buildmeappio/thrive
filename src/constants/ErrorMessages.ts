@@ -136,4 +136,6 @@ export default Object.freeze({
   FAILED_TO_GET_EXAMINATION_TYPES: 'Failed to get examination type benefits',
   CLAIM_TYPE_NOT_FOUND: 'Claim type not found',
   FAILED_TO_GET_CLAIM_TYPES: 'Failed to get claim types',
+  FAILED_TO_GET_CASE_LIST: 'Failed to get case list',
+  CASES_NOT_FOUND: 'Cannot get case data',
 });

@@ -483,6 +483,42 @@ const getExaminationBenefits = async (examinationTypeId: string) => {
   }
 };
 
+const getCaseList = async () => {
+  try {
+    const examinations = await prisma.examination.findMany({
+      include: {
+        case: {
+          include: {
+            claimant: {
+              include: {
+                claimType: true,
+              },
+            },
+          },
+        },
+        examinationType: true,
+        status: true,
+      },
+    });
+
+    const caseData = examinations.map(exam => ({
+      id: exam.id,
+      number: exam.caseNumber,
+      claimant: `${exam.case.claimant.firstName} ${exam.case.claimant.lastName}`,
+      claimType: exam.case.claimant.claimType.name,
+      status: exam.status.name,
+      specialty: exam.examinationType.name,
+      submittedAt: exam.createdAt.toISOString(),
+    }));
+    if (!caseData || caseData.length === 0) {
+      throw HttpError.notFound(ErrorMessages.CASES_NOT_FOUND);
+    }
+    return caseData;
+  } catch (error) {
+    throw HttpError.handleServiceError(error, ErrorMessages.FAILED_TO_GET_CASE_LIST);
+  }
+};
+
 const imeReferralService = {
   createCase,
   getCaseTypes,
@@ -490,6 +526,7 @@ const imeReferralService = {
   getCases,
   getClaimTypes,
   getExaminationBenefits,
+  getCaseList,
 };
 
 export default imeReferralService;

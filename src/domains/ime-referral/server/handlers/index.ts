@@ -4,3 +4,4 @@ export { default as getReferralDetails } from './getReferralDetails';
 export { default as getCaseTypes } from './getCaseTypes';
 export { default as getClaimTypes } from './getClaimTypes';
 export { default as getExaminationBenefits } from './getExaminationBenefits';
+export { default as getCaseList } from './getCaseList';

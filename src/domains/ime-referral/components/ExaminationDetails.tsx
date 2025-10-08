@@ -369,7 +369,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                 }
                 options={provinceOptions}
                 placeholder="Select Province"
-                className="bg-white"
+                className="h-[45px] bg-white md:h-[55px]"
                 icon={false}
               />
             </div>
@@ -401,7 +401,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
               }
               options={languageOptions}
               placeholder="Select Language"
-              className="bg-white"
+              className="h-[45px] bg-white md:h-[55px]"
               icon={false}
               required
             />
@@ -555,7 +555,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                               }}
                               options={UrgencyLevels}
                               placeholder="Select"
-                              className="bg-white"
+                              className="h-[45px] bg-white md:h-[55px]"
                               icon={false}
                               required
                             />
@@ -609,7 +609,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                               }}
                               options={locationOptions}
                               placeholder="Select"
-                              className="bg-white"
+                              className="h-[45px] bg-white md:h-[55px]"
                               icon={false}
                               required
                             />

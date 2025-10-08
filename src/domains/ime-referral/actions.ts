@@ -71,3 +71,14 @@ export const getExaminationBenefits = async (examinationTypeId: string) => {
   const result = await imeReferralHandlers.getExaminationBenefits(examinationTypeId);
   return result;
 };
+
+export const getCaseList = async () => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+
+  const result = await imeReferralHandlers.getCaseList();
+  return result;
+};
