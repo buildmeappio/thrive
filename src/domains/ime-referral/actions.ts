@@ -50,6 +50,17 @@ export const getCaseTypes = async () => {
   return result;
 };
 
+export const getCaseDetails = async (caseId: string) => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+
+  const result = await imeReferralHandlers.getCaseDetails(caseId);
+  return result;
+};
+
 export const getClaimTypes = async () => {
   const user = await getCurrentUser();
 
