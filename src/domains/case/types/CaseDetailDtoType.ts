@@ -1,5 +1,5 @@
 
-import { Examination, Case, CaseType, Documents, Claimant, Organization, LegalRepresentative, Insurance, ExaminationServices, ExaminationInterpreter, ExaminationTransport, Address, Language, ExaminationType, CaseDocument } from "@prisma/client";
+import { Address } from "@prisma/client";
 
 export type CaseDetailDtoType = {
     id: string;

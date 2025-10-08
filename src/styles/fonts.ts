@@ -1,26 +1,45 @@
-import localFont from 'next/font/local';
+import localFont from "next/font/local";
 
-// Degular font for headings
 export const degular = localFont({
   src: [
     {
-      path: '../assets/fonts/degular/DegularText-Regular.otf',
-      weight: '400',
-      style: 'normal',
+      path: "../../public/fonts/degular/fonnts.com-DegularDemo-Thin.otf",
+      weight: "100",
+      style: "normal",
     },
     {
-      path: '../assets/fonts/degular/DegularText-Medium.otf',
-      weight: '500',
-      style: 'normal',
+      path: "../../public/fonts/degular/fonnts.com-DegularDemo-Light.otf",
+      weight: "300",
+      style: "normal",
     },
     {
-      path: '../assets/fonts/degular/DegularText-Bold.otf',
-      weight: '700',
-      style: 'normal',
+      path: "../../public/fonts/degular/fonnts.com-DegularDemo-Regular.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/degular/fonnts.com-DegularDemo-Medium.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/degular/fonnts.com-DegularDemo-Semibold.otf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/degular/fonnts.com-DegularDemo-Bold.otf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/degular/fonnts.com-DegularDemo-Black.otf",
+      weight: "900",
+      style: "normal",
     },
   ],
-  variable: '--font-degular',
-  display: 'swap',
+  variable: "--font-degular",
+  display: "swap",
 });
 
 // Poppins font for body text

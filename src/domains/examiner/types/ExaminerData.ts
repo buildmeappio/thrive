@@ -12,7 +12,7 @@ export type ExaminerData = {
   cvUrl?: string;
   medicalLicenseUrl?: string;
   languagesSpoken: string[];
-  yearsOfIMEExperience: number;
+  yearsOfIMEExperience: string;
   experienceDetails: string;
   insuranceProofUrl?: string;
   signedNdaUrl?: string;

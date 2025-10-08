@@ -173,7 +173,7 @@ const Sidebar = () => {
   return (
     <>
       <aside
-        className={`fixed top-0 left-0 z-50 flex h-screen w-[280px] transform-gpu flex-col
+        className={`fixed top-0 left-0 z-50 flex h-screen w-[85%] sm:w-[320px] md:w-[280px] max-w-[400px] transform-gpu flex-col
               bg-white rounded-r-[28px] shadow-[0_6px_30px_rgba(16,24,40,0.06)]
               transition-transform duration-300 ${
                 isMobileOpen

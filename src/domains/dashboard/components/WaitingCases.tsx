@@ -1,4 +1,4 @@
-// domains/dashboard/NewCases.tsx
+// domains/dashboard/WaitingCases.tsx
 "use client";
 
 import Link from "next/link";
@@ -6,41 +6,30 @@ import { ChevronRight } from "lucide-react";
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
 import { formatDateShort } from "@/utils/date";
 
-export type CaseRow = {
-  id: string;
-  caseNo: string;
-  claimant: string;
-  organization: string;
-  urgency: "Urgent" | "Normal";
-  status: "Pending" | "Accepted" | "Rejected";
-};
-
 type Props = {
-  items: CaseDetailDtoType[];                 // rows to show
-  listHref: string;                 // e.g. "/cases"
-  buildDetailHref?: (id: string) => string; // defaults to `${listHref}/${id}`
-  title?: string;                   // override title if needed
-  subtitle?: string;                // override subtitle
+  items: CaseDetailDtoType[];
+  listHref: string;
+  buildDetailHref?: (id: string) => string;
+  title?: string;
+  subtitle?: string;
 };
 
-export default function NewCases({
+export default function WaitingCases({
   items,
   listHref,
   buildDetailHref = (id) => `${listHref}/${id}`,
-  title = "New Cases to be Reviewed",
-  subtitle = "Recently submitted",
+  title = "Waiting to be Scheduled",
+  subtitle = "Pending for verification",
 }: Props) {
-  // const rows = items.slice(0, visibleCount);
-
   return (
     <section
       className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
-      aria-labelledby="new-cases-heading"
+      aria-labelledby="waiting-cases-heading"
     >
       {/* Title + CTA */}
       <div className="flex items-center justify-between gap-2 sm:gap-3">
         <h3
-          id="new-cases-heading"
+          id="waiting-cases-heading"
           className="font-degular font-[600] text-[20px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black"
         >
           {title}
@@ -69,15 +58,21 @@ export default function NewCases({
             <div>Claim Type</div>
             <div>Date Received</div>
             <div>Due Date</div>
-            <div>Priority</div>
+            <div>Status</div>
           </div>
 
           {/* Rows */}
           <ul className="divide-y divide-[#EDEDED]">
             {items?.map((r) => {
               const href = buildDetailHref(r.id);
-              const priorityText = r.urgencyLevel === "HIGH" ? "Urgent" : "Normal";
-              const priorityColor = r.urgencyLevel === "HIGH" ? "text-[#FF0000]" : "text-[#FFB800]";
+              const statusText = r.status?.name || "N/A";
+              
+              // Color coding for different statuses
+              const statusColor = 
+                statusText === "Pending" ? "text-[#FFB800]" :
+                statusText === "Waiting to be Scheduled" ? "text-[#00A8FF]" :
+                statusText === "Scheduled" ? "text-[#00C853]" :
+                "text-[#5B5B5B]";
               
               return (
                 <li
@@ -101,8 +96,8 @@ export default function NewCases({
                   </span>
 
                   <span className="flex items-center justify-between gap-3">
-                    <span className={`font-medium ${priorityColor} truncate min-w-0 flex-1`}>
-                      {priorityText}
+                    <span className={`font-medium ${statusColor} truncate min-w-0 flex-1`}>
+                      {statusText}
                     </span>
 
                     <Link
@@ -122,3 +117,4 @@ export default function NewCases({
     </section>
   );
 }
+

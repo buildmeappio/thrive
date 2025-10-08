@@ -15,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="light" style={{ colorScheme: "light" }}>
-      <body className={`${degular.variable} ${poppins.variable} antialiased`}>
+      <body className={`${degular.variable} ${poppins.variable} font-degular antialiased`}>
         <Provider>
           {children}
         </Provider>

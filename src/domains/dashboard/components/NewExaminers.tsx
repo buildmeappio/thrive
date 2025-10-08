@@ -17,7 +17,6 @@ type Props = {
   listHref: string;                     // e.g. "/examiners"
   buildDetailHref?: (id: string) => string; // defaults to `${listHref}/${id}`
   visibleCount?: number;                // optional slice on dashboard
-  title?: string;
   subtitle?: string;
 };
 
@@ -26,11 +25,6 @@ export default function NewExaminers({
   listHref,
   buildDetailHref = (id) => `${listHref}/${id}`,
   visibleCount = 7,
-  title = (
-    <>
-      New <span className="bg-[linear-gradient(270deg,#01F4C8_50%,#00A8FF_65.19%)] bg-clip-text text-transparent">Medical</span> Examiners
-    </>
-  ) as unknown as string, // TS appeasement for inline JSX below
   subtitle = "Pending for verification",
 }: Props) {
   const rows = items.slice(0, visibleCount);
@@ -41,67 +35,73 @@ export default function NewExaminers({
       aria-labelledby="new-examiners-heading"
     >
       {/* Title + CTA */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-2 sm:gap-3">
         <h3
           id="new-examiners-heading"
-          className="font-degular font-[600] text-[29.01px] leading-[100%] tracking-[-0.02em] text-black"
+          className="font-degular font-[600] text-[20px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black"
         >
-          New Medical Examiners
+          New Examiners Applications
         </h3>
 
         <Link
           href={listHref}
-          className="h-[34px] rounded-[20px] bg-[#0C108B] px-4 text-white text-sm grid place-items-center"
+          className="h-[30px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-3 sm:px-4 text-white text-xs sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0"
         >
           View All
         </Link>
       </div>
 
       {/* Subline */}
-      <p className="mt-1 font-poppins font-[300] text-[13.26px] leading-[100%] text-[#7A7A7A]">
+      <p className="mt-1 font-poppins font-[300] text-[12px] sm:text-[13.26px] leading-[100%] text-[#7A7A7A]">
         {subtitle}
       </p>
 
-      {/* Table */}
-      <div className="mt-4 overflow-hidden rounded-2xl border border-[#E8E8E8]">
-        {/* Header */}
-        <div className="grid grid-cols-4 bg-[#F3F3F3] px-4 py-3 text-sm font-medium tracking-[-0.02em] text-[#1A1A1A]">
-          <div>Name</div>
-          <div>Specialty</div>
-          <div>License Number</div>
-          <div>Province</div>
+      {/* Table - Mobile Responsive with Horizontal Scroll */}
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-[#E8E8E8]">
+        <div className="min-w-[700px]">
+          {/* Header */}
+          <div className="grid grid-cols-5 gap-x-4 bg-[#F3F3F3] px-4 py-3 text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins">
+            <div>Name</div>
+            <div>Email</div>
+            <div>Specialties</div>
+            <div>Province</div>
+            <div>Status</div>
+          </div>
+
+          {/* Rows */}
+          <ul className="divide-y divide-[#EDEDED]">
+            {rows.map((r) => {
+              const href = buildDetailHref(r.id);
+              const statusText = r.status === "PENDING" ? "Normal" : r.status === "ACCEPTED" ? "Approved" : "Rejected";
+              
+              return (
+                <li
+                  key={r.id}
+                  className="grid grid-cols-5 gap-x-4 items-center px-4 py-[12px] text-[14px] tracking-[-0.01em] hover:bg-[#FAFAFF] font-poppins"
+                >
+                  <span className="text-[#1A1A1A] truncate">{r.name}</span>
+                  <span className="text-[#5B5B5B] truncate">{r.email}</span>
+                  <span className="text-[#5B5B5B] truncate">
+                    {Array.isArray(r.specialties) ? r.specialties.join(", ") : r.specialties}
+                  </span>
+                  <span className="text-[#5B5B5B] truncate">{r.province}</span>
+
+                  <span className="flex items-center justify-between gap-3">
+                    <span className="text-[#5B5B5B] truncate min-w-0 flex-1">{statusText}</span>
+
+                    <Link
+                      href={href}
+                      aria-label={`Open ${r.name}`}
+                      className="flex-shrink-0 grid h-5 w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
+                    >
+                      <ChevronRight className="h-3.5 w-3.5 text-[#00A8FF]" />
+                    </Link>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         </div>
-
-        {/* Rows */}
-        <ul className="divide-y divide-[#EDEDED]">
-          {rows.map((r) => {
-            const href = buildDetailHref(r.id);
-            return (
-              <li
-                key={r.id}
-                className="grid grid-cols-4 items-center px-4 py-[12px] text-[14px] tracking-[-0.01em] hover:bg-[#FAFAFF]"
-              >
-                <span className="text-[#1A1A1A] truncate">{r.name}</span>
-                <span className="text-[#5B5B5B] truncate">{r.specialties}</span>
-                <span className="text-[#5B5B5B] font-mono tabular-nums truncate">
-                  {r.licenseNumber}
-                </span>
-
-                <span className="flex items-center justify-between text-[#5B5B5B]">
-                  <span className="truncate">{r.province}</span>
-
-                  <Link
-                    href={href}
-                    aria-label={`Open ${r.name}`}
-                    className="ml-3 grid h-5 w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
-                  >
-                    <ChevronRight className="h-3.5 w-3.5 text-[#00A8FF]" />
-                  </Link>
-                </span>
-              </li>
-            );
-          })}
-        </ul>
       </div>
     </section>
   );

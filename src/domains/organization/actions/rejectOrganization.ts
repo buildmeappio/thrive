@@ -36,7 +36,7 @@ const rejectOrganization = async (id: string, reason: string) => {
   return organization;
 };
 
-async function sendRejectReasonToOrganization(org: OrganizationView, reason: string) {
+async function _sendRejectReasonToOrganization(org: OrganizationView, reason: string) {
   const recipients = extractManagerEmails(org);
   if (recipients.length === 0) return;
 

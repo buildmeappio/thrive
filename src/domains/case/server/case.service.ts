@@ -1,6 +1,6 @@
 import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
-import { Examination, Prisma, Case, CaseStatus, ExaminationSecureLinkStatus } from "@prisma/client";
+import { Examination, Prisma, ExaminationSecureLinkStatus } from "@prisma/client";
 import { Roles } from "@/domains/auth/constants/roles";
 import { isAllowedRole } from "@/lib/rbac";
 import { v4 } from "uuid";
@@ -112,9 +112,9 @@ class CaseService {
     }
 
     if (filter?.caseTypes) {
-      const types = await this.getCaseTypes(filter.caseTypes);
+      const _types = await this.getCaseTypes(filter.caseTypes);
       // where.caseTypeId = {
-      //   in: types.map((t) => t.id),
+      //   in: _types.map((t) => t.id),
       // };
     }
 

@@ -2,7 +2,6 @@ import { cn } from "@/lib/utils";
 import { ExaminerData } from "../types/ExaminerData";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowRight } from "lucide-react";
-import { formatDate } from "@/utils/date";
 import Link from "next/link";
 
 const Header = ({
@@ -15,7 +14,7 @@ const Header = ({
   return (
     <p
       className={cn(
-        "text-left text-black font-poppins font-semibold text-[18px] leading-none py-4",
+        "text-left text-black font-poppins font-semibold text-[18px] leading-none py-4 whitespace-nowrap",
         first && "pl-4"
       )}
     >

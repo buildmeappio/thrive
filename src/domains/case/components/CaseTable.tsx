@@ -98,7 +98,7 @@ export default function CaseTable({ data, statuses, types, urgencies = ["HIGH", 
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  useEffect(() => { table.setPageIndex(0); }, [query, applied]); // reset page
+  useEffect(() => { table.setPageIndex(0); }, [query, applied, table]); // reset page
 
   return (
     <div className="overflow-hidden rounded-md outline-none">
