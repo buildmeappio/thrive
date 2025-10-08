@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { MapPin } from "lucide-react";
 import {
   Select,
@@ -12,7 +12,7 @@ import { Checkbox } from "./ui";
 
 export interface DropdownProps {
   id: string;
-  label: string;
+  label?: string;
   value: string | string[] | null | undefined;
   onChange: (value: string | string[]) => void;
   options: { value: string; label: string }[];
@@ -26,7 +26,7 @@ export interface DropdownProps {
 
 const Dropdown: React.FC<DropdownProps> = ({
   id,
-  label,
+  label = "",
   value,
   onChange,
   options,
@@ -110,10 +110,12 @@ const Dropdown: React.FC<DropdownProps> = ({
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <label htmlFor={id} className="text-sm font-normal text-[#000000]">
-        {label}
-        {required && <span className="text-red-500">*</span>}
-      </label>
+      {label && (
+        <label htmlFor={id} className="text-sm font-normal text-[#000000]">
+          {label}
+          {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
       <div className="relative mt-1">
         {!multiSelect ? (
           <Select
@@ -122,14 +124,20 @@ const Dropdown: React.FC<DropdownProps> = ({
             name={id}>
             <SelectTrigger
               id={id}
-              className={`h-[55px] w-full text-[#000000] rounded-[7.56px] border-none shadow-none bg-[#F2F5F6] pl-10  text-[14px] leading-[120%] font-normal tracking-[0.5%] text focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50`}
+              className={`h-[55px] w-full text-[#000000] rounded-[7.56px] border-none shadow-none bg-[#F2F5F6] ${
+                icon ? "pl-10" : "pl-3"
+              }  text-[14px] leading-[120%] font-normal tracking-[0.5%] text focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                error ? "ring-2 ring-red-500/30" : ""
+              }`}
               aria-required={required}>
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                {icon}
-              </div>
+              {icon && (
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  {icon}
+                </div>
+              )}
               <SelectValue
                 placeholder={placeholder}
-                className={"text-[#000000] shadow-none"}
+                className="text-[#000000]"
               />
             </SelectTrigger>
             <SelectContent style={contentStyle}>
@@ -145,12 +153,18 @@ const Dropdown: React.FC<DropdownProps> = ({
             <button
               type="button"
               id={id}
-              className={`h-[55px] w-full rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 pl-10 text-[14px] leading-[120%] font-normal tracking-[0.5%] text-left focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 relative`}
+              className={`h-[55px] w-full rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 ${
+                icon ? "pl-10" : "pl-3"
+              } text-[14px] leading-[120%] font-normal tracking-[0.5%] text-left focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 relative ${
+                error ? "ring-2 ring-red-500/30" : ""
+              }`}
               onClick={() => setOpen((o) => !o)}
               tabIndex={0}>
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                {icon}
-              </div>
+              {icon && (
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                  {icon}
+                </div>
+              )}
               <span
                 className={
                   displayValue
@@ -178,7 +192,7 @@ const Dropdown: React.FC<DropdownProps> = ({
               </span>
             </button>
             {open && (
-              <div className="absolute z-50 mt-2 w-full max-h-[200px] rounded-md bg-white shadow-lg border border-gray-200 overflow-y-auto">
+              <div className="scrollbar-thin absolute z-50 mt-2 w-full max-h-[200px] rounded-md bg-white shadow-lg border border-gray-200 overflow-y-auto">
                 <ul className="py-1">
                   {uniqueOptions.map((option) => (
                     <li

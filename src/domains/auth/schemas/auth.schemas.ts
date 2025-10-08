@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { parsePhoneNumberWithError } from 'libphonenumber-js'
+import { parsePhoneNumberWithError } from "libphonenumber-js";
 
 export const loginSchema = z.object({
   email: z.string().email({ message: "Enter a valid email address" }),
@@ -22,23 +22,28 @@ export const step1PersonalInfoSchema = z.object({
   phoneNumber: z
     .string()
     .min(5, { message: "Please enter a valid phone number" })
-    .refine((val) => {
-      try {
-        const phone = parsePhoneNumberWithError(`+1${val}`)
-        if (phone.countryCallingCode === "1") {
-          return true
+    .refine(
+      (val) => {
+        try {
+          const phone = parsePhoneNumberWithError(`+1${val}`);
+          if (phone.countryCallingCode === "1") {
+            return true;
+          }
+          return false;
+        } catch (error) {
+          console.error(error);
+          return false;
         }
-        return false
-      } catch (error) {
-        console.error(error)
-        return false
-      }
-    }, { message: "Please enter a valid phone number" }),
+      },
+      { message: "Please enter a valid phone number" }
+    ),
 
   emailAddress: z
     .string()
     .email({ message: "Please enter a valid email address" }),
-  provinceOfResidence: z.string({ error: "Province of residence is required" }),
+  provinceOfResidence: z
+    .string({ error: "Province of residence is required" })
+    .min(1, { message: "Province of residence is required" }),
   mailingAddress: z
     .string()
     .min(10, { message: "Mailing address must be at least 10 characters" }),
@@ -47,20 +52,28 @@ export const step1PersonalInfoSchema = z.object({
 export type Step1PersonalInfoInput = z.infer<typeof step1PersonalInfoSchema>;
 
 export const step2MedicalCredentialsSchema = z.object({
-  medicalSpecialty: z.array(
-    z.string({ error: "Medical specialty is required" })
-  ).min(1, { message: "Medical specialty is required" }),
+  medicalSpecialty: z
+    .array(z.string())
+    .min(1, { message: "Medical specialty is required" }),
   licenseNumber: z
     .string()
     .min(5, { message: "License number must be at least 5 characters" }),
-  provinceOfLicensure: z.string({ error: "Province of licensure is required" }),
-  licenseExpiryDate: z.string({ error: "License expiry date is required" }),
-  medicalLicense: z.any().refine((val) => val !== null, {
-    error: "Medical license document is required",
-  }),
+  provinceOfLicensure: z
+    .string({ error: "Province of licensure is required" })
+    .min(1, { message: "Province of licensure is required" }),
+  // licenseExpiryDate: z
+  //   .string({ error: "License expiry date is required" })
+  //   .min(1, { message: "License expiry date is required" }),
+  medicalLicense: z
+    .any()
+    .refine((val) => val !== null && val !== undefined && val !== "", {
+      message: "Medical license document is required",
+    }),
   cvResume: z
     .any()
-    .refine((val) => val !== null, { error: "CV/Resume document is required" }),
+    .refine((val) => val !== null && val !== undefined && val !== "", {
+      message: "CV/Resume document is required",
+    }),
 });
 
 export type Step2MedicalCredentialsInput = z.infer<
@@ -69,16 +82,17 @@ export type Step2MedicalCredentialsInput = z.infer<
 
 export const step3IMEExperienceSchema = z.object({
   yearsOfIMEExperience: z
-    .number({
-      error: "Years of IME experience is required",
-    })
-    .int({ message: "Years of IME experience must be an integer" })
-    .min(0, { message: "Years of IME experience must be greater than 0" }),
-  provinceOfLicensure: z.string({ error: "Province of licensure is required" }),
-  languagesSpoken: z.array(z.string({ error: "Languages spoken is required" })),
-  forensicAssessmentTrained: z.string({
-    error: "Forensic assessment training status is required",
-  }),
+    .string({ error: "Years of IME experience is required" })
+    .min(1, { message: "Years of IME experience is required" }),
+  provinceOfLicensure: z
+    .string({ error: "Province of licensure is required" })
+    .min(1, { message: "Province of licensure is required" }),
+  languagesSpoken: z
+    .array(z.string())
+    .min(1, { message: "At least one language is required" }),
+  forensicAssessmentTrained: z
+    .string({ error: "Forensic assessment training status is required" })
+    .min(1, { message: "Forensic assessment training status is required" }),
 });
 
 export type Step3IMEExperienceInput = z.infer<typeof step3IMEExperienceSchema>;

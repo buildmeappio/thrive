@@ -14,7 +14,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="light" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`light ${degular.variable}`}
+      suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -26,7 +29,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${degular.variable}`} suppressHydrationWarning>
+      <body className={degular.className} suppressHydrationWarning>
         <Provider>{children}</Provider>
       </body>
     </html>

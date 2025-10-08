@@ -25,7 +25,7 @@ export type Step2MedicalCredentials = {
 };
 
 export type Step3IMEExperience = {
-  yearsOfIMEExperience: number;
+  yearsOfIMEExperience: string;
   languagesSpoken: string[];
   forensicAssessmentTrained: string; // "yes"/"no" or similar
 };
@@ -89,7 +89,7 @@ export const initialData: RegistrationData = {
   medicalLicense: null,
   cvResume: null,
   // Step 3
-  yearsOfIMEExperience: 0,
+  yearsOfIMEExperience: "",
   languagesSpoken: [],
   forensicAssessmentTrained: "",
   // Step 4
@@ -108,7 +108,6 @@ export const initialData: RegistrationData = {
   // Step 9
   password: "",
   confirmPassword: "",
-
 };
 
 /**
@@ -128,18 +127,16 @@ type Store = {
   setLanguages: (languages: Language[]) => void;
 };
 
-export const useRegistrationStore = create<Store>()(
-  (set) => ({
-    data: initialData,
-    merge: (
-      patch: Partial<RegistrationData> // <- ensure Partial here
-    ) => set((s) => ({ data: { ...s.data, ...patch } })),
-    setAll: (all: RegistrationData) => set({ data: all }),
-    reset: () => set({ data: initialData }),
-    languages: [],
-    setLanguages: (languages: Language[]) => set({ languages }),
-  }),
-);
+export const useRegistrationStore = create<Store>()((set) => ({
+  data: initialData,
+  merge: (
+    patch: Partial<RegistrationData> // <- ensure Partial here
+  ) => set((s) => ({ data: { ...s.data, ...patch } })),
+  setAll: (all: RegistrationData) => set({ data: all }),
+  reset: () => set({ data: initialData }),
+  languages: [],
+  setLanguages: (languages: Language[]) => set({ languages }),
+}));
 
 /**
  * Optional selectors per step to reduce re-renders in components.

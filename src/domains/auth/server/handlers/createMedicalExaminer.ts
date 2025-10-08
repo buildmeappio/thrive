@@ -23,7 +23,7 @@ export type CreateMedicalExaminerInput = {
   resumeDocumentId: string;
 
   // step 3
-  yearsOfIMEExperience: number;
+  yearsOfIMEExperience: string;
   languagesSpoken: string[];
   forensicAssessmentTrained: boolean;
 
@@ -80,23 +80,33 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
     // Create examiner profile
     const examinerProfile = await prisma.examinerProfile.create({
       data: {
-        accountId: account.id,
+        account: {
+          connect: { id: account.id },
+        },
         provinceOfResidence: payload.provinceOfResidence,
         mailingAddress: payload.mailingAddress,
         specialties: payload.specialties,
         licenseNumber: payload.licenseNumber,
         provinceOfLicensure: payload.provinceOfLicensure,
         licenseExpiryDate: payload.licenseExpiryDate,
-        medicalLicenseDocumentId: payload.medicalLicenseDocumentId,
-        resumeDocumentId: payload.resumeDocumentId,
+        medicalLicenseDocument: {
+          connect: { id: payload.medicalLicenseDocumentId },
+        },
+        resumeDocument: {
+          connect: { id: payload.resumeDocumentId },
+        },
         yearsOfIMEExperience: payload.yearsOfIMEExperience,
         isForensicAssessmentTrained: payload.forensicAssessmentTrained,
-        NdaDocumentId: payload.signedNDADocumentId,
+        ndaDocument: {
+          connect: { id: payload.signedNDADocumentId },
+        },
         agreeToTerms: payload.agreeTermsConditions,
         isConsentToBackgroundVerification:
           payload.consentBackgroundVerification,
         bio: payload.experienceDetails,
-        insuranceDocumentId: payload.insuranceProofDocumentId,
+        insuranceDocument: {
+          connect: { id: payload.insuranceProofDocumentId },
+        },
         status: ExaminerStatus.PENDING,
       },
     });
@@ -108,13 +118,23 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
       })),
     });
 
-    const token = signPasswordToken({ email: payload.email, id: user.id, accountId: account.id, role: Roles.MEDICAL_EXAMINER });
+    const token = signPasswordToken({
+      email: payload.email,
+      id: user.id,
+      accountId: account.id,
+      role: Roles.MEDICAL_EXAMINER,
+    });
 
-    await emailService.sendEmail("Welcome to Thrive", "welcome.html", {
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      createAccountLink: `${process.env.NEXT_PUBLIC_APP_URL}/create-account?token=${token}`,
-    }, payload.email);
+    await emailService.sendEmail(
+      "Welcome to Thrive",
+      "welcome.html",
+      {
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        createAccountLink: `${process.env.NEXT_PUBLIC_APP_URL}/create-account?token=${token}`,
+      },
+      payload.email
+    );
 
     return {
       success: true,

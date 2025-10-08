@@ -46,6 +46,43 @@ const Select = ({
   const isControlled = controlledValue !== undefined;
   const value = isControlled ? controlledValue : uncontrolledValue;
 
+  // Extract label from children when value changes
+  React.useEffect(() => {
+    if (!value) {
+      setSelectedLabel("");
+      return;
+    }
+
+    // Find the SelectItem child that matches the current value
+    const findLabel = (children: React.ReactNode): string | null => {
+      let label: string | null = null;
+
+      React.Children.forEach(children, (child) => {
+        if (label) return; // Already found
+
+        if (React.isValidElement(child)) {
+          const props = child.props as any;
+          // Check if this is a SelectItem with matching value
+          if (props.value === value) {
+            label = typeof props.children === "string" ? props.children : value;
+          }
+          // Recursively search in nested children (like SelectContent)
+          if (props.children) {
+            const nestedLabel = findLabel(props.children);
+            if (nestedLabel) label = nestedLabel;
+          }
+        }
+      });
+
+      return label;
+    };
+
+    const foundLabel = findLabel(children);
+    if (foundLabel) {
+      setSelectedLabel(foundLabel);
+    }
+  }, [value, children]);
+
   const onChange = React.useCallback(
     (newValue: string, newLabel: string) => {
       setSelectedLabel(newLabel);
@@ -89,6 +126,7 @@ const SelectValueContext = React.createContext<
 
 const SelectValue = ({
   placeholder,
+  className,
   children,
 }: {
   placeholder?: string;
@@ -98,14 +136,19 @@ const SelectValue = ({
   const valueContext = React.useContext(SelectValueContext);
 
   if (children) {
-    return <span>{children}</span>;
+    return <span className={className}>{children}</span>;
   }
 
   if (valueContext) {
-    return <span>{valueContext.selectedLabel || placeholder}</span>;
+    const hasValue = !!valueContext.selectedLabel;
+    return (
+      <span className={hasValue ? className : "text-[#A4A4A4]"}>
+        {valueContext.selectedLabel || placeholder}
+      </span>
+    );
   }
 
-  return <span>{placeholder}</span>;
+  return <span className="text-[#A4A4A4]">{placeholder}</span>;
 };
 SelectValue.displayName = "SelectValue";
 
@@ -124,6 +167,8 @@ const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
         type="button"
         role="combobox"
         aria-expanded={open}
+        aria-controls="select-content"
+        aria-haspopup="listbox"
         className={cn(
           "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
           className
@@ -146,7 +191,7 @@ interface SelectContentProps {
 }
 
 const SelectContent = React.forwardRef<HTMLDivElement, SelectContentProps>(
-  ({ className, children, position = "popper", style }, ref) => {
+  ({ className, children, position = "popper", style }, _ref) => {
     const { open, onOpenChange } = useSelectContext();
     const contentRef = React.useRef<HTMLDivElement>(null);
 
@@ -186,8 +231,10 @@ const SelectContent = React.forwardRef<HTMLDivElement, SelectContentProps>(
     return (
       <div
         ref={contentRef}
+        id="select-content"
+        role="listbox"
         className={cn(
-          "absolute z-50 mt-1 max-h-96 min-w-[8rem] overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-80",
+          "scrollbar-thin absolute z-50 mt-1 max-h-96 min-w-[8rem] overflow-y-auto rounded-md border bg-white text-gray-900 shadow-md animate-in fade-in-80",
           position === "popper" && "w-full",
           className
         )}
@@ -219,7 +266,16 @@ interface SelectItemProps extends React.HTMLAttributes<HTMLDivElement> {
 const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
   ({ className, children, value, ...props }, ref) => {
     const { value: selectedValue, onChange } = useSelectContext();
+    const valueContext = React.useContext(SelectValueContext);
     const isSelected = selectedValue === value;
+
+    // Update label when component mounts or value changes
+    React.useEffect(() => {
+      if (isSelected && valueContext) {
+        const text = typeof children === "string" ? children : value;
+        valueContext.setSelectedLabel(text);
+      }
+    }, [isSelected, children, value, valueContext]);
 
     const handleClick = () => {
       const text = typeof children === "string" ? children : value;
@@ -259,8 +315,8 @@ const SelectSeparator = React.forwardRef<
 ));
 SelectSeparator.displayName = "SelectSeparator";
 
-const SelectScrollUpButton = ({ className }: { className?: string }) => null;
-const SelectScrollDownButton = ({ className }: { className?: string }) => null;
+const SelectScrollUpButton = () => null;
+const SelectScrollDownButton = () => null;
 
 export {
   Select,

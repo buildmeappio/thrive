@@ -9,23 +9,32 @@ export const metadata: Metadata = {
 
 const Page = () => {
   return (
-    <div className="bg-[#F2F5F6]">
-      <div className="flex min-h-screen flex-col justify-between md:flex-row">
-        <div className="flex flex-1 flex-col justify-center px-6 md:px-0 md:pl-30">
-          <h1 className="mb-4 text-center text-3xl font-bold md:text-left md:text-[44px]">
-            Welcome To <span className="text-[#00A8FF]">Thrive</span>{" "}
-          </h1>
-          <div className="w-full rounded-xl border-[#E9EDEE] bg-white p-6 shadow-xs md:w-[445px]">
-            <h2 className="mb-6 text-[30px] font-semibold">Log In</h2>
-            <LoginForm />
+    <div className="bg-[#F4FBFF] overflow-hidden pt-4">
+      <div className="flex h-[calc(100vh-120px)] flex-col lg:flex-row">
+        {/* Left Section - Login Form */}
+        <div className="flex flex-1 flex-col justify-center overflow-y-auto lg:overflow-y-visible px-6 py-12 sm:px-8 lg:px-16 xl:px-24 2xl:px-32">
+          <div className="mx-auto w-full max-w-[500px]">
+            <h1 className="mb-6 text-3xl md:text-5xl font-semibold text-left leading-tight">
+              Welcome to <span className="text-[#00A8FF]">Thrive</span>
+            </h1>
+            <div className="w-full rounded-2xl border border-[#E9EDEE] bg-white p-6 shadow-sm">
+              <h2 className="mb-6 text-2xl font-semibold sm:text-[30px]">
+                Log In
+              </h2>
+              <LoginForm />
+            </div>
           </div>
         </div>
-        <div className="pl- relative hidden flex-1 overflow-hidden md:block">
+
+        {/* Right Section - Image */}
+        <div className="relative hidden w-full lg:block lg:max-w-[35%]">
           <div className="absolute inset-0">
             <Image
               src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/examiner-home.png"
               alt="Admin Dashboard Preview"
               fill
+              className="object-cover"
+              priority
             />
           </div>
         </div>

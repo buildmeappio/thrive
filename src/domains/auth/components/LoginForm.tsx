@@ -34,7 +34,7 @@ const LoginForm = () => {
               value={values.email}
               onChange={handleChange}
               placeholder="Enter your email address"
-              className="mt-1 border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0"
+              className=" border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0"
             />
             {errors.email && (
               <p className="mt-1 text-xs text-red-500">{errors.email}</p>
@@ -49,6 +49,7 @@ const LoginForm = () => {
               placeholder="Enter your password"
               value={values.password}
               onChange={handleChange}
+              className=""
             />
             {errors.password && (
               <p className="mt-1 text-xs text-red-500">{errors.password}</p>
@@ -57,14 +58,14 @@ const LoginForm = () => {
           <div className="mb-4 text-right">
             <Link
               href={createRoute(URLS.PASSWORD_FORGOT)}
-              className="text-sm font-medium text-[#0097E5] hover:underline">
+              className="text-sm font-bold text-[#0097E5] underline">
               Forgot Password?
             </Link>
           </div>
           <Button
-            className="w-full bg-[#00A8FF] hover:bg-[#0097E5] text-white font-semibold py-5 px-3 rounded-xl flex items-center justify-center gap-2"
+            className="w-full bg-[#00A8FF] hover:bg-[#0097E5] text-white text-xl font-semibold py-7 px-3 rounded-full flex items-center justify-center gap-2"
             type="submit">
-            Login
+            Log In
             <ArrowRight strokeWidth={3} color="white" />
           </Button>
         </Form>

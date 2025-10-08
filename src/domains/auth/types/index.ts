@@ -9,7 +9,6 @@ export type AuthUser = {
   accountId: string;
 };
 
-
 export type SubmitExaminerApplicationInput = {
   // Profile core
   firstName: string;
@@ -25,14 +24,22 @@ export type SubmitExaminerApplicationInput = {
   licenseExpiryDate: Date;
 
   // Experience
-  yearsOfIMEExperience: number;
+  yearsOfIMEExperience: string;
   forensicAssessmentTrained: boolean;
   experienceDetails: string;
 
   // Availability
   preferredRegions: string;
   maxTravelDistanceKm: number;
-  daysAvailable: ("MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY")[];
+  daysAvailable: (
+    | "MONDAY"
+    | "TUESDAY"
+    | "WEDNESDAY"
+    | "THURSDAY"
+    | "FRIDAY"
+    | "SATURDAY"
+    | "SUNDAY"
+  )[];
   timeMorning: boolean;
   timeAfternoon: boolean;
   timeEvening: boolean;
@@ -68,7 +75,6 @@ export type VerifyCodeInput = {
   accountId: string;
   code: string;
 };
-
 
 export interface RegStepProps {
   onNext: () => void;
