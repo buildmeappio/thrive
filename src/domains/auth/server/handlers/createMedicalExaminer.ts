@@ -118,20 +118,13 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
       })),
     });
 
-    const token = signPasswordToken({
-      email: payload.email,
-      id: user.id,
-      accountId: account.id,
-      role: Roles.MEDICAL_EXAMINER,
-    });
-
+    // Send submission confirmation email (without password setup link)
     await emailService.sendEmail(
-      "Welcome to Thrive",
-      "welcome.html",
+      "Your Thrive Medical Examiner Application Has Been Received",
+      "application-received.html",
       {
         firstName: payload.firstName,
         lastName: payload.lastName,
-        createAccountLink: `${process.env.NEXT_PUBLIC_APP_URL}/create-account?token=${token}`,
       },
       payload.email
     );
