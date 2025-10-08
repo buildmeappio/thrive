@@ -5,6 +5,7 @@ import {
   MedicalCredentials,
   IMEExperince,
   ExperienceDetails,
+  Availablity,
   Legal,
   SubmitConfirmation,
   ThankYou,
@@ -33,6 +34,7 @@ const RegisterForm: React.FC<{ languages: Language[] }> = ({ languages }) => {
     { component: MedicalCredentials },
     { component: IMEExperince },
     { component: ExperienceDetails },
+    { component: Availablity },
     { component: Legal },
     { component: SubmitConfirmation },
     { component: ThankYou },
@@ -66,12 +68,12 @@ const RegisterForm: React.FC<{ languages: Language[] }> = ({ languages }) => {
     );
   };
 
-  const showTitle = currentStep <= 6;
+  const showTitle = currentStep <= 7;
   return (
-    <div className="mx-auto max-w-[900px] p-4 md:min-h-screen md:p-0 md:py-6">
+    <div className="mx-auto max-w-[900px] p-4 md:p-0 md:py-6">
       <div className="mb-6 flex h-[60px] items-center justify-between">
         {showTitle && (
-          <h2 className="text-center text-3xl md:text-5xl leading-none font-semibold tracking-[-0.03em]">
+          <h2 className="text-center text-3xl md:text-5xl font-semibold">
             Let&apos;s complete your profile to join{" "}
             <span className="text-[#00A8FF]">Thrive.</span>
           </h2>

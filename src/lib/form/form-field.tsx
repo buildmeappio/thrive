@@ -18,13 +18,13 @@ interface FormFieldProps<TFieldValues extends FieldValues> {
   className?: string;
 }
 
-export function FormField<TFieldValues extends FieldValues>({
+const FormField = <TFieldValues extends FieldValues>({
   name,
   label,
   required = false,
   children,
   className = "",
-}: FormFieldProps<TFieldValues>) {
+}: FormFieldProps<TFieldValues>) => {
   const {
     register,
     formState: { errors },
@@ -46,4 +46,6 @@ export function FormField<TFieldValues extends FieldValues>({
       {errorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
     </div>
   );
-}
+};
+
+export default FormField;

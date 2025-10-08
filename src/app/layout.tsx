@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`light ${degular.variable}`}
+      className={`light ${degular.variable} h-full`}
       suppressHydrationWarning>
       <head>
         <script
@@ -29,7 +29,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={degular.className} suppressHydrationWarning>
+      <body className={`${degular.className} h-full`} suppressHydrationWarning>
         <Provider>{children}</Provider>
       </body>
     </html>

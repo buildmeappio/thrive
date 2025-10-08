@@ -23,7 +23,7 @@ import {
 } from "@/domains/auth/state/useRegistrationStore";
 // import DatePickerInput from "@/components/DatePickerInput";
 import { useForm, FormProvider, FormField, FormDropdown } from "@/lib/form";
-import { Controller } from "react-hook-form";
+import { Controller, UseFormRegisterReturn } from "react-hook-form";
 
 const MedicalCredentials: React.FC<RegStepProps> = ({
   onNext,
@@ -62,7 +62,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
   if (!isClient) {
     return (
       <div
-        className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
+        className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
         style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
         <ProgressIndicator
           currentStep={currentStep}
@@ -79,7 +79,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
 
   return (
     <div
-      className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
+      className="mt-4 flex w-full flex-col rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
       style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
       <ProgressIndicator
         currentStep={currentStep}
@@ -89,7 +89,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
       />
 
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="space-y-4 px-4 pb-8 md:space-y-6 md:px-0">
+        <div className="flex-grow space-y-4 px-4 md:space-y-6 md:px-0">
           <div className="text-center">
             <h3 className="mt-4 mb-2 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
               Enter Your Medical Credentials
@@ -108,7 +108,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
             />
 
             <FormField name="licenseNumber" label="License Number" required>
-              {(field) => (
+              {(field: UseFormRegisterReturn & { error?: boolean }) => (
                 <Input
                   {...field}
                   id="licenseNumber"
@@ -193,23 +193,23 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
               />
             </div>
           </div>
+        </div>
 
-          <div className="mt-10 flex justify-between md:mt-8">
-            <BackButton
-              onClick={onPrevious}
-              disabled={currentStep === 1}
-              borderColor="#00A8FF"
-              iconColor="#00A8FF"
-            />
-            <ContinueButton
-              onClick={form.handleSubmit(onSubmit)}
-              isLastStep={currentStep === totalSteps}
-              gradientFrom="#89D7FF"
-              gradientTo="#00A8FF"
-              disabled={form.formState.isSubmitting}
-              loading={form.formState.isSubmitting}
-            />
-          </div>
+        <div className="mt-auto flex justify-center gap-4 pb-8 md:justify-between">
+          <BackButton
+            onClick={onPrevious}
+            disabled={currentStep === 1}
+            borderColor="#00A8FF"
+            iconColor="#00A8FF"
+          />
+          <ContinueButton
+            onClick={form.handleSubmit(onSubmit)}
+            isLastStep={currentStep === totalSteps}
+            gradientFrom="#89D7FF"
+            gradientTo="#00A8FF"
+            disabled={form.formState.isSubmitting}
+            loading={form.formState.isSubmitting}
+          />
         </div>
       </FormProvider>
     </div>

@@ -28,11 +28,11 @@ export type CreateMedicalExaminerInput = {
   forensicAssessmentTrained: boolean;
 
   // step 4
-  experienceDetails: string;
+  experienceDetails?: string;
 
   // step 5
-  signedNDADocumentId: string;
-  insuranceProofDocumentId: string;
+  // signedNDADocumentId: string;
+  // insuranceProofDocumentId: string;
   agreeTermsConditions: boolean;
   consentBackgroundVerification: boolean;
 };
@@ -97,16 +97,16 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
         },
         yearsOfIMEExperience: payload.yearsOfIMEExperience,
         isForensicAssessmentTrained: payload.forensicAssessmentTrained,
-        ndaDocument: {
-          connect: { id: payload.signedNDADocumentId },
-        },
+        // ndaDocument: {
+        //   connect: { id: payload.signedNDADocumentId },
+        // },
         agreeToTerms: payload.agreeTermsConditions,
         isConsentToBackgroundVerification:
           payload.consentBackgroundVerification,
-        bio: payload.experienceDetails,
-        insuranceDocument: {
-          connect: { id: payload.insuranceProofDocumentId },
-        },
+        bio: payload.experienceDetails || "",
+        // insuranceDocument: {
+        //   connect: { id: payload.insuranceProofDocumentId },
+        // },
         status: ExaminerStatus.PENDING,
       },
     });

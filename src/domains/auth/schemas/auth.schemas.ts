@@ -100,13 +100,11 @@ export type Step3IMEExperienceInput = z.infer<typeof step3IMEExperienceSchema>;
 export const step4ExperienceDetailsSchema = z.object({
   experienceDetails: z
     .string()
-    .min(10, {
-      message:
-        "Please provide at least 10 characters describing your experience",
-    })
     .max(500, {
       message: "Experience details must be less than 500 characters",
-    }),
+    })
+    .optional()
+    .default(""),
 });
 
 export type Step4ExperienceDetailsInput = z.infer<
@@ -114,32 +112,36 @@ export type Step4ExperienceDetailsInput = z.infer<
 >;
 
 export const step5AvailabilitySchema = z.object({
-  preferredRegions: z.string({ error: "Preferred regions is required" }),
-  maxTravelDistance: z.string({ error: "Maximum travel distance is required" }),
-  daysAvailable: z.string({ error: "Days available is required" }),
-  timeWindows: z
-    .object({
-      morning: z.boolean(),
-      afternoon: z.boolean(),
-      evening: z.boolean(),
-    })
-    .refine((value) => value.morning || value.afternoon || value.evening, {
-      message: "Please select at least one time window",
-    }),
-  acceptVirtualAssessments: z.string({
-    error: "Please specify if you accept virtual assessments",
-  }),
+  preferredRegions: z
+    .string()
+    .min(1, { message: "Preferred regions is required" }),
+  maxTravelDistance: z
+    .string()
+    .min(1, { message: "Maximum travel distance is required" }),
+  // daysAvailable: z.string().min(1, { message: "Days available is required" }),
+  // timeWindows: z
+  //   .object({
+  //     morning: z.boolean(),
+  //     afternoon: z.boolean(),
+  //     evening: z.boolean(),
+  //   })
+  //   .refine((value) => value.morning || value.afternoon || value.evening, {
+  //     message: "Please select at least one time window",
+  //   }),
+  acceptVirtualAssessments: z
+    .string()
+    .min(1, { message: "Please specify if you accept virtual assessments" }),
 });
 
 export type Step5AvailabilityInput = z.infer<typeof step5AvailabilitySchema>;
 
 export const step6LegalSchema = z.object({
-  signedNDA: z.any().refine((val) => val !== null, {
-    error: "Signed NDA document is required",
-  }),
-  insuranceProof: z.any().refine((val) => val !== null, {
-    error: "Insurance proof document is required",
-  }),
+  // signedNDA: z.any().refine((val) => val !== null, {
+  //   error: "Signed NDA document is required",
+  // }),
+  // insuranceProof: z.any().refine((val) => val !== null, {
+  //   error: "Insurance proof document is required",
+  // }),
   consentBackgroundVerification: z.boolean().refine((val) => val === true, {
     message: "You must consent to background verification",
   }),

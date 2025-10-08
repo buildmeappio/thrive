@@ -25,9 +25,9 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
 
       if (
         !data.medicalLicense ||
-        !data.cvResume ||
-        !data.signedNDA ||
-        !data.insuranceProof
+        !data.cvResume
+        // || !data.signedNDA ||
+        // !data.insuranceProof
       ) {
         setErr("Please upload all documents");
         setLoading(false);
@@ -37,20 +37,20 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
       const [
         medicalLicenseDocument,
         cvResumeDocument,
-        signedNDADocument,
-        insuranceProofDocument,
+        // signedNDADocument,
+        // insuranceProofDocument,
       ] = await Promise.all([
         uploadFileToS3(data.medicalLicense),
         uploadFileToS3(data.cvResume),
-        uploadFileToS3(data.signedNDA),
-        uploadFileToS3(data.insuranceProof),
+        // uploadFileToS3(data.signedNDA),
+        // uploadFileToS3(data.insuranceProof),
       ]);
 
       if (
         !medicalLicenseDocument.success ||
-        !cvResumeDocument.success ||
-        !signedNDADocument.success ||
-        !insuranceProofDocument.success
+        !cvResumeDocument.success
+        // || !signedNDADocument.success ||
+        // !insuranceProofDocument.success
       ) {
         setErr("Failed to upload documents");
         setLoading(false);
@@ -77,16 +77,17 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         // Step3
         yearsOfIMEExperience: data.yearsOfIMEExperience,
         languagesSpoken: data.languagesSpoken,
-        forensicAssessmentTrained: data.forensicAssessmentTrained.toLowerCase() === "yes",
+        forensicAssessmentTrained:
+          data.forensicAssessmentTrained.toLowerCase() === "yes",
 
         // Step4
         experienceDetails: data.experienceDetails,
 
         // Step5
-        signedNDADocumentId: signedNDADocument.document.id,
-        insuranceProofDocumentId: insuranceProofDocument.document.id,
+        // signedNDADocumentId: signedNDADocument.document.id,
+        // insuranceProofDocumentId: insuranceProofDocument.document.id,
         agreeTermsConditions: data.agreeTermsConditions,
-        consentBackgroundVerification: data.consentBackgroundVerification,  
+        consentBackgroundVerification: data.consentBackgroundVerification,
       };
 
       await authActions.createMedicalExaminer(payload);
@@ -100,9 +101,8 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
 
   return (
     <div
-      className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[450px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
-    >
+      className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
+      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
       <ProgressIndicator
         currentStep={currentStep}
         totalSteps={totalSteps}

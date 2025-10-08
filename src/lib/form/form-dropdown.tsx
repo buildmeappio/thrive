@@ -20,7 +20,7 @@ interface FormDropdownProps<TFieldValues extends FieldValues> {
   icon?: React.ReactNode;
 }
 
-export function FormDropdown<TFieldValues extends FieldValues>({
+const FormDropdown = <TFieldValues extends FieldValues>({
   name,
   label,
   required = false,
@@ -29,7 +29,7 @@ export function FormDropdown<TFieldValues extends FieldValues>({
   multiSelect = false,
   className = "",
   icon,
-}: FormDropdownProps<TFieldValues>) {
+}: FormDropdownProps<TFieldValues>) => {
   const {
     control,
     formState: { errors },
@@ -74,4 +74,6 @@ export function FormDropdown<TFieldValues extends FieldValues>({
       />
     </div>
   );
-}
+};
+
+export default FormDropdown;

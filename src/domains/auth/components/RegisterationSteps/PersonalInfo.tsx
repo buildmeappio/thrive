@@ -16,6 +16,7 @@ import {
 } from "@/domains/auth/schemas/auth.schemas";
 import authActions from "../../actions";
 import { useForm, FormProvider, FormField, FormDropdown } from "@/lib/form";
+import { UseFormRegisterReturn } from "react-hook-form";
 
 const PersonalInfo: React.FC<RegStepProps> = ({
   onNext,
@@ -57,7 +58,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
 
   return (
     <div
-      className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:min-h-[500px] md:w-[950px] md:rounded-[55px] md:px-[75px]"
+      className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
       style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
       <ProgressIndicator
         currentStep={currentStep}
@@ -73,7 +74,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
             </h3>
             <div className="mt-6 grid grid-cols-1 gap-x-14 gap-y-5 md:mt-8 md:grid-cols-2">
               <FormField name="firstName" label="First Name" required>
-                {(field) => (
+                {(field: UseFormRegisterReturn & { error?: boolean }) => (
                   <Input
                     {...field}
                     id="firstName"
@@ -84,7 +85,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
               </FormField>
 
               <FormField name="lastName" label="Last Name" required>
-                {(field) => (
+                {(field: UseFormRegisterReturn & { error?: boolean }) => (
                   <Input
                     {...field}
                     id="lastName"
@@ -95,7 +96,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
               </FormField>
 
               <FormField name="phoneNumber" label="Phone Number" required>
-                {(field) => (
+                {(field: UseFormRegisterReturn & { error?: boolean }) => (
                   <Input
                     {...field}
                     id="phoneNumber"
@@ -107,7 +108,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
               </FormField>
 
               <FormField name="emailAddress" label="Email Address" required>
-                {(field) => (
+                {(field: UseFormRegisterReturn & { error?: boolean }) => (
                   <Input
                     {...field}
                     id="emailAddress"
@@ -128,7 +129,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
               />
 
               <FormField name="mailingAddress" label="Mailing Address" required>
-                {(field) => (
+                {(field: UseFormRegisterReturn & { error?: boolean }) => (
                   <Input
                     {...field}
                     id="mailingAddress"

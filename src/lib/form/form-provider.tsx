@@ -15,15 +15,15 @@ export interface UseFormOptions<TFieldValues extends FieldValues>
   schema: z.ZodType<TFieldValues, any, any>;
 }
 
-export function useForm<TFieldValues extends FieldValues = FieldValues>(
+const useForm = <TFieldValues extends FieldValues = FieldValues>(
   options: UseFormOptions<TFieldValues>
-) {
+) => {
   const { schema, ...restOptions } = options;
   return useReactHookForm<TFieldValues>({
     ...restOptions,
     resolver: zodResolver(schema),
   });
-}
+};
 
 export interface FormProviderProps<TFieldValues extends FieldValues> {
   children: React.ReactNode;
@@ -31,16 +31,17 @@ export interface FormProviderProps<TFieldValues extends FieldValues> {
   onSubmit: (data: TFieldValues) => void | Promise<void>;
 }
 
-export function FormProvider<TFieldValues extends FieldValues>({
+const FormProvider = <TFieldValues extends FieldValues>({
   children,
   form,
   onSubmit,
-}: FormProviderProps<TFieldValues>) {
+}: FormProviderProps<TFieldValues>) => {
   return (
     <RHFProvider {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>{children}</form>
     </RHFProvider>
   );
-}
+};
 
 export { useFormContext } from "react-hook-form";
+export { useForm, FormProvider };
