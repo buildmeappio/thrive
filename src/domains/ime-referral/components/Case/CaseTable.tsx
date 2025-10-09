@@ -25,39 +25,35 @@ import Pagination from '@/components/Pagination';
 import { CaseData } from '../../types/CaseData';
 import SearchInput from '@/components/SearchInput';
 import DateRangePicker from '@/components/DateRangePicker';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Filter, Info, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { formatDate } from '@/utils/dateTime';
+import { getCaseStatuses, getCaseTypes, getClaimTypes } from '../../actions';
 
-type Props = {
+type CaseTableProps = {
   caseList: CaseData[];
+  caseStatuses: Awaited<ReturnType<typeof getCaseStatuses>>['result'];
+  claimTypes: Awaited<ReturnType<typeof getClaimTypes>>['result'];
+  caseTypes: Awaited<ReturnType<typeof getCaseTypes>>['result'];
 };
 
-const pretty = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, m => m.toUpperCase());
-
-const CaseTable = ({ caseList }: Props) => {
+const CaseTable = ({ caseList, caseStatuses, claimTypes, caseTypes }: CaseTableProps) => {
   const [query, setQuery] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>();
 
-  const statuses = useMemo(() => Array.from(new Set(caseList.map(c => c.status))), [caseList]);
-
-  const claimTypes = useMemo(() => Array.from(new Set(caseList.map(c => c.claimType))), [caseList]);
-
-  const specialties = useMemo(
-    () => Array.from(new Set(caseList.map(c => c.specialty))),
-    [caseList]
-  );
-
   const statusOptions: FilterOption[] = useMemo(
-    () => [{ label: 'All Statuses', value: 'ALL' }, ...statuses.map(s => ({ label: s, value: s }))],
-    [statuses]
+    () => [
+      { label: 'All Statuses', value: 'ALL' },
+      ...(caseStatuses?.map(s => ({ label: s.name, value: s.name })) || []),
+    ],
+    [caseStatuses]
   );
 
   const typeOptions: FilterOption[] = useMemo(
     () => [
       { label: 'All Claim Types', value: 'ALL' },
-      ...claimTypes.map(t => ({ label: pretty(t), value: t })),
+      ...(claimTypes?.map(t => ({ label: t.name, value: t.name })) || []),
     ],
     [claimTypes]
   );
@@ -65,9 +61,9 @@ const CaseTable = ({ caseList }: Props) => {
   const specialtyOptions: FilterOption[] = useMemo(
     () => [
       { label: 'All Specialties', value: 'ALL' },
-      ...specialties.map(s => ({ label: pretty(s), value: s })),
+      ...(caseTypes?.map(s => ({ label: s.name, value: s.name })) || []),
     ],
-    [specialties]
+    [caseTypes]
   );
 
   const [filters, setFilters] = useState<Record<string, string>>({
@@ -75,12 +71,6 @@ const CaseTable = ({ caseList }: Props) => {
     claimType: 'ALL',
     specialty: 'ALL',
   });
-
-  const configs: FilterConfig[] = [
-    { key: 'status', label: 'Status', options: statusOptions },
-    { key: 'claimType', label: 'Claim Type', options: typeOptions },
-    { key: 'specialty', label: 'Specialty', options: specialtyOptions },
-  ];
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -90,7 +80,6 @@ const CaseTable = ({ caseList }: Props) => {
       const typeOk = filters.claimType === 'ALL' || d.claimType === filters.claimType;
       const specialtyOk = filters.specialty === 'ALL' || d.specialty === filters.specialty;
 
-      // Date range filtering
       let dateOk = true;
       if (dateRange?.from) {
         const submittedDate = new Date(d.submittedAt);
@@ -137,16 +126,33 @@ const CaseTable = ({ caseList }: Props) => {
         <div className="w-full flex-1 sm:w-auto">
           <SearchInput value={query} onChange={setQuery} placeholder="Search by case" />
         </div>
-        {configs.map(c => (
-          <div key={c.key} className="w-full flex-shrink-0 sm:w-auto">
-            <LabeledSelect
-              label={c.label}
-              value={filters[c.key] ?? 'ALL'}
-              onChange={v => setFilters({ ...filters, [c.key]: v })}
-              options={c.options}
-            />
-          </div>
-        ))}
+        <div className="w-full flex-shrink-0 sm:w-auto">
+          <LabeledSelect
+            label="Status"
+            value={filters.status ?? 'ALL'}
+            onChange={v => setFilters({ ...filters, status: v })}
+            options={statusOptions}
+            icon={<Filter className="h-4 w-4 flex-shrink-0 text-blue-900" strokeWidth={2} />}
+          />
+        </div>
+        <div className="w-full flex-shrink-0 sm:w-auto">
+          <LabeledSelect
+            label="Claim Type"
+            value={filters.claimType ?? 'ALL'}
+            onChange={v => setFilters({ ...filters, claimType: v })}
+            options={typeOptions}
+            icon={<Info className="h-4 w-4 flex-shrink-0 text-blue-900" strokeWidth={2} />}
+          />
+        </div>
+        <div className="w-full flex-shrink-0 sm:w-auto">
+          <LabeledSelect
+            label="Specialty"
+            value={filters.specialty ?? 'ALL'}
+            onChange={v => setFilters({ ...filters, specialty: v })}
+            options={specialtyOptions}
+            icon={<Plus className="h-4 w-4 flex-shrink-0 text-blue-900" strokeWidth={2} />}
+          />
+        </div>
         <div className="w-full flex-shrink-0 sm:w-auto">
           <DateRangePicker value={dateRange} onChange={setDateRange} />
         </div>
@@ -154,7 +160,7 @@ const CaseTable = ({ caseList }: Props) => {
 
       {/* Table */}
       <div className="w-full max-w-full overflow-hidden rounded-[27px] border-[1.18px] border-[#EAEAEA] bg-white p-3 sm:p-6">
-        {/* Desktop Table - hidden on small screens */}
+        {/* Desktop Table */}
         <div className="hidden overflow-x-auto md:block">
           <Table className="rounded-3xl border-none">
             <TableHeader>
@@ -210,7 +216,7 @@ const CaseTable = ({ caseList }: Props) => {
           </Table>
         </div>
 
-        {/* ✅ Mobile Card View - visible only on small screens */}
+        {/* Mobile Card View */}
         <div className="relative w-full overflow-x-hidden md:hidden">
           <div className="w-full space-y-4 px-3">
             {table.getRowModel().rows.length ? (
@@ -221,7 +227,6 @@ const CaseTable = ({ caseList }: Props) => {
                     key={row.id}
                     className="w-full space-y-3 overflow-hidden rounded-[13px] bg-[#F3F3F3] p-4"
                   >
-                    {/* Header Section */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1 pr-2">
                         <p className="font-poppins mb-1 text-[12px] text-[#4D4D4D]">Case No.</p>
@@ -237,7 +242,6 @@ const CaseTable = ({ caseList }: Props) => {
                       </Link>
                     </div>
 
-                    {/* Case Info Grid */}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="min-w-0">
                         <p className="font-poppins mb-1 text-[12px] text-[#4D4D4D]">Claimant</p>
@@ -265,7 +269,6 @@ const CaseTable = ({ caseList }: Props) => {
                       </div>
                     </div>
 
-                    {/* Status */}
                     <div className="min-w-0">
                       <p className="font-poppins mb-1 text-[12px] text-[#4D4D4D]">Status</p>
                       <p className="font-poppins text-[14px] break-words text-black">

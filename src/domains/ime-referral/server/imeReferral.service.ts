@@ -519,6 +519,22 @@ const getCaseList = async () => {
   }
 };
 
+const getCaseStatuses = async () => {
+  try {
+    const caseStatuses = await prisma.caseStatus.findMany({
+      where: {
+        deletedAt: null,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+    return caseStatuses;
+  } catch (error) {
+    throw HttpError.handleServiceError(error, 'Error fetching case ststuses');
+  }
+};
+
 const imeReferralService = {
   createCase,
   getCaseTypes,
@@ -527,6 +543,7 @@ const imeReferralService = {
   getClaimTypes,
   getExaminationBenefits,
   getCaseList,
+  getCaseStatuses,
 };
 
 export default imeReferralService;

@@ -1,31 +1,26 @@
 'use client';
-
-import { Info, Plus, CalendarDays, Filter } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { Dropdown } from './Dropdown';
+import { ReactNode } from 'react';
 
 type Option = { label: string; value: string };
-
-const iconMap: Record<string, any> = {
-  'Claim Type': Info,
-  Specialty: Plus,
-  Date: CalendarDays,
-  Status: Filter,
-};
 
 const LabeledSelect = ({
   label,
   value,
   onChange,
   options,
+  icon,
   className = '',
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   options: Option[];
+  icon?: ReactNode;
   className?: string;
 }) => {
-  const Icon = iconMap[label] || Info;
+  const defaultIcon = <Info className="h-4 w-4 flex-shrink-0 text-blue-900" strokeWidth={2} />;
 
   return (
     <div className={`relative w-44 ${className}`}>
@@ -35,11 +30,12 @@ const LabeledSelect = ({
         value={value}
         onChange={onChange}
         options={options}
-        icon={<Icon className="h-4 w-4 flex-shrink-0 text-blue-900" strokeWidth={2} />}
+        icon={icon || defaultIcon}
         placeholder={label}
         className="h-[45px] rounded-full border border-gray-200 bg-white"
       />
     </div>
   );
 };
+
 export default LabeledSelect;

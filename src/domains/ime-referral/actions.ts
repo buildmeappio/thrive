@@ -82,3 +82,14 @@ export const getCaseList = async () => {
   const result = await imeReferralHandlers.getCaseList();
   return result;
 };
+
+export const getCaseStatuses = async () => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+
+  const result = await imeReferralHandlers.getCaseStatuses();
+  return result;
+};

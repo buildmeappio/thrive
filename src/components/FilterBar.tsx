@@ -1,9 +1,15 @@
 'use client';
 
 import LabeledSelect from './LabeledSelect';
+import { ReactNode } from 'react';
 
 export type FilterOption = { label: string; value: string };
-export type FilterConfig = { key: string; label: string; options: FilterOption[] };
+export type FilterConfig = {
+  key: string;
+  label: string;
+  options: FilterOption[];
+  icon?: ReactNode;
+};
 
 const FilterBar = ({
   configs,
@@ -27,9 +33,11 @@ const FilterBar = ({
           value={pending[c.key] ?? 'ALL'}
           onChange={v => setField(c.key, v)}
           options={c.options}
+          icon={c.icon}
         />
       ))}
     </div>
   );
 };
+
 export default FilterBar;
