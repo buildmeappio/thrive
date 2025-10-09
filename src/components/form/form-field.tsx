@@ -5,7 +5,7 @@ import {
   FieldPath,
   FieldValues,
   UseFormRegisterReturn,
-} from "react-hook-form";
+} from "@/lib/form";
 import { Label } from "@/components/ui";
 
 interface FormFieldProps<TFieldValues extends FieldValues> {

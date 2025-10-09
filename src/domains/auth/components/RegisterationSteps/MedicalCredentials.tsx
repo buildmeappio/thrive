@@ -22,8 +22,9 @@ import {
   useRegistrationStore,
 } from "@/domains/auth/state/useRegistrationStore";
 // import DatePickerInput from "@/components/DatePickerInput";
-import { useForm, FormProvider, FormField, FormDropdown } from "@/lib/form";
-import { Controller, UseFormRegisterReturn } from "react-hook-form";
+import { FormProvider, FormField, FormDropdown } from "@/components/form";
+import { Controller, UseFormRegisterReturn } from "@/lib/form";
+import { useForm } from "@/hooks/use-form-hook";
 
 const MedicalCredentials: React.FC<RegStepProps> = ({
   onNext,

@@ -1,34 +1,29 @@
 "use client";
 import React from "react";
-import {
-  useFormContext,
-  FieldPath,
-  FieldValues,
-  Controller,
-} from "react-hook-form";
-import { Dropdown } from "@/components";
+import { Controller, useFormContext, FieldPath, FieldValues } from "@/lib/form";
 import { Label } from "@/components/ui";
+import { Dropdown } from "@/components";
 
 interface FormDropdownProps<TFieldValues extends FieldValues> {
   name: FieldPath<TFieldValues>;
   label?: string;
+  options: { value: string; label: string }[];
   required?: boolean;
-  options: Array<{ value: string; label: string }>;
   placeholder?: string;
   multiSelect?: boolean;
-  className?: string;
   icon?: React.ReactNode;
+  className?: string;
 }
 
 const FormDropdown = <TFieldValues extends FieldValues>({
   name,
   label,
-  required = false,
   options,
+  required = false,
   placeholder = "Select...",
   multiSelect = false,
+  icon = null,
   className = "",
-  icon,
 }: FormDropdownProps<TFieldValues>) => {
   const {
     control,
@@ -52,26 +47,16 @@ const FormDropdown = <TFieldValues extends FieldValues>({
         render={({ field }) => (
           <Dropdown
             id={name}
-            value={field.value}
-            onChange={(v) => {
-              if (multiSelect) {
-                field.onChange(v);
-              } else {
-                if (Array.isArray(v)) {
-                  field.onChange(v[0]);
-                } else {
-                  field.onChange(v);
-                }
-              }
-            }}
             options={options}
+            value={field.value}
+            onChange={field.onChange}
             placeholder={placeholder}
-            error={errorMessage}
             multiSelect={multiSelect}
             icon={icon}
           />
         )}
       />
+      {errorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
     </div>
   );
 };

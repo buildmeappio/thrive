@@ -4,6 +4,8 @@ import verifyOtp from "./verifyOtp";
 import createMedicalExaminer from "./createMedicalExaminer";
 import getLanguages from "./getLanguages";
 import approveMedicalExaminer from "./approveMedicalExaminer";
+import verifyAccountToken from "./verifyAccountToken";
+import setPassword from "./setPassword";
 
 const authActions = {
   checkUserExists,
@@ -12,6 +14,8 @@ const authActions = {
   createMedicalExaminer,
   getLanguages,
   approveMedicalExaminer,
+  verifyAccountToken,
+  setPassword,
 };
 
 export default authActions;

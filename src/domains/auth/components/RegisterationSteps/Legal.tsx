@@ -19,8 +19,9 @@ import {
   RegistrationData,
 } from "@/domains/auth/state/useRegistrationStore";
 import { step6InitialValues } from "@/domains/auth/constants/initialValues";
-import { useForm, FormProvider } from "@/lib/form";
-import { Controller } from "react-hook-form";
+import { FormProvider } from "@/components/form";
+import { Controller } from "@/lib/form";
+import { useForm } from "@/hooks/use-form-hook";
 
 const Legal: React.FC<RegStepProps> = ({
   onNext,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import authHandlers from "@/domains/auth/server/handlers";
+import ErrorMessages from "@/constants/ErrorMessages";
 
 /**
  * POST /api/examiner/approve
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: "examinerProfileId is required",
+          message: ErrorMessages.EXAMINER_PROFILE_NOT_FOUND,
         },
         { status: 400 }
       );
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
     const errorMessage =
       error instanceof Error
         ? error.message
-        : "Failed to approve medical examiner";
+        : ErrorMessages.FAILED_APPROVE_EXAMINER;
     const statusCode = (error as any)?.statusCode || 500;
 
     return NextResponse.json(

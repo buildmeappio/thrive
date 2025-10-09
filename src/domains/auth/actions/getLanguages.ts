@@ -1,19 +1,16 @@
-'use server';
-import prisma from "@/lib/db";
+"use server";
+
+import authHandlers from "../server/handlers";
+import ErrorMessages from "@/constants/ErrorMessages";
 
 const getLanguages = async () => {
-	try {
-		const languages = await prisma.language.findMany({
-			where: {
-				deletedAt: null,
-			},
-		});
-		return languages;
-	} catch (error) {
-		console.error(error);
-		throw new Error("Failed to get languages");
-	}
+  try {
+    const languages = await authHandlers.getLanguages();
+    return languages;
+  } catch (error) {
+    console.error(error);
+    throw new Error(ErrorMessages.LANGUAGES_NOT_FOUND);
+  }
 };
 
-export default getLanguages;  
-  
+export default getLanguages;

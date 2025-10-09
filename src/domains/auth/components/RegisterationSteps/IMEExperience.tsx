@@ -13,8 +13,9 @@ import {
   useRegistrationStore,
   RegistrationData,
 } from "@/domains/auth/state/useRegistrationStore";
-import { useForm, FormProvider, FormDropdown } from "@/lib/form";
-import { Controller } from "react-hook-form";
+import { FormProvider, FormDropdown } from "@/components/form";
+import { Controller } from "@/lib/form";
+import { useForm } from "@/hooks/use-form-hook";
 
 interface Step3IMEExperinceProps {
   onNext: () => void;

@@ -15,8 +15,10 @@ import {
   Step1PersonalInfoInput,
 } from "@/domains/auth/schemas/auth.schemas";
 import authActions from "../../actions";
-import { useForm, FormProvider, FormField, FormDropdown } from "@/lib/form";
-import { UseFormRegisterReturn } from "react-hook-form";
+import ErrorMessages from "@/constants/ErrorMessages";
+import { FormProvider, FormField, FormDropdown } from "@/components/form";
+import { UseFormRegisterReturn } from "@/lib/form";
+import { useForm } from "@/hooks/use-form-hook";
 
 const PersonalInfo: React.FC<RegStepProps> = ({
   onNext,
@@ -45,7 +47,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
       if (exists) {
         form.setError("emailAddress", {
           type: "manual",
-          message: "An account with this email already exists",
+          message: ErrorMessages.ACCOUNT_ALREADY_EXISTS,
         });
       } else {
         merge(values as Partial<RegistrationData>);

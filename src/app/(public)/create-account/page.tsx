@@ -1,6 +1,7 @@
-import prisma from "@/lib/db";
-import { verifyPasswordToken } from "@/lib/jwt";
 import { SetPasswordForm } from "@/domains/auth";
+import { redirect } from "next/navigation";
+import authActions from "@/domains/auth/actions";
+import ErrorMessages from "@/constants/ErrorMessages";
 
 const Page = async ({
   searchParams,
@@ -9,24 +10,18 @@ const Page = async ({
 }) => {
   const { token } = await searchParams;
 
-  const decoded = verifyPasswordToken(token);
+  try {
+    // Verify token and check user exists
+    await authActions.verifyAccountToken({ token });
+  } catch (error) {
+    // Redirect to error page based on error type
+    const errorMessage = error instanceof Error ? error.message : "unknown";
 
-  if (!decoded) {
-    return (
-      <div className="p-8 text-center">
-        <h1 className="text-2xl font-bold text-red-600 mb-4">
-          Invalid or Expired Token
-        </h1>
-      </div>
-    );
-  }
-  const user = await prisma.user.findUnique({
-    where: {
-      id: decoded.id,
-    },
-  });
-  if (!user) {
-    return <div>User not found</div>;
+    if (errorMessage.includes(ErrorMessages.USER_NOT_FOUND)) {
+      redirect("/create-account/success?error=user_not_found");
+    }
+
+    redirect("/create-account/success?error=invalid_token");
   }
   return (
     <div className="bg-[#F4FBFF]">

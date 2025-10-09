@@ -3,7 +3,7 @@ import HttpError from "@/utils/httpError";
 import { Roles } from "../../constants/roles";
 import { ExaminerStatus } from "@prisma/client";
 import emailService from "@/services/email.service";
-import { signPasswordToken } from "@/lib/jwt";
+import ErrorMessages from "@/constants/ErrorMessages";
 
 export type CreateMedicalExaminerInput = {
   // step 1
@@ -53,7 +53,7 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
     });
 
     if (!role) {
-      throw HttpError.notFound("MEDICAL_EXAMINER role not found");
+      throw HttpError.notFound(ErrorMessages.ROLE_NOT_FOUND);
     }
 
     if (!user) {
@@ -134,7 +134,7 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
       message: "Medical examiner created successfully",
     };
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to create medical examiner", 500);
+    throw HttpError.fromError(error, ErrorMessages.REGISTRATION_FAILED, 500);
   }
 };
 

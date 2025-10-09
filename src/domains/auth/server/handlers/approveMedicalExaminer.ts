@@ -1,9 +1,9 @@
-import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
 import { ExaminerStatus } from "@prisma/client";
 import emailService from "@/services/email.service";
-import { signPasswordToken } from "@/lib/jwt";
 import { Roles } from "../../constants/roles";
+import { examinerService, tokenService } from "../services";
+import ErrorMessages from "@/constants/ErrorMessages";
 
 export type ApproveMedicalExaminerInput = {
   examinerProfileId: string;
@@ -12,51 +12,26 @@ export type ApproveMedicalExaminerInput = {
 
 const approveMedicalExaminer = async (payload: ApproveMedicalExaminerInput) => {
   try {
-    // Find the examiner profile
-    const examinerProfile = await prisma.examinerProfile.findUnique({
-      where: {
-        id: payload.examinerProfileId,
-      },
-      include: {
-        account: {
-          include: {
-            user: true,
-          },
-        },
-      },
-    });
+    // Get examiner profile
+    const examinerProfile = await examinerService.getExaminerProfileById(
+      payload.examinerProfileId
+    );
 
-    if (!examinerProfile) {
-      throw HttpError.notFound("Examiner profile not found");
-    }
+    // Validate current status
+    examinerService.validateExaminerStatus(examinerProfile.status, "approve");
 
-    if (examinerProfile.status === ExaminerStatus.ACCEPTED) {
-      throw HttpError.badRequest("Examiner is already approved");
-    }
-
-    if (examinerProfile.status === ExaminerStatus.REJECTED) {
-      throw HttpError.badRequest(
-        "Cannot approve a rejected examiner. Please create a new profile."
-      );
-    }
-
-    // Update the examiner profile status to ACCEPTED
-    const updatedProfile = await prisma.examinerProfile.update({
-      where: {
-        id: payload.examinerProfileId,
-      },
-      data: {
-        status: ExaminerStatus.ACCEPTED,
-        approvedBy: payload.approvedBy || null,
-        approvedAt: new Date(),
-      },
-    });
+    // Update status to ACCEPTED
+    const updatedProfile = await examinerService.updateExaminerStatus(
+      payload.examinerProfileId,
+      ExaminerStatus.ACCEPTED,
+      payload.approvedBy
+    );
 
     // Get user details for email
     const user = examinerProfile.account.user;
 
     // Generate password setup token
-    const token = signPasswordToken({
+    const token = tokenService.generatePasswordToken({
       email: user.email,
       id: user.id,
       accountId: examinerProfile.accountId,
@@ -85,7 +60,11 @@ const approveMedicalExaminer = async (payload: ApproveMedicalExaminerInput) => {
       },
     };
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to approve medical examiner", 500);
+    throw HttpError.fromError(
+      error,
+      ErrorMessages.FAILED_APPROVE_EXAMINER,
+      500
+    );
   }
 };
 

@@ -15,8 +15,9 @@ import {
   regionOptions,
 } from "../../constants/options";
 import { step5InitialValues } from "@/domains/auth/constants/initialValues";
-import { useForm, FormProvider, FormDropdown } from "@/lib/form";
-import { Controller } from "react-hook-form";
+import { FormProvider, FormDropdown } from "@/components/form";
+import { Controller } from "@/lib/form";
+import { useForm } from "@/hooks/use-form-hook";
 import {
   useRegistrationStore,
   RegistrationData,

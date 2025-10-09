@@ -1,34 +1,22 @@
-import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
 import { Roles } from "../../constants/roles";
+import { roleService, userService } from "../services";
+import ErrorMessages from "@/constants/ErrorMessages";
 
 const checkUserExists = async (email: string) => {
   try {
-    // find role with name MEDICAL_EXAMINER
-    const medicalExaminerRole = await prisma.role.findFirst({
-      where: {
-        name: Roles.MEDICAL_EXAMINER,
-      },
-    });
+    // Get medical examiner role
+    const medicalExaminerRole = await roleService.getRoleByName(
+      Roles.MEDICAL_EXAMINER
+    );
 
-    if (!medicalExaminerRole) {
-      throw HttpError.notFound("MEDICAL_EXAMINER role not found");
-    }
+    // Find user with account for this role
+    const user = await userService.getUserWithAccountByRole(
+      email,
+      medicalExaminerRole.id
+    );
 
-    const user = await prisma.user.findFirst({
-      where: {
-        email,
-      },
-      include: {
-        accounts: {
-          where: {
-            roleId: medicalExaminerRole.id,
-          },
-        },
-      },
-    });
-
-    if (!user) {
+    if (!user || user.accounts.length === 0) {
       return {
         exists: false,
       };
@@ -39,7 +27,11 @@ const checkUserExists = async (email: string) => {
       account: user.accounts[0],
     };
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to check user exists", 500);
+    throw HttpError.fromError(
+      error,
+      ErrorMessages.FAILED_CHECK_USER_EXISTS,
+      500
+    );
   }
 };
 
