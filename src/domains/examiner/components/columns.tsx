@@ -61,17 +61,21 @@ const columns: ColumnDef<ExaminerData>[] = [
     },
   },
   {
-    header: () => <Header>Specialty</Header>,
-    accessorKey: "specialties",
+    header: () => <Header>Email</Header>,
+    accessorKey: "email",
     cell: ({ row }) => {
-      return <Content>{row.original.specialties}</Content>;
+      return <Content>{row.original.email}</Content>;
     },
   },
   {
-    header: () => <Header>License Number</Header>,
-    accessorKey: "licenseNumber",
+    header: () => <Header>Specialties</Header>,
+    accessorKey: "specialties",
     cell: ({ row }) => {
-      return <Content>{row.original.licenseNumber}</Content>;
+      const specialties = row.original.specialties;
+      const displayText = Array.isArray(specialties) 
+        ? specialties.join(", ") 
+        : specialties;
+      return <Content>{displayText}</Content>;
     },
   },
   {
@@ -82,10 +86,12 @@ const columns: ColumnDef<ExaminerData>[] = [
     },
   },
   {
-    header: () => <Header>Mailing Address</Header>,
-    accessorKey: "mailingAddress",
+    header: () => <Header>Status</Header>,
+    accessorKey: "status",
     cell: ({ row }) => {
-      return <Content>{row.original.mailingAddress}</Content>;
+      const status = row.original.status;
+      const statusText = status === "PENDING" ? "Pending Approval" : status === "ACCEPTED" ? "Approved" : "Rejected";
+      return <Content>{statusText}</Content>;
     },
   },
   {

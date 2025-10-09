@@ -602,8 +602,8 @@ model ExaminerProfile {
   licenseExpiryDate                 DateTime?      @map("license_expiry_date") @db.Date
   medicalLicenseDocumentId          String         @map("medical_license_document_id") @db.Uuid
   resumeDocumentId                  String         @map("resume_document_id") @db.Uuid
-  NdaDocumentId                     String         @map("nda_document_id") @db.Uuid
-  insuranceDocumentId               String         @map("insurance_document_id") @db.Uuid
+  NdaDocumentId                     String?        @map("nda_document_id") @db.Uuid
+  insuranceDocumentId               String?        @map("insurance_document_id") @db.Uuid
   isForensicAssessmentTrained       Boolean        @map("is_forensic_assessment_trained")
   yearsOfIMEExperience              String         @map("years_of_ime_experience") @db.VarChar(255)
   bio                               String         @map("bio") @db.Text
@@ -622,8 +622,8 @@ model ExaminerProfile {
   account                Account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
   medicalLicenseDocument Documents          @relation(name: "ExmainerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
   resumeDocument         Documents          @relation(name: "ExmainerResumeDocument", references: [id], fields: [resumeDocumentId])
-  ndaDocument            Documents          @relation(name: "ExmainerNDADocument", references: [id], fields: [NdaDocumentId])
-  insuranceDocument      Documents          @relation(name: "ExmainerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
+  ndaDocument            Documents?         @relation(name: "ExmainerNDADocument", references: [id], fields: [NdaDocumentId])
+  insuranceDocument      Documents?         @relation(name: "ExmainerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
   examinerLanguages      ExaminerLanguage[]
 
   @@map("examiner_profiles")
