@@ -18,7 +18,7 @@ export async function getCaseCount(): Promise<number> {
   return dashboardService.getActiveCaseCount();
 }
 
-export async function getCases(limit = 3): Promise<CaseDetailDtoType[]> {
+export async function getCases(limit: number): Promise<CaseDetailDtoType[]> {
   return dashboardService.getRecentCases(limit);
 }
 
@@ -27,11 +27,11 @@ export async function getExaminerCount(): Promise<number> {
   return getExaminerCountAction();
 }
 
-export async function getExaminers(): Promise<ExaminerData[]> {
-  return listRecentExaminers(3);
+export async function getExaminers(limit: number): Promise<ExaminerData[]> {
+  return listRecentExaminers(limit);
 }
 
-export async function getWaitingCases(limit = 3): Promise<CaseDetailDtoType[]> {
+export async function getWaitingCases(limit: number): Promise<CaseDetailDtoType[]> {
   return dashboardService.getWaitingCases(limit);
 }
 

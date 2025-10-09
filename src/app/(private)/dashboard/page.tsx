@@ -21,9 +21,9 @@ const Page = async () => {
     getOrganizationCount(),
     getCaseCount(),
     getExaminerCount(),
-    getCases(),
-    getWaitingCases(),
-    getExaminers(),
+    getCases(3),
+    getWaitingCases(3),
+    getExaminers(3),
   ]);
 
   return (

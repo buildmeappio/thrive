@@ -5,6 +5,14 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
 import { formatDateShort } from "@/utils/date";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type Props = {
   items: CaseDetailDtoType[];
@@ -48,73 +56,76 @@ export default function WaitingCases({
         {subtitle}
       </p>
 
-      {/* Table - Mobile Responsive with Horizontal Scroll */}
+      {/* Table - Using shadcn components */}
       <div className="mt-4 overflow-x-auto rounded-2xl border border-[#E8E8E8]">
-        <div className="min-w-[800px]">
-          {/* Header */}
-          <div className="grid grid-cols-6 gap-x-4 bg-[#F3F3F3] px-4 py-3 text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins">
-            <div>Case ID</div>
-            <div>Company</div>
-            <div>Claim Type</div>
-            <div>Date Received</div>
-            <div>Due Date</div>
-            <div>Status</div>
-          </div>
-
-          {/* Rows */}
-          <ul className="divide-y divide-[#EDEDED]">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-[#F3F3F3] border-b-0 hover:bg-[#F3F3F3]">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Case ID
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Company
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Claim Type
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Date Received
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Due Date
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Status
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {items?.map((r) => {
               const href = buildDetailHref(r.id);
               const statusText = r.status?.name || "N/A";
               
-              // Color coding for different statuses
-              const statusColor = 
-                statusText === "Pending" ? "text-[#FFB800]" :
-                statusText === "Waiting to be Scheduled" ? "text-[#00A8FF]" :
-                statusText === "Scheduled" ? "text-[#00C853]" :
-                "text-[#5B5B5B]";
-              
               return (
-                <li
+                <TableRow 
                   key={r.id}
-                  className="grid grid-cols-6 gap-x-4 items-center px-4 py-[12px] text-[14px] tracking-[-0.01em] hover:bg-[#FAFAFF] font-poppins"
+                  className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
                 >
-                  <span className="text-[#1A1A1A] font-mono tabular-nums truncate">
-                    {r.caseNumber}
-                  </span>
-                  <span className="text-[#5B5B5B] truncate">
-                    {r.case.organization?.name || "N/A"}
-                  </span>
-                  <span className="text-[#5B5B5B] truncate">
-                    {r.case.caseType?.name || "N/A"}
-                  </span>
-                  <span className="text-[#5B5B5B] truncate">
-                    {formatDateShort(r.createdAt)}
-                  </span>
-                  <span className="text-[#5B5B5B] truncate">
-                    {r.dueDate ? formatDateShort(r.dueDate) : "N/A"}
-                  </span>
-
-                  <span className="flex items-center justify-between gap-3">
-                    <span className={`font-medium ${statusColor} truncate min-w-0 flex-1`}>
-                      {statusText}
-                    </span>
-
-                    <Link
-                      href={href}
-                      aria-label={`Open ${r.caseNumber}`}
-                      className="flex-shrink-0 grid h-5 w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
-                    >
-                      <ChevronRight className="h-3.5 w-3.5 text-[#00A8FF]" />
-                    </Link>
-                  </span>
-                </li>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#1A1A1A] font-mono tabular-nums font-poppins py-3">
+                    <span className="truncate block">{r.caseNumber}</span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">{r.case.organization?.name || "N/A"}</span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">{r.case.caseType?.name || "N/A"}</span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">{formatDateShort(r.createdAt)}</span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">{r.dueDate ? formatDateShort(r.dueDate) : "N/A"}</span>
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins truncate min-w-0 flex-1">
+                        {statusText}
+                      </span>
+                      <Link
+                        href={href}
+                        aria-label={`Open ${r.caseNumber}`}
+                        className="flex-shrink-0 grid h-5 w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
+                      >
+                        <ChevronRight className="h-3.5 w-3.5 text-[#00A8FF]" />
+                      </Link>
+                    </div>
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </ul>
-        </div>
+          </TableBody>
+        </Table>
       </div>
     </section>
   );
 }
-
