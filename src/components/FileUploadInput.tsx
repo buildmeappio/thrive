@@ -1,14 +1,26 @@
 "use client";
 import React, { useRef } from "react";
-import { Upload, File, X } from "lucide-react";
+import { Upload, File, X, Download } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+
+// Document types for handling both new uploads and existing documents
+export type ExistingDocument = {
+  id: string;
+  name: string;
+  displayName?: string;
+  type: string;
+  size: number;
+  isExisting: true;
+};
+
+export type DocumentFile = File | ExistingDocument | null;
 
 interface FileUploadInputProps {
   name: string;
   label?: string;
-  value?: File | null;
-  onChange: (file: File | null) => void;
+  value?: DocumentFile;
+  onChange: (file: DocumentFile) => void;
   accept?: string;
   required?: boolean;
   error?: string;
@@ -52,6 +64,23 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
     }
   };
 
+  const handleDownloadExisting = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (value && "isExisting" in value && value.isExisting) {
+      // TODO: Implement download functionality for existing documents
+      console.log("Download existing document:", value.id);
+    }
+  };
+
+  const isExistingDocument = (doc: DocumentFile): doc is ExistingDocument => {
+    return (
+      doc !== null &&
+      typeof doc === "object" &&
+      "isExisting" in doc &&
+      doc.isExisting === true
+    );
+  };
+
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
@@ -92,10 +121,17 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
               )}
               <div className="min-w-0 flex-1">
                 <p className="text-[#333] text-[13px] font-medium truncate">
-                  {value.name}
+                  {isExistingDocument(value)
+                    ? value.displayName || value.name
+                    : value.name}
                 </p>
                 <p className="text-[11px] text-[#9EA9AA]">
                   {formatFileSize(value.size)}
+                  {isExistingDocument(value) && (
+                    <span className="ml-2 text-[#00A8FF] text-[10px]">
+                      (Previously uploaded)
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
@@ -106,13 +142,30 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
           )}
 
           {value && (
-            <button
-              type="button"
-              onClick={handleRemoveFile}
-              className="ml-2 p-1 rounded-full hover:bg-red-100 text-red-500 transition-colors flex-shrink-0"
-              disabled={disabled}>
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-1 ml-2">
+              {isExistingDocument(value) && (
+                <button
+                  type="button"
+                  onClick={handleDownloadExisting}
+                  className="p-1 rounded-full hover:bg-blue-100 text-blue-500 transition-colors flex-shrink-0"
+                  disabled={disabled}
+                  title="Download existing document">
+                  <Download className="h-4 w-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleRemoveFile}
+                className="p-1 rounded-full hover:bg-red-100 text-red-500 transition-colors flex-shrink-0"
+                disabled={disabled}
+                title={
+                  isExistingDocument(value)
+                    ? "Remove and upload new file"
+                    : "Remove file"
+                }>
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           )}
         </div>
       </div>

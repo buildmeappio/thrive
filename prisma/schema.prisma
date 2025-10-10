@@ -574,6 +574,7 @@ enum ExaminerStatus {
   PENDING
   ACCEPTED
   REJECTED
+  INFO_REQUESTED
 }
 
 model ExaminerLanguage {
@@ -607,6 +608,9 @@ model ExaminerProfile {
   isForensicAssessmentTrained       Boolean        @map("is_forensic_assessment_trained")
   yearsOfIMEExperience              String         @map("years_of_ime_experience") @db.VarChar(255)
   bio                               String         @map("bio") @db.Text
+  preferredRegions                  String?        @map("preferred_regions") @db.VarChar(255)
+  maxTravelDistance                 String?        @map("max_travel_distance") @db.VarChar(255)
+  acceptVirtualAssessments          Boolean?       @map("accept_virtual_assessments")
   isConsentToBackgroundVerification Boolean        @map("is_consent_to_background_verification")
   agreeToTerms                      Boolean        @map("agree_to_terms")
   status                            ExaminerStatus @default(PENDING) @map("status")

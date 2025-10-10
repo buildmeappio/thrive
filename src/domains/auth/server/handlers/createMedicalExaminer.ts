@@ -31,6 +31,9 @@ export type CreateMedicalExaminerInput = {
   experienceDetails?: string;
 
   // step 5
+  preferredRegions?: string;
+  maxTravelDistance?: string;
+  acceptVirtualAssessments?: boolean;
   // signedNDADocumentId: string;
   // insuranceProofDocumentId: string;
   agreeTermsConditions: boolean;
@@ -104,6 +107,9 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
         isConsentToBackgroundVerification:
           payload.consentBackgroundVerification,
         bio: payload.experienceDetails || "",
+        preferredRegions: payload.preferredRegions,
+        maxTravelDistance: payload.maxTravelDistance,
+        acceptVirtualAssessments: payload.acceptVirtualAssessments,
         // insuranceDocument: {
         //   connect: { id: payload.insuranceProofDocumentId },
         // },

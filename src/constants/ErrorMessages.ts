@@ -161,4 +161,6 @@ export default Object.freeze({
   EMAIL_MISMATCH: "Email mismatch",
   OTP_VERIFICATION_FAILED: "OTP verification failed",
   ACCOUNT_ALREADY_EXISTS: "An account with this email already exists",
+  INVALID_EXAMINER_INFO_TOKEN: "Invalid or expired examiner info token",
+  FAILED_UPDATE_EXAMINER_PROFILE: "Failed to update examiner profile",
 });

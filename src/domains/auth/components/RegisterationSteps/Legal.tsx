@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import {
   ContinueButton,
@@ -42,6 +42,17 @@ const Legal: React.FC<RegStepProps> = ({
     },
     mode: "onSubmit",
   });
+
+  // Reset form when store data changes
+  useEffect(() => {
+    form.reset({
+      ...step6InitialValues,
+      // signedNDA: data.signedNDA,
+      // insuranceProof: data.insuranceProof,
+      consentBackgroundVerification: data.consentBackgroundVerification,
+      agreeTermsConditions: data.agreeTermsConditions,
+    });
+  }, [data.consentBackgroundVerification, data.agreeTermsConditions, form]);
 
   const onSubmit = (values: Step6LegalInput) => {
     merge(values as Partial<RegistrationData>);

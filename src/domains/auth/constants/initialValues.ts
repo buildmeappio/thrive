@@ -28,8 +28,8 @@ export const step2InitialValues: Step2MedicalCredentialsInput = {
   licenseNumber: "",
   provinceOfLicensure: "",
   // licenseExpiryDate: "",
-  medicalLicense: null as File | null,
-  cvResume: null as File | null,
+  medicalLicense: null,
+  cvResume: null,
 };
 
 export const step3InitialValues: Step3IMEExperienceInput = {

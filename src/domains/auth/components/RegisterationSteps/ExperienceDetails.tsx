@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { BackButton, ContinueButton, ProgressIndicator } from "@/components";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,6 +33,14 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
     },
     mode: "onSubmit",
   });
+
+  // Reset form when store data changes
+  useEffect(() => {
+    form.reset({
+      ...step4InitialValues,
+      experienceDetails: data.experienceDetails,
+    });
+  }, [data.experienceDetails, form]);
 
   const onSubmit = (values: Step4ExperienceDetailsInput) => {
     merge(values as Partial<RegistrationData>);
