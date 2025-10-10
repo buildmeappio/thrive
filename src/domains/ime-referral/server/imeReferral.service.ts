@@ -341,28 +341,75 @@ const getCaseTypes = async () => {
 
 const getCaseDetails = async (caseId: string) => {
   try {
-    const caseDetails = await prisma.case.findUnique({
+    const examination = await prisma.examination.findUnique({
       where: { id: caseId },
       include: {
-        claimant: {
-          include: { address: true },
+        examinationType: true,
+        status: true,
+        examiner: {
+          include: {
+            user: true,
+          },
         },
-        insurance: {
-          include: { address: true },
+        assignTo: {
+          include: {
+            user: true,
+          },
         },
-        legalRepresentative: {
-          include: { address: true },
+        services: {
+          where: { enabled: true },
+          include: {
+            interpreter: {
+              include: {
+                language: true,
+              },
+            },
+            transport: {
+              include: {
+                pickupAddress: true,
+              },
+            },
+          },
         },
-        caseType: true,
-        examinations: {
-          include: { examinationType: true, status: true },
+        case: {
+          include: {
+            organization: {
+              select: {
+                name: true,
+              },
+            },
+            claimant: {
+              include: {
+                address: true,
+                claimType: true,
+              },
+            },
+            insurance: {
+              include: {
+                address: true,
+              },
+            },
+            legalRepresentative: {
+              include: {
+                address: true,
+              },
+            },
+            caseType: true,
+            documents: {
+              include: {
+                document: true,
+              },
+            },
+          },
         },
       },
     });
-    if (!caseDetails) {
-      throw HttpError.notFound('Case details not found');
+
+    if (!examination) {
+      throw HttpError.notFound('Examination not found');
     }
-    return caseDetails;
+
+    return examination;
   } catch (error) {
     console.error('Database error in getCaseDetails:', error);
     throw HttpError.handleServiceError(error, 'Error fetching case details');
@@ -483,6 +530,35 @@ const getExaminationBenefits = async (examinationTypeId: string) => {
   }
 };
 
+const getReferralDetails = async (caseId: string) => {
+  try {
+    const caseDetails = await prisma.case.findUnique({
+      where: { id: caseId },
+      include: {
+        claimant: {
+          include: { address: true },
+        },
+        insurance: {
+          include: { address: true },
+        },
+        legalRepresentative: {
+          include: { address: true },
+        },
+        caseType: true,
+        examinations: {
+          include: { examinationType: true, status: true },
+        },
+      },
+    });
+    if (!caseDetails) {
+      throw HttpError.notFound('Case details not found');
+    }
+    return caseDetails;
+  } catch (error) {
+    console.error('Database error in getCaseDetails:', error);
+    throw HttpError.handleServiceError(error, 'Error fetching case details');
+  }
+};
 const getCaseList = async () => {
   try {
     const examinations = await prisma.examination.findMany({
@@ -542,6 +618,7 @@ const imeReferralService = {
   getCases,
   getClaimTypes,
   getExaminationBenefits,
+  getReferralDetails,
   getCaseList,
   getCaseStatuses,
 };

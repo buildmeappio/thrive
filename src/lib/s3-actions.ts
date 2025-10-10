@@ -1,5 +1,5 @@
 'use server';
-import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { revalidatePath } from 'next/cache';
 import { s3Client } from './s3-client';
 
@@ -92,5 +92,80 @@ export async function deleteFileFromS3(
   } catch (error) {
     console.error('S3 Delete error:', error);
     return { success: false, error: 'Failed to delete file from S3' };
+  }
+}
+
+async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Uint8Array[] = [];
+
+    stream.on('data', (chunk: Uint8Array) => chunks.push(chunk));
+    stream.on('error', error => reject(error));
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+  });
+}
+
+export async function getFileFromS3(filename: string): Promise<{
+  success: boolean;
+  data?: Buffer;
+  contentType?: string;
+  error?: string;
+}> {
+  try {
+    // Validate filename
+    if (!filename || filename.trim() === '') {
+      return {
+        success: false,
+        error: 'Filename is required',
+      };
+    }
+
+    const key = `documents/${filename}`;
+
+    const command = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+    });
+
+    const response = await s3Client.send(command);
+
+    // Check if Body exists in response
+    if (!response.Body) {
+      return {
+        success: false,
+        error: 'No data returned from S3',
+      };
+    }
+
+    // Convert the stream to Buffer
+    const buffer = await streamToBuffer(response.Body as NodeJS.ReadableStream);
+
+    return {
+      success: true,
+      data: buffer,
+      contentType: response.ContentType,
+    };
+  } catch (error: any) {
+    console.error('S3 Get error:', error);
+
+    // Handle specific S3 errors
+    if (error.name === 'NoSuchKey') {
+      return {
+        success: false,
+        error: 'File not found in S3',
+      };
+    }
+
+    if (error.name === 'AccessDenied') {
+      return {
+        success: false,
+        error: 'Access denied to S3 bucket',
+      };
+    }
+
+    return {
+      success: false,
+      error: error.message || 'Failed to get file from S3',
+    };
   }
 }
