@@ -574,6 +574,7 @@ enum ExaminerStatus {
   PENDING
   ACCEPTED
   REJECTED
+  INFO_REQUESTED
 }
 
 model ExaminerLanguage {
