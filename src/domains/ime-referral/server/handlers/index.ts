@@ -5,3 +5,5 @@ export { default as getCaseTypes } from './getCaseTypes';
 export { default as getCaseDetails } from './getCaseDetails';
 export { default as getClaimTypes } from './getClaimTypes';
 export { default as getExaminationBenefits } from './getExaminationBenefits';
+export { default as getCaseList } from './getCaseList';
+export { default as getCaseStatuses } from './getCaseStatuses';
