@@ -20,6 +20,9 @@ interface ExaminerData {
   bio: string;
   languages: string[];
   status: "PENDING" | "ACCEPTED" | "REJECTED";
+  preferredRegions?: string;
+  maxTravelDistance?: string;
+  acceptVirtualAssessments?: boolean;
 }
 
 class ExaminerProfileSeeder {
@@ -58,6 +61,9 @@ class ExaminerProfileSeeder {
         bio: "Experienced orthopedic surgeon with over 15 years of clinical practice and 5 years of IME experience. Specializing in musculoskeletal injuries and workplace assessments.",
         languages: ["English", "French"],
         status: "ACCEPTED",
+        preferredRegions: "Greater Toronto Area, Hamilton, Niagara Region",
+        maxTravelDistance: "100 km",
+        acceptVirtualAssessments: true,
       },
       {
         firstName: "Sarah",
@@ -76,6 +82,9 @@ class ExaminerProfileSeeder {
         bio: "Board-certified psychiatrist with expertise in mental health assessments for legal and insurance purposes. Strong background in forensic psychiatry.",
         languages: ["English"],
         status: "ACCEPTED",
+        preferredRegions: "Vancouver, Surrey, Burnaby, Richmond",
+        maxTravelDistance: "50 km",
+        acceptVirtualAssessments: true,
       },
       {
         firstName: "Michael",
@@ -94,6 +103,9 @@ class ExaminerProfileSeeder {
         bio: "Cardiologist with extensive experience in cardiovascular assessments and occupational health evaluations.",
         languages: ["English", "Spanish"],
         status: "PENDING",
+        preferredRegions: "Ottawa, Gatineau, Eastern Ontario",
+        maxTravelDistance: "75 km",
+        acceptVirtualAssessments: false,
       },
       {
         firstName: "Emily",
@@ -112,6 +124,9 @@ class ExaminerProfileSeeder {
         bio: "Family physician transitioning into independent medical examinations. Committed to providing thorough and objective assessments.",
         languages: ["English", "French"],
         status: "PENDING",
+        preferredRegions: "Winnipeg, Brandon, Steinbach",
+        maxTravelDistance: "150 km",
+        acceptVirtualAssessments: true,
       },
     ];
 
@@ -249,6 +264,9 @@ class ExaminerProfileSeeder {
             isConsentToBackgroundVerification: true,
             agreeToTerms: true,
             status: examinerData.status,
+            preferredRegions: examinerData.preferredRegions,
+            maxTravelDistance: examinerData.maxTravelDistance,
+            acceptVirtualAssessments: examinerData.acceptVirtualAssessments,
             ...(examinerData.status === "ACCEPTED" && {
               approvedAt: new Date(),
             }),
