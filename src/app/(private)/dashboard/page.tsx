@@ -1,8 +1,8 @@
 import getOrganization from '@/domains/organization/server/handlers/getOrganization';
 // import OrganizationDashboard from '@/domains/organization/components';
 import { type Metadata } from 'next';
-import { getDashboardCases } from '@/domains/dashboard/actions';
 import Dashboard from '@/domains/dashboard/components/Dashboard';
+import { getCaseList } from '@/domains/ime-referral/actions';
 
 export const metadata: Metadata = {
   title: 'Dashboard | Thrive',
@@ -18,9 +18,9 @@ const DashboardPage = async () => {
   }
   // return <OrganizationDashboard organization={organization.result} />;
 
-  const newDashboardCases = await getDashboardCases('');
-  const inProgressDashboardCases = await getDashboardCases('');
-  const moreInfoDashboardCases = await getDashboardCases('');
+  const newDashboardCases = await getCaseList(undefined, 3);
+  const inProgressDashboardCases = await getCaseList(undefined, 3);
+  const moreInfoDashboardCases = await getCaseList(undefined, 3);
   return (
     <Dashboard
       newDashboardCases={newDashboardCases.result}

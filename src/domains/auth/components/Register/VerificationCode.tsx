@@ -48,7 +48,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
         toast.success(SuccessMessages.OTP_RESENT);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setResending(false);
     }
@@ -111,7 +111,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
 
       actions.setSubmitting(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error(ErrorMessages.REGISTRATION_FAILED);
     }
   };

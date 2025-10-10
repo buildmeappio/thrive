@@ -50,6 +50,17 @@ export const getCaseTypes = async () => {
   return result;
 };
 
+export const getCaseDetails = async (caseId: string) => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+
+  const result = await imeReferralHandlers.getCaseDetails(caseId);
+  return result;
+};
+
 export const getClaimTypes = async () => {
   const user = await getCurrentUser();
 
@@ -69,5 +80,27 @@ export const getExaminationBenefits = async (examinationTypeId: string) => {
   }
 
   const result = await imeReferralHandlers.getExaminationBenefits(examinationTypeId);
+  return result;
+};
+
+export const getCaseList = async (status?: string, take?: number) => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+
+  const result = await imeReferralHandlers.getCaseList(status, take);
+  return result;
+};
+
+export const getCaseStatuses = async () => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+
+  const result = await imeReferralHandlers.getCaseStatuses();
   return result;
 };

@@ -341,28 +341,75 @@ const getCaseTypes = async () => {
 
 const getCaseDetails = async (caseId: string) => {
   try {
-    const caseDetails = await prisma.case.findUnique({
+    const examination = await prisma.examination.findUnique({
       where: { id: caseId },
       include: {
-        claimant: {
-          include: { address: true },
+        examinationType: true,
+        status: true,
+        examiner: {
+          include: {
+            user: true,
+          },
         },
-        insurance: {
-          include: { address: true },
+        assignTo: {
+          include: {
+            user: true,
+          },
         },
-        legalRepresentative: {
-          include: { address: true },
+        services: {
+          where: { enabled: true },
+          include: {
+            interpreter: {
+              include: {
+                language: true,
+              },
+            },
+            transport: {
+              include: {
+                pickupAddress: true,
+              },
+            },
+          },
         },
-        caseType: true,
-        examinations: {
-          include: { examinationType: true, status: true },
+        case: {
+          include: {
+            organization: {
+              select: {
+                name: true,
+              },
+            },
+            claimant: {
+              include: {
+                address: true,
+                claimType: true,
+              },
+            },
+            insurance: {
+              include: {
+                address: true,
+              },
+            },
+            legalRepresentative: {
+              include: {
+                address: true,
+              },
+            },
+            caseType: true,
+            documents: {
+              include: {
+                document: true,
+              },
+            },
+          },
         },
       },
     });
-    if (!caseDetails) {
-      throw HttpError.notFound('Case details not found');
+
+    if (!examination) {
+      throw HttpError.notFound('Examination not found');
     }
-    return caseDetails;
+
+    return examination;
   } catch (error) {
     console.error('Database error in getCaseDetails:', error);
     throw HttpError.handleServiceError(error, 'Error fetching case details');
@@ -483,6 +530,101 @@ const getExaminationBenefits = async (examinationTypeId: string) => {
   }
 };
 
+const getReferralDetails = async (caseId: string) => {
+  try {
+    const caseDetails = await prisma.case.findUnique({
+      where: { id: caseId },
+      include: {
+        claimant: {
+          include: { address: true },
+        },
+        insurance: {
+          include: { address: true },
+        },
+        legalRepresentative: {
+          include: { address: true },
+        },
+        caseType: true,
+        examinations: {
+          include: { examinationType: true, status: true },
+        },
+      },
+    });
+    if (!caseDetails) {
+      throw HttpError.notFound('Case details not found');
+    }
+    return caseDetails;
+  } catch (error) {
+    console.error('Database error in getCaseDetails:', error);
+    throw HttpError.handleServiceError(error, 'Error fetching case details');
+  }
+};
+
+const getCaseList = async (status?: string, take?: number) => {
+  try {
+    const examinations = await prisma.examination.findMany({
+      where: status ? { status: { name: status } } : undefined,
+      ...(take && { take }),
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        case: {
+          include: {
+            claimant: {
+              include: {
+                claimType: true,
+              },
+            },
+          },
+        },
+        examinationType: true,
+        status: true,
+        examiner: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    const caseData = examinations.map(exam => ({
+      id: exam.id,
+      number: exam.caseNumber,
+      claimant: `${exam.case.claimant.firstName} ${exam.case.claimant.lastName}`,
+      claimType: exam.case.claimant.claimType.name,
+      status: exam.status.name,
+      specialty: exam.examinationType.name,
+      examiner: exam.examiner && `${exam.examiner.user.firstName} ${exam.examiner.user.lastName}`,
+      submittedAt: exam.createdAt.toISOString(),
+    }));
+
+    if (!caseData || caseData.length === 0) {
+      throw HttpError.notFound(ErrorMessages.CASES_NOT_FOUND);
+    }
+
+    return caseData;
+  } catch (error) {
+    throw HttpError.handleServiceError(error, ErrorMessages.FAILED_TO_GET_CASE_LIST);
+  }
+};
+
+const getCaseStatuses = async () => {
+  try {
+    const caseStatuses = await prisma.caseStatus.findMany({
+      where: {
+        deletedAt: null,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+    return caseStatuses;
+  } catch (error) {
+    throw HttpError.handleServiceError(error, 'Error fetching case ststuses');
+  }
+};
+
 const imeReferralService = {
   createCase,
   getCaseTypes,
@@ -490,6 +632,9 @@ const imeReferralService = {
   getCases,
   getClaimTypes,
   getExaminationBenefits,
+  getReferralDetails,
+  getCaseList,
+  getCaseStatuses,
 };
 
 export default imeReferralService;
