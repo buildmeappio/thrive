@@ -9,7 +9,10 @@ import {
   LoginInput,
 } from "../schemas/auth.schemas";
 
-export const step1InitialValues: Omit<Step1PersonalInfoInput, "provinceOfResidence"> & {
+export const step1InitialValues: Omit<
+  Step1PersonalInfoInput,
+  "provinceOfResidence"
+> & {
   provinceOfResidence: string | null;
 } = {
   firstName: "",
@@ -24,7 +27,7 @@ export const step2InitialValues: Step2MedicalCredentialsInput = {
   medicalSpecialty: [],
   licenseNumber: "",
   provinceOfLicensure: "",
-  licenseExpiryDate: "",
+  // licenseExpiryDate: "",
   medicalLicense: null as File | null,
   cvResume: null as File | null,
 };
@@ -33,7 +36,7 @@ export const step3InitialValues: Step3IMEExperienceInput = {
   provinceOfLicensure: "",
   languagesSpoken: [],
   forensicAssessmentTrained: "",
-  yearsOfIMEExperience: 0,
+  yearsOfIMEExperience: "",
 };
 
 export const step4InitialValues: Step4ExperienceDetailsInput = {
@@ -43,18 +46,18 @@ export const step4InitialValues: Step4ExperienceDetailsInput = {
 export const step5InitialValues: Step5AvailabilityInput = {
   preferredRegions: "",
   maxTravelDistance: "",
-  daysAvailable: "",
-  timeWindows: {
-    morning: false,
-    afternoon: false,
-    evening: false,
-  },
+  // daysAvailable: "",
+  // timeWindows: {
+  //   morning: false,
+  //   afternoon: false,
+  //   evening: false,
+  // },
   acceptVirtualAssessments: "",
 };
 
 export const step6InitialValues: Step6LegalInput = {
-  signedNDA: null as File | null,
-  insuranceProof: null as File | null,
+  // signedNDA: null as File | null,
+  // insuranceProof: null as File | null,
   consentBackgroundVerification: false,
   agreeTermsConditions: false,
 };

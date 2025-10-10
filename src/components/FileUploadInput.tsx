@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useRef } from "react";
 import { Upload, File, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 interface FileUploadInputProps {
   name: string;
-  label: string;
+  label?: string;
   value?: File | null;
   onChange: (file: File | null) => void;
   accept?: string;
@@ -15,6 +15,7 @@ interface FileUploadInputProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  showIcon?: boolean;
 }
 
 const FileUploadInput: React.FC<FileUploadInputProps> = ({
@@ -28,6 +29,7 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
   placeholder = "Click to upload file",
   disabled = false,
   className,
+  showIcon = true,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -60,11 +62,13 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <Label htmlFor={name} className="text-black">
-        {label}
-        {required && <span className="text-red-500">*</span>}
-      </Label>
-      
+      {label && (
+        <Label htmlFor={name} className="text-sm text-black">
+          {label}
+          {required && <span className="text-red-500">*</span>}
+        </Label>
+      )}
+
       <div
         onClick={handleClick}
         className={cn(
@@ -72,17 +76,20 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
           "hover:bg-[#E8EBEC] focus-within:ring-2 focus-within:ring-[#00A8FF]/30 focus-within:ring-offset-0",
           disabled && "cursor-not-allowed opacity-50",
           error && "ring-2 ring-red-500/30"
+        )}>
+        {!value && showIcon && (
+          <Upload
+            className="mr-3 h-5 w-5 text-[#A4A4A4] flex-shrink-0"
+            strokeWidth={2}
+          />
         )}
-      >
-        {!value && <Upload
-          className="mr-3 h-5 w-5 text-[#A4A4A4] flex-shrink-0"
-          strokeWidth={2}
-        /> }
-        
+
         <div className="flex-1 flex items-center justify-between min-w-0">
           {value ? (
             <div className="flex items-center min-w-0 flex-1">
-              <File className="mr-3 h-5 w-5 text-[#00A8FF] flex-shrink-0" />
+              {showIcon && (
+                <File className="mr-3 h-5 w-5 text-[#00A8FF] flex-shrink-0" />
+              )}
               <div className="min-w-0 flex-1">
                 <p className="text-[#333] text-[13px] font-medium truncate">
                   {value.name}
@@ -97,14 +104,13 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
               {placeholder}
             </span>
           )}
-          
+
           {value && (
             <button
               type="button"
               onClick={handleRemoveFile}
               className="ml-2 p-1 rounded-full hover:bg-red-100 text-red-500 transition-colors flex-shrink-0"
-              disabled={disabled}
-            >
+              disabled={disabled}>
               <X className="h-4 w-4" />
             </button>
           )}
@@ -122,10 +128,8 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
         aria-label={label}
       />
 
-      {error && (
-        <p className="text-xs text-red-500 mt-1">{error}</p>
-      )}
-      
+      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+
       {accept && !error && (
         <p className="text-xs text-[#9EA9AA] mt-1">
           Accepted formats: {accept.replace(/\./g, "").toUpperCase()}

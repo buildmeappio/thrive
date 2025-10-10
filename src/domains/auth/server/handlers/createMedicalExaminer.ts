@@ -3,7 +3,7 @@ import HttpError from "@/utils/httpError";
 import { Roles } from "../../constants/roles";
 import { ExaminerStatus } from "@prisma/client";
 import emailService from "@/services/email.service";
-import { signPasswordToken } from "@/lib/jwt";
+import ErrorMessages from "@/constants/ErrorMessages";
 
 export type CreateMedicalExaminerInput = {
   // step 1
@@ -23,16 +23,16 @@ export type CreateMedicalExaminerInput = {
   resumeDocumentId: string;
 
   // step 3
-  yearsOfIMEExperience: number;
+  yearsOfIMEExperience: string;
   languagesSpoken: string[];
   forensicAssessmentTrained: boolean;
 
   // step 4
-  experienceDetails: string;
+  experienceDetails?: string;
 
   // step 5
-  signedNDADocumentId: string;
-  insuranceProofDocumentId: string;
+  // signedNDADocumentId: string;
+  // insuranceProofDocumentId: string;
   agreeTermsConditions: boolean;
   consentBackgroundVerification: boolean;
 };
@@ -53,7 +53,7 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
     });
 
     if (!role) {
-      throw HttpError.notFound("MEDICAL_EXAMINER role not found");
+      throw HttpError.notFound(ErrorMessages.ROLE_NOT_FOUND);
     }
 
     if (!user) {
@@ -80,23 +80,33 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
     // Create examiner profile
     const examinerProfile = await prisma.examinerProfile.create({
       data: {
-        accountId: account.id,
+        account: {
+          connect: { id: account.id },
+        },
         provinceOfResidence: payload.provinceOfResidence,
         mailingAddress: payload.mailingAddress,
         specialties: payload.specialties,
         licenseNumber: payload.licenseNumber,
         provinceOfLicensure: payload.provinceOfLicensure,
         licenseExpiryDate: payload.licenseExpiryDate,
-        medicalLicenseDocumentId: payload.medicalLicenseDocumentId,
-        resumeDocumentId: payload.resumeDocumentId,
+        medicalLicenseDocument: {
+          connect: { id: payload.medicalLicenseDocumentId },
+        },
+        resumeDocument: {
+          connect: { id: payload.resumeDocumentId },
+        },
         yearsOfIMEExperience: payload.yearsOfIMEExperience,
         isForensicAssessmentTrained: payload.forensicAssessmentTrained,
-        NdaDocumentId: payload.signedNDADocumentId,
+        // ndaDocument: {
+        //   connect: { id: payload.signedNDADocumentId },
+        // },
         agreeToTerms: payload.agreeTermsConditions,
         isConsentToBackgroundVerification:
           payload.consentBackgroundVerification,
-        bio: payload.experienceDetails,
-        insuranceDocumentId: payload.insuranceProofDocumentId,
+        bio: payload.experienceDetails || "",
+        // insuranceDocument: {
+        //   connect: { id: payload.insuranceProofDocumentId },
+        // },
         status: ExaminerStatus.PENDING,
       },
     });
@@ -108,20 +118,23 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
       })),
     });
 
-    const token = signPasswordToken({ email: payload.email, id: user.id, accountId: account.id, role: Roles.MEDICAL_EXAMINER });
-
-    await emailService.sendEmail("Welcome to Thrive", "welcome.html", {
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      createAccountLink: `${process.env.NEXT_PUBLIC_APP_URL}/create-account?token=${token}`,
-    }, payload.email);
+    // Send submission confirmation email (without password setup link)
+    await emailService.sendEmail(
+      "Your Thrive Medical Examiner Application Has Been Received",
+      "application-received.html",
+      {
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+      },
+      payload.email
+    );
 
     return {
       success: true,
       message: "Medical examiner created successfully",
     };
   } catch (error) {
-    throw HttpError.fromError(error, "Failed to create medical examiner", 500);
+    throw HttpError.fromError(error, ErrorMessages.REGISTRATION_FAILED, 500);
   }
 };
 

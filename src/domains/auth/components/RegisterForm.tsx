@@ -1,17 +1,18 @@
-'use client';
-import React, { useEffect, useState } from 'react';
+"use client";
+import React, { useEffect, useState } from "react";
 import {
   PersonalInfo,
   MedicalCredentials,
   IMEExperince,
   ExperienceDetails,
+  Availablity,
   Legal,
-  SubmitConfirmation,  
+  SubmitConfirmation,
   ThankYou,
-} from './RegisterationSteps';
-import { RegStepProps } from '@/domains/auth/types/index';
-import { Language } from '@prisma/client';
-import { useRegistrationStore } from '@/domains/auth/state/useRegistrationStore';
+} from "./RegisterationSteps";
+import { RegStepProps } from "@/domains/auth/types/index";
+import { Language } from "@prisma/client";
+import { useRegistrationStore } from "@/domains/auth/state/useRegistrationStore";
 
 interface Step {
   component: React.ComponentType<RegStepProps>;
@@ -28,20 +29,20 @@ const RegisterForm: React.FC<{ languages: Language[] }> = ({ languages }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languages]);
 
-
   const steps: Step[] = [
     { component: PersonalInfo },
     { component: MedicalCredentials },
     { component: IMEExperince },
     { component: ExperienceDetails },
+    { component: Availablity },
     { component: Legal },
     { component: SubmitConfirmation },
     { component: ThankYou },
   ];
 
   const goToNext = () => {
-    console.log('goToNext', currentStep);
-    console.log('data', data);
+    console.log("goToNext", currentStep);
+    console.log("data", data);
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     }
@@ -67,13 +68,14 @@ const RegisterForm: React.FC<{ languages: Language[] }> = ({ languages }) => {
     );
   };
 
-  const showTitle = currentStep <= 6;
+  const showTitle = currentStep <= 7;
   return (
-    <div className="mx-auto max-w-[900px] p-4 md:min-h-screen md:p-0 md:py-6">
+    <div className="mx-auto max-w-[900px] p-4 md:p-0 md:py-6">
       <div className="mb-6 flex h-[60px] items-center justify-between">
         {showTitle && (
-          <h2 className="text-center text-[#000000] text-[22px] leading-none font-semibold tracking-[-0.03em] whitespace-nowrap md:text-4xl lg:text-5xl xl:text-[54px]">
-            Let&apos;s complete your profile to join <span className="text-[#00A8FF]">Thrive.</span>
+          <h2 className="text-center text-3xl md:text-5xl font-semibold">
+            Let&apos;s complete your profile to join{" "}
+            <span className="text-[#00A8FF]">Thrive.</span>
           </h2>
         )}
       </div>

@@ -1,15 +1,23 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Provider from "@/providers";
+import { degular } from "@/lib/fonts";
 
 export const metadata: Metadata = {
   title: "Thrive — Examiner",
   description: "Independent Medical Examiner onboarding",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className="light">
+    <html
+      lang="en"
+      className={`light ${degular.variable} h-full`}
+      suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -21,10 +29,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="font-degular antialiased">
-        <Provider>
-          {children}
-        </Provider>
+      <body className={`${degular.className} h-full`} suppressHydrationWarning>
+        <Provider>{children}</Provider>
       </body>
     </html>
   );

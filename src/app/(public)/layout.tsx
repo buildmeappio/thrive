@@ -2,9 +2,11 @@ import Header from "@/layouts/public/header";
 
 const PublicLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="flex min-h-screen flex-col bg-[#fafafa] h-full">
+    <div className="flex min-h-full flex-col">
       <Header />
-      <main role="main" className="flex-1">{children}</main>
+      <main role="main" className="flex-1 bg-[#F4FBFF]">
+        {children}
+      </main>
     </div>
   );
 };

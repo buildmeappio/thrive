@@ -23,7 +23,7 @@ class AuthService {
   async verifyOtp(otp: string, email: string, token: string) {
     try {
       if (!token) {
-        return { success: false, message: "No OTP token found" };
+        return { success: false, message: ErrorMessages.NO_OTP_TOKEN_FOUND };
       }
       if (!process.env.JWT_SECRET) {
         throw new Error(ErrorMessages.JWT_SECRETS_REQUIRED);
@@ -37,11 +37,11 @@ class AuthService {
 
       // Compare OTP
       if (decoded.otp !== otp) {
-        return { success: false, message: "Invalid OTP" };
+        return { success: false, message: ErrorMessages.INVALID_OTP };
       }
 
       if (decoded.email !== email) {
-        return { success: false, message: "Email mismatch" };
+        return { success: false, message: ErrorMessages.EMAIL_MISMATCH };
       }
 
       // Create password token with email
@@ -50,7 +50,7 @@ class AuthService {
       return { success: true, email: decoded.email, passwordToken };
     } catch (err) {
       console.error("OTP verification error:", err);
-      return { success: false, message: "OTP verification failed" };
+      return { success: false, message: ErrorMessages.OTP_VERIFICATION_FAILED };
     }
   }
 }

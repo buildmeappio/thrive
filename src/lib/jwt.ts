@@ -1,11 +1,15 @@
-import ErrorMessages from '@/constants/ErrorMessages';
-import jwt, { type Secret, type SignOptions, type JwtPayload } from 'jsonwebtoken';
+import ErrorMessages from "@/constants/ErrorMessages";
+import jwt, {
+  type Secret,
+  type SignOptions,
+  type JwtPayload,
+} from "jsonwebtoken";
 
 const checkJwtSecrets = () => {
-  if (process.env.NODE_ENV === 'test' || process.env.CI === 'true') {
+  if (process.env.NODE_ENV === "test" || process.env.CI === "true") {
     return {
-      otpSecret: '',
-      passwordSecret: '',
+      otpSecret: "",
+      passwordSecret: "",
     };
   }
 
@@ -21,7 +25,10 @@ const checkJwtSecrets = () => {
 
 const { otpSecret, passwordSecret } = checkJwtSecrets();
 
-export function signOtpToken(payload: object, expiresIn: SignOptions['expiresIn'] = '5m'): string {
+export function signOtpToken(
+  payload: object,
+  expiresIn: SignOptions["expiresIn"] = "5m"
+): string {
   const options: SignOptions = { expiresIn };
   return jwt.sign(payload, otpSecret, options);
 }
@@ -37,7 +44,7 @@ export function verifyOtpToken(token: string): JwtPayload | null {
 // ----- Password Tokens -----
 export function signPasswordToken(
   payload: object,
-  expiresIn: SignOptions['expiresIn'] = '7d'
+  expiresIn: SignOptions["expiresIn"] = "7d"
 ): string {
   const options: SignOptions = { expiresIn };
   return jwt.sign(payload, passwordSecret, options);
