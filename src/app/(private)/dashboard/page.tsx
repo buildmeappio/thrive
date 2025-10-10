@@ -1,6 +1,8 @@
 import getOrganization from '@/domains/organization/server/handlers/getOrganization';
-import OrganizationDashboard from '@/domains/organization/components';
+// import OrganizationDashboard from '@/domains/organization/components';
 import { type Metadata } from 'next';
+import { getDashboardCases } from '@/domains/dashboard/actions';
+import Dashboard from '@/domains/dashboard/components/Dashboard';
 
 export const metadata: Metadata = {
   title: 'Dashboard | Thrive',
@@ -14,6 +16,17 @@ const DashboardPage = async () => {
   if (!organization || !organization.result) {
     return <div className="p-4">Failed to load organization data.</div>;
   }
-  return <OrganizationDashboard organization={organization.result} />;
+  // return <OrganizationDashboard organization={organization.result} />;
+
+  const newDashboardCases = await getDashboardCases('');
+  const inProgressDashboardCases = await getDashboardCases('');
+  const moreInfoDashboardCases = await getDashboardCases('');
+  return (
+    <Dashboard
+      newDashboardCases={newDashboardCases.result}
+      inProgressDashboardCases={inProgressDashboardCases.result}
+      moreInfoDashboardCases={moreInfoDashboardCases.result}
+    />
+  );
 };
 export default DashboardPage;

@@ -14,6 +14,7 @@ import {
 import ErrorMessages from '@/constants/ErrorMessages';
 import jwt from 'jsonwebtoken';
 import SuccessMessages from '@/constants/SuccessMessages';
+import { Prisma } from '@prisma/client';
 
 const getUserByEmail = async (email: string) => {
   try {
@@ -53,7 +54,7 @@ const checkPassword = async (password: string, hashedPassword: string) => {
 };
 
 const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) => {
-  const result = await prisma.$transaction(async tx => {
+  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const {
       organizationType,
       organizationName,
