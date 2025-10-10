@@ -20,7 +20,7 @@ const Header = ({ children, first }: { children: React.ReactNode; first?: boolea
 
 const ActionButton = ({ id }: { id: string }) => {
   return (
-    <Link href={`/cases/${id}`} className="h-full w-full cursor-pointer">
+    <Link href={`/dashboard/cases/${id}`} className="h-full w-full cursor-pointer">
       <div className="flex h-[30px] w-[40px] items-center justify-center rounded-full bg-[#E0E0FF] p-0 hover:opacity-80">
         <ArrowRight className="h-4 w-4 text-[#000093]" />
       </div>

@@ -8,8 +8,6 @@ type ClaimantProps = {
 };
 
 const Claimant = ({ claimantDetails }: ClaimantProps) => {
-  console.log(claimantDetails);
-
   const fields = [
     {
       label: 'Type of Claim',

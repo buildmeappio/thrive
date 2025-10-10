@@ -1,5 +1,5 @@
 import { getCaseDetails } from '@/domains/ime-referral/actions';
-import CaseDetails from '@/domains/ime-referral/components/CaseDetails';
+import CaseDetails from '@/domains/ime-referral/components/Case/CaseDetails';
 import { Metadata } from 'next';
 
 type Props = {

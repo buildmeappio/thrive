@@ -7,8 +7,6 @@ type InsuranceDetailsProps = {
 };
 
 const InsuranceDetails = ({ insuranceDetails }: InsuranceDetailsProps) => {
-  console.log(insuranceDetails);
-
   const fields = [
     {
       label: 'Company Name',

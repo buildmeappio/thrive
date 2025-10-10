@@ -1,18 +1,18 @@
 'use client';
 
 import { ChevronDown } from 'lucide-react';
-import { getCaseDetails } from '../actions';
+import { getCaseDetails } from '../../actions';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import ClaimantDetails from './CaseDetails/Claimant';
-import InsuranceDetails from './CaseDetails/Insurance';
-import LegalRepresentative from './CaseDetails/LegalRepresentative';
-import ExaminationDetails from './CaseDetails/ExaminationDetails';
-import Documents from './CaseDetails/Documents';
+import ClaimantDetails from './Claimant';
+import InsuranceDetails from './Insurance';
+import LegalRepresentative from './LegalRepresentative';
+import ExaminationDetails from './ExaminationDetails';
+import Documents from './Documents';
 
 type CaseDetailsProps = {
   examinationData: Awaited<ReturnType<typeof getCaseDetails>>['result'];

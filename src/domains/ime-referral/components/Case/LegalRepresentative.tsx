@@ -8,8 +8,6 @@ type LegalRepresentativeDetailsProps = {
 };
 
 const LegalRepresentative = ({ legalRepresentativeDetails }: LegalRepresentativeDetailsProps) => {
-  console.log(legalRepresentativeDetails);
-
   const fields = [
     {
       label: 'Company Name',

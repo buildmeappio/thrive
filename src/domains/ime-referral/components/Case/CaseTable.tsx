@@ -235,7 +235,10 @@ const CaseTable = ({ caseList, caseStatuses, claimTypes, caseTypes }: CaseTableP
                         </p>
                       </div>
 
-                      <Link href={`/cases/${data.id}`} className="flex-shrink-0 cursor-pointer">
+                      <Link
+                        href={`/dashboard/cases/${data.id}`}
+                        className="flex-shrink-0 cursor-pointer"
+                      >
                         <div className="flex h-[30px] w-[40px] items-center justify-center rounded-full bg-[#E0E0FF] hover:opacity-80">
                           <ArrowRight className="h-4 w-4 text-[#000093]" />
                         </div>
