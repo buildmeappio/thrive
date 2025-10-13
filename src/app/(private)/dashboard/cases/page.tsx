@@ -23,12 +23,17 @@ const DashboardPage = async () => {
   ]);
 
   return (
-    <CaseTable
-      caseList={caseList.result}
-      caseStatuses={caseStatuses.result}
-      claimTypes={claimTypes.result}
-      caseTypes={caseTypes.result}
-    />
+    <>
+      <div className="mb-2 text-[32px] font-semibold text-[#000000] sm:text-[36px] md:text-[40px]">
+        All Cases
+      </div>
+      <CaseTable
+        caseList={caseList.result}
+        caseStatuses={caseStatuses.result}
+        claimTypes={claimTypes.result}
+        caseTypes={caseTypes.result}
+      />
+    </>
   );
 };
 export default DashboardPage;

@@ -3,6 +3,7 @@ import getOrganization from '@/domains/organization/server/handlers/getOrganizat
 import { type Metadata } from 'next';
 import Dashboard from '@/domains/dashboard/components/Dashboard';
 import { getCaseList } from '@/domains/ime-referral/actions';
+import Greetings from '@/components/Greetings';
 
 export const metadata: Metadata = {
   title: 'Dashboard | Thrive',
@@ -22,11 +23,14 @@ const DashboardPage = async () => {
   const inProgressDashboardCases = await getCaseList(undefined, 3);
   const moreInfoDashboardCases = await getCaseList(undefined, 3);
   return (
-    <Dashboard
-      newDashboardCases={newDashboardCases.result}
-      inProgressDashboardCases={inProgressDashboardCases.result}
-      moreInfoDashboardCases={moreInfoDashboardCases.result}
-    />
+    <>
+      <Greetings />
+      <Dashboard
+        newDashboardCases={newDashboardCases.result}
+        inProgressDashboardCases={inProgressDashboardCases.result}
+        moreInfoDashboardCases={moreInfoDashboardCases.result}
+      />
+    </>
   );
 };
 export default DashboardPage;

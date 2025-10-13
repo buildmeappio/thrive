@@ -1,3 +1,5 @@
+'use client';
+
 import { getCaseList } from '@/domains/ime-referral/actions';
 import DashboardCases from './DashboardCases';
 import ExaminationStatusChart from './ExaminationStatusChart';

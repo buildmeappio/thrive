@@ -4,10 +4,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import useRouter from '@/hooks/useRouter';
 import Link from 'next/link';
-import Image from '@/components/Image';
 import { Home, LifeBuoy, LogOut, Plus, UserPlus, X, FileText, ChevronLeft } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { createRoute, URLS } from '@/constants/routes';
+import { useSession } from 'next-auth/react';
 
 export const medicalExaminerSidebarRoutes = [
   { icon: Home, label: 'Dashboard', href: '/dashboard', index: 0 },
@@ -26,6 +26,8 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   const router = useRouter();
   const [selectedBtn, setSelectedBtn] = useState<number | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { data: session } = useSession();
+  const isOrgStatusPending = session?.user?.organizationStatus === 'pending';
 
   const isValidSidebarIndex = (index: string | null) => {
     return index && !isNaN(Number(index)) && Number(index) >= 0;
@@ -85,6 +87,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   };
 
   const handleNewReferral = () => {
+    if (isOrgStatusPending) return;
     router.push(URLS.IME_REFERRAL);
     if (onMobileClose) {
       onMobileClose();
@@ -99,6 +102,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   };
 
   const handleLinkClick = (item: (typeof medicalExaminerSidebarRoutes)[0]) => {
+    if (isOrgStatusPending) return;
     setSelectedSidebarIndex(item.index);
     if (onMobileClose) {
       onMobileClose();
@@ -111,7 +115,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-50 flex h-screen transform-gpu flex-col bg-white transition-all duration-300 md:sticky md:top-[77px] md:h-[calc(100vh-77px)] md:rounded-r-[50px] ${
+      className={`fixed top-0 left-0 z-50 flex h-screen transform-gpu flex-col rounded-r-[50px] bg-white transition-all duration-300 md:sticky md:h-[calc(100vh-77px)] ${
         isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       } ${isCollapsed ? 'md:w-[77px]' : 'w-[270px]'}`}
     >
@@ -138,13 +142,18 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
         </button>
 
         {/* Sidebar Content */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-16 md:pt-12">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-16 md:pt-10">
           {/* New IME Referral Button - hidden when collapsed */}
           {!isCollapsed && (
             <div className="mb-4 px-6 md:px-8">
               <button
                 onClick={handleNewReferral}
-                className="mb-4 flex w-full cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#000093] px-6 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95"
+                disabled={isOrgStatusPending}
+                className={`mb-4 flex w-full items-center justify-center space-x-2 rounded-full px-6 py-3 font-semibold text-white shadow-lg transition-all duration-200 ${
+                  isOrgStatusPending
+                    ? 'cursor-not-allowed bg-gray-400 opacity-60'
+                    : 'cursor-pointer bg-[#000093] hover:bg-[#000093]/90 active:scale-95'
+                }`}
               >
                 <Plus size={20} strokeWidth={2} className="h-5 w-5 text-white" />
                 <span className="text-sm">New IME Referral</span>
@@ -166,14 +175,17 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
                   key={item.index}
                   href={item.href}
                   onClick={() => handleLinkClick(item)}
-                  className={`group relative flex w-full items-center rounded-full text-left text-sm font-medium transition-all duration-200 active:scale-95 ${
+                  className={`group relative flex w-full items-center rounded-full text-left text-sm font-medium transition-all duration-200 ${
                     isCollapsed ? 'justify-center px-3 py-3' : 'justify-start px-6 py-2.5'
                   } ${
                     isSelected || itemIsActive
                       ? 'border border-[#DBDBFF] bg-[#F1F1FF] text-[#000093] shadow-sm'
                       : 'border border-transparent bg-[#F3F3F3] text-[#9B9B9B] hover:border-[#DBDBFF] hover:bg-[#F1F1FF] hover:text-[#000093]'
+                  } ${
+                    isOrgStatusPending ? 'cursor-not-allowed opacity-50' : 'active:scale-95'
                   } mb-2`}
                   title={item.label}
+                  style={isOrgStatusPending ? { pointerEvents: 'none' } : undefined}
                 >
                   <div
                     className={`flex w-full items-center ${isCollapsed ? 'justify-center' : 'justify-start space-x-2'}`}

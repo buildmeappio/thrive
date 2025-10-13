@@ -1,5 +1,6 @@
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { authHandlers } from '../..';
+import prisma from '@/lib/prisma';
 
 export const credentials = CredentialsProvider({
   name: 'credentials',
@@ -12,6 +13,27 @@ export const credentials = CredentialsProvider({
 
     const user = await authHandlers.login({ email: values.email, password: values.password });
 
-    return user;
+    if (!user) return null;
+
+    const organizationManager = await prisma.organizationManager.findFirst({
+      where: {
+        accountId: user.accountId,
+        deletedAt: null,
+      },
+      include: {
+        organization: {
+          select: {
+            name: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    return {
+      ...user,
+      organizationName: organizationManager?.organization?.name || null,
+      organizationStatus: organizationManager?.organization?.status || null,
+    };
   },
 });
