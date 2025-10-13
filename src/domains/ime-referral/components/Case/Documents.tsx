@@ -133,7 +133,7 @@ const Documents = ({ documents }: DocumentDetailsProps) => {
               className="flex items-center justify-between rounded-lg bg-[#F6F6F6] px-4 py-3"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[16px] font-medium text-[#1E1E1E]">
+                <p className="truncate text-[14px] text-[#1E1E1E] md:text-[18px]">
                   {doc.displayName || doc.name}
                 </p>
               </div>

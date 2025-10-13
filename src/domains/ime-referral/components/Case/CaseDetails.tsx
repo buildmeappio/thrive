@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
+import { ArrowLeft, ChevronDown } from 'lucide-react';
 import { getCaseDetails } from '../../actions';
 import {
   Accordion,
@@ -13,6 +13,9 @@ import InsuranceDetails from './Insurance';
 import LegalRepresentative from './LegalRepresentative';
 import ExaminationDetails from './ExaminationDetails';
 import Documents from './Documents';
+import { formatDate } from '@/utils/dateTime';
+import useRouter from '@/hooks/useRouter';
+import { URLS } from '@/constants/routes';
 
 type CaseDetailsProps = {
   examinationData: Awaited<ReturnType<typeof getCaseDetails>>['result'];
@@ -20,6 +23,7 @@ type CaseDetailsProps = {
 
 const CaseDetails: React.FC<CaseDetailsProps> = ({ examinationData }) => {
   const caseData = examinationData.case;
+  const router = useRouter();
 
   if (!caseData) {
     return <div className="py-8 text-center">No case data available</div>;
@@ -63,15 +67,39 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ examinationData }) => {
   const visibleItems = accordionItems.filter(item => item.show);
 
   return (
-    <div className="space-y-4">
-      {organization?.name && (
-        <div className="rounded-full bg-white px-6 py-3">
-          <span className="text-gray-600">Created by </span>
-          <span className="font-semibold">{organization.name}</span>
+    <div className="space-y-4 px-4 md:px-0">
+      <div className="flex items-center space-x-3 md:space-x-4">
+        <ArrowLeft
+          onClick={() => router.push(URLS.CASES)}
+          className="h-[32px] w-[32px] shrink-0 cursor-pointer rounded-full border border-[#BCE8FF] bg-[#E9F8FF] p-1 text-[#000093] md:h-[38px] md:w-[38px]"
+        />
+        <div className="text-2xl font-semibold md:text-[40px]">{examinationData.caseNumber}</div>
+      </div>
+
+      {organization?.name && examinationData.createdAt && examinationData.dueDate && (
+        <div className="font-poppins flex w-full flex-col gap-3 rounded-[20px] bg-white px-4 py-4 text-sm leading-[100%] md:flex-row md:justify-between md:rounded-[30px] md:px-40 md:py-3 md:text-[17.22px]">
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="font-light tracking-[0%] text-[#848484]">Created by</span>
+            <span className="font-normal tracking-[-0.01em] text-[#000000]">
+              {organization.name}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="font-light tracking-[0%] text-[#848484]">at</span>
+            <span className="font-normal tracking-[-0.01em] text-[#000000]">
+              {formatDate(examinationData.createdAt)}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="font-light tracking-[0%] text-[#848484]">Due on</span>
+            <span className="font-normal tracking-[-0.01em] text-[#000000]">
+              {formatDate(examinationData.dueDate)}
+            </span>
+          </div>
         </div>
       )}
 
-      <div className="rounded-[30px] bg-white p-8">
+      <div className="rounded-[20px] bg-white p-4 md:rounded-[30px] md:p-8">
         <Accordion type="single" collapsible className="w-full">
           {visibleItems.map(item => (
             <AccordionItem
@@ -79,11 +107,15 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ examinationData }) => {
               value={item.value}
               className="border-b border-[#A7A7A7]"
             >
-              <AccordionTrigger className="flex w-full items-center justify-between px-0 py-6 hover:no-underline [&>svg]:hidden">
-                <span className="text-[27.34px] font-semibold">{item.title}</span>
-                <ChevronDown className="h-6 w-6 shrink-0 text-[#1E1E1E] transition-transform duration-200 [data-state=open]:rotate-180" />
+              <AccordionTrigger className="flex w-full items-center justify-between px-0 py-4 hover:no-underline md:py-6 [&[data-state=open]>svg]:rotate-180">
+                <span className="pr-4 text-left text-xl font-semibold md:text-[27.34px]">
+                  {item.title}
+                </span>
+                <ChevronDown className="h-5 w-5 shrink-0 text-[#1E1E1E] transition-transform duration-200 md:h-6 md:w-6" />
               </AccordionTrigger>
-              <AccordionContent className="pb-6 text-gray-600">{item.content}</AccordionContent>
+              <AccordionContent className="pb-4 text-gray-600 md:pb-6">
+                {item.content}
+              </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>

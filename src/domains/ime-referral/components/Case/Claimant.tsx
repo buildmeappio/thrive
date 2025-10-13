@@ -86,8 +86,10 @@ const Claimant = ({ claimantDetails }: ClaimantProps) => {
             key={field.key}
             className="flex w-full justify-between rounded-md bg-[#F6F6F6] px-4 py-2"
           >
-            <span className="text-[18px] font-normal text-[#4E4E4E]">{field.label}</span>
-            <span className="ml-4 text-right text-[18px] font-normal text-[#000080]">
+            <span className="text-[12px] font-normal text-[#4E4E4E] md:text-[18px]">
+              {field.label}
+            </span>
+            <span className="ml-4 text-right text-[12px] font-normal text-[#000080] md:text-[18px]">
               {field.value}
             </span>
           </div>

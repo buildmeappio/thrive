@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, Suspense } from 'react';
+import { type ReactNode, Suspense, useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import SideBar from '@/layouts/private/Sidebar';
 import { SidebarProvider, useSidebar } from '@/providers/SideBarProvider';
@@ -17,37 +17,39 @@ const DashboardLayoutInner = ({ children }: DashboardLayoutProps) => {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <SideBar isMobileOpen={isSidebarOpen} onMobileClose={closeSidebar} />
-
-      {/* Mobile Overlay */}
-      {isSidebarOpen && (
-        <div
-          className="bg-opacity-50 fixed inset-0 z-40 bg-black/30 md:hidden"
-          onClick={closeSidebar}
-        />
-      )}
-
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col md:ml-[280px]">
-        {/* Header */}
+    <div className="flex min-h-screen flex-col bg-gray-50">
+      {/* Header - Full Width at Top */}
+      <header className="fixed top-0 right-0 left-0 z-50 bg-white">
         <DashboardNavbar currentPath={pathname} />
+      </header>
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 px-0 md:px-8">
-          <div className="max-w-full p-6">
-            <Suspense
-              fallback={
-                <div className="flex h-full w-full flex-1 items-center justify-center">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
-                </div>
-              }
-            >
-              {children}
-            </Suspense>
-          </div>
-        </main>
+      {/* Content Area with Sidebar */}
+      <div className="flex flex-1 pt-[77px]">
+        {/* Sidebar */}
+        <SideBar isMobileOpen={isSidebarOpen} onMobileClose={closeSidebar} />
+
+        {/* Mobile Overlay */}
+        {isSidebarOpen && (
+          <div className="fixed inset-0 z-40 bg-black/30 md:hidden" onClick={closeSidebar} />
+        )}
+
+        {/* Main Content Area */}
+        <div className="flex min-w-0 flex-1 flex-col transition-all duration-300">
+          {/* Main Content */}
+          <main className="flex-1 overflow-y-auto bg-gray-50 px-4 py-6 md:p-8">
+            <div className="max-w-full">
+              <Suspense
+                fallback={
+                  <div className="flex h-full w-full flex-1 items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
+                  </div>
+                }
+              >
+                {children}
+              </Suspense>
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );

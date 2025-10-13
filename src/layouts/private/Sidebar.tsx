@@ -5,14 +5,15 @@ import { usePathname } from 'next/navigation';
 import useRouter from '@/hooks/useRouter';
 import Link from 'next/link';
 import Image from '@/components/Image';
-import { Home, LifeBuoy, LogOut, Plus, UserPlus, X } from 'lucide-react';
+import { Home, LifeBuoy, LogOut, Plus, UserPlus, X, FileText, ChevronLeft } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { createRoute, URLS } from '@/constants/routes';
 
 export const medicalExaminerSidebarRoutes = [
   { icon: Home, label: 'Dashboard', href: '/dashboard', index: 0 },
-  { icon: UserPlus, label: 'Referrals', href: '/dashboard/referrals', index: 1 },
-  { icon: LifeBuoy, label: 'Support', href: '/dashboard/support', index: 2 },
+  { icon: FileText, label: 'All Cases', href: '/dashboard/cases', index: 1 },
+  { icon: UserPlus, label: 'Referrals', href: '/dashboard/referrals', index: 2 },
+  { icon: LifeBuoy, label: 'Support', href: '/dashboard/support', index: 3 },
 ];
 
 interface SideBarProps {
@@ -24,6 +25,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   const pathname = usePathname();
   const router = useRouter();
   const [selectedBtn, setSelectedBtn] = useState<number | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const isValidSidebarIndex = (index: string | null) => {
     return index && !isNaN(Number(index)) && Number(index) >= 0;
@@ -48,19 +50,13 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
     setSelectedSidebarIndex(Number(storedSelectedBtn));
   }, [setSelectedSidebarIndex]);
 
-  // Fixed function to handle route matching more precisely
   const checkIsPartOfSidebar = useCallback((pathname: string, href: string) => {
-    // Exact match
     if (pathname === href) {
       return true;
     }
-
-    // For dashboard route, only match exactly (not subroutes)
     if (href === '/dashboard') {
       return pathname === '/dashboard';
     }
-
-    // For other routes, check if pathname starts with href
     return pathname.startsWith(href);
   }, []);
 
@@ -73,7 +69,6 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
       return;
     }
 
-    // Sort routes by specificity (longest href first) to match most specific route first
     const sortedRoutes = [...medicalExaminerSidebarRoutes].sort(
       (a, b) => b.href.length - a.href.length
     );
@@ -96,7 +91,6 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
     }
   };
 
-  // Updated isActive function to match the same logic
   const isActive = (href: string) => {
     if (href === '/dashboard') {
       return pathname === '/dashboard';
@@ -111,49 +105,57 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
     }
   };
 
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
     <aside
-      className={`fixed top-0 left-0 z-50 flex h-screen w-[280px] transform-gpu flex-col bg-white transition-transform duration-300 ${
+      className={`fixed top-0 left-0 z-50 flex h-screen transform-gpu flex-col bg-white transition-all duration-300 md:sticky md:top-[77px] md:h-[calc(100vh-77px)] md:rounded-r-[50px] ${
         isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-      } border-r border-gray-200`}
+      } ${isCollapsed ? 'md:w-[77px]' : 'w-[270px]'}`}
     >
       <div className="relative flex h-full min-h-0 w-full flex-col">
         {/* Close button for mobile */}
         <button
-          className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-2xl text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 md:hidden"
+          className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-2xl text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 md:hidden"
           onClick={onMobileClose}
           aria-label="Close sidebar"
         >
           <X size={20} />
         </button>
 
-        {/* Logo Section */}
-        <div className="mb-2 flex items-center justify-center p-6">
-          <Image
-            src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png"
-            alt="Thrive"
-            width={160}
-            height={80}
-            className="h-auto max-h-[80px] w-32 sm:w-36 md:w-40"
-            priority
+        {/* Collapse button for desktop */}
+        <button
+          className="absolute top-4 right-4 z-10 hidden h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-2xl text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 md:flex"
+          onClick={toggleCollapse}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <ChevronLeft
+            size={20}
+            className={`transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
           />
-        </div>
+        </button>
 
         {/* Sidebar Content */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          {/* New IME Referral Button */}
-          <div className="mb-4 px-8">
-            <button
-              onClick={handleNewReferral}
-              className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#000093] px-6 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90"
-            >
-              <Plus size={20} strokeWidth={2} className="h-5 w-5 text-white" />
-              <span className="text-sm">New IME Referral</span>
-            </button>
-          </div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-16 md:pt-12">
+          {/* New IME Referral Button - hidden when collapsed */}
+          {!isCollapsed && (
+            <div className="mb-4 px-6 md:px-8">
+              <button
+                onClick={handleNewReferral}
+                className="mb-4 flex w-full cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#000093] px-6 py-4 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95"
+              >
+                <Plus size={20} strokeWidth={2} className="h-5 w-5 text-white" />
+                <span className="text-sm">New IME Referral</span>
+              </button>
+            </div>
+          )}
 
           {/* Main Navigation - scrollable */}
-          <nav className="flex-1 space-y-4 overflow-y-auto px-8">
+          <nav
+            className={`flex-1 space-y-4 overflow-y-auto pb-4 ${isCollapsed ? 'px-4' : 'px-6 md:px-8'}`}
+          >
             {medicalExaminerSidebarRoutes.map(item => {
               const itemIsActive = isActive(item.href);
               const isSelected = selectedBtn === item.index;
@@ -164,14 +166,18 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
                   key={item.index}
                   href={item.href}
                   onClick={() => handleLinkClick(item)}
-                  className={`group relative flex w-full items-center justify-start rounded-full px-6 py-2.5 text-left text-sm font-medium transition-all duration-200 ${
+                  className={`group relative flex w-full items-center rounded-full text-left text-sm font-medium transition-all duration-200 active:scale-95 ${
+                    isCollapsed ? 'justify-center px-3 py-3' : 'justify-start px-6 py-2.5'
+                  } ${
                     isSelected || itemIsActive
                       ? 'border border-[#DBDBFF] bg-[#F1F1FF] text-[#000093] shadow-sm'
                       : 'border border-transparent bg-[#F3F3F3] text-[#9B9B9B] hover:border-[#DBDBFF] hover:bg-[#F1F1FF] hover:text-[#000093]'
                   } mb-2`}
                   title={item.label}
                 >
-                  <div className="flex w-full items-center justify-start space-x-2">
+                  <div
+                    className={`flex w-full items-center ${isCollapsed ? 'justify-center' : 'justify-start space-x-2'}`}
+                  >
                     <IconComponent
                       size={20}
                       className={`flex-shrink-0 transition-all duration-200 ${
@@ -180,7 +186,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
                           : 'text-[#9B9B9B] group-hover:text-[#000093]'
                       }`}
                     />
-                    <span className="flex-1 text-left">{item.label}</span>
+                    {!isCollapsed && <span className="flex-1 text-left">{item.label}</span>}
                   </div>
                 </Link>
               );
@@ -188,13 +194,15 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
           </nav>
 
           {/* Logout Button */}
-          <div className="flex-shrink-0 p-4">
+          <div className="flex-shrink-0 p-4 px-6 md:px-4">
             <button
               onClick={handleLogout}
-              className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#000093] px-6 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90"
+              className={`flex w-full cursor-pointer items-center rounded-full bg-[#000093] font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95 ${
+                isCollapsed ? 'justify-center px-3 py-3' : 'justify-center space-x-2 px-6 py-3'
+              }`}
             >
               <LogOut size={20} strokeWidth={2} className="text-white" />
-              <span className="text-sm">Logout</span>
+              {!isCollapsed && <span className="text-sm">Logout</span>}
             </button>
           </div>
         </div>

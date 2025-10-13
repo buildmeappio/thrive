@@ -12,6 +12,7 @@ const URLS = Object.freeze({
   PASSWORD_RESET: '/password/reset',
   PASSWORD_VERIFY: '/password/verify',
   SUCCESS: '/claimant/availability/success',
+  CASES: '/dashboard/cases',
 });
 
 const PUBLIC_ROUTES = Object.freeze([

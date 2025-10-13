@@ -91,8 +91,10 @@ const ExaminationDetails = ({ examinationDetails }: ExaminationDetailsProps) => 
         {visibleFields.length > 0 ? (
           visibleFields.map(field => (
             <div key={field.key} className="flex w-full justify-between bg-[#F6F6F6] px-4 py-2">
-              <span className="text-[18px] font-normal text-[#4E4E4E]">{field.label}</span>
-              <span className="ml-4 text-right text-[18px] font-normal text-[#000080]">
+              <span className="text-[14px] font-normal text-[#4E4E4E] md:text-[18px]">
+                {field.label}
+              </span>
+              <span className="ml-4 text-right text-[14px] font-normal text-[#000080] md:text-[18px]">
                 {field.value}
               </span>
             </div>
