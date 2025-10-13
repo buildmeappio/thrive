@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useSidebar } from '../../providers/SideBarProvider';
 import Searchbar from './SearchBar';
 import ProfileDropdown from './ProfileDropDown';
+import Image from 'next/image';
 
 const PageOptions = [
   {
@@ -38,25 +39,9 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
 
   const currentPage = PageOptions.find(page => page.name === getPageName()) || PageOptions[0];
 
-  const showGreeting = (session: any) => {
-    const name = session?.user?.firstName || 'User';
-    return (
-      <span className="text-[#000000]">
-        Welcome, <span className="text-[#000093]">{name}</span>!
-      </span>
-    );
-  };
-
-  const renderTitle = () => {
-    if (currentPage.name === 'dashboard') {
-      return showGreeting(session);
-    }
-    return currentPage.label;
-  };
-
   return (
     <header className="px-8">
-      <div className="relative flex w-full flex-col gap-4 p-4">
+      <div className="relative flex w-full flex-col gap-4 px-4 py-1">
         {/* Mobile Header Row */}
         <div className="flex items-center justify-between md:hidden">
           {/* Mobile Menu Button */}
@@ -69,10 +54,15 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
             {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </Button>
 
-          {/* Title for mobile */}
-          <h1 className="flex-1 text-center text-xl font-semibold text-[#000000]">
-            {renderTitle()}
-          </h1>
+          {/* Logo */}
+          <Image
+            src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png"
+            alt="Thrive"
+            width={160}
+            height={80}
+            className="h-auto max-h-[80px] w-32 sm:w-36 md:w-48"
+            priority
+          />
 
           {/* Profile for mobile */}
           {session && <ProfileDropdown isMobile={true} session={session} />}
@@ -80,11 +70,16 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
 
         {/* Desktop Header Row */}
         <div className="hidden md:flex md:items-center md:justify-between md:gap-4">
-          {/* Title Section for desktop */}
+          {/* Logo */}
           <div className="text-left">
-            <h1 className="text-xl font-semibold text-[#000000] md:text-2xl lg:text-3xl">
-              {renderTitle()}
-            </h1>
+            <Image
+              src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png"
+              alt="Thrive"
+              width={160}
+              height={80}
+              className="max-h-[77px] w-32 sm:w-36 md:w-32"
+              priority
+            />
           </div>
 
           {/* Search Section for desktop */}
