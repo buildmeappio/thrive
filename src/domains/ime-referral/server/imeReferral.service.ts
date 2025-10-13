@@ -559,9 +559,15 @@ const getReferralDetails = async (caseId: string) => {
     throw HttpError.handleServiceError(error, 'Error fetching case details');
   }
 };
-const getCaseList = async () => {
+
+const getCaseList = async (status?: string, take?: number) => {
   try {
     const examinations = await prisma.examination.findMany({
+      where: status ? { status: { name: status } } : undefined,
+      ...(take && { take }),
+      orderBy: {
+        createdAt: 'desc',
+      },
       include: {
         case: {
           include: {
@@ -574,6 +580,11 @@ const getCaseList = async () => {
         },
         examinationType: true,
         status: true,
+        examiner: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
 
@@ -584,11 +595,14 @@ const getCaseList = async () => {
       claimType: exam.case.claimant.claimType.name,
       status: exam.status.name,
       specialty: exam.examinationType.name,
+      examiner: exam.examiner && `${exam.examiner.user.firstName} ${exam.examiner.user.lastName}`,
       submittedAt: exam.createdAt.toISOString(),
     }));
+
     if (!caseData || caseData.length === 0) {
       throw HttpError.notFound(ErrorMessages.CASES_NOT_FOUND);
     }
+
     return caseData;
   } catch (error) {
     throw HttpError.handleServiceError(error, ErrorMessages.FAILED_TO_GET_CASE_LIST);

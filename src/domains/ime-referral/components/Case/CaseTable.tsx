@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table';
 import columns from './Columns';
 import { cn } from '@/lib/utils';
-import { FilterConfig, FilterOption } from '@/components/FilterBar';
+import { FilterOption } from '@/components/FilterBar';
 import LabeledSelect from '@/components/LabeledSelect';
 import Pagination from '@/components/Pagination';
 import { CaseData } from '../../types/CaseData';
