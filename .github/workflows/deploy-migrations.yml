@@ -149,10 +149,14 @@ jobs:
           # Get AWS Account ID (no additional permissions needed)
           AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           
-          # Construct DB secret ARN with wildcard suffix (no ListSecrets permission needed)
-          # AWS Secrets Manager auto-appends 6-char random suffix (e.g., -ABC123)
-          # Wildcard pattern allows ECS to resolve the full ARN at runtime
-          DB_SECRET_ARN="arn:aws:secretsmanager:${AWS_REGION}:${AWS_ACCOUNT_ID}:secret:${ENV}-db-connection-*"
+          # Get DB secret ARN using describe-secret (requires secretsmanager:DescribeSecret)
+          # This works with partial secret name (without suffix) and returns full ARN
+          # ECS task definitions require exact ARN (wildcards not supported in valueFrom)
+          DB_SECRET_ARN=$(aws secretsmanager describe-secret \
+            --secret-id ${ENV}-db-connection \
+            --region ${AWS_REGION} \
+            --query 'ARN' \
+            --output text)
           
           # Construct execution role ARN directly (no IAM GetRole permission needed)
           EXECUTION_ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ENV}-ecs-execution-role"
@@ -273,10 +277,14 @@ jobs:
           # Get AWS Account ID (no additional permissions needed)
           AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           
-          # Construct DB secret ARN with wildcard suffix (no ListSecrets permission needed)
-          # AWS Secrets Manager auto-appends 6-char random suffix (e.g., -ABC123)
-          # Wildcard pattern allows ECS to resolve the full ARN at runtime
-          DB_SECRET_ARN="arn:aws:secretsmanager:${AWS_REGION}:${AWS_ACCOUNT_ID}:secret:${ENV}-db-connection-*"
+          # Get DB secret ARN using describe-secret (requires secretsmanager:DescribeSecret)
+          # This works with partial secret name (without suffix) and returns full ARN
+          # ECS task definitions require exact ARN (wildcards not supported in valueFrom)
+          DB_SECRET_ARN=$(aws secretsmanager describe-secret \
+            --secret-id ${ENV}-db-connection \
+            --region ${AWS_REGION} \
+            --query 'ARN' \
+            --output text)
           
           # Construct execution role ARN directly (no IAM GetRole permission needed)
           EXECUTION_ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ENV}-ecs-execution-role"
