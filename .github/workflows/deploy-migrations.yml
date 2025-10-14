@@ -7,11 +7,7 @@ on:
       - staging   # Deploy to staging
       - qa        # Deploy to QA
       - develop   # Deploy to dev
-    paths:
-      - 'prisma/**'
-      - 'src/migrations/**'
-      - 'src/seeders/**'
-      - '.github/workflows/deploy-migrations.yml'
+
   
   workflow_dispatch:
     inputs:
