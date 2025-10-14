@@ -13,8 +13,9 @@ RUN apt-get update -y && \
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies
-RUN npm ci --only=production --ignore-scripts
+# Install all dependencies (including devDependencies for tsx, etc.)
+# This is a one-off task container, not a long-running service
+RUN npm ci --ignore-scripts
 
 # Copy Prisma schema and migration files
 COPY prisma ./prisma
