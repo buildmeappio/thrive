@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { BackButton, ContinueButton, ProgressIndicator } from "@/components";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -43,6 +43,23 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
     },
     mode: "onSubmit",
   });
+
+  // Reset form when store data changes
+  useEffect(() => {
+    form.reset({
+      ...step3InitialValues,
+      yearsOfIMEExperience: data.yearsOfIMEExperience || "",
+      provinceOfLicensure: data.provinceOfLicensure || "",
+      languagesSpoken: data.languagesSpoken || [],
+      forensicAssessmentTrained: data.forensicAssessmentTrained || "",
+    });
+  }, [
+    data.yearsOfIMEExperience,
+    data.provinceOfLicensure,
+    data.languagesSpoken,
+    data.forensicAssessmentTrained,
+    form,
+  ]);
 
   const onSubmit = (values: Step3IMEExperienceInput) => {
     merge(values as unknown as Partial<RegistrationData>);

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { Input } from "@/components/ui";
 import {
   BackButton,
@@ -53,6 +53,26 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
     },
     mode: "onSubmit",
   });
+
+  // Reset form when store data changes
+  useEffect(() => {
+    form.reset({
+      ...step2InitialValues,
+      medicalSpecialty: data.medicalSpecialty,
+      licenseNumber: data.licenseNumber,
+      provinceOfLicensure: data.provinceOfLicensure,
+      // licenseExpiryDate: data.licenseExpiryDate,
+      medicalLicense: data.medicalLicense,
+      cvResume: data.cvResume,
+    });
+  }, [
+    data.medicalSpecialty,
+    data.licenseNumber,
+    data.provinceOfLicensure,
+    data.medicalLicense,
+    data.cvResume,
+    form,
+  ]);
 
   const onSubmit = (values: Step2MedicalCredentialsInput) => {
     merge(values as Partial<RegistrationData>);

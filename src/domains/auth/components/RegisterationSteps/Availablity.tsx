@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 // import { Checkbox } from "@/components/ui";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -43,6 +43,23 @@ const Availablity: React.FC<RegStepProps> = ({
     },
     mode: "onSubmit",
   });
+
+  // Reset form when store data changes
+  useEffect(() => {
+    form.reset({
+      ...step5InitialValues,
+      preferredRegions: data.preferredRegions,
+      maxTravelDistance: data.maxTravelDistance,
+      // daysAvailable: data.daysAvailable,
+      // timeWindows: data.timeWindows,
+      acceptVirtualAssessments: data.acceptVirtualAssessments,
+    });
+  }, [
+    data.preferredRegions,
+    data.maxTravelDistance,
+    data.acceptVirtualAssessments,
+    form,
+  ]);
 
   const onSubmit = (values: Step5AvailabilityInput) => {
     console.log("Step 5 Form Data:", values);

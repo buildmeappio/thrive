@@ -3,6 +3,18 @@
 
 import { create } from "zustand";
 import { Language } from "@prisma/client";
+
+// Document types for handling both new uploads and existing documents
+export type ExistingDocument = {
+  id: string;
+  name: string;
+  displayName?: string;
+  type: string;
+  size: number;
+  isExisting: true;
+};
+
+export type DocumentFile = File | ExistingDocument | null;
 /**
  * Types per step
  */
@@ -20,8 +32,8 @@ export type Step2MedicalCredentials = {
   licenseNumber: string;
   provinceOfLicensure: string; // reused in step 3 as well
   licenseExpiryDate: string; // ISO yyyy-mm-dd
-  medicalLicense: File | null;
-  cvResume: File | null;
+  medicalLicense: DocumentFile;
+  cvResume: DocumentFile;
 };
 
 export type Step3IMEExperience = {
@@ -123,8 +135,13 @@ type Store = {
   reset: () => void;
 
   languages: Language[];
-
   setLanguages: (languages: Language[]) => void;
+
+  // Edit mode state
+  isEditMode: boolean;
+  examinerProfileId: string | null;
+  setEditMode: (isEdit: boolean, profileId?: string) => void;
+  loadExaminerData: (examinerData: any) => void;
 };
 
 export const useRegistrationStore = create<Store>()((set) => ({
@@ -136,6 +153,85 @@ export const useRegistrationStore = create<Store>()((set) => ({
   reset: () => set({ data: initialData }),
   languages: [],
   setLanguages: (languages: Language[]) => set({ languages }),
+
+  // Edit mode state
+  isEditMode: false,
+  examinerProfileId: null,
+  setEditMode: (isEdit: boolean, profileId?: string) =>
+    set({ isEditMode: isEdit, examinerProfileId: profileId || null }),
+  loadExaminerData: (examinerData: any) => {
+    const mappedData: Partial<RegistrationData> = {
+      // Step 1: Personal Info
+      firstName: examinerData.account?.user?.firstName || "",
+      lastName: examinerData.account?.user?.lastName || "",
+      emailAddress: examinerData.account?.user?.email || "",
+      phoneNumber: examinerData.account?.user?.phone || "",
+      provinceOfResidence: examinerData.provinceOfResidence || "",
+      mailingAddress: examinerData.mailingAddress || "",
+
+      // Step 2: Medical Credentials
+      medicalSpecialty: examinerData.specialties || [],
+      licenseNumber: examinerData.licenseNumber || "",
+      provinceOfLicensure: examinerData.provinceOfLicensure || "",
+      licenseExpiryDate: examinerData.licenseExpiryDate
+        ? new Date(examinerData.licenseExpiryDate).toISOString().split("T")[0]
+        : "",
+      // Documents - store document info for display
+      medicalLicense: examinerData.medicalLicenseDocument
+        ? {
+            id: examinerData.medicalLicenseDocument.id,
+            name: examinerData.medicalLicenseDocument.name,
+            displayName:
+              examinerData.medicalLicenseDocument.displayName ||
+              examinerData.medicalLicenseDocument.name,
+            type: examinerData.medicalLicenseDocument.type,
+            size: examinerData.medicalLicenseDocument.size,
+            isExisting: true,
+          }
+        : null,
+      cvResume: examinerData.resumeDocument
+        ? {
+            id: examinerData.resumeDocument.id,
+            name: examinerData.resumeDocument.name,
+            displayName:
+              examinerData.resumeDocument.displayName ||
+              examinerData.resumeDocument.name,
+            type: examinerData.resumeDocument.type,
+            size: examinerData.resumeDocument.size,
+            isExisting: true,
+          }
+        : null,
+
+      // Step 3: IME Experience
+      yearsOfIMEExperience: examinerData.yearsOfIMEExperience || "",
+      languagesSpoken:
+        examinerData.examinerLanguages?.map((l: any) => l.languageId) || [],
+      forensicAssessmentTrained: examinerData.isForensicAssessmentTrained
+        ? "yes"
+        : "no",
+
+      // Step 4: Experience Details
+      experienceDetails: examinerData.bio || "",
+
+      // Step 5: Availability
+      preferredRegions: examinerData.preferredRegions || "",
+      maxTravelDistance: examinerData.maxTravelDistance || "",
+      acceptVirtualAssessments: examinerData.acceptVirtualAssessments
+        ? "yes"
+        : "no",
+
+      // Step 6: Legal
+      consentBackgroundVerification:
+        examinerData.isConsentToBackgroundVerification || false,
+      agreeTermsConditions: examinerData.agreeToTerms || false,
+    };
+
+    set((state) => ({
+      data: { ...state.data, ...mappedData },
+      isEditMode: true,
+      examinerProfileId: examinerData.id,
+    }));
+  },
 }));
 
 /**

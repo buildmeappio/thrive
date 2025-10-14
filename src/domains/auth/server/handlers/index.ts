@@ -7,6 +7,8 @@ import verifyAccountToken from "./verifyAccountToken";
 import setPassword from "./setPassword";
 import login from "./login";
 import getLanguages from "./getLanguages";
+import getExaminerProfileDetails from "./getExaminerProfileDetails";
+import updateMedicalExaminer from "./updateMedicalExaminer";
 
 const handlers = {
   checkUserExists,
@@ -18,6 +20,8 @@ const handlers = {
   setPassword,
   login,
   getLanguages,
+  getExaminerProfileDetails,
+  updateMedicalExaminer,
 };
 
 export default handlers;

@@ -13,7 +13,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
   totalSteps,
   currentStep,
 }) => {
-  const { data } = useRegistrationStore();
+  const { data, isEditMode, examinerProfileId } = useRegistrationStore();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -40,8 +40,16 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         // signedNDADocument,
         // insuranceProofDocument,
       ] = await Promise.all([
-        uploadFileToS3(data.medicalLicense),
-        uploadFileToS3(data.cvResume),
+        data.medicalLicense &&
+        "isExisting" in data.medicalLicense &&
+        data.medicalLicense.isExisting
+          ? { success: true, document: { id: data.medicalLicense.id } }
+          : uploadFileToS3(data.medicalLicense as File),
+        data.cvResume &&
+        "isExisting" in data.cvResume &&
+        data.cvResume.isExisting
+          ? { success: true, document: { id: data.cvResume.id } }
+          : uploadFileToS3(data.cvResume as File),
         // uploadFileToS3(data.signedNDA),
         // uploadFileToS3(data.insuranceProof),
       ]);
@@ -84,13 +92,25 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         experienceDetails: data.experienceDetails,
 
         // Step5
+        preferredRegions: data.preferredRegions,
+        maxTravelDistance: data.maxTravelDistance,
+        acceptVirtualAssessments: data.acceptVirtualAssessments === "yes",
         // signedNDADocumentId: signedNDADocument.document.id,
         // insuranceProofDocumentId: insuranceProofDocument.document.id,
         agreeTermsConditions: data.agreeTermsConditions,
         consentBackgroundVerification: data.consentBackgroundVerification,
       };
 
-      await authActions.createMedicalExaminer(payload);
+      if (isEditMode && examinerProfileId) {
+        // Update existing examiner
+        await authActions.updateMedicalExaminer({
+          examinerProfileId,
+          ...payload,
+        });
+      } else {
+        // Create new examiner
+        await authActions.createMedicalExaminer(payload);
+      }
 
       onNext?.();
     } catch (e: unknown) {
@@ -113,19 +133,13 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
       <div className="space-y-6 px-4 pt-4 pb-8 md:px-20 md:py-15">
         <div className="pt-1 md:pt-0">
           <h3 className="mt-4 mb-2 text-center text-[22px] font-semibold text-[#140047] md:mt-5 md:mb-0 md:text-[40px]">
-            Ready to Submit?
+            {isEditMode ? "Ready to Update?" : "Ready to Submit?"}
           </h3>
           <div className="mt-4 text-center text-[14px] leading-relaxed font-light text-[#8A8A8A] md:text-base">
             <p className="text-center">
-              Your Medical Examiner profile is ready for review. Please{" "}
-              <span className="hidden md:inline">
-                <br />
-              </span>
-              confirm that all information and documents are accurate.{" "}
-              <span className="hidden md:inline">
-                <br />
-              </span>
-              Once submitted, our team will begin the verification process.
+              {isEditMode
+                ? "Your updated Medical Examiner profile is ready for review. Please confirm that all information and documents are accurate. Once submitted, our team will review your updates."
+                : "Your Medical Examiner profile is ready for review. Please confirm that all information and documents are accurate. Once submitted, our team will begin the verification process."}
             </p>
           </div>
           {err && (

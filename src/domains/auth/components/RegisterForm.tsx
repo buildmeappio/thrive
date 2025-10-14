@@ -18,9 +18,13 @@ interface Step {
   component: React.ComponentType<RegStepProps>;
 }
 
-const RegisterForm: React.FC<{ languages: Language[] }> = ({ languages }) => {
+const RegisterForm: React.FC<{
+  languages: Language[];
+  examinerData?: any;
+}> = ({ languages, examinerData }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const { setLanguages, data } = useRegistrationStore();
+  const { setLanguages, data, loadExaminerData, isEditMode } =
+    useRegistrationStore();
 
   useEffect(() => {
     if (languages.length > 0) {
@@ -28,6 +32,13 @@ const RegisterForm: React.FC<{ languages: Language[] }> = ({ languages }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languages]);
+
+  // Load examiner data if in edit mode
+  useEffect(() => {
+    if (examinerData) {
+      loadExaminerData(examinerData.examinerProfile);
+    }
+  }, [examinerData, loadExaminerData]);
 
   const steps: Step[] = [
     { component: PersonalInfo },
@@ -73,8 +84,10 @@ const RegisterForm: React.FC<{ languages: Language[] }> = ({ languages }) => {
     <div className="mx-auto max-w-[900px] p-4 md:p-0 md:py-6">
       <div className="mb-6 flex h-[60px] items-center justify-between">
         {showTitle && (
-          <h2 className="text-center text-3xl md:text-5xl font-semibold">
-            Let&apos;s complete your profile to join{" "}
+          <h2 className="text-center text-3xl md:text-5xl font-semibold md:whitespace-nowrap">
+            {isEditMode
+              ? "Let's update your profile information to join "
+              : "Let's complete your profile to join "}
             <span className="text-[#00A8FF]">Thrive.</span>
           </h2>
         )}

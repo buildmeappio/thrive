@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { Input } from "@/components/ui";
 import { Mail, MapPin, Phone, User } from "lucide-react";
 import { ContinueButton, ProgressIndicator } from "@/components";
@@ -25,7 +25,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { data, merge } = useRegistrationStore();
+  const { data, merge, isEditMode } = useRegistrationStore();
 
   const form = useForm<Step1PersonalInfoInput>({
     schema: step1PersonalInfoSchema,
@@ -41,18 +41,45 @@ const PersonalInfo: React.FC<RegStepProps> = ({
     mode: "onSubmit",
   });
 
+  // Reset form when store data changes
+  useEffect(() => {
+    form.reset({
+      ...step1InitialValues,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      phoneNumber: data.phoneNumber,
+      emailAddress: data.emailAddress,
+      provinceOfResidence: data.provinceOfResidence,
+      mailingAddress: data.mailingAddress,
+    });
+  }, [
+    data.firstName,
+    data.lastName,
+    data.phoneNumber,
+    data.emailAddress,
+    data.provinceOfResidence,
+    data.mailingAddress,
+    form,
+  ]);
+
   const onSubmit = async (values: Step1PersonalInfoInput) => {
     try {
-      const { exists } = await authActions.checkUserExists(values.emailAddress);
-      if (exists) {
-        form.setError("emailAddress", {
-          type: "manual",
-          message: ErrorMessages.ACCOUNT_ALREADY_EXISTS,
-        });
-      } else {
-        merge(values as Partial<RegistrationData>);
-        onNext();
+      // Skip email validation in edit mode since the user already exists
+      if (!isEditMode) {
+        const { exists } = await authActions.checkUserExists(
+          values.emailAddress
+        );
+        if (exists) {
+          form.setError("emailAddress", {
+            type: "manual",
+            message: ErrorMessages.ACCOUNT_ALREADY_EXISTS,
+          });
+          return;
+        }
       }
+
+      merge(values as Partial<RegistrationData>);
+      onNext();
     } catch (error) {
       console.error(error);
     }

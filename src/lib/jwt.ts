@@ -10,20 +10,26 @@ const checkJwtSecrets = () => {
     return {
       otpSecret: "",
       passwordSecret: "",
+      examinerRequestSecret: "",
     };
   }
 
-  if (!process.env.JWT_SECRET || !process.env.PASSWORD_JWT_SECRET) {
+  if (
+    !process.env.JWT_SECRET ||
+    !process.env.PASSWORD_JWT_SECRET ||
+    !process.env.EXAMINER_REQUEST_JWT_SECRET
+  ) {
     throw new Error(ErrorMessages.JWT_SECRETS_REQUIRED);
   }
 
   return {
     otpSecret: process.env.JWT_SECRET as Secret,
     passwordSecret: process.env.PASSWORD_JWT_SECRET as Secret,
+    examinerRequestSecret: process.env.EXAMINER_REQUEST_JWT_SECRET as Secret,
   };
 };
 
-const { otpSecret, passwordSecret } = checkJwtSecrets();
+const { otpSecret, passwordSecret, examinerRequestSecret } = checkJwtSecrets();
 
 export function signOtpToken(
   payload: object,
@@ -53,6 +59,28 @@ export function signPasswordToken(
 export function verifyPasswordToken(token: string): JwtPayload | null {
   try {
     return jwt.verify(token, passwordSecret) as JwtPayload;
+  } catch {
+    return null;
+  }
+}
+
+// ----- Examiner Info Tokens -----
+export function signExaminerInfoToken(
+  payload: {
+    email: string;
+    userId: string;
+    accountId: string;
+    examinerId: string;
+  },
+  expiresIn: SignOptions["expiresIn"] = "7d"
+): string {
+  const options: SignOptions = { expiresIn };
+  return jwt.sign(payload, examinerRequestSecret, options);
+}
+
+export function verifyExaminerInfoToken(token: string): JwtPayload | null {
+  try {
+    return jwt.verify(token, examinerRequestSecret) as JwtPayload;
   } catch {
     return null;
   }
