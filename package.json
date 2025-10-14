@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "set NODE_OPTIONS=--max-old-space-size=8192 && next build",
-    "start": "next start",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' next build",
+    "start": "next start -p 3002",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "format": "prettier --write .",
@@ -28,7 +28,13 @@
     "deploy:production": "npm run predeploy && scripts/deploy.sh production --app thrive-organization --env .env.production --config ecosystem.config.js",
     "deploy:logs": "pm2 logs thrive-organization",
     "deploy:stop": "pm2 stop thrive-organization",
-    "deploy:delete": "pm2 delete thrive-organization"
+    "deploy:delete": "pm2 delete thrive-organization",
+    "docker:build": "docker build -t examiner:latest .",
+    "docker:run": "docker build -t examiner:latest . && docker run --env-file .env -d -p 3002:3002 examiner:latest",
+    "docker:stop": "docker stop examiner",
+    "docker:remove": "docker rm examiner",
+    "docker:up": "docker-compose up --build -d",
+    "docker:down": "docker-compose down -v"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
@@ -94,7 +100,7 @@
     "@types/json5": "^0.0.30",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/ms": "^2.1.0",
-    "@types/node": "^20",
+    "@types/node": "^20.19.21",
     "@types/nodemailer": "^7.0.1",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
