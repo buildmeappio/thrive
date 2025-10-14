@@ -139,7 +139,7 @@ jobs:
       ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
       ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
       ECS_SERVICE: ${{ vars.ECS_SERVICE }}
-      CONTAINER_NAME: ${{ vars.CONTAINER_NAME || 'admin' }}
+      CONTAINER_NAME: ${{ vars.CONTAINER_NAME || 'organization' }}
       AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
     steps:
       - name: Checkout code
