@@ -8,7 +8,6 @@ coverage
 *.log
 Dockerfile*
 docker-compose*.yml
-.env*
 *.local
 .vscode
 .sentryclirc
