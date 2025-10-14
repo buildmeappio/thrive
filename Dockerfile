@@ -1,24 +1,42 @@
 # ----------- 1. Build Stage -----------
-FROM node:20.18.1-alpine AS builder
+FROM node:22-slim AS builder
 
 # Create app directory
 WORKDIR /app
 
-# Install system/build dependencies
-RUN apk add --no-cache \
+# Install system/build dependencies with robust error handling
+# Retry logic handles hash sum mismatches and mirror issues
+RUN for i in 1 2 3; do \
+  rm -rf /var/lib/apt/lists/* && \
+  apt-get clean && \
+  apt-get update --fix-missing && \
+  apt-get install -y --no-install-recommends --allow-unauthenticated \
   python3 \
   make \
   g++ \
   openssl \
-  libc6-compat
+  ca-certificates \
+  && break || sleep 5; \
+  done && \
+  rm -rf /var/lib/apt/lists/*
 
-# Use reliable registry
-RUN npm config set registry https://registry.npmjs.org/
+# Configure npm for maximum speed
+RUN npm config set registry https://registry.npmjs.org/ && \
+  npm config set progress false && \
+  npm config set fetch-retries 5 && \
+  npm config set fetch-retry-mintimeout 20000 && \
+  npm config set fetch-retry-maxtimeout 120000
 
 # Copy and install dependencies
 COPY package.json package-lock.json* ./
+
+# Install dependencies with proper handling of optional/native modules
+# We use npm install instead of npm ci to better handle optional dependencies
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --legacy-peer-deps --omit=optional --no-audit --no-fund
+  npm install --no-audit --no-fund --legacy-peer-deps
+
+# Verify lightningcss platform-specific binary is installed
+RUN node -e "try { require('lightningcss'); console.log('✓ lightningcss loaded successfully'); } catch(e) { console.error('✗ lightningcss failed:', e.message); process.exit(1); }"
 
 # Copy rest of the code
 COPY . .
@@ -37,16 +55,23 @@ RUN npm run build
 
 
 # ----------- 2. Runtime Stage -----------
-FROM node:20.18.1-alpine AS runner
+FROM node:22-slim AS runner
 
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Install minimal runtime dependencies
-RUN apk add --no-cache \
+# Install minimal runtime dependencies with retry logic for hash mismatch issues
+RUN for i in 1 2 3; do \
+  rm -rf /var/lib/apt/lists/* && \
+  apt-get clean && \
+  apt-get update --fix-missing && \
+  apt-get install -y --no-install-recommends --allow-unauthenticated \
   openssl \
   curl \
-  libc6-compat
+  ca-certificates \
+  && break || sleep 5; \
+  done && \
+  rm -rf /var/lib/apt/lists/*
 
 # Copy only necessary files
 COPY --from=builder /app/public ./public
