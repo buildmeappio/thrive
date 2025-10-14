@@ -33,7 +33,7 @@ COPY package.json package-lock.json* ./
 # Install dependencies with proper handling of optional/native modules
 # We use npm install instead of npm ci to better handle optional dependencies
 RUN --mount=type=cache,target=/root/.npm \
-  npm install --no-audit --no-fund --legacy-peer-deps
+  npm ci --legacy-peer-deps
 
 # Verify lightningcss platform-specific binary is installed
 RUN node -e "try { require('lightningcss'); console.log('✓ lightningcss loaded successfully'); } catch(e) { console.error('✗ lightningcss failed:', e.message); process.exit(1); }"
