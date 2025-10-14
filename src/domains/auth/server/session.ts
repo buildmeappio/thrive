@@ -1,51 +1,24 @@
-// domains/auth/server/session.ts
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import type { Session } from "next-auth";
+import { getServerSession, type User } from "next-auth";
 import { authOptions } from "./nextauth/options";
-import { AuthUser } from "../types";
+import type { NextRequest } from "next/server";
+import HttpError from "@/utils/httpError";
+import { getToken as getTokenNextAuth, type JWT } from "next-auth/jwt";
 
-/** Raw NextAuth session. Null if unauthenticated. */
-export async function getCurrentSession(): Promise<Session | null> {
-  return getServerSession(authOptions);
-}
+export const getCurrentUser = async (): Promise<User | null> => {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return null;
+  }
+  return session.user;
+};
 
-/** Typed current user for server code. */
-export async function getCurrentUser(): Promise<AuthUser | null> {
-  const session = await getCurrentSession();
-  return session?.user
-    ? {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        image: session.user.image ?? null,
-        roleName: session.user.roleName,
-        accountId: session.user.accountId,
-      }
-    : null;
-}
-
-/** Require a logged-in user or redirect to login. */
-export async function requireUser(): Promise<AuthUser> {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  return user;
-}
-
-/**
- * Start a session.
- * With NextAuth you should initiate login via the client `signIn()` or a form POST to `/api/auth/callback/credentials`.
- * This helper exists for symmetry; it just sends you to the login page with an optional callbackUrl.
- */
-export async function setSession(opts?: { callbackUrl?: string }) {
-  const cb = opts?.callbackUrl ?? "/";
-  redirect(`/login?callbackUrl=${encodeURIComponent(cb)}`);
-}
-
-/**
- * Clear session.
- * Server-side, send the browser to NextAuth signout which clears cookies then returns.
- */
-export async function clearSession(callbackUrl = "/login") {
-  redirect(`/api/auth/signout?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-}
+export const getToken = async (req: NextRequest): Promise<JWT> => {
+  const token = await getTokenNextAuth({
+    req: req,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+  if (!token) {
+    throw HttpError.unauthorized("Token not found");
+  }
+  return token;
+};

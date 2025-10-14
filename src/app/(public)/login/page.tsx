@@ -33,6 +33,7 @@ const Page = () => {
               src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/examiner-home.png"
               alt="Admin Dashboard Preview"
               fill
+              sizes="(max-width: 1024px) 100vw, 35vw"
               className="object-cover"
               priority
             />

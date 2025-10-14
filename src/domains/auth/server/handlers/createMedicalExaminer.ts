@@ -42,25 +42,28 @@ export type CreateMedicalExaminerInput = {
 
 const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
   try {
-    let user = await prisma.user.findUnique({
-      where: {
-        email: payload.email,
-      },
-    });
-
-    // get role
-    const role = await prisma.role.findFirst({
-      where: {
-        name: Roles.MEDICAL_EXAMINER,
-      },
-    });
+    // Fetch user and role in parallel
+    const [existingUser, role] = await Promise.all([
+      prisma.user.findUnique({
+        where: {
+          email: payload.email,
+        },
+      }),
+      prisma.role.findFirst({
+        where: {
+          name: Roles.MEDICAL_EXAMINER,
+        },
+      }),
+    ]);
 
     if (!role) {
       throw HttpError.notFound(ErrorMessages.ROLE_NOT_FOUND);
     }
 
-    if (!user) {
-      user = await prisma.user.create({
+    // Create user if doesn't exist
+    const user =
+      existingUser ||
+      (await prisma.user.create({
         data: {
           firstName: payload.firstName,
           lastName: payload.lastName,
@@ -68,14 +71,13 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
           phone: payload.phone,
           password: "invalid",
         },
-      });
-    }
+      }));
 
     // Create account
     const account = await prisma.account.create({
       data: {
         userId: user.id,
-        roleId: role?.id,
+        roleId: role.id,
         isVerified: false,
       },
     });
@@ -117,23 +119,24 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
       },
     });
 
-    await prisma.examinerLanguage.createMany({
-      data: payload.languagesSpoken.map((language) => ({
-        examinerProfileId: examinerProfile.id,
-        languageId: language,
-      })),
-    });
-
-    // Send submission confirmation email (without password setup link)
-    await emailService.sendEmail(
-      "Your Thrive Medical Examiner Application Has Been Received",
-      "application-received.html",
-      {
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-      },
-      payload.email
-    );
+    // Create languages and send email in parallel
+    await Promise.all([
+      prisma.examinerLanguage.createMany({
+        data: payload.languagesSpoken.map((language) => ({
+          examinerProfileId: examinerProfile.id,
+          languageId: language,
+        })),
+      }),
+      emailService.sendEmail(
+        "Your Thrive Medical Examiner Application Has Been Received",
+        "application-received.html",
+        {
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+        },
+        payload.email
+      ),
+    ]);
 
     return {
       success: true,
