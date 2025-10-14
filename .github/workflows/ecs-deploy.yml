@@ -43,9 +43,25 @@ jobs:
           echo "target_env=$TARGET_ENV" >> "$GITHUB_OUTPUT"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
+  debug:
+    name: Show OIDC token claims
+    runs-on: ubuntu-latest
+    needs: select
+    environment: ${{ needs.select.outputs.target_env }}
+    steps:
+      - name: Show OIDC token claims
+        shell: bash
+        run: |
+          set -e
+          TOK_JSON=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com")
+          TOK=$(echo "$TOK_JSON" | jq -r .value)
+          PAYLOAD=$(echo "$TOK" | cut -d. -f2 | tr '_-' '/+' | awk '{l=4-((length)%4); if(l<4) print $0 substr("====",1,l); else print}' | base64 -d 2>/dev/null)
+          echo "$PAYLOAD" | jq .
+        
   build:
     name: Build Image
-    needs: select
+    needs: [select, debug]
     runs-on: ubuntu-latest
     environment: ${{ needs.select.outputs.target_env }}
     permissions:
