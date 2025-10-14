@@ -31,9 +31,8 @@ RUN npm config set registry https://registry.npmjs.org/ && \
 COPY package.json package-lock.json* ./
 
 # Install dependencies with proper handling of optional/native modules
-# We use npm install instead of npm ci to better handle optional dependencies
 RUN --mount=type=cache,target=/root/.npm \
-  npm ci --legacy-peer-deps
+  npm ci --legacy-peer-deps --include=optional
 
 # Copy rest of the code
 COPY . .
