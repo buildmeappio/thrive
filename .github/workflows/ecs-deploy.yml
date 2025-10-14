@@ -5,9 +5,8 @@ on:
     branches: [develop, staging, qa, main]
   pull_request:
     branches: [develop, staging, qa, main]
-  workflow_dispatch: 
-    
-
+  workflow_dispatch:
+          
 concurrency:
   group: ecs-deploy-${{ github.ref_name }}
   cancel-in-progress: false
@@ -19,6 +18,7 @@ permissions:
 
 jobs:
   select:
+    name: 'Select Environment'
     runs-on: ubuntu-latest
     outputs:
       target_env: ${{ steps.map.outputs.target_env }}
@@ -45,7 +45,7 @@ jobs:
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
   build:
-    name: Build Image
+    name: 'Build Image'
     needs: [select]
     runs-on: ubuntu-latest
     environment: ${{ needs.select.outputs.target_env }}
@@ -111,7 +111,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
-    name: Deploy to ECS
+    name: 'Deploy to ECS'
     needs: [select, build]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
