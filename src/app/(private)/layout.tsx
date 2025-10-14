@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, Suspense, useState, useEffect } from 'react';
+import { type ReactNode, Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import SideBar from '@/layouts/private/Sidebar';
 import { SidebarProvider, useSidebar } from '@/providers/SideBarProvider';
