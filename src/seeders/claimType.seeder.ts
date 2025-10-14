@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { PrismaClient } from "@prisma/client";
-import { ClaimType } from "src/constants/claimType";
+import { ClaimType } from "../constants/claimType";
 
 interface ClaimTypeData {
   name: string;
