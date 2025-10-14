@@ -5,4 +5,6 @@ export { default as getExaminerById } from "./getExaminerById";
 export { default as approveExaminer } from "./approveExaminer";
 export { default as rejectExaminer } from "./rejectExaminer";
 export { default as requestMoreInfo } from "./requestMoreInfo";
+export { default as getExaminerByToken } from "./getExaminerByToken";
+export { default as updateExaminerProfile } from "./updateExaminerProfile";
 

@@ -141,13 +141,16 @@ export default function ExaminerTable({ data }: ExaminerTableProps) {
                 <SelectValue placeholder="Status">
                   {statusFilter === "all" ? "Status" : 
                    statusFilter === "PENDING" ? "Pending Approval" :
-                   statusFilter === "ACCEPTED" ? "Approved" : "Rejected"}
+                   statusFilter === "ACCEPTED" ? "Approved" : 
+                   statusFilter === "INFO_REQUESTED" ? "Information Requested" : 
+                   "Rejected"}
                 </SelectValue>
               </div>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Status</SelectItem>
               <SelectItem value="PENDING">Pending Approval</SelectItem>
+              <SelectItem value="INFO_REQUESTED">Information Requested</SelectItem>
               <SelectItem value="ACCEPTED">Approved</SelectItem>
               <SelectItem value="REJECTED">Rejected</SelectItem>
             </SelectContent>

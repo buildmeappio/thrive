@@ -21,5 +21,5 @@ export type ExaminerData = {
   updatedAt: string;
 };
 
-type ServerStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+type ServerStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "INFO_REQUESTED";
   

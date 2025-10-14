@@ -14,7 +14,7 @@ import { Check } from "lucide-react";
 import { toast } from "sonner";
 
 
-const mapStatus = { PENDING: "pending", ACCEPTED: "approved", REJECTED: "rejected" } as const;
+const mapStatus = { PENDING: "pending", ACCEPTED: "approved", REJECTED: "rejected", INFO_REQUESTED: "info_requested" } as const;
 
 type Props = { examiner: ExaminerData };
 
@@ -63,6 +63,7 @@ export default function ExaminerDetail({ examiner }: Props) {
         setLoadingAction("request");
         try {
             await requestMoreInfo(examiner.id, messageToExaminer);
+            setStatus("info_requested");
             setIsRequestOpen(false);
             toast.success("Request sent. An email has been sent to the examiner.");
         } catch (error) {
@@ -204,6 +205,19 @@ export default function ExaminerDetail({ examiner }: Props) {
                                 disabled
                             >
                                 Rejected
+                            </button>
+                        ) : status === "info_requested" ? (
+                            <button
+                                className={cn(
+                                    "px-4 py-3 rounded-full border border-blue-500 text-blue-700 bg-blue-50 flex items-center gap-2 cursor-default"
+                                )}
+                                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                                disabled
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Information Requested
                             </button>
                         ) : (
                             <>

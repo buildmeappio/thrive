@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import examinerService from "../server/examiner.service";
 import { sendMail } from "@/lib/email";
+import { signExaminerResubmitToken } from "@/lib/jwt";
 
 const requestMoreInfo = async (examinerId: string, message: string) => {
   const user = await getCurrentUser();
@@ -14,8 +15,8 @@ const requestMoreInfo = async (examinerId: string, message: string) => {
     throw new Error("Request message is required");
   }
 
-  // Update examiner status or add note (you can modify this based on your needs)
-  const examiner = await examinerService.getExaminerById(examinerId);
+  // Update examiner status to INFO_REQUESTED
+  const examiner = await examinerService.requestMoreInfoFromExaminer(examinerId);
 
   // Send request for more info email
   try {
@@ -37,11 +38,24 @@ async function sendRequestMoreInfoEmail(examiner: any, requestMessage: string) {
   const userEmail = examiner.account?.user?.email;
   const firstName = examiner.account?.user?.firstName;
   const lastName = examiner.account?.user?.lastName;
+  const userId = examiner.account?.user?.id;
+  const accountId = examiner.accountId;
+  const examinerId = examiner.id;
 
-  if (!userEmail || !firstName || !lastName) {
+  if (!userEmail || !firstName || !lastName || !userId || !accountId || !examinerId) {
     console.error("Missing required user information for request email");
     throw new Error("Missing user information");
   }
+
+  // Generate token with examiner's information for resubmission
+  const token = signExaminerResubmitToken({
+    email: userEmail,
+    userId: userId,
+    accountId: accountId,
+    examinerId: examinerId,
+  });
+
+  const resubmitLink = `${process.env.NEXT_PUBLIC_APP_URL}/examiner/register?token=${token}`;
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -52,7 +66,7 @@ async function sendRequestMoreInfoEmail(examiner: any, requestMessage: string) {
   <title>Additional Information Required</title>
 </head>
 <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
-  <div style="width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
     <div style="text-align: center;">
       <img src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png" alt="Thrive Logo" style="width: 120px;">
     </div>
@@ -68,12 +82,30 @@ async function sendRequestMoreInfoEmail(examiner: any, requestMessage: string) {
         ${escapeHtml(requestMessage)}
       </div>
       
-      <p>Please reply to this email with the requested information at your earliest convenience so we can continue processing your application.</p>
+      <p>Please click the button below to resubmit your application with the updated information:</p>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${resubmitLink}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(90deg, #00A8FF 0%, #01F4C8 100%); color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px;">
+          Update My Application
+        </a>
+      </div>
+      
+      <p style="font-size: 14px; color: #666666;">
+        <strong>Note:</strong> When you click the link above, you'll be taken through the application process again. Your previously submitted information will be pre-filled in the forms, so you only need to update the requested information.
+      </p>
+      
+      <p style="font-size: 14px; color: #666666;">
+        This link will expire in 30 days. If you need assistance, please contact us at 
+        <a href="mailto:support@thrivenetwork.ca" style="color: #00A8FF;">support@thrivenetwork.ca</a>.
+      </p>
     </div>
     
-    <div style="margin-top: 30px; font-size: 14px; color: #777777; text-align: center;">
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 14px; color: #777777; text-align: center;">
       <p>If you have any questions, feel free to contact us at 
         <a href="mailto:support@thrivenetwork.ca" style="color: #00A8FF;">support@thrivenetwork.ca</a>.
+      </p>
+      <p style="font-size: 12px; color: #999999; margin-top: 10px;">
+        © 2025 Thrive Assessment & Care. All rights reserved.
       </p>
     </div>
   </div>

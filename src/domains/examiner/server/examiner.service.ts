@@ -167,6 +167,38 @@ class ExaminerService {
       throw HttpError.fromError(error, "Failed to reject examiner");
     }
   }
+
+  // Request more info from examiner (change status to INFO_REQUESTED)
+  async requestMoreInfoFromExaminer(id: string) {
+    try {
+      const examiner = await prisma.examinerProfile.update({
+        where: { id },
+        data: {
+          status: "INFO_REQUESTED",
+        },
+        include: {
+          account: {
+            include: {
+              user: true,
+            },
+          },
+          medicalLicenseDocument: true,
+          resumeDocument: true,
+          ndaDocument: true,
+          insuranceDocument: true,
+          examinerLanguages: {
+            include: {
+              language: true,
+            },
+          },
+        },
+      });
+
+      return examiner;
+    } catch (error) {
+      throw HttpError.fromError(error, "Failed to update examiner status");
+    }
+  }
 }
 
 const examinerService = new ExaminerService();

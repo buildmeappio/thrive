@@ -90,7 +90,11 @@ const columns: ColumnDef<ExaminerData>[] = [
     accessorKey: "status",
     cell: ({ row }) => {
       const status = row.original.status;
-      const statusText = status === "PENDING" ? "Pending Approval" : status === "ACCEPTED" ? "Approved" : "Rejected";
+      const statusText = 
+        status === "PENDING" ? "Pending Approval" : 
+        status === "ACCEPTED" ? "Approved" : 
+        status === "INFO_REQUESTED" ? "Information Requested" : 
+        "Rejected";
       return <Content>{statusText}</Content>;
     },
   },
