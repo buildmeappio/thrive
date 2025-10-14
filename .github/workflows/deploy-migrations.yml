@@ -157,6 +157,9 @@ jobs:
           # Construct execution role ARN directly (no IAM GetRole permission needed)
           EXECUTION_ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ENV}-ecs-execution-role"
           
+          # Create CloudWatch log group if it doesn't exist
+          aws logs create-log-group --log-group-name "/ecs/${ENV}/migrations" --region ${AWS_REGION} 2>/dev/null || true
+          
           # Register task definition for migrations
           TASK_DEF_ARN=$(aws ecs register-task-definition \
             --family ${ENV}-db-migrations \
@@ -182,8 +185,7 @@ jobs:
                   \"options\": {
                     \"awslogs-group\": \"/ecs/${ENV}/migrations\",
                     \"awslogs-region\": \"${AWS_REGION}\",
-                    \"awslogs-stream-prefix\": \"migration\",
-                    \"awslogs-create-group\": \"true\"
+                    \"awslogs-stream-prefix\": \"migration\"
                   }
                 }
               }
@@ -304,8 +306,7 @@ jobs:
                   \"options\": {
                     \"awslogs-group\": \"/ecs/${ENV}/migrations\",
                     \"awslogs-region\": \"${AWS_REGION}\",
-                    \"awslogs-stream-prefix\": \"seeder\",
-                    \"awslogs-create-group\": \"true\"
+                    \"awslogs-stream-prefix\": \"seeder\"
                   }
                 }
               }
