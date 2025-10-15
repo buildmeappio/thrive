@@ -141,8 +141,7 @@ jobs:
         run: |
           ecs deploy \
             --region ${{ env.AWS_REGION }} \
+            --image ${{ env.CONTAINER_NAME }} ${{ env.ECR_REPOSITORY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }} \
+            --no-deregister --timeout 600 --rollback \
             ${{ env.ECS_CLUSTER }} \
-            ${{ env.ECS_SERVICE }} \
-            --image ${{ env.CONTAINER_NAME }} \
-            ${{ env.ECR_REPOSITORY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }} \
-            --no-deregister --timeout 600 --rollback
+            ${{ env.ECS_SERVICE }}
