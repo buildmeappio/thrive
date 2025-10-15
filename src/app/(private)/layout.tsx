@@ -18,11 +18,11 @@ const DashboardLayoutInner = ({ children }: DashboardLayoutProps) => {
 
   return (
     <div className="min-h-screen bg-[#F4FBFF]">
-      {/* Header */}
+      {/* Fixed Header */}
       <Header currentPath={pathname} />
 
-      <div className="flex">
-        {/* Sidebar */}
+      <div className="flex pt-20">
+        {/* Fixed Sidebar */}
         <SideBar isMobileOpen={isSidebarOpen} onMobileClose={closeSidebar} />
 
         {/* Mobile Overlay */}
@@ -35,8 +35,8 @@ const DashboardLayoutInner = ({ children }: DashboardLayoutProps) => {
 
         {/* Main Content Area */}
         <div className="flex flex-1 flex-col md:ml-[280px]">
-          {/* Main Content */}
-          <main className="flex-1 overflow-y-auto bg-gray-50">
+          {/* Scrollable Main Content */}
+          <main className="flex-1 min-h-[calc(100vh-5rem)] bg-[#F4FBFF]">
             <div className="max-w-full p-10">
               <Suspense
                 fallback={

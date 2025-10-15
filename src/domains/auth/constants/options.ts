@@ -1,13 +1,3 @@
-export const daysOptions = [
-  { value: "monday", label: "Monday" },
-  { value: "tuesday", label: "Tuesday" },
-  { value: "wednesday", label: "Wednesday" },
-  { value: "thursday", label: "Thursday" },
-  { value: "friday", label: "Friday" },
-  { value: "saturday", label: "Saturday" },
-  { value: "sunday", label: "Sunday" },
-];
-
 export const travelDistanceOptions = [
   { value: "up-to-25-km", label: "Up to 25 km" },
   { value: "up-to-50-km", label: "Up to 50 km" },
@@ -66,21 +56,6 @@ export const medicalSpecialtyOptions = [
   { value: "urology", label: "Urology" },
   { value: "vascular-surgery", label: "Vascular Surgery" },
   { value: "other", label: "Other" },
-];
-
-export const provinceOptions = [
-  { value: "Ontario", label: "Ontario" },
-  { value: "British Columbia  ", label: "British Columbia" },
-  { value: "Manitoba", label: "Manitoba" },
-  { value: "New Brunswick", label: "New Brunswick" },
-  { value: "Newfoundland and Labrador", label: "Newfoundland and Labrador" },
-  { value: "Nova Scotia", label: "Nova Scotia" },
-  { value: "Prince Edward Island", label: "Prince Edward Island" },
-  { value: "Quebec", label: "Quebec" },
-  { value: "Saskatchewan", label: "Saskatchewan" },
-  { value: "Northwest Territories", label: "Northwest Territories" },
-  { value: "Nunavut", label: "Nunavut" },
-  { value: "Yukon", label: "Yukon" },
 ];
 
 export const yearsOfExperienceOptions = [

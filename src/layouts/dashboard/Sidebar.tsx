@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   Home,
   LogOut,
-  X,
   CreditCard,
   Settings,
   HelpCircle,
@@ -139,14 +138,6 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
         isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       } border-r border-gray-200 rounded-r-[50px]`}>
       <div className="relative flex h-full min-h-0 w-full flex-col">
-        {/* Close button for mobile */}
-        <button
-          className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-2xl text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 md:hidden"
-          onClick={onMobileClose}
-          aria-label="Close sidebar">
-          <X size={20} />
-        </button>
-
         {/* Sidebar Content */}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-8">
           {/* Main Navigation - scrollable */}

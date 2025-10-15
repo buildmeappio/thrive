@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { Header } from "@/domains/dashboard";
+import { ActivationSteps } from "@/domains/dashboard";
 
 export const metadata: Metadata = {
   title: "Dashboard | Thrive - Examiner",
@@ -7,7 +8,12 @@ export const metadata: Metadata = {
 };
 
 const DashboardPage = () => {
-  return <Header />;
+  return (
+    <div className="space-y-4">
+      <Header />
+      <ActivationSteps />
+    </div>
+  );
 };
 
 export default DashboardPage;

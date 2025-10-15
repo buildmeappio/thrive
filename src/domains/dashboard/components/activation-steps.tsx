@@ -1,79 +1,210 @@
 "use client";
-import React, { useState } from "react";
-import { ChevronRight, CheckCircle2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Play, CircleCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface ActivationStep {
-  id: string;
-  title: string;
-  completed: boolean;
-}
+import {
+  ProfileInfoForm,
+  SpecialtyPreferencesForm,
+  AvailabilityPreferencesForm,
+} from "./OnboardingSteps";
+import { type ActivationStep, initializeActivationSteps } from "../constants";
+import { useSession } from "next-auth/react";
+import { getExaminerProfileAction } from "../server/actions";
 
 const ActivationSteps = () => {
-  const [steps, setSteps] = useState<ActivationStep[]>([
-    {
-      id: "profile",
-      title: "Confirm or Complete Your Profile Info",
-      completed: false,
-    },
-    {
-      id: "specialty",
-      title: "Choose Your Speciality & IME Preferences",
-      completed: false,
-    },
-    {
-      id: "availability",
-      title: "Set Your Availability",
-      completed: false,
-    },
-    {
-      id: "payout",
-      title: "Set Up Payout Details",
-      completed: false,
-    },
-  ]);
+  const { data: session } = useSession();
+  const [activeStep, setActiveStep] = useState<string | null>(null);
+  const [steps, setSteps] = useState<ActivationStep[]>(
+    initializeActivationSteps()
+  );
+  const [loading, setLoading] = useState(true);
 
-  const handleStepClick = (stepId: string) => {
-    // Handle step navigation here
-    console.log("Navigating to step:", stepId);
+  // Fetch activation step from database
+  useEffect(() => {
+    const fetchActivationStep = async () => {
+      if (!session?.user?.accountId) return;
 
-    // For now, just toggle completion for demo
+      try {
+        const result = await getExaminerProfileAction(session.user.accountId);
+        if (result.success && "data" in result && result.data) {
+          const completedStepId = result.data.activationStep;
+          if (completedStepId) {
+            // Mark all steps up to and including the completed step as completed
+            setSteps((prevSteps) =>
+              prevSteps.map((step) => {
+                const completedStep = prevSteps.find(
+                  (s) => s.id === completedStepId
+                );
+                if (completedStep && step.order <= completedStep.order) {
+                  return { ...step, completed: true };
+                }
+                return step;
+              })
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching activation step:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivationStep();
+  }, [session]);
+
+  const getNextUncompletedStepOrder = () => {
+    const uncompletedStep = steps.find((step) => !step.completed);
+    return uncompletedStep ? uncompletedStep.order : steps.length + 1;
+  };
+
+  const isStepClickable = (stepOrder: number) => {
+    return stepOrder === getNextUncompletedStepOrder();
+  };
+
+  const handleStepClick = (step: ActivationStep) => {
+    if (isStepClickable(step.order) && !step.completed) {
+      setActiveStep(step.id);
+    }
+  };
+
+  const handleStepComplete = (stepId: string) => {
     setSteps((prevSteps) =>
       prevSteps.map((step) =>
-        step.id === stepId ? { ...step, completed: !step.completed } : step
+        step.id === stepId ? { ...step, completed: true } : step
       )
+    );
+    setActiveStep(null);
+  };
+
+  const handleStepCancel = () => {
+    setActiveStep(null);
+  };
+
+  const renderStepIcon = () => {
+    return (
+      <Play className="h-6 w-6 text-[#00A8FF] flex-shrink-0 fill-[#00A8FF]" />
     );
   };
 
-  return (
-    <div className="space-y-4">
-      {steps.map((step) => (
-        <button
-          key={step.id}
-          onClick={() => handleStepClick(step.id)}
-          className={cn(
-            "w-full flex items-center justify-between p-6 rounded-2xl transition-all duration-200",
-            "border-2 bg-white hover:shadow-md",
-            step.completed
-              ? "border-[#00A8FF] bg-[#F0F9FF]"
-              : "border-transparent hover:border-gray-200"
-          )}>
-          <div className="flex items-center gap-4">
-            {step.completed ? (
-              <CheckCircle2 className="h-6 w-6 text-[#00A8FF] flex-shrink-0" />
-            ) : (
-              <ChevronRight className="h-6 w-6 text-[#00A8FF] flex-shrink-0" />
-            )}
-            <span
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00A8FF] border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  // If a step is active, show all steps with the active one as a form
+  if (activeStep) {
+    return (
+      <div className="space-y-4">
+        {steps.map((step) => {
+          // If this is the active step, show the form
+          if (step.id === activeStep) {
+            if (step.id === "profile") {
+              return (
+                <ProfileInfoForm
+                  key={step.id}
+                  onComplete={() => handleStepComplete("profile")}
+                  onCancel={handleStepCancel}
+                />
+              );
+            }
+            if (step.id === "specialty") {
+              return (
+                <SpecialtyPreferencesForm
+                  key={step.id}
+                  onComplete={() => handleStepComplete("specialty")}
+                  onCancel={handleStepCancel}
+                />
+              );
+            }
+            if (step.id === "availability") {
+              return (
+                <AvailabilityPreferencesForm
+                  key={step.id}
+                  onComplete={() => handleStepComplete("availability")}
+                  onCancel={handleStepCancel}
+                />
+              );
+            }
+            // TODO: Add payout form
+            return null;
+          }
+
+          // Otherwise, show a locked/completed card
+          return (
+            <div
+              key={step.id}
               className={cn(
-                "text-lg font-medium text-left",
-                step.completed ? "text-[#00A8FF]" : "text-gray-700"
+                "w-full flex items-center justify-between p-3 rounded-2xl",
+                "border-2 bg-white cursor-not-allowed",
+                step.completed
+                  ? "border-none bg-white"
+                  : "opacity-50 border-transparent"
               )}>
-              {step.title}
-            </span>
-          </div>
-        </button>
-      ))}
+              <div className="flex items-center gap-4 flex-1">
+                {renderStepIcon()}
+                <span
+                  className={cn(
+                    "text-lg font-medium text-left",
+                    step.completed
+                      ? "text-gray-400 line-through decoration-2"
+                      : "text-gray-400"
+                  )}>
+                  {step.title}
+                </span>
+              </div>
+              {step.completed && (
+                <CircleCheck className="h-6 w-6 text-white border-none flex-shrink-0 fill-green-600" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 mt-4">
+      {steps.map((step) => {
+        const clickable = isStepClickable(step.order);
+
+        return (
+          <button
+            key={step.id}
+            onClick={() => handleStepClick(step)}
+            disabled={!clickable || step.completed}
+            className={cn(
+              "w-full flex items-center justify-between p-3 rounded-2xl transition-all duration-200",
+              "border-2 bg-white",
+              step.completed
+                ? "border-none bg-white"
+                : clickable
+                ? "cursor-pointer border-transparent"
+                : "opacity-50 cursor-not-allowed border-transparent"
+            )}>
+            <div className="flex items-center gap-4 flex-1">
+              {renderStepIcon()}
+              <span
+                className={cn(
+                  "text-lg font-medium text-left",
+                  step.completed
+                    ? "text-gray-400 line-through decoration-2"
+                    : clickable
+                    ? "text-gray-700"
+                    : "text-gray-400"
+                )}>
+                {step.title}
+              </span>
+            </div>
+            {step.completed && (
+              <CircleCheck className="h-6 w-6 text-white border-none flex-shrink-0 fill-green-600" />
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 };

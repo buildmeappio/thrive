@@ -143,7 +143,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
           src={session?.user?.image || undefined}
           alt={session?.user?.name || "User"}
         />
-        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-xl">
+        <AvatarFallback className="bg-[#00A8FF] text-white font-semibold text-xl">
           {getInitials()}
         </AvatarFallback>
       </Avatar>
