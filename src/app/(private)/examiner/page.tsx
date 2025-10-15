@@ -1,5 +1,5 @@
 import ExaminerTable from "@/domains/examiner/components/ExaminerTable";
-import { fakeExaminers } from "@/domains/examiner/constants/fakeData";
+import { listAllExaminers } from "@/domains/examiner/actions";
 import { DashboardShell } from "@/layouts/dashboard";
 import { Metadata } from "next";
 
@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const Page = async () => {
+  const examiners = await listAllExaminers();
 
   return (
     <DashboardShell
@@ -29,7 +30,7 @@ const Page = async () => {
       }
     >
       <div className="bg-white shadow-sm rounded-[30px] px-6 py-8">
-        <ExaminerTable data={fakeExaminers} />
+        <ExaminerTable data={examiners} />
       </div>
     </DashboardShell>
   );

@@ -31,7 +31,7 @@ const approveOrganization = async (id: string) => {
   return organization;
 };
 
-async function sendApprovalEmailToOrganization(org: OrganizationView) {
+async function _sendApprovalEmailToOrganization(org: OrganizationView) {
   const recipients = extractManagerEmails(org);
   if (recipients.length === 0) return;
 

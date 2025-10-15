@@ -4,7 +4,15 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
-import { convertTo12HourFormat, formatDate } from "@/utils/date";
+import { formatDateShort } from "@/utils/date";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export type CaseRow = {
   id: string;
@@ -19,7 +27,6 @@ type Props = {
   items: CaseDetailDtoType[];                 // rows to show
   listHref: string;                 // e.g. "/cases"
   buildDetailHref?: (id: string) => string; // defaults to `${listHref}/${id}`
-  visibleCount?: number;            // optional slice on dashboard
   title?: string;                   // override title if needed
   subtitle?: string;                // override subtitle
 };
@@ -28,95 +35,106 @@ export default function NewCases({
   items,
   listHref,
   buildDetailHref = (id) => `${listHref}/${id}`,
-  visibleCount = 7,
   title = "New Cases to be Reviewed",
   subtitle = "Recently submitted",
 }: Props) {
-  // const rows = items.slice(0, visibleCount);
-
   return (
     <section
       className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
       aria-labelledby="new-cases-heading"
     >
       {/* Title + CTA */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-2 sm:gap-3">
         <h3
           id="new-cases-heading"
-          className="font-degular font-[600] text-[29.01px] leading-[100%] tracking-[-0.02em] text-black"
+          className="font-degular font-[600] text-[20px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black"
         >
           {title}
         </h3>
 
         <Link
           href={listHref}
-          className="h-[34px] rounded-[20px] bg-[#0C108B] px-4 text-white text-sm grid place-items-center"
+          className="h-[30px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-3 sm:px-4 text-white text-xs sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0"
         >
           View All
         </Link>
       </div>
 
       {/* Subline */}
-      <p className="mt-1 font-poppins font-[300] text-[13.26px] leading-[100%] text-[#7A7A7A]">
+      <p className="mt-1 font-poppins font-[300] text-[12px] sm:text-[13.26px] leading-[100%] text-[#7A7A7A]">
         {subtitle}
       </p>
 
-      {/* Table */}
-      <div className="mt-4 overflow-hidden rounded-2xl border border-[#E8E8E8]">
-        {/* Header */}
-        <div className="grid grid-cols-4 bg-[#F3F3F3] px-4 py-3 text-sm font-medium tracking-[-0.02em] text-[#1A1A1A]">
-          <div>Case No.</div>
-          <div>Claimant Name</div>
-          <div>Urgency Level</div>
-          <div>Due Date</div>
-        </div>
-
-        {/* Rows */}
-        <ul className="divide-y divide-[#EDEDED]">
-          {items?.map((r) => {
-            const href = buildDetailHref(r.id);
-            return (
-              <li
-                key={r.id}
-                className="grid grid-cols-4 items-center px-4 py-[12px] text-[14px] tracking-[-0.01em] hover:bg-[#FAFAFF]"
-              >
-                <span className="text-[#1A1A1A] font-mono tabular-nums truncate">
-                  {r.caseNumber}
-                </span>
-                <span className="text-[#5B5B5B] truncate">{r.case.claimant.firstName + " " + r.case.claimant.lastName}</span>
-
-                <span className="truncate">
-                  <span
-                    className={
-                      "inline-flex items-center rounded-full px-3 py-[3px] text-xs font-medium " +
-                      (r.urgencyLevel === "Urgent"
-                        ? "bg-[#FFF2F2] text-[#A10000] border border-[#FFD4D4]"
-                        : "bg-[#F2F7FF] text-[#003E9E] border border-[#DDE8FF]")
-                    }
-                  >
-                    {r.urgencyLevel}
-                  </span>
-                </span>
-
-                <span className="flex items-center justify-between">
-                  <span className="text-[#5B5B5B]">
-                    {formatDate(r.dueDate.toISOString())} -{" "}
-                    {convertTo12HourFormat(r.dueDate.toISOString())}
-                  </span>
-
-
-                  <Link
-                    href={href}
-                    aria-label={`Open ${r.caseNumber}`}
-                    className="ml-3 grid h-5 w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
-                  >
-                    <ChevronRight className="h-3.5 w-3.5 text-[#00A8FF]" />
-                  </Link>
-                </span>
-              </li>
-            );
-          })}
-        </ul>
+      {/* Table - Using shadcn components */}
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-[#E8E8E8]">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-[#F3F3F3] border-b-0 hover:bg-[#F3F3F3]">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Case ID
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Company
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Claim Type
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Date Received
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Due Date
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Priority
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {items?.map((r) => {
+              const href = buildDetailHref(r.id);
+              const priorityText = r.urgencyLevel === "HIGH" ? "Urgent" : "Normal";
+              const priorityColor = r.urgencyLevel === "HIGH" ? "text-[#FF0000]" : "text-[#FFB800]";
+              
+              return (
+                <TableRow 
+                  key={r.id}
+                  className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
+                >
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#1A1A1A] font-mono tabular-nums font-poppins py-3">
+                    <span className="truncate block">{r.caseNumber}</span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">{r.case.organization?.name || "N/A"}</span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">{r.case.caseType?.name || "N/A"}</span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">{formatDateShort(r.createdAt)}</span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">{r.dueDate ? formatDateShort(r.dueDate) : "N/A"}</span>
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className={`text-[14px] tracking-[-0.01em] font-medium ${priorityColor} font-poppins truncate min-w-0 flex-1`}>
+                        {priorityText}
+                      </span>
+                      <Link
+                        href={href}
+                        aria-label={`Open ${r.caseNumber}`}
+                        className="flex-shrink-0 grid h-5 w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
+                      >
+                        <ChevronRight className="h-3.5 w-3.5 text-[#00A8FF]" />
+                      </Link>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </div>
     </section>
   );

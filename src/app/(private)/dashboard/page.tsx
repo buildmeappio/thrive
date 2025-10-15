@@ -7,6 +7,7 @@ import {
   getCases,
   getExaminerCount,
   getExaminers,
+  getWaitingCases,
 } from "@/domains/dashboard/actions/dashboard.actions";
 export const metadata: Metadata = {
   title: "Dashboard | Thrive Admin",
@@ -16,20 +17,21 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const Page = async () => {
-  const [orgCount, caseCount, examinerCount, cases, examiners] = await Promise.all([
+  const [orgCount, caseCount, examinerCount, cases, waitingCases, examiners] = await Promise.all([
     getOrganizationCount(),
     getCaseCount(),
     getExaminerCount(),
-    getCases(),
-    getExaminers(),
+    getCases(3),
+    getWaitingCases(3),
+    getExaminers(3),
   ]);
 
   return (
     <DashboardShell
       title={
-        <h1 className="text-[#000000] text-[36px] font-semibold font-degular">
+        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
           Welcome To{" "}
-          <span className="bg-gradient-to-r to-[#01F4C8] from-[#00A8FF] bg-clip-text text-transparent">
+          <span className="text-[#00A8FF]">
             Thrive
           </span>{" "}
           Admin Dashboard
@@ -38,6 +40,7 @@ const Page = async () => {
     >
       <Dashboard
         caseRows={cases}
+        waitingCaseRows={waitingCases}
         examinerRows={examiners}
         orgCount={orgCount}
         caseCount={caseCount}

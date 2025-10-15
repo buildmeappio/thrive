@@ -3,6 +3,14 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export type ExaminerRow = {
   id: string;
@@ -17,7 +25,6 @@ type Props = {
   listHref: string;                     // e.g. "/examiners"
   buildDetailHref?: (id: string) => string; // defaults to `${listHref}/${id}`
   visibleCount?: number;                // optional slice on dashboard
-  title?: string;
   subtitle?: string;
 };
 
@@ -26,11 +33,6 @@ export default function NewExaminers({
   listHref,
   buildDetailHref = (id) => `${listHref}/${id}`,
   visibleCount = 7,
-  title = (
-    <>
-      New <span className="bg-[linear-gradient(270deg,#01F4C8_50%,#00A8FF_65.19%)] bg-clip-text text-transparent">Medical</span> Examiners
-    </>
-  ) as unknown as string, // TS appeasement for inline JSX below
   subtitle = "Pending for verification",
 }: Props) {
   const rows = items.slice(0, visibleCount);
@@ -41,67 +43,92 @@ export default function NewExaminers({
       aria-labelledby="new-examiners-heading"
     >
       {/* Title + CTA */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-2 sm:gap-3">
         <h3
           id="new-examiners-heading"
-          className="font-degular font-[600] text-[29.01px] leading-[100%] tracking-[-0.02em] text-black"
+          className="font-degular font-[600] text-[20px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black"
         >
-          New Medical Examiners
+          New Examiners Applications
         </h3>
 
         <Link
           href={listHref}
-          className="h-[34px] rounded-[20px] bg-[#0C108B] px-4 text-white text-sm grid place-items-center"
+          className="h-[30px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-3 sm:px-4 text-white text-xs sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0"
         >
           View All
         </Link>
       </div>
 
       {/* Subline */}
-      <p className="mt-1 font-poppins font-[300] text-[13.26px] leading-[100%] text-[#7A7A7A]">
+      <p className="mt-1 font-poppins font-[300] text-[12px] sm:text-[13.26px] leading-[100%] text-[#7A7A7A]">
         {subtitle}
       </p>
 
-      {/* Table */}
-      <div className="mt-4 overflow-hidden rounded-2xl border border-[#E8E8E8]">
-        {/* Header */}
-        <div className="grid grid-cols-4 bg-[#F3F3F3] px-4 py-3 text-sm font-medium tracking-[-0.02em] text-[#1A1A1A]">
-          <div>Name</div>
-          <div>Specialty</div>
-          <div>License Number</div>
-          <div>Province</div>
-        </div>
-
-        {/* Rows */}
-        <ul className="divide-y divide-[#EDEDED]">
-          {rows.map((r) => {
-            const href = buildDetailHref(r.id);
-            return (
-              <li
-                key={r.id}
-                className="grid grid-cols-4 items-center px-4 py-[12px] text-[14px] tracking-[-0.01em] hover:bg-[#FAFAFF]"
-              >
-                <span className="text-[#1A1A1A] truncate">{r.name}</span>
-                <span className="text-[#5B5B5B] truncate">{r.specialties}</span>
-                <span className="text-[#5B5B5B] font-mono tabular-nums truncate">
-                  {r.licenseNumber}
-                </span>
-
-                <span className="flex items-center justify-between text-[#5B5B5B]">
-                  <span className="truncate">{r.province}</span>
-
-                  <Link
-                    href={href}
-                    aria-label={`Open ${r.name}`}
-                    className="ml-3 grid h-5 w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
-                  >
-                    <ChevronRight className="h-3.5 w-3.5 text-[#00A8FF]" />
-                  </Link>
-                </span>
-              </li>
-            );
-          })}
-        </ul>
+      {/* Table - Using shadcn components */}
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-[#E8E8E8]">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-[#F3F3F3] border-b-0 hover:bg-[#F3F3F3]">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Name
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Email
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Specialties
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Province
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+                Status
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => {
+              const href = buildDetailHref(r.id);
+              const statusText = r.status === "PENDING" ? "Pending" : r.status === "ACCEPTED" ? "Approved" : "Rejected";
+              
+              return (
+                <TableRow 
+                  key={r.id}
+                  className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
+                >
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#1A1A1A] font-poppins py-3">
+                    <span className="truncate block">{r.name}</span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">{r.email}</span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">
+                      {Array.isArray(r.specialties) ? r.specialties.join(", ") : r.specialties}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">{r.province}</span>
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins truncate min-w-0 flex-1">
+                        {statusText}
+                      </span>
+                      <Link
+                        href={href}
+                        aria-label={`Open ${r.name}`}
+                        className="flex-shrink-0 grid h-5 w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
+                      >
+                        <ChevronRight className="h-3.5 w-3.5 text-[#00A8FF]" />
+                      </Link>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </div>
     </section>
   );

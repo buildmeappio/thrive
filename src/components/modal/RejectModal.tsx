@@ -1,34 +1,33 @@
+// components/RejectModal.tsx
 import React, { useEffect, useId, useRef, useState } from "react";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (text: string) => void;
-  title?: string;          // default: "Reject Examiner"
-  placeholder?: string;    // default: "Type reason"
-  maxLength?: number;      // default: 200
-  initialValue?: string;
+  onSubmit: (internalNotes: string, messageToExaminer: string) => void;
+  title?: string;
+  maxLength?: number;
 };
 
 export default function RejectModal({
   open,
   onClose,
   onSubmit,
-  title = "Reject Examiner",
-  placeholder = "Type reason",
+  title = "Reason for Rejection",
   maxLength = 200,
-  initialValue = "",
 }: Props) {
-  const [value, setValue] = useState(initialValue);
+  const [internalNotes, setInternalNotes] = useState("");
+  const [messageToExaminer, setMessageToExaminer] = useState("");
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLTextAreaElement>(null);
+  const firstTextRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
-    const t = setTimeout(() => textRef.current?.focus(), 0);
+    const t = setTimeout(() => firstTextRef.current?.focus(), 0);
+    // lock body scroll on mobile
     const { overflow } = document.body.style;
     document.body.style.overflow = "hidden";
     return () => {
@@ -44,7 +43,16 @@ export default function RejectModal({
 
   if (!open) return null;
 
-  const canSend = value.trim().length > 0 && value.length <= maxLength;
+  const canSend = messageToExaminer.trim().length > 0 && messageToExaminer.length <= maxLength;
+
+  const handleSubmit = () => {
+    if (canSend) {
+      onSubmit(internalNotes.trim(), messageToExaminer.trim());
+      // Reset form
+      setInternalNotes("");
+      setMessageToExaminer("");
+    }
+  };
 
   return (
     <div
@@ -57,10 +65,10 @@ export default function RejectModal({
       <div
         ref={panelRef}
         className="
-          relative w-full max-w-[769px]
-          rounded-2xl sm:rounded-[43px]
+          relative w-full max-w-[650px]
+          rounded-2xl sm:rounded-[30px]
           bg-white
-          p-5 sm:px-[40px] sm:py-[37px]
+          p-5 sm:px-[45px] sm:py-[40px]
           shadow-[0_4px_134.6px_0_#00000030]
           max-h-[calc(100vh-1.5rem)] sm:max-h-[85vh]
           overflow-y-auto
@@ -71,7 +79,7 @@ export default function RejectModal({
         <button
           aria-label="Close"
           onClick={onClose}
-          className="absolute right-3 top-3 sm:right-4 sm:top-4 grid h-8 w-8 sm:h-[32px] sm:w-[32px] place-items-center rounded-full bg-[#930000] focus:outline-none focus:ring-2 focus:ring-[#930000]/40"
+          className="absolute right-4 top-4 sm:right-5 sm:top-5 grid h-8 w-8 sm:h-[32px] sm:w-[32px] place-items-center rounded-full bg-[#000093] focus:outline-none focus:ring-2 focus:ring-[#000093]/40"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" className="text-white">
             <path
@@ -84,59 +92,89 @@ export default function RejectModal({
         {/* Title */}
         <h2
           id={titleId}
-          className="font-[600] text-2xl sm:text-[35.39px] leading-[1] tracking-[-0.03em] text-[#930000] font-degular pr-10"
+          className="font-[600] text-xl sm:text-[28px] leading-[1.2] tracking-[-0.02em] text-[#C62828] font-degular pr-10"
         >
           {title}
         </h2>
 
-        {/* Label */}
-        <label
-          htmlFor="reject-text"
-          className="mt-4 sm:mt-5 block font-[500] text-base sm:text-[20px] leading-[1] tracking-[-0.03em] text-[#464646] font-poppins"
-        >
-          Write Reason Here
-        </label>
-
-        {/* Textarea */}
-        <div className="mt-2">
+        {/* Internal Notes Field */}
+        <div className="mt-5">
+          <label
+            htmlFor="internal-notes"
+            className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
+          >
+            Internal Notes
+          </label>
           <textarea
-            id="reject-text"
-            ref={textRef}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            maxLength={maxLength * 3}
+            id="internal-notes"
+            ref={firstTextRef}
+            value={internalNotes}
+            onChange={(e) => setInternalNotes(e.target.value)}
+            maxLength={maxLength}
             className="
-              h-36 sm:h-[158px] w-full resize-none
-              rounded-xl sm:rounded-[20px]
-              border border-[#F0F0F0] bg-[#F6F6F6]
+              h-28 sm:h-[120px] w-full resize-none
+              rounded-xl sm:rounded-[15px]
+              border border-[#E5E5E5] bg-[#F6F6F6]
               p-3 sm:p-4 outline-none
-              placeholder:font-[400] placeholder:text-[14px] sm:placeholder:text-[16px]
-              placeholder:leading-[1] placeholder:tracking-[-0.03em] placeholder:text-[#A4A4A4]
-              font-poppins text-[14px] sm:text-[16px]
+              placeholder:font-[400] placeholder:text-[14px]
+              placeholder:text-[#A4A4A4]
+              font-poppins text-[14px] sm:text-[15px]
+              focus:border-[#C62828] focus:ring-1 focus:ring-[#C62828]
             "
-            placeholder={placeholder}
+            placeholder="Type here"
           />
-          <div className="mt-2 text-right font-inter text-sm sm:text-[15.67px] tracking-[0.5%] text-[#554B4B]/80">
-            {Math.min(value.length, maxLength)}/{maxLength}
+          <div className="mt-1 text-right font-poppins text-xs sm:text-[13px] text-[#7A7A7A]">
+            {internalNotes.length}/{maxLength}
+          </div>
+        </div>
+
+        {/* Message to Examiner Field */}
+        <div className="mt-4">
+          <label
+            htmlFor="message-to-examiner"
+            className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
+          >
+            Message to Examiner
+          </label>
+          <textarea
+            id="message-to-examiner"
+            value={messageToExaminer}
+            onChange={(e) => setMessageToExaminer(e.target.value)}
+            maxLength={maxLength}
+            className="
+              h-28 sm:h-[120px] w-full resize-none
+              rounded-xl sm:rounded-[15px]
+              border border-[#E5E5E5] bg-[#F6F6F6]
+              p-3 sm:p-4 outline-none
+              placeholder:font-[400] placeholder:text-[14px]
+              placeholder:text-[#A4A4A4]
+              font-poppins text-[14px] sm:text-[15px]
+              focus:border-[#C62828] focus:ring-1 focus:ring-[#C62828]
+            "
+            placeholder="Type here"
+          />
+          <div className="mt-1 text-right font-poppins text-xs sm:text-[13px] text-[#7A7A7A]">
+            {messageToExaminer.length}/{maxLength}
           </div>
         </div>
 
         {/* Actions */}
-        <div className="mt-4 sm:mt-5 flex justify-end">
+        <div className="mt-6 flex justify-end">
           <button
             type="button"
             disabled={!canSend}
-            onClick={() => onSubmit(value.trim())}
+            onClick={handleSubmit}
             className="
-              h-10 sm:h-[41px]
+              h-10 sm:h-[46px]
               rounded-full
-              bg-[#8B0000] px-5 sm:px-6 text-white
+              bg-[#000080] px-8 sm:px-10 text-white
               transition-opacity
               disabled:cursor-not-allowed disabled:opacity-50
-              font-poppins text-[14px] sm:text-[15.75px] tracking-[-0.03em]
+              hover:bg-[#000093]
+              font-poppins text-[14px] sm:text-[16px] font-[500] tracking-[-0.02em]
             "
           >
-            Reject
+            Save & Send
           </button>
         </div>
       </div>

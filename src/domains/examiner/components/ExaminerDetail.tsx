@@ -9,9 +9,12 @@ import RejectModal from "@/components/modal/RejectModal";
 import { cn } from "@/lib/utils";
 import { formatDateLong } from "@/utils/date";
 import { ExaminerData } from "../types/ExaminerData";
+import { approveExaminer, rejectExaminer, requestMoreInfo } from "../actions";
+import { Check } from "lucide-react";
+import { toast } from "sonner";
 
 
-const mapStatus = { PENDING: "pending", ACCEPTED: "approved", REJECTED: "rejected" } as const;
+const mapStatus = { PENDING: "pending", ACCEPTED: "approved", REJECTED: "rejected", INFO_REQUESTED: "info_requested" } as const;
 
 type Props = { examiner: ExaminerData };
 
@@ -21,26 +24,54 @@ export default function ExaminerDetail({ examiner }: Props) {
     const [status, setStatus] = useState<(typeof mapStatus)[ExaminerData["status"]]>(
         mapStatus[examiner.status]
     );
-    const [isLoading, setIsLoading] = useState(false);
-    const isTerminal = status === "approved" || status === "rejected";
+    const [loadingAction, setLoadingAction] = useState<"approve" | "reject" | "request" | null>(null);
 
     const formattedExpiry = examiner.licenseExpiryDate
         ? formatDateLong(examiner.licenseExpiryDate)
         : "-";
 
     const handleApprove = async () => {
-        setIsLoading(true);
-        // await api.approveExaminer({ id: examiner.id })
-        setIsLoading(false);
-        setStatus("approved");
+        setLoadingAction("approve");
+        try {
+            await approveExaminer(examiner.id);
+            setStatus("approved");
+            toast.success("Examiner approved successfully! An email has been sent to the examiner.");
+        } catch (error) {
+            console.error("Failed to approve examiner:", error);
+            toast.error("Failed to approve examiner. Please try again.");
+        } finally {
+            setLoadingAction(null);
+        }
     };
 
-    const handleRejectSubmit = async () => {
-        setIsRejectOpen(false);
+    const handleRejectSubmit = async (internalNotes: string, messageToExaminer: string) => {
+        setLoadingAction("reject");
+        try {
+            await rejectExaminer(examiner.id, messageToExaminer);
+            setStatus("rejected");
+            setIsRejectOpen(false);
+            toast.success("Examiner rejected. An email has been sent to the examiner.");
+        } catch (error) {
+            console.error("Failed to reject examiner:", error);
+            toast.error("Failed to reject examiner. Please try again.");
+        } finally {
+            setLoadingAction(null);
+        }
     };
 
-    const handleRequestMoreInfoSubmit = async (_text: string) => {
-        setIsRequestOpen(false);
+    const handleRequestMoreInfoSubmit = async (internalNotes: string, messageToExaminer: string) => {
+        setLoadingAction("request");
+        try {
+            await requestMoreInfo(examiner.id, messageToExaminer);
+            setStatus("info_requested");
+            setIsRequestOpen(false);
+            toast.success("Request sent. An email has been sent to the examiner.");
+        } catch (error) {
+            console.error("Failed to request more info:", error);
+            toast.error("Failed to send request. Please try again.");
+        } finally {
+            setLoadingAction(null);
+        }
     };
 
     return (
@@ -91,15 +122,15 @@ export default function ExaminerDetail({ examiner }: Props) {
                                 />
                                 <FieldRow
                                     label="CV / Resume"
-                                    value="Download"
+                                    value={examiner.cvUrl ? "Download" : "Not uploaded"}
                                     valueHref={examiner.cvUrl}
-                                    type="link"
+                                    type={examiner.cvUrl ? "link" : "text"}
                                 />
                                 <FieldRow
                                     label="Medical License"
-                                    value="Download"
+                                    value={examiner.medicalLicenseUrl ? "Download" : "Not uploaded"}
                                     valueHref={examiner.medicalLicenseUrl}
-                                    type="link"
+                                    type={examiner.medicalLicenseUrl ? "link" : "text"}
                                 />
                             </Section>
                         </div>
@@ -138,15 +169,15 @@ export default function ExaminerDetail({ examiner }: Props) {
                             <Section title="Legal & Compliance">
                                 <FieldRow
                                     label="Insurance Proof"
-                                    value="Download"
+                                    value={examiner.insuranceProofUrl ? "Download" : "Not uploaded"}
                                     valueHref={examiner.insuranceProofUrl}
-                                    type="link"
+                                    type={examiner.insuranceProofUrl ? "link" : "text"}
                                 />
                                 <FieldRow
                                     label="Signed NDA"
-                                    value="Download"
+                                    value={examiner.signedNdaUrl ? "Download" : "Not uploaded"}
                                     valueHref={examiner.signedNdaUrl}
-                                    type="link"
+                                    type={examiner.signedNdaUrl ? "link" : "text"}
                                 />
                             </Section>
                         </div>
@@ -154,39 +185,77 @@ export default function ExaminerDetail({ examiner }: Props) {
 
                     {/* Actions */}
                     <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-end">
-                        <button
-                            className={cn(
-                                "px-4 py-3 rounded-full border border-cyan-400 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                            )}
-                            style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
-                            disabled={isLoading || status === "rejected"}
-                            onClick={handleApprove}
-                        >
-                            {status === "approved" ? "Approved" : isLoading ? "Approving..." : "Approve Examiner"}
-                        </button>
+                        {status === "approved" ? (
+                            <button
+                                className={cn(
+                                    "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-green-50 flex items-center gap-2 cursor-default"
+                                )}
+                                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                                disabled
+                            >
+                                <Check className="w-4 h-4" />
+                                Approved
+                            </button>
+                        ) : status === "rejected" ? (
+                            <button
+                                className={cn(
+                                    "px-4 py-3 rounded-full text-white bg-red-700 flex items-center gap-2 cursor-default"
+                                )}
+                                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                                disabled
+                            >
+                                Rejected
+                            </button>
+                        ) : status === "info_requested" ? (
+                            <button
+                                className={cn(
+                                    "px-4 py-3 rounded-full border border-blue-500 text-blue-700 bg-blue-50 flex items-center gap-2 cursor-default"
+                                )}
+                                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                                disabled
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Information Requested
+                            </button>
+                        ) : (
+                            <>
+                                <button
+                                    className={cn(
+                                        "px-4 py-3 rounded-full border border-cyan-400 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    )}
+                                    style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                                    disabled={loadingAction !== null}
+                                    onClick={handleApprove}
+                                >
+                                    {loadingAction === "approve" ? "Approving..." : "Approve Examiner"}
+                                </button>
 
-                        <button
-                            onClick={() => setIsRequestOpen(true)}
-                            className={cn(
-                                "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                            )}
-                            style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
-                            disabled={isLoading || isTerminal}
-                        >
-                            {status === "rejected" ? "Requested More Info" : isLoading ? "Requesting..." : "Request More Info"}
-                        </button>
+                                <button
+                                    onClick={() => setIsRequestOpen(true)}
+                                    className={cn(
+                                        "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    )}
+                                    style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                                    disabled={loadingAction !== null}
+                                >
+                                    {loadingAction === "request" ? "Requesting..." : "Request More Info"}
+                                </button>
 
-                        <button
-                            className={cn(
-                                "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                            )}
-                            style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
-                            disabled={isLoading || status === "approved"}
-                            onClick={() => setIsRejectOpen(true)}
+                                <button
+                                    className={cn(
+                                        "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    )}
+                                    style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                                    disabled={loadingAction !== null}
+                                    onClick={() => setIsRejectOpen(true)}
 
-                        >
-                            {status === "rejected" ? "Rejected" : isLoading ? "Rejecting..." : "Reject Examiner"}
-                        </button>
+                                >
+                                    {loadingAction === "reject" ? "Rejecting..." : "Reject Examiner"}
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -196,7 +265,6 @@ export default function ExaminerDetail({ examiner }: Props) {
                     onClose={() => setIsRequestOpen(false)}
                     onSubmit={handleRequestMoreInfoSubmit}
                     title="Request More Info"
-                    placeholder="Type here"
                     maxLength={200}
                 />
 
@@ -204,8 +272,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                     open={isRejectOpen}
                     onClose={() => setIsRejectOpen(false)}
                     onSubmit={handleRejectSubmit}
-                    title="Rejection Reason"
-                    placeholder="Type here"
+                    title="Reason for Rejection"
                     maxLength={200}
                 />
             </div>

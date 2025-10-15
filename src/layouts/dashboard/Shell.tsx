@@ -12,8 +12,8 @@ const Shell = ({ children, title }: ShellProps) => {
       <Header title={title} />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-gray-50 px-0 md:px-8">
-        <div className="max-w-full p-4">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 px-0 md:px-8">
+        <div className="w-full max-w-full px-4 py-4">
           <Suspense
             fallback={
               <div className="flex h-full w-full flex-1 items-center justify-center">

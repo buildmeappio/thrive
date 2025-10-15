@@ -3,7 +3,6 @@ import { convertTo12HourFormat, formatDate } from "@/utils/date";
 import { DashboardShell } from "@/layouts/dashboard";
 import Section from "@/components/Section";
 import FieldRow from "@/components/FieldRow";
-import SaveCaseDetails from "@/domains/case/components/SaveCaseDetails";
 
 type PageProps = {
   params: Promise<{
@@ -31,7 +30,7 @@ export async function generateMetadata({ params }: PageProps) {
 const Page: React.FC<PageProps> = async ({ params }) => {
   const { id } = await params;
   const caseDetails = await caseActions.getCaseDetails(id);
-  const statusOptions = await caseActions.getCaseStatuses();
+  const _statusOptions = await caseActions.getCaseStatuses();
 
   return (
     <DashboardShell

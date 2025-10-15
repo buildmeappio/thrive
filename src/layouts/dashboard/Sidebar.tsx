@@ -173,7 +173,7 @@ const Sidebar = () => {
   return (
     <>
       <aside
-        className={`fixed top-0 left-0 z-50 flex h-screen w-[280px] transform-gpu flex-col
+        className={`fixed top-0 left-0 z-50 flex h-screen w-[85%] sm:w-[320px] md:w-[280px] max-w-[400px] transform-gpu flex-col
               bg-white rounded-r-[28px] shadow-[0_6px_30px_rgba(16,24,40,0.06)]
               transition-transform duration-300 ${
                 isMobileOpen
@@ -217,7 +217,7 @@ const Sidebar = () => {
             <div className="flex-shrink-0 p-6">
               <button
                 onClick={handleLogout}
-                className="flex w-full items-center gap-2 rounded-xl bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] pl-4 py-3 text-white font-semibold shadow-lg hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80 cursor-pointer"
+                className="flex w-full items-center gap-2 rounded-xl bg-[#00005D] pl-4 py-3 text-white font-semibold shadow-lg hover:bg-[#00005D]/90 cursor-pointer transition-colors"
               >
                 <LogOut size={20} className="text-white" />
                 <span className="text-sm">Log Out</span>

@@ -33,10 +33,11 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ") || "-";
 
-  const handleRequestSubmit = async (text: string) => {
+  const handleRequestSubmit = async (internalNotes: string, messageToExaminer: string) => {
     try {
       setIsLoading(true);
-      await organizationActions.requestMoreInfo(organization.id, text);
+      // Send the message to examiner (internal notes can be stored separately if needed)
+      await organizationActions.requestMoreInfo(organization.id, messageToExaminer);
       setIsRequestOpen(false);
       toast.success("Request More Info email send Successfully!");
 
@@ -62,10 +63,11 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
     setIsRejectOpen(true);
   };
 
-  const handleRejectSubmit = async (reason: string) => {
+  const handleRejectSubmit = async (internalNotes: string, messageToExaminer: string) => {
     try {
       setIsLoading(true);
-      await organizationActions.rejectOrganization(organization.id, reason);
+      // Send the message to examiner (internal notes can be stored separately if needed)
+      await organizationActions.rejectOrganization(organization.id, messageToExaminer);
       setIsRejectOpen(false);
       setStatus("rejected");
       toast.success("Organization Status Rejected Successfully!");
@@ -200,7 +202,6 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
           onClose={() => setIsRequestOpen(false)}
           onSubmit={handleRequestSubmit}
           title="Request More Info"
-          placeholder="Type here"
           maxLength={200}
         />
 
@@ -208,8 +209,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
           open={isRejectOpen}
           onClose={() => setIsRejectOpen(false)}
           onSubmit={handleRejectSubmit}
-          title="Rejection Reason"
-          placeholder="Type Here"
+          title="Reason for Rejection"
           maxLength={200}
         />
       </div>

@@ -17,15 +17,6 @@ const FieldRow = ({ label, value, valueHref, type }: FieldRowProps) => {
     fileName
   )}`;
 
-  const handleDownload = () => {
-    const link = document.createElement("a");
-    link.href = fileUrl + `?download=${encodeURIComponent(fileName)}`;
-    link.download = fileName || "document";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  };
-
 
   return (
     <>

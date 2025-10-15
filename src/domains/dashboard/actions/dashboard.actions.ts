@@ -1,11 +1,13 @@
 // src/domains/dashboard/actions/index.ts
 "use server";
 
-import { fakeExaminers } from "@/domains/examiner/constants/fakeData";
 import dashboardService from "../server/dashboard.service";
-import { CaseRowDTO } from "../types/dashboard.types";
-import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
+import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
+import { 
+  listRecentExaminers, 
+  getExaminerCount as getExaminerCountAction 
+} from "@/domains/examiner/actions";
 
 
 export async function getOrganizationCount(): Promise<number> {
@@ -16,15 +18,20 @@ export async function getCaseCount(): Promise<number> {
   return dashboardService.getActiveCaseCount();
 }
 
-export async function getCases(limit = 7): Promise<CaseDetailDtoType[]> {
+export async function getCases(limit: number): Promise<CaseDetailDtoType[]> {
   return dashboardService.getRecentCases(limit);
 }
 
-// stubs (you said skip examiner)
+// Now calling examiner domain actions
 export async function getExaminerCount(): Promise<number> {
-  return 3;
+  return getExaminerCountAction();
 }
-export async function getExaminers(): Promise<ExaminerData[]> {
-  return fakeExaminers.slice(0, 3);
+
+export async function getExaminers(limit: number): Promise<ExaminerData[]> {
+  return listRecentExaminers(limit);
+}
+
+export async function getWaitingCases(limit: number): Promise<CaseDetailDtoType[]> {
+  return dashboardService.getWaitingCases(limit);
 }
 
