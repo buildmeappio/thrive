@@ -1,6 +1,7 @@
 import { LoginForm } from '@/domains/auth';
 import { type Metadata } from 'next';
 import Image from '@/components/Image';
+import { createImagePath } from '@/utils/createImagePath';
 
 export const metadata: Metadata = {
   title: 'Login | Thrive',
@@ -24,7 +25,7 @@ const LoginPage = () => {
         <div className="relative hidden flex-1 overflow-hidden md:block">
           <div className="absolute inset-0">
             <Image
-              src={`${process.env.NEXT_PUBLIC_CDN_URL}images/org-gettingStarted.png`}
+              src={createImagePath('org-gettingStarted.png')}
               alt="Organization Dashboard Preview"
               width={200}
               height={200}

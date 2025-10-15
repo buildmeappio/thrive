@@ -1,4 +1,5 @@
 import Image from '@/components/Image';
+import { createImagePath } from '@/utils/createImagePath';
 import { MapPin, Mail, Phone } from 'lucide-react';
 
 const Footer = () => {
@@ -57,7 +58,7 @@ const Footer = () => {
           {/* Logo & Description */}
           <div>
             <Image
-              src={`${process.env.NEXT_PUBLIC_CDN_URL}images/footerLogo.png`}
+              src={createImagePath('footerLogo.png')}
               alt="Thrive Footer Logo"
               width={150}
               height={50}

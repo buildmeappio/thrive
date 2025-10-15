@@ -7,6 +7,7 @@ import { useSidebar } from '../../providers/SideBarProvider';
 import Searchbar from './SearchBar';
 import ProfileDropdown from './ProfileDropDown';
 import Image from 'next/image';
+import { createImagePath } from '@/utils/createImagePath';
 
 const PageOptions = [
   {
@@ -56,7 +57,7 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
 
           {/* Logo */}
           <Image
-            src={`${process.env.NEXT_PUBLIC_CDN_URL}images/thriveLogo.png`}
+            src={createImagePath('thriveLogo.png')}
             alt="Thrive"
             width={160}
             height={80}
@@ -73,7 +74,7 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
           {/* Logo */}
           <div className="text-left">
             <Image
-              src={`${process.env.NEXT_PUBLIC_CDN_URL}images/thriveLogo.png`}
+              src={createImagePath('thriveLogo.png')}
               alt="Thrive"
               width={160}
               height={80}
