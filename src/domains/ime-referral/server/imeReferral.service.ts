@@ -599,10 +599,6 @@ const getCaseList = async (status?: string, take?: number) => {
       submittedAt: exam.createdAt.toISOString(),
     }));
 
-    if (!caseData || caseData.length === 0) {
-      throw HttpError.notFound(ErrorMessages.CASES_NOT_FOUND);
-    }
-
     return caseData;
   } catch (error) {
     throw HttpError.handleServiceError(error, ErrorMessages.FAILED_TO_GET_CASE_LIST);

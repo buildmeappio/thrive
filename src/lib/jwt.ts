@@ -9,13 +9,13 @@ const checkJwtSecrets = () => {
     };
   }
 
-  if (!process.env.JWT_SECRET || !process.env.PASSWORD_JWT_SECRET) {
+  if (!process.env.JWT_OTP_SECRET || !process.env.JWT_SET_PASSWORD_SECRET) {
     throw new Error(ErrorMessages.JWT_SECRETS_REQUIRED);
   }
 
   return {
-    otpSecret: process.env.JWT_SECRET as Secret,
-    passwordSecret: process.env.PASSWORD_JWT_SECRET as Secret,
+    otpSecret: process.env.JWT_OTP_SECRET as Secret,
+    passwordSecret: process.env.JWT_SET_PASSWORD_SECRET as Secret,
   };
 };
 

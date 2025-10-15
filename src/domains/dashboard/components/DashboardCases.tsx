@@ -21,10 +21,7 @@ type CaseProps = {
 
 const DashboardCases = ({ dashboardCases, title }: CaseProps) => {
   return (
-    <section
-      className="w-full rounded-[29px] bg-white px-6 py-4 shadow-[0_0_36.92px_rgba(0,0,0,0.08)]"
-      aria-labelledby="cases-heading"
-    >
+    <section className="w-full rounded-[29px] bg-white px-6 py-4" aria-labelledby="cases-heading">
       {/* Header */}
       <div className="flex items-center justify-between gap-2 sm:gap-3">
         <h3

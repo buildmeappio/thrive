@@ -273,12 +273,12 @@ const verifyOtp = (otp: string, email: string, token: string) => {
     if (!token) {
       return { success: false, message: 'No OTP token found' };
     }
-    if (!process.env.JWT_SECRET) {
+    if (!process.env.JWT_OTP_SECRET) {
       throw new Error(ErrorMessages.JWT_SECRETS_REQUIRED);
     }
 
     // Verify JWT
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as { email: string; otp: string };
+    const decoded = jwt.verify(token, process.env.JWT_OTP_SECRET) as { email: string; otp: string };
 
     // Compare OTP
     if (decoded.otp !== otp) {

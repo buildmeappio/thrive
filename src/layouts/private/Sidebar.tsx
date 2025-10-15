@@ -125,11 +125,11 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-50 flex h-screen transform-gpu flex-col rounded-r-[50px] bg-white transition-all duration-300 md:sticky md:h-[calc(100vh-77px)] ${
-        isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      className={`fixed left-0 z-40 flex h-screen transform-gpu flex-col rounded-r-[50px] bg-white transition-all duration-300 md:top-[77px] md:h-[calc(100vh-77px)] ${
+        isMobileOpen ? 'top-0 translate-x-0' : 'top-0 -translate-x-full md:translate-x-0'
       } ${isCollapsed ? 'md:w-[77px]' : 'w-[270px]'}`}
     >
-      <div className="relative flex h-full min-h-0 w-full flex-col">
+      <div className="relative flex h-full w-full flex-col overflow-hidden">
         {/* Close button for mobile */}
         <button
           className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-2xl text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 md:hidden"
@@ -154,10 +154,10 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
         )}
 
         {/* Sidebar Content */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-16 md:pt-10">
+        <div className="flex h-full flex-col pt-16 md:pt-10">
           {/* Hamburger button when collapsed */}
           {isCollapsed && (
-            <div className="mb-4 flex justify-center px-4">
+            <div className="mb-4 flex flex-shrink-0 justify-center px-4">
               <button
                 onClick={toggleCollapse}
                 className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-colors"
@@ -170,7 +170,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
 
           {/* New IME Referral Button - hidden when collapsed */}
           {!isCollapsed && (
-            <div className="mb-4 px-6 md:px-8">
+            <div className="mb-4 flex-shrink-0 px-6 md:px-8">
               <button
                 onClick={handleNewReferral}
                 disabled={isOrgStatusPending}
@@ -186,10 +186,8 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
             </div>
           )}
 
-          {/* Main Navigation - scrollable */}
-          <nav
-            className={`flex-1 space-y-4 overflow-y-auto pb-4 ${isCollapsed ? 'px-4' : 'px-6 md:px-8'}`}
-          >
+          {/* Main Navigation - NO SCROLL */}
+          <nav className={`flex-1 space-y-4 ${isCollapsed ? 'px-4' : 'px-6 md:px-8'}`}>
             {medicalExaminerSidebarRoutes.map(item => {
               const itemIsActive = isActive(item.href);
               const isSelected = selectedBtn === item.index;

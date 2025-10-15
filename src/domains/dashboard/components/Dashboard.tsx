@@ -37,7 +37,7 @@ const Dashboard = ({
               'New insurer onboarded: Easy Life',
             ]}
           />
-          <div className="flex flex-col items-center rounded-[20px] bg-white p-4 shadow-[0_0_36.92px_rgba(0,0,0,0.08)] sm:rounded-[29px] sm:p-6">
+          <div className="flex flex-col items-center rounded-[20px] bg-white p-4 sm:rounded-[29px] sm:p-6">
             <ExaminationStatusChart />
           </div>
         </div>
