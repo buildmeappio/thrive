@@ -1,6 +1,5 @@
 import type { NextConfig } from "next";
 
-console.log(process.env);
 
 const nextConfig: NextConfig = {
   /* config options here */
