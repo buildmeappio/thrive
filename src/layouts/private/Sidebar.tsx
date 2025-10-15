@@ -4,7 +4,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import useRouter from '@/hooks/useRouter';
 import Link from 'next/link';
-import { Home, LifeBuoy, LogOut, Plus, UserPlus, X, FileText, ChevronLeft } from 'lucide-react';
+import {
+  Home,
+  LifeBuoy,
+  LogOut,
+  Plus,
+  UserPlus,
+  X,
+  FileText,
+  ChevronLeft,
+  Menu,
+} from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { createRoute, URLS } from '@/constants/routes';
 import { useSession } from 'next-auth/react';
@@ -130,19 +140,36 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
         </button>
 
         {/* Collapse button for desktop */}
-        <button
-          className="absolute top-4 right-4 z-10 hidden h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-2xl text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 md:flex"
-          onClick={toggleCollapse}
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          <ChevronLeft
-            size={20}
-            className={`transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
-          />
-        </button>
+        {isCollapsed || (
+          <button
+            className={`absolute top-12 z-10 hidden cursor-pointer items-center justify-center rounded-full border border-[#DBDBFF] bg-[#F1F1FF] text-2xl text-gray-500 transition-colors duration-200 hover:bg-[#000093]/10 md:flex ${
+              isCollapsed ? 'left-[252px]' : 'left-[252px]'
+            }`}
+            onClick={toggleCollapse}
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <ChevronLeft
+              size={20}
+              className="h-8 w-8 text-[#000093] transition-transform duration-300"
+            />
+          </button>
+        )}
 
         {/* Sidebar Content */}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-16 md:pt-10">
+          {/* Hamburger button when collapsed */}
+          {isCollapsed && (
+            <div className="mb-4 flex justify-center px-4">
+              <button
+                onClick={toggleCollapse}
+                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-colors"
+                aria-label="Open sidebar"
+              >
+                <Menu className="h-6 w-6 text-[#000093]" />
+              </button>
+            </div>
+          )}
+
           {/* New IME Referral Button - hidden when collapsed */}
           {!isCollapsed && (
             <div className="mb-4 px-6 md:px-8">

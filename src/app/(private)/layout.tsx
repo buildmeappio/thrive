@@ -24,7 +24,7 @@ const DashboardLayoutInner = ({ children }: DashboardLayoutProps) => {
       </header>
 
       {/* Content Area with Sidebar */}
-      <div className="flex flex-1 pt-[77px]">
+      <div className="flex flex-1 pt-[70px]">
         {/* Sidebar */}
         <SideBar isMobileOpen={isSidebarOpen} onMobileClose={closeSidebar} />
 
