@@ -92,6 +92,7 @@ jobs:
           EXAMINER_REQUEST_JWT_SECRET=${{ secrets.EXAMINER_REQUEST_JWT_SECRET }}
           NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
           AWS_REGION=${{ vars.AWS_REGION }}
+          NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
           EOF
 
       - name: Build and Push container
