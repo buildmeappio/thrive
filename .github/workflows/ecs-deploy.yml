@@ -1,0 +1,150 @@
+name: Build and Deploy to ECS (branch→env)
+
+on:
+  push:
+    branches: [develop, staging, qa, main]
+  pull_request:
+    branches: [develop, staging, qa, main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: ecs-deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: write
+  actions: write
+
+jobs:
+  select:
+    runs-on: ubuntu-latest
+    outputs:
+      target_env: ${{ steps.map.outputs.target_env }}
+      branch: ${{ steps.map.outputs.branch }}
+    steps:
+      - id: map
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            BRANCH="$GITHUB_BASE_REF"          # target branch of the PR
+          else
+            BRANCH="$GITHUB_REF_NAME"          # branch that pushed
+          fi
+
+          case "$BRANCH" in
+            main)     TARGET_ENV="prod"  ;;
+            develop)  TARGET_ENV="dev"   ;;
+            staging)  TARGET_ENV="staging" ;;
+            qa)       TARGET_ENV="qa"    ;;
+            *)        echo "Unsupported branch: $BRANCH"; exit 1 ;;
+          esac
+
+          echo "target_env=$TARGET_ENV" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build Image
+    needs: [select]
+    runs-on: ubuntu-latest
+    environment: ${{ needs.select.outputs.target_env }}
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION || 'ca-central-1' }}
+      ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+      ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+      ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+      CONTAINER_NAME: ${{ vars.CONTAINER_NAME || 'organization' }}
+      AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-session-name: github-${{ github.run_id }}
+          aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env file from secrets
+        run: |
+          cat <<EOF > .env
+          ENVIRONMENT=${{ needs.select.outputs.target_env }}
+          NEXT_PUBLIC_ENVIRONMENT=${{ needs.select.outputs.target_env }}
+          NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
+          NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
+          OAUTH_CLIENT_ID=${{ secrets.OAUTH_CLIENT_ID }}
+          OAUTH_CLIENT_SECRET=${{ secrets.OAUTH_CLIENT_SECRET }}
+          OAUTH_REFRESH_TOKEN=${{ secrets.OAUTH_REFRESH_TOKEN }}
+          OAUTH_USERNAME=${{ secrets.OAUTH_USERNAME }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          PASSWORD_JWT_SECRET=${{ secrets.PASSWORD_JWT_SECRET }}
+          EXAMINER_REQUEST_JWT_SECRET=${{ secrets.EXAMINER_REQUEST_JWT_SECRET }}
+          NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
+          AWS_REGION=${{ vars.AWS_REGION }}
+          NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
+          EOF
+
+      - name: Build and Push container
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          file: Dockerfile
+          tags: ${{ env.ECR_REPOSITORY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to ECS
+    needs: [select, build]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    environment: ${{ needs.select.outputs.target_env }}
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION || 'ca-central-1' }}
+      ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+      ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+      ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+      CONTAINER_NAME: ${{ vars.CONTAINER_NAME || 'organization' }}
+      AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-session-name: github-${{ github.run_id }}
+          aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y curl jq python3-pip
+          sudo pip3 install --ignore-installed urllib3 ecs-deploy
+
+      - name: Deploy to ECS
+        run: |
+          ecs deploy \
+            --region ${{ env.AWS_REGION }} \
+            ${{ env.ECS_CLUSTER }} \
+            ${{ env.ECS_SERVICE }} \
+            --image ${{ env.CONTAINER_NAME }} \
+            ${{ env.ECR_REPOSITORY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }} \
+            --no-deregister --timeout 600 --rollback
