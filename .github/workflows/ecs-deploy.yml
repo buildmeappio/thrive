@@ -97,7 +97,8 @@ jobs:
           NEXT_PUBLIC_GOOGLE_PLACES_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY }}
           JWT_FORGOT_PASSWORD_TOKEN_SECRET=${{ secrets.JWT_FORGOT_PASSWORD_TOKEN_SECRET }}
           JWT_FORGOT_PASSWORD_TOKEN_EXPIRY=${{ secrets.JWT_FORGOT_PASSWORD_TOKEN_EXPIRY }}
-          AWS_REGION=${{ secrets.AWS_REGION }}
+          AWS_REGION=${{ vars.AWS_REGION }}
+          NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
           EOF
 
       - name: Build and Push container
