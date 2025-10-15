@@ -8,50 +8,37 @@ import {
   AvailabilityPreferencesForm,
 } from "./OnboardingSteps";
 import { type ActivationStep, initializeActivationSteps } from "../constants";
-import { useSession } from "next-auth/react";
-import { getExaminerProfileAction } from "../server/actions";
 
-const ActivationSteps = () => {
-  const { data: session } = useSession();
+interface ActivationStepsProps {
+  initialActivationStep: string | null;
+  examinerProfileId: string | null;
+}
+
+const ActivationSteps: React.FC<ActivationStepsProps> = ({
+  initialActivationStep,
+  examinerProfileId,
+}) => {
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [steps, setSteps] = useState<ActivationStep[]>(
     initializeActivationSteps()
   );
-  const [loading, setLoading] = useState(true);
 
-  // Fetch activation step from database
+  // Initialize steps based on the activation step from props
   useEffect(() => {
-    const fetchActivationStep = async () => {
-      if (!session?.user?.accountId) return;
-
-      try {
-        const result = await getExaminerProfileAction(session.user.accountId);
-        if (result.success && "data" in result && result.data) {
-          const completedStepId = result.data.activationStep;
-          if (completedStepId) {
-            // Mark all steps up to and including the completed step as completed
-            setSteps((prevSteps) =>
-              prevSteps.map((step) => {
-                const completedStep = prevSteps.find(
-                  (s) => s.id === completedStepId
-                );
-                if (completedStep && step.order <= completedStep.order) {
-                  return { ...step, completed: true };
-                }
-                return step;
-              })
-            );
+    if (initialActivationStep) {
+      setSteps((prevSteps) =>
+        prevSteps.map((step) => {
+          const completedStep = prevSteps.find(
+            (s) => s.id === initialActivationStep
+          );
+          if (completedStep && step.order <= completedStep.order) {
+            return { ...step, completed: true };
           }
-        }
-      } catch (error) {
-        console.error("Error fetching activation step:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchActivationStep();
-  }, [session]);
+          return step;
+        })
+      );
+    }
+  }, [initialActivationStep]);
 
   const getNextUncompletedStepOrder = () => {
     const uncompletedStep = steps.find((step) => !step.completed);
@@ -87,14 +74,6 @@ const ActivationSteps = () => {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00A8FF] border-t-transparent"></div>
-      </div>
-    );
-  }
-
   // If a step is active, show all steps with the active one as a form
   if (activeStep) {
     return (
@@ -106,6 +85,7 @@ const ActivationSteps = () => {
               return (
                 <ProfileInfoForm
                   key={step.id}
+                  examinerProfileId={examinerProfileId}
                   onComplete={() => handleStepComplete("profile")}
                   onCancel={handleStepCancel}
                 />
@@ -115,6 +95,7 @@ const ActivationSteps = () => {
               return (
                 <SpecialtyPreferencesForm
                   key={step.id}
+                  examinerProfileId={examinerProfileId}
                   onComplete={() => handleStepComplete("specialty")}
                   onCancel={handleStepCancel}
                 />
@@ -124,6 +105,7 @@ const ActivationSteps = () => {
               return (
                 <AvailabilityPreferencesForm
                   key={step.id}
+                  examinerProfileId={examinerProfileId}
                   onComplete={() => handleStepComplete("availability")}
                   onCancel={handleStepCancel}
                 />
@@ -167,7 +149,7 @@ const ActivationSteps = () => {
   }
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="space-y-4 mt-8">
       {steps.map((step) => {
         const clickable = isStepClickable(step.order);
 

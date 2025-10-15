@@ -17,7 +17,6 @@ const FormPhoneInput = <TFieldValues extends FieldValues>({
   name,
   label,
   required = false,
-  placeholder = "(123) 456-7890",
   className = "",
   disabled = false,
 }: FormPhoneInputProps<TFieldValues>) => {

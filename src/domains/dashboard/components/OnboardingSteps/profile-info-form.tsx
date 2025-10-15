@@ -22,19 +22,18 @@ import {
 } from "../../schemas/onboardingSteps.schema";
 
 interface ProfileInfoFormProps {
+  examinerProfileId: string | null;
   onComplete: () => void;
   onCancel?: () => void;
 }
 
 const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
+  examinerProfileId,
   onComplete,
   onCancel: _onCancel,
 }) => {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [examinerProfileId, setExaminerProfileId] = useState<string | null>(
-    null
-  );
 
   const form = useForm<ProfileInfoInput>({
     schema: profileInfoSchema,
@@ -60,7 +59,6 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
         const result = await getExaminerProfileAction(session.user.accountId);
 
         if (result.success && "data" in result && result.data) {
-          setExaminerProfileId(result.data.id);
           form.reset({
             firstName: result.data.firstName || "",
             lastName: result.data.lastName || "",
@@ -107,7 +105,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
     }
   };
 
-  if (loading && !examinerProfileId) {
+  if (loading) {
     return (
       <div className="bg-white rounded-2xl p-8 shadow-sm flex items-center justify-center min-h-[400px]">
         <div className="text-center">

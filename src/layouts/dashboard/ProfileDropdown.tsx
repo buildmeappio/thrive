@@ -4,6 +4,7 @@ import { signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { LogOut, Home, LifeBuoy, UserPlus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { createRoute, URLS } from "@/constants/route";
 
 type ProfileDropdownProps = {
   isMobile: boolean;
@@ -57,7 +58,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
         <ul className="py-2 text-sm text-gray-700">
           <li>
             <a
-              href="/dashboard"
+              href={createRoute(URLS.DASHBOARD)}
               className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
               <Home size={16} />
               <span>Dashboard</span>
@@ -65,7 +66,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
           </li>
           <li>
             <a
-              href="/dashboard/cases"
+              href={createRoute(URLS.CASES)}
               className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
               <UserPlus size={16} />
               <span>All Cases</span>
@@ -73,7 +74,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
           </li>
           <li>
             <a
-              href="/dashboard/billing"
+              href={createRoute(URLS.BILLING)}
               className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
               <LifeBuoy size={16} />
               <span>Billing & Invoices</span>
@@ -81,7 +82,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
           </li>
           <li>
             <a
-              href="/dashboard/settings"
+              href={createRoute(URLS.SETTINGS)}
               className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
               <LifeBuoy size={16} />
               <span>Settings</span>
@@ -89,7 +90,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
           </li>
           <li>
             <a
-              href="/dashboard/support"
+              href={createRoute(URLS.SUPPORT)}
               className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
               <LifeBuoy size={16} />
               <span>Support & Help</span>
@@ -99,7 +100,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
         <div className="py-1">
           <a
             onClick={() => {
-              signOut({ callbackUrl: "/login" });
+              signOut({ callbackUrl: createRoute(URLS.LOGIN) });
               localStorage.removeItem("token");
             }}
             className="flex cursor-pointer items-center space-x-2 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">

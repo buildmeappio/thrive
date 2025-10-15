@@ -3,7 +3,7 @@
 // TODO: Implement handler
 // import getAvailabilityPreferencesHandler from "../handlers/getAvailabilityPreferences";
 
-export const getAvailabilityPreferencesAction = async (accountId: string) => {
+export const getAvailabilityPreferencesAction = async () => {
   try {
     // return await getAvailabilityPreferencesHandler({ accountId });
     return {

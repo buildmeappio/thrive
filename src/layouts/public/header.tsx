@@ -6,7 +6,7 @@ const Header = () => {
       {/* fixed 120px header to match design */}
       <div className="mx-auto flex w-full max-w-none items-center justify-center p-3">
         <Image
-          src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png"
+          src={`${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
           alt="Thrive Assessment & Care"
           width={240}
           height={80}

@@ -8,11 +8,11 @@ import {
   specialtyPreferencesSchema,
   SpecialtyPreferencesInput,
 } from "../../schemas/onboardingSteps.schema";
+import { medicalSpecialtyOptions, regionOptions } from "@/constants/options";
 import {
-  medicalSpecialtyOptions,
-  regionOptions,
-} from "@/domains/auth/constants/options";
-import { assessmentTypeOptions, formatOptions } from "../../constants";
+  assessmentTypeOptions,
+  formatOptions,
+} from "@/domains/dashboard/constants";
 import getLanguages from "@/domains/auth/actions/getLanguages";
 import { CircleCheck } from "lucide-react";
 import {
@@ -21,19 +21,18 @@ import {
 } from "../../server/actions";
 
 interface SpecialtyPreferencesFormProps {
+  examinerProfileId: string | null;
   onComplete: () => void;
   onCancel?: () => void;
 }
 
 const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
+  examinerProfileId,
   onComplete,
   onCancel: _onCancel,
 }) => {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [examinerProfileId, setExaminerProfileId] = useState<string | null>(
-    null
-  );
   const [languageOptions, setLanguageOptions] = useState<
     { value: string; label: string }[]
   >([]);
@@ -80,7 +79,6 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
         );
 
         if (result.success && "data" in result && result.data) {
-          setExaminerProfileId(result.data.id);
           form.reset({
             specialty: result.data.specialty || [],
             assessmentTypes: result.data.assessmentTypes || [],
