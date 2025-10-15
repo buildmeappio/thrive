@@ -13,10 +13,7 @@ import {
 } from "@/domains/auth/schemas/auth.schemas";
 import { step2InitialValues } from "@/domains/auth/constants/initialValues";
 import { RegStepProps } from "@/domains/auth/types/index";
-import {
-  medicalSpecialtyOptions,
-  provinceOptions,
-} from "../../constants/options";
+import { medicalSpecialtyOptions } from "@/constants/options";
 import {
   RegistrationData,
   useRegistrationStore,
@@ -25,6 +22,7 @@ import {
 import { FormProvider, FormField, FormDropdown } from "@/components/form";
 import { Controller, UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
+import { provinceOptions } from "@/constants/options";
 
 const MedicalCredentials: React.FC<RegStepProps> = ({
   onNext,

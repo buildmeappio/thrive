@@ -1,16 +1,18 @@
 "use client";
 import React from "react";
-import { useSession } from "next-auth/react";
 
-const Header = () => {
-  const { data: session } = useSession();
+export interface HeaderProps {
+  userName: string;
+}
+
+const Header: React.FC<HeaderProps> = ({ userName }) => {
   return (
     <div>
       <h1 className="text-4xl font-semibold">
-        Welcome <span className="text-[#00A8FF]">{session?.user?.name}!</span>
+        Welcome <span className="text-[#00A8FF]">{userName}!</span>
       </h1>
       <p className="text-xl">
-        Let’s complete a few steps to activate your dashboard.
+        Let&apos;s complete a few steps to activate your dashboard.
       </p>
     </div>
   );

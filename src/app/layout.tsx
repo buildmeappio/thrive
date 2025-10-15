@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { SessionProvider } from "@/providers";
-import { degular } from "@/lib/fonts";
 import { ThemeProvider, Toaster } from "@/providers";
 
 export const metadata: Metadata = {
@@ -17,7 +16,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`light ${degular.variable} h-full`}
+      className={`light h-full`}
+      style={{ fontFamily: "var(--font-degular)" }}
       suppressHydrationWarning>
       <head>
         <script
@@ -30,7 +30,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${degular.className} h-full`} suppressHydrationWarning>
+      <body
+        className="h-full font-degular"
+        style={{ fontFamily: "var(--font-degular)" }}
+        suppressHydrationWarning>
         <SessionProvider>
           <ThemeProvider>
             <Toaster richColors position="top-center" closeButton />

@@ -1,14 +1,13 @@
 "use client";
 import React, { useEffect } from "react";
 import { Input } from "@/components/ui";
-import { Mail, MapPin, Phone, User } from "lucide-react";
+import { Mail, MapPin, User } from "lucide-react";
 import { ContinueButton, ProgressIndicator } from "@/components";
 import {
   useRegistrationStore,
   RegistrationData,
 } from "@/domains/auth/state/useRegistrationStore";
 import { RegStepProps } from "@/domains/auth/types/index";
-import { provinceOptions } from "../../constants/options";
 import { step1InitialValues } from "@/domains/auth/constants/initialValues";
 import {
   step1PersonalInfoSchema,
@@ -16,9 +15,15 @@ import {
 } from "@/domains/auth/schemas/auth.schemas";
 import authActions from "../../actions";
 import ErrorMessages from "@/constants/ErrorMessages";
-import { FormProvider, FormField, FormDropdown } from "@/components/form";
+import {
+  FormProvider,
+  FormField,
+  FormDropdown,
+  FormPhoneInput,
+} from "@/components/form";
 import { UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
+import { provinceOptions } from "@/constants/options";
 
 const PersonalInfo: React.FC<RegStepProps> = ({
   onNext,
@@ -124,17 +129,11 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                 )}
               </FormField>
 
-              <FormField name="phoneNumber" label="Phone Number" required>
-                {(field: UseFormRegisterReturn & { error?: boolean }) => (
-                  <Input
-                    {...field}
-                    id="phoneNumber"
-                    icon={Phone}
-                    type="tel"
-                    placeholder="(647) 555-1923"
-                  />
-                )}
-              </FormField>
+              <FormPhoneInput
+                name="phoneNumber"
+                label="Phone Number"
+                required
+              />
 
               <FormField name="emailAddress" label="Email Address" required>
                 {(field: UseFormRegisterReturn & { error?: boolean }) => (

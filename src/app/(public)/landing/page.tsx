@@ -64,7 +64,7 @@ const Page: React.FC = () => {
         <div className="relative hidden w-full lg:block lg:max-w-[35%]">
           <div className="absolute inset-0">
             <Image
-              src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/examiner-home.png"
+              src={`${process.env.NEXT_PUBLIC_CDN_URL}/images/examiner-login.png`}
               alt="Hero"
               fill
               priority

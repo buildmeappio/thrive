@@ -12,8 +12,7 @@ import { RegStepProps } from "@/domains/auth/types/index";
 import {
   // daysOptions,
   travelDistanceOptions,
-  regionOptions,
-} from "../../constants/options";
+} from "@/domains/auth/constants/options";
 import { step5InitialValues } from "@/domains/auth/constants/initialValues";
 import { FormProvider, FormDropdown } from "@/components/form";
 import { Controller } from "@/lib/form";
@@ -22,6 +21,7 @@ import {
   useRegistrationStore,
   RegistrationData,
 } from "@/domains/auth/state/useRegistrationStore";
+import { regionOptions } from "@/constants/options";
 
 const Availablity: React.FC<RegStepProps> = ({
   onNext,

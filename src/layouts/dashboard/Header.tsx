@@ -16,7 +16,7 @@ const Header: React.FC<HeaderProps> = ({ currentPath: _currentPath = "" }) => {
   const { isSidebarOpen, toggleSidebar } = useSidebar();
 
   return (
-    <header className="bg-white border-b border-gray-200 px-4 md:px-8">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 md:px-8">
       <div className="flex items-center justify-between h-20">
         {/* Mobile Menu Button */}
         <div className="flex items-center gap-4 md:hidden">
@@ -36,7 +36,7 @@ const Header: React.FC<HeaderProps> = ({ currentPath: _currentPath = "" }) => {
         {/* Logo - Desktop Only */}
         <div className="hidden md:flex items-center">
           <Image
-            src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png"
+            src={`${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
             alt="Thrive"
             width={120}
             height={120}
