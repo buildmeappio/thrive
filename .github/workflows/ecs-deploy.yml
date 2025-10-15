@@ -57,7 +57,7 @@ jobs:
       ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
       ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
       ECS_SERVICE: ${{ vars.ECS_SERVICE }}
-      CONTAINER_NAME: ${{ vars.CONTAINER_NAME || 'organization' }}
+      CONTAINER_NAME: ${{ vars.CONTAINER_NAME || 'admin' }}
       AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
     steps:
       - name: Check out code
@@ -82,22 +82,15 @@ jobs:
           cat <<EOF > .env
           ENVIRONMENT=${{ needs.select.outputs.target_env }}
           NEXT_PUBLIC_ENVIRONMENT=${{ needs.select.outputs.target_env }}
-          FRONTEND_URL=${{ secrets.FRONTEND_URL }}
           NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
           NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
-          OAUTH_CLIENT_ID=${{ secrets.OAUTH_CLIENT_ID }}
-          OAUTH_CLIENT_SECRET=${{ secrets.OAUTH_CLIENT_SECRET }}
-          OAUTH_REFRESH_TOKEN=${{ secrets.OAUTH_REFRESH_TOKEN }}
-          OAUTH_USERNAME=${{ secrets.OAUTH_USERNAME }}
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          PASSWORD_JWT_SECRET=${{ secrets.PASSWORD_JWT_SECRET }}
-          GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
-          GOOGLE_GEOCODE_API_ENABLE=${{ secrets.GOOGLE_GEOCODE_API_ENABLE }}
-          GOOGLE_DISTANCE_MATRIX_API_ENABLE=${{ secrets.GOOGLE_DISTANCE_MATRIX_API_ENABLE }}
-          NEXT_PUBLIC_GOOGLE_PLACES_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY }}
-          JWT_FORGOT_PASSWORD_TOKEN_SECRET=${{ secrets.JWT_FORGOT_PASSWORD_TOKEN_SECRET }}
-          JWT_FORGOT_PASSWORD_TOKEN_EXPIRY=${{ secrets.JWT_FORGOT_PASSWORD_TOKEN_EXPIRY }}
-          AWS_REGION=${{ secrets.AWS_REGION }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GMAIL_REFRESH_TOKEN=${{ secrets.GMAIL_REFRESH_TOKEN }}
+          GMAIL_ACCESS_TOKEN=${{ secrets.GMAIL_ACCESS_TOKEN }}
+          NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
+          AWS_REGION=${{ vars.AWS_REGION }}
+          NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
           EOF
 
       - name: Build and Push container
@@ -124,7 +117,7 @@ jobs:
       ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
       ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
       ECS_SERVICE: ${{ vars.ECS_SERVICE }}
-      CONTAINER_NAME: ${{ vars.CONTAINER_NAME || 'organization' }}
+      CONTAINER_NAME: ${{ vars.CONTAINER_NAME || 'admin' }}
       AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
     steps:
       - name: Checkout code
