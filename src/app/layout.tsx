@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { degular, poppins } from '@/lib/fonts';
 import { SessionProvider } from '@/providers/SessionProvider';
 import './globals.css';
 import { Toaster } from 'sonner';
@@ -52,7 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Accessibility */}
         <meta name="color-scheme" content="light dark" />
       </head>
-      <body className={`${poppins.variable} ${degular.variable}`}>
+      <body className="font-degular" style={{ fontFamily: 'var(--font-degular)' }}>
         <SessionProvider>
           <div className="bg-background text-foreground min-h-screen">
             <main id="main-content">

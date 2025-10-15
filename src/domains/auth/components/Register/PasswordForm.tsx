@@ -44,7 +44,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({ onNext, currentStep,
 
       const result = await signIn('credentials', {
         email: data.step2?.officialEmailAddress,
-        password: data.step5?.password,
+        password: values.password,
         redirect: false,
       });
 
