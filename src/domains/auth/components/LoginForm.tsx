@@ -9,10 +9,35 @@ import { loginInitialValues } from "@/domains/auth/constants/initialValues";
 import Link from "next/link";
 import { createRoute, URLS } from "@/constants/route";
 import { LoginInput, loginSchema } from "@/domains/auth/schemas/auth.schemas";
+import { signIn } from "next-auth/react";
+import { useState } from "react";
+import ErrorMessages from "@/constants/ErrorMessages";
+import { toast } from "sonner";
 
 const LoginForm = () => {
-  const handleSubmit = (values: LoginInput) => {
-    console.log(values);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (values: LoginInput) => {
+    setIsLoading(true);
+
+    try {
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        toast.error(ErrorMessages.INVALID_CREDENTIALS);
+      } else {
+        // Redirect to dashboard on success
+        window.location.href = createRoute(URLS.DASHBOARD);
+      }
+    } catch {
+      toast.error(ErrorMessages.LOGIN_FAILED);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -63,10 +88,13 @@ const LoginForm = () => {
             </Link>
           </div>
           <Button
+            onClick={() => {
+              handleSubmit(values);
+            }}
             className="w-full bg-[#00A8FF] hover:bg-[#0097E5] text-white text-xl font-semibold py-7 px-3 rounded-full flex items-center justify-center gap-2"
-            type="submit">
-            Log In
-            <ArrowRight strokeWidth={3} color="white" />
+            disabled={isLoading}>
+            {isLoading ? "Logging in..." : "Log In"}
+            {!isLoading && <ArrowRight strokeWidth={3} color="white" />}
           </Button>
         </Form>
       )}

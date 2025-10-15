@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Provider from "@/providers";
+import { SessionProvider } from "@/providers";
 import { degular } from "@/lib/fonts";
+import { ThemeProvider, Toaster } from "@/providers";
 
 export const metadata: Metadata = {
   title: "Thrive — Examiner",
@@ -30,7 +31,12 @@ export default function RootLayout({
         />
       </head>
       <body className={`${degular.className} h-full`} suppressHydrationWarning>
-        <Provider>{children}</Provider>
+        <SessionProvider>
+          <ThemeProvider>
+            <Toaster richColors position="top-center" closeButton />
+            {children}
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );
