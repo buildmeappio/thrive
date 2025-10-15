@@ -142,15 +142,13 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
         {/* Collapse button for desktop */}
         {isCollapsed || (
           <button
-            className={`absolute top-12 z-10 hidden cursor-pointer items-center justify-center rounded-full border border-[#DBDBFF] bg-[#F1F1FF] text-2xl text-gray-500 transition-colors duration-200 hover:bg-[#000093]/10 md:flex ${
-              isCollapsed ? 'left-[252px]' : 'left-[252px]'
-            }`}
+            className="absolute top-12 left-[255px] z-10 hidden cursor-pointer items-center justify-center rounded-full border border-[#DBDBFF] bg-[#F1F1FF] text-2xl text-gray-500 transition-colors duration-200 hover:bg-[#000093]/10 md:flex"
             onClick={toggleCollapse}
             aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             <ChevronLeft
               size={20}
-              className="h-8 w-8 text-[#000093] transition-transform duration-300"
+              className="h-6 w-6 text-[#000093] transition-transform duration-300"
             />
           </button>
         )}

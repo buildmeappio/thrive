@@ -163,7 +163,11 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
     await emailService.sendEmail(
       'Welcome to Our Platform!',
       'welcome.html',
-      { firstName: result.firstName, lastName: result.lastName },
+      {
+        firstName: result.firstName,
+        lastName: result.lastName,
+        cdnUrl: process.env.NEXT_PUBLIC_CDN_URL,
+      },
       result.email
     );
   } catch (error) {
@@ -256,6 +260,7 @@ const sendOtp = async (email: string) => {
     'otp.html',
     {
       otp: otp,
+      cdnUrl: process.env.NEXT_PUBLIC_CDN_URL,
     },
     email
   );
@@ -352,6 +357,7 @@ const sendResetPasswordLink = async (email: string) => {
       'reset-link.html',
       {
         resetLink: resetLink,
+        cdnUrl: process.env.NEXT_PUBLIC_CDN_URL,
       },
       email
     );

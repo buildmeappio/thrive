@@ -8,7 +8,7 @@ const Header = () => {
       <div className="flex items-center justify-center py-4">
         <Link href={URLS.HOME}>
           <Image
-            src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png"
+            src={`${process.env.NEXT_PUBLIC_CDN_URL}images/thriveLogo.png`}
             alt="Thrive"
             width={120}
             height={82}

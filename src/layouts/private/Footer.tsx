@@ -57,7 +57,7 @@ const Footer = () => {
           {/* Logo & Description */}
           <div>
             <Image
-              src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/footerLogo.png"
+              src={`${process.env.NEXT_PUBLIC_CDN_URL}images/footerLogo.png`}
               alt="Thrive Footer Logo"
               width={150}
               height={50}

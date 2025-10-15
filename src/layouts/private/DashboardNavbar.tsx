@@ -40,7 +40,7 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
   const currentPage = PageOptions.find(page => page.name === getPageName()) || PageOptions[0];
 
   return (
-    <header className="px-8">
+    <header className="px-10">
       <div className="relative flex w-full flex-col gap-4 px-0 py-1">
         {/* Mobile Header Row */}
         <div className="flex items-center justify-between md:hidden">
@@ -56,7 +56,7 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
 
           {/* Logo */}
           <Image
-            src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png"
+            src={`${process.env.NEXT_PUBLIC_CDN_URL}images/thriveLogo.png`}
             alt="Thrive"
             width={160}
             height={80}
@@ -73,11 +73,11 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
           {/* Logo */}
           <div className="text-left">
             <Image
-              src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png"
+              src={`${process.env.NEXT_PUBLIC_CDN_URL}images/thriveLogo.png`}
               alt="Thrive"
               width={160}
               height={80}
-              className="max-h-[77px] w-32 sm:w-36 md:w-32"
+              className="max-h-[80px] w-32 sm:w-36 md:w-[180px]"
               priority
             />
           </div>
