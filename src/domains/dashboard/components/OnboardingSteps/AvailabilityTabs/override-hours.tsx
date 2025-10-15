@@ -119,6 +119,22 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
     );
   };
 
+  // Check if we're in the current month
+  const today = new Date();
+  const isCurrentMonth =
+    currentMonth.getMonth() === today.getMonth() &&
+    currentMonth.getFullYear() === today.getFullYear();
+
+  // Check if a date is in the past (before today)
+  const isPastDate = (date: Date) => {
+    const todayStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+    return date < todayStart;
+  };
+
   const renderCalendar = () => {
     const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentMonth);
     const weeks: (number | null)[][] = [];
@@ -150,15 +166,24 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
   };
 
   return (
-    <div className="flex gap-12">
+    <div className="flex gap-12 py-6 pl-3">
       {/* Calendar */}
-      <div className="bg-gray-50 rounded-2xl p-6 w-[380px] flex-shrink-0 h-[400px]">
+      <div className="bg-[#FCFDFF] border border-gray-300 rounded-2xl p-6 w-[380px] flex-shrink-0 h-[380px]">
         <div className="flex items-center justify-between mb-4">
           <button
             type="button"
             onClick={previousMonth}
-            className="p-1 hover:bg-gray-200 rounded transition-colors">
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
+            disabled={isCurrentMonth}
+            className={`p-1.5 rounded-full cursor-pointer transition-colors ${
+              isCurrentMonth
+                ? "cursor-not-allowed opacity-40"
+                : "bg-[#E8F1FF] hover:bg-[#d0e3ff]"
+            }`}>
+            <ChevronLeft
+              className={`w-5 h-5  ${
+                isCurrentMonth ? "text-gray-400" : "text-[#00A8FF]"
+              }`}
+            />
           </button>
           <h3 className="text-lg font-medium text-gray-900">
             {currentMonth.toLocaleDateString("en-US", {
@@ -169,8 +194,8 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
           <button
             type="button"
             onClick={nextMonth}
-            className="p-1 hover:bg-gray-200 rounded transition-colors">
-            <ChevronRight className="w-5 h-5 text-gray-600" />
+            className="p-1.5 rounded-full cursor-pointer bg-[#E8F1FF] hover:bg-[#d0e3ff] transition-colors">
+            <ChevronRight className="w-5 h-5 text-[#00A8FF]" />
           </button>
         </div>
 
@@ -204,20 +229,31 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
               );
               const dateStr = formatDate(date);
               const isSelected = selectedDates.has(dateStr);
-              const isToday = new Date().toDateString() === date.toDateString();
+              const isToday = today.toDateString() === date.toDateString();
+              const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+              const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5; // Monday to Friday
+              const isPast = isPastDate(date);
 
               return (
                 <button
                   key={`${weekIndex}-${dayIndex}`}
                   type="button"
-                  onClick={() => toggleDateSelection(dateStr)}
-                  className={`aspect-square rounded-full text-sm font-medium transition-all ${
-                    isSelected
-                      ? "bg-[#00A8FF] text-white"
+                  onClick={() => !isPast && toggleDateSelection(dateStr)}
+                  disabled={isPast}
+                  className={`aspect-square rounded-full text-base transition-all relative ${
+                    isPast
+                      ? "text-gray-300 cursor-not-allowed"
+                      : isSelected
+                      ? "bg-[#00A8FF] font-bold text-white"
                       : isToday
-                      ? "bg-[#00A8FF] text-white"
+                      ? "bg-[#00A8FF] font-bold text-white"
+                      : isWeekday
+                      ? "bg-[#E8F1FF] text-[#00A8FF] font-semibold hover:bg-[#d0e3ff]"
                       : "text-gray-700 hover:bg-blue-50"
                   }`}>
+                  {isToday && !isSelected && (
+                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full" />
+                  )}
                   {day}
                 </button>
               );

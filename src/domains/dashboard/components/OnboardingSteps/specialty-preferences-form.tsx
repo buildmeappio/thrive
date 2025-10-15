@@ -1,9 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FormProvider, FormDropdown } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
-import { useSession } from "next-auth/react";
 import {
   specialtyPreferencesSchema,
   SpecialtyPreferencesInput,
@@ -13,89 +12,41 @@ import {
   assessmentTypeOptions,
   formatOptions,
 } from "@/domains/dashboard/constants";
-import getLanguages from "@/domains/auth/actions/getLanguages";
 import { CircleCheck } from "lucide-react";
-import {
-  getSpecialtyPreferencesAction,
-  updateSpecialtyPreferencesAction,
-} from "../../server/actions";
+import { updateSpecialtyPreferencesAction } from "../../server/actions";
 
 interface SpecialtyPreferencesFormProps {
   examinerProfileId: string | null;
+  initialData: any;
+  languages: any[];
   onComplete: () => void;
   onCancel?: () => void;
 }
 
 const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
   examinerProfileId,
+  initialData,
+  languages,
   onComplete,
   onCancel: _onCancel,
 }) => {
-  const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [languageOptions, setLanguageOptions] = useState<
-    { value: string; label: string }[]
-  >([]);
+  const languageOptions = languages.map((lang: any) => ({
+    value: lang.id,
+    label: lang.name,
+  }));
 
   const form = useForm<SpecialtyPreferencesInput>({
     schema: specialtyPreferencesSchema,
     defaultValues: {
-      specialty: [],
-      assessmentTypes: [],
-      preferredFormat: "",
-      regionsServed: [],
-      languagesSpoken: [],
+      specialty: initialData?.specialty || [],
+      assessmentTypes: initialData?.assessmentTypes || [],
+      preferredFormat: initialData?.preferredFormat || "",
+      regionsServed: initialData?.regionsServed || [],
+      languagesSpoken: initialData?.languagesSpoken || [],
     },
     mode: "onSubmit",
   });
-
-  // Fetch languages from database
-  useEffect(() => {
-    const fetchLanguages = async () => {
-      try {
-        const languages = await getLanguages();
-        const options = languages.map((lang: any) => ({
-          value: lang.id,
-          label: lang.name,
-        }));
-        setLanguageOptions(options);
-      } catch (error) {
-        console.error("Error fetching languages:", error);
-      }
-    };
-
-    fetchLanguages();
-  }, []);
-
-  // Fetch examiner specialty preferences data
-  useEffect(() => {
-    const fetchPreferencesData = async () => {
-      if (!session?.user?.accountId) return;
-
-      setLoading(true);
-      try {
-        const result = await getSpecialtyPreferencesAction(
-          session.user.accountId
-        );
-
-        if (result.success && "data" in result && result.data) {
-          form.reset({
-            specialty: result.data.specialty || [],
-            assessmentTypes: result.data.assessmentTypes || [],
-            preferredFormat: result.data.preferredFormat || "",
-            regionsServed: result.data.regionsServed || [],
-            languagesSpoken: result.data.languagesSpoken || [],
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching preferences data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPreferencesData();
-  }, [session, form]);
 
   const onSubmit = async (values: SpecialtyPreferencesInput) => {
     if (!examinerProfileId) {
@@ -122,17 +73,6 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
       setLoading(false);
     }
   };
-
-  if (loading && !form.getValues().specialty.length) {
-    return (
-      <div className="bg-white rounded-2xl p-8 shadow-sm flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00A8FF] border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading preferences data...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm">
@@ -192,7 +132,7 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
               label="Regions Served"
               required
               options={regionOptions}
-              placeholder="Ontario"
+              placeholder="Select regions"
               className=""
               multiSelect
             />

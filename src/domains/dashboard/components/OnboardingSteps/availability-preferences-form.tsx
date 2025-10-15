@@ -1,7 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useSession } from "next-auth/react";
 import { useForm } from "@/hooks/use-form-hook";
 import { FormProvider } from "@/components/form";
 import { CircleCheck } from "lucide-react";
@@ -14,14 +13,14 @@ import { WeeklyHours, OverrideHours, BookingOptions } from "./AvailabilityTabs";
 
 interface AvailabilityPreferencesFormProps {
   examinerProfileId: string | null;
+  initialData: any;
   onComplete: () => void;
   onCancel?: () => void;
 }
 
 const AvailabilityPreferencesForm: React.FC<
   AvailabilityPreferencesFormProps
-> = ({ examinerProfileId, onComplete, onCancel: _onCancel }) => {
-  const { data: session } = useSession();
+> = ({ examinerProfileId, initialData, onComplete, onCancel: _onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "weeklyHours" | "overrideHours" | "bookingOptions"
@@ -29,31 +28,9 @@ const AvailabilityPreferencesForm: React.FC<
 
   const form = useForm<AvailabilityPreferencesInput>({
     schema: availabilityPreferencesSchema,
-    defaultValues: availabilityInitialValues,
+    defaultValues: initialData || availabilityInitialValues,
     mode: "onSubmit",
   });
-
-  // Fetch availability preferences
-  useEffect(() => {
-    const fetchPreferences = async () => {
-      if (!session?.user?.accountId) return;
-
-      setLoading(true);
-      try {
-        // TODO: Implement getAvailabilityPreferencesAction
-        // const result = await getAvailabilityPreferencesAction(session.user.accountId);
-        // if (result.success && "data" in result && result.data) {
-        //   form.reset(result.data);
-        // }
-      } catch (error) {
-        console.error("Error fetching availability preferences:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPreferences();
-  }, [session, form]);
 
   const onSubmit = async (values: AvailabilityPreferencesInput) => {
     if (!examinerProfileId) {
@@ -63,37 +40,26 @@ const AvailabilityPreferencesForm: React.FC<
 
     setLoading(true);
     try {
-      // TODO: Implement updateAvailabilityPreferencesAction
-      // const result = await updateAvailabilityPreferencesAction({
-      //   examinerProfileId,
-      //   ...values,
-      //   activationStep: "availability",
-      // });
+      const { saveAvailabilityAction } = await import("../../server/actions");
+      const result = await saveAvailabilityAction({
+        examinerProfileId,
+        weeklyHours: values.weeklyHours,
+        overrideHours: values.overrideHours,
+        bookingOptions: values.bookingOptions,
+        activationStep: "availability",
+      });
 
-      // if (result.success) {
-      //   onComplete();
-      // }
-
-      // For now, just complete
-      console.log("Availability preferences:", values);
-      onComplete();
+      if (result.success) {
+        onComplete();
+      } else {
+        console.error("Failed to save availability:", result.message);
+      }
     } catch (error) {
       console.error("Error updating availability preferences:", error);
     } finally {
       setLoading(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="bg-white rounded-2xl p-8 shadow-sm flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00A8FF] border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading availability preferences...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-white rounded-2xl px-8 py-4 shadow-sm">
@@ -111,7 +77,7 @@ const AvailabilityPreferencesForm: React.FC<
       </div>
 
       {/* Tabs */}
-      <div className="relative mb-6 border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
+      <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
         <div className="flex gap-4">
           <button
             type="button"

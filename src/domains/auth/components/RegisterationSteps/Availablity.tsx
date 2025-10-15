@@ -95,6 +95,7 @@ const Availablity: React.FC<RegStepProps> = ({
                 required
                 placeholder="Toronto"
                 icon={null}
+                multiSelect
               />
 
               <FormDropdown

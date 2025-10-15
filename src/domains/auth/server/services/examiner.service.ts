@@ -157,7 +157,7 @@ class ExaminerService {
       experienceDetails?: string;
 
       // Step 5: Availability
-      preferredRegions?: string;
+      preferredRegions?: string[];
       maxTravelDistance?: string;
       acceptVirtualAssessments?: boolean;
 
@@ -217,7 +217,7 @@ class ExaminerService {
             bio: data.experienceDetails,
           }),
           ...(data.preferredRegions && {
-            preferredRegions: data.preferredRegions,
+            preferredRegions: data.preferredRegions.join(","),
           }),
           ...(data.maxTravelDistance && {
             maxTravelDistance: data.maxTravelDistance,

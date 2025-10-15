@@ -16,6 +16,7 @@ interface FormFieldProps<TFieldValues extends FieldValues> {
     field: UseFormRegisterReturn<FieldPath<TFieldValues>> & { error?: boolean }
   ) => React.ReactElement;
   className?: string;
+  hint?: string;
 }
 
 const FormField = <TFieldValues extends FieldValues>({
@@ -24,6 +25,7 @@ const FormField = <TFieldValues extends FieldValues>({
   required = false,
   children,
   className = "",
+  hint,
 }: FormFieldProps<TFieldValues>) => {
   const {
     register,
@@ -44,6 +46,7 @@ const FormField = <TFieldValues extends FieldValues>({
       )}
       {children({ ...register(name), error: hasError })}
       {errorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
+      {hint && !errorMessage && <p className="text-xs text-gray-500">{hint}</p>}
     </div>
   );
 };

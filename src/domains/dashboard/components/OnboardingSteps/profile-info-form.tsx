@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui";
 import { Mail, MapPin, User, CircleCheck } from "lucide-react";
 import {
@@ -11,11 +11,7 @@ import {
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
 import { provinceOptions } from "@/constants/options";
-import { useSession } from "next-auth/react";
-import {
-  getExaminerProfileAction,
-  updateExaminerProfileAction,
-} from "../../server/actions";
+import { updateExaminerProfileAction } from "../../server/actions";
 import {
   profileInfoSchema,
   ProfileInfoInput,
@@ -23,61 +19,32 @@ import {
 
 interface ProfileInfoFormProps {
   examinerProfileId: string | null;
+  initialData: any;
   onComplete: () => void;
   onCancel?: () => void;
 }
 
 const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   examinerProfileId,
+  initialData,
   onComplete,
   onCancel: _onCancel,
 }) => {
-  const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<ProfileInfoInput>({
     schema: profileInfoSchema,
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      phoneNumber: "",
-      emailAddress: "",
-      provinceOfResidence: "",
-      mailingAddress: "",
-      bio: "",
+      firstName: initialData?.firstName || "",
+      lastName: initialData?.lastName || "",
+      phoneNumber: initialData?.phoneNumber || "",
+      emailAddress: initialData?.emailAddress || "",
+      provinceOfResidence: initialData?.provinceOfResidence || "",
+      mailingAddress: initialData?.mailingAddress || "",
+      bio: initialData?.bio || "",
     },
     mode: "onSubmit",
   });
-
-  // Fetch examiner profile data
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      if (!session?.user?.accountId) return;
-
-      setLoading(true);
-      try {
-        const result = await getExaminerProfileAction(session.user.accountId);
-
-        if (result.success && "data" in result && result.data) {
-          form.reset({
-            firstName: result.data.firstName || "",
-            lastName: result.data.lastName || "",
-            phoneNumber: result.data.phoneNumber || "",
-            emailAddress: result.data.emailAddress || "",
-            provinceOfResidence: result.data.provinceOfResidence || "",
-            mailingAddress: result.data.mailingAddress || "",
-            bio: result.data.bio || "",
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching profile data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfileData();
-  }, [session, form]);
 
   const onSubmit = async (values: ProfileInfoInput) => {
     if (!examinerProfileId) {
@@ -104,17 +71,6 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       setLoading(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="bg-white rounded-2xl p-8 shadow-sm flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00A8FF] border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading profile data...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-white rounded-2xl px-8 py-4 shadow-sm">
@@ -164,7 +120,6 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
               label="Phone Number"
               required
               className="bg-[#F9F9F9]"
-              disabled={loading}
             />
           </div>
 

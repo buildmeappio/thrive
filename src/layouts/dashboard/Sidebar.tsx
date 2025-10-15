@@ -45,9 +45,14 @@ export const medicalExaminerSidebarRoutes = [
 interface SideBarProps {
   isMobileOpen?: boolean;
   onMobileClose?: () => void;
+  isActivationComplete?: boolean;
 }
 
-const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
+const SideBar = ({
+  isMobileOpen = false,
+  onMobileClose,
+  isActivationComplete = false,
+}: SideBarProps) => {
   const pathname = usePathname();
   const [selectedBtn, setSelectedBtn] = useState<number | null>(null);
 
@@ -146,6 +151,25 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
               const itemIsActive = isActive(item.href);
               const isSelected = selectedBtn === item.index;
               const IconComponent = item.icon;
+              const isDashboard = item.href === URLS.DASHBOARD;
+              const isDisabled = !isDashboard && !isActivationComplete;
+
+              if (isDisabled) {
+                return (
+                  <div
+                    key={item.index}
+                    className="group relative flex w-full items-center justify-start rounded-full px-6 py-3 text-left text-sm font-medium transition-all duration-200 border border-transparent bg-[#F3F3F3] text-[#9B9B9B] opacity-50 cursor-not-allowed mb-6"
+                    title="Complete activation steps to unlock">
+                    <div className="flex w-full items-center justify-start space-x-2">
+                      <IconComponent
+                        size={20}
+                        className="flex-shrink-0 transition-all duration-200 text-[#9B9B9B]"
+                      />
+                      <span className="flex-1 text-left">{item.label}</span>
+                    </div>
+                  </div>
+                );
+              }
 
               return (
                 <Link

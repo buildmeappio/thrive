@@ -113,8 +113,8 @@ export type Step4ExperienceDetailsInput = z.infer<
 
 export const step5AvailabilitySchema = z.object({
   preferredRegions: z
-    .string()
-    .min(1, { message: "Preferred regions is required" }),
+    .array(z.string())
+    .min(1, { message: "Please select at least one region" }),
   maxTravelDistance: z
     .string()
     .min(1, { message: "Maximum travel distance is required" }),

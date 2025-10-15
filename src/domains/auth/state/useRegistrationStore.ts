@@ -47,7 +47,7 @@ export type Step4ExperienceDetails = {
 };
 
 export type Step5Availability = {
-  preferredRegions: string;
+  preferredRegions: string[];
   maxTravelDistance: string;
   daysAvailable: string;
   timeWindows: {
@@ -107,7 +107,7 @@ export const initialData: RegistrationData = {
   // Step 4
   experienceDetails: "",
   // Step 5
-  preferredRegions: "",
+  preferredRegions: [],
   maxTravelDistance: "",
   daysAvailable: "",
   timeWindows: { morning: false, afternoon: false, evening: false },
@@ -214,7 +214,9 @@ export const useRegistrationStore = create<Store>()((set) => ({
       experienceDetails: examinerData.bio || "",
 
       // Step 5: Availability
-      preferredRegions: examinerData.preferredRegions || "",
+      preferredRegions: examinerData.preferredRegions
+        ? examinerData.preferredRegions.split(",")
+        : [],
       maxTravelDistance: examinerData.maxTravelDistance || "",
       acceptVirtualAssessments: examinerData.acceptVirtualAssessments
         ? "yes"

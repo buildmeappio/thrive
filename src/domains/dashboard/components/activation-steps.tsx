@@ -12,11 +12,19 @@ import { type ActivationStep, initializeActivationSteps } from "../constants";
 interface ActivationStepsProps {
   initialActivationStep: string | null;
   examinerProfileId: string | null;
+  profileData: any;
+  specialtyData: any;
+  availabilityData: any;
+  languages: any[];
 }
 
 const ActivationSteps: React.FC<ActivationStepsProps> = ({
   initialActivationStep,
   examinerProfileId,
+  profileData,
+  specialtyData,
+  availabilityData,
+  languages,
 }) => {
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [steps, setSteps] = useState<ActivationStep[]>(
@@ -86,6 +94,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                 <ProfileInfoForm
                   key={step.id}
                   examinerProfileId={examinerProfileId}
+                  initialData={profileData}
                   onComplete={() => handleStepComplete("profile")}
                   onCancel={handleStepCancel}
                 />
@@ -96,6 +105,8 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                 <SpecialtyPreferencesForm
                   key={step.id}
                   examinerProfileId={examinerProfileId}
+                  initialData={specialtyData}
+                  languages={languages}
                   onComplete={() => handleStepComplete("specialty")}
                   onCancel={handleStepCancel}
                 />
@@ -106,6 +117,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                 <AvailabilityPreferencesForm
                   key={step.id}
                   examinerProfileId={examinerProfileId}
+                  initialData={availabilityData}
                   onComplete={() => handleStepComplete("availability")}
                   onCancel={handleStepCancel}
                 />
