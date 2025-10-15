@@ -29,6 +29,7 @@ const Page = async () => {
     managerName: org.manager?.[0]?.account?.user?.firstName
       ? `${org.manager[0].account.user.firstName} ${org.manager[0].account.user.lastName}`
       : "",
+    managerEmail: org.manager?.[0]?.account?.user?.email ?? "",
   } as OrganizationData));
 
   return (

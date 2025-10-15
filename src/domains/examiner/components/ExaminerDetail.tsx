@@ -59,10 +59,10 @@ export default function ExaminerDetail({ examiner }: Props) {
         }
     };
 
-    const handleRequestMoreInfoSubmit = async (internalNotes: string, messageToExaminer: string) => {
+    const handleRequestMoreInfoSubmit = async (internalNotes: string, messageToExaminer: string, documentsRequired: boolean) => {
         setLoadingAction("request");
         try {
-            await requestMoreInfo(examiner.id, messageToExaminer);
+            await requestMoreInfo(examiner.id, messageToExaminer, documentsRequired);
             setStatus("info_requested");
             setIsRequestOpen(false);
             toast.success("Request sent. An email has been sent to the examiner.");
