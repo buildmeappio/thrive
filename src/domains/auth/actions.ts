@@ -6,17 +6,20 @@ import { handleAction } from '@/utils/action';
 
 export const checkUserByEmail = async (email: string) => {
   return await handleAction(
-    () => authHandlers.checkUserByEmail(email),
+    async () => await authHandlers.checkUserByEmail(email),
     'Failed to check user by email'
   );
 };
 
 export const sendOtp = async (email: string) => {
-  return await handleAction(() => authHandlers.sendOtp(email), 'Failed to send OTP');
+  return await handleAction(async () => await authHandlers.sendOtp(email), 'Failed to send OTP');
 };
 
 export const verifyOtp = async (otp: string, email: string) => {
-  return await handleAction(() => authHandlers.verifyOtp(otp, email), 'Failed to verify OTP');
+  return await handleAction(
+    async () => await authHandlers.verifyOtp(otp, email),
+    'Failed to verify OTP'
+  );
 };
 
 export const registerOrganization = async (data: FormData) => {
@@ -42,14 +45,14 @@ export const sendResetPasswordLink = async (email: string) => {
 
 export const verifyResetToken = async (token: string) => {
   return await handleAction(
-    () => authHandlers.verifyResetToken(token),
+    async () => await authHandlers.verifyResetToken(token),
     'Failed to verify reset token'
   );
 };
 
 export const resetPassword = async (token: string, password: string) => {
   return await handleAction(
-    () => authHandlers.resetPassword(token, password),
+    async () => await authHandlers.resetPassword(token, password),
     'Failed to reset password'
   );
 };
