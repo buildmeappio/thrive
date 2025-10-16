@@ -58,7 +58,7 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
         gradientTo="#00A8FF"
       />
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="flex-grow px-4 pt-4 sm:px-4 sm:py-6 sm:pt-0 md:px-0">
+        <div className="flex-grow pt-4 md:px-0 px-8 sm:py-6 sm:pt-0">
           <div className="space-y-4 sm:space-y-6">
             <div className="mt-0 text-center sm:mt-0">
               <h3 className="mt-4 mb-2 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
@@ -79,7 +79,7 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
                       className="min-h-[150px] w-full resize-none text-sm sm:text-base md:min-h-[200px]"
                       maxLength={500}
                     />
-                    <div className="absolute right-2 bottom-2 text-xs text-gray-400 sm:right-3 sm:bottom-7 sm:text-sm">
+                    <div className="absolute right-4 bottom-6 text-xs text-gray-400 ">
                       {(field.value || "").length}/500
                     </div>
                   </div>
@@ -99,7 +99,7 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
           </div>
         </div>
 
-        <div className="mt-auto flex items-center justify-center gap-3 px-2 pb-8 md:justify-between md:gap-4 md:px-0">
+        <div className="mt-10 flex items-center justify-center gap-8 px-2 pb-8 md:mt-12 md:justify-between md:gap-4 md:px-0">
           <BackButton
             onClick={onPrevious}
             disabled={currentStep === 1}

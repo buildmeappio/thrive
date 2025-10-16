@@ -84,7 +84,7 @@ const RegisterForm: React.FC<{
     <div className="mx-auto max-w-[900px] p-4 md:py-7 py-10">
       <div className="mb-8 flex h-[60px] items-center justify-between ">
         {showTitle && (
-          <h2 className="text-center text-3xl md:text-5xl font-semibold md:whitespace-nowrap">
+          <h2 className="md:ml-12 text-center text-3xl md:text-5xl font-semibold md:whitespace-nowrap">
             {isEditMode
               ? "Let's update your profile information to join "
               : "Let's complete your profile to join "}

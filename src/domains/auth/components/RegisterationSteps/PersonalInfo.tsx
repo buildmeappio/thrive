@@ -101,12 +101,12 @@ const PersonalInfo: React.FC<RegStepProps> = ({
         gradientTo="#00A8FF"
       />
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="space-y-6 px-4 pb-8 md:px-0">
+        <div className="space-y-6 pb-8 md:px-0">
           <div className="pt-1 md:pt-0">
             <h3 className="mt-4 mb-2 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
               Enter Your Personal Details
             </h3>
-            <div className="mt-6 grid grid-cols-1 gap-x-14 gap-y-5 md:mt-8 md:grid-cols-2">
+            <div className="mt-6 md:px-0 px-8 grid grid-cols-1 gap-x-14 gap-y-5 md:mt-8 md:grid-cols-2">
               <FormField name="firstName" label="First Name" required>
                 {(field: UseFormRegisterReturn & { error?: boolean }) => (
                   <Input
@@ -179,7 +179,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
             </div>
           </div>
 
-          <div className="mt-8 flex flex-row justify-center gap-3 px-2 md:justify-between md:gap-4 md:px-0">
+          <div className="mt-10 flex flex-row justify-center gap-3 px-2 md:mt-12 md:justify-between md:gap-4 md:px-0">
             <div className="hidden md:block" />
             <ContinueButton
               onClick={form.handleSubmit(onSubmit)}

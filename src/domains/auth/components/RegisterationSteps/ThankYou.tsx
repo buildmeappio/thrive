@@ -16,7 +16,7 @@ const ThankYou: React.FC<RegStepProps> = ({ currentStep, totalSteps }) => {
         gradientFrom="#89D7FF"
         gradientTo="#00A8FF"
       />
-      <div className="px-4 py-8 md:px-8 md:py-20">
+      <div className="px-6 py-8 md:py-20">
         <div className="py-auto mx-auto flex max-w-2xl flex-col items-center text-center">
           <div className="mb-6 md:mb-4">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-400 md:h-12 md:w-12">
