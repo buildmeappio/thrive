@@ -146,7 +146,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
           value={value}
           onChange={handleChange}
           placeholder={placeholder}
-          className="w-full bg-[#F9F9F9] rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#00A8FF]"
+          className="w-full bg-[#F2F5F6] rounded-lg py-3 pl-10 pr-4 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none"
           disabled={!isLoaded}
         />
       </div>
