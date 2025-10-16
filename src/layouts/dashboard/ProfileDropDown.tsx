@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { LogOut, Home, LifeBuoy, UserPlus } from 'lucide-react';
 import Link from 'next/link';
+import { ENV } from '@/constants/variables';
 
 type ProfileDropdownProps = {
   isMobile: boolean;
@@ -44,7 +45,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
   }, [session?.user?.image]);
 
   const getProfileImageUrl = () => {
-    return session?.user?.image || '/admin/images/avatar.png';
+    return session?.user?.image || `${ENV.NEXT_PUBLIC_CDN_URL}/images/admin-avatar.png`;
   };
 
   const renderDropdown = () => {

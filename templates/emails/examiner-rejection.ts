@@ -33,7 +33,7 @@ export function generateExaminerRejectionEmail({
 <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
     <div style="text-align: center;">
-      <img src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png" alt="Thrive Logo" style="width: 120px;">
+      <img src="https://assets.thriveassessmentcare.com/images/thriveLogo.png" alt="Thrive Logo" style="width: 120px;">
     </div>
     
     <div style="margin-top: 20px; font-size: 16px; color: #333333;">

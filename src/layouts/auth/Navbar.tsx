@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "@/components/Image";
 import { URLS } from "@/constants/route";
 import { getCurrentUser } from "@/domains/auth/server/session";
+import { ENV } from "@/constants/variables";
 
 const Navbar = async () => {
   const user = await getCurrentUser();
@@ -12,7 +13,7 @@ const Navbar = async () => {
       <div className="flex h-full items-center justify-center">
         <Link href={href}>
           <Image
-            src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png"
+            src={`${ENV.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
             alt="Thrive"
             sizes="(max-width: 768px) 100vw, 50vw"
             width={120}

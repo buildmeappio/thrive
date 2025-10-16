@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
 import { sendMail } from "@/lib/email";
+import { ENV } from "@/constants/variables";
 
 type OrganizationView = {
   id: string;
@@ -15,8 +16,8 @@ type OrganizationView = {
 };
 
 const BRAND = {
-  logo: process.env.NEXT_PUBLIC_EMAIL_LOGO_URL || "https://localhost:3000/logo.png",
-  primary: "#1a237e",
+  logo: `${ENV.NEXT_PUBLIC_CDN_URL}/images/thrive-logo.png`,
+  primary: "#00A8FF",
   supportEmail: "support@thrivenetwork.ca",
   appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://thrivenetwork.ca",
 };

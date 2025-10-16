@@ -15,6 +15,7 @@ import {
 import { signOut } from "next-auth/react";
 import { useSidebar } from "@/providers/Sidebar";
 import { cn } from "@/lib/utils";
+import { ENV } from "@/constants/variables";
 
 type Route = {
   icon: LucideIcon;
@@ -188,7 +189,7 @@ const Sidebar = () => {
           {/* Logo */}
           <div className="mb-2 flex items-center justify-center p-6">
             <Image
-              src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png"
+              src={`${ENV.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
               alt="Thrive"
               width={160}
               height={80}
