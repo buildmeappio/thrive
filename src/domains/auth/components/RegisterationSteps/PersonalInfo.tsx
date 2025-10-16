@@ -179,8 +179,8 @@ const PersonalInfo: React.FC<RegStepProps> = ({
             </div>
           </div>
 
-          <div className="mt-8 flex flex-row justify-start gap-4 md:justify-between">
-            <div />
+          <div className="mt-8 flex flex-row justify-center gap-3 px-2 md:justify-between md:gap-4 md:px-0">
+            <div className="hidden md:block" />
             <ContinueButton
               onClick={form.handleSubmit(onSubmit)}
               isLastStep={currentStep === totalSteps}

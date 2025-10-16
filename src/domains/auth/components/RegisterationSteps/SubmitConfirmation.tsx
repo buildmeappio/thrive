@@ -186,7 +186,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
           )}
         </div>
 
-        <div className="mt-8 flex flex-row justify-start gap-4 md:mt-14 md:justify-center md:gap-26">
+        <div className="mt-8 flex flex-row justify-center gap-3 px-2 md:mt-14 md:gap-4 md:px-0">
           <BackButton
             onClick={onPrevious}
             disabled={currentStep === 1 || loading}

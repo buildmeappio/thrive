@@ -214,7 +214,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
           </div>
         </div>
 
-        <div className="mt-auto flex justify-center gap-4 pb-8 md:justify-between">
+        <div className="mt-auto flex justify-center gap-3 px-2 pb-8 md:justify-between md:gap-4 md:px-0">
           <BackButton
             onClick={onPrevious}
             disabled={currentStep === 1}

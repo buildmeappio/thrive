@@ -22,7 +22,7 @@ const ContinueButton: React.FC<ContinueButtonProps> = ({
     <button
       type="submit"
       onClick={onClick}
-      className="flex h-[45px] w-[182px] cursor-pointer items-center justify-center gap-1.5 rounded-[34px] px-4 py-3 text-white transition-all duration-300 ease-in-out hover:opacity-90"
+      className="flex h-[40px] w-[140px] cursor-pointer items-center justify-center gap-1 rounded-[34px] px-3 py-2 text-sm text-white transition-all duration-300 ease-in-out hover:opacity-90 md:h-[45px] md:w-[182px] md:gap-1.5 md:px-4 md:py-3 md:text-base"
       style={{
         backgroundImage: `linear-gradient(to left, ${gradientFrom}, ${gradientTo})`,
       }}
@@ -34,7 +34,7 @@ const ContinueButton: React.FC<ContinueButtonProps> = ({
           <span className="transition-all duration-300 ease-in-out">
             {isLastStep ? "Submit" : "Continue"}
           </span>
-          <ArrowRight className="cup ml-2 h-4 w-4 text-white transition-all duration-300 ease-in-out" />
+          <ArrowRight className="cup ml-1 h-3.5 w-3.5 text-white transition-all duration-300 ease-in-out md:ml-2 md:h-4 md:w-4" />
         </>
       )}
     </button>

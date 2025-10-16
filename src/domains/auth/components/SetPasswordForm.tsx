@@ -107,7 +107,7 @@ const SetPasswordForm: React.FC<Step9PasswordProps> = ({ token }) => {
             </div>
           </div>
 
-          <div className="mt-8 flex justify-end md:mt-14">
+          <div className="mt-8 flex justify-center px-2 md:justify-end md:mt-14 md:px-0">
             <ContinueButton
               disabled={loading || form.formState.isSubmitting}
               gradientFrom="#89D7FF"

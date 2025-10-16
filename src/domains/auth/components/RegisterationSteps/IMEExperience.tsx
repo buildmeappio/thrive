@@ -159,7 +159,7 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
           </div>
         </div>
 
-        <div className="mt-auto md:mt-8 flex items-center justify-center gap-4 pb-8 md:justify-between">
+        <div className="mt-auto flex items-center justify-center gap-3 px-2 pb-8 md:mt-8 md:justify-between md:gap-4 md:px-0">
           <BackButton
             onClick={onPrevious}
             disabled={currentStep === 1}
