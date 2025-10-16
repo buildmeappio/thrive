@@ -1,32 +1,23 @@
-import ErrorMessages from "@/constants/ErrorMessages";
 import jwt, {
   type Secret,
   type SignOptions,
   type JwtPayload,
 } from "jsonwebtoken";
+import { ENV } from "@/constants/variables";
 
 const checkJwtSecrets = () => {
-  if (process.env.NODE_ENV === "test" || process.env.CI === "true") {
-    return {
-      otpSecret: "",
-      passwordSecret: "",
-      examinerRequestSecret: "",
-    };
-  }
-
   if (
-    !process.env.JWT_OTP_SECRET ||
-    !process.env.JWT_SET_PASSWORD_SECRET ||
-    !process.env.JWT_EXAMINER_INFO_REQUEST_SECRET
+    !ENV.JWT_OTP_SECRET ||
+    !ENV.JWT_SET_PASSWORD_SECRET ||
+    !ENV.JWT_EXAMINER_INFO_REQUEST_SECRET
   ) {
-    throw new Error(ErrorMessages.JWT_SECRETS_REQUIRED);
+    throw new Error("JWT secrets are required");
   }
 
   return {
-    otpSecret: process.env.JWT_OTP_SECRET as Secret,
-    passwordSecret: process.env.JWT_SET_PASSWORD_SECRET as Secret,
-    examinerRequestSecret: process.env
-      .JWT_EXAMINER_INFO_REQUEST_SECRET as Secret,
+    otpSecret: ENV.JWT_OTP_SECRET as Secret,
+    passwordSecret: ENV.JWT_SET_PASSWORD_SECRET as Secret,
+    examinerRequestSecret: ENV.JWT_EXAMINER_INFO_REQUEST_SECRET as Secret,
   };
 };
 

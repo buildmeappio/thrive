@@ -144,6 +144,7 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
     };
   } catch (error) {
     throw HttpError.fromError(error, ErrorMessages.REGISTRATION_FAILED, 500);
+    console.error("Error in createMedicalExaminer handler:", error);
   }
 };
 

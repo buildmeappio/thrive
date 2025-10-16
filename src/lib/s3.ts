@@ -3,21 +3,20 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { revalidatePath } from "next/cache";
 import prisma from "./db";
+import { ENV } from "@/constants/variables";
 
 const credentials =
-  process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+  ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY
     ? {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: ENV.AWS_ACCESS_KEY_ID,
+        secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
       }
     : undefined;
 
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION!,
+  region: ENV.AWS_REGION!,
   credentials,
 });
-
-const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME!;
 
 const createFileName = (file: File) => {
   const timestamp = Date.now();
@@ -27,7 +26,7 @@ const createFileName = (file: File) => {
 };
 
 const createKey = (file: File) => {
-  return `documents/${createFileName(file)}`;
+  return `documents/examiner/${createFileName(file)}`;
 };
 
 async function uploadFilesToS3(formData: FormData) {
@@ -55,7 +54,7 @@ async function uploadFilesToS3(formData: FormData) {
         const key = createKey(file);
 
         const command = new PutObjectCommand({
-          Bucket: BUCKET_NAME,
+          Bucket: ENV.AWS_S3_BUCKET!,
           Key: key,
           Body: buffer,
           ContentType: file.type,
@@ -110,7 +109,7 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
     const buffer = Buffer.from(bytes);
     const key = createKey(file);
     const command = new PutObjectCommand({
-      Bucket: BUCKET_NAME,
+      Bucket: ENV.AWS_S3_BUCKET!,
       Key: key,
       Body: buffer,
       ContentType: file.type,

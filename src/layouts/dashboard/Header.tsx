@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useSidebar } from "@/providers/Sidebar";
 import ProfileDropdown from "./ProfileDropdown";
 import Image from "@/components/Image";
+import { ENV } from "@/constants/variables";
 
 interface HeaderProps {
   currentPath?: string;
@@ -36,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ currentPath: _currentPath = "" }) => {
         {/* Logo - Desktop Only */}
         <div className="hidden md:flex items-center">
           <Image
-            src={`${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
+            src={`${ENV.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
             alt="Thrive"
             width={120}
             height={120}

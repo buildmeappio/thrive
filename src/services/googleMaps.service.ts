@@ -5,6 +5,8 @@
  * Used to validate addresses and get coordinates on the backend
  */
 
+import { ENV } from "@/constants/variables";
+
 interface GeocodeResult {
   formattedAddress: string;
   latitude: number;
@@ -33,7 +35,7 @@ class GoogleMapsService {
   private baseUrl = "https://maps.googleapis.com/maps/api/geocode/json";
 
   constructor() {
-    this.apiKey = process.env.GOOGLE_MAPS_API_KEY || "";
+    this.apiKey = ENV.GOOGLE_PLACES_API_KEY || "";
     if (!this.apiKey) {
       console.warn(
         "GOOGLE_MAPS_API_KEY is not set. Geocoding features will not work."

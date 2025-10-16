@@ -2,6 +2,7 @@ import { ArrowRight, Check } from "lucide-react";
 import { MedicalExaminerFeatures } from "@/constants/landing";
 import Image from "@/components/Image";
 import { createRoute, URLS } from "@/constants/route";
+import { ENV } from "@/constants/variables";
 
 const Page: React.FC = () => {
   return (
@@ -64,7 +65,7 @@ const Page: React.FC = () => {
         <div className="relative hidden w-full lg:block lg:max-w-[35%]">
           <div className="absolute inset-0">
             <Image
-              src={`${process.env.NEXT_PUBLIC_CDN_URL}/images/examiner-login.png`}
+              src={`${ENV.NEXT_PUBLIC_CDN_URL}/images/examiner-login.png`}
               alt="Hero"
               fill
               priority

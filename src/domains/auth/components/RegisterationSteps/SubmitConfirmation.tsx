@@ -116,6 +116,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
       // Check if the action was successful
       if (result && !result.success) {
         setErr(result.message || "Submission failed");
+        console.error("Submission failed:", result.message);
         setLoading(false);
         return;
       }
