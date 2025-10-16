@@ -81,13 +81,13 @@ const Availablity: React.FC<RegStepProps> = ({
       />
 
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="flex-grow space-y-6 px-4 pb-8 md:px-0 md:pb-10">
+        <div className="flex-grow space-y-6 pb-8 md:pb-10">
           <div className="pt-1 md:pt-0">
             <h3 className="mt-4 mb-2 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
               Availability & Preferences
             </h3>
 
-            <div className="mt-6 grid grid-cols-1 gap-x-14 gap-y-5 md:mt-8 md:grid-cols-2">
+            <div className="mt-6 md:px-0 px-8 grid grid-cols-1 gap-x-14 gap-y-5 md:mt-8 md:grid-cols-2">
               <FormDropdown
                 name="preferredRegions"
                 label="Preferred Regions"
@@ -190,7 +190,7 @@ const Availablity: React.FC<RegStepProps> = ({
               name="acceptVirtualAssessments"
               control={form.control}
               render={({ field, fieldState }) => (
-                <div className="sm:-mt- mt-4 space-y-3">
+                <div className="sm:-mt- mt-4 space-y-3 md:px-0 px-8">
                   <Label className="text-sm text-black">
                     Accept Virtual Assessments
                     <span className="text-red-500">*</span>
@@ -237,7 +237,7 @@ const Availablity: React.FC<RegStepProps> = ({
           </div>
         </div>
 
-        <div className="mt-auto flex items-center justify-center gap-3 px-2 pb-8 md:mt-8 md:justify-between md:gap-4 md:px-0">
+        <div className="mt-10 flex items-center justify-center gap-8 px-2 pb-8 md:mt-12 md:justify-between md:gap-4 md:px-0">
           <BackButton
             onClick={onPrevious}
             disabled={currentStep === 1}

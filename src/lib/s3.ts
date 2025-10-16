@@ -11,14 +11,6 @@ const s3Config: S3ClientConfig = {
   region: ENV.AWS_REGION!,
 };
 
-// Only add credentials if explicitly provided (for local development)
-if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
-  s3Config.credentials = {
-    accessKeyId: ENV.AWS_ACCESS_KEY_ID,
-    secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
-  };
-}
-
 const s3Client = new S3Client(s3Config);
 
 const createFileName = (file: File) => {

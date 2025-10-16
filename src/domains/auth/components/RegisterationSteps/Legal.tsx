@@ -76,7 +76,7 @@ const Legal: React.FC<RegStepProps> = ({
       />
 
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="flex-grow space-y-4 px-4 pb-8 md:space-y-6 md:px-0">
+        <div className="flex-grow space-y-4  pb-8 md:space-y-6 md:px-0">
           <div className="text-center">
             <h3 className="mt-4 mb-2 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
               Legal & Compliance
@@ -143,7 +143,7 @@ const Legal: React.FC<RegStepProps> = ({
             />
           </div> */}
 
-          <div className="mt-8 grid grid-cols-1 gap-4 md:mt-14 md:grid-cols-2">
+          <div className="mt-8 grid grid-cols-1 gap-4 md:mt-14 md:grid-cols-2 md:px-0 px-8">
             <Controller
               name="consentBackgroundVerification"
               control={form.control}
@@ -213,7 +213,7 @@ const Legal: React.FC<RegStepProps> = ({
           </div>
         </div>
 
-        <div className="mt-auto flex justify-center gap-3 px-2 pb-8 md:mt-8 md:justify-between md:gap-4 md:px-0">
+        <div className="mt-10 flex justify-center gap-8 px-2 pb-8 md:mt-12 md:justify-between md:gap-4 md:px-0">
           <BackButton
             onClick={onPrevious}
             disabled={currentStep === 1}

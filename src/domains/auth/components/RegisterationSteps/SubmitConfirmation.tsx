@@ -147,7 +147,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         gradientTo="#00A8FF"
       />
 
-      <div className="space-y-6 px-4 pt-4 pb-8 md:px-20 md:py-15">
+      <div className="space-y-6 pt-4 pb-8 px-6 md:py-15">
         <div className="pt-1 md:pt-0">
           <h3 className="mt-4 mb-2 text-center text-[22px] font-semibold text-[#140047] md:mt-5 md:mb-0 md:text-[40px]">
             {isEditMode ? "Ready to Update?" : "Ready to Submit?"}
@@ -186,7 +186,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
           )}
         </div>
 
-        <div className="mt-8 flex flex-row justify-center gap-3 px-2 md:mt-14 md:gap-4 md:px-0">
+        <div className="mt-10 flex flex-row justify-center gap-8 px-2 md:mt-14 md:gap-12 md:px-0">
           <BackButton
             onClick={onPrevious}
             disabled={currentStep === 1 || loading}

@@ -108,14 +108,14 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
       />
 
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="flex-grow space-y-4 px-4 md:space-y-6 md:px-0">
+        <div className="flex-grow space-y-4 md:px-0">
           <div className="text-center">
             <h3 className="mt-4 mb-2 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
               Enter Your Medical Credentials
             </h3>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-x-14 gap-y-6 md:mt-8 md:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-x-14 gap-y-4 md:mt-8 md:grid-cols-2 md:px-0 px-8">
             <FormDropdown
               name="medicalSpecialty"
               label="Medical Specialties"
@@ -214,7 +214,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
           </div>
         </div>
 
-        <div className="mt-auto flex justify-center gap-3 px-2 pb-8 md:justify-between md:gap-4 md:px-0">
+        <div className="pt-8 md:pt-2 flex justify-center gap-8 px-2 pb-8 md:justify-between md:gap-4 md:px-0">
           <BackButton
             onClick={onPrevious}
             disabled={currentStep === 1}
