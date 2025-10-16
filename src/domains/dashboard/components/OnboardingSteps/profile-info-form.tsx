@@ -1,13 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import { Input } from "@/components/ui";
-import { Mail, User, CircleCheck } from "lucide-react";
+import { Mail, MapPin, User, CircleCheck } from "lucide-react";
 import {
   FormProvider,
   FormField,
   FormDropdown,
   FormPhoneInput,
-  FormGoogleMapsInput,
 } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
@@ -147,12 +146,16 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
               className=""
             />
 
-            <FormGoogleMapsInput
-              name="mailingAddress"
-              label="Mailing Address"
-              placeholder="125 Bay Street, Suite 600, Toronto, ON"
-              required
-            />
+            <FormField name="mailingAddress" label="Mailing Address" required>
+              {(field) => (
+                <Input
+                  {...field}
+                  placeholder="125 Bay Street, Suite 600"
+                  icon={MapPin}
+                  className="bg-[#F9F9F9]"
+                />
+              )}
+            </FormField>
           </div>
 
           {/* Profile Photo and Bio */}

@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect } from "react";
 import { Input } from "@/components/ui";
-import { Mail, User } from "lucide-react";
+import { Mail, MapPin, User } from "lucide-react";
 import { ContinueButton, ProgressIndicator } from "@/components";
 import {
   useRegistrationStore,
@@ -20,7 +20,6 @@ import {
   FormField,
   FormDropdown,
   FormPhoneInput,
-  FormGoogleMapsInput,
 } from "@/components/form";
 import { UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
@@ -167,12 +166,16 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                 icon={null}
               />
 
-              <FormGoogleMapsInput
-                name="mailingAddress"
-                label="Mailing Address"
-                placeholder="125 Bay Street, Suite 600, Toronto, ON"
-                required
-              />
+              <FormField name="mailingAddress" label="Mailing Address" required>
+                {(field: UseFormRegisterReturn & { error?: boolean }) => (
+                  <Input
+                    {...field}
+                    id="mailingAddress"
+                    icon={MapPin}
+                    placeholder="125 Bay Street, Suite 600"
+                  />
+                )}
+              </FormField>
             </div>
           </div>
 
