@@ -13,7 +13,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
   totalSteps,
   currentStep,
 }) => {
-  const { data, isEditMode, examinerProfileId } = useRegistrationStore();
+  const { data, isEditMode, examinerProfileId, reset } = useRegistrationStore();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -101,20 +101,36 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         consentBackgroundVerification: data.consentBackgroundVerification,
       };
 
+      let result;
       if (isEditMode && examinerProfileId) {
         // Update existing examiner
-        await authActions.updateMedicalExaminer({
+        result = await authActions.updateMedicalExaminer({
           examinerProfileId,
           ...payload,
         });
       } else {
         // Create new examiner
-        await authActions.createMedicalExaminer(payload);
+        result = await authActions.createMedicalExaminer(payload);
       }
+
+      // Check if the action was successful
+      if (result && !result.success) {
+        setErr(result.message || "Submission failed");
+        setLoading(false);
+        return;
+      }
+
+      // Clear localStorage after successful submission
+      reset();
+      localStorage.removeItem("examiner-registration-storage");
 
       onNext?.();
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : "Submission failed");
+      // Handle unexpected errors
+      const errorMessage =
+        e instanceof Error ? e.message : "An unexpected error occurred";
+      console.error("Submission error:", e);
+      setErr(errorMessage);
       setLoading(false);
     }
   };
@@ -143,9 +159,29 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
             </p>
           </div>
           {err && (
-            <p className="mt-3 text-center text-xs text-red-500 md:text-sm">
-              {err}
-            </p>
+            <div className="mt-4 mx-auto max-w-lg rounded-lg border border-red-200 bg-red-50 p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-5 w-5 text-red-400"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-3 flex-1">
+                  <h3 className="text-sm font-medium text-red-800">
+                    Submission Error
+                  </h3>
+                  <p className="mt-1 text-sm text-red-700">{err}</p>
+                </div>
+              </div>
+            </div>
           )}
         </div>
 

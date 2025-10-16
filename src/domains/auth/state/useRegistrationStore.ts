@@ -2,6 +2,7 @@
 "use client";
 
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { Language } from "@prisma/client";
 
 // Document types for handling both new uploads and existing documents
@@ -144,97 +145,159 @@ type Store = {
   loadExaminerData: (examinerData: any) => void;
 };
 
-export const useRegistrationStore = create<Store>()((set) => ({
-  data: initialData,
-  merge: (
-    patch: Partial<RegistrationData> // <- ensure Partial here
-  ) => set((s) => ({ data: { ...s.data, ...patch } })),
-  setAll: (all: RegistrationData) => set({ data: all }),
-  reset: () => set({ data: initialData }),
-  languages: [],
-  setLanguages: (languages: Language[]) => set({ languages }),
-
-  // Edit mode state
-  isEditMode: false,
-  examinerProfileId: null,
-  setEditMode: (isEdit: boolean, profileId?: string) =>
-    set({ isEditMode: isEdit, examinerProfileId: profileId || null }),
-  loadExaminerData: (examinerData: any) => {
-    const mappedData: Partial<RegistrationData> = {
-      // Step 1: Personal Info
-      firstName: examinerData.account?.user?.firstName || "",
-      lastName: examinerData.account?.user?.lastName || "",
-      emailAddress: examinerData.account?.user?.email || "",
-      phoneNumber: examinerData.account?.user?.phone || "",
-      provinceOfResidence: examinerData.provinceOfResidence || "",
-      mailingAddress: examinerData.mailingAddress || "",
-
-      // Step 2: Medical Credentials
-      medicalSpecialty: examinerData.specialties || [],
-      licenseNumber: examinerData.licenseNumber || "",
-      provinceOfLicensure: examinerData.provinceOfLicensure || "",
-      licenseExpiryDate: examinerData.licenseExpiryDate
-        ? new Date(examinerData.licenseExpiryDate).toISOString().split("T")[0]
-        : "",
-      // Documents - store document info for display
-      medicalLicense: examinerData.medicalLicenseDocument
-        ? {
-            id: examinerData.medicalLicenseDocument.id,
-            name: examinerData.medicalLicenseDocument.name,
-            displayName:
-              examinerData.medicalLicenseDocument.displayName ||
-              examinerData.medicalLicenseDocument.name,
-            type: examinerData.medicalLicenseDocument.type,
-            size: examinerData.medicalLicenseDocument.size,
-            isExisting: true,
+// Custom storage to handle File objects
+const createRegistrationStorage = () => {
+  return {
+    getItem: (name: string) => {
+      const str = localStorage.getItem(name);
+      if (!str) return null;
+      return str;
+    },
+    setItem: (name: string, value: string) => {
+      // Parse the state to exclude File objects (non-serializable)
+      try {
+        const state = JSON.parse(value);
+        if (state?.state?.data) {
+          // Remove File objects before storing
+          const sanitizedData = { ...state.state.data };
+          if (
+            sanitizedData.medicalLicense &&
+            sanitizedData.medicalLicense instanceof File
+          ) {
+            sanitizedData.medicalLicense = null;
           }
-        : null,
-      cvResume: examinerData.resumeDocument
-        ? {
-            id: examinerData.resumeDocument.id,
-            name: examinerData.resumeDocument.name,
-            displayName:
-              examinerData.resumeDocument.displayName ||
-              examinerData.resumeDocument.name,
-            type: examinerData.resumeDocument.type,
-            size: examinerData.resumeDocument.size,
-            isExisting: true,
+          if (
+            sanitizedData.cvResume &&
+            sanitizedData.cvResume instanceof File
+          ) {
+            sanitizedData.cvResume = null;
           }
-        : null,
+          if (
+            sanitizedData.signedNDA &&
+            sanitizedData.signedNDA instanceof File
+          ) {
+            sanitizedData.signedNDA = null;
+          }
+          if (
+            sanitizedData.insuranceProof &&
+            sanitizedData.insuranceProof instanceof File
+          ) {
+            sanitizedData.insuranceProof = null;
+          }
+          state.state.data = sanitizedData;
+        }
+        localStorage.setItem(name, JSON.stringify(state));
+      } catch {
+        localStorage.setItem(name, value);
+      }
+    },
+    removeItem: (name: string) => {
+      localStorage.removeItem(name);
+    },
+  };
+};
 
-      // Step 3: IME Experience
-      yearsOfIMEExperience: examinerData.yearsOfIMEExperience || "",
-      languagesSpoken:
-        examinerData.examinerLanguages?.map((l: any) => l.languageId) || [],
-      forensicAssessmentTrained: examinerData.isForensicAssessmentTrained
-        ? "yes"
-        : "no",
+export const useRegistrationStore = create<Store>()(
+  persist(
+    (set) => ({
+      data: initialData,
+      merge: (
+        patch: Partial<RegistrationData> // <- ensure Partial here
+      ) => set((s) => ({ data: { ...s.data, ...patch } })),
+      setAll: (all: RegistrationData) => set({ data: all }),
+      reset: () => set({ data: initialData }),
+      languages: [],
+      setLanguages: (languages: Language[]) => set({ languages }),
 
-      // Step 4: Experience Details
-      experienceDetails: examinerData.bio || "",
+      // Edit mode state
+      isEditMode: false,
+      examinerProfileId: null,
+      setEditMode: (isEdit: boolean, profileId?: string) =>
+        set({ isEditMode: isEdit, examinerProfileId: profileId || null }),
+      loadExaminerData: (examinerData: any) => {
+        const mappedData: Partial<RegistrationData> = {
+          // Step 1: Personal Info
+          firstName: examinerData.account?.user?.firstName || "",
+          lastName: examinerData.account?.user?.lastName || "",
+          emailAddress: examinerData.account?.user?.email || "",
+          phoneNumber: examinerData.account?.user?.phone || "",
+          provinceOfResidence: examinerData.provinceOfResidence || "",
+          mailingAddress: examinerData.mailingAddress || "",
 
-      // Step 5: Availability
-      preferredRegions: examinerData.preferredRegions
-        ? examinerData.preferredRegions.split(",")
-        : [],
-      maxTravelDistance: examinerData.maxTravelDistance || "",
-      acceptVirtualAssessments: examinerData.acceptVirtualAssessments
-        ? "yes"
-        : "no",
+          // Step 2: Medical Credentials
+          medicalSpecialty: examinerData.specialties || [],
+          licenseNumber: examinerData.licenseNumber || "",
+          provinceOfLicensure: examinerData.provinceOfLicensure || "",
+          licenseExpiryDate: examinerData.licenseExpiryDate
+            ? new Date(examinerData.licenseExpiryDate)
+                .toISOString()
+                .split("T")[0]
+            : "",
+          // Documents - store document info for display
+          medicalLicense: examinerData.medicalLicenseDocument
+            ? {
+                id: examinerData.medicalLicenseDocument.id,
+                name: examinerData.medicalLicenseDocument.name,
+                displayName:
+                  examinerData.medicalLicenseDocument.displayName ||
+                  examinerData.medicalLicenseDocument.name,
+                type: examinerData.medicalLicenseDocument.type,
+                size: examinerData.medicalLicenseDocument.size,
+                isExisting: true,
+              }
+            : null,
+          cvResume: examinerData.resumeDocument
+            ? {
+                id: examinerData.resumeDocument.id,
+                name: examinerData.resumeDocument.name,
+                displayName:
+                  examinerData.resumeDocument.displayName ||
+                  examinerData.resumeDocument.name,
+                type: examinerData.resumeDocument.type,
+                size: examinerData.resumeDocument.size,
+                isExisting: true,
+              }
+            : null,
 
-      // Step 6: Legal
-      consentBackgroundVerification:
-        examinerData.isConsentToBackgroundVerification || false,
-      agreeTermsConditions: examinerData.agreeToTerms || false,
-    };
+          // Step 3: IME Experience
+          yearsOfIMEExperience: examinerData.yearsOfIMEExperience || "",
+          languagesSpoken:
+            examinerData.examinerLanguages?.map((l: any) => l.languageId) || [],
+          forensicAssessmentTrained: examinerData.isForensicAssessmentTrained
+            ? "yes"
+            : "no",
 
-    set((state) => ({
-      data: { ...state.data, ...mappedData },
-      isEditMode: true,
-      examinerProfileId: examinerData.id,
-    }));
-  },
-}));
+          // Step 4: Experience Details
+          experienceDetails: examinerData.bio || "",
+
+          // Step 5: Availability
+          preferredRegions: examinerData.preferredRegions
+            ? examinerData.preferredRegions.split(",")
+            : [],
+          maxTravelDistance: examinerData.maxTravelDistance || "",
+          acceptVirtualAssessments: examinerData.acceptVirtualAssessments
+            ? "yes"
+            : "no",
+
+          // Step 6: Legal
+          consentBackgroundVerification:
+            examinerData.isConsentToBackgroundVerification || false,
+          agreeTermsConditions: examinerData.agreeToTerms || false,
+        };
+
+        set((state) => ({
+          data: { ...state.data, ...mappedData },
+          isEditMode: true,
+          examinerProfileId: examinerData.id,
+        }));
+      },
+    }),
+    {
+      name: "examiner-registration-storage",
+      storage: createRegistrationStorage() as any,
+    }
+  )
+);
 
 /**
  * Optional selectors per step to reduce re-renders in components.

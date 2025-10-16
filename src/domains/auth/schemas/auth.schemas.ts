@@ -25,7 +25,9 @@ export const step1PersonalInfoSchema = z.object({
     .refine(
       (val) => {
         try {
-          const phone = parsePhoneNumberWithError(`+1${val}`);
+          // Handle both formats: "+1 (123) 456-7890" and raw digits
+          const cleanVal = val.replace(/^\+1\s*/, "").replace(/\D/g, "");
+          const phone = parsePhoneNumberWithError(`+1${cleanVal}`);
           if (phone.countryCallingCode === "1") {
             return true;
           }
