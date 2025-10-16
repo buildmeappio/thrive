@@ -103,7 +103,9 @@ jobs:
           context: .
           push: true
           file: Dockerfile
-          tags: ${{ env.ECR_REPOSITORY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+          tags: |
+            ${{ env.ECR_REPOSITORY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+            ${{ env.ECR_REPOSITORY }}/${{ env.CONTAINER_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
