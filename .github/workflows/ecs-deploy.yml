@@ -100,13 +100,15 @@ jobs:
           NEXT_PUBLIC_GOOGLE_PLACES_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY }}
           EOF
 
-      - name: Build and Push container
+      - name: Build and Push container with tags
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           file: Dockerfile
-          tags: ${{ env.ECR_REPOSITORY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+          tags: |
+            ${{ env.ECR_REPOSITORY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+            ${{ env.ECR_REPOSITORY }}/${{ env.CONTAINER_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
