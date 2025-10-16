@@ -1,0 +1,67 @@
+/**
+ * Email template for rejecting an examiner application
+ */
+
+type ExaminerRejectionParams = {
+  firstName: string;
+  lastName: string;
+  rejectionMessage: string;
+};
+
+function escapeHtml(input: string) {
+  return String(input)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+export function generateExaminerRejectionEmail({
+  firstName,
+  lastName,
+  rejectionMessage,
+}: ExaminerRejectionParams): string {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application Status Update</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+    <div style="text-align: center;">
+      <img src="${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png" alt="Thrive Logo" style="width: 120px;">
+    </div>
+    
+    <div style="margin-top: 20px; font-size: 16px; color: #333333;">
+      <p>Hi Dr. ${escapeHtml(firstName)} ${escapeHtml(lastName)},</p>
+      
+      <p>Thank you for your interest in joining Thrive as a Medical Examiner. After careful review, we regret to inform you that your application has not been approved at this time.</p>
+      
+      <p><strong>Reason:</strong></p>
+      <div style="background-color: #f9f9f9; border-left: 4px solid #C62828; padding: 15px; margin: 15px 0;">
+        ${escapeHtml(rejectionMessage)}
+      </div>
+      
+      <p>We appreciate your interest in working with Thrive and encourage you to reapply in the future if circumstances change.</p>
+    </div>
+    
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 14px; color: #777777; text-align: center;">
+      <p>If you have any questions or need assistance, feel free to contact us at 
+        <a href="mailto:support@thrivenetwork.ca" style="color: #00A8FF;">support@thrivenetwork.ca</a>.
+      </p>
+      <p style="font-size: 12px; color: #999999; margin-top: 10px;">
+        © 2025 Thrive Assessment & Care. All rights reserved.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
+export const EXAMINER_REJECTION_SUBJECT = "Thrive Medical Examiner Application - Status Update";
+

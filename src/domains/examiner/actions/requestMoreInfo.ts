@@ -60,7 +60,6 @@ async function sendRequestMoreInfoEmail(examiner: any, requestMessage: string, d
   });
 
   const resubmitLink = `${process.env.NEXT_PUBLIC_APP_URL}/examiner/register?token=${token}`;
-
   const htmlContent = generateExaminerRequestMoreInfoEmail({
     firstName,
     lastName,
