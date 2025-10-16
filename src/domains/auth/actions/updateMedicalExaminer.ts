@@ -8,9 +8,12 @@ const updateMedicalExaminer = async (payload: UpdateMedicalExaminerInput) => {
   try {
     const result = await authHandlers.updateMedicalExaminer(payload);
     return result;
-  } catch (error) {
-    console.error(error);
-    throw new Error(ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE);
+  } catch (error: any) {
+    console.error("Error in updateMedicalExaminer action:", error);
+    return {
+      success: false,
+      message: error?.message || ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
+    };
   }
 };
 
