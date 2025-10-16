@@ -139,4 +139,5 @@ export default Object.freeze({
   ORGANIZATION_NOT_FOUND: 'Organization not found',
   FAILED_TO_GET_CASE_LIST: 'Failed to get case list',
   CASES_NOT_FOUND: 'Cannot get case data',
+  PASSWORD_ALREADY_EXISTS: 'Password already exists',
 });

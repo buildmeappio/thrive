@@ -22,6 +22,8 @@ import { Button } from '@/components/ui/button';
 import useRouter from '@/hooks/useRouter';
 import { URLS } from '@/constants/routes';
 import PhoneInput from '@/components/PhoneNumber';
+import { toast } from 'sonner';
+import log from '@/utils/log';
 
 interface DepartmentOption {
   value: string;
@@ -52,10 +54,14 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
     actions: FormikHelpers<typeof OfficeDetailsInitialValues>
   ) => {
     try {
-      console.log('Checking email:', values.officialEmailAddress);
-      const exists = await checkUserByEmail(values.officialEmailAddress);
+      log.debug('Checking email:', values.officialEmailAddress);
+      const result = await checkUserByEmail(values.officialEmailAddress);
 
-      if (exists) {
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      if (result.data) {
         setShowLoginPrompt(true);
         actions.setSubmitting(false);
         return;
@@ -67,7 +73,14 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
         onNext();
       }
     } catch (error) {
-      console.error('Error in handleSubmit:', error);
+      log.error('Error in handleSubmit:', error);
+      let message = 'An error occurred while submitting office details';
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === 'string') {
+        message = error;
+      }
+      toast.error(message);
       actions.setSubmitting(false);
     }
   };

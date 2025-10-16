@@ -29,7 +29,7 @@ const registerOrganization = async (data: FormData) => {
 
   (await cookies()).set('password_token', '', { maxAge: 0 });
 
-  return { success: true, result };
+  return result;
 };
 
 export default registerOrganization;

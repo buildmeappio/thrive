@@ -15,6 +15,7 @@ import useRouter from '@/hooks/useRouter';
 import { URLS } from '@/constants/routes';
 import { createPassword } from '../../actions';
 import { HttpError } from '@/utils/httpError';
+import log from '@/utils/log';
 
 const PasswordForm: React.FC<OrganizationRegStepProps> = ({ onNext, currentStep, totalSteps }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -35,29 +36,37 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({ onNext, currentStep,
         throw HttpError.notFound('Email and password are required');
       }
 
-      const res = await createPassword(email, password);
+      log.debug('Creating password for email:', email);
+      const result = await createPassword(email, password);
 
-      if (!res.success) {
-        actions.setFieldError('code', 'Error');
-        return;
+      if (!result.success) {
+        throw new Error(result.error);
       }
-
-      const result = await signIn('credentials', {
+      log.debug('Password created successfully');
+      log.debug('Signing in with email:', email);
+      const signInResult = await signIn('credentials', {
         email: data.step2?.officialEmailAddress,
         password: values.password,
         redirect: false,
       });
 
-      if (result?.ok) {
+      if (signInResult?.ok) {
         router.push(URLS.DASHBOARD);
         reset();
       } else {
-        console.error(result?.error);
+        console.error(signInResult?.error);
         toast.error(ErrorMessages.LOGIN_FAILED);
       }
     } catch (error) {
-      console.error('error:', error);
-      toast.error(ErrorMessages.PASSWORD_CREATION_FAILED);
+      log.error('Error in handleSubmit:', error);
+      let message = 'An error occurred while creating password';
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === 'string') {
+        message = error;
+      }
+      toast.error(message);
+      actions.setSubmitting(false);
       if (onNext) onNext();
     }
   };
