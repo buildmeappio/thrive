@@ -255,7 +255,7 @@ const sendOtp = async (email: string) => {
   const otp = Math.floor(1000 + Math.random() * 9000).toString();
   const token = signOtpToken({ email, otp }, '5m');
 
-  await emailService.sendEmail(
+  const result = await emailService.sendEmail(
     'Welcome to Our Platform!',
     'otp.html',
     {
@@ -264,6 +264,10 @@ const sendOtp = async (email: string) => {
     },
     email
   );
+
+  if (!result.success) {
+    throw HttpError.handleServiceError(result.error, 'Failed to get examination types');
+  }
 
   return { token };
 };

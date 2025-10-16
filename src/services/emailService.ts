@@ -56,7 +56,7 @@ class EmailService {
   }
 
   private async loadTemplate(templateName: string): Promise<string> {
-    const templatesDir = path.join(process.cwd(), 'src', 'templates');
+    const templatesDir = path.join(process.cwd(), 'templates');
     const templatePath = path.join(templatesDir, templateName);
 
     try {
