@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, S3ClientConfig } from "@aws-sdk/client-s3";
 import prisma from "@/lib/db";
 import { ENV } from "@/constants/variables";
 
@@ -47,22 +47,18 @@ function initializeS3Client() {
     throw new Error("AWS_REGION is not configured");
   }
 
-  const credentials =
-    ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY
-      ? {
-          accessKeyId: ENV.AWS_ACCESS_KEY_ID,
-          secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
-        }
-      : undefined;
-
-  if (!credentials) {
-    throw new Error("AWS credentials are not configured");
-  }
-
-  return new S3Client({
+  const config: S3ClientConfig = {
     region: ENV.AWS_REGION,
-    credentials,
-  });
+  };
+
+  if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
+    config.credentials = {
+      accessKeyId: ENV.AWS_ACCESS_KEY_ID,
+      secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
+    };
+  }
+  
+  return new S3Client(config);
 }
 
 /**
