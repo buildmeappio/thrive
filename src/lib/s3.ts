@@ -1,22 +1,25 @@
 "use server";
 
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, S3ClientConfig, PutObjectCommand } from "@aws-sdk/client-s3";
 import { revalidatePath } from "next/cache";
 import prisma from "./db";
 import { ENV } from "@/constants/variables";
 
-const credentials =
-  ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY
-    ? {
-        accessKeyId: ENV.AWS_ACCESS_KEY_ID,
-        secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
-      }
-    : undefined;
-
-const s3Client = new S3Client({
+// For ECS: Don't pass credentials, let SDK use IAM role automatically
+// For local dev: Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in .env.local
+const s3Config: S3ClientConfig = {
   region: ENV.AWS_REGION!,
-  credentials,
-});
+};
+
+// Only add credentials if explicitly provided (for local development)
+if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
+  s3Config.credentials = {
+    accessKeyId: ENV.AWS_ACCESS_KEY_ID,
+    secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
+  };
+}
+
+const s3Client = new S3Client(s3Config);
 
 const createFileName = (file: File) => {
   const timestamp = Date.now();
