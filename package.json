@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' next build --turbopack",
+    "build": "next build --turbopack",
+    "build:memory": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next build --turbopack",
     "start": "next start -p 3000",
     "lint": "eslint",
     "db:generate": "prisma generate",
@@ -28,8 +29,8 @@
     "docker:down": "docker-compose down -v"
   },
   "optionalDependencies": {
-    "lightningcss-linux-x64-gnu": "^1.30.1",
-    "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1"
+    "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
+    "lightningcss-linux-x64-gnu": "^1.30.1"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -65,6 +66,7 @@
     "@types/node": "^20.19.14",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
     "prisma": "^6.15.0",

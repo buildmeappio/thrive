@@ -4,12 +4,12 @@
 import React, { useState } from "react";
 import Section from "@/components/Section";
 import FieldRow from "@/components/FieldRow";
-import RequestInfoModal from "@/components/modal/RequestInfoModal";
+import RequestOrgInfoModal from "@/components/modal/RequestOrgInfoModal";
 import { DashboardShell } from "@/layouts/dashboard";
 import getOrganizationById from "../server/handlers/getOrganizationById";
 import { cn } from "@/lib/utils";
-import RejectModal from "@/components/modal/RejectModal";
-
+import RejectOrgModal from "@/components/modal/RejectOrgModal";
+import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import organizationActions from "../actions";
 import { toast } from "sonner";
@@ -25,7 +25,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
   const [status, setStatus] = useState(mapStatus[organization.status as keyof typeof mapStatus]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState<"approve" | "reject" | "request" | null>(null);
 
   const type =
     organization.type?.name
@@ -33,51 +33,50 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ") || "-";
 
-  const handleRequestSubmit = async (internalNotes: string, messageToExaminer: string) => {
+  const handleRequestSubmit = async (messageToOrganization: string) => {
+    setLoadingAction("request");
     try {
-      setIsLoading(true);
-      // Send the message to examiner (internal notes can be stored separately if needed)
-      await organizationActions.requestMoreInfo(organization.id, messageToExaminer);
+      await organizationActions.requestMoreInfo(organization.id, messageToOrganization);
       setIsRequestOpen(false);
-      toast.success("Request More Info email send Successfully!");
-
+      toast.success("Request sent. An email has been sent to the organization.");
+    } catch (error) {
+      console.error("Failed to request more info:", error);
+      toast.error("Failed to send request. Please try again.");
     } finally {
-      setIsLoading(false);
+      setLoadingAction(null);
     }
   };
 
-  const handleApproveExaminer = async () => {
+  const handleApprove = async () => {
+    setLoadingAction("approve");
     try {
-      setIsLoading(true);
       await organizationActions.approveOrganization(organization.id);
       setStatus("approved");
-      toast.success("Organization Status Approved Successfully!");
+      toast.success("Organization approved successfully! An email has been sent to the organization.");
       router.refresh();
+    } catch (error) {
+      console.error("Failed to approve organization:", error);
+      toast.error("Failed to approve organization. Please try again.");
     } finally {
-      setIsLoading(false);
+      setLoadingAction(null);
     }
   };
 
-  // open modal only; real submit happens in handleRejectSubmit
-  const handleRejectExaminer = () => {
-    setIsRejectOpen(true);
-  };
-
-  const handleRejectSubmit = async (internalNotes: string, messageToExaminer: string) => {
+  const handleRejectSubmit = async (messageToOrganization: string) => {
+    setLoadingAction("reject");
     try {
-      setIsLoading(true);
-      // Send the message to examiner (internal notes can be stored separately if needed)
-      await organizationActions.rejectOrganization(organization.id, messageToExaminer);
+      await organizationActions.rejectOrganization(organization.id, messageToOrganization);
       setIsRejectOpen(false);
       setStatus("rejected");
-      toast.success("Organization Status Rejected Successfully!");
+      toast.success("Organization rejected. An email has been sent to the organization.");
       router.refresh();
+    } catch (error) {
+      console.error("Failed to reject organization:", error);
+      toast.error("Failed to reject organization. Please try again.");
     } finally {
-      setIsLoading(false);
+      setLoadingAction(null);
     }
   };
-
-  const isTerminal = status === "approved" || status === "rejected";
 
   return (
     <DashboardShell
@@ -160,44 +159,69 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
             </div>
           </div>
 
-          {/* Actions: wrap on small screens */}
+          {/* Actions */}
           <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-end">
-            <button
-              className={cn(
-                "px-4 py-3 rounded-full border border-cyan-400 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
-              style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
-              disabled={isLoading || status === "rejected"}
-              onClick={handleApproveExaminer}
-            >
-              {status === "approved" ? "Approved" : isLoading ? "Approving..." : "Approve Examiner"}
-            </button>
+            {status === "approved" ? (
+              <button
+                className={cn(
+                  "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-green-50 flex items-center gap-2 cursor-default"
+                )}
+                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                disabled
+              >
+                <Check className="w-4 h-4" />
+                Approved
+              </button>
+            ) : status === "rejected" ? (
+              <button
+                className={cn(
+                  "px-4 py-3 rounded-full text-white bg-red-700 flex items-center gap-2 cursor-default"
+                )}
+                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                disabled
+              >
+                Rejected
+              </button>
+            ) : (
+              <>
+                <button
+                  className={cn(
+                    "px-4 py-3 rounded-full border border-cyan-400 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  )}
+                  style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                  disabled={loadingAction !== null}
+                  onClick={handleApprove}
+                >
+                  {loadingAction === "approve" ? "Approving..." : "Approve Organization"}
+                </button>
 
-            <button
-              onClick={() => setIsRequestOpen(true)}
-              className={cn(
-                "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
-              style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
-              disabled={isLoading || isTerminal}
-            >
-              {status === "rejected" ? "Requested More Info" : isLoading ? "Requesting..." : "Request More Info"}
-            </button>
+                <button
+                  onClick={() => setIsRequestOpen(true)}
+                  className={cn(
+                    "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  )}
+                  style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                  disabled={loadingAction !== null}
+                >
+                  {loadingAction === "request" ? "Requesting..." : "Request More Info"}
+                </button>
 
-            <button
-              className={cn(
-                "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
-              style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
-              disabled={isLoading || status === "approved"}
-              onClick={handleRejectExaminer}
-            >
-              {status === "rejected" ? "Rejected" : isLoading ? "Rejecting..." : "Reject Examiner"}
-            </button>
+                <button
+                  className={cn(
+                    "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                  )}
+                  style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                  disabled={loadingAction !== null}
+                  onClick={() => setIsRejectOpen(true)}
+                >
+                  {loadingAction === "reject" ? "Rejecting..." : "Reject Organization"}
+                </button>
+              </>
+            )}
           </div>
         </div>
 
-        <RequestInfoModal
+        <RequestOrgInfoModal
           open={isRequestOpen}
           onClose={() => setIsRequestOpen(false)}
           onSubmit={handleRequestSubmit}
@@ -205,7 +229,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
           maxLength={200}
         />
 
-        <RejectModal
+        <RejectOrgModal
           open={isRejectOpen}
           onClose={() => setIsRejectOpen(false)}
           onSubmit={handleRejectSubmit}

@@ -1,33 +1,31 @@
-// components/RequestInfoModal.tsx
+// components/modal/RequestOrgInfoModal.tsx
 import React, { useEffect, useId, useRef, useState } from "react";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (internalNotes: string, messageToExaminer: string, documentsRequired: boolean) => void;
+  onSubmit: (messageToOrganization: string) => void;
   title?: string;
   maxLength?: number;
 };
 
-export default function RequestInfoModal({
+export default function RequestOrgInfoModal({
   open,
   onClose,
   onSubmit,
   title = "Request More Info",
   maxLength = 200,
 }: Props) {
-  const [internalNotes, setInternalNotes] = useState("");
-  const [messageToExaminer, setMessageToExaminer] = useState("");
-  const [documentsRequired, setDocumentsRequired] = useState(false);
+  const [messageToOrganization, setMessageToOrganization] = useState("");
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
-  const firstTextRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
-    const t = setTimeout(() => firstTextRef.current?.focus(), 0);
+    const t = setTimeout(() => textareaRef.current?.focus(), 0);
     // lock body scroll on mobile
     const { overflow } = document.body.style;
     document.body.style.overflow = "hidden";
@@ -44,15 +42,13 @@ export default function RequestInfoModal({
 
   if (!open) return null;
 
-  const canSend = messageToExaminer.trim().length > 0 && messageToExaminer.length <= maxLength;
+  const canSend = messageToOrganization.trim().length > 0 && messageToOrganization.length <= maxLength;
 
   const handleSubmit = () => {
     if (canSend) {
-      onSubmit(internalNotes.trim(), messageToExaminer.trim(), documentsRequired);
+      onSubmit(messageToOrganization.trim());
       // Reset form
-      setInternalNotes("");
-      setMessageToExaminer("");
-      setDocumentsRequired(false);
+      setMessageToOrganization("");
     }
   };
 
@@ -99,19 +95,19 @@ export default function RequestInfoModal({
           {title}
         </h2>
 
-        {/* Internal Notes Field */}
+        {/* Message to Organization Field */}
         <div className="mt-5">
           <label
-            htmlFor="internal-notes"
+            htmlFor="message-to-organization"
             className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
           >
-            Internal Notes
+            Message to Organization
           </label>
           <textarea
-            id="internal-notes"
-            ref={firstTextRef}
-            value={internalNotes}
-            onChange={(e) => setInternalNotes(e.target.value)}
+            id="message-to-organization"
+            ref={textareaRef}
+            value={messageToOrganization}
+            onChange={(e) => setMessageToOrganization(e.target.value)}
             maxLength={maxLength}
             className="
               h-28 sm:h-[120px] w-full resize-none
@@ -126,55 +122,8 @@ export default function RequestInfoModal({
             placeholder="Type here"
           />
           <div className="mt-1 text-right font-poppins text-xs sm:text-[13px] text-[#7A7A7A]">
-            {internalNotes.length}/{maxLength}
+            {messageToOrganization.length}/{maxLength}
           </div>
-        </div>
-
-        {/* Message to Examiner Field */}
-        <div className="mt-4">
-          <label
-            htmlFor="message-to-examiner"
-            className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
-          >
-            Message to Examiner
-          </label>
-          <textarea
-            id="message-to-examiner"
-            value={messageToExaminer}
-            onChange={(e) => setMessageToExaminer(e.target.value)}
-            maxLength={maxLength}
-            className="
-              h-28 sm:h-[120px] w-full resize-none
-              rounded-xl sm:rounded-[15px]
-              border border-[#E5E5E5] bg-[#F6F6F6]
-              p-3 sm:p-4 outline-none
-              placeholder:font-[400] placeholder:text-[14px]
-              placeholder:text-[#A4A4A4]
-              font-poppins text-[14px] sm:text-[15px]
-              focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
-            "
-            placeholder="Type here"
-          />
-          <div className="mt-1 text-right font-poppins text-xs sm:text-[13px] text-[#7A7A7A]">
-            {messageToExaminer.length}/{maxLength}
-          </div>
-        </div>
-
-        {/* Documents Required Checkbox */}
-        <div className="mt-4 flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="documents-required"
-            checked={documentsRequired}
-            onChange={(e) => setDocumentsRequired(e.target.checked)}
-            className="h-4 w-4 sm:h-5 sm:w-5 rounded border-gray-300 text-[#000093] focus:ring-[#000093]"
-          />
-          <label
-            htmlFor="documents-required"
-            className="font-poppins text-sm sm:text-[15px] text-[#1A1A1A] cursor-pointer"
-          >
-            Documents are required
-          </label>
         </div>
 
         {/* Actions */}
@@ -186,10 +135,11 @@ export default function RequestInfoModal({
             className="
               h-10 sm:h-[46px]
               rounded-full
-              bg-[#000080] px-8 sm:px-10 text-white
+              bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]
+              px-8 sm:px-10 text-white
               transition-opacity
               disabled:cursor-not-allowed disabled:opacity-50
-              hover:bg-[#000093]
+              hover:opacity-90
               font-poppins text-[14px] sm:text-[16px] font-[500] tracking-[-0.02em]
             "
           >
@@ -200,3 +150,4 @@ export default function RequestInfoModal({
     </div>
   );
 }
+

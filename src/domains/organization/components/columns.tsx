@@ -18,14 +18,17 @@ const Content = ({ children, first }: { children: React.ReactNode; first?: boole
 );
 
 const StatusBadge = ({ status }: { status: OrganizationData["status"] }) => {
-  const map = {
-    PENDING: "bg-yellow-100 text-yellow-800",
-    ACCEPTED: "bg-green-100 text-green-800",
-    REJECTED: "bg-red-100 text-red-800",
+  const statusConfig = {
+    PENDING: { label: "Pending Approval", className: "bg-yellow-100 text-yellow-800" },
+    ACCEPTED: { label: "Approved", className: "bg-green-100 text-green-800" },
+    REJECTED: { label: "Rejected", className: "bg-red-100 text-red-800" },
   } as const;
+  
+  const config = statusConfig[status] || { label: status, className: "bg-gray-100 text-gray-800" };
+  
   return (
-    <span className={cn("px-2 py-1 rounded-full text-xs font-medium", map[status])}>
-      {status.charAt(0) + status.slice(1).toLowerCase()}
+    <span className={cn("px-2 py-1 rounded-full text-xs font-medium", config.className)}>
+      {config.label}
     </span>
   );
 };
@@ -44,28 +47,28 @@ const ActionButton = ({ id }: { id: string }) => (
 // Enable sorting per-column via 'enableSorting: true'
 const columns: ColumnDef<OrganizationData>[] = [
   {
-    header: () => <Header first>Name</Header>,
+    header: () => <Header first>Organization</Header>,
     accessorKey: "name",
     enableSorting: true,
     cell: ({ row }) => <Content first>{row.original.name}</Content>,
-  },
-  {
-    header: () => <Header>Address</Header>,
-    accessorKey: "address",
-    enableSorting: true,
-    cell: ({ row }) => <Content>{row.original.address}</Content>,
-  },
-  {
-    header: () => <Header>Manager</Header>,
-    accessorKey: "managerName",
-    enableSorting: true,
-    cell: ({ row }) => <Content>{row.original.managerName}</Content>,
   },
   {
     header: () => <Header>Type</Header>,
     accessorKey: "typeName",
     enableSorting: true,
     cell: ({ row }) => <Content>{prettyType(row.original.typeName)}</Content>,
+  },
+  {
+    header: () => <Header>Representative</Header>,
+    accessorKey: "managerName",
+    enableSorting: true,
+    cell: ({ row }) => <Content>{row.original.managerName}</Content>,
+  },
+  {
+    header: () => <Header>Email</Header>,
+    accessorKey: "managerEmail",
+    enableSorting: true,
+    cell: ({ row }) => <Content>{row.original.managerEmail}</Content>,
   },
   {
     header: () => <Header>Status</Header>,

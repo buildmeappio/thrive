@@ -44,11 +44,15 @@ const FieldRow = ({ label, value, valueHref, type }: FieldRowProps) => {
                 >
                   Preview
                 </button>
-                <button
+                <a
+                  href={fileUrl}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none text-[#000080] underline"
                 >
                   Download
-                </button>
+                </a>
               </div>
             ) : (
               <span className="block font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight tracking-[-0.03em] text-[#000080]">

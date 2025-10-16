@@ -2,9 +2,14 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
 import { sendMail } from "@/lib/email";
+import { 
+  generateOrganizationRejectionEmail,
+  ORGANIZATION_REJECTION_SUBJECT 
+} from "../../../../templates/emails/organization-rejection";
 
 type OrganizationView = {
   id: string;
@@ -14,16 +19,16 @@ type OrganizationView = {
   type: any;
   address: any;
   manager: Array<{
-    account?: { user?: { email?: string | null } | null } | null;
+    account?: { 
+      user?: { 
+        email?: string | null;
+        firstName?: string | null;
+        lastName?: string | null;
+      } | null;
+    } | null;
   }>;
   createdAt: string | Date;
   updatedAt: string | Date;
-};
-
-const BRAND = {
-  logo: process.env.NEXT_PUBLIC_EMAIL_LOGO_URL || "https://localhost:3000/logo.png",
-  primary: "#1a237e",
-  supportEmail: "support@thrivenetwork.ca",
 };
 
 const rejectOrganization = async (id: string, reason: string) => {
@@ -32,67 +37,45 @@ const rejectOrganization = async (id: string, reason: string) => {
 
   const organization = (await handlers.rejectOrganization(id, user.accountId, reason)) as OrganizationView;
 
-//   await sendRejectReasonToOrganization(organization, reason);
+  // Send rejection email
+  try {
+    await sendRejectReasonToOrganization(organization, reason);
+    console.log("✓ Rejection email sent successfully");
+  } catch (emailError) {
+    console.error("⚠️ Failed to send rejection email (but rejection succeeded):", emailError);
+  }
+
+  // Revalidate dashboard and organization pages
+  revalidatePath("/dashboard");
+  revalidatePath("/organization");
+  
   return organization;
 };
 
-async function _sendRejectReasonToOrganization(org: OrganizationView, reason: string) {
-  const recipients = extractManagerEmails(org);
-  if (recipients.length === 0) return;
+async function sendRejectReasonToOrganization(org: OrganizationView, reason: string) {
+  const manager = org.manager?.[0];
+  const firstName = manager?.account?.user?.firstName || "";
+  const lastName = manager?.account?.user?.lastName || "";
+  const email = manager?.account?.user?.email;
+
+  if (!email) {
+    console.error("Organization manager email not found");
+    return;
+  }
+
+  // Generate email HTML from template
+  const htmlContent = generateOrganizationRejectionEmail({
+    firstName,
+    lastName,
+    organizationName: org.name,
+    rejectionMessage: reason,
+  });
 
   await sendMail({
-    to: recipients,
-    subject: "Your organization application was rejected",
-    html: rejectOrganizationEmailHtml(org.name, reason),
+    to: email,
+    subject: ORGANIZATION_REJECTION_SUBJECT,
+    html: htmlContent,
   });
-}
-
-function extractManagerEmails(org: OrganizationView): string[] {
-  const emails = (org.manager ?? [])
-    .map((m) => m?.account?.user?.email)
-    .filter((e): e is string => !!e && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
-  return Array.from(new Set(emails));
-}
-
-function rejectOrganizationEmailHtml(orgName: string, reason: string) {
-  const safeOrg = escapeHtml(orgName ?? "your organization");
-  const safeReason = escapeHtml(reason?.trim() || "No reason provided.");
-  const content = `
-    <p style="font-family:'Poppins',Arial,sans-serif;font-size:16px;line-height:1.5;color:#333;">
-      Your application for <strong>${safeOrg}</strong> has been <strong>rejected</strong>.
-    </p>
-    <p style="font-family:'Poppins',Arial,sans-serif;font-size:16px;line-height:1.5;color:#333;">
-      <strong>Reason:</strong>
-    </p>
-    <blockquote style="margin:0;padding:12px;background:#f6f7f9;border-left:4px solid #ccc">
-      ${safeReason}
-    </blockquote>
-    <p style="font-family:'Poppins',Arial,sans-serif;font-size:14px;color:#555;">
-      You may revise your submission and reapply. If you believe this is an error, reply to this email or contact
-      <a href="mailto:${BRAND.supportEmail}" style="color:${BRAND.primary};">${BRAND.supportEmail}</a>.
-    </p>
-  `;
-  return emailShell(content);
-}
-
-function emailShell(innerHtml: string) {
-  return `
-    <div style="font-family:'Poppins',Arial,sans-serif;background:#f7fbfd;padding:32px;">
-      <div style="max-width:600px;margin:auto;background:#fff;border-radius:8px;box-shadow:0 2px 8px #e3e3e3;padding:32px;">
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"/>
-        <div style="text-align:center;">
-          <img src="${BRAND.logo}" alt="Thrive Assessment & Care" style="height:48px;margin-bottom:16px;"/>
-        </div>
-        ${innerHtml}
-      </div>
-    </div>
-  `;
-}
-
-function escapeHtml(input: string) {
-  return String(input)
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
 export default rejectOrganization;
