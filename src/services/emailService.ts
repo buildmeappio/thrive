@@ -86,7 +86,7 @@ class EmailService {
       const template = await this.loadTemplate(templateName);
       const htmlContent = this.replacePlaceholders(template, data);
 
-      transporter
+      await transporter
         .sendMail({
           from: this.config.oauth.email,
           to: to,
@@ -95,13 +95,10 @@ class EmailService {
         })
         .then(() => {
           log.info(`Email sent to ${to}`);
-          return { success: true };
         })
         .catch(err => {
           log.error('Error sending email:', err);
         });
-
-      log.info(`Email sent to ${to}`);
       return { success: true };
     } catch (err) {
       log.error('Error sending email:', err);
