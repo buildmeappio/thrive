@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import SuccessMessages from '@/constants/SuccessMessages';
 import { registerOrganization, sendOtp, verifyOtp } from '../../actions';
 import ErrorMessages from '@/constants/ErrorMessages';
+import log from '@/utils/log';
 
 const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -43,12 +44,25 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   const onResendCode = async () => {
     try {
       setResending(true);
-      if (email) {
-        await sendOtp(email);
-        toast.success(SuccessMessages.OTP_RESENT);
+      if (!email) {
+        throw new Error('Email is required');
       }
+      const result = await sendOtp(email);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      toast.success(SuccessMessages.OTP_RESENT);
     } catch (error) {
-      console.error(error);
+      log.error('Error in onResendCode:', error);
+      let message = 'An error occurred while resending the code';
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === 'string') {
+        message = error;
+      }
+      toast.error(message);
     } finally {
       setResending(false);
     }
@@ -86,33 +100,39 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
       const otp = values.code;
 
       if (!email) {
-        actions.setSubmitting(false);
-        return;
+        throw new Error('Email is required');
       }
 
-      const res = await verifyOtp(otp, email);
+      const otpVerificationResult = await verifyOtp(otp, email);
 
-      if (res.success) {
-        const updatedData = {
-          ...data,
-          step4: values,
-        };
-
-        const res = await registerOrganization(updatedData);
-
-        if (!res.success) {
-          actions.setFieldError('code', 'Error');
-          return;
-        }
-        if (onNext) onNext();
-      } else {
-        toast.error('Invalid Otp');
+      if (!otpVerificationResult.success) {
+        throw new Error(otpVerificationResult.error);
       }
 
-      actions.setSubmitting(false);
+      const updatedData = {
+        ...data,
+        step4: values,
+      };
+
+      const registerOrganizationResult = await registerOrganization(updatedData);
+
+      if (!registerOrganizationResult.success) {
+        throw new Error(registerOrganizationResult.error);
+      }
+
+      if (onNext) onNext();
     } catch (error) {
-      console.error(error);
+      log.error('Error in handleSubmit:', error);
+      let message = 'An error occurred during registration';
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === 'string') {
+        message = error;
+      }
+      toast.error(message);
       toast.error(ErrorMessages.REGISTRATION_FAILED);
+    } finally {
+      actions.setSubmitting(false);
     }
   };
 

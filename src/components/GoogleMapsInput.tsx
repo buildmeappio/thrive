@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
+import { Input } from './ui';
 
 declare global {
   interface Window {
@@ -217,18 +218,19 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
           {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      <div className="relative">
-        <MapPin className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-        <input
+      <div className="relative z-10">
+        <MapPin className="pointer-events-none absolute top-1/2 left-3 z-20 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <Input
           ref={inputRef}
           type="text"
           value={inputValue || ''}
           onChange={handleChange}
           placeholder={placeholder}
-          className="text-black-2 w-full rounded-xl bg-[#F2F5F6] py-3 pr-4 pl-0 transition-colors duration-200 focus:border-[#A6EC0A] focus:outline-none sm:pr-6 sm:pl-8"
+          className="text-black-2 relative z-10 w-full rounded-xl bg-[#F2F5F6] py-3 pr-4 pl-10 focus:border-[#A6EC0A] focus:outline-none"
           {...(formik && name && { onBlur: formik.handleBlur })}
         />
       </div>
+
       {errorMessage && <span className="mt-1 text-xs text-red-500">{errorMessage}</span>}
     </div>
   );

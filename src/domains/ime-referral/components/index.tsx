@@ -10,7 +10,7 @@ import ExaminationType from './ExaminationType';
 import type { getClaimTypes, getCaseTypes } from '../actions';
 import { convertToTypeOptions } from '@/utils/convertToTypeOptions';
 import DocumentUpload from './DocumentUpload';
-import { type getExaminationTypes } from '@/domains/auth/actions';
+import { type getExaminationTypes } from '@/domains/auth/server/handlers';
 import InsuranceDetails from './InsuranceDetails';
 import type { getLanguages } from '@/domains/claimant/actions';
 
@@ -27,8 +27,8 @@ interface StepProps {
 
 interface IMEReferralProps {
   claimTypes: Awaited<ReturnType<typeof getClaimTypes>>['result'];
-  examinationTypes: Awaited<ReturnType<typeof getCaseTypes>>['result'];
-  caseTypes: Awaited<ReturnType<typeof getExaminationTypes>>['result'];
+  examinationTypes: Awaited<ReturnType<typeof getExaminationTypes>>;
+  caseTypes: Awaited<ReturnType<typeof getCaseTypes>>['result'];
   languages: Awaited<ReturnType<typeof getLanguages>>['result'];
 }
 

@@ -23,8 +23,8 @@ interface StepProps {
 }
 
 interface RegisterFormProps {
-  organizationTypes: Awaited<ReturnType<typeof getOrganizationTypes>>['result'];
-  departmentTypes: Awaited<ReturnType<typeof getDepartments>>['result'];
+  organizationTypes: Awaited<ReturnType<typeof getOrganizationTypes>>;
+  departmentTypes: Awaited<ReturnType<typeof getDepartments>>;
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ organizationTypes, departmentTypes }) => {

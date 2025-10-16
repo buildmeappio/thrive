@@ -20,6 +20,8 @@ import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { sendOtp } from '../../actions';
 import { ComplianceAccessInitialValues, ComplianceAccessSchema } from '../../schemas/register';
 import Link from 'next/link';
+import log from '@/utils/log';
+import { toast } from 'sonner';
 
 const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
   onNext,
@@ -51,12 +53,22 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
 
       const email = data.step2?.officialEmailAddress;
       if (email) {
-        await sendOtp(email);
+        const result = await sendOtp(email);
+        if (!result.success) {
+          throw new Error(result.error);
+        }
       }
 
       pendingActions.setSubmitting(false);
     } catch (error) {
-      console.log(error);
+      log.error('Error in proceedToNextStep:', error);
+      let message = 'An error occurred while proceeding to the next step';
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === 'string') {
+        message = error;
+      }
+      toast.error(message);
       pendingActions.setSubmitting(false);
     }
   };

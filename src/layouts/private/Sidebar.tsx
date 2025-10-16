@@ -22,7 +22,6 @@ import { useSession } from 'next-auth/react';
 export const medicalExaminerSidebarRoutes = [
   { icon: Home, label: 'Dashboard', href: '/dashboard', index: 0 },
   { icon: FileText, label: 'All Cases', href: '/dashboard/cases', index: 1 },
-  { icon: UserPlus, label: 'Referrals', href: '/dashboard/referrals', index: 2 },
   { icon: LifeBuoy, label: 'Support', href: '/dashboard/support', index: 3 },
 ];
 

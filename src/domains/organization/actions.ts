@@ -11,7 +11,7 @@ export const getOrganization = async () => {
   if (!user) {
     redirect(URLS.LOGIN);
   }
-  const result = await organizationHandlers.getOrganization();
+  const result = await organizationHandlers.getOrganization(user.id);
   return result;
 };
 

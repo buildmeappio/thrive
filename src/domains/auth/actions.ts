@@ -2,53 +2,54 @@
 
 import { type FormData } from '@/store/useRegistration';
 import { authHandlers } from './server';
+import { handleAction } from '@/utils/action';
 
 export const checkUserByEmail = async (email: string) => {
-  const exists = await authHandlers.checkUserByEmail(email);
-  return exists;
+  return await handleAction(
+    () => authHandlers.checkUserByEmail(email),
+    'Failed to check user by email'
+  );
 };
 
 export const sendOtp = async (email: string) => {
-  const result = await authHandlers.sendOtp(email);
-  return result;
+  return await handleAction(() => authHandlers.sendOtp(email), 'Failed to send OTP');
 };
 
 export const verifyOtp = async (otp: string, email: string) => {
-  const result = await authHandlers.verifyOtp(otp, email);
-  return result;
-};
-
-export const getDepartments = async () => {
-  const departments = await authHandlers.getDepartments();
-  return departments;
-};
-
-export const getExaminationTypes = async () => {
-  const examinationTypes = await authHandlers.getExaminationTypes();
-  return examinationTypes;
+  return await handleAction(() => authHandlers.verifyOtp(otp, email), 'Failed to verify OTP');
 };
 
 export const registerOrganization = async (data: FormData) => {
-  const result = await authHandlers.registerOrganization(data);
-  return result;
+  return await handleAction(
+    async () => await authHandlers.registerOrganization(data),
+    'Failed to register organization'
+  );
 };
 
 export const createPassword = async (email: string, password: string) => {
-  const result = await authHandlers.createPassword(email, password);
-  return result;
+  return await handleAction(
+    async () => await authHandlers.createPassword(email, password),
+    'Failed to create password'
+  );
 };
 
 export const sendResetPasswordLink = async (email: string) => {
-  const result = await authHandlers.sendResetPasswordLink(email);
-  return result;
+  return await handleAction(
+    async () => await authHandlers.sendResetPasswordLink(email),
+    'Failed to send reset password link'
+  );
 };
 
 export const verifyResetToken = async (token: string) => {
-  const result = await authHandlers.verifyResetToken(token);
-  return result;
+  return await handleAction(
+    () => authHandlers.verifyResetToken(token),
+    'Failed to verify reset token'
+  );
 };
 
 export const resetPassword = async (token: string, password: string) => {
-  const result = await authHandlers.resetPassword(token, password);
-  return result;
+  return await handleAction(
+    () => authHandlers.resetPassword(token, password),
+    'Failed to reset password'
+  );
 };

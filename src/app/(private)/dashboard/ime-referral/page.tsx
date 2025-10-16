@@ -1,4 +1,4 @@
-import { getExaminationTypes } from '@/domains/auth/actions';
+import { getExaminationTypes } from '@/domains/auth/server/handlers';
 import { getLanguages } from '@/domains/claimant/actions';
 import { getCaseTypes, getClaimTypes } from '@/domains/ime-referral/actions';
 import IMEReferral from '@/domains/ime-referral/components';
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 const IMEReferralPage = async () => {
-  const [claimTypes, examinationTypes, caseTypes, languageOptions] = await Promise.all([
+  const [claimTypes, caseTypes, examinationTypes, languageOptions] = await Promise.all([
     getClaimTypes(),
     getCaseTypes(),
     getExaminationTypes(),
@@ -22,7 +22,7 @@ const IMEReferralPage = async () => {
   return (
     <IMEReferral
       claimTypes={claimTypes.result}
-      examinationTypes={examinationTypes.result}
+      examinationTypes={examinationTypes}
       caseTypes={caseTypes.result}
       languages={languageOptions.result}
     />
