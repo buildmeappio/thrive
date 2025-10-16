@@ -1,7 +1,7 @@
 import jwt, { SignOptions } from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || "";
-const PASSWORD_JWT_SECRET = process.env.PASSWORD_JWT_SECRET || "";
+const JWT_SET_PASSWORD_SECRET = process.env.JWT_SET_PASSWORD_SECRET || "";
 const JWT_EXAMINER_INFO_REQUEST_SECRET = process.env.JWT_EXAMINER_INFO_REQUEST_SECRET || "";
 const JWT_ORGANIZATION_INFO_REQUEST_SECRET = process.env.JWT_ORGANIZATION_INFO_REQUEST_SECRET || JWT_EXAMINER_INFO_REQUEST_SECRET;
 
@@ -9,8 +9,8 @@ if (!JWT_SECRET) {
   throw new Error("JWT_SECRET or NEXTAUTH_SECRET must be defined in environment variables");
 }
 
-if (!PASSWORD_JWT_SECRET) {
-  throw new Error("PASSWORD_JWT_SECRET must be defined in environment variables");
+if (!JWT_SET_PASSWORD_SECRET) {
+  throw new Error("JWT_SET_PASSWORD_SECRET must be defined in environment variables");
 }
 
 if (!JWT_EXAMINER_INFO_REQUEST_SECRET) {
@@ -28,7 +28,7 @@ export function signAccountToken(
   expiresIn: SignOptions['expiresIn'] = '7d'
 ): string {
   const options: SignOptions = { expiresIn };
-  return jwt.sign(payload, PASSWORD_JWT_SECRET, options);
+  return jwt.sign(payload, JWT_SET_PASSWORD_SECRET, options);
 }
 
 /**
@@ -38,7 +38,7 @@ export function signAccountToken(
  */
 export function verifyAccountToken(token: string): any {
   try {
-    return jwt.verify(token, PASSWORD_JWT_SECRET);
+    return jwt.verify(token, JWT_SET_PASSWORD_SECRET);
   } catch {
     throw new Error("Invalid or expired token");
   }

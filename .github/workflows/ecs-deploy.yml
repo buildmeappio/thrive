@@ -93,6 +93,7 @@ jobs:
           NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
           EXAMINER_REQUEST_JWT_TOKEN=${{ secrets.EXAMINER_REQUEST_JWT_TOKEN }}
           ORGANIZATION_REQUEST_JWT_TOKEN=${{ secrets.ORGANIZATION_REQUEST_JWT_TOKEN }}
+          JWT_SET_PASSWORD_EXPIRY=${{ secrets.JWT_SET_PASSWORD_EXPIRY }}
           EOF
 
       - name: Build and Push container
