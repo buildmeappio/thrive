@@ -560,10 +560,23 @@ const getReferralDetails = async (caseId: string) => {
   }
 };
 
-const getCaseList = async (status?: string, take?: number) => {
+const getCaseList = async (userId?: string, status?: string, take?: number) => {
   try {
     const examinations = await prisma.examination.findMany({
-      where: status ? { status: { name: status } } : undefined,
+      where: {
+        ...(status && { status: { name: status } }),
+        ...(userId && {
+          case: {
+            organization: {
+              manager: {
+                some: {
+                  accountId: userId,
+                },
+              },
+            },
+          },
+        }),
+      },
       ...(take && { take }),
       orderBy: {
         createdAt: 'desc',
@@ -574,6 +587,20 @@ const getCaseList = async (status?: string, take?: number) => {
             claimant: {
               include: {
                 claimType: true,
+              },
+            },
+            organization: {
+              include: {
+                manager: {
+                  where: userId ? { accountId: userId } : undefined,
+                  include: {
+                    account: {
+                      include: {
+                        user: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },
@@ -588,16 +615,21 @@ const getCaseList = async (status?: string, take?: number) => {
       },
     });
 
-    const caseData = examinations.map(exam => ({
-      id: exam.id,
-      number: exam.caseNumber,
-      claimant: `${exam.case.claimant.firstName} ${exam.case.claimant.lastName}`,
-      claimType: exam.case.claimant.claimType.name,
-      status: exam.status.name,
-      specialty: exam.examinationType.name,
-      examiner: exam.examiner && `${exam.examiner.user.firstName} ${exam.examiner.user.lastName}`,
-      submittedAt: exam.createdAt.toISOString(),
-    }));
+    const caseData = examinations.map(exam => {
+      const creator = exam.case.organization?.manager[0];
+
+      return {
+        id: exam.id,
+        number: exam.caseNumber,
+        claimant: `${exam.case.claimant.firstName} ${exam.case.claimant.lastName}`,
+        claimType: exam.case.claimant.claimType.name,
+        status: exam.status.name,
+        specialty: exam.examinationType.name,
+        examiner: exam.examiner && `${exam.examiner.user.firstName} ${exam.examiner.user.lastName}`,
+        submittedAt: exam.createdAt.toISOString(),
+        createdBy: creator && `${creator.account.user.firstName} ${creator.account.user.lastName}`,
+      };
+    });
 
     return caseData;
   } catch (error) {

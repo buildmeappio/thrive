@@ -53,7 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="font-degular" style={{ fontFamily: 'var(--font-degular)' }}>
         <SessionProvider>
-          <div className="bg-background text-foreground min-h-screen">
+          <div className="text-foreground min-h-screen bg-gray-50">
             <main id="main-content">
               {children}
               <Toaster richColors position="top-right" />

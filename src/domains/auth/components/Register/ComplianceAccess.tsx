@@ -6,15 +6,14 @@ import ContinueButton from '@/components/ContinueButton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { useRegistrationStore } from '@/store/useRegistration';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { sendOtp } from '../../actions';
@@ -216,27 +215,27 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
       </div>
 
       {/* Confirmation Dialog */}
-      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Your Details</AlertDialogTitle>
-            <AlertDialogDescription>
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Your Details</DialogTitle>
+            <DialogDescription>
               If you continue, you will not be able to go back now. Please confirm your details.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointrer rounded-lg" onClick={handleCancel}>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" className="cursor-pointer rounded-lg" onClick={handleCancel}>
               Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
+            </Button>
+            <Button
               className="cursor-pointer rounded-lg bg-[#000093] hover:bg-[#000093]"
               onClick={handleConfirmProceed}
             >
               Proceed
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

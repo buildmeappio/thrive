@@ -57,7 +57,7 @@ const GettingStarted: React.FC = () => {
             alt="Organization Dashboard Preview"
             width={400}
             height={400}
-            className="h-auto w-full rounded-lg object-cover"
+            className="h-[680px] w-[740px] rounded-lg"
           />
         </div>
 
@@ -88,7 +88,7 @@ const GettingStarted: React.FC = () => {
             alt="Organization Dashboard Preview"
             width={200}
             height={200}
-            className="h-full w-full"
+            className="h-[680px] w-[740px]"
           />
         </div>
       </div>

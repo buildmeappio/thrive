@@ -90,7 +90,7 @@ export const getCaseList = async (status?: string, take?: number) => {
     redirect(URLS.LOGIN);
   }
 
-  const result = await imeReferralHandlers.getCaseList(status, take);
+  const result = await imeReferralHandlers.getCaseList(user.id, status, take);
   return result;
 };
 

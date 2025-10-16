@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Menu, X } from 'lucide-react';
+import { LogOut, Menu, X, Settings, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSession } from 'next-auth/react';
 import { useSidebar } from '../../providers/SideBarProvider';
@@ -8,6 +8,8 @@ import Searchbar from './SearchBar';
 import ProfileDropdown from './ProfileDropDown';
 import Image from 'next/image';
 import { createImagePath } from '@/utils/createImagePath';
+import { signOut } from 'next-auth/react';
+import { createRoute, URLS } from '@/constants/routes';
 
 const PageOptions = [
   {
@@ -40,11 +42,15 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
 
   const currentPage = PageOptions.find(page => page.name === getPageName()) || PageOptions[0];
 
+  const handleLogout = () => {
+    signOut({ callbackUrl: createRoute(URLS.LOGIN) });
+  };
+
   return (
-    <header className="px-10">
+    <header className="px-6">
       <div className="relative flex w-full flex-col gap-4 px-0 py-1">
         {/* Mobile Header Row */}
-        <div className="flex items-center justify-between md:hidden">
+        <div className="flex items-center justify-between gap-2 md:hidden">
           {/* Mobile Menu Button */}
           <Button
             variant="ghost"
@@ -61,12 +67,26 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
             alt="Thrive"
             width={160}
             height={80}
-            className="h-auto max-h-[80px] w-32 sm:w-36 md:w-48"
+            className="h-auto max-h-[80px] w-24 sm:w-32"
             priority
           />
 
-          {/* Profile for mobile */}
-          {session && <ProfileDropdown isMobile={true} session={session} />}
+          {/* Mobile Action Buttons */}
+          <div className="flex items-center gap-1.5">
+            <button className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#E1E1FF] shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95">
+              <Settings size={18} strokeWidth={2} className="text-[#000093]" />
+            </button>
+            <button className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#000093] shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95">
+              <Bell size={18} strokeWidth={2} className="text-[#FFFFFF]" />
+            </button>
+            {session && <ProfileDropdown isMobile={true} session={session} />}
+            <button
+              onClick={handleLogout}
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#000093] shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95"
+            >
+              <LogOut size={18} strokeWidth={2} className="text-white" />
+            </button>
+          </div>
         </div>
 
         {/* Desktop Header Row */}
@@ -86,8 +106,22 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
           {/* Search Section for desktop */}
           {currentPage?.search && <Searchbar currentPage={currentPage} isMobile={false} />}
 
-          {/* Profile Section for desktop */}
-          {session && <ProfileDropdown isMobile={false} session={session} />}
+          <div className="flex space-x-4">
+            <button className="flex cursor-pointer items-center justify-center rounded-full bg-[#E1E1FF] px-3 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95">
+              <Settings size={20} strokeWidth={2} className="text-[#000093]" />
+            </button>
+            <button className="flex cursor-pointer items-center justify-center rounded-full bg-[#000093] px-3 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95">
+              <Bell size={20} strokeWidth={2} className="text-[#FFFFFF]" />
+            </button>
+            {/* Profile Section for desktop */}
+            {session && <ProfileDropdown isMobile={false} session={session} />}
+            <button
+              onClick={handleLogout}
+              className="flex cursor-pointer items-center justify-center rounded-full bg-[#000093] px-3 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95"
+            >
+              <LogOut size={20} strokeWidth={2} className="text-white" />
+            </button>
+          </div>
         </div>
 
         {/* Mobile Search Section */}

@@ -100,7 +100,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
       <div className="relative" ref={avatarMobileRef}>
         <div
           onClick={() => setDropdownOpen(prev => !prev)}
-          className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-full border border-[#DBDBFF] bg-[#37BBFF] text-[21.5px] font-normal tracking-[-0.07em] text-white"
+          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#DBDBFF] bg-[#37BBFF] text-sm font-normal tracking-[-0.07em] text-white"
         >
           {getInitials()}
         </div>

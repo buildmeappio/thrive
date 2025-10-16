@@ -4,17 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import useRouter from '@/hooks/useRouter';
 import Link from 'next/link';
-import {
-  Home,
-  LifeBuoy,
-  LogOut,
-  Plus,
-  UserPlus,
-  X,
-  FileText,
-  ChevronLeft,
-  Menu,
-} from 'lucide-react';
+import { Home, LifeBuoy, LogOut, Plus, X, FileText, ChevronLeft, Menu } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { createRoute, URLS } from '@/constants/routes';
 import { useSession } from 'next-auth/react';
