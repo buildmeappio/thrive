@@ -35,10 +35,11 @@ class GoogleMapsService {
   private baseUrl = "https://maps.googleapis.com/maps/api/geocode/json";
 
   constructor() {
+    // Use the server-side key (without NEXT_PUBLIC_ prefix)
     this.apiKey = ENV.GOOGLE_PLACES_API_KEY || "";
     if (!this.apiKey) {
       console.warn(
-        "GOOGLE_MAPS_API_KEY is not set. Geocoding features will not work."
+        "GOOGLE_PLACES_API_KEY is not set. Geocoding features will not work."
       );
     }
   }

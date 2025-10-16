@@ -47,7 +47,15 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
   const { isLoaded } = useGoogleMaps();
 
   useEffect(() => {
+    // Ensure Google Maps API is fully loaded
     if (!isLoaded || !inputRef.current) return;
+    if (!window.google?.maps?.places?.Autocomplete) {
+      console.warn("Google Maps Places API not ready yet");
+      return;
+    }
+
+    // Skip if already initialized
+    if (autoCompleteRef.current) return;
 
     try {
       // Initialize Google Maps Autocomplete
@@ -69,10 +77,12 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
       // Cleanup listeners on unmount
       return () => {
         if (placeChangedListener) {
-          google.maps.event.removeListener(placeChangedListener);
+          window.google?.maps?.event?.removeListener(placeChangedListener);
         }
         if (autoCompleteRef.current) {
-          google.maps.event.clearInstanceListeners(autoCompleteRef.current);
+          window.google?.maps?.event?.clearInstanceListeners(
+            autoCompleteRef.current
+          );
         }
       };
     } catch (error) {
@@ -136,7 +146,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
           value={value}
           onChange={handleChange}
           placeholder={placeholder}
-          className="w-full bg-[#F9F9F9] rounded-lg py-3 pl-10 pr-4 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] border border-gray-200"
+          className="w-full bg-[#F9F9F9] rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#00A8FF]"
           disabled={!isLoaded}
         />
       </div>
