@@ -21,14 +21,19 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = e.target.value;
 
-      const digitsOnly = inputValue.replace(/\D/g, "");
+      // Remove +1 prefix if user tries to type it
+      const cleanValue = inputValue.replace(/^\+1\s*/, "");
+
+      const digitsOnly = cleanValue.replace(/\D/g, "");
 
       if (digitsOnly.length > 10) {
         return;
       }
 
+      // Format with +1 prefix
       const formatter = new AsYouType("CA");
-      const formatted = formatter.input(inputValue);
+      formatter.input(`+1${digitsOnly}`);
+      const formatted = formatter.getNumber()?.formatInternational() || "";
 
       const syntheticEvent = {
         ...e,
@@ -64,7 +69,7 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         name={name}
         icon={Phone}
         type="tel"
-        placeholder="(123) 456-7890"
+        placeholder="+1 (123) 456-7890"
         value={value}
         onChange={handleChange}
         onKeyPress={handleKeyPress}

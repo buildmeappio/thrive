@@ -31,7 +31,7 @@ export type UpdateMedicalExaminerInput = {
   experienceDetails?: string;
 
   // step 5
-  preferredRegions?: string;
+  preferredRegions?: string[];
   maxTravelDistance?: string;
   acceptVirtualAssessments?: boolean;
 

@@ -53,19 +53,31 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
   const toggleDay = (day: DayOfWeek) => {
     const isEnabled = weeklyHours[day].enabled;
     form.setValue(`weeklyHours.${day}.enabled` as any, !isEnabled);
-    if (isEnabled) {
-      form.setValue(`weeklyHours.${day}.timeSlots` as any, []);
-    } else {
+
+    // If enabling and no time slots exist, add a default one
+    if (!isEnabled && weeklyHours[day].timeSlots.length === 0) {
       form.setValue(`weeklyHours.${day}.timeSlots` as any, [
         { startTime: "8:00 AM", endTime: "11:00 AM" },
       ]);
     }
+    // If disabling, keep the time slots (don't clear them)
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pl-3 py-6">
+      <style jsx>{`
+        select[size="1"] option {
+          padding: 8px;
+        }
+      `}</style>
       {daysOptions.map((day) => {
         const dayData = weeklyHours[day.value as DayOfWeek];
+
+        // Safety check: if dayData is undefined, skip this day
+        if (!dayData) {
+          return null;
+        }
+
         return (
           <div key={day.value} className="flex items-start gap-4">
             {/* Day Checkbox */}
@@ -88,7 +100,7 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
 
             {/* Time Slots */}
             <div className="flex-1 space-y-2">
-              {dayData.enabled &&
+              {dayData.timeSlots.length > 0 ? (
                 dayData.timeSlots.map((slot, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <select
@@ -101,7 +113,10 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                           e.target.value
                         )
                       }
-                      className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[120px]">
+                      disabled={!dayData.enabled}
+                      className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[120px] disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"
+                      style={{ maxHeight: "200px" }}
+                      size={1}>
                       {timeOptions.map((time) => (
                         <option key={time} value={time}>
                           {time}
@@ -119,7 +134,10 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                           e.target.value
                         )
                       }
-                      className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[120px]">
+                      disabled={!dayData.enabled}
+                      className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[120px] disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"
+                      style={{ maxHeight: "200px" }}
+                      size={1}>
                       {timeOptions.map((time) => (
                         <option key={time} value={time}>
                           {time}
@@ -132,7 +150,8 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                       <button
                         type="button"
                         onClick={() => addTimeSlot(day.value as DayOfWeek)}
-                        className="p-2 text-[#00A8FF] hover:text-[#0097E5] transition-colors"
+                        disabled={!dayData.enabled}
+                        className="p-2 text-[#00A8FF] hover:text-[#0097E5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Add time slot">
                         <Plus className="w-4 h-4" />
                       </button>
@@ -145,13 +164,19 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                         onClick={() =>
                           removeTimeSlot(day.value as DayOfWeek, index)
                         }
-                        className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                        disabled={!dayData.enabled}
+                        className="p-2 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Remove time slot">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                   </div>
-                ))}
+                ))
+              ) : (
+                <div className="text-sm text-gray-400 italic">
+                  No time slots
+                </div>
+              )}
             </div>
           </div>
         );

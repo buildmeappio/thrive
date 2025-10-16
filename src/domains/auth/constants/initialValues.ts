@@ -44,7 +44,7 @@ export const step4InitialValues: Step4ExperienceDetailsInput = {
 };
 
 export const step5InitialValues: Step5AvailabilityInput = {
-  preferredRegions: "",
+  preferredRegions: [],
   maxTravelDistance: "",
   // daysAvailable: "",
   // timeWindows: {

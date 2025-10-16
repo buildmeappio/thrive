@@ -25,7 +25,9 @@ export const step1PersonalInfoSchema = z.object({
     .refine(
       (val) => {
         try {
-          const phone = parsePhoneNumberWithError(`+1${val}`);
+          // Handle both formats: "+1 (123) 456-7890" and raw digits
+          const cleanVal = val.replace(/^\+1\s*/, "").replace(/\D/g, "");
+          const phone = parsePhoneNumberWithError(`+1${cleanVal}`);
           if (phone.countryCallingCode === "1") {
             return true;
           }
@@ -113,8 +115,8 @@ export type Step4ExperienceDetailsInput = z.infer<
 
 export const step5AvailabilitySchema = z.object({
   preferredRegions: z
-    .string()
-    .min(1, { message: "Preferred regions is required" }),
+    .array(z.string())
+    .min(1, { message: "Please select at least one region" }),
   maxTravelDistance: z
     .string()
     .min(1, { message: "Maximum travel distance is required" }),
