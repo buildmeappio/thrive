@@ -614,6 +614,12 @@ model ExaminerProfile {
   acceptVirtualAssessments          Boolean?       @map("accept_virtual_assessments")
   bufferTime                        String?        @map("buffer_time") @db.VarChar(20)
   advanceBooking                    String?        @map("advance_booking") @db.VarChar(20)
+  payoutMethod                      String?        @map("payout_method") @db.VarChar(20)
+  transitNumber                     String?        @map("transit_number") @db.VarChar(5)
+  institutionNumber                 String?        @map("institution_number") @db.VarChar(3)
+  accountNumber                     String?        @map("account_number") @db.VarChar(12)
+  chequeMailingAddress              String?        @map("cheque_mailing_address") @db.Text
+  interacEmail                      String?        @map("interac_email") @db.VarChar(255)
   isConsentToBackgroundVerification Boolean        @map("is_consent_to_background_verification")
   agreeToTerms                      Boolean        @map("agree_to_terms")
   status                            ExaminerStatus @default(PENDING) @map("status")

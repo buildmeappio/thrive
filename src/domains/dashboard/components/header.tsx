@@ -7,8 +7,8 @@ export interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ userName }) => {
   return (
-    <div>
-      <h1 className="text-4xl font-semibold">
+    <div className="mb-4">
+      <h1 className="text-4xl font-semibold ">
         Welcome <span className="text-[#00A8FF]">{userName}!</span>
       </h1>
       <p className="text-xl">

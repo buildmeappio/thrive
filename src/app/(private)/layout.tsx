@@ -26,8 +26,7 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
       : null;
 
   // Check if activation is complete (all 4 steps done)
-  const isActivationComplete =
-    examinerProfile?.activationStep === "availability";
+  const isActivationComplete = examinerProfile?.activationStep === "payout";
 
   return (
     <SidebarProvider>

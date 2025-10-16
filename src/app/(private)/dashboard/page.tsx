@@ -6,6 +6,7 @@ import {
   getExaminerProfileAction,
   getSpecialtyPreferencesAction,
   getAvailabilityAction,
+  getPayoutDetailsAction,
 } from "@/domains/dashboard/server/actions";
 import { redirect } from "next/navigation";
 import getLanguages from "@/domains/auth/actions/getLanguages";
@@ -38,12 +39,17 @@ const DashboardPage = async () => {
   }
 
   // Fetch all data in parallel
-  const [specialtyPreferencesResult, availabilityResult, languages] =
-    await Promise.all([
-      getSpecialtyPreferencesAction(user.accountId),
-      getAvailabilityAction({ examinerProfileId: examinerProfile.id }),
-      getLanguages(),
-    ]);
+  const [
+    specialtyPreferencesResult,
+    availabilityResult,
+    payoutResult,
+    languages,
+  ] = await Promise.all([
+    getSpecialtyPreferencesAction(user.accountId),
+    getAvailabilityAction({ examinerProfileId: examinerProfile.id }),
+    getPayoutDetailsAction({ accountId: user.accountId }),
+    getLanguages(),
+  ]);
 
   const specialtyPreferences =
     specialtyPreferencesResult.success && "data" in specialtyPreferencesResult
@@ -55,6 +61,9 @@ const DashboardPage = async () => {
       ? availabilityResult.data
       : null;
 
+  const payoutDetails =
+    payoutResult.success && "data" in payoutResult ? payoutResult.data : null;
+
   return (
     <div className="space-y-4">
       <Header userName={user.name || "User"} />
@@ -64,6 +73,7 @@ const DashboardPage = async () => {
         profileData={examinerProfile}
         specialtyData={specialtyPreferences}
         availabilityData={availability}
+        payoutData={payoutDetails}
         languages={languages}
       />
     </div>

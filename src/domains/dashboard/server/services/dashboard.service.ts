@@ -160,6 +160,58 @@ class DashboardService {
 
     return updatedProfile;
   }
+
+  /**
+   * Update examiner payout details
+   */
+  async updatePayoutDetails(
+    examinerProfileId: string,
+    data: {
+      payoutMethod?: "direct_deposit" | "cheque" | "interac";
+      transitNumber?: string;
+      institutionNumber?: string;
+      accountNumber?: string;
+      chequeMailingAddress?: string;
+      interacEmail?: string;
+      activationStep?: string;
+    }
+  ) {
+    const examinerProfile = await prisma.examinerProfile.findUnique({
+      where: { id: examinerProfileId },
+    });
+
+    if (!examinerProfile) {
+      throw new Error("Examiner profile not found");
+    }
+
+    // Update examiner profile
+    const updatedProfile = await prisma.examinerProfile.update({
+      where: { id: examinerProfileId },
+      data: {
+        ...(data.payoutMethod && { payoutMethod: data.payoutMethod }),
+        ...(data.transitNumber !== undefined && {
+          transitNumber: data.transitNumber,
+        }),
+        ...(data.institutionNumber !== undefined && {
+          institutionNumber: data.institutionNumber,
+        }),
+        ...(data.accountNumber !== undefined && {
+          accountNumber: data.accountNumber,
+        }),
+        ...(data.chequeMailingAddress !== undefined && {
+          chequeMailingAddress: data.chequeMailingAddress,
+        }),
+        ...(data.interacEmail !== undefined && {
+          interacEmail: data.interacEmail,
+        }),
+        ...(data.activationStep && {
+          activationStep: data.activationStep,
+        }),
+      },
+    });
+
+    return updatedProfile;
+  }
 }
 
 export const dashboardService = new DashboardService();

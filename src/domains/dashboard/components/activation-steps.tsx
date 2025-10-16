@@ -6,6 +6,7 @@ import {
   ProfileInfoForm,
   SpecialtyPreferencesForm,
   AvailabilityPreferencesForm,
+  PayoutDetailsForm,
 } from "./OnboardingSteps";
 import { type ActivationStep, initializeActivationSteps } from "../constants";
 
@@ -15,6 +16,7 @@ interface ActivationStepsProps {
   profileData: any;
   specialtyData: any;
   availabilityData: any;
+  payoutData: any;
   languages: any[];
 }
 
@@ -24,6 +26,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
   profileData,
   specialtyData,
   availabilityData,
+  payoutData,
   languages,
 }) => {
   const [activeStep, setActiveStep] = useState<string | null>(null);
@@ -123,7 +126,17 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                 />
               );
             }
-            // TODO: Add payout form
+            if (step.id === "payout") {
+              return (
+                <PayoutDetailsForm
+                  key={step.id}
+                  examinerProfileId={examinerProfileId}
+                  initialData={payoutData}
+                  onComplete={() => handleStepComplete("payout")}
+                  onCancel={handleStepCancel}
+                />
+              );
+            }
             return null;
           }
 

@@ -98,3 +98,52 @@ export type OverrideHours = z.infer<typeof overrideHoursSchema>;
 export type AvailabilityPreferencesInput = z.infer<
   typeof availabilityPreferencesSchema
 >;
+
+// Schema for payout details
+export const payoutDetailsSchema = z
+  .object({
+    payoutMethod: z.enum(["direct_deposit", "cheque", "interac"], {
+      message: "Please select a payout method",
+    }),
+    // Direct Deposit fields
+    transitNumber: z.string().optional(),
+    institutionNumber: z.string().optional(),
+    accountNumber: z.string().optional(),
+    // Cheque fields
+    chequeMailingAddress: z.string().optional(),
+    // Interac E-Transfer fields
+    interacEmail: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.payoutMethod === "direct_deposit") {
+        return (
+          data.transitNumber &&
+          data.institutionNumber &&
+          data.accountNumber &&
+          data.transitNumber.length === 5 &&
+          data.institutionNumber.length === 3 &&
+          data.accountNumber.length >= 7 &&
+          data.accountNumber.length <= 12
+        );
+      }
+      if (data.payoutMethod === "cheque") {
+        return (
+          data.chequeMailingAddress && data.chequeMailingAddress.length > 0
+        );
+      }
+      if (data.payoutMethod === "interac") {
+        return (
+          data.interacEmail &&
+          z.string().email().safeParse(data.interacEmail).success
+        );
+      }
+      return true;
+    },
+    {
+      message:
+        "Please fill in all required fields for the selected payout method",
+    }
+  );
+
+export type PayoutDetailsInput = z.infer<typeof payoutDetailsSchema>;
