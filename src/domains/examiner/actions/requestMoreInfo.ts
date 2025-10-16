@@ -6,8 +6,12 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import examinerService from "../server/examiner.service";
 import { sendMail } from "@/lib/email";
 import { signExaminerResubmitToken } from "@/lib/jwt";
+import {
+  generateExaminerRequestMoreInfoEmail,
+  EXAMINER_REQUEST_MORE_INFO_SUBJECT,
+} from "../../../../templates/emails/examiner-request-more-info";
 
-const requestMoreInfo = async (examinerId: string, message: string) => {
+const requestMoreInfo = async (examinerId: string, message: string, documentsRequired: boolean = false) => {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
@@ -20,7 +24,7 @@ const requestMoreInfo = async (examinerId: string, message: string) => {
 
   // Send request for more info email
   try {
-    await sendRequestMoreInfoEmail(examiner, message);
+    await sendRequestMoreInfoEmail(examiner, message, documentsRequired);
     console.log("✓ Request more info email sent successfully");
   } catch (emailError) {
     console.error("⚠️ Failed to send request email:", emailError);
@@ -34,7 +38,7 @@ const requestMoreInfo = async (examinerId: string, message: string) => {
   return examiner;
 };
 
-async function sendRequestMoreInfoEmail(examiner: any, requestMessage: string) {
+async function sendRequestMoreInfoEmail(examiner: any, requestMessage: string, documentsRequired: boolean = false) {
   const userEmail = examiner.account?.user?.email;
   const firstName = examiner.account?.user?.firstName;
   const lastName = examiner.account?.user?.lastName;
@@ -57,76 +61,19 @@ async function sendRequestMoreInfoEmail(examiner: any, requestMessage: string) {
 
   const resubmitLink = `${process.env.NEXT_PUBLIC_APP_URL}/examiner/register?token=${token}`;
 
-  const htmlContent = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Additional Information Required</title>
-</head>
-<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
-  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-    <div style="text-align: center;">
-      <img src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png" alt="Thrive Logo" style="width: 120px;">
-    </div>
-    
-    <div style="margin-top: 20px; font-size: 16px; color: #333333;">
-      <p>Hi Dr. ${escapeHtml(firstName)} ${escapeHtml(lastName)},</p>
-      
-      <p>Thank you for submitting your application to become a Medical Examiner with Thrive.</p>
-      
-      <p>We're currently reviewing your profile and need some additional information to complete our assessment:</p>
-      
-      <div style="background-color: #f9f9f9; border-left: 4px solid #00A8FF; padding: 15px; margin: 15px 0;">
-        ${escapeHtml(requestMessage)}
-      </div>
-      
-      <p>Please click the button below to resubmit your application with the updated information:</p>
-      
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${resubmitLink}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(90deg, #00A8FF 0%, #01F4C8 100%); color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px;">
-          Update My Application
-        </a>
-      </div>
-      
-      <p style="font-size: 14px; color: #666666;">
-        <strong>Note:</strong> When you click the link above, you'll be taken through the application process again. Your previously submitted information will be pre-filled in the forms, so you only need to update the requested information.
-      </p>
-      
-      <p style="font-size: 14px; color: #666666;">
-        This link will expire in 30 days. If you need assistance, please contact us at 
-        <a href="mailto:support@thrivenetwork.ca" style="color: #00A8FF;">support@thrivenetwork.ca</a>.
-      </p>
-    </div>
-    
-    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 14px; color: #777777; text-align: center;">
-      <p>If you have any questions, feel free to contact us at 
-        <a href="mailto:support@thrivenetwork.ca" style="color: #00A8FF;">support@thrivenetwork.ca</a>.
-      </p>
-      <p style="font-size: 12px; color: #999999; margin-top: 10px;">
-        © 2025 Thrive Assessment & Care. All rights reserved.
-      </p>
-    </div>
-  </div>
-</body>
-</html>
-  `;
+  const htmlContent = generateExaminerRequestMoreInfoEmail({
+    firstName,
+    lastName,
+    requestMessage,
+    resubmitLink,
+    documentsRequired,
+  });
 
   await sendMail({
     to: userEmail,
-    subject: "Thrive Medical Examiner Application - Additional Information Required",
+    subject: EXAMINER_REQUEST_MORE_INFO_SUBJECT,
     html: htmlContent,
   });
-}
-
-function escapeHtml(input: string) {
-  return String(input)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }
 
 export default requestMoreInfo;
