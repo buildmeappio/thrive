@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 25;
 
 const RegisterPage = async () => {
   try {

@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import { google } from 'googleapis';
 import fs from 'fs/promises';
 import path from 'path';
+import log from '@/utils/log';
 
 const emailConfig: EmailConfig = {
   oauth: {
@@ -62,7 +63,7 @@ class EmailService {
     try {
       return await fs.readFile(templatePath, 'utf-8');
     } catch (err) {
-      console.log('Error loading email template:', err);
+      log.error('Error loading email template:', err);
       throw new Error(`Template ${templateName} not found`);
     }
   }
@@ -85,17 +86,22 @@ class EmailService {
       const template = await this.loadTemplate(templateName);
       const htmlContent = this.replacePlaceholders(template, data);
 
-      await transporter.sendMail({
-        from: this.config.oauth.email,
-        to: to,
-        subject,
-        html: htmlContent,
-      });
-
-      console.log(`✅ Email sent to ${to}`);
+      await transporter
+        .sendMail({
+          from: this.config.oauth.email,
+          to: to,
+          subject,
+          html: htmlContent,
+        })
+        .then(() => {
+          log.info(`Email sent to ${to}`);
+        })
+        .catch(err => {
+          log.error('Error sending email:', err);
+        });
       return { success: true };
     } catch (err) {
-      console.error('❌ Error sending email:', err);
+      log.error('Error sending email:', err);
       return { success: false, error: (err as Error).message };
     }
   }
