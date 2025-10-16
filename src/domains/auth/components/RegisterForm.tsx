@@ -81,8 +81,8 @@ const RegisterForm: React.FC<{
 
   const showTitle = currentStep <= 7;
   return (
-    <div className="mx-auto max-w-[900px] p-4 md:p-0 md:py-7">
-      <div className="mb-6 flex h-[60px] items-center justify-between">
+    <div className="mx-auto max-w-[900px] p-4 md:py-7 py-10">
+      <div className="mb-8 flex h-[60px] items-center justify-between ">
         {showTitle && (
           <h2 className="text-center text-3xl md:text-5xl font-semibold md:whitespace-nowrap">
             {isEditMode

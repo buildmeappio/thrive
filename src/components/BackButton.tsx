@@ -18,7 +18,7 @@ const BackButton: React.FC<BackButtonProps> = ({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-[45px] w-[165px] items-center justify-center gap-1.5 rounded-[34px] border px-4 py-3 transition-all duration-300 ease-in-out ${
+      className={`flex h-[40px] w-[130px] items-center justify-center gap-1 rounded-[34px] border px-3 py-2 text-sm transition-all duration-300 ease-in-out md:h-[45px] md:w-[165px] md:gap-1.5 md:px-4 md:py-3 md:text-base ${
         disabled
           ? "cursor-not-allowed bg-transparent text-[#555555]"
           : "cursor-pointer hover:opacity-90"
@@ -28,7 +28,7 @@ const BackButton: React.FC<BackButtonProps> = ({
         backgroundColor: "transparent",
       }}>
       <ArrowLeft
-        className="mr-2 h-4 w-4 transition-colors duration-300 ease-in-out"
+        className="h-3.5 w-3.5 transition-colors duration-300 ease-in-out md:mr-2 md:h-4 md:w-4"
         style={{ color: disabled ? "#555555" : iconColor }}
       />
       <span className="transition-all duration-300 ease-in-out">Back</span>
