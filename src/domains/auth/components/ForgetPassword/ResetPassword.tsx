@@ -16,6 +16,7 @@ import { resetPasswordInitialValues, resetPasswordSchema } from '../../schemas/f
 import { resetPassword, verifyResetToken } from '../../actions';
 import { URLS } from '@/constants/routes';
 import useRouter from '@/hooks/useRouter';
+import log from '@/utils/log';
 
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
@@ -40,36 +41,35 @@ const ResetPasswordContent = () => {
     formState: { errors },
   } = form;
 
+  const verifyToken = async () => {
+    try {
+      const token = searchParams.get('token');
+      if (!token) {
+        throw new Error('Token not found');
+      }
+      const response = await verifyResetToken(token);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+
+      setIsValidToken(true);
+      setToken(token);
+    } catch (error) {
+      log.error(error);
+      setIsValidToken(false);
+      let message = ErrorMessages.ERROR_VERIFYING_TOKEN as string;
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      toast.error(message);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   useEffect(() => {
-    const verifyToken = async () => {
-      const tokenFromUrl = searchParams.get('token');
-
-      if (!tokenFromUrl) {
-        setIsValidToken(false);
-        setIsVerifying(false);
-        return;
-      }
-
-      try {
-        const response = await verifyResetToken(tokenFromUrl);
-
-        if (response.success) {
-          setIsValidToken(true);
-          setToken(tokenFromUrl);
-        } else {
-          setIsValidToken(false);
-          toast.error(response.result.message || ErrorMessages.INVALID_OR_EXPIRED_TOKEN);
-        }
-      } catch (error) {
-        setIsValidToken(false);
-        console.error(ErrorMessages.ERROR_VERIFYING_TOKEN, error);
-        toast.error(ErrorMessages.ERROR_VERIFYING_TOKEN);
-      } finally {
-        setIsVerifying(false);
-      }
-    };
-
     verifyToken();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const onSubmit = async (data: ResetPasswordForm) => {
@@ -85,12 +85,14 @@ const ResetPasswordContent = () => {
           router.push(URLS.LOGIN);
         }, 2000);
       } else {
-        console.error(response.result.message);
-        toast.error(ErrorMessages.ERROR_RESETTING_PASSWORD);
+        throw new Error(response.error);
       }
     } catch (error) {
-      console.error(ErrorMessages.ERROR_RESETTING_PASSWORD, error);
-      toast.error(ErrorMessages.ERROR_RESETTING_PASSWORD);
+      let message = ErrorMessages.ERROR_RESETTING_PASSWORD as string;
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }

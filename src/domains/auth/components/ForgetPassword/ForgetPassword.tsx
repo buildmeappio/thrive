@@ -36,12 +36,15 @@ const ForgetPasswordForm = () => {
     try {
       const response = await sendResetPasswordLink(data.email);
       if (!response.success) {
-        toast.error(ErrorMessages.ERROR_SENDING_RESET_LINK);
+        throw new Error(response.error);
       }
       toast.success(SuccessMessages.PASSWORD_RESET_LINK_SENT);
     } catch (error) {
-      console.error(ErrorMessages.ERROR_SENDING_RESET_LINK, error);
-      toast.error(ErrorMessages.ERROR_SENDING_RESET_LINK);
+      let message = ErrorMessages.ERROR_SENDING_RESET_LINK as string;
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }

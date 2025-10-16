@@ -3,7 +3,6 @@ import { HttpError } from '@/utils/httpError';
 import bcrypt from 'bcryptjs';
 import { type CreateOrganizationWithUserData } from '../types/createOrganization';
 import { Roles } from '@/constants/role';
-import { getCurrentUser } from './session';
 import emailService from '@/services/emailService';
 import {
   signOtpToken,

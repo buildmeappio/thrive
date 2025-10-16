@@ -35,6 +35,7 @@ const DashboardPage = async () => {
     if (newDashboardCases.result.length === 0) {
       return <OrganizationDashboard organization={organization.result} />;
     }
+
     return (
       <>
         <Greetings />
