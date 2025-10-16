@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ENV } from "@/constants/variables";
 
 const SCRIPT_ID = "google-maps-script";
 
@@ -10,7 +11,7 @@ const SCRIPT_ID = "google-maps-script";
  */
 export const useGoogleMaps = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
+  const API_KEY = ENV.GOOGLE_PLACES_API_KEY;
 
   useEffect(() => {
     if (!API_KEY) {

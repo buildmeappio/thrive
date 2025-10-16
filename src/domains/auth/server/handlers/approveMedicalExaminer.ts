@@ -4,6 +4,7 @@ import emailService from "@/services/email.service";
 import { Roles } from "../../constants/roles";
 import { examinerService, tokenService } from "../services";
 import ErrorMessages from "@/constants/ErrorMessages";
+import { ENV } from "@/constants/variables";
 
 export type ApproveMedicalExaminerInput = {
   examinerProfileId: string;
@@ -45,7 +46,7 @@ const approveMedicalExaminer = async (payload: ApproveMedicalExaminerInput) => {
       {
         firstName: user.firstName,
         lastName: user.lastName,
-        createPasswordLink: `${process.env.NEXT_PUBLIC_APP_URL}/create-account?token=${token}`,
+        createPasswordLink: `${ENV.NEXT_PUBLIC_APP_URL!}/create-account?token=${token}`,
       },
       user.email
     );

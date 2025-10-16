@@ -2,6 +2,7 @@ import { signOtpToken, signPasswordToken } from "@/lib/jwt";
 import emailService from "@/services/email.service";
 import ErrorMessages from "@/constants/ErrorMessages";
 import jwt from "jsonwebtoken";
+import { ENV } from "@/constants/variables";
 
 class AuthService {
   async sendOtp(email: string) {
@@ -25,12 +26,12 @@ class AuthService {
       if (!token) {
         return { success: false, message: ErrorMessages.NO_OTP_TOKEN_FOUND };
       }
-      if (!process.env.JWT_OTP_SECRET) {
+      if (!ENV.JWT_OTP_SECRET) {
         throw new Error(ErrorMessages.JWT_SECRETS_REQUIRED);
       }
 
       // Verify JWT
-      const decoded = jwt.verify(token, process.env.JWT_OTP_SECRET) as {
+      const decoded = jwt.verify(token, ENV.JWT_OTP_SECRET) as {
         email: string;
         otp: string;
       };
