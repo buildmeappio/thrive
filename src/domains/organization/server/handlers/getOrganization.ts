@@ -1,7 +1,7 @@
 import authService from '../../../auth/server/auth.service';
 
-const getOrganization = async () => {
-  const organization = await authService.getOrganization();
+const getOrganization = async (userId: string) => {
+  const organization = await authService.getOrganization(userId);
 
   return { success: true, result: organization };
 };
