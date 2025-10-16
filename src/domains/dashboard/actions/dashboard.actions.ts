@@ -35,3 +35,11 @@ export async function getWaitingCases(limit: number): Promise<CaseDetailDtoType[
   return dashboardService.getWaitingCases(limit);
 }
 
+export async function getWaitingToBeScheduledCount(): Promise<number> {
+  return dashboardService.getWaitingToBeScheduledCount();
+}
+
+export async function getDueCasesCount(period: "today" | "tomorrow" | "this-week" = "today"): Promise<number> {
+  return dashboardService.getDueCasesCount(period);
+}
+

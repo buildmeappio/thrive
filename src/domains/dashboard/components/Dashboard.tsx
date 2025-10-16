@@ -1,6 +1,7 @@
 // domains/dashboard/index.tsx
 "use client";
 
+import { useState } from "react";
 import StatCard from "./StatCard";
 import UpdatesPanel from "./UpdatesPanel";
 import NewExaminers from "./NewExaminers";
@@ -8,25 +9,90 @@ import NewCases from "./NewCases";
 import WaitingCases from "./WaitingCases";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
+import { PcCase, NotebookPen, ClipboardClock, CalendarCheck } from "lucide-react";
+import { getDueCasesCount } from "@/domains/dashboard/actions/dashboard.actions";
 
 type Props = {
   caseRows: CaseDetailDtoType[],
   waitingCaseRows: CaseDetailDtoType[],
   examinerRows: ExaminerData[],
-  orgCount: number;
+  _orgCount: number;
   caseCount: number;
   examinerCount: number;
+  waitingToBeScheduledCount: number;
+  dueTodayCount: number;
 };
 
-export default function Dashboard({ caseRows, waitingCaseRows, examinerRows, orgCount, caseCount, examinerCount }: Props) {
+export default function Dashboard({ 
+  caseRows, 
+  waitingCaseRows, 
+  examinerRows, 
+  _orgCount, 
+  caseCount, 
+  examinerCount,
+  waitingToBeScheduledCount,
+  dueTodayCount,
+}: Props) {
+  const [dueCount, setDueCount] = useState(dueTodayCount);
+  const [isLoadingDueCount, setIsLoadingDueCount] = useState(false);
+
+  const handleDueFilterChange = async (value: string) => {
+    setIsLoadingDueCount(true);
+    try {
+      // Map dropdown value to server action period
+      const periodMap: Record<string, "today" | "tomorrow" | "this-week"> = {
+        "Today": "today",
+        "Tomorrow": "tomorrow",
+        "This Week": "this-week",
+      };
+      
+      const period = periodMap[value] || "today";
+      
+      // Fetch new count using server action
+      const count = await getDueCasesCount(period);
+      setDueCount(count);
+    } catch (error) {
+      console.error("Failed to fetch due cases count:", error);
+    } finally {
+      setIsLoadingDueCount(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-full pb-6 sm:pb-10">
       {/* Row 1: Stat cards */}
       <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
-        <StatCard title="New Organizations" value={orgCount} href="/organization" badge="This Month" iconSrc="/icons/org-card-icon.svg" intent="primary" />
-        <StatCard title="New Examiners" value={examinerCount} href="/examiner" badge="This Month" iconSrc="/icons/examiner-card-icon.svg" intent="indigo" />
-        <StatCard title="New Insurers" value="6" href="" badge="This Month" iconSrc="/icons/insurers-card-icon.svg" intent="primary" />
-        <StatCard title="Active IME Cases" value={caseCount} href="/cases" badge="All Time" iconSrc="/icons/ime-card-icon.svg" intent="aqua" />
+        <StatCard 
+          title="Active Cases" 
+          value={caseCount} 
+          href="/cases" 
+          icon={<PcCase size={16} />}
+          intent="primary" 
+        />
+        <StatCard 
+          title="Waiting to be reviewed" 
+          value={examinerCount} 
+          href="/cases" 
+          icon={<NotebookPen size={16} />}
+          intent="indigo" 
+        />
+        <StatCard 
+          title="Waiting to be scheduled" 
+          value={waitingToBeScheduledCount} 
+          href="/cases" 
+          icon={<ClipboardClock size={16} />}
+          intent="primary" 
+        />
+        <StatCard 
+          title="Due" 
+          value={isLoadingDueCount ? "..." : dueCount} 
+          href="/cases" 
+          icon={<CalendarCheck size={16} />}
+          intent="aqua" 
+          showDropdown={true}
+          dropdownOptions={["Today", "Tomorrow", "This Week"]}
+          onDropdownChange={handleDueFilterChange}
+        />
       </div>
 
       {/* Row 2: Left tables + Right rail */}
