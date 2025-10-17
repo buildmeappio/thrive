@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.896.0",
+    "@aws-sdk/s3-request-presigner": "^3.911.0",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.16.1",
     "@radix-ui/react-avatar": "^1.1.10",

@@ -1,6 +1,12 @@
 "use server";
 
-import { S3Client, S3ClientConfig, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  S3ClientConfig,
+  PutObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { revalidatePath } from "next/cache";
 import prisma from "./db";
 import { ENV } from "@/constants/variables";
@@ -137,4 +143,117 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
   }
 };
 
-export { uploadFileToS3, uploadFilesToS3 };
+const getFileFromS3 = async (
+  filename: string
+): Promise<
+  | {
+      success: false;
+      error: string;
+    }
+  | {
+      success: true;
+      data: Buffer;
+      contentType: string;
+    }
+> => {
+  try {
+    // Validate filename
+    if (!filename || filename.trim() === "") {
+      return {
+        success: false,
+        error: "Filename is required",
+      };
+    }
+
+    const key = `documents/examiner/${filename}`;
+
+    const command = new GetObjectCommand({
+      Bucket: ENV.AWS_S3_BUCKET!,
+      Key: key,
+    });
+
+    const response = await s3Client.send(command);
+
+    // Check if Body exists in response
+    if (!response.Body) {
+      return {
+        success: false,
+        error: "No data returned from S3",
+      };
+    }
+
+    // Convert the stream to Buffer
+    const buffer = Buffer.from(await response.Body?.transformToByteArray());
+
+    return {
+      success: true,
+      data: buffer,
+      contentType: response.ContentType || "application/octet-stream",
+    };
+  } catch (error: any) {
+    console.error("S3 Get error:", error);
+
+    // Handle specific S3 errors
+    if (error.name === "NoSuchKey") {
+      return {
+        success: false,
+        error: "File not found in S3",
+      };
+    }
+
+    if (error.name === "AccessDenied") {
+      return {
+        success: false,
+        error: "Access denied to S3 bucket",
+      };
+    }
+
+    return {
+      success: false,
+      error: error.message || "Failed to get file from S3",
+    };
+  }
+};
+
+const getPresignedUrlFromS3 = async (
+  filename: string,
+  expiresIn: number = 3600
+): Promise<
+  { success: false; error: string } | { success: true; url: string }
+> => {
+  try {
+    if (!filename || filename.trim() === "") {
+      return {
+        success: false,
+        error: "Filename is required",
+      };
+    }
+
+    const key = `documents/examiner/${filename}`;
+
+    const command = new GetObjectCommand({
+      Bucket: ENV.AWS_S3_BUCKET!,
+      Key: key,
+    });
+
+    const url = await getSignedUrl(s3Client, command, { expiresIn });
+
+    return {
+      success: true,
+      url,
+    };
+  } catch (error: any) {
+    console.error("S3 Presigned URL error:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to generate presigned URL",
+    };
+  }
+};
+
+export {
+  uploadFileToS3,
+  uploadFilesToS3,
+  getFileFromS3,
+  getPresignedUrlFromS3,
+};
