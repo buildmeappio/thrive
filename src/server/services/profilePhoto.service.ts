@@ -1,5 +1,5 @@
 import prisma from "@/lib/db";
-import { ENV } from "@/constants/variables";
+import { getPresignedUrlFromS3 } from "@/lib/s3";
 
 class ProfilePhotoService {
   async getProfilePhotoUrl(profilePhotoId: string): Promise<string | null> {
@@ -13,13 +13,15 @@ class ProfilePhotoService {
         return null;
       }
 
-      const cdnUrl = ENV.NEXT_PUBLIC_CDN_URL;
-      if (!cdnUrl) {
+      // Get presigned URL from S3 (expires in 1 hour)
+      const result = await getPresignedUrlFromS3(document.name, 3600);
+
+      if (!result.success) {
+        console.error("Error generating presigned URL:", result.error);
         return null;
       }
 
-      // The document name already includes the unique timestamp
-      return `${cdnUrl}/documents/examiner/${document.name}`;
+      return result.url;
     } catch (error) {
       console.error("Error fetching profile photo URL:", error);
       return null;
