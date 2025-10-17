@@ -55,6 +55,7 @@ export type CaseDetailDtoType = {
             name: string;
             type: string;
             size: number;
+            url: string | null;
         }>;
         claimant: {
             id: string;
