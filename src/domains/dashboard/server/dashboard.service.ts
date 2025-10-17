@@ -1,6 +1,6 @@
 // domains/dashboard/service.ts
 import prisma from "@/lib/db";
-import { endOfMonth, startOfMonth } from "date-fns";
+import { endOfMonth, startOfMonth, startOfDay, endOfDay, addDays, startOfWeek, endOfWeek } from "date-fns";
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
 import { CaseDto } from "@/domains/case/server/dto/case.dto";
 
@@ -120,6 +120,68 @@ class DashboardService {
         });
 
         return CaseDto.toCaseDto(rows);
+    }
+
+    // Get count of cases waiting to be scheduled
+    async getWaitingToBeScheduledCount(): Promise<number> {
+        const status = await prisma.caseStatus.findFirst({
+            where: {
+                name: "Waiting to be Scheduled",
+            },
+        });
+
+        if (!status) {
+            return 0;
+        }
+
+        return await prisma.examination.count({
+            where: {
+                statusId: status.id,
+                case: {
+                    deletedAt: null,
+                    isDraft: false,
+                },
+            },
+        });
+    }
+
+    // Get count of cases due by period (today, tomorrow, this week)
+    async getDueCasesCount(period: "today" | "tomorrow" | "this-week"): Promise<number> {
+        const now = new Date();
+        let startDate: Date;
+        let endDate: Date;
+
+        switch (period) {
+            case "today":
+                startDate = startOfDay(now);
+                endDate = endOfDay(now);
+                break;
+            case "tomorrow":
+                const tomorrow = addDays(now, 1);
+                startDate = startOfDay(tomorrow);
+                endDate = endOfDay(tomorrow);
+                break;
+            case "this-week":
+                startDate = startOfWeek(now, { weekStartsOn: 1 }); // Monday
+                endDate = endOfWeek(now, { weekStartsOn: 1 });
+                break;
+            default:
+                startDate = startOfDay(now);
+                endDate = endOfDay(now);
+        }
+
+        return await prisma.examination.count({
+            where: {
+                dueDate: {
+                    gte: startDate,
+                    lte: endDate,
+                },
+                case: {
+                    deletedAt: null,
+                    isDraft: false,
+                },
+            },
+        });
     }
 }
 

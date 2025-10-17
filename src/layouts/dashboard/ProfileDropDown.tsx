@@ -91,16 +91,16 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
           </li>
         </ul>
         <div className="py-1">
-          <a
-            onClick={() => {
-              signOut({ callbackUrl: '/login' });
+          <button
+            onClick={async () => {
               localStorage.removeItem('token');
+              await signOut({ callbackUrl: '/admin/login', redirect: true });
             }}
-            className="flex cursor-pointer items-center space-x-2 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
+            className="flex w-full cursor-pointer items-center space-x-2 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
           >
             <LogOut size={16} />
             <span>Sign out</span>
-          </a>
+          </button>
         </div>
       </div>
     );

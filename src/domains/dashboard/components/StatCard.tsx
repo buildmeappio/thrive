@@ -3,15 +3,27 @@
 import Image from "@/components/Image";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useState, ReactNode } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Props = {
   title: string;
   value: string | number;
   href: string;
-  badge: string;
-  iconSrc: string;
+  badge?: string;
+  icon?: ReactNode;
+  iconSrc?: string;
   iconAlt?: string;
   intent?: "primary" | "indigo" | "aqua";
+  showDropdown?: boolean;
+  dropdownOptions?: string[];
+  onDropdownChange?: (value: string) => void;
 };
 
 const INTENTS = {
@@ -25,11 +37,21 @@ export default function StatCard({
   value,
   href,
   badge,
+  icon,
   iconSrc,
   iconAlt = "",
   intent = "primary",
+  showDropdown = false,
+  dropdownOptions = ["Today", "Tomorrow", "This Week"],
+  onDropdownChange,
 }: Props) {
   const colors = INTENTS[intent];
+  const [selectedFilter, setSelectedFilter] = useState(dropdownOptions[0]);
+
+  const handleDropdownChange = (value: string) => {
+    setSelectedFilter(value);
+    onDropdownChange?.(value);
+  };
 
   return (
     <div
@@ -40,27 +62,48 @@ export default function StatCard({
       )}
       style={{ fontFamily: "Poppins, system-ui" }}
     >
-      {/* top row: icon left, badge right */}
+      {/* top row: icon left, badge/dropdown right */}
       <div className="flex items-start justify-between">
         <span className="grid h-[26px] w-[26px] place-items-center rounded-full">
-          <Image
-            src={iconSrc}
-            alt={iconAlt}
-            width={16}
-            height={16}
-            className="h-[16px] w-[16px]"
-          />
+          {icon ? (
+            <span className="text-white w-[16px] h-[16px]">
+              {icon}
+            </span>
+          ) : iconSrc ? (
+            <Image
+              src={iconSrc}
+              alt={iconAlt}
+              width={16}
+              height={16}
+              className="h-[16px] w-[16px]"
+            />
+          ) : null}
         </span>
 
-        <span
-          className={cn(
-            "inline-flex items-center justify-center rounded-[34px] h-[28px] px-[12px]",
-            "text-[12.5px] font-medium tracking-[-0.02em]",
-            colors.badge
-          )}
-        >
-          {badge}
-        </span>
+        {showDropdown ? (
+          <Select value={selectedFilter} onValueChange={handleDropdownChange}>
+            <SelectTrigger className="w-[110px] h-[28px] rounded-[34px] border-0 bg-white text-[#000080] text-[12.5px] font-medium tracking-[-0.02em] px-[12px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {dropdownOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : badge ? (
+          <span
+            className={cn(
+              "inline-flex items-center justify-center rounded-[34px] h-[28px] px-[12px]",
+              "text-[12.5px] font-medium tracking-[-0.02em]",
+              colors.badge
+            )}
+          >
+            {badge}
+          </span>
+        ) : null}
       </div>
 
       {/* title */}
