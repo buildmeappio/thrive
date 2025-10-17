@@ -5,10 +5,8 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import examinerService from "../server/examiner.service";
 import { sendMail } from "@/lib/email";
-import {
-  generateExaminerRejectionEmail,
-  EXAMINER_REJECTION_SUBJECT,
-} from "../../../../templates/emails/examiner-rejection";
+import emailService from "@/services/email.service";
+import { ENV } from "@/constants/variables";
 
 const rejectExaminer = async (examinerId: string, messageToExaminer: string) => {
   const user = await getCurrentUser();
@@ -50,17 +48,21 @@ async function sendRejectionEmailToExaminer(examiner: any, rejectionMessage: str
     return;
   }
 
-  const htmlContent = generateExaminerRejectionEmail({
-    firstName,
-    lastName,
-    rejectionMessage,
-  });
+  const result = await emailService.sendEmail(
+    "Thrive Medical Examiner Application - Status Update",
+    "examiner-rejection.html",
+    {
+      firstName,
+      lastName,
+      rejectionMessage,
+      CDN_URL: ENV.NEXT_PUBLIC_CDN_URL,
+    },
+    userEmail
+  );
 
-  await sendMail({
-    to: userEmail,
-    subject: EXAMINER_REJECTION_SUBJECT,
-    html: htmlContent,
-  });
+  if (!result.success) {
+    throw new Error((result as { success: false; error: string }).error);
+  }
 }
 
 export default rejectExaminer;

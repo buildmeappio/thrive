@@ -34,6 +34,13 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
       .join(" ") || "-";
 
   const handleRequestSubmit = async (messageToOrganization: string) => {
+    // Check if manager email exists before proceeding
+    const managerEmail = organization.manager?.[0]?.account?.user?.email;
+    if (!managerEmail) {
+      toast.error("Cannot send request: No manager email found.");
+      return;
+    }
+
     setLoadingAction("request");
     try {
       await organizationActions.requestMoreInfo(organization.id, messageToOrganization);
@@ -48,6 +55,13 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
   };
 
   const handleApprove = async () => {
+    // Check if manager email exists before proceeding
+    const managerEmail = organization.manager?.[0]?.account?.user?.email;
+    if (!managerEmail) {
+      toast.error("Cannot approve organization: No manager email found.");
+      return;
+    }
+
     setLoadingAction("approve");
     try {
       await organizationActions.approveOrganization(organization.id);
@@ -63,6 +77,13 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
   };
 
   const handleRejectSubmit = async (messageToOrganization: string) => {
+    // Check if manager email exists before proceeding
+    const managerEmail = organization.manager?.[0]?.account?.user?.email;
+    if (!managerEmail) {
+      toast.error("Cannot reject organization: No manager email found.");
+      return;
+    }
+
     setLoadingAction("reject");
     try {
       await organizationActions.rejectOrganization(organization.id, messageToOrganization);
@@ -81,29 +102,40 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
   return (
     <DashboardShell
       title={
-        <h2 className="w-full text-left text-2xl sm:text-3xl font-bold">
-          Review{" "}
-          <span className="bg-[linear-gradient(270deg,#01F4C8_50%,#00A8FF_65.19%)] bg-clip-text text-transparent break-words">
-            {organization.name}
-          </span>{" "}
-          Profile
+        <h2 className="w-full text-left text-2xl sm:text-3xl font-bold text-black">
+          {organization.name}
         </h2>
       }
     >
-      <div className="w-full flex flex-col items-center">
-        <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
-          {/* Two-column on lg, single column below */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 w-full">
+      <div className="w-full flex flex-col items-center min-h-[72vh]">
+        <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full flex-1 flex flex-col">
+          {/* Two-column layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 w-full flex-1">
+            {/* Left Column - Organization Details */}
             <div className="flex flex-col gap-6 lg:gap-10">
-              <Section title="Organization Info">
-                <FieldRow label="Name" value={organization.name} type="text" />
-                <FieldRow label="Type" value={type} type="text" />
-                <FieldRow label="Website" value={organization.website || "-"} type="text" />
+              <Section title="Organization Details">
+                <FieldRow label="Organization Name" value={organization.name} type="text" />
+                <FieldRow label="Organization Type" value={type} type="text" />
+                
+                {/* Custom Address Lookup Field */}
+                <div className="rounded-lg bg-[#F6F6F6] px-3 sm:px-4 py-2">
+                  <div className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] mb-1.5 sm:mb-2">
+                    Address Lookup
+                  </div>
+                  <div className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight tracking-[-0.03em] text-[#000080] break-words">
+                    {organization.address?.address || "-"}
+                  </div>
+                </div>
+                
+                <FieldRow label="Organization Website" value={organization.website || "-"} type="text" />
               </Section>
+            </div>
 
-              <Section title="Manager Info">
+            {/* Right Column - Personal Details */}
+            <div className="flex flex-col gap-6 lg:gap-10">
+              <Section title="Personal Details">
                 <FieldRow
-                  label="Name"
+                  label="Full Name"
                   value={
                     organization.manager?.[0]?.account?.user
                       ? `${organization.manager?.[0]?.account?.user.firstName ?? ""} ${organization.manager?.[0]?.account?.user.lastName ?? ""}`.trim() || "-"
@@ -112,13 +144,13 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                   type="text"
                 />
                 <FieldRow
-                  label="Email"
-                  value={organization.manager?.[0]?.account?.user?.email || "-"}
+                  label="Phone Number"
+                  value={organization.manager?.[0]?.account?.user?.phone || "-"}
                   type="text"
                 />
                 <FieldRow
-                  label="Phone"
-                  value={organization.manager?.[0]?.account?.user?.phone || "-"}
+                  label="Email Address"
+                  value={organization.manager?.[0]?.account?.user?.email || "-"}
                   type="text"
                 />
                 <FieldRow
@@ -133,34 +165,10 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                 />
               </Section>
             </div>
-
-            <div className="flex flex-col gap-6 lg:gap-8">
-              <Section title="Address">
-                <FieldRow label="Address" value={organization.address?.address || "-"} type="text" />
-                <FieldRow label="Province" value={organization.address?.province || "-"} type="text" />
-                <FieldRow label="City" value={organization.address?.city || "-"} type="text" />
-                <FieldRow label="Postal Code" value={organization.address?.postalCode || "-"} type="text" />
-                <FieldRow label="Suite" value={organization.address?.suite || "-"} type="text" />
-                <FieldRow label="Street" value={organization.address?.street || "-"} type="text" />
-              </Section>
-
-              <Section title="Legal & Compliance">
-                <FieldRow
-                  label="Data Sharing Consent"
-                  value={organization.dataSharingConsent === true ? "Yes" : "No"}
-                  type="text"
-                />
-                <FieldRow
-                  label="Agree to Terms and Privacy"
-                  value={organization.agreeToTermsAndPrivacy === true ? "Yes" : "No"}
-                  type="text"
-                />
-              </Section>
-            </div>
           </div>
 
           {/* Actions */}
-          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-end">
+          <div className="mt-auto pt-6 sm:pt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-end">
             {status === "approved" ? (
               <button
                 className={cn(
@@ -192,7 +200,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                   disabled={loadingAction !== null}
                   onClick={handleApprove}
                 >
-                  {loadingAction === "approve" ? "Approving..." : "Approve Organization"}
+                  {loadingAction === "approve" ? "Approving..." : "Approve"}
                 </button>
 
                 <button

@@ -69,19 +69,19 @@ export default function NewExaminers({
         <Table>
           <TableHeader>
             <TableRow className="bg-[#F3F3F3] border-b-0 hover:bg-[#F3F3F3]">
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Name
               </TableHead>
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Email
               </TableHead>
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Specialties
               </TableHead>
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Province
               </TableHead>
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Status
               </TableHead>
             </TableRow>

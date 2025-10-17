@@ -1,6 +1,7 @@
 import { LoginForm } from "@/domains/auth";
 import type { Metadata } from "next";
 import Image from "@/components/Image";
+import { ENV } from "@/constants/variables";
 
 export const metadata: Metadata = {
   title: "Login | Thrive Admin",
@@ -34,7 +35,7 @@ const Page = () => {
           {/* Right (only on lg+) */}
           <div className="relative hidden lg:block">
             <Image
-              src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/adminLogin.png"
+              src={`${ENV.NEXT_PUBLIC_CDN_URL}/images/admin-login.png`}
               alt="Admin Dashboard Preview"
               fill
               sizes="(max-width: 1024px) 0px, 50vw"

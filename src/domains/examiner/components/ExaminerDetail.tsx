@@ -26,10 +26,6 @@ export default function ExaminerDetail({ examiner }: Props) {
     );
     const [loadingAction, setLoadingAction] = useState<"approve" | "reject" | "request" | null>(null);
 
-    const formattedExpiry = examiner.licenseExpiryDate
-        ? formatDateLong(examiner.licenseExpiryDate)
-        : "-";
-
     const handleApprove = async () => {
         setLoadingAction("approve");
         try {
@@ -88,55 +84,20 @@ export default function ExaminerDetail({ examiner }: Props) {
         >
             <div className="w-full flex flex-col items-center">
                 <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-                        {/* Left column */}
-                        <div className="flex flex-col gap-6 lg:gap-10">
-                            <Section title="Personal & Contact Info">
-                                <FieldRow label="Name" value={examiner.name} type="text" />
-                                <FieldRow
-                                    label="Medical Specialties"
-                                    value={examiner.specialties?.join(", ") || "-"}
-                                    type="text"
-                                />
-                                <FieldRow label="Phone Number" value={examiner.phone || "-"} type="text" />
-                                <FieldRow label="Email" value={examiner.email || "-"} type="text" />
+                    <div className="flex flex-col gap-6 lg:gap-10">
+                        {/* First row: Organization (left) and IME Experience (right) */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+                            {/* Left column - Examiner Info */}
+                        <Section title="What Organization Do You Represent?">
+                                <FieldRow label="Name" value={examiner.name || "-"} type="text" />
+                                <FieldRow label="Medical Specialties" value={examiner.specialties?.join(", ") || "-"} type="text" />
+                            <FieldRow label="Phone Number" value={examiner.phone || "-"} type="text" />
+                            <FieldRow label="Email Address" value={examiner.email || "-"} type="text" />
                                 <FieldRow label="Province" value={examiner.province || "-"} type="text" />
-                                <FieldRow
-                                    label="Mailing Address"
-                                    value={examiner.mailingAddress || "-"}
-                                    type="text"
-                                />
-                            </Section>
+                                <FieldRow label="Mailing Address" value={examiner.mailingAddress || "-"} type="text" />
+                        </Section>
 
-                            <Section title="Medical Credentials">
-                                <FieldRow label="License Number" value={examiner.licenseNumber || "-"} type="text" />
-                                <FieldRow
-                                    label="Province of Licensure"
-                                    value={examiner.provinceOfLicensure || "-"}
-                                    type="text"
-                                />
-                                <FieldRow
-                                    label="License Expiry Date"
-                                    value={formattedExpiry}
-                                    type="text"
-                                />
-                                <FieldRow
-                                    label="CV / Resume"
-                                    value={examiner.cvUrl ? "Download" : "Not uploaded"}
-                                    valueHref={examiner.cvUrl}
-                                    type={examiner.cvUrl ? "link" : "text"}
-                                />
-                                <FieldRow
-                                    label="Medical License"
-                                    value={examiner.medicalLicenseUrl ? "Download" : "Not uploaded"}
-                                    valueHref={examiner.medicalLicenseUrl}
-                                    type={examiner.medicalLicenseUrl ? "link" : "text"}
-                                />
-                            </Section>
-                        </div>
-
-                        {/* Right column */}
-                        <div className="flex flex-col gap-6 lg:gap-10">
+                            {/* Right column - IME Experience */}
                             <Section title="IME Experience & Qualifications">
                                 <FieldRow
                                     label="Languages Spoken"
@@ -152,110 +113,133 @@ export default function ExaminerDetail({ examiner }: Props) {
                                     }
                                     type="text"
                                 />
-                                <div className="flex flex-col gap-2 w-full">
-                                    <div className="flex items-center justify-between w-full">
-                                        <h4 className="font-degular font-semibold text-[16px] sm:text-[18px] tracking-[-0.03em] text-black">
-                                            Share Some Details About Your Past Experience
-                                        </h4>
-                                    </div>
-                                    <div className="rounded-lg bg-[#F6F6F6] px-4 py-3">
-                                        <p className="font-[Poppins] text-[14px] sm:text-[16px] leading-snug text-[#000080] break-words">
-                                            {examiner.experienceDetails || "-"}
-                                        </p>
-                                    </div>
+                                <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[169px] flex flex-col">
+                                    <h4 className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] mb-3">
+                                        Share Some Details About Your Past Experience
+                                    </h4>
+                                    <p className="font-poppins text-base text-[#000080] flex-1 overflow-hidden" style={{
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 6,
+                                        WebkitBoxOrient: 'vertical',
+                                        textOverflow: 'ellipsis'
+                                    }}>
+                                        {examiner.experienceDetails || "-"}
+                                    </p>
                                 </div>
                             </Section>
+                        </div>
 
-                            <Section title="Legal & Compliance">
+                        {/* Second row: Medical Credentials (left) and Consent + Actions (right) */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+                            {/* Left column - Medical Credentials */}
+                            <Section title="Medical Credentials">
+                                <FieldRow label="License Number" value={examiner.licenseNumber || "-"} type="text" />
                                 <FieldRow
-                                    label="Insurance Proof"
-                                    value={examiner.insuranceProofUrl ? "Download" : "Not uploaded"}
-                                    valueHref={examiner.insuranceProofUrl}
-                                    type={examiner.insuranceProofUrl ? "link" : "text"}
+                                    label="Province of Licensure"
+                                    value={examiner.provinceOfLicensure || "-"}
+                                    type="text"
                                 />
                                 <FieldRow
-                                    label="Signed NDA"
-                                    value={examiner.signedNdaUrl ? "Download" : "Not uploaded"}
-                                    valueHref={examiner.signedNdaUrl}
-                                    type={examiner.signedNdaUrl ? "link" : "text"}
+                                    label="CV / Resume"
+                                    value={examiner.cvUrl ? "Download" : "Not uploaded"}
+                                    valueHref={examiner.cvUrl}
+                                    type={examiner.cvUrl ? "link" : "text"}
+                                />
+                                <FieldRow
+                                    label="Medical License"
+                                    value={examiner.medicalLicenseUrl ? "Download" : "Not uploaded"}
+                                    valueHref={examiner.medicalLicenseUrl}
+                                    type={examiner.medicalLicenseUrl ? "link" : "text"}
                                 />
                             </Section>
+
+                            {/* Right column - Consent and Actions */}
+                            <div className="flex flex-col gap-6 lg:gap-10">
+                                <Section title="Consent">
+                                    <FieldRow
+                                        label="Consent to Background Verification"
+                                        value="Yes" // Default to Yes since this is required for examiners
+                                        type="text"
+                                    />
+                                </Section>
+
+                                <Section title="Actions">
+                                    <div className="flex flex-row flex-wrap gap-3">
+                                        {status === "approved" ? (
+                                            <button
+                                                className={cn(
+                                                    "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-green-50 flex items-center gap-2 cursor-default"
+                                                )}
+                                                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                                                disabled
+                                            >
+                                                <Check className="w-4 h-4" />
+                                                Approved
+                                            </button>
+                                        ) : status === "rejected" ? (
+                                            <button
+                                                className={cn(
+                                                    "px-4 py-3 rounded-full text-white bg-red-700 flex items-center gap-2 cursor-default"
+                                                )}
+                                                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                                                disabled
+                                            >
+                                                Rejected
+                                            </button>
+                                        ) : status === "info_requested" ? (
+                                            <button
+                                                className={cn(
+                                                    "px-4 py-3 rounded-full border border-blue-500 text-blue-700 bg-blue-50 flex items-center gap-2 cursor-default"
+                                                )}
+                                                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                                                disabled
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Information Requested
+                                            </button>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    className={cn(
+                                                        "px-4 py-3 rounded-full border border-cyan-400 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    )}
+                                                    style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                                                    disabled={loadingAction !== null}
+                                                    onClick={handleApprove}
+                                                >
+                                                    {loadingAction === "approve" ? "Approving..." : "Approve Examiner"}
+                                                </button>
+
+                                                <button
+                                                    onClick={() => setIsRequestOpen(true)}
+                                                    className={cn(
+                                                        "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    )}
+                                                    style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                                                    disabled={loadingAction !== null}
+                                                >
+                                                    {loadingAction === "request" ? "Requesting..." : "Request More Info"}
+                                                </button>
+
+                                                <button
+                                                    className={cn(
+                                                        "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    )}
+                                                    style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                                                    disabled={loadingAction !== null}
+                                                    onClick={() => setIsRejectOpen(true)}
+
+                                                >
+                                                    {loadingAction === "reject" ? "Rejecting..." : "Reject Examiner"}
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </Section>
+                            </div>
                         </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-end">
-                        {status === "approved" ? (
-                            <button
-                                className={cn(
-                                    "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-green-50 flex items-center gap-2 cursor-default"
-                                )}
-                                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
-                                disabled
-                            >
-                                <Check className="w-4 h-4" />
-                                Approved
-                            </button>
-                        ) : status === "rejected" ? (
-                            <button
-                                className={cn(
-                                    "px-4 py-3 rounded-full text-white bg-red-700 flex items-center gap-2 cursor-default"
-                                )}
-                                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
-                                disabled
-                            >
-                                Rejected
-                            </button>
-                        ) : status === "info_requested" ? (
-                            <button
-                                className={cn(
-                                    "px-4 py-3 rounded-full border border-blue-500 text-blue-700 bg-blue-50 flex items-center gap-2 cursor-default"
-                                )}
-                                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
-                                disabled
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Information Requested
-                            </button>
-                        ) : (
-                            <>
-                                <button
-                                    className={cn(
-                                        "px-4 py-3 rounded-full border border-cyan-400 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    )}
-                                    style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
-                                    disabled={loadingAction !== null}
-                                    onClick={handleApprove}
-                                >
-                                    {loadingAction === "approve" ? "Approving..." : "Approve Examiner"}
-                                </button>
-
-                                <button
-                                    onClick={() => setIsRequestOpen(true)}
-                                    className={cn(
-                                        "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    )}
-                                    style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
-                                    disabled={loadingAction !== null}
-                                >
-                                    {loadingAction === "request" ? "Requesting..." : "Request More Info"}
-                                </button>
-
-                                <button
-                                    className={cn(
-                                        "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    )}
-                                    style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
-                                    disabled={loadingAction !== null}
-                                    onClick={() => setIsRejectOpen(true)}
-
-                                >
-                                    {loadingAction === "reject" ? "Rejecting..." : "Reject Examiner"}
-                                </button>
-                            </>
-                        )}
                     </div>
                 </div>
 

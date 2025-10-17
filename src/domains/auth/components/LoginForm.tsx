@@ -40,7 +40,7 @@ const LoginForm = () => {
       return;
     }
 
-    console.log(`Login failed`);
+    toast.error('Invalid email or password. Please try again.');
   };
 
   return (
