@@ -86,6 +86,7 @@ const columnsDef = [
   },
 ];
 
+// Combined component that handles both table and pagination with shared state
 export default function OrganizationTableWrapper({ 
   data, 
   types: _types = [], 
@@ -189,55 +190,14 @@ export default function OrganizationTableWrapper({
           </TableBody>
         </Table>
       </div>
+      
+      {/* Pagination */}
+      <Pagination table={table} />
     </>
   );
 }
 
-// Export pagination separately
-export function OrganizationPagination({ 
-  data, 
-  types: _types = [], 
-  statuses: _statuses = [], 
-  searchQuery = "", 
-  filters = { type: "all", status: "all" } 
-}: Props) {
-  const filtered = useMemo(() => {
-    let result = data;
-
-    // Filter by status
-    if (filters.status !== "all") {
-      result = result.filter((d) => d.status === filters.status);
-    }
-
-    // Filter by type
-    if (filters.type !== "all") {
-      result = result.filter((d) => d.typeName === filters.type);
-    }
-
-    // Filter by search query
-    const q = searchQuery.trim().toLowerCase();
-    if (q) {
-      result = result.filter((d) =>
-        [d.name, d.managerName, d.managerEmail, d.typeName]
-          .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q))
-      );
-    }
-
-    return result;
-  }, [data, searchQuery, filters]);
-
-  const table = useReactTable({
-    data: filtered,
-    columns: columnsDef,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-  });
-
-  // reset to first page when searching or filtering
-  useEffect(() => {
-    table.setPageIndex(0);
-  }, [searchQuery, filters, table]);
-
+// Export pagination separately - now it receives the table instance
+export function OrganizationPagination({ table }: { table: any }) {
   return <Pagination table={table} />;
 }

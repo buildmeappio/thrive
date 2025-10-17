@@ -25,7 +25,7 @@ const Page = () => {
                 <br /> Admin Dashboard
               </h1>
 
-              <div className="rounded-xl border border-[#E9EDEE] bg-white p-6 sm:p-7 md:p-8 shadow-xs">
+              <div className="rounded-3xl border border-[#E9EDEE] bg-white p-6 sm:p-7 md:p-8 shadow-xs">
                 <h2 className="mb-6 font-semibold text-[clamp(20px,2.2vw,30px)]">Log In</h2>
                 <LoginForm />
               </div>

@@ -99,6 +99,7 @@ const columnsDef = [
   },
 ];
 
+// Combined component that handles both table and pagination with shared state
 export default function ExaminerTableWrapper({ data, searchQuery = "", filters }: Props) {
   const [query, setQuery] = useState(searchQuery);
 
@@ -124,7 +125,6 @@ export default function ExaminerTableWrapper({ data, searchQuery = "", filters }
     if (filters?.status && filters.status !== "all") {
       result = result.filter((d) => d.status === filters.status);
     }
-
 
     // Filter by search query
     const q = query.trim().toLowerCase();
@@ -209,62 +209,14 @@ export default function ExaminerTableWrapper({ data, searchQuery = "", filters }
           </TableBody>
         </Table>
       </div>
+      
+      {/* Pagination */}
+      <Pagination table={table} />
     </>
   );
 }
 
-// Export pagination separately
-export function ExaminerPagination({ data, searchQuery = "", filters }: Props) {
-  const [query, setQuery] = useState(searchQuery);
-
-  // Update internal query when searchQuery prop changes
-  useEffect(() => {
-    setQuery(searchQuery);
-  }, [searchQuery]);
-
-  const filtered = useMemo(() => {
-    let result = data;
-
-    // Filter by specialty
-    if (filters?.specialty && filters.specialty !== "all") {
-      result = result.filter((d) => {
-        if (Array.isArray(d.specialties)) {
-          return d.specialties.includes(filters.specialty);
-        }
-        return d.specialties === filters.specialty;
-      });
-    }
-
-    // Filter by status
-    if (filters?.status && filters.status !== "all") {
-      result = result.filter((d) => d.status === filters.status);
-    }
-
-
-    // Filter by search query
-    const q = query.trim().toLowerCase();
-    if (q) {
-      result = result.filter((d) =>
-        [d.name, d.email, d.specialties, d.province, d.status]
-          .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q))
-      );
-    }
-
-    return result;
-  }, [data, query, filters]);
-
-  const table = useReactTable({
-    data: filtered,
-    columns: columnsDef,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-  });
-
-  // reset to first page when searching or filtering
-  useEffect(() => {
-    table.setPageIndex(0);
-  }, [query, filters, table]);
-
+// Export pagination separately - now it receives the table instance
+export function ExaminerPagination({ table }: { table: any }) {
   return <Pagination table={table} />;
 }

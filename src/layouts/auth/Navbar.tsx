@@ -18,7 +18,7 @@ const Navbar = async () => {
             sizes="(max-width: 768px) 100vw, 50vw"
             width={120}
             height={120}
-            className="h-[3.5rem] md:h-[4.5rem] w-auto"
+            className="h-[5.5rem] md:h-[6.5rem] w-auto"
           />
         </Link>
       </div>

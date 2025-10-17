@@ -113,6 +113,7 @@ const columnsDef = [
   },
 ];
 
+// Combined component that handles both table and pagination with shared state
 export default function CaseTableWrapper({ data, searchQuery = "", filters }: Props) {
   const [query, setQuery] = useState(searchQuery);
 
@@ -242,81 +243,14 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
           </TableBody>
         </Table>
       </div>
+      
+      {/* Pagination */}
+      <Pagination table={table} />
     </>
   );
 }
 
-// Export pagination separately
-export function CasePagination({ data, searchQuery = "", filters }: Props) {
-  const [query, setQuery] = useState(searchQuery);
-
-  // Update internal query when searchQuery prop changes
-  useEffect(() => {
-    setQuery(searchQuery);
-  }, [searchQuery]);
-
-  const filtered = useMemo(() => {
-    let result = data;
-
-    // Filter by claim type
-    if (filters?.claimType && filters.claimType !== "all") {
-      result = result.filter((d) => d.caseType === filters.claimType);
-    }
-
-    // Filter by status
-    if (filters?.status && filters.status !== "all") {
-      result = result.filter((d) => d.status === filters.status);
-    }
-
-    // Filter by priority
-    if (filters?.priority && filters.priority !== "all") {
-      result = result.filter((d) => d.urgencyLevel === filters.priority);
-    }
-
-    // Filter by date range
-    if (filters?.dateRange) {
-      const { start, end } = filters.dateRange;
-      if (start) {
-        result = result.filter((d) => {
-          const submittedDate = new Date(d.submittedAt);
-          const startDate = new Date(start);
-          return submittedDate >= startDate;
-        });
-      }
-      if (end) {
-        result = result.filter((d) => {
-          const submittedDate = new Date(d.submittedAt);
-          const endDate = new Date(end);
-          endDate.setHours(23, 59, 59, 999); // Include the entire end date
-          return submittedDate <= endDate;
-        });
-      }
-    }
-
-    // Filter by search query
-    const q = query.trim().toLowerCase();
-    if (q) {
-      result = result.filter((d) =>
-        [d.number, d.organization, d.caseType, d.status, d.urgencyLevel]
-          .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q))
-      );
-    }
-
-    return result;
-  }, [data, query, filters]);
-
-  const table = useReactTable({
-    data: filtered,
-    columns: columnsDef,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-  });
-
-  // reset to first page when searching or filtering
-  useEffect(() => {
-    table.setPageIndex(0);
-  }, [query, filters, table]);
-
+// Export pagination separately - now it receives the table instance
+export function CasePagination({ table }: { table: any }) {
   return <Pagination table={table} />;
 }
