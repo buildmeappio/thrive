@@ -194,7 +194,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
                   )}
                 </div>
 
-                <div className="mt-20 flex flex-row justify-center gap-4 md:mt-32 md:justify-between">
+                <div className="mt-20 flex flex-row justify-between gap-4 px-4 md:mt-32 md:px-0">
                   <BackButton
                     onClick={onPrevious}
                     disabled={currentStep === 1}

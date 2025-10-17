@@ -269,6 +269,7 @@ const sendOtp = async (email: string) => {
     const payload = {
       email: email,
       otp: otp,
+      cdnUrl: process.env.NEXT_PUBLIC_CDN_URL,
     };
 
     const result = await emailService.sendEmail(

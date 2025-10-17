@@ -61,6 +61,8 @@ export type IMEFormData = {
     insuranceStreetAddress?: string;
     insuranceAptUnitSuite?: string;
     insuranceCity?: string;
+    insurancePostalCode?: string;
+    insuranceProvince?: string;
     insurancePhone: string;
     insuranceFaxNo: string;
     insuranceEmailAddress: string;

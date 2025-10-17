@@ -13,6 +13,8 @@ import {
 import { Button } from '@/components/ui';
 import { formatDate } from '@/utils/dateTime';
 import { getCaseList } from '@/domains/ime-referral/actions';
+import { URLS } from '@/constants/routes';
+import useRouter from '@/hooks/useRouter';
 
 type CaseProps = {
   dashboardCases: Awaited<ReturnType<typeof getCaseList>>['result'];
@@ -20,6 +22,7 @@ type CaseProps = {
 };
 
 const DashboardCases = ({ dashboardCases, title }: CaseProps) => {
+  const router = useRouter();
   return (
     <section className="w-full rounded-[29px] bg-white px-6 py-4" aria-labelledby="cases-heading">
       {/* Header */}
@@ -31,7 +34,10 @@ const DashboardCases = ({ dashboardCases, title }: CaseProps) => {
           {title}
         </h3>
 
-        <Button className="h-[30px] w-[84px] flex-shrink-0 rounded-full bg-[#000093] text-[12px] font-medium text-white">
+        <Button
+          onClick={() => router.push(URLS.CASES)}
+          className="h-[30px] w-[84px] flex-shrink-0 rounded-full bg-[#000093] text-[12px] font-medium text-white hover:bg-[#000093]"
+        >
           View All
         </Button>
       </div>

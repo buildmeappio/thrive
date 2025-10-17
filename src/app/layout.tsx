@@ -60,9 +60,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
 
             {/* Canadian compliance footer note */}
-            <div className="text-muted-foreground bg-background/80 border-border fixed right-0 bottom-0 rounded-tl-md border-t border-l p-2 text-xs backdrop-blur-sm">
+            {/* <div className="text-muted-foreground bg-background/80 border-border fixed right-0 bottom-0 rounded-tl-md border-t border-l p-2 text-xs backdrop-blur-sm">
               <span className="flex items-center gap-1">🇨🇦 Canadian Privacy Compliant</span>
-            </div>
+            </div> */}
           </div>
         </SessionProvider>
       </body>

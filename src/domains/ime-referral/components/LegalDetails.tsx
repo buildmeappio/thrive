@@ -3,7 +3,7 @@
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2, Printer } from 'lucide-react';
 import { Dropdown } from '@/components/Dropdown';
 import { provinceOptions } from '@/config/ProvinceOptions';
 import {
@@ -176,6 +176,7 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                         setValue('legalFaxNo', e.target.value, { shouldValidate: true })
                       }
                       className="w-full"
+                      icon={Printer}
                     />
                     {errors.legalFaxNo && (
                       <p className="text-sm text-red-500">{errors.legalFaxNo.message}</p>
@@ -199,7 +200,7 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                 </div>
 
                 {/* Legal Street Address, Apt/Unit/Suite, Postal Code */}
-                <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="mb-6 grid w-full max-w-full grid-cols-1">
                   <div className="space-y-2">
                     <Label htmlFor="legalStreetAddress">Street Address</Label>
                     <Input
@@ -212,7 +213,10 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                       <p className="text-sm text-red-500">{errors.legalStreetAddress.message}</p>
                     )}
                   </div>
+                </div>
 
+                {/* Legal Province and City */}
+                <div className="mb-8 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-4">
                   <div className="space-y-2">
                     <Label htmlFor="legalAptUnitSuite">Apt / Unit / Suite</Label>
                     <Input
@@ -238,10 +242,6 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                       <p className="text-sm text-red-500">{errors.legalPostalCode.message}</p>
                     )}
                   </div>
-                </div>
-
-                {/* Legal Province and City */}
-                <div className="mb-8 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="legalProvinceState">Province / State</Label>
                     <Dropdown
@@ -274,7 +274,7 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
             </div>
           </div>
           {/* Buttons */}
-          <div className="mb-8 flex flex-row justify-center gap-4 md:mb-0 md:justify-between">
+          <div className="mb-8 flex flex-row justify-between gap-4 px-4 md:mb-0 md:px-0">
             <BackButton
               onClick={onPrevious}
               disabled={currentStep === 1}

@@ -21,6 +21,7 @@ import CustomDatePicker from '@/components/CustomDatePicker';
 import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
 import PhoneInput from '@/components/PhoneNumber';
 import type { OrganizationTypeOption } from '@/domains/auth/components/Register/OrganizationInfo';
+import { Printer } from 'lucide-react';
 
 type CLaimTypeProps = IMEReferralProps & {
   claimTypes: OrganizationTypeOption[];
@@ -268,7 +269,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
               </div>
 
               {/* Third Row: Street Address, Apt/Unit/Suite, City */}
-              <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-5">
+              <div className="mb-6 grid w-full max-w-full grid-cols-1">
                 <div className="space-y-2 md:col-span-3">
                   <Label htmlFor="street">Street Address</Label>
                   <Input
@@ -279,7 +280,10 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                   />
                   {errors.street && <p className="text-sm text-red-500">{errors.street.message}</p>}
                 </div>
+              </div>
 
+              {/* Fourth Row: Apt/unit/suite, Postal Code, Province, City */}
+              <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-4">
                 <div className="space-y-2 md:col-span-1">
                   <Label htmlFor="suite">Apt / Unit / Suite</Label>
                   <Input
@@ -303,10 +307,6 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                     <p className="text-sm text-red-500">{errors.postalCode.message}</p>
                   )}
                 </div>
-              </div>
-
-              {/* Fourth Row: Province, City */}
-              <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="province">Province / State</Label>
                   <Dropdown
@@ -331,7 +331,6 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                   />
                   {errors.city && <p className="text-sm text-red-500">{errors.city.message}</p>}
                 </div>
-                <div></div>
               </div>
 
               {/* Family Doctor Section */}
@@ -342,7 +341,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                     disabled={isSubmitting}
                     {...register('relatedCasesDetails')}
                     placeholder="Type here"
-                    className={`mt-2 min-h-[100px] w-full resize-none ${errors.relatedCasesDetails ? 'border-red-500' : ''}`}
+                    className={`mt-2 min-h-[100px] w-full resize-none rounded-md ${errors.relatedCasesDetails ? 'border-red-500' : ''}`}
                   />
                   {errors.relatedCasesDetails && (
                     <p className="text-sm text-red-500">{errors.relatedCasesDetails.message}</p>
@@ -406,6 +405,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                         setValue('familyDoctorFax', e.target.value, { shouldValidate: true })
                       }
                       className="w-full"
+                      icon={Printer}
                     />
                     {errors.familyDoctorFax && (
                       <p className="text-sm text-red-500">{errors.familyDoctorFax.message}</p>

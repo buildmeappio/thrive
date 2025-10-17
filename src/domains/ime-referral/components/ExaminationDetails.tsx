@@ -445,7 +445,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                   </div>
                 </div>
 
-                <div className="w-1/3 space-y-2">
+                <div className="w-full space-y-2 md:w-1/3">
                   <Dropdown
                     id="examinationType"
                     label="Case Type"
@@ -471,7 +471,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                     disabled={isSubmitting}
                     {...register('reasonForReferral')}
                     placeholder="Type here"
-                    className={`mt-2 min-h-[120px] w-full resize-none ${
+                    className={`mt-2 min-h-[120px] w-full resize-none rounded-md ${
                       errors.reasonForReferral ? 'border-red-500' : ''
                     }`}
                   />
@@ -551,7 +551,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                             )}
                           </div>
 
-                          <div className="mt-2 space-y-2">
+                          <div className="mt-0 space-y-2">
                             <Label className="text-sm font-normal text-[#000000]">
                               Due Date<span className="text-red-500">*</span>
                             </Label>
@@ -622,7 +622,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                               setValue('examinations', updatedExaminations);
                             }}
                             placeholder="Type here"
-                            className={`mt-2 min-h-[100px] w-full bg-white ${
+                            className={`mt-2 min-h-[100px] w-full rounded-md bg-white ${
                               errors.examinations?.[index]?.instructions ? 'border-red-500' : ''
                             }`}
                           />
@@ -697,7 +697,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                               setValue('examinations', updatedExaminations);
                             }}
                             placeholder="Type here"
-                            className={`mt-2 min-h-[100px] w-full resize-none bg-white ${
+                            className={`mt-2 min-h-[100px] w-full resize-none rounded-md bg-white ${
                               errors.examinations?.[index]?.additionalNotes ? 'border-red-500' : ''
                             }`}
                           />
@@ -709,7 +709,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
               })}
             </div>
 
-            <div className="mb-8 flex flex-row justify-center gap-4 md:mb-0 md:justify-between">
+            <div className="mb-8 flex flex-row justify-between gap-4 px-4 md:mb-0 md:px-0">
               <BackButton
                 onClick={onPrevious}
                 disabled={currentStep === 1}

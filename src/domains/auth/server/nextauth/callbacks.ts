@@ -1,4 +1,5 @@
 import { type NextAuthOptions } from 'next-auth';
+import prisma from '@/lib/prisma';
 
 export const callbacks: NonNullable<NextAuthOptions['callbacks']> = {
   jwt: async ({ token, user }) => {
@@ -8,12 +9,38 @@ export const callbacks: NonNullable<NextAuthOptions['callbacks']> = {
       token.lastName = user.lastName;
       token.role = user.role;
       token.accountId = user.accountId;
-      token.organizationName = user.organizationName;
       token.organizationId = user.organizationId;
+      token.organizationName = user.organizationName;
       token.organizationStatus = user.organizationStatus;
     }
+
+    if (token.accountId) {
+      const organizationManager = await prisma.organizationManager.findFirst({
+        where: {
+          accountId: token.accountId,
+          deletedAt: null,
+        },
+        include: {
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              status: true,
+            },
+          },
+        },
+      });
+
+      if (organizationManager?.organization) {
+        token.organizationId = organizationManager.organization.id;
+        token.organizationName = organizationManager.organization.name;
+        token.organizationStatus = organizationManager.organization.status;
+      }
+    }
+
     return token;
   },
+
   session: async ({ session, token }) => {
     if (session.user) {
       session.user.id = token.id;

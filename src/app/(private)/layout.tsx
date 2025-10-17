@@ -13,7 +13,7 @@ type DashboardLayoutProps = {
 
 // Inner layout component that uses the sidebar context
 const DashboardLayoutInner = ({ children }: DashboardLayoutProps) => {
-  const { isSidebarOpen, closeSidebar } = useSidebar();
+  const { isSidebarOpen, isCollapsed, closeSidebar } = useSidebar();
   const pathname = usePathname();
 
   return (
@@ -30,11 +30,15 @@ const DashboardLayoutInner = ({ children }: DashboardLayoutProps) => {
 
         {/* Mobile Overlay */}
         {isSidebarOpen && (
-          <div className="fixed inset-0 z-40 bg-black/30 md:hidden" onClick={closeSidebar} />
+          <div className="fixed inset-0 z-30 bg-black/30 md:hidden" onClick={closeSidebar} />
         )}
 
-        {/* Main Content Area */}
-        <div className="flex min-w-0 flex-1 flex-col transition-all duration-300 md:ml-[270px]">
+        {/* Main Content Area - with dynamic padding based on sidebar state */}
+        <div
+          className={`flex min-w-0 flex-1 flex-col transition-all duration-300 ${
+            isCollapsed ? 'md:pl-[77px]' : 'md:pl-[270px]'
+          }`}
+        >
           {/* Main Content */}
           <main className="flex-1 overflow-y-auto bg-gray-50 px-6 md:p-8">
             <div className="max-w-full">

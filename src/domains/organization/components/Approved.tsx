@@ -7,7 +7,7 @@ const Approved = () => {
   const router = useRouter();
 
   return (
-    <div className="min-h-[385px] w-full max-w-[725px] rounded-[25px] bg-white px-6 py-6 sm:px-8 lg:px-12 lg:py-8">
+    <div className="min-h-[385px] w-full max-w-[725px] rounded-[25px] bg-white px-6 py-6 sm:px-8 lg:px-14 lg:py-8">
       <h1 className="mb-2 text-xl font-semibold tracking-[-0.01em] text-[#000093] sm:text-2xl lg:text-[30px]">
         Congratulations!
       </h1>

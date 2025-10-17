@@ -123,7 +123,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
           )}
 
           {/* Navigation Buttons */}
-          <div className="mt-24 flex flex-row justify-center gap-4 md:justify-between">
+          <div className="mt-24 flex flex-row justify-between gap-4 px-4 md:px-0">
             <BackButton
               isSubmitting={isSubmitting}
               onClick={onPrevious}

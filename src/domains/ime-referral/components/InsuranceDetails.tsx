@@ -18,6 +18,9 @@ import { useEffect } from 'react';
 import CustomDatePicker from '@/components/CustomDatePicker';
 import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
 import PhoneInput from '@/components/PhoneNumber';
+import { Dropdown } from '@/components/Dropdown';
+import { provinceOptions } from '@/config/ProvinceOptions';
+import { Printer } from 'lucide-react';
 
 const InsuranceDetails: React.FC<IMEReferralProps> = ({
   onNext,
@@ -58,6 +61,8 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
     let streetNumber = '';
     let route = '';
     let city = '';
+    let postalCode = '';
+    let province = '';
 
     components?.forEach((component: any) => {
       const types = component.types;
@@ -71,6 +76,12 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
       if (types.includes('locality')) {
         city = component.long_name;
       }
+      if (types.includes('postal_code')) {
+        postalCode = component.long_name;
+      }
+      if (types.includes('administrative_area_level_1')) {
+        province = component.short_name; // Use short_name for province code (e.g., "ON", "BC")
+      }
     });
 
     // Construct street address
@@ -82,6 +93,12 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
     }
     if (city) {
       setValue('insuranceCity', city, { shouldValidate: true });
+    }
+    if (postalCode) {
+      setValue('insurancePostalCode', postalCode, { shouldValidate: true });
+    }
+    if (province) {
+      setValue('insuranceProvince', province, { shouldValidate: true });
     }
   };
 
@@ -216,8 +233,8 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                   />
                 </div>
 
-                {/* Insurance Street Address, Apt/Unit/Suite, City */}
-                <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
+                {/* Insurance Street Address */}
+                <div className="mb-6 grid w-full max-w-full grid-cols-1">
                   <div className="space-y-2">
                     <Label htmlFor="insuranceStreetAddress">Street Address</Label>
                     <Input
@@ -232,8 +249,11 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                       </p>
                     )}
                   </div>
+                </div>
 
-                  <div className="space-y-2">
+                {/* Apt/Unit/Suite, Postal Code, Province, City */}
+                <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-4">
+                  <div className="space-y-2 md:col-span-1">
                     <Label htmlFor="insuranceAptUnitSuite">Apt / Unit / Suite</Label>
                     <Input
                       disabled={isSubmitting}
@@ -243,6 +263,36 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                     />
                     {errors.insuranceAptUnitSuite && (
                       <p className="text-sm text-red-500">{errors.insuranceAptUnitSuite.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 md:col-span-1">
+                    <Label htmlFor="insurancePostalCode">Postal Code</Label>
+                    <Input
+                      disabled={isSubmitting}
+                      {...register('insurancePostalCode')}
+                      placeholder="A1A 1A1"
+                      className="w-full"
+                    />
+                    {errors.insurancePostalCode && (
+                      <p className="text-sm text-red-500">{errors.insurancePostalCode.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="insuranceProvince">Province / State</Label>
+                    <Dropdown
+                      id="insuranceProvince"
+                      label=""
+                      value={watch('insuranceProvince') ?? ''}
+                      onChange={(val: string) =>
+                        setValue('insuranceProvince', val, { shouldValidate: true })
+                      }
+                      options={provinceOptions}
+                      placeholder="Select"
+                    />
+                    {errors.insuranceProvince && (
+                      <p className="text-sm text-red-500">{errors.insuranceProvince.message}</p>
                     )}
                   </div>
 
@@ -292,6 +342,7 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                         setValue('insuranceFaxNo', e.target.value, { shouldValidate: true })
                       }
                       className={`w-full ${errors.insuranceFaxNo ? 'border-red-500' : ''}`}
+                      icon={Printer}
                     />
                     {errors.insuranceFaxNo && (
                       <p className="text-sm text-red-500">{errors.insuranceFaxNo.message}</p>
@@ -321,7 +372,7 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                     type="checkbox"
                     id="policyHolderSameAsClaimant"
                     {...register('policyHolderSameAsClaimant')}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 [color-scheme:light] focus:ring-blue-500"
                   />
                   <Label htmlFor="policyHolderSameAsClaimant" className="ml-2 text-sm">
                     Policy Holder is same as claimant
@@ -368,7 +419,7 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
             </div>
           </div>
           {/* Buttons */}
-          <div className="mb-8 flex flex-row justify-center gap-4 md:mb-0 md:justify-between">
+          <div className="mb-8 flex flex-row justify-between gap-4 px-4 md:mb-0 md:px-0">
             <BackButton
               onClick={onPrevious}
               disabled={currentStep === 1}

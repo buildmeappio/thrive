@@ -12,7 +12,7 @@ function Input({ className, type, icon: Icon, iconPosition = 'left', ...props }:
     <div className="relative">
       {Icon && iconPosition === 'left' && (
         <Icon
-          className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-[#A4A4A4]"
+          className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#A4A4A4] md:h-5 md:w-5"
           strokeWidth={2}
         />
       )}

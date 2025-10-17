@@ -107,11 +107,13 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ examinationData }) => {
               value={item.value}
               className="border-b border-[#A7A7A7]"
             >
-              <AccordionTrigger className="flex w-full items-center justify-between px-0 py-4 hover:no-underline md:py-6 [&[data-state=open]>svg]:rotate-180">
+              <AccordionTrigger className="flex w-full items-center justify-between px-0 py-4 hover:no-underline md:py-6 [&[data-state=open]>span>svg]:rotate-180">
                 <span className="pr-4 text-left text-xl font-semibold md:text-[27.34px]">
                   {item.title}
                 </span>
-                <ChevronDown className="h-5 w-5 shrink-0 text-[#1E1E1E] transition-transform duration-200 md:h-6 md:w-6" />
+                <span>
+                  <ChevronDown className="h-5 w-5 shrink-0 text-[#1E1E1E] transition-transform duration-200 md:h-6 md:w-6" />
+                </span>
               </AccordionTrigger>
               <AccordionContent className="pb-4 text-gray-600 md:pb-6">
                 {item.content}

@@ -149,7 +149,7 @@ const PasswordForm: React.FC<OrganizationRegStepProps> = ({ onNext, currentStep,
                 </div>
               </div>
 
-              <div className="flex justify-end">
+              <div className="mb-8 flex justify-end">
                 <ContinueButton
                   isSubmitting={isSubmitting}
                   isLastStep={currentStep === totalSteps}

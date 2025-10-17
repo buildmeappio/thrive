@@ -161,6 +161,8 @@ export const InsuranceDetailsSchema = z.object({
 
   // Optional address fields
   insuranceAddressLookup: z.string().optional(),
+  insurancePostalCode: z.string().optional(),
+  insuranceProvince: z.string().optional(),
   insuranceStreetAddress: z.string().optional(),
   insuranceAptUnitSuite: z.string().optional(),
   insuranceCity: z.string().optional(),
@@ -193,6 +195,8 @@ export const InsuranceDetailsInitialValues: InsuranceDetails = {
   insuranceDateOfLoss: '',
   // Optional address fields - can be undefined or empty strings
   insuranceAddressLookup: '',
+  insurancePostalCode: '',
+  insuranceProvince: '',
   insuranceStreetAddress: '',
   insuranceAptUnitSuite: '',
   insuranceCity: '',

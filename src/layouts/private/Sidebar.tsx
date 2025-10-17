@@ -8,6 +8,7 @@ import { Home, LifeBuoy, LogOut, Plus, X, FileText, ChevronLeft, Menu } from 'lu
 import { signOut } from 'next-auth/react';
 import { createRoute, URLS } from '@/constants/routes';
 import { useSession } from 'next-auth/react';
+import { useSidebar } from '@/providers/SideBarProvider';
 
 export const medicalExaminerSidebarRoutes = [
   { icon: Home, label: 'Dashboard', href: '/dashboard', index: 0 },
@@ -24,7 +25,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   const pathname = usePathname();
   const router = useRouter();
   const [selectedBtn, setSelectedBtn] = useState<number | null>(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isCollapsed, toggleCollapse } = useSidebar();
   const { data: session } = useSession();
   const isOrgStatusPending = session?.user?.organizationStatus === 'PENDING';
 
@@ -107,10 +108,6 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
     if (onMobileClose) {
       onMobileClose();
     }
-  };
-
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
   };
 
   return (

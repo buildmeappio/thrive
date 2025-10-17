@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import { AsYouType, parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
 import { Phone } from 'lucide-react';
 import { Input } from '@/components/ui';
+import type { LucideIcon } from 'lucide-react';
 
 interface PhoneInputProps {
   name: string;
@@ -10,10 +11,11 @@ interface PhoneInputProps {
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   disabled?: boolean;
   className?: string;
+  icon?: LucideIcon;
 }
 
 const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ name, value, onChange, onBlur, disabled, className }, ref) => {
+  ({ name, value, onChange, onBlur, disabled, className, icon }, ref) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = e.target.value;
       const digitsOnly = inputValue.replace(/\D/g, '');
@@ -54,7 +56,7 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
       <Input
         ref={ref}
         name={name}
-        icon={Phone}
+        icon={icon || Phone}
         type="tel"
         placeholder="(123) 456-7890"
         value={value}

@@ -56,7 +56,7 @@ const MultiSelectBenefits: React.FC<{
         type="button"
         onClick={buttonClick}
         disabled={disabled || loadingBenefits}
-        className="flex w-full items-center justify-between rounded-md bg-white px-3 py-2 text-left text-sm shadow-none hover:bg-white disabled:opacity-50"
+        className="flex h-[50px] w-full items-center justify-between rounded-md bg-white px-3 py-4 text-left text-sm shadow-none hover:bg-white disabled:opacity-50"
       >
         <span
           className="scrollbar-hide block min-w-0 flex-1 overflow-x-auto overflow-y-hidden font-normal whitespace-nowrap text-[#A4A4A4]"
@@ -90,7 +90,7 @@ const MultiSelectBenefits: React.FC<{
                   type="checkbox"
                   checked={selectedIds.includes(benefit.id)}
                   onChange={() => handleToggle(benefit.id)}
-                  className="m-0 h-4 w-4 flex-shrink-0"
+                  className="m-0 h-4 w-4 flex-shrink-0 [color-scheme:light]"
                 />
                 <span className="text-sm leading-tight">{benefit.benefit}</span>
               </Label>

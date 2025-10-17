@@ -113,7 +113,7 @@ const ExaminationTypeForm: React.FC<CaseTypeProps> = ({
               )}
             </div>
 
-            <div className="mt-20 mb-8 flex flex-row justify-center gap-4 md:mb-0 md:justify-between">
+            <div className="mt-20 mb-8 flex flex-row justify-between gap-4 px-4 md:mb-0 md:px-0">
               <BackButton
                 onClick={onPrevious}
                 disabled={currentStep === 1}

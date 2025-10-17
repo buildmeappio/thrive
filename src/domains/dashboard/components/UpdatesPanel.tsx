@@ -13,7 +13,7 @@ const UpdatesPanel = ({ items }: { items: string[] }) => {
             Recent Updates
           </h3>
         </div>
-        <Button className="h-[30px] w-[84px] rounded-full bg-[#000093] text-[12px] font-medium text-white">
+        <Button className="h-[30px] w-[84px] rounded-full bg-[#000093] text-[12px] font-medium text-white hover:bg-[#000093]">
           View All
         </Button>
       </div>
