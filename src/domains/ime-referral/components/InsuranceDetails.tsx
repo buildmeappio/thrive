@@ -96,12 +96,12 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
-      <h1 className="mb-4 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
+      <h1 className="mb-6 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
         New Case Request
       </h1>
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
       <div
-        className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[60px] md:py-8"
+        className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[55px] md:py-8"
         style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
@@ -114,7 +114,7 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                 </h2>
 
                 {/* Insurance Company Name and Adjuster/Contact */}
-                <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="insuranceCompanyName">
                       Company Name<span className="text-red-500">*</span>
@@ -149,7 +149,7 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                 </div>
 
                 {/* Policy No, Claim No, Date of Loss */}
-                <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="-mb-2 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
                   <div className="space-y-2">
                     <Label htmlFor="insurancePolicyNo">
                       Policy No.<span className="text-red-500">*</span>
@@ -202,7 +202,7 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                 </div>
 
                 {/* Insurance Address Lookup - NOW USING GoogleMapsInput */}
-                <div className="mb-4 w-full max-w-full">
+                <div className="mb-6 w-full max-w-full">
                   <GoogleMapsInput
                     name="insuranceAddressLookup"
                     value={watch('insuranceAddressLookup')}
@@ -217,7 +217,7 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
                 </div>
 
                 {/* Insurance Street Address, Apt/Unit/Suite, City */}
-                <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
                   <div className="space-y-2">
                     <Label htmlFor="insuranceStreetAddress">Street Address</Label>
                     <Input

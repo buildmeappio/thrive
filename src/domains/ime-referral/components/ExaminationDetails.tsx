@@ -426,7 +426,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
-      <h1 className="mb-4 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
+      <h1 className="mb-6 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
         New Case Request
       </h1>
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
@@ -435,10 +435,15 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
           <div className="w-full max-w-full space-y-6">
             <div className="w-full max-w-full px-4 md:px-0">
               {/* Case Type and Reason for Referral */}
-              <div className="mb-8 grid w-full max-w-full grid-cols-1 gap-4 rounded-[20px] bg-white p-4 md:p-0 md:px-[40px] md:py-6">
-                <h2 className="text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
-                  Case Information
-                </h2>
+              <div className="mb-8 grid w-full max-w-full grid-cols-1 gap-4 rounded-[20px] bg-white p-4 md:p-0 md:px-[55px] md:py-6">
+                <div className="flex justify-between">
+                  <h2 className="text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
+                    Case Information
+                  </h2>
+                  <div className="bg-gradient-to-l from-[#01F4C8] to-[#00A8FF] bg-clip-text text-center align-middle text-[14.48px] leading-[160%] font-normal tracking-[-0.02em] text-transparent">
+                    Rewrite with AI
+                  </div>
+                </div>
 
                 <div className="w-1/3 space-y-2">
                   <Dropdown
@@ -479,7 +484,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
               </div>
 
               {/* Note */}
-              <div className="mb-6 px-8">
+              <div className="mb-6 px-[55px]">
                 <div className="flex text-lg font-medium">
                   <p className="text-[#000093]">
                     Note:{' '}
@@ -500,7 +505,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                 return (
                   <div
                     key={examType.id}
-                    className="mb-8 w-full rounded-[30px] border border-[#C1C1C1] bg-[#F2F5F6] p-4 md:p-0 md:px-[40px] md:py-6"
+                    className="mb-8 w-full rounded-[30px] border border-[#C1C1C1] bg-[#F2F5F6] p-4 md:p-0 md:px-[55px] md:py-6"
                   >
                     <Collapsible
                       open={!isCollapsed}
@@ -508,9 +513,9 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                     >
                       {/* Section Header */}
                       <div className="mb-6 flex items-center justify-between">
-                        <h3 className="text-2xl font-medium text-[#000000]">
+                        <h2 className="text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
                           {index + 1}. {examType.label}
-                        </h3>
+                        </h2>
                         <CollapsibleTrigger asChild>
                           <ChevronDown
                             className={`h-6 w-6 cursor-pointer text-[#000000] ${
@@ -520,7 +525,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                         </CollapsibleTrigger>
                       </div>
 
-                      <CollapsibleContent className="space-y-4">
+                      <CollapsibleContent>
                         {/* Basic Fields */}
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                           <div className="space-y-2">
@@ -617,7 +622,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                               setValue('examinations', updatedExaminations);
                             }}
                             placeholder="Type here"
-                            className={`mt-2 min-h-[100px] w-full resize-none bg-white ${
+                            className={`mt-2 min-h-[100px] w-full bg-white ${
                               errors.examinations?.[index]?.instructions ? 'border-red-500' : ''
                             }`}
                           />
@@ -628,7 +633,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                           )}
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="mt-4 space-y-2">
                           <Label className="text-sm leading-relaxed font-normal text-[#000000]">
                             Benefits<span className="text-red-500">*</span>
                           </Label>
@@ -657,7 +662,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                         </div>
 
                         {/* Add-On Services */}
-                        <div className="space-y-6">
+                        <div className="mt-6 space-y-6">
                           {renderToggleSection(
                             'Transportation',
                             'transportation',
@@ -676,7 +681,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 
                           {renderToggleSection('Support Person', 'chaperone', examination, index)}
                         </div>
-                        <div className="mb-6 space-y-2">
+                        <div className="mt-6 mb-6 space-y-2">
                           <Label className="text-base font-semibold text-black">
                             Additional Notes
                           </Label>

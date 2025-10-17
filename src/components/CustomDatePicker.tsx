@@ -186,16 +186,16 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
 
   const renderCalendar = () => {
     return (
-      <div className="bg-opacity-50 w-[270px] rounded-3xl border-[1px] bg-white p-4 shadow-lg backdrop-blur-md">
-        <div className="mb-2 flex w-[70%] items-center justify-between">
+      <div className="bg-opacity-50 w-[250px] rounded-3xl border-[1px] bg-white p-4 shadow-lg backdrop-blur-md">
+        <div className="mb-2 flex w-[100%] items-center justify-between">
           <button onClick={prevMonth} className="rounded p-1 text-gray-600 hover:bg-gray-100">
-            <ChevronRight className="h-[10px] w-[5px] rotate-180" />
+            <ChevronLeft className="h-6 w-6" />
           </button>
           <h3 className="font-poppins text-center text-[13.9px] leading-[16.68px] font-bold tracking-[0.26px] text-[#000000]">
             {monthYearString(currentMonth)}
           </h3>
           <button onClick={nextMonth} className="rounded p-1 text-gray-600 hover:bg-gray-100">
-            <ChevronLeft className="h-[10px] w-[5px]" />
+            <ChevronRight className="h-6 w-6" />
           </button>
         </div>
 

@@ -33,7 +33,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`mt-1 space-y-1`}>
+    <div className={`mt-1 space-y-0`}>
       <Label htmlFor={id} className="text-sm leading-relaxed font-normal text-[#000000]">
         {label}
         {required && <span className="text-red-500">*</span>}
@@ -54,7 +54,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
         </SelectTrigger>
 
         <SelectContent
-          className="scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-500 hover:scrollbar-thumb-gray-500 z-50 max-h-[250px] overflow-y-scroll rounded-md border border-gray-200 bg-white shadow-lg"
+          className="scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-500 hover:scrollbar-thumb-gray-500 z-50 max-h-[250px] overflow-y-scroll rounded-md border-none bg-white shadow-lg"
           position="popper"
         >
           {options.map(option => (

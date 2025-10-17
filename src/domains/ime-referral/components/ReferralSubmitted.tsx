@@ -9,7 +9,10 @@ const ReferralSubmitted: React.FC = () => {
   const router = useRouter();
 
   return (
-    <div className="rounded-4xl bg-[#FFFFFF] p-6 sm:p-12 md:p-20 lg:p-25">
+    <div
+      style={{ minHeight: '550px' }}
+      className="mt-2 rounded-4xl bg-[#FFFFFF] p-6 sm:p-12 md:p-20 lg:p-25"
+    >
       <div className="flex flex-col items-center text-center">
         {/* Success Icon */}
         <div className="mb-4 sm:mb-6">
@@ -42,11 +45,11 @@ const ReferralSubmitted: React.FC = () => {
         </p>
 
         {/* Action Button */}
-        <div className="mt-8 flex w-full justify-center px-2 sm:mt-12">
+        <div className="mt-12 flex w-full justify-center px-2 sm:mt-12">
           <Button
             variant="outline"
             onClick={() => router.push(URLS.DASHBOARD)}
-            className="flex h-[45px] w-[200px] items-center justify-center rounded-full bg-[#000093] text-[14px] whitespace-nowrap text-[#FFFFFF] hover:bg-[#000093] sm:w-auto sm:px-8 md:px-10"
+            className="flex h-[45px] w-[220px] items-center justify-center rounded-full bg-[#000093] text-[14px] whitespace-nowrap text-[#FFFFFF] hover:bg-[#000093] sm:w-auto sm:px-8 md:px-12"
           >
             Go to Dashboard
             <ArrowRight className="h-4 w-6 text-[#FFFFFF]" />

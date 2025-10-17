@@ -64,12 +64,12 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
-      <h1 className="mb-4 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
+      <h1 className="mb-6 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
         New Case Request
       </h1>
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
       <div
-        className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[60px] md:py-8"
+        className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[55px] md:py-8"
         style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
@@ -78,7 +78,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
               <h2 className="mb-6 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
                 Claimant Details
               </h2>
-              <div className="mb-4">
+              <div className="mb-6">
                 <div className="space-y-2 md:col-span-1">
                   <Label htmlFor="claimType">
                     Type of Claim<span className="text-red-500">*</span>
@@ -151,7 +151,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
               </div>
 
               {/* Second Row: Gender, Phone, Email */}
-              <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-5">
+              <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-5">
                 <div className="space-y-2 md:col-span-1">
                   <Label htmlFor="gender">Gender</Label>
                   <Dropdown
@@ -198,7 +198,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
               </div>
 
               {/* Address Lookup - NOW WITH GOOGLE MAPS */}
-              <div className="mb-4 w-full max-w-full space-y-2">
+              <div className="mb-6 w-full max-w-full space-y-2">
                 <Controller
                   name="addressLookup"
                   control={control}
@@ -268,7 +268,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
               </div>
 
               {/* Third Row: Street Address, Apt/Unit/Suite, City */}
-              <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-5">
+              <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-5">
                 <div className="space-y-2 md:col-span-3">
                   <Label htmlFor="street">Street Address</Label>
                   <Input
@@ -349,7 +349,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                   )}
                 </div>
                 {/* Family Doctor Address and Email */}
-                <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="familyDoctorName">Family Doctor</Label>
                     <Input

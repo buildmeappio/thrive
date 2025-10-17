@@ -71,18 +71,18 @@ const ExaminationTypeForm: React.FC<CaseTypeProps> = ({
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
-      <h1 className="mb-4 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
+      <h1 className="mb-6 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
         New Case Request
       </h1>
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
       <div
-        className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[60px] md:py-8"
+        className="min-h-[500px] w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[55px] md:py-8"
         style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
           <div className="w-full max-w-full space-y-6">
             <div className="w-full max-w-full px-4 md:px-0">
-              <h2 className="mb-6 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
+              <h2 className="mb-12 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
                 Type of Examination(s) Required
               </h2>
             </div>
@@ -113,7 +113,7 @@ const ExaminationTypeForm: React.FC<CaseTypeProps> = ({
               )}
             </div>
 
-            <div className="mt-12 mb-8 flex flex-row justify-center gap-4 md:mb-0 md:justify-between">
+            <div className="mt-20 mb-8 flex flex-row justify-center gap-4 md:mb-0 md:justify-between">
               <BackButton
                 onClick={onPrevious}
                 disabled={currentStep === 1}

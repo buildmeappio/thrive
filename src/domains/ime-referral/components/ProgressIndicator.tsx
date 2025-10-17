@@ -27,7 +27,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   const progressPercent = (currentStep / totalSteps) * 100;
 
   return (
-    <div className="mx-auto mb-10 w-full">
+    <div className="mx-auto mb-16 w-full">
       {/* Progress bar */}
       <div className="relative mb-4 h-2 w-full rounded-full bg-gray-200">
         <div

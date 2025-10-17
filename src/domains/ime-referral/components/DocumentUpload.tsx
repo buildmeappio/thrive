@@ -61,13 +61,16 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
 
   return (
     <>
-      <h1 className="mb-4 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
+      <h1 className="mb-6 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
         New Case Request
       </h1>
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
-      <div className="rounded-4xl bg-white p-4 sm:p-6 md:p-10">
+      <div
+        style={{ minHeight: '530px' }}
+        className="rounded-4xl bg-white p-4 sm:p-6 md:px-[55px] md:py-8"
+      >
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <h2 className="mb-6 text-[36.02px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000] md:mb-8">
+          <h2 className="mb-6 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
             Document Upload
           </h2>
 
@@ -120,7 +123,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
           )}
 
           {/* Navigation Buttons */}
-          <div className="flex flex-row justify-center gap-4 md:justify-between">
+          <div className="mt-24 flex flex-row justify-center gap-4 md:justify-between">
             <BackButton
               isSubmitting={isSubmitting}
               onClick={onPrevious}

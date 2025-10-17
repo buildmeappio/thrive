@@ -48,7 +48,7 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
 
   return (
     <header className="px-6">
-      <div className="relative flex w-full flex-col gap-4 px-0 py-1">
+      <div className="relative flex w-full flex-col gap-4 px-0 py-2">
         {/* Mobile Header Row */}
         <div className="flex items-center justify-between gap-2 md:hidden">
           {/* Mobile Menu Button */}

@@ -96,15 +96,15 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
-      <h1 className="mb-4 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
+      <h1 className="mb-6 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
         New Case Request
       </h1>
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
 
-      <div className="w-full max-w-full rounded-4xl bg-white p-4 sm:p-6 md:p-10">
+      <div className="w-full max-w-full rounded-4xl bg-white p-4 sm:p-6 md:px-[55px] md:py-8">
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-full">
           <header className="mb-6 w-full max-w-full md:mb-8">
-            <h2 className="text-2xl font-semibold tracking-[-0.02em] text-[#000000] sm:text-3xl md:text-2xl md:leading-[36.02px]">
+            <h2 className="mb-6 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
               Consent Confirmation
             </h2>
           </header>

@@ -102,12 +102,12 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
-      <h1 className="mb-4 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
+      <h1 className="mb-6 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
         New Case Request
       </h1>
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
       <div
-        className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[60px] md:py-8"
+        className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[55px] md:py-8"
         style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
@@ -120,7 +120,7 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                 </h2>
 
                 {/* Company Name and Contact Person */}
-                <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="legalCompanyName">Company Name</Label>
                     <Input
@@ -149,7 +149,7 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                 </div>
 
                 {/* Phone and Fax */}
-                <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="legalPhone">Phone</Label>
                     <PhoneInput
@@ -184,7 +184,7 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                 </div>
 
                 {/* Legal Address Lookup - NOW USING GoogleMapsInput */}
-                <div className="mb-4 w-full max-w-full">
+                <div className="mb-6 w-full max-w-full">
                   <GoogleMapsInput
                     name="legalAddressLookup"
                     value={watch('legalAddressLookup')}
@@ -199,7 +199,7 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
                 </div>
 
                 {/* Legal Street Address, Apt/Unit/Suite, Postal Code */}
-                <div className="mb-4 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="mb-6 grid w-full max-w-full grid-cols-1 gap-4 md:grid-cols-3">
                   <div className="space-y-2">
                     <Label htmlFor="legalStreetAddress">Street Address</Label>
                     <Input

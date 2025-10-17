@@ -26,7 +26,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   const [selectedBtn, setSelectedBtn] = useState<number | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { data: session } = useSession();
-  const isOrgStatusPending = session?.user?.organizationStatus === 'pending';
+  const isOrgStatusPending = session?.user?.organizationStatus === 'PENDING';
 
   const isValidSidebarIndex = (index: string | null) => {
     return index && !isNaN(Number(index)) && Number(index) >= 0;
@@ -101,7 +101,8 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   };
 
   const handleLinkClick = (item: (typeof medicalExaminerSidebarRoutes)[0]) => {
-    if (isOrgStatusPending) return;
+    const isDashboard = item.href === '/dashboard';
+    if (isOrgStatusPending && !isDashboard) return;
     setSelectedSidebarIndex(item.index);
     if (onMobileClose) {
       onMobileClose();
@@ -181,6 +182,8 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
               const itemIsActive = isActive(item.href);
               const isSelected = selectedBtn === item.index;
               const IconComponent = item.icon;
+              const isDashboard = item.href === '/dashboard';
+              const isItemDisabled = isOrgStatusPending && !isDashboard;
 
               return (
                 <Link
@@ -193,11 +196,9 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
                     isSelected || itemIsActive
                       ? 'border border-[#DBDBFF] bg-[#F1F1FF] text-[#000093] shadow-sm'
                       : 'border border-transparent bg-[#F3F3F3] text-[#9B9B9B] hover:border-[#DBDBFF] hover:bg-[#F1F1FF] hover:text-[#000093]'
-                  } ${
-                    isOrgStatusPending ? 'cursor-not-allowed opacity-50' : 'active:scale-95'
-                  } mb-2`}
+                  } ${isItemDisabled ? 'cursor-not-allowed opacity-50' : 'active:scale-95'} mb-2`}
                   title={item.label}
-                  style={isOrgStatusPending ? { pointerEvents: 'none' } : undefined}
+                  style={isItemDisabled ? { pointerEvents: 'none' } : undefined}
                 >
                   <div
                     className={`flex w-full items-center ${isCollapsed ? 'justify-center' : 'justify-start space-x-2'}`}
