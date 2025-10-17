@@ -1,5 +1,5 @@
 import { signOtpToken, signPasswordToken } from "@/lib/jwt";
-import emailService from "@/services/email.service";
+import emailService from "@/server/services/email.service";
 import ErrorMessages from "@/constants/ErrorMessages";
 import jwt from "jsonwebtoken";
 import { ENV } from "@/constants/variables";

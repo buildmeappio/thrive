@@ -14,6 +14,7 @@ import {
 } from "@/domains/dashboard/constants";
 import { CircleCheck } from "lucide-react";
 import { updateSpecialtyPreferencesAction } from "../../server/actions";
+import { toast } from "sonner";
 
 interface SpecialtyPreferencesFormProps {
   examinerProfileId: string | null;
@@ -50,7 +51,7 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
 
   const onSubmit = async (values: SpecialtyPreferencesInput) => {
     if (!examinerProfileId) {
-      console.error("Examiner profile ID not found");
+      toast.error("Examiner profile ID not found");
       return;
     }
 
@@ -63,12 +64,15 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
       });
 
       if (result.success) {
+        toast.success("Specialty preferences updated successfully");
         onComplete();
       } else {
-        console.error("Failed to update preferences:", result.message);
+        toast.error(result.message || "Failed to update preferences");
       }
     } catch (error) {
-      console.error("Error updating preferences:", error);
+      toast.error(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
     } finally {
       setLoading(false);
     }

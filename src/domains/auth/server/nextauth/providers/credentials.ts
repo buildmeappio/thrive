@@ -1,5 +1,5 @@
 import CredentialsProvider from "next-auth/providers/credentials";
-import login from "../../handlers/login";
+import login from "@/domains/auth/server/handlers/login";
 import ErrorMessages from "@/constants/ErrorMessages";
 
 export const credentials = CredentialsProvider({
@@ -11,15 +11,16 @@ export const credentials = CredentialsProvider({
   async authorize(creds) {
     if (!creds?.email || !creds?.password) return null;
     const u = await login(creds.email, creds.password);
-    console.log(u);
     if (!u) throw new Error(ErrorMessages.INVALID_CREDENTIALS);
+
     return {
       id: u.id,
       email: u.email,
       name: `${u.firstName} ${u.lastName}`,
-      image: null,
+      image: u.profilePhotoId,
       roleName: u.roleName,
       accountId: u.accountId,
+      activationStep: u.activationStep,
     };
   },
 });

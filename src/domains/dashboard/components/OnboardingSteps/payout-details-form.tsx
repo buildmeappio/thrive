@@ -15,6 +15,7 @@ import {
   InteracTab,
   PayoutSection,
 } from "./PayoutTabs";
+import { toast } from "sonner";
 
 interface PayoutDetailsFormProps {
   examinerProfileId: string | null;
@@ -59,7 +60,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
 
   const onSubmit = async (values: PayoutDetailsInput) => {
     if (!examinerProfileId) {
-      console.error("Examiner profile ID not found");
+      toast.error("Examiner profile ID not found");
       return;
     }
 
@@ -72,12 +73,15 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       });
 
       if (result.success) {
+        toast.success("Payout details saved successfully");
         onComplete();
       } else {
-        console.error("Failed to update payout details:", result.message);
+        toast.error(result.message || "Failed to update payout details");
       }
     } catch (error) {
-      console.error("Error updating payout details:", error);
+      toast.error(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
     } finally {
       setLoading(false);
     }

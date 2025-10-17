@@ -10,6 +10,7 @@ import {
 } from "../../schemas/onboardingSteps.schema";
 import { availabilityInitialValues } from "../../constants";
 import { WeeklyHours, OverrideHours, BookingOptions } from "./AvailabilityTabs";
+import { toast } from "sonner";
 
 interface AvailabilityPreferencesFormProps {
   examinerProfileId: string | null;
@@ -34,7 +35,7 @@ const AvailabilityPreferencesForm: React.FC<
 
   const onSubmit = async (values: AvailabilityPreferencesInput) => {
     if (!examinerProfileId) {
-      console.error("Examiner profile ID not found");
+      toast.error("Examiner profile ID not found");
       return;
     }
 
@@ -50,12 +51,15 @@ const AvailabilityPreferencesForm: React.FC<
       });
 
       if (result.success) {
+        toast.success("Availability preferences saved successfully");
         onComplete();
       } else {
-        console.error("Failed to save availability:", result.message);
+        toast.error(result.message || "Failed to save availability");
       }
     } catch (error) {
-      console.error("Error updating availability preferences:", error);
+      toast.error(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
     } finally {
       setLoading(false);
     }

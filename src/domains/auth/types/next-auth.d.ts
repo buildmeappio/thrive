@@ -9,6 +9,7 @@ declare module "next-auth" {
       image?: string | null;
       roleName: RoleType;
       accountId: string;
+      activationStep?: string | null;
     } | null;
   }
   interface User {
@@ -18,6 +19,7 @@ declare module "next-auth" {
     image?: string | null;
     roleName: RoleType;
     accountId: string;
+    activationStep?: string | null;
   }
 }
 
@@ -29,5 +31,6 @@ declare module "next-auth/jwt" {
     image?: string | null;
     roleName: RoleType;
     accountId: string;
+    activationStep?: string | null;
   }
 }

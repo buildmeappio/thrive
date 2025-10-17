@@ -24,6 +24,7 @@ import {
   ProfileInfoInput,
 } from "../../schemas/onboardingSteps.schema";
 import { uploadFileToS3 } from "@/lib/s3";
+import { toast } from "sonner";
 
 interface ProfileInfoFormProps {
   examinerProfileId: string | null;
@@ -64,7 +65,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
   const onSubmit = async (values: ProfileInfoInput) => {
     if (!examinerProfileId) {
-      console.error("Examiner profile ID not found");
+      toast.error("Examiner profile ID not found");
       return;
     }
 
@@ -74,14 +75,10 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
       // Upload profile photo if a new one was selected
       if (profilePhoto) {
-        console.log("📸 Uploading profile photo to S3...");
-
         const uploadResult = await uploadFileToS3(profilePhoto);
 
         if (uploadResult.success) {
           uploadedPhotoId = uploadResult.document.id;
-          console.log("✅ Profile photo uploaded successfully");
-          console.log("📋 Document ID:", uploadedPhotoId);
 
           // Update preview URL (construct CDN URL)
           const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL;
@@ -90,11 +87,9 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
             setProfilePhotoUrl(uploadedUrl);
           }
         } else {
-          console.error(
-            "❌ Failed to upload profile photo:",
-            uploadResult.error
-          );
-          throw new Error(uploadResult.error);
+          toast.error(uploadResult.error || "Failed to upload profile photo");
+          setLoading(false);
+          return;
         }
       }
 
@@ -106,12 +101,15 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       });
 
       if (result.success) {
+        toast.success("Profile updated successfully");
         onComplete();
       } else {
-        console.error("Failed to update profile:", result.message);
+        toast.error(result.message || "Failed to update profile");
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
+      toast.error(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
     } finally {
       setLoading(false);
     }

@@ -6,10 +6,11 @@ export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
       const u = user;
       token.id = u.id;
       token.email = u.email;
-      token.firstName = u.name;
+      token.name = u.name;
       token.image = u.image;
       token.roleName = u.roleName;
       token.accountId = u.accountId;
+      token.activationStep = u.activationStep;
     }
     return token;
   },
@@ -22,6 +23,7 @@ export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
       image: token.image ?? null,
       roleName: token.roleName,
       accountId: token.accountId,
+      activationStep: token.activationStep,
     };
     return session;
   },
