@@ -325,7 +325,7 @@ export const createCase = async (formData: IMEFormData) => {
 
 const getCaseTypes = async () => {
   try {
-    const caseTypes = await prisma.caseType.findMany({
+    const caseTypes = await prisma.examinationType.findMany({
       where: {
         deletedAt: null,
       },
@@ -570,7 +570,9 @@ const getCaseList = async (userId?: string, status?: string, take?: number) => {
             organization: {
               manager: {
                 some: {
-                  accountId: userId,
+                  account: {
+                    userId: userId, // Changed from accountId to account.userId
+                  },
                 },
               },
             },
@@ -592,7 +594,7 @@ const getCaseList = async (userId?: string, status?: string, take?: number) => {
             organization: {
               include: {
                 manager: {
-                  where: userId ? { accountId: userId } : undefined,
+                  where: userId ? { account: { userId: userId } } : undefined, // Also updated here
                   include: {
                     account: {
                       include: {

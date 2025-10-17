@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import type { FieldError, UseFormSetValue, UseFormTrigger } from 'react-hook-form';
@@ -10,6 +10,19 @@ declare global {
   }
 }
 
+interface ParsedAddress {
+  formattedAddress: string;
+  streetAddress: string;
+  aptUnitSuite?: string;
+  city: string;
+  postalCode: string;
+  province: string;
+  latitude?: number;
+  longitude?: number;
+  components: any[];
+  raw: any;
+}
+
 interface GoogleMapsInputProps {
   value?: string;
   onChange?: (value: string) => void;
@@ -19,7 +32,7 @@ interface GoogleMapsInputProps {
   required?: boolean;
   className?: string;
   error?: FieldError | string;
-  onPlaceSelect?: (placeData: any) => void;
+  onPlaceSelect?: (placeData: ParsedAddress) => void;
   from?: string;
   setValue?: UseFormSetValue<any>;
   trigger?: UseFormTrigger<any>;
@@ -41,6 +54,15 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
   const autoCompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { isLoaded } = useGoogleMaps();
+
+  const [localValue, setLocalValue] = useState(value || '');
+  const isSelectingRef = useRef(false);
+
+  useEffect(() => {
+    if (!isSelectingRef.current && value !== localValue) {
+      setLocalValue(value || '');
+    }
+  }, [value]);
 
   useEffect(() => {
     if (!isLoaded || !inputRef.current) return;
@@ -71,7 +93,6 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
     } catch (error) {
       console.error('Error initializing Google Maps Autocomplete:', error);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded]);
 
   const addDropdownStyles = () => {
@@ -108,7 +129,6 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
         color: #000000; 
       }
 
-      
       .pac-item:last-child {
         border-bottom: none;
       }
@@ -116,7 +136,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
       .pac-item-query {
         font-size: 14px;
         font-weight: 500;
-        color: ##000000;
+        color: #000000;
       }
       
       .pac-matched {
@@ -159,33 +179,83 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
     }
   };
 
+  const parseAddressComponents = (addressComponents: any): ParsedAddress => {
+    let streetNumber = '';
+    let route = '';
+    let city = '';
+    let postalCode = '';
+    let province = '';
+
+    addressComponents?.forEach((component: any) => {
+      const types = component.types;
+
+      if (types.includes('street_number')) {
+        streetNumber = component.long_name;
+      }
+      if (types.includes('route')) {
+        route = component.long_name;
+      }
+      if (types.includes('locality')) {
+        city = component.long_name;
+      }
+      if (types.includes('postal_code')) {
+        postalCode = component.long_name;
+      }
+      if (types.includes('administrative_area_level_1')) {
+        province = component.short_name;
+      }
+    });
+
+    const streetAddress = `${streetNumber} ${route}`.trim();
+
+    return {
+      formattedAddress: '',
+      streetAddress,
+      city,
+      postalCode,
+      province,
+      components: addressComponents,
+      raw: null,
+    };
+  };
+
   const handlePlaceSelect = () => {
     if (!autoCompleteRef.current) return;
 
     try {
+      isSelectingRef.current = true;
       const place = autoCompleteRef.current.getPlace();
 
       if (!place.geometry) {
+        isSelectingRef.current = false;
         return;
       }
 
-      const placeData = {
-        formattedAddress: place.formatted_address,
+      const formattedAddress = place.formatted_address || '';
+
+      // Parse address components using the new function
+      const parsedAddress = parseAddressComponents(place.address_components);
+
+      const placeData: ParsedAddress = {
+        ...parsedAddress,
+        formattedAddress,
         latitude: place.geometry.location?.lat(),
         longitude: place.geometry.location?.lng(),
-        components: place.address_components,
         raw: place,
       };
 
+      // Update local state immediately
+      setLocalValue(formattedAddress);
+
       // Update field value using React Hook Form's setValue
       if (setValue) {
-        setValue(name, place.formatted_address, { shouldValidate: true });
+        setValue(name, formattedAddress, { shouldValidate: true });
 
         // Optionally set latitude/longitude if they exist in form
         setValue('latitude', placeData.latitude);
         setValue('longitude', placeData.longitude);
       } else if (onChange) {
-        onChange(place.formatted_address || '');
+        onChange(formattedAddress);
       }
 
       // Trigger validation after setting value
@@ -196,13 +266,21 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
       if (onPlaceSelect) {
         onPlaceSelect(placeData);
       }
+
+      // Reset the flag after a short delay to allow state updates to complete
+      setTimeout(() => {
+        isSelectingRef.current = false;
+      }, 100);
     } catch (error) {
       console.error('Error handling place selection:', error);
+      isSelectingRef.current = false;
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
+    setLocalValue(newValue);
+
     if (setValue) {
       setValue(name, newValue, { shouldValidate: false });
     } else if (onChange) {
@@ -225,7 +303,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
         <input
           ref={inputRef}
           type="text"
-          value={value || ''}
+          value={localValue}
           onChange={handleChange}
           placeholder={placeholder}
           className={cn(

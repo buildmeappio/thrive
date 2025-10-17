@@ -9,6 +9,7 @@ export const callbacks: NonNullable<NextAuthOptions['callbacks']> = {
       token.role = user.role;
       token.accountId = user.accountId;
       token.organizationName = user.organizationName;
+      token.organizationId = user.organizationId;
       token.organizationStatus = user.organizationStatus;
     }
     return token;
@@ -20,6 +21,7 @@ export const callbacks: NonNullable<NextAuthOptions['callbacks']> = {
       session.user.lastName = token.lastName;
       session.user.role = token.role;
       session.user.accountId = token.accountId;
+      session.user.organizationId = token.organizationId;
       session.user.organizationName = token.organizationName;
       session.user.organizationStatus = token.organizationStatus;
     }

@@ -16,10 +16,12 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
   ({ name, value, onChange, onBlur, disabled, className }, ref) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = e.target.value;
-
       const digitsOnly = inputValue.replace(/\D/g, '');
 
-      if (digitsOnly.length > 10) {
+      // Allow 11 digits only if it starts with "1"
+      const maxLength = digitsOnly.startsWith('1') ? 11 : 10;
+
+      if (digitsOnly.length > maxLength) {
         return;
       }
 
@@ -70,29 +72,41 @@ PhoneInput.displayName = 'PhoneInput';
 
 export default PhoneInput;
 
+// ✅ Validation allows 10 or 11 digits (11 only if starts with 1)
 export const validateCanadianPhoneNumber = (value: string | undefined): boolean => {
   if (!value) return false;
 
   try {
     const digitsOnly = value.replace(/\D/g, '');
+    if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
+      return isValidPhoneNumber(`+${digitsOnly}`, 'CA');
+    }
 
-    if (digitsOnly.length !== 10) return false;
+    if (digitsOnly.length === 10) {
+      return isValidPhoneNumber(`+1${digitsOnly}`, 'CA');
+    }
 
-    const phoneWithCountryCode = `+1${digitsOnly}`;
-
-    return isValidPhoneNumber(phoneWithCountryCode, 'CA');
+    return false;
   } catch {
     return false;
   }
 };
 
+// ✅ Convert to E.164 (handles both 10- and 11-digit inputs)
 export const getE164PhoneNumber = (value: string): string | null => {
   try {
     const digitsOnly = value.replace(/\D/g, '');
+
+    if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
+      const phoneNumber = parsePhoneNumber(`+${digitsOnly}`, 'CA');
+      return phoneNumber?.format('E.164') || null;
+    }
+
     if (digitsOnly.length === 10) {
       const phoneNumber = parsePhoneNumber(`+1${digitsOnly}`, 'CA');
       return phoneNumber?.format('E.164') || null;
     }
+
     return null;
   } catch {
     return null;

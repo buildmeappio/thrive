@@ -7,6 +7,7 @@ declare module 'next-auth' {
       lastName: string | null;
       role: string;
       accountId: string;
+      organizationId: string | null;
       organizationName: string | null;
       organizationStatus: OrganizationStatus | null;
     } | null;
@@ -18,6 +19,7 @@ declare module 'next-auth' {
     lastName: string | null;
     role: string;
     accountId: string;
+    organizationId: string | null;
     organizationName: string | null;
     organizationStatus: OrganizationStatus | null;
   }
@@ -31,6 +33,7 @@ declare module 'next-auth/jwt' {
     lastName: string | null;
     role: string;
     accountId: string;
+    organizationId: string | null;
     organizationName: string | null;
     organizationStatus: OrganizationStatus | null;
   }

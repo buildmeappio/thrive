@@ -96,6 +96,9 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
+      <h1 className="mb-4 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
+        New Case Request
+      </h1>
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
 
       <div className="w-full max-w-full rounded-4xl bg-white p-4 sm:p-6 md:p-10">

@@ -33,6 +33,7 @@ import CustomDatePicker from '@/components/CustomDatePicker';
 import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
 import { getExaminationBenefits } from '../actions';
 import MultiSelectBenefits from '@/components/MultiSelectDropDown';
+import log from '@/utils/log';
 
 interface ExaminationProps extends IMEReferralProps {
   examinationTypes: DropdownOption[];
@@ -54,7 +55,6 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
   >({});
   const [loadingBenefits, setLoadingBenefits] = useState(false);
 
-  // Get selected exam types from step4
   const selectedExamTypes: ExaminationType[] = useMemo(
     () => data.step4?.caseTypes || [],
     [data.step4?.caseTypes]
@@ -80,7 +80,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 
         setBenefitsByType(benefitsMap);
       } catch (error) {
-        console.error('Error fetching benefits:', error);
+        log.error('Error fetching benefits:', error);
       } finally {
         setLoadingBenefits(false);
       }
@@ -205,59 +205,39 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
     [watchedValues.examinations, setValue]
   );
 
-  // Handle Google Maps place selection for transportation
   const handleTransportationPlaceSelect = useCallback(
     (examinationIndex: number, placeData: any) => {
-      const components = placeData.components;
+      const currentExaminations = watchedValues.examinations || [];
+      const examination = currentExaminations[examinationIndex];
 
-      let streetNumber = '';
-      let route = '';
-      let city = '';
-      let postalCode = '';
-      let province = '';
+      if (!examination) return;
 
-      components?.forEach((component: any) => {
-        const types = component.types;
+      const transportationService = getServiceByType(examination.services, 'transportation');
 
-        if (types.includes('street_number')) {
-          streetNumber = component.long_name;
-        }
-        if (types.includes('route')) {
-          route = component.long_name;
-        }
-        if (types.includes('locality')) {
-          city = component.long_name;
-        }
-        if (types.includes('postal_code')) {
-          postalCode = component.long_name;
-        }
-        if (types.includes('administrative_area_level_1')) {
-          province = component.short_name;
-        }
+      if (!transportationService) return;
+
+      // Update all transportation fields at once with parsed data from GoogleMapsInput
+      const updatedServices = updateServiceInArray(examination.services, 'transportation', {
+        enabled: transportationService.enabled,
+        details: {
+          ...transportationService.details,
+          pickupAddress: placeData.formattedAddress || '',
+          streetAddress: placeData.streetAddress || '',
+          city: placeData.city || '',
+          postalCode: placeData.postalCode || '',
+          province: placeData.province || '',
+        },
       });
 
-      const streetAddress = `${streetNumber} ${route}`.trim();
+      const updatedExaminations = [...currentExaminations];
+      updatedExaminations[examinationIndex] = {
+        ...examination,
+        services: updatedServices,
+      };
 
-      // Update all transportation fields
-      if (streetAddress) {
-        handleServiceDetailUpdate(
-          examinationIndex,
-          'transportation',
-          'streetAddress',
-          streetAddress
-        );
-      }
-      if (city) {
-        handleServiceDetailUpdate(examinationIndex, 'transportation', 'city', city);
-      }
-      if (postalCode) {
-        handleServiceDetailUpdate(examinationIndex, 'transportation', 'postalCode', postalCode);
-      }
-      if (province) {
-        handleServiceDetailUpdate(examinationIndex, 'transportation', 'province', province);
-      }
+      setValue('examinations', updatedExaminations, { shouldValidate: true });
     },
-    [handleServiceDetailUpdate]
+    [watchedValues.examinations, setValue]
   );
 
   // Toggle section collapse state
@@ -446,17 +426,17 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
+      <h1 className="mb-4 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
+        New Case Request
+      </h1>
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
-      <div
-        className="w-full max-w-full py-4 md:rounded-[30px]"
-        style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
-      >
+      <div className="w-full max-w-full md:rounded-[30px]">
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
           <div className="w-full max-w-full space-y-6">
             <div className="w-full max-w-full px-4 md:px-0">
               {/* Case Type and Reason for Referral */}
-              <div className="mb-8 grid w-full max-w-full grid-cols-1 gap-4 rounded-[20px] bg-white md:px-[40px] md:py-8">
-                <h2 className="mb-2 text-[23px] leading-[36.02px] font-semibold tracking-[-0.02em] text-[#000000] md:text-2xl">
+              <div className="mb-8 grid w-full max-w-full grid-cols-1 gap-4 rounded-[20px] bg-white p-4 md:p-0 md:px-[40px] md:py-6">
+                <h2 className="text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
                   Case Information
                 </h2>
 
@@ -520,7 +500,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                 return (
                   <div
                     key={examType.id}
-                    className="mb-8 w-full rounded-[30px] border border-[#C1C1C1] bg-[#F2F5F6] md:px-[40px] md:py-6"
+                    className="mb-8 w-full rounded-[30px] border border-[#C1C1C1] bg-[#F2F5F6] p-4 md:p-0 md:px-[40px] md:py-6"
                   >
                     <Collapsible
                       open={!isCollapsed}

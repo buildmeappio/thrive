@@ -56,9 +56,12 @@ const MultiSelectBenefits: React.FC<{
         type="button"
         onClick={buttonClick}
         disabled={disabled || loadingBenefits}
-        className="flex w-full max-w-full items-center justify-between rounded-md bg-white px-3 py-2 text-left text-sm shadow-none hover:bg-white disabled:opacity-50"
+        className="flex w-full items-center justify-between rounded-md bg-white px-3 py-2 text-left text-sm shadow-none hover:bg-white disabled:opacity-50"
       >
-        <span className="block min-w-0 flex-shrink overflow-hidden font-normal text-ellipsis whitespace-nowrap text-[#A4A4A4]">
+        <span
+          className="scrollbar-hide block min-w-0 flex-1 overflow-x-auto overflow-y-hidden font-normal whitespace-nowrap text-[#A4A4A4]"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
           {getDisplayText()}
         </span>
         {loadingBenefits === true ? (
@@ -98,4 +101,5 @@ const MultiSelectBenefits: React.FC<{
     </div>
   );
 };
+
 export default MultiSelectBenefits;

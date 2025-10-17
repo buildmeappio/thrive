@@ -23,6 +23,7 @@ export const credentials = CredentialsProvider({
       include: {
         organization: {
           select: {
+            id: true,
             name: true,
             status: true,
           },
@@ -32,6 +33,7 @@ export const credentials = CredentialsProvider({
 
     return {
       ...user,
+      organizationId: organizationManager?.organization?.id || null,
       organizationName: organizationManager?.organization?.name || null,
       organizationStatus: organizationManager?.organization?.status || null,
     };

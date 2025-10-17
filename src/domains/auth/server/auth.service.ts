@@ -236,7 +236,7 @@ const getOrganization = async (userId: string) => {
 
 const getExaminationTypes = async () => {
   try {
-    const examinationTypes = await prisma.examinationType.findMany({
+    const examinationTypes = await prisma.caseType.findMany({
       where: {
         deletedAt: null,
       },
