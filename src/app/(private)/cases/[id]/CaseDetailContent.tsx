@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { formatDate } from "@/utils/date";
 import FieldRow from "@/components/FieldRow";
 

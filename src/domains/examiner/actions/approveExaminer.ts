@@ -6,8 +6,7 @@ import examinerService from "../server/examiner.service";
 import { sendMail } from "@/lib/email";
 import { signAccountToken } from "@/lib/jwt";
 import { Roles } from "@/domains/auth/constants/roles";
-import fs from "fs";
-import path from "path";
+import { EXAMINER_APPROVED_SUBJECT, generateExaminerApprovedEmail } from "@/emails/examiner-approved";
 
 const approveExaminer = async (examinerId: string) => {
   const user = await getCurrentUser();
@@ -49,31 +48,19 @@ async function sendApprovalEmailToExaminer(examiner: any) {
 
   const createAccountLink = `${process.env.NEXT_PUBLIC_APP_URL}/examiner/create-account?token=${token}`;
 
-  // Read the HTML template
-  const templatePath = path.join(process.cwd(), "src/lib/email-templates/examiner-approved.html");
-  let htmlTemplate = fs.readFileSync(templatePath, "utf-8");
-
-  // Replace placeholders with actual data
-  htmlTemplate = htmlTemplate
-    .replace(/\{\{firstName\}\}/g, escapeHtml(firstName))
-    .replace(/\{\{lastName\}\}/g, escapeHtml(lastName))
-    .replace(/\{\{createAccountLink\}\}/g, createAccountLink);
+  const htmlTemplate = generateExaminerApprovedEmail({
+    firstName,
+    lastName,
+    createAccountLink,
+  });
 
   await sendMail({
     to: userEmail,
-    subject: "Your Thrive Medical Examiner Profile Has Been Approved",
+    subject: EXAMINER_APPROVED_SUBJECT,
     html: htmlTemplate,
   });
 }
 
-function escapeHtml(input: string) {
-  return String(input)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
 
 export default approveExaminer;
 

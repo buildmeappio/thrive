@@ -1,6 +1,6 @@
-import ExaminerTable from "@/domains/examiner/components/ExaminerTable";
-import { listAllExaminers } from "@/domains/examiner/actions";
-import { DashboardShell } from "@/layouts/dashboard";
+import ExaminerPageContent from "./ExaminerPageContent";
+import { listAllExaminers, listExaminerSpecialties, listExaminerStatuses } from "@/domains/examiner/actions";
+import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -11,29 +11,36 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const Page = async () => {
-  const examiners = await listAllExaminers();
+  const [examiners, specialties, statuses] = await Promise.all([
+    listAllExaminers(),
+    listExaminerSpecialties(),
+    listExaminerStatuses(),
+  ]);
 
-  return (
-    <DashboardShell
-      title={
-        <div className="flex flex-col items-start gap-2">
-          <h1 className="text-[36px] font-semibold text-black font-poppins">
-            New{" "}
-            <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
-              Medical Examiner
-            </span>
-          </h1>
-          <p className="text-[#676767] font-poppins font-normal text-[18px] leading-none">
-              View all new medical examiner, manage requests and track statuses.
-          </p>
-        </div>
-      }
-    >
-      <div className="bg-white shadow-sm rounded-[30px] px-6 py-8">
-        <ExaminerTable data={examiners} />
-      </div>
-    </DashboardShell>
-  );
+  const data: ExaminerData[] = examiners.map((examiner) => ({
+    id: examiner.id,
+    name: examiner.name,
+    specialties: examiner.specialties,
+    phone: examiner.phone,
+    email: examiner.email,
+    province: examiner.province,
+    mailingAddress: examiner.mailingAddress,
+    licenseNumber: examiner.licenseNumber,
+    provinceOfLicensure: examiner.provinceOfLicensure,
+    licenseExpiryDate: examiner.licenseExpiryDate,
+    cvUrl: examiner.cvUrl,
+    medicalLicenseUrl: examiner.medicalLicenseUrl,
+    languagesSpoken: examiner.languagesSpoken,
+    yearsOfIMEExperience: examiner.yearsOfIMEExperience,
+    experienceDetails: examiner.experienceDetails,
+    insuranceProofUrl: examiner.insuranceProofUrl,
+    signedNdaUrl: examiner.signedNdaUrl,
+    status: examiner.status,
+    createdAt: examiner.createdAt,
+    updatedAt: examiner.updatedAt,
+  }));
+
+  return <ExaminerPageContent data={data} specialties={specialties} statuses={statuses} />;
 };
 
 export default Page;

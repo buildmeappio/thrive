@@ -71,13 +71,14 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
   }, [activeDropdown]);
 
   return (
-    <DashboardShell
-      title={
-        <h2 className="w-full text-left text-2xl sm:text-3xl font-bold text-black">
+    <DashboardShell>
+      {/* Organizations Heading */}
+      <div className="mb-6">
+        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
           Organizations
-        </h2>
-      }
-    >
+        </h1>
+      </div>
+
       {/* SVG for gradient definitions */}
       <svg width="0" height="0" className="absolute">
         <defs>
@@ -96,10 +97,10 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
         </defs>
       </svg>
       <div className="flex flex-col gap-6 mb-20">
-        {/* Search and Filters Section - Separate Elements */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          {/* Search Bar - Separate */}
-          <div className="w-full sm:w-auto sm:flex-1 max-w-md">
+        {/* Search and Filters Section - All in one line for mobile */}
+        <div className="flex flex-row gap-4 items-center justify-between">
+          {/* Search Bar - Left side */}
+          <div className="flex-1 min-w-0">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg className="h-5 w-5" fill="none" stroke="url(#searchGradient)" viewBox="0 0 24 24">
@@ -116,8 +117,8 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
             </div>
           </div>
 
-          {/* Filter Buttons - Separate */}
-          <div className="flex gap-3 w-full sm:w-auto">
+          {/* Filter Buttons - Right side */}
+          <div className="flex gap-3 flex-shrink-0">
             {/* Type Filter */}
             <div className="relative filter-dropdown">
               <button 

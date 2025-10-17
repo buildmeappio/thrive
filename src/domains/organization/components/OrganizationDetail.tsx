@@ -100,13 +100,14 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
   };
 
   return (
-    <DashboardShell
-      title={
-        <h2 className="w-full text-left text-2xl sm:text-3xl font-bold text-black">
+    <DashboardShell>
+      {/* Organization Name Heading */}
+      <div className="mb-6">
+        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
           {organization.name}
-        </h2>
-      }
-    >
+        </h1>
+      </div>
+
       <div className="w-full flex flex-col items-center min-h-[72vh]">
         <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full flex-1 flex flex-col">
           {/* Two-column layout */}

@@ -28,18 +28,18 @@ export default function Pagination<TData>({ table, className }: Props<TData>) {
   return (
     <div
       className={cn(
-        "w-full flex flex-col gap-3 md:flex-row md:items-center md:justify-between",
+        "w-full flex flex-row items-center justify-between gap-2",
         className
       )}
     >
       {/* left: range + size */}
-      <div className="flex items-center gap-4">
-        <span className="text-[16px] font-poppins text-[#4D4D4D]">
+      <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+        <span className="text-[16px] font-poppins text-[#4D4D4D] whitespace-nowrap">
           Showing <span className="font-semibold text-black">{from}</span>–<span className="font-semibold text-black">{to}</span> of{" "}
           <span className="font-semibold text-black">{totalRows}</span>
         </span>
 
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-2">
           <span className="text-[16px] text-[#676767]">Rows per page</span>
           <Select
             value={String(pageSize)}
@@ -60,7 +60,7 @@ export default function Pagination<TData>({ table, className }: Props<TData>) {
       </div>
 
       {/* right: pager */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-1 sm:gap-4">
         {/* Previous Button */}
         <button
           type="button"

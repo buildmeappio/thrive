@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import Image from "@/components/Image";
 import {
   Building,
   CaseUpper,
@@ -122,7 +121,7 @@ const Sidebar = () => {
           "transition-all duration-300",
           "top-24 h-[calc(100vh-96px)]",
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-          isCollapsed ? "md:w-[90px]" : "w-[85%] sm:w-[280px] md:w-[240px] max-w-[320px]"
+          isCollapsed ? "md:w-[90px]" : "w-[85%] sm:w-[320px] md:w-[280px] max-w-[360px]"
         )}
       >
         <div className="relative flex h-full min-h-0 w-full flex-col pt-2">

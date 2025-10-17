@@ -75,13 +75,14 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
   }, [activeDropdown]);
 
   return (
-    <DashboardShell
-      title={
-        <h1 className="text-[36px] font-semibold text-black font-degular">
+    <DashboardShell>
+      {/* Examiners Heading */}
+      <div className="mb-6">
+        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
           New Examiners
         </h1>
-      }
-    >
+      </div>
+
       {/* Define SVG gradients */}
       <svg width="0" height="0" className="absolute">
         <defs>
@@ -100,10 +101,10 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
         </defs>
       </svg>
       <div className="flex flex-col gap-6 mb-20">
-        {/* Search and Filters Section - Separate Elements */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          {/* Search Bar - Separate */}
-          <div className="w-full sm:w-auto sm:flex-1 max-w-md">
+        {/* Search and Filters Section - All in one line for mobile */}
+        <div className="flex flex-row gap-4 items-center justify-between">
+          {/* Search Bar - Left side */}
+          <div className="flex-1 min-w-0">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg className="h-5 w-5" fill="none" stroke="url(#searchGradient)" viewBox="0 0 24 24">
@@ -120,8 +121,8 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
             </div>
           </div>
 
-          {/* Filter Buttons - Separate */}
-          <div className="flex gap-3 w-full sm:w-auto">
+          {/* Filter Buttons - Right side */}
+          <div className="flex gap-3 flex-shrink-0">
             {/* Specialty Filter */}
             <div className="relative filter-dropdown">
               <button 

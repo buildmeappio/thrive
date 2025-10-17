@@ -19,7 +19,7 @@ export default function UpdatesPanel({ items }: Props) {
         </span>
         <h3
           id="updates-heading"
-          className="text-[18.64px] font-medium tracking-[-0.02em] text-black"
+          className="text-[18.64px] font-medium tracking-[-0.02em] text-black whitespace-nowrap"
         >
           Recent Updates
         </h3>
@@ -27,7 +27,7 @@ export default function UpdatesPanel({ items }: Props) {
 
       {/* List */}
       <div className="space-y-2 overflow-hidden">
-        {items.slice(0, 5).map((t, idx) => (
+        {items.slice(0, 9).map((t, idx) => (
           <div
             key={idx}
             className="flex items-center gap-2 w-full rounded-md py-2 bg-[#F2F2F2] px-4"
@@ -40,10 +40,10 @@ export default function UpdatesPanel({ items }: Props) {
       </div>
 
       {/* CTA */}
-      <div className="mt-auto pt-4">
+      <div className="mt-auto pt-4 flex justify-center">
         <button
           type="button"
-          className="py-2 px-4 rounded-full bg-[#000093] text-white text-[15px] tracking-[-0.01em]"
+          className="py-2 px-4 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white text-[15px] tracking-[-0.01em] hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80 transition-all duration-200"
         >
           View All
         </button>

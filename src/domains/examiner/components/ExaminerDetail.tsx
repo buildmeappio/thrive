@@ -7,7 +7,6 @@ import FieldRow from "@/components/FieldRow";
 import RequestInfoModal from "@/components/modal/RequestInfoModal";
 import RejectModal from "@/components/modal/RejectModal";
 import { cn } from "@/lib/utils";
-import { formatDateLong } from "@/utils/date";
 import { ExaminerData } from "../types/ExaminerData";
 import { approveExaminer, rejectExaminer, requestMoreInfo } from "../actions";
 import { Check } from "lucide-react";
@@ -71,17 +70,18 @@ export default function ExaminerDetail({ examiner }: Props) {
     };
 
     return (
-        <DashboardShell
-            title={
-                <h2 className="w-full text-left text-2xl sm:text-3xl font-bold">
+        <DashboardShell>
+            {/* Review Profile Heading */}
+            <div className="mb-6">
+                <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
                     Review{" "}
-                    <span className="bg-[linear-gradient(270deg,#01F4C8_50%,#00A8FF_65.19%)] bg-clip-text text-transparent break-words">
+                    <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
                         {examiner.name}
                     </span>{" "}
                     Profile
-                </h2>
-            }
-        >
+                </h1>
+            </div>
+
             <div className="w-full flex flex-col items-center">
                 <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
                     <div className="flex flex-col gap-6 lg:gap-10">

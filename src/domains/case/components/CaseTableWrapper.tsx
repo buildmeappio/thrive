@@ -50,17 +50,8 @@ const columnsDef = [
     ),
   },
   {
-    accessorKey: "claimant",
-    header: "Claimant Name",
-    cell: ({ row }: { row: any }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("claimant")}
-      </div>
-    ),
-  },
-  {
     accessorKey: "organization",
-    header: "Organization",
+    header: "Company",
     cell: ({ row }: { row: any }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("organization")}
@@ -73,24 +64,6 @@ const columnsDef = [
     cell: ({ row }: { row: any }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("caseType")}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }: { row: any }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("status")}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "urgencyLevel",
-    header: "Priority",
-    cell: ({ row }: { row: any }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("urgencyLevel")}
       </div>
     ),
   },
@@ -109,6 +82,24 @@ const columnsDef = [
     cell: ({ row }: { row: any }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
         {row.getValue("dueDate") ? formatDateShort(row.getValue("dueDate")) : "N/A"}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }: { row: any }) => (
+      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
+        {row.getValue("status")}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "urgencyLevel",
+    header: "Priority",
+    cell: ({ row }: { row: any }) => (
+      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
+        {row.getValue("urgencyLevel")}
       </div>
     ),
   },
@@ -172,7 +163,7 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
     const q = query.trim().toLowerCase();
     if (q) {
       result = result.filter((d) =>
-        [d.number, d.claimant, d.organization, d.caseType, d.status, d.urgencyLevel]
+        [d.number, d.organization, d.caseType, d.status, d.urgencyLevel]
           .filter(Boolean)
           .some((v) => String(v).toLowerCase().includes(q))
       );
@@ -306,7 +297,7 @@ export function CasePagination({ data, searchQuery = "", filters }: Props) {
     const q = query.trim().toLowerCase();
     if (q) {
       result = result.filter((d) =>
-        [d.number, d.claimant, d.organization, d.caseType, d.status, d.urgencyLevel]
+        [d.number, d.organization, d.caseType, d.status, d.urgencyLevel]
           .filter(Boolean)
           .some((v) => String(v).toLowerCase().includes(q))
       );

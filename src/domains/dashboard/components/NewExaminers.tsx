@@ -104,7 +104,22 @@ export default function NewExaminers({
                   </TableCell>
                   <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
                     <span className="truncate block">
-                      {Array.isArray(r.specialties) ? r.specialties.join(", ") : r.specialties}
+                      {(() => {
+                        const specialties = r.specialties as string | string[] | undefined;
+                        if (Array.isArray(specialties)) {
+                          return specialties.map(specialty => 
+                            specialty.split('-').map(word => 
+                              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                            ).join(' ')
+                          ).join(", ");
+                        } else if (typeof specialties === 'string') {
+                          return specialties.split('-').map(word => 
+                            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                          ).join(' ');
+                        } else {
+                          return '-';
+                        }
+                      })()}
                     </span>
                   </TableCell>
                   <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">

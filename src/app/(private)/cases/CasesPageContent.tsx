@@ -106,13 +106,14 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
   }, [activeDropdown]);
 
   return (
-    <DashboardShell
-      title={
-        <span className="font-semibold text-[36px] font-degular leading-none tracking-0">
+    <DashboardShell>
+      {/* Cases Heading */}
+      <div className="mb-6">
+        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
           New Cases
-        </span>
-      }
-    >
+        </h1>
+      </div>
+
       {/* Define SVG gradients */}
       <svg width="0" height="0" className="absolute">
         <defs>

@@ -1,4 +1,29 @@
-<!DOCTYPE html>
+/**
+ * Email template for approved an examiner application
+ */
+
+type ExaminerApprovedParams = {
+    firstName: string;
+    lastName: string;
+    createAccountLink: string;
+};
+
+function escapeHtml(input: string) {
+    return String(input)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+export function generateExaminerApprovedEmail({
+    firstName,
+    lastName,
+    createAccountLink,
+}: ExaminerApprovedParams): string {
+    return `
+  <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -63,17 +88,17 @@
 
   <div class="container">
     <div class="header">
-      <img src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/thriveLogo.png" alt="Thrive Logo">
+      <img src="https://assets.thriveassessmentcare.com/images/thriveLogo.png" alt="Thrive Logo">
     </div>
 
     <div class="body">
-      <p>Hi Dr. {{firstName}} {{lastName}},</p>
+      <p>Hi Dr. ${escapeHtml(firstName)} ${escapeHtml(lastName)},</p>
       <p>We're excited to let you know that your profile has been successfully reviewed and approved on the Thrive
         platform. You are now an active Medical Examiner and eligible to receive IME case opportunities through our
         system.</p>
       <p><strong>What Happens Next:</strong></p>
       <p>You can log in to view and manage your profile, documents, and upcoming IMEs.</p>
-      <a href="{{createAccountLink}}" class="button">Create Your Account</a>
+      <a href="${escapeHtml(createAccountLink)}" class="button">Create Your Account</a>
     </div>
 
     <div class="footer">
@@ -85,4 +110,10 @@
 </body>
 
 </html>
+
+
+    `;
+}
+
+export const EXAMINER_APPROVED_SUBJECT = "Your Thrive Medical Examiner Profile Has Been Approved";
 

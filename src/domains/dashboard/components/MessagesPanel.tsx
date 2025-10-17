@@ -13,13 +13,17 @@ export default function MessagesPanel({ items }: Props) {
     >
       {/* Header */}
       <div className="flex items-center gap-3 pb-3 w-full">
-        <span className="grid h-[30.5px] w-[30.5px] place-items-center rounded-full bg-[#EEEFFF]">
+        <span className="relative grid h-[30.5px] w-[30.5px] place-items-center rounded-full bg-[#EEEFFF]">
           {/* gradient message icon */}
           <MessageSquare className="h-[16px] w-[16px]" style={{ color: "#00A8FF" }} />
+          {/* notification badge */}
+          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] font-medium flex items-center justify-center">
+            1
+          </span>
         </span>
         <h3
           id="messages-heading"
-          className="text-[18.64px] font-medium tracking-[-0.02em] text-black"
+          className="text-[18.64px] font-medium tracking-[-0.02em] text-black whitespace-nowrap"
         >
           Recent Messages
         </h3>
@@ -40,10 +44,10 @@ export default function MessagesPanel({ items }: Props) {
       </div>
 
       {/* CTA */}
-      <div className="mt-auto pt-4">
+      <div className="mt-auto pt-4 flex justify-center">
         <button
           type="button"
-          className="py-2 px-4 rounded-full bg-[#000093] text-white text-[15px] tracking-[-0.01em]"
+          className="py-2 px-4 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white text-[15px] tracking-[-0.01em] hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80 transition-all duration-200"
         >
           View All
         </button>

@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
-import { sendMail } from "@/lib/email";
 import emailService from "@/services/email.service";
 import { ENV } from "@/constants/variables";
 

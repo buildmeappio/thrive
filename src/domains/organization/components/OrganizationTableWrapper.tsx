@@ -88,8 +88,8 @@ const columnsDef = [
 
 export default function OrganizationTableWrapper({ 
   data, 
-  types = [], 
-  statuses = [], 
+  types: _types = [], 
+  statuses: _statuses = [], 
   searchQuery = "", 
   filters = { type: "all", status: "all" } 
 }: Props) {
@@ -129,7 +129,7 @@ export default function OrganizationTableWrapper({
   // reset to first page when searching or filtering
   useEffect(() => {
     table.setPageIndex(0);
-  }, [searchQuery, filters]); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, filters, table]);
 
   return (
     <>
@@ -196,8 +196,8 @@ export default function OrganizationTableWrapper({
 // Export pagination separately
 export function OrganizationPagination({ 
   data, 
-  types = [], 
-  statuses = [], 
+  types: _types = [], 
+  statuses: _statuses = [], 
   searchQuery = "", 
   filters = { type: "all", status: "all" } 
 }: Props) {
@@ -237,7 +237,7 @@ export function OrganizationPagination({
   // reset to first page when searching or filtering
   useEffect(() => {
     table.setPageIndex(0);
-  }, [searchQuery, filters]); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, filters, table]);
 
   return <Pagination table={table} />;
 }
