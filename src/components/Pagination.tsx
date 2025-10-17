@@ -2,9 +2,8 @@
 "use client";
 
 import { type Table } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props<TData> = {
@@ -29,24 +28,24 @@ export default function Pagination<TData>({ table, className }: Props<TData>) {
   return (
     <div
       className={cn(
-        "w-full flex flex-col gap-3 md:flex-row md:items-center md:justify-between rounded-b-[12px] bg-white border-t border-[#EDEDED] px-4 pt-6",
+        "w-full flex flex-row items-center justify-between gap-2",
         className
       )}
     >
       {/* left: range + size */}
-      <div className="flex items-center gap-4">
-        <span className="text-[16px] font-poppins text-[#4D4D4D]">
+      <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+        <span className="text-[16px] font-poppins text-[#4D4D4D] whitespace-nowrap">
           Showing <span className="font-semibold text-black">{from}</span>–<span className="font-semibold text-black">{to}</span> of{" "}
           <span className="font-semibold text-black">{totalRows}</span>
         </span>
 
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-2">
           <span className="text-[16px] text-[#676767]">Rows per page</span>
           <Select
             value={String(pageSize)}
             onValueChange={(v) => table.setPageSize(Number(v))}
           >
-            <SelectTrigger className="h-9 w-[84px]">
+            <SelectTrigger className="h-9 w-[84px] bg-white border border-gray-200">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -61,59 +60,49 @@ export default function Pagination<TData>({ table, className }: Props<TData>) {
       </div>
 
       {/* right: pager */}
-      <div className="flex items-center gap-2 md:gap-3">
-        <IconButton
-          ariaLabel="First page"
-          disabled={!table.getCanPreviousPage()}
-          onClick={() => table.setPageIndex(0)}
-          icon={<ChevronsLeft className="h-4 w-4" />}
-        />
-        <IconButton
-          ariaLabel="Previous page"
+      <div className="flex items-center gap-1 sm:gap-4">
+        {/* Previous Button */}
+        <button
+          type="button"
           disabled={!table.getCanPreviousPage()}
           onClick={() => table.previousPage()}
-          icon={<ChevronLeft className="h-4 w-4" />}
-        />
+          className={cn(
+            "flex items-center gap-1 text-sm font-medium transition-colors",
+            table.getCanPreviousPage()
+              ? "text-gray-600 hover:text-gray-800"
+              : "text-gray-400 cursor-not-allowed"
+          )}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Previous
+        </button>
 
         {/* page numbers */}
         <div className="flex items-center gap-1">
-          {start > 0 && (
-            <>
-              <PagePill active={pageIndex === 0} onClick={() => table.setPageIndex(0)}>
-                1
-              </PagePill>
-              {start > 1 && <Ellipsis />}
-            </>
-          )}
-
           {pages.map((p) => (
             <PagePill key={p} active={p === pageIndex} onClick={() => table.setPageIndex(p)}>
               {p + 1}
             </PagePill>
           ))}
-
-          {end < pageCount - 1 && (
-            <>
-              {end < pageCount - 2 && <Ellipsis />}
-              <PagePill active={pageIndex === pageCount - 1} onClick={() => table.setPageIndex(pageCount - 1)}>
-                {pageCount}
-              </PagePill>
-            </>
-          )}
+          
+          {end < pageCount - 1 && <Ellipsis />}
         </div>
 
-        <IconButton
-          ariaLabel="Next page"
+        {/* Next Button */}
+        <button
+          type="button"
           disabled={!table.getCanNextPage()}
           onClick={() => table.nextPage()}
-          icon={<ChevronRight className="h-4 w-4" />}
-        />
-        <IconButton
-          ariaLabel="Last page"
-          disabled={!table.getCanNextPage()}
-          onClick={() => table.setPageIndex(pageCount - 1)}
-          icon={<ChevronsRight className="h-4 w-4" />}
-        />
+          className={cn(
+            "flex items-center gap-1 text-sm font-medium transition-colors",
+            table.getCanNextPage()
+              ? "text-gray-600 hover:text-gray-800"
+              : "text-gray-400 cursor-not-allowed"
+          )}
+        >
+          Next
+          <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );
@@ -128,16 +117,16 @@ function PagePill({
   active?: boolean;
   onClick: () => void;
 }) {
-  // match table styling: subtle gray, active = AVA gradient
+  // match design: active = gradient, inactive = white background with black text
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "h-9 min-w-9 px-3 rounded-full text-sm font-medium transition border",
+        "h-9 min-w-9 px-3 rounded-lg text-sm font-medium transition border",
         active
           ? "text-white border-transparent bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
-          : "text-[#4D4D4D] bg-[#F3F3F3] border-[#E7E7E7] hover:bg-[#EDEDED]"
+          : "text-black bg-white border border-gray-200 hover:bg-gray-50"
       )}
     >
       {children}
@@ -149,31 +138,3 @@ function Ellipsis() {
   return <span className="px-1 text-[#9B9B9B] select-none">…</span>;
 }
 
-function IconButton({
-  ariaLabel,
-  icon,
-  onClick,
-  disabled,
-}: {
-  ariaLabel: string;
-  icon: React.ReactNode;
-  onClick: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      className={cn(
-        "h-9 w-9 p-0 rounded-full border bg-[#F9F9F9] border-[#E7E7E7]",
-        "hover:bg-[#EDEDED]",
-        disabled && "opacity-50 pointer-events-none"
-      )}
-      aria-label={ariaLabel}
-      onClick={onClick}
-      disabled={disabled}
-    >
-      {icon}
-    </Button>
-  );
-}

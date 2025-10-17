@@ -69,19 +69,19 @@ export default function NewExaminers({
         <Table>
           <TableHeader>
             <TableRow className="bg-[#F3F3F3] border-b-0 hover:bg-[#F3F3F3]">
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Name
               </TableHead>
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Email
               </TableHead>
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Specialties
               </TableHead>
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Province
               </TableHead>
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Status
               </TableHead>
             </TableRow>
@@ -104,7 +104,22 @@ export default function NewExaminers({
                   </TableCell>
                   <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
                     <span className="truncate block">
-                      {Array.isArray(r.specialties) ? r.specialties.join(", ") : r.specialties}
+                      {(() => {
+                        const specialties = r.specialties as string | string[] | undefined;
+                        if (Array.isArray(specialties)) {
+                          return specialties.map(specialty => 
+                            specialty.split('-').map(word => 
+                              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                            ).join(' ')
+                          ).join(", ");
+                        } else if (typeof specialties === 'string') {
+                          return specialties.split('-').map(word => 
+                            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                          ).join(' ');
+                        } else {
+                          return '-';
+                        }
+                      })()}
                     </span>
                   </TableCell>
                   <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">

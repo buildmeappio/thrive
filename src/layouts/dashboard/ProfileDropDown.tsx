@@ -131,15 +131,15 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
   }
 
   return (
-    <div className="relative" ref={avatarDesktopRef} style={{ width: 48, height: 48 }}>
+    <div className="relative flex-shrink-0" ref={avatarDesktopRef}>
       {imageLoading && (
         <div className="absolute inset-0 flex items-center justify-center rounded-full bg-gray-500 bg-opacity-50">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+          <div className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
         </div>
       )}
       <Image
         onClick={() => setDropdownOpen(prev => !prev)}
-        className="h-[50px] min-h-[50px] w-[50px] cursor-pointer rounded-full border border-[#DBDBFF] bg-white object-cover"
+        className="h-8 w-8 sm:h-10 sm:w-10 lg:h-[50px] lg:w-[50px] cursor-pointer rounded-full border border-[#DBDBFF] bg-white object-cover flex-shrink-0"
         src={getProfileImageUrl()}
         alt="User dropdown"
         height={48}

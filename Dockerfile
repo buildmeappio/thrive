@@ -78,6 +78,7 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/next.config.ts ./next.config.ts
 COPY --from=builder /app/tailwind.config.ts ./tailwind.config.ts
 COPY --from=builder /app/postcss.config.mjs ./postcss.config.mjs
+COPY --from=builder /app/templates ./templates
 
 
 EXPOSE 3000

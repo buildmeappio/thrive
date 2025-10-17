@@ -1,3 +1,7 @@
 export const ENV = {
     NEXT_PUBLIC_CDN_URL: process.env.NEXT_PUBLIC_CDN_URL,
+    OAUTH_USERNAME: process.env.OAUTH_USERNAME,
+    OAUTH_CLIENT_ID: process.env.OAUTH_CLIENT_ID,
+    OAUTH_CLIENT_SECRET: process.env.OAUTH_CLIENT_SECRET,
+    OAUTH_REFRESH_TOKEN: process.env.OAUTH_REFRESH_TOKEN,
 } as const;

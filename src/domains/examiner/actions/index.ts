@@ -7,4 +7,6 @@ export { default as rejectExaminer } from "./rejectExaminer";
 export { default as requestMoreInfo } from "./requestMoreInfo";
 export { default as getExaminerByToken } from "./getExaminerByToken";
 export { default as updateExaminerProfile } from "./updateExaminerProfile";
+export { default as listExaminerSpecialties } from "./listExaminerSpecialties";
+export { default as listExaminerStatuses } from "./listExaminerStatuses";
 

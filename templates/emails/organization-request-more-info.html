@@ -1,38 +1,3 @@
-/**
- * Email template for requesting more information from an examiner
- */
-
-type ExaminerRequestMoreInfoParams = {
-  firstName: string;
-  lastName: string;
-  requestMessage: string;
-  resubmitLink: string;
-  documentsRequired?: boolean;
-};
-
-function escapeHtml(input: string) {
-  return String(input)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-export function generateExaminerRequestMoreInfoEmail({
-  firstName,
-  lastName,
-  requestMessage,
-  resubmitLink,
-  documentsRequired = false,
-}: ExaminerRequestMoreInfoParams): string {
-  const documentsNotice = documentsRequired ? `
-    <div style="background-color: #FFF3CD; border-left: 4px solid #FFC107; padding: 15px; margin: 15px 0;">
-      <strong>⚠️ Important:</strong> Please ensure you upload all required documents when resubmitting your application.
-    </div>
-  ` : '';
-
-  return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,27 +8,25 @@ export function generateExaminerRequestMoreInfoEmail({
 <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
     <div style="text-align: center;">
-      <img src="${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png" alt="Thrive Logo" style="width: 120px;">
+      <img src="{{CDN_URL}}/images/thriveLogo.png" alt="Thrive Logo" style="width: 120px;">
     </div>
     
     <div style="margin-top: 20px; font-size: 16px; color: #333333;">
-      <p>Hi Dr. ${escapeHtml(firstName)} ${escapeHtml(lastName)},</p>
+      <p>Hi {{firstName}} {{lastName}},</p>
       
-      <p>Thank you for submitting your application to become a Medical Examiner with Thrive.</p>
+      <p>Thank you for submitting your organization application to Thrive Assessment & Care.</p>
       
-      <p>We're currently reviewing your profile and need some additional information to complete our assessment:</p>
+      <p>We're currently reviewing <strong>{{organizationName}}</strong>'s profile and need some additional information to complete our assessment:</p>
       
       <div style="background-color: #f9f9f9; border-left: 4px solid #00A8FF; padding: 15px; margin: 15px 0;">
-        ${escapeHtml(requestMessage)}
+        {{requestMessage}}
       </div>
-      
-      ${documentsNotice}
       
       <p>Please click the button below to resubmit your application with the updated information:</p>
       
       <div style="text-align: center; margin: 30px 0;">
-        <a href="${resubmitLink}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(90deg, #00A8FF 0%, #01F4C8 100%); color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px;">
-          Update My Application
+        <a href="{{resubmitLink}}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(90deg, #00A8FF 0%, #01F4C8 100%); color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px;">
+          Update Application
         </a>
       </div>
       
@@ -88,8 +51,3 @@ export function generateExaminerRequestMoreInfoEmail({
   </div>
 </body>
 </html>
-  `;
-}
-
-export const EXAMINER_REQUEST_MORE_INFO_SUBJECT = "Thrive Medical Examiner Application - Additional Information Required";
-

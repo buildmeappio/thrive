@@ -4,12 +4,9 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import examinerService from "../server/examiner.service";
-import { sendMail } from "@/lib/email";
 import { signExaminerResubmitToken } from "@/lib/jwt";
-import {
-  generateExaminerRequestMoreInfoEmail,
-  EXAMINER_REQUEST_MORE_INFO_SUBJECT,
-} from "@/emails/examiner-request-more-info";
+import emailService from "@/services/email.service";
+import { ENV } from "@/constants/variables";
 
 const requestMoreInfo = async (examinerId: string, message: string, documentsRequired: boolean = false) => {
   const user = await getCurrentUser();
@@ -60,19 +57,24 @@ async function sendRequestMoreInfoEmail(examiner: any, requestMessage: string, d
   });
 
   const resubmitLink = `${process.env.NEXT_PUBLIC_APP_URL}/examiner/register?token=${token}`;
-  const htmlContent = generateExaminerRequestMoreInfoEmail({
-    firstName,
-    lastName,
-    requestMessage,
-    resubmitLink,
-    documentsRequired,
-  });
+  
+  const result = await emailService.sendEmail(
+    "Thrive Medical Examiner Application - Additional Information Required",
+    "examiner-request-more-info.html",
+    {
+      firstName,
+      lastName,
+      requestMessage,
+      resubmitLink,
+      documentsRequired,
+      CDN_URL: ENV.NEXT_PUBLIC_CDN_URL,
+    },
+    userEmail
+  );
 
-  await sendMail({
-    to: userEmail,
-    subject: EXAMINER_REQUEST_MORE_INFO_SUBJECT,
-    html: htmlContent,
-  });
+  if (!result.success) {
+    throw new Error((result as { success: false; error: string }).error);
+  }
 }
 
 export default requestMoreInfo;

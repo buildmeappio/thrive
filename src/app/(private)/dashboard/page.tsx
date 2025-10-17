@@ -40,8 +40,8 @@ const Page = async () => {
   ]);
 
   return (
-    <DashboardShell
-      title={
+    <DashboardShell>
+      <div className="mb-6">
         <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
           Welcome To{" "}
           <span className="text-[#00A8FF]">
@@ -49,8 +49,7 @@ const Page = async () => {
           </span>{" "}
           Admin Dashboard
         </h1>
-      }
-    >
+      </div>
       <Dashboard
         caseRows={cases}
         waitingCaseRows={waitingCases}

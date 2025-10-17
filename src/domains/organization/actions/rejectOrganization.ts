@@ -5,11 +5,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
-import { sendMail } from "@/lib/email";
-import { 
-  generateOrganizationRejectionEmail,
-  ORGANIZATION_REJECTION_SUBJECT 
-} from "@/emails/organization-rejection";
+import emailService from "@/services/email.service";
+import { ENV } from "@/constants/variables";
 
 type OrganizationView = {
   id: string;
@@ -63,19 +60,22 @@ async function sendRejectReasonToOrganization(org: OrganizationView, reason: str
     return;
   }
 
-  // Generate email HTML from template
-  const htmlContent = generateOrganizationRejectionEmail({
-    firstName,
-    lastName,
-    organizationName: org.name,
-    rejectionMessage: reason,
-  });
+  const result = await emailService.sendEmail(
+    "Organization Application - Status Update",
+    "organization-rejection.html",
+    {
+      firstName,
+      lastName,
+      organizationName: org.name,
+      rejectionMessage: reason,
+      CDN_URL: ENV.NEXT_PUBLIC_CDN_URL,
+    },
+    email
+  );
 
-  await sendMail({
-    to: email,
-    subject: ORGANIZATION_REJECTION_SUBJECT,
-    html: htmlContent,
-  });
+  if (!result.success) {
+    throw new Error((result as { success: false; error: string }).error);
+  }
 }
 
 export default rejectOrganization;

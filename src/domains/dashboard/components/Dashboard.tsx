@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import StatCard from "./StatCard";
+import MessagesPanel from "./MessagesPanel";
 import UpdatesPanel from "./UpdatesPanel";
 import NewExaminers from "./NewExaminers";
 import NewCases from "./NewCases";
@@ -61,7 +62,7 @@ export default function Dashboard({
   return (
     <div className="w-full max-w-full pb-6 sm:pb-10">
       {/* Row 1: Stat cards */}
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+      <div className="w-full grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
         <StatCard 
           title="Active Cases" 
           value={caseCount} 
@@ -113,22 +114,30 @@ export default function Dashboard({
           />
         </div>
 
-        {/* Right: recent updates + donut */}
-        <div className="w-full xl:w-4/12 flex flex-col gap-4 sm:gap-6">
+        {/* Right: recent messages + recent updates */}
+        <div className="w-full xl:w-4/12 flex flex-row xl:flex-col gap-4 sm:gap-6">
+          <MessagesPanel
+            items={[
+              "New insurer onboarded: Maple Life",
+              "Dr. Sarah Ahmed's profile was verified",
+              "John Doe profile was verified",
+              "New client registered: Bright Horizons",
+              "Policy update completed for: Emily",
+            ]}
+          />
           <UpdatesPanel
             items={[
               "New insurer onboarded: Maple Life",
               "Dr. Sarah Ahmed's profile was verified",
               "John Doe profile was verified",
-              "New claim submitted by: Emily Carter",
-              "New insurer onboarded: Easy Life",
+              "New insurer onboarded: Horizon Health",
+              "Dr. Emily Chen's profile was verified",
+              "Jane Smith profile was verified",
+              "New insurer onboarded: Evergreen....",
+              "Dr. Michael Lee's profile was verified",
+              "Robert Brown profile was verified",
             ]}
           />
-          <div className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6 h-[280px] sm:h-[327px] flex items-center justify-center">
-            <span className="text-sm text-neutral-500 tracking-[-0.02em]">
-              Analytics donut placeholder
-            </span>
-          </div>
         </div>
       </div>
     </div>

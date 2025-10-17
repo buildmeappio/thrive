@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import Image from "@/components/Image";
 import {
   Building,
   CaseUpper,
@@ -18,7 +17,6 @@ import {
 import { signOut } from "next-auth/react";
 import { useSidebar } from "@/providers/Sidebar";
 import { cn } from "@/lib/utils";
-import { ENV } from "@/constants/variables";
 
 type Route = {
   icon: LucideIcon;
@@ -118,11 +116,12 @@ const Sidebar = () => {
     <>
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 flex h-screen transform-gpu flex-col",
-          "bg-white rounded-r-[28px] shadow-[0_6px_30px_rgba(16,24,40,0.06)] border-r border-gray-200",
+          "fixed left-0 z-40 flex transform-gpu flex-col",
+          "bg-white rounded-tr-[28px] rounded-br-[28px]",
           "transition-all duration-300",
+          "top-24 h-[calc(100vh-96px)]",
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-          isCollapsed ? "md:w-[90px]" : "w-[85%] sm:w-[320px] md:w-[280px] max-w-[400px]"
+          isCollapsed ? "md:w-[90px]" : "w-[85%] sm:w-[320px] md:w-[280px] max-w-[360px]"
         )}
       >
         <div className="relative flex h-full min-h-0 w-full flex-col pt-2">
@@ -159,16 +158,7 @@ const Sidebar = () => {
               >
                 <Menu className="h-6 w-6 text-[#000093]" />
               </button>
-            ) : (
-              <Image
-                src={`${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
-                alt="Thrive"
-                width={160}
-                height={80}
-                className="h-16 w-auto"
-                priority
-              />
-            )}
+            ) : null}
           </div>
 
           {/* Nav */}

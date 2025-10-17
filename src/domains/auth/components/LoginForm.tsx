@@ -40,11 +40,11 @@ const LoginForm = () => {
       return;
     }
 
-    console.log(`Login failed`);
+    toast.error('Invalid email or password. Please try again.');
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
       <div>
         <Label htmlFor="email" className="text-black text-sm md:text-[15px]">
           Email<span className="text-red-500">*</span>

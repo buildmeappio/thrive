@@ -5,12 +5,9 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
-import { sendMail } from "@/lib/email";
 import { signOrganizationResubmitToken } from "@/lib/jwt";
-import { 
-  generateOrganizationRequestMoreInfoEmail,
-  ORGANIZATION_REQUEST_MORE_INFO_SUBJECT 
-} from "@/emails/organization-request-more-info";
+import emailService from "@/services/email.service";
+import { ENV } from "@/constants/variables";
 
 type OrganizationView = {
   id: string;
@@ -77,20 +74,23 @@ async function sendRequestMoreInfoEmail(org: OrganizationView, requestMessage: s
 
   const resubmitLink = `${process.env.NEXT_PUBLIC_APP_URL}/organization/register?token=${token}`;
 
-  // Generate email HTML from template
-  const htmlContent = generateOrganizationRequestMoreInfoEmail({
-    firstName,
-    lastName,
-    organizationName: org.name,
-    requestMessage,
-    resubmitLink,
-  });
+  const result = await emailService.sendEmail(
+    "Additional Information Required - Organization Application",
+    "organization-request-more-info.html",
+    {
+      firstName,
+      lastName,
+      organizationName: org.name,
+      requestMessage,
+      resubmitLink,
+      CDN_URL: ENV.NEXT_PUBLIC_CDN_URL,
+    },
+    email
+  );
 
-  await sendMail({
-    to: email,
-    subject: ORGANIZATION_REQUEST_MORE_INFO_SUBJECT,
-    html: htmlContent,
-  });
+  if (!result.success) {
+    throw new Error((result as { success: false; error: string }).error);
+  }
 }
 
 export default requestMoreInfo;

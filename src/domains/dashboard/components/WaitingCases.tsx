@@ -61,22 +61,22 @@ export default function WaitingCases({
         <Table>
           <TableHeader>
             <TableRow className="bg-[#F3F3F3] border-b-0 hover:bg-[#F3F3F3]">
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Case ID
               </TableHead>
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Company
               </TableHead>
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Claim Type
               </TableHead>
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Date Received
               </TableHead>
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Due Date
               </TableHead>
-              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
                 Status
               </TableHead>
             </TableRow>
