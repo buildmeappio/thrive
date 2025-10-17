@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import CaseTableWrapper from "@/domains/case/components/CaseTableWrapper";
+import CaseTableWithPagination from "@/domains/case/components/CaseTableWithPagination";
+import Pagination from "@/components/Pagination";
 import { CaseData } from "@/domains/case/types/CaseData";
 import { DashboardShell } from "@/layouts/dashboard";
 
@@ -104,6 +105,16 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [activeDropdown]);
+
+  // Get table and table element from the component
+  const { table, tableElement } = CaseTableWithPagination({
+    data,
+    types,
+    statuses,
+    priorityLevels,
+    searchQuery,
+    filters
+  });
 
   return (
     <DashboardShell>
@@ -389,14 +400,12 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
 
         {/* Cases Table Card */}
         <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
-          <CaseTableWrapper 
-            data={data} 
-            types={types} 
-            statuses={statuses} 
-            searchQuery={searchQuery}
-            filters={filters}
-            priorityLevels={priorityLevels}
-          />
+          {tableElement}
+        </div>
+
+        {/* Pagination - Outside the card */}
+        <div className="mt-4 px-6">
+          <Pagination table={table} />
         </div>
       </div>
     </DashboardShell>

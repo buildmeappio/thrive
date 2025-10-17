@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect } from "react";
 import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CaseData } from "@/domains/case/types/CaseData";
-import Pagination from "@/components/Pagination";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -113,8 +112,7 @@ const columnsDef = [
   },
 ];
 
-// Combined component that handles both table and pagination with shared state
-export default function CaseTableWrapper({ data, searchQuery = "", filters }: Props) {
+export default function CaseTableWithPagination({ data, searchQuery = "", filters }: Props) {
   const [query, setQuery] = useState(searchQuery);
 
   // Update internal query when searchQuery prop changes
@@ -185,74 +183,67 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
     table.setPageIndex(0);
   }, [query, filters, table]);
 
-  return (
-    <>
-      {/* Table */}
-      <div className="overflow-hidden rounded-md outline-none">
-        <Table className="border-0">
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className={cn(
-                      "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap",
-                      header.index === 0 && "rounded-l-2xl",
-                      header.index === headerGroup.headers.length - 1 &&
-                      "rounded-r-2xl w-[60px]"
-                    )}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
+  return {
+    table,
+    tableElement: (
+      <>
+        {/* Table */}
+        <div className="overflow-hidden rounded-md outline-none">
+          <Table className="border-0">
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className={cn(
+                        "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap",
+                        header.index === 0 && "rounded-l-2xl",
+                        header.index === headerGroup.headers.length - 1 &&
+                        "rounded-r-2xl w-[60px]"
                       )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-
-          <TableBody>
-            {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="bg-white border-0 border-b-1"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="px-6 py-3">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columnsDef.length}
-                  className="h-24 text-center text-black font-poppins text-[16px] leading-none"
-                >
-                  No Cases Found
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      
-      {/* Pagination */}
-      <div className="px-6 mt-4">
-        <Pagination table={table} />
-      </div>
-    </>
-  );
-}
+              ))}
+            </TableHeader>
 
-// Export pagination separately - now it receives the table instance
-export function CasePagination({ table }: { table: any }) {
-  return <Pagination table={table} />;
+            <TableBody>
+              {table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="bg-white border-0 border-b-1"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="px-6 py-3">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columnsDef.length}
+                    className="h-24 text-center text-black font-poppins text-[16px] leading-none"
+                  >
+                    No Cases Found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </>
+    )
+  };
 }

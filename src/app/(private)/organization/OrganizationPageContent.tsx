@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import OrganizationTableWrapper from "@/domains/organization/components/OrganizationTableWrapper";
+import OrganizationTableWithPagination from "@/domains/organization/components/OrganizationTableWithPagination";
+import Pagination from "@/components/Pagination";
 import { OrganizationData } from "@/domains/organization/types/OrganizationData";
 import { DashboardShell } from "@/layouts/dashboard";
 import { Cross, Funnel } from "lucide-react";
@@ -69,6 +70,15 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [activeDropdown]);
+
+  // Get table and table element from the component
+  const { table, tableElement } = OrganizationTableWithPagination({
+    data,
+    types,
+    statuses,
+    searchQuery,
+    filters
+  });
 
   return (
     <DashboardShell>
@@ -234,13 +244,12 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
 
         {/* Organizations Table Card */}
         <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
-          <OrganizationTableWrapper 
-            data={data} 
-            types={types} 
-            statuses={statuses} 
-            searchQuery={searchQuery}
-            filters={filters}
-          />
+          {tableElement}
+        </div>
+
+        {/* Pagination - Outside the card */}
+        <div className="mt-4 px-6">
+          <Pagination table={table} />
         </div>
       </div>
     </DashboardShell>

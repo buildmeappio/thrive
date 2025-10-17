@@ -34,6 +34,7 @@ const Page = async () => {
     examinerId: c.examiner ? c.examiner.id : "Unknown",
     submittedAt: new Date(c.createdAt).toISOString(),
     assignedAt: c.assignedAt ? new Date(c.assignedAt).toISOString() : undefined,
+    dueDate: c.dueDate ? new Date(c.dueDate).toISOString() : null,
   }));
 
   return <CasesPageContent data={data} types={types} statuses={statuses} priorityLevels={priorityLevels} />;
