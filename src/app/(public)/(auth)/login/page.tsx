@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 const LoginPage = () => {
   return (
     <div className="bg-[#F2F5F6]">
-      <div className="flex flex-col justify-between md:min-h-[calc(100vh-97px)] md:flex-row">
+      <div className="flex flex-col justify-between md:min-h-[calc(100vh-77px)] md:flex-row">
         <div className="flex flex-1 flex-col justify-center px-6 md:px-0 md:pl-30">
           <h1 className="mb-4 text-[68.35px] leading-[100%] font-semibold tracking-[-0.02em]">
             Welcome To <span>Thrive</span>{' '}

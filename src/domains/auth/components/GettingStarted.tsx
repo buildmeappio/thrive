@@ -13,7 +13,7 @@ const GettingStarted: React.FC = () => {
     router.push(URLS.REGISTER);
   };
   return (
-    <div className="flex min-h-[calc(100vh-97px)] flex-col bg-[#FAFAFF] md:flex-row">
+    <div className="flex min-h-[calc(100vh-77px)] flex-col bg-[#FAFAFF] md:flex-row">
       <div className="mt-8 flex-shrink-0 px-6 md:mt-16 md:w-[60%] md:px-0 md:pl-20">
         <div className="space-y-6">
           <div className="md:leading[150%] w-full text-[30px] leading-[100%] font-semibold tracking-[-0.03em] md:max-w-[660px] md:text-[50.86px]">
