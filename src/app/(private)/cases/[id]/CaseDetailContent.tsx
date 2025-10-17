@@ -189,7 +189,13 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
       <CollapsibleSection title="Documents">
         {caseDetails.case.documents && caseDetails.case.documents.length > 0 ? (
           caseDetails.case.documents.map((document: any, index: number) => (
-            <FieldRow key={document.id || index} label={safeValue(document.name)} value={safeValue(document.name)} type="document" />
+            <FieldRow 
+              key={document.id || index} 
+              label={safeValue(document.name)} 
+              value={safeValue(document.name)} 
+              type="document"
+              documentUrl={document.url || undefined}
+            />
           ))
         ) : (
           <FieldRow label="No documents uploaded" value="-" type="text" />
