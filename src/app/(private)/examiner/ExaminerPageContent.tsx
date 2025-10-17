@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import ExaminerTableWrapper from "@/domains/examiner/components/ExaminerTableWrapper";
+import ExaminerTableWithPagination from "@/domains/examiner/components/ExaminerTableWithPagination";
+import Pagination from "@/components/Pagination";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { DashboardShell } from "@/layouts/dashboard";
 import { Cross, Funnel } from "lucide-react";
@@ -73,6 +74,15 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [activeDropdown]);
+
+  // Get table and table element from the component
+  const { table, tableElement } = ExaminerTableWithPagination({
+    data,
+    specialties,
+    statuses,
+    searchQuery,
+    filters
+  });
 
   return (
     <DashboardShell>
@@ -238,13 +248,12 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
 
         {/* Examiners Table Card */}
         <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
-          <ExaminerTableWrapper 
-            data={data} 
-            specialties={specialties} 
-            statuses={statuses} 
-            searchQuery={searchQuery}
-            filters={filters}
-          />
+          {tableElement}
+        </div>
+
+        {/* Pagination - Outside the card */}
+        <div className="mt-4 px-6">
+          <Pagination table={table} />
         </div>
       </div>
     </DashboardShell>

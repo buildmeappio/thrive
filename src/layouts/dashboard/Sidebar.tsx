@@ -51,9 +51,8 @@ export const routes: Route[] = [
 const Sidebar = () => {
   const pathname = usePathname();
   const [selectedBtn, setSelectedBtn] = useState<number | null>(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
-  const { isSidebarOpen: isMobileOpen, closeSidebar: onMobileClose } =
+  const { isSidebarOpen: isMobileOpen, isCollapsed, toggleCollapse, closeSidebar: onMobileClose } =
     useSidebar();
 
   const isValidSidebarIndex = (index: string | null) => {
@@ -106,10 +105,6 @@ const Sidebar = () => {
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/admin/login", redirect: true });
-  };
-
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
   };
 
   return (

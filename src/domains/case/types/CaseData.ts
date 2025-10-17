@@ -10,5 +10,6 @@ export type CaseData = {
   examinerId: string;
   submittedAt: string;
   assignedAt?: string;
+  dueDate?: string | null;
 };
 
