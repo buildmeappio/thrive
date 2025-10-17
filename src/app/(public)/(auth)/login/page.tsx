@@ -13,7 +13,7 @@ const LoginPage = () => {
     <div className="bg-[#F2F5F6]">
       <div className="flex flex-col justify-between md:min-h-[calc(100vh-77px)] md:flex-row">
         <div className="flex flex-1 flex-col justify-center px-6 md:px-0 md:pl-30">
-          <h1 className="mb-4 text-[68.35px] leading-[100%] font-semibold tracking-[-0.02em]">
+          <h1 className="mt-4 mb-4 text-[40px] leading-[100%] font-semibold tracking-[-0.02em] md:mt-0 md:text-[68.35px]">
             Welcome To <span>Thrive</span>{' '}
           </h1>
           <div className="w-full rounded-xl border-[#E9EDEE] bg-white p-6 shadow-xs md:max-w-[515px]">
@@ -24,8 +24,8 @@ const LoginPage = () => {
           </div>
         </div>
 
-        <div className="relative hidden flex-1 overflow-hidden md:block">
-          <div className="absolute inset-0">
+        <div className="relative hidden flex-1 overflow-hidden md:flex md:items-end">
+          <div className="w-full">
             <Image
               src={createImagePath('org-gettingStarted.png')}
               alt="Organization Dashboard Preview"

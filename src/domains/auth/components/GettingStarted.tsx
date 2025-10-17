@@ -81,8 +81,8 @@ const GettingStarted: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative mt-16 hidden flex-1 overflow-hidden md:block">
-        <div className="absolute inset-0">
+      <div className="relative mt-16 hidden flex-1 overflow-hidden md:flex md:items-end">
+        <div className="w-full">
           <Image
             src={createImagePath('org-gettingStarted.png')}
             alt="Organization Dashboard Preview"
