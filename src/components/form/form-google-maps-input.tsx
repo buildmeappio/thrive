@@ -16,6 +16,7 @@ interface FormGoogleMapsInputProps {
     components: any;
     raw: any;
   }) => void;
+  from?: string;
 }
 
 /**
@@ -31,6 +32,7 @@ const FormGoogleMapsInput: React.FC<FormGoogleMapsInputProps> = ({
   required = false,
   className = "",
   onPlaceSelect,
+  from = "",
 }) => {
   const {
     control,
@@ -60,6 +62,7 @@ const FormGoogleMapsInput: React.FC<FormGoogleMapsInputProps> = ({
               onPlaceSelect(placeData);
             }
           }}
+          from={from}
         />
       )}
     />

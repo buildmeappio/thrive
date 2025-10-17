@@ -14,6 +14,7 @@ import {
 } from "@/domains/dashboard/constants";
 import { CircleCheck } from "lucide-react";
 import { updateSpecialtyPreferencesAction } from "../../server/actions";
+import { toast } from "sonner";
 
 interface SpecialtyPreferencesFormProps {
   examinerProfileId: string | null;
@@ -50,7 +51,7 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
 
   const onSubmit = async (values: SpecialtyPreferencesInput) => {
     if (!examinerProfileId) {
-      console.error("Examiner profile ID not found");
+      toast.error("Examiner profile ID not found");
       return;
     }
 
@@ -63,12 +64,15 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
       });
 
       if (result.success) {
+        toast.success("Specialty preferences updated successfully");
         onComplete();
       } else {
-        console.error("Failed to update preferences:", result.message);
+        toast.error(result.message || "Failed to update preferences");
       }
     } catch (error) {
-      console.error("Error updating preferences:", error);
+      toast.error(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
     } finally {
       setLoading(false);
     }
@@ -76,7 +80,7 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h2 className="text-2xl font-medium">
           Choose Your Speciality & IME Preferences
         </h2>
@@ -84,7 +88,7 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
           type="submit"
           form="specialty-form"
           variant="outline"
-          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center gap-2"
+          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
           disabled={loading}>
           <span>Mark as Complete</span>
           <CircleCheck className="w-5 h-5 text-gray-700" />

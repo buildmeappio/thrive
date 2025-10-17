@@ -24,6 +24,7 @@ interface GoogleMapsInputProps {
     components: any;
     raw: any;
   }) => void;
+  from?: string;
 }
 
 /**
@@ -41,6 +42,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
   className = "",
   error,
   onPlaceSelect,
+  from,
 }) => {
   const autoCompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -146,7 +148,9 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
           value={value}
           onChange={handleChange}
           placeholder={placeholder}
-          className="w-full bg-[#F2F5F6] rounded-lg py-3 pl-10 pr-4 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none"
+          className={`w-full bg-[${
+            from === "profile-info-form" ? "#F9F9F9" : "#F2F5F6"
+          }] h-[55px] rounded-lg pl-10 pr-4 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none`}
           disabled={!isLoaded}
         />
       </div>

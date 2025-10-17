@@ -15,6 +15,7 @@ import {
   InteracTab,
   PayoutSection,
 } from "./PayoutTabs";
+import { toast } from "sonner";
 
 interface PayoutDetailsFormProps {
   examinerProfileId: string | null;
@@ -59,7 +60,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
 
   const onSubmit = async (values: PayoutDetailsInput) => {
     if (!examinerProfileId) {
-      console.error("Examiner profile ID not found");
+      toast.error("Examiner profile ID not found");
       return;
     }
 
@@ -72,12 +73,15 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       });
 
       if (result.success) {
+        toast.success("Payout details saved successfully");
         onComplete();
       } else {
-        console.error("Failed to update payout details:", result.message);
+        toast.error(result.message || "Failed to update payout details");
       }
     } catch (error) {
-      console.error("Error updating payout details:", error);
+      toast.error(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
     } finally {
       setLoading(false);
     }
@@ -85,13 +89,13 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm ">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h2 className="text-2xl font-medium">Set Up Payout Details</h2>
         <Button
           type="submit"
           form="payout-form"
           variant="outline"
-          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center gap-2"
+          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
           disabled={loading}>
           <span>Mark as Complete</span>
           <CircleCheck className="w-5 h-5 text-gray-700" />

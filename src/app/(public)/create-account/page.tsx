@@ -2,6 +2,12 @@ import { SetPasswordForm } from "@/domains/auth";
 import { redirect } from "next/navigation";
 import authActions from "@/domains/auth/actions";
 import ErrorMessages from "@/constants/ErrorMessages";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Create Account | Thrive Examiner",
+  description: "Create your account",
+};
 
 const Page = async ({
   searchParams,

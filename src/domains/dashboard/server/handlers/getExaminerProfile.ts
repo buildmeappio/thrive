@@ -1,6 +1,7 @@
 import { dashboardService } from "../services/dashboard.service";
 import HttpError from "@/utils/httpError";
 import ErrorMessages from "@/constants/ErrorMessages";
+import prisma from "@/lib/db";
 
 export type GetExaminerProfileInput = {
   accountId: string;
@@ -20,6 +21,21 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
     activationStep?: string | null;
   };
 
+  // Get profile photo URL from Documents table if exists
+  let profilePhotoUrl = null;
+  if (profile.account.user.profilePhotoId) {
+    const profilePhoto = await prisma.documents.findUnique({
+      where: { id: profile.account.user.profilePhotoId },
+    });
+    if (profilePhoto) {
+      // Construct CDN URL if available
+      const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL;
+      profilePhotoUrl = cdnUrl
+        ? `${cdnUrl}/documents/examiner/${profile.account.userId}/${profilePhoto.name}`
+        : null;
+    }
+  }
+
   return {
     success: true,
     data: {
@@ -31,7 +47,8 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
       provinceOfResidence: profile.provinceOfResidence || "",
       mailingAddress: profile.mailingAddress || "",
       bio: profile.bio || "",
-      profilePhoto: profile.account.user.profilePhotoId || null,
+      profilePhotoId: profile.account.user.profilePhotoId || null,
+      profilePhotoUrl: profilePhotoUrl,
       activationStep: profile.activationStep || null,
     },
   };

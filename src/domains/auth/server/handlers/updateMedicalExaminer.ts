@@ -1,7 +1,7 @@
 import HttpError from "@/utils/httpError";
 import { examinerService } from "../services";
 import ErrorMessages from "@/constants/ErrorMessages";
-import emailService from "@/services/email.service";
+import { emailService } from "@/server";
 
 export type UpdateMedicalExaminerInput = {
   examinerProfileId: string;

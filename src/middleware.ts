@@ -1,45 +1,40 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse, type NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-const protectedRoutes = ["/dashboard"];
+const protectedRoutes = ["/dashboard", "/cases", "/billing", "/support"];
 
 export default withAuth(
-  function middleware(request: NextRequest) {
+  async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
+    const token = await getToken({ req: request });
 
-    // Check if current path is a protected route
+    // Check if user's activation is complete
+    const isActivationComplete = token?.activationStep === "payout";
+
+    // Check if current path is a protected route (not settings)
     const isProtectedRoute = protectedRoutes.some((route) =>
       pathname.startsWith(route)
     );
 
-    if (isProtectedRoute) {
-      const response = NextResponse.next();
-      response.headers.set("x-pathname", pathname);
-      return response;
+    // If activation is not complete and user tries to access protected routes (not settings)
+    if (!isActivationComplete && isProtectedRoute) {
+      return NextResponse.redirect(new URL("/examiner/settings", request.url));
     }
 
-    // Allow the request to proceed
+    // If activation is complete and user tries to access settings, allow it
+    // Settings is always accessible for profile management
+
     const response = NextResponse.next();
     response.headers.set("x-pathname", pathname);
+    response.headers.set("x-activation-complete", String(isActivationComplete));
     return response;
   },
   {
     callbacks: {
-      authorized: ({ token, req }) => {
-        const pathname = req.nextUrl.pathname;
-
-        // Check if current path is a protected route
-        const isProtectedRoute = protectedRoutes.some((route) =>
-          pathname.startsWith(route)
-        );
-
-        // If it's a protected route, require a valid token
-        if (isProtectedRoute) {
-          return !!token;
-        }
-
-        // For non-protected routes, always allow access
-        return true;
+      authorized: ({ token }) => {
+        // Require a valid token for all private routes
+        return !!token;
       },
     },
     pages: {
@@ -51,15 +46,17 @@ export default withAuth(
 export const config = {
   matcher: [
     /*
-     * Match only protected routes:
+     * Match all private routes:
      * - dashboard (and its sub-paths)
-     * Exclude:
-     * - api routes
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico
-     * - public routes (login, register, etc.)
+     * - cases
+     * - billing
+     * - settings
+     * - support
      */
     "/dashboard/:path*",
+    "/cases/:path*",
+    "/billing/:path*",
+    "/settings/:path*",
+    "/support/:path*",
   ],
 };

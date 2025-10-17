@@ -114,6 +114,11 @@ class UserService {
           accounts: {
             include: {
               role: true,
+              examinerProfiles: {
+                select: {
+                  activationStep: true,
+                },
+              },
             },
           },
         },

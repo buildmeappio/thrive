@@ -3,6 +3,7 @@ import { SidebarProvider } from "@/providers/Sidebar";
 import { SearchProvider } from "@/providers/Search";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import { getExaminerProfileAction } from "@/domains/dashboard/server/actions";
+import { Header } from "@/domains/dashboard";
 import { redirect } from "next/navigation";
 import LayoutWrapper from "./layout-wrapper";
 
@@ -25,8 +26,14 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
       ? profileResult.data
       : null;
 
+  let isActivationComplete = false;
+
   // Check if activation is complete (all 4 steps done)
-  const isActivationComplete = examinerProfile?.activationStep === "payout";
+  if (examinerProfile?.activationStep === "payout") {
+    isActivationComplete = true;
+  } else {
+    isActivationComplete = false;
+  }
 
   return (
     <SidebarProvider>
@@ -38,6 +45,7 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
               </div>
             }>
+            <Header userName={user.name || "User"} />
             {children}
           </Suspense>
         </LayoutWrapper>

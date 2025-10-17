@@ -151,8 +151,8 @@ const SideBar = ({
               const itemIsActive = isActive(item.href);
               const isSelected = selectedBtn === item.index;
               const IconComponent = item.icon;
-              const isDashboard = item.href === URLS.DASHBOARD;
-              const isDisabled = !isDashboard && !isActivationComplete;
+              const isSettings = item.href === URLS.SETTINGS;
+              const isDisabled = !isSettings && !isActivationComplete;
 
               if (isDisabled) {
                 return (

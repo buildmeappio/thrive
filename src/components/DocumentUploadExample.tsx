@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef } from "react";
-import { documentService } from "@/services";
+import { documentService } from "@/server";
 import { Button } from "@/components/ui/button";
 import { Upload, X, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 

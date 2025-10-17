@@ -42,6 +42,7 @@ class DashboardService {
       provinceOfResidence?: string;
       mailingAddress?: string;
       bio?: string;
+      profilePhotoId?: string | null;
       activationStep?: string;
     }
   ) {
@@ -60,7 +61,8 @@ class DashboardService {
       data.firstName ||
       data.lastName ||
       data.phoneNumber ||
-      data.emailAddress
+      data.emailAddress ||
+      data.profilePhotoId !== undefined
     ) {
       await prisma.user.update({
         where: { id: examinerProfile.account.userId },
@@ -69,6 +71,9 @@ class DashboardService {
           ...(data.lastName && { lastName: data.lastName }),
           ...(data.phoneNumber && { phone: data.phoneNumber }),
           ...(data.emailAddress && { email: data.emailAddress }),
+          ...(data.profilePhotoId !== undefined && {
+            profilePhotoId: data.profilePhotoId,
+          }),
         },
       });
     }

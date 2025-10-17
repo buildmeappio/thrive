@@ -1,6 +1,6 @@
 import HttpError from "@/utils/httpError";
 import { ExaminerStatus } from "@prisma/client";
-import emailService from "@/services/email.service";
+import { emailService } from "@/server";
 import { Roles } from "../../constants/roles";
 import { examinerService, tokenService } from "../services";
 import ErrorMessages from "@/constants/ErrorMessages";

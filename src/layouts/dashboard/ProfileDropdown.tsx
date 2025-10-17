@@ -5,17 +5,39 @@ import { useEffect, useRef, useState } from "react";
 import { LogOut, Home, LifeBuoy, UserPlus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createRoute, URLS } from "@/constants/route";
+import { getProfilePhotoUrlAction } from "@/server/actions/getProfilePhotoUrl";
 
 type ProfileDropdownProps = {
   isMobile: boolean;
   session: Session;
+  isActivationComplete?: boolean;
 };
 
-const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
+const ProfileDropdown = ({
+  isMobile,
+  session,
+  isActivationComplete = false,
+}: ProfileDropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const avatarDesktopRef = useRef<HTMLDivElement>(null);
   const avatarMobileRef = useRef<HTMLDivElement>(null);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | undefined>(
+    undefined
+  );
+
+  // Fetch profile photo URL on mount
+  useEffect(() => {
+    const fetchProfilePhoto = async () => {
+      if (session?.user?.image) {
+        const url = await getProfilePhotoUrlAction(
+          session.user.image as string
+        );
+        setProfilePhotoUrl(url || undefined);
+      }
+    };
+    void fetchProfilePhoto();
+  }, [session?.user?.image]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -57,28 +79,55 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
         </div>
         <ul className="py-2 text-sm text-gray-700">
           <li>
-            <a
-              href={createRoute(URLS.DASHBOARD)}
-              className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
-              <Home size={16} />
-              <span>Dashboard</span>
-            </a>
+            {isActivationComplete ? (
+              <a
+                href={createRoute(URLS.DASHBOARD)}
+                className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
+                <Home size={16} />
+                <span>Dashboard</span>
+              </a>
+            ) : (
+              <div
+                className="flex items-center space-x-2 px-4 py-2 text-gray-400 cursor-not-allowed"
+                title="Complete activation steps to unlock">
+                <Home size={16} />
+                <span>Dashboard</span>
+              </div>
+            )}
           </li>
           <li>
-            <a
-              href={createRoute(URLS.CASES)}
-              className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
-              <UserPlus size={16} />
-              <span>All Cases</span>
-            </a>
+            {isActivationComplete ? (
+              <a
+                href={createRoute(URLS.CASES)}
+                className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
+                <UserPlus size={16} />
+                <span>All Cases</span>
+              </a>
+            ) : (
+              <div
+                className="flex items-center space-x-2 px-4 py-2 text-gray-400 cursor-not-allowed"
+                title="Complete activation steps to unlock">
+                <UserPlus size={16} />
+                <span>All Cases</span>
+              </div>
+            )}
           </li>
           <li>
-            <a
-              href={createRoute(URLS.BILLING)}
-              className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
-              <LifeBuoy size={16} />
-              <span>Billing & Invoices</span>
-            </a>
+            {isActivationComplete ? (
+              <a
+                href={createRoute(URLS.BILLING)}
+                className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
+                <LifeBuoy size={16} />
+                <span>Billing & Invoices</span>
+              </a>
+            ) : (
+              <div
+                className="flex items-center space-x-2 px-4 py-2 text-gray-400 cursor-not-allowed"
+                title="Complete activation steps to unlock">
+                <LifeBuoy size={16} />
+                <span>Billing & Invoices</span>
+              </div>
+            )}
           </li>
           <li>
             <a
@@ -89,12 +138,21 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
             </a>
           </li>
           <li>
-            <a
-              href={createRoute(URLS.SUPPORT)}
-              className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
-              <LifeBuoy size={16} />
-              <span>Support & Help</span>
-            </a>
+            {isActivationComplete ? (
+              <a
+                href={createRoute(URLS.SUPPORT)}
+                className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
+                <LifeBuoy size={16} />
+                <span>Support & Help</span>
+              </a>
+            ) : (
+              <div
+                className="flex items-center space-x-2 px-4 py-2 text-gray-400 cursor-not-allowed"
+                title="Complete activation steps to unlock">
+                <LifeBuoy size={16} />
+                <span>Support & Help</span>
+              </div>
+            )}
           </li>
         </ul>
         <div className="py-1">
@@ -119,7 +177,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
           className="h-[50px] w-[50px] cursor-pointer border border-[#DBDBFF]"
           onClick={() => setDropdownOpen((prev) => !prev)}>
           <AvatarImage
-            src={session?.user?.image || undefined}
+            src={profilePhotoUrl}
             alt={session?.user?.name || "User"}
           />
           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
@@ -141,7 +199,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
         className="h-[40px] w-[40px] cursor-pointer border border-[#DBDBFF]"
         onClick={() => setDropdownOpen((prev) => !prev)}>
         <AvatarImage
-          src={session?.user?.image || undefined}
+          src={profilePhotoUrl}
           alt={session?.user?.name || "User"}
         />
         <AvatarFallback className="bg-[#00A8FF] text-white font-semibold text-xl">

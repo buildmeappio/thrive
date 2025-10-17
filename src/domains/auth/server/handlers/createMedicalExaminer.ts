@@ -2,7 +2,7 @@ import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
 import { Roles } from "../../constants/roles";
 import { ExaminerStatus } from "@prisma/client";
-import emailService from "@/services/email.service";
+import { emailService } from "@/server";
 import ErrorMessages from "@/constants/ErrorMessages";
 
 export type CreateMedicalExaminerInput = {
