@@ -8,7 +8,7 @@ import { sendMail } from "@/lib/email";
 import {
   generateExaminerRejectionEmail,
   EXAMINER_REJECTION_SUBJECT,
-} from "../../../../templates/emails/examiner-rejection";
+} from "@/emails/examiner-rejection";
 
 const rejectExaminer = async (examinerId: string, messageToExaminer: string) => {
   const user = await getCurrentUser();

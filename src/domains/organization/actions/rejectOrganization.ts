@@ -9,7 +9,7 @@ import { sendMail } from "@/lib/email";
 import { 
   generateOrganizationRejectionEmail,
   ORGANIZATION_REJECTION_SUBJECT 
-} from "../../../../templates/emails/organization-rejection";
+} from "@/emails/organization-rejection";
 
 type OrganizationView = {
   id: string;

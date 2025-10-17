@@ -9,7 +9,7 @@ import { signExaminerResubmitToken } from "@/lib/jwt";
 import {
   generateExaminerRequestMoreInfoEmail,
   EXAMINER_REQUEST_MORE_INFO_SUBJECT,
-} from "../../../../templates/emails/examiner-request-more-info";
+} from "@/emails/examiner-request-more-info";
 
 const requestMoreInfo = async (examinerId: string, message: string, documentsRequired: boolean = false) => {
   const user = await getCurrentUser();

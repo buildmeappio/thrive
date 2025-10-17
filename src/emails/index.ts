@@ -15,6 +15,11 @@ export {
   EXAMINER_REJECTION_SUBJECT,
 } from "./examiner-rejection";
 
+export {
+  generateExaminerApprovedEmail,
+  EXAMINER_APPROVED_SUBJECT,
+} from "./examiner-approved";
+
 // Organization Templates
 export {
   generateOrganizationRequestMoreInfoEmail,

@@ -10,7 +10,7 @@ import { signOrganizationResubmitToken } from "@/lib/jwt";
 import { 
   generateOrganizationRequestMoreInfoEmail,
   ORGANIZATION_REQUEST_MORE_INFO_SUBJECT 
-} from "../../../../templates/emails/organization-request-more-info";
+} from "@/emails/organization-request-more-info";
 
 type OrganizationView = {
   id: string;
