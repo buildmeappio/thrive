@@ -11,6 +11,7 @@ export type UpdateExaminerProfileInput = {
   provinceOfResidence: string;
   mailingAddress: string;
   bio?: string;
+  profilePhotoId?: string | null;
   activationStep?: string;
 };
 
@@ -26,6 +27,7 @@ const updateExaminerProfile = async (payload: UpdateExaminerProfileInput) => {
         provinceOfResidence: payload.provinceOfResidence,
         mailingAddress: payload.mailingAddress,
         bio: payload.bio,
+        profilePhotoId: payload.profilePhotoId,
         activationStep: payload.activationStep,
       }
     );
@@ -42,6 +44,7 @@ const updateExaminerProfile = async (payload: UpdateExaminerProfileInput) => {
         provinceOfResidence: updatedProfile.provinceOfResidence || "",
         mailingAddress: updatedProfile.mailingAddress || "",
         bio: updatedProfile.bio || "",
+        profilePhotoId: updatedProfile.account.user.profilePhotoId || null,
       },
     };
   } catch (error) {

@@ -102,17 +102,22 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
   try {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const uniqueFileName = createFileName(file);
     const key = createKey(file);
     const command = new PutObjectCommand({
       Bucket: ENV.AWS_S3_BUCKET!,
       Key: key,
       Body: buffer,
       ContentType: file.type,
+      Metadata: {
+        originalName: file.name,
+        uploadedAt: new Date().toISOString(),
+      },
     });
     await s3Client.send(command);
     const document = await prisma.documents.create({
       data: {
-        name: file.name,
+        name: uniqueFileName,
         size: file.size,
         type: file.type,
       },
@@ -121,7 +126,7 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
       success: true,
       document: {
         id: document.id,
-        name: file.name,
+        name: uniqueFileName,
         size: file.size,
         type: file.type,
       },

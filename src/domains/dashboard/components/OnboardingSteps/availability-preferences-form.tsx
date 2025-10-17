@@ -63,13 +63,13 @@ const AvailabilityPreferencesForm: React.FC<
 
   return (
     <div className="bg-white rounded-2xl px-8 py-4 shadow-sm">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h2 className="text-2xl font-medium">Set Your Availability</h2>
         <Button
           type="submit"
           form="availability-form"
           variant="outline"
-          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center gap-2"
+          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
           disabled={loading}>
           <span>Mark as Complete</span>
           <CircleCheck className="w-5 h-5 text-gray-700" />

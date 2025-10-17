@@ -11,6 +11,7 @@ export const updateExaminerProfileAction = async (data: {
   provinceOfResidence: string;
   mailingAddress: string;
   bio?: string;
+  profilePhotoId?: string | null;
   activationStep?: string;
 }) => {
   try {

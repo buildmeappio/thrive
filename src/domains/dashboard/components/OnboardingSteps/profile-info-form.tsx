@@ -7,6 +7,7 @@ import {
   User,
   CircleCheck,
 } from "lucide-react";
+import ProfilePhotoUpload from "@/components/ProfilePhotoUpload";
 import {
   FormProvider,
   FormField,
@@ -22,6 +23,7 @@ import {
   profileInfoSchema,
   ProfileInfoInput,
 } from "../../schemas/onboardingSteps.schema";
+import { uploadFileToS3 } from "@/lib/s3";
 
 interface ProfileInfoFormProps {
   examinerProfileId: string | null;
@@ -37,6 +39,10 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   onCancel: _onCancel,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(
+    initialData?.profilePhotoUrl || null
+  );
 
   const form = useForm<ProfileInfoInput>({
     schema: profileInfoSchema,
@@ -52,6 +58,10 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
     mode: "onSubmit",
   });
 
+  const handlePhotoChange = (file: File | null) => {
+    setProfilePhoto(file);
+  };
+
   const onSubmit = async (values: ProfileInfoInput) => {
     if (!examinerProfileId) {
       console.error("Examiner profile ID not found");
@@ -60,9 +70,38 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
     setLoading(true);
     try {
+      let uploadedPhotoId = initialData?.profilePhotoId || null;
+
+      // Upload profile photo if a new one was selected
+      if (profilePhoto) {
+        console.log("📸 Uploading profile photo to S3...");
+
+        const uploadResult = await uploadFileToS3(profilePhoto);
+
+        if (uploadResult.success) {
+          uploadedPhotoId = uploadResult.document.id;
+          console.log("✅ Profile photo uploaded successfully");
+          console.log("📋 Document ID:", uploadedPhotoId);
+
+          // Update preview URL (construct CDN URL)
+          const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL;
+          if (cdnUrl) {
+            const uploadedUrl = `${cdnUrl}/documents/examiner/${uploadResult.document.name}`;
+            setProfilePhotoUrl(uploadedUrl);
+          }
+        } else {
+          console.error(
+            "❌ Failed to upload profile photo:",
+            uploadResult.error
+          );
+          throw new Error(uploadResult.error);
+        }
+      }
+
       const result = await updateExaminerProfileAction({
         examinerProfileId,
         ...values,
+        profilePhotoId: uploadedPhotoId,
         activationStep: "profile", // Mark step 1 as completed
       });
 
@@ -80,7 +119,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
   return (
     <div className="bg-white rounded-2xl px-8 py-4 shadow-sm">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h2 className="text-2xl font-medium">
           Confirm or Complete Your Profile Info
         </h2>
@@ -88,7 +127,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
           type="submit"
           form="profile-form"
           variant="outline"
-          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center gap-2"
+          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
           disabled={loading}>
           <span>Mark as Complete</span>
           <CircleCheck className="w-5 h-5 text-gray-700" />
@@ -149,13 +188,14 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
               required
               options={provinceOptions}
               placeholder="Select Province"
-              className=""
+              from="profile-info-form"
             />
 
             <FormGoogleMapsInput
               name="mailingAddress"
               label="Mailing Address"
               required
+              from="profile-info-form"
             />
             {/* <FormField name="mailingAddress" label="Mailing Address" required>
               {(field) => (
@@ -176,9 +216,12 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Profile Photo*
               </label>
-              <div className="w-24 h-24 rounded-full bg-gray-100 border-2 border-gray-200 flex items-center justify-center">
-                <User size={40} className="text-gray-400" />
-              </div>
+              <ProfilePhotoUpload
+                currentPhotoUrl={profilePhotoUrl}
+                onPhotoChange={handlePhotoChange}
+                disabled={loading}
+                size="md"
+              />
             </div>
 
             {/* Bio */}

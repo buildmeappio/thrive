@@ -13,6 +13,7 @@ interface FormDropdownProps<TFieldValues extends FieldValues> {
   multiSelect?: boolean;
   icon?: React.ReactNode;
   className?: string;
+  from?: string;
 }
 
 const FormDropdown = <TFieldValues extends FieldValues>({
@@ -24,6 +25,7 @@ const FormDropdown = <TFieldValues extends FieldValues>({
   multiSelect = false,
   icon = null,
   className = "",
+  from = "",
 }: FormDropdownProps<TFieldValues>) => {
   const {
     control,
@@ -53,6 +55,7 @@ const FormDropdown = <TFieldValues extends FieldValues>({
             placeholder={placeholder}
             multiSelect={multiSelect}
             icon={icon}
+            from={from}
           />
         )}
       />
