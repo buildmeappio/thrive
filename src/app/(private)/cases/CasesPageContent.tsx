@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import CaseTableWrapper, { CasePagination } from "@/domains/case/components/CaseTableWrapper";
+import CaseTableWrapper from "@/domains/case/components/CaseTableWrapper";
 import { CaseData } from "@/domains/case/types/CaseData";
 import { DashboardShell } from "@/layouts/dashboard";
 
@@ -398,16 +398,6 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
             priorityLevels={priorityLevels}
           />
         </div>
-
-        {/* Pagination - Outside the table card */}
-        <CasePagination 
-          data={data} 
-          types={types} 
-          statuses={statuses} 
-          searchQuery={searchQuery}
-          filters={filters}
-          priorityLevels={priorityLevels}
-        />
       </div>
     </DashboardShell>
   );

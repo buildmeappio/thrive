@@ -185,7 +185,7 @@ const Sidebar = () => {
                     }}
                     className={cn(
                       "group relative flex w-full items-center text-left text-sm font-medium transition-all duration-200 mb-4",
-                      isCollapsed ? "justify-center rounded-xl px-3 py-2" : "justify-start rounded-xl gap-3 pl-4 py-2",
+                      isCollapsed ? "justify-center rounded-full px-3 py-2" : "justify-start rounded-full gap-3 pl-4 py-2",
                       active
                         ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white shadow-sm hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80"
                         : "bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]"

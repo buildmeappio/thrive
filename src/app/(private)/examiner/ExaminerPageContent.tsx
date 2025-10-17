@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import ExaminerTableWrapper, { ExaminerPagination } from "@/domains/examiner/components/ExaminerTableWrapper";
+import ExaminerTableWrapper from "@/domains/examiner/components/ExaminerTableWrapper";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { DashboardShell } from "@/layouts/dashboard";
 import { Cross, Funnel } from "lucide-react";
@@ -246,15 +246,6 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
             filters={filters}
           />
         </div>
-
-        {/* Pagination - Outside the table card */}
-        <ExaminerPagination 
-          data={data} 
-          specialties={specialties} 
-          statuses={statuses} 
-          searchQuery={searchQuery}
-          filters={filters}
-        />
       </div>
     </DashboardShell>
   );

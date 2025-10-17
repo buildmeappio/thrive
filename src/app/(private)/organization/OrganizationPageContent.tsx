@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import OrganizationTableWrapper, { OrganizationPagination } from "@/domains/organization/components/OrganizationTableWrapper";
+import OrganizationTableWrapper from "@/domains/organization/components/OrganizationTableWrapper";
 import { OrganizationData } from "@/domains/organization/types/OrganizationData";
 import { DashboardShell } from "@/layouts/dashboard";
 import { Cross, Funnel } from "lucide-react";
@@ -242,15 +242,6 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
             filters={filters}
           />
         </div>
-
-        {/* Pagination - Outside the table card */}
-        <OrganizationPagination 
-          data={data} 
-          types={types} 
-          statuses={statuses} 
-          searchQuery={searchQuery}
-          filters={filters}
-        />
       </div>
     </DashboardShell>
   );
