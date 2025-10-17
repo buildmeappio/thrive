@@ -13,17 +13,15 @@ const GettingStarted: React.FC = () => {
     router.push(URLS.REGISTER);
   };
   return (
-    <div className="flex min-h-screen flex-col bg-[#FAFAFF] md:flex-row">
+    <div className="flex min-h-[calc(100vh-97px)] flex-col bg-[#FAFAFF] md:flex-row">
       <div className="mt-8 flex-shrink-0 px-6 md:mt-16 md:w-[60%] md:px-0 md:pl-20">
         <div className="space-y-6">
-          <div className="">
-            <h1 className="text-[24px] font-bold text-gray-900 md:text-[40px]">
-              Independent Medical
-            </h1>
-            <h2 className="text-[24px] font-bold md:text-[40px]">
+          <div className="md:leading[150%] w-full text-[30px] leading-[100%] font-semibold tracking-[-0.03em] md:max-w-[660px] md:text-[50.86px]">
+            <h1 className="">Independent Medical</h1>
+            <h2 className="">
               Examinations for{' '}
               <span
-                className="text-[24px] font-bold md:text-[40px]"
+                className=""
                 style={{
                   color: '#000080',
                 }}
@@ -31,7 +29,7 @@ const GettingStarted: React.FC = () => {
                 Organization
               </span>
             </h2>
-            <p className="max-w-[100%] text-[16px] text-[#636363] md:max-w-[80%] md:text-base">
+            <p className="mt-4 font-[Poppins] text-[19.57px] leading-[130%] font-normal tracking-[-0.02em] text-[#636363]">
               Thrive helps insurance companies, government agencies, & regulatory bodies manage
               independent medical examinations with speed, accuracy, and total transparency — all
               from one secure platform.
@@ -40,7 +38,7 @@ const GettingStarted: React.FC = () => {
           <form onSubmit={handleGetStarted}>
             <button
               type="submit"
-              className="flex cursor-pointer items-center gap-2 rounded-full px-8 py-4 text-[16px] font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              className="flex cursor-pointer items-center gap-2 rounded-full px-8 py-4 text-center font-[Poppins] text-[12px] leading-[100%] font-medium tracking-[-0.02em] text-white transition-all duration-300 hover:scale-105 hover:shadow-lg md:text-[18.54px]"
               style={{
                 background: 'linear-gradient(90deg, #000080 0%, #5151B9 100%)',
               }}
@@ -57,12 +55,14 @@ const GettingStarted: React.FC = () => {
             alt="Organization Dashboard Preview"
             width={400}
             height={400}
-            className="h-[680px] w-[740px] rounded-lg"
+            className="h-[400px] w-full rounded-lg px-4"
           />
         </div>
 
         <div className="mt-8 space-y-4 md:mt-10">
-          <h3 className="text-lg font-semibold text-[#000000]">Fully Compliant & Confidential</h3>
+          <h3 className="font-[Poppins] text-[20px] leading-[39.99px] font-semibold tracking-[-0.03em] md:text-[20.11px]">
+            Fully Compliant & Confidential
+          </h3>
           <ul className="space-y-3 pb-4">
             {OrganizationFeatures.map((feature, index) => (
               <li key={index} className="flex items-start space-x-3">
@@ -72,7 +72,7 @@ const GettingStarted: React.FC = () => {
                   className="mt-1 flex-shrink-0"
                   style={{ color: '#000080' }}
                 />
-                <span className="flex-1 text-xs leading-relaxed text-[#333333] md:text-sm">
+                <span className="flex-1 font-[Poppins] text-[14.48px] leading-[12px] font-light tracking-[-0.01em] text-[#333333]">
                   {feature}
                 </span>
               </li>
@@ -88,7 +88,7 @@ const GettingStarted: React.FC = () => {
             alt="Organization Dashboard Preview"
             width={200}
             height={200}
-            className="h-[680px] w-[740px]"
+            className="h-[680px] w-[800px]"
           />
         </div>
       </div>

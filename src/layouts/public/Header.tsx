@@ -6,7 +6,7 @@ import { createImagePath } from '@/utils/createImagePath';
 const Header = () => {
   return (
     <nav className="bg-white">
-      <div className="flex items-center justify-center py-4">
+      <div className="flex items-center justify-center py-[20px]">
         <Link href={URLS.HOME}>
           <Image
             src={createImagePath('thriveLogo.png')}

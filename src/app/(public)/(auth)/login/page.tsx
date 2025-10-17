@@ -10,14 +10,16 @@ export const metadata: Metadata = {
 
 const LoginPage = () => {
   return (
-    <div className="bg-[#F2F5F6] pt-10">
-      <div className="flex flex-col justify-between md:min-h-screen md:flex-row">
+    <div className="bg-[#F2F5F6]">
+      <div className="flex flex-col justify-between md:min-h-[calc(100vh-97px)] md:flex-row">
         <div className="flex flex-1 flex-col justify-center px-6 md:px-0 md:pl-30">
-          <h1 className="mb-4 text-center text-3xl font-bold md:text-left md:text-[44px]">
+          <h1 className="mb-4 text-[68.35px] leading-[100%] font-semibold tracking-[-0.02em]">
             Welcome To <span>Thrive</span>{' '}
           </h1>
-          <div className="w-full rounded-xl border-[#E9EDEE] bg-white p-6 shadow-xs md:w-[445px]">
-            <h2 className="mb-6 text-[30px] font-semibold">Log In</h2>
+          <div className="w-full rounded-xl border-[#E9EDEE] bg-white p-6 shadow-xs md:max-w-[515px]">
+            <h2 className="mb-6 font-[Poppins] text-[20px] leading-[100%] font-medium tracking-[0em] md:text-[29.99px]">
+              Log In
+            </h2>
             <LoginForm />
           </div>
         </div>
@@ -29,7 +31,7 @@ const LoginPage = () => {
               alt="Organization Dashboard Preview"
               width={200}
               height={200}
-              className="h-full w-full"
+              className="h-[680px] w-[800px]"
             />
           </div>
         </div>

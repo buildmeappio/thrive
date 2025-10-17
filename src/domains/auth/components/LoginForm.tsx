@@ -54,7 +54,10 @@ const LoginForm = () => {
       {({ values, errors, handleChange }) => (
         <Form>
           <div className="mb-6">
-            <Label htmlFor="email" className="text-black">
+            <Label
+              htmlFor="email"
+              className="font-[Poppins] text-[14.78px] leading-[100%] font-normal tracking-[0em]"
+            >
               Email<span className="text-red-500">*</span>
             </Label>
             <Input
@@ -70,7 +73,10 @@ const LoginForm = () => {
           </div>
 
           <div className="mb-4">
-            <Label htmlFor="password" className="text-black">
+            <Label
+              htmlFor="password"
+              className="font-[Poppins] text-[14.78px] leading-[100%] font-normal tracking-[0em]"
+            >
               Password<span className="text-red-500">*</span>
             </Label>
             <PasswordInput
