@@ -1,5 +1,6 @@
 import Image from "@/components/Image";
 import { MapPin, Mail, Phone } from "lucide-react";
+import { ENV } from "@/constants/variables";
 
 const Footer = () => {
   const quickLinks = [
@@ -56,7 +57,7 @@ const Footer = () => {
           {/* Logo & Description */}
           <div>
             <Image
-              src="https://public-thrive-assets.s3.eu-north-1.amazonaws.com/footerLogo.png"
+              src={`${ENV.NEXT_PUBLIC_CDN_URL}/images/footerLogo.png`}
               alt="Thrive Footer Logo"
               width={150}
               height={50}

@@ -17,7 +17,7 @@ const Page = async ({
 }) => {
   const { token } = await searchParams;
   const languages = await authActions.getLanguages();
-
+    
   // If token exists, fetch examiner data and pass to RegisterForm
   let examinerData = null;
   if (token) {
