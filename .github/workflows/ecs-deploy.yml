@@ -82,19 +82,9 @@ jobs:
           cat <<EOF > .env
           ENVIRONMENT=${{ needs.select.outputs.target_env }}
           NEXT_PUBLIC_ENVIRONMENT=${{ needs.select.outputs.target_env }}
-          NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
-          NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
-          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GMAIL_REFRESH_TOKEN=${{ secrets.GMAIL_REFRESH_TOKEN }}
-          GMAIL_ACCESS_TOKEN=${{ secrets.GMAIL_ACCESS_TOKEN }}
           NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
-          AWS_REGION=${{ vars.AWS_REGION }}
           NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
-          JWT_SET_PASSWORD_SECRET=${{ secrets.JWT_SET_PASSWORD_SECRET }}
-          JWT_EXAMINER_INFO_REQUEST_SECRET=${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}
-          JWT_ORGANIZATION_INFO_REQUEST_SECRET=${{ secrets.JWT_ORGANIZATION_INFO_REQUEST_SECRET }}
-
+          AWS_REGION=${{ vars.AWS_REGION }}
           EOF
 
       - name: Build and Push container
