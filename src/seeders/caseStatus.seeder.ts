@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { PrismaClient } from "@prisma/client";
-import { CaseStatus } from "src/constants/caseStatus";
+import { CaseStatus } from "../constants/caseStatus";
 
 interface CaseStatusData {
   name: string;

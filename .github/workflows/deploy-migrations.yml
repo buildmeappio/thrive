@@ -1,0 +1,358 @@
+name: Deploy Database Migrations
+
+on:
+  push:
+    branches:
+      - main      # Deploy to production
+      - staging   # Deploy to staging
+      - qa        # Deploy to QA
+      - develop   # Deploy to dev
+
+  
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - qa
+          - staging
+          - prod
+      run_seeders:
+        description: 'Run seeders after migrations?'
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  id-token: write   # Required for OIDC
+  contents: read    # Required to checkout code
+
+env:
+  AWS_REGION: ca-central-1
+  ECR_REPOSITORY: prisma-db
+
+jobs:
+  determine-environment:
+    name: Determine Environment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      run_seeders: ${{ steps.set-env.outputs.run_seeders }}
+    steps:
+      - name: Set Environment
+        id: set-env
+        run: |
+          # Check if this is a manual workflow_dispatch run
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "environment=${{ inputs.environment }}" >> $GITHUB_OUTPUT
+            echo "run_seeders=${{ inputs.run_seeders }}" >> $GITHUB_OUTPUT
+          else
+            # Automatic runs based on branch
+            if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+              echo "environment=prod" >> $GITHUB_OUTPUT
+              echo "run_seeders=false" >> $GITHUB_OUTPUT  # Never auto-run in prod
+            elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+              echo "environment=staging" >> $GITHUB_OUTPUT
+              echo "run_seeders=true" >> $GITHUB_OUTPUT
+            elif [[ "${{ github.ref }}" == "refs/heads/qa" ]]; then
+              echo "environment=qa" >> $GITHUB_OUTPUT
+              echo "run_seeders=true" >> $GITHUB_OUTPUT
+            elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+              echo "environment=dev" >> $GITHUB_OUTPUT
+              echo "run_seeders=true" >> $GITHUB_OUTPUT
+            else
+              echo "environment=dev" >> $GITHUB_OUTPUT
+              echo "run_seeders=true" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  build-and-push:
+    name: Build & Push Migration Image
+    runs-on: ubuntu-latest
+    needs: determine-environment
+    environment: ${{ needs.determine-environment.outputs.environment }}
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::564083281173:role/${{ needs.determine-environment.outputs.environment }}-github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: github-prisma-db-${{ github.run_id }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, and Push Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+          ENV: ${{ needs.determine-environment.outputs.environment }}
+        run: |
+          # Build the Docker image
+          docker build -t $ECR_REGISTRY/$ENV/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/$ENV/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ENV/$ECR_REPOSITORY:latest
+          
+          # Push to ECR
+          docker push $ECR_REGISTRY/$ENV/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ENV/$ECR_REPOSITORY:latest
+          
+          echo "IMAGE_URI=$ECR_REGISTRY/$ENV/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Output Image URI
+        run: echo "Pushed image ${{ env.IMAGE_URI }}"
+
+  run-migrations:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    needs: [determine-environment, build-and-push]
+    environment: ${{ needs.determine-environment.outputs.environment }}
+    
+    steps:
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::564083281173:role/${{ needs.determine-environment.outputs.environment }}-github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: github-prisma-db-migration-${{ github.run_id }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Run Migration Task
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+          ENV: ${{ needs.determine-environment.outputs.environment }}
+        run: |
+          # Get cluster info
+          CLUSTER_NAME="${ENV}-cluster"
+          
+          # Get VPC configuration from existing services
+          SERVICE_INFO=$(aws ecs describe-services \
+            --cluster $CLUSTER_NAME \
+            --services ${ENV}-admin-service \
+            --query 'services[0].networkConfiguration.awsvpcConfiguration' \
+            --output json)
+          
+          SUBNETS=$(echo $SERVICE_INFO | jq -r '.subnets | join(",")')
+          SECURITY_GROUPS=$(echo $SERVICE_INFO | jq -r '.securityGroups | join(",")')
+          
+          # Get AWS Account ID (no additional permissions needed)
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          
+          # Get DB secret ARN using describe-secret (requires secretsmanager:DescribeSecret)
+          # This works with partial secret name (without suffix) and returns full ARN
+          # ECS task definitions require exact ARN (wildcards not supported in valueFrom)
+          DB_SECRET_ARN=$(aws secretsmanager describe-secret \
+            --secret-id ${ENV}-db-connection \
+            --region ${AWS_REGION} \
+            --query 'ARN' \
+            --output text)
+          
+          # Construct execution role ARN directly (no IAM GetRole permission needed)
+          EXECUTION_ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ENV}-ecs-execution-role"
+          
+          # Create CloudWatch log group if it doesn't exist
+          aws logs create-log-group --log-group-name "/ecs/${ENV}/migrations" --region ${AWS_REGION} 2>/dev/null || true
+          
+          # Register task definition for migrations
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --family ${ENV}-db-migrations \
+            --network-mode awsvpc \
+            --requires-compatibilities FARGATE \
+            --cpu 256 \
+            --memory 512 \
+            --execution-role-arn $EXECUTION_ROLE_ARN \
+            --container-definitions "[
+              {
+                \"name\": \"db-migrator\",
+                \"image\": \"$ECR_REGISTRY/$ENV/$ECR_REPOSITORY:$IMAGE_TAG\",
+                \"essential\": true,
+                \"command\": [\"npx\", \"prisma\", \"migrate\", \"deploy\"],
+                \"secrets\": [
+                  {
+                    \"name\": \"DATABASE_URL\",
+                    \"valueFrom\": \"${DB_SECRET_ARN}:url::\"
+                  }
+                ],
+                \"logConfiguration\": {
+                  \"logDriver\": \"awslogs\",
+                  \"options\": {
+                    \"awslogs-group\": \"/ecs/${ENV}/migrations\",
+                    \"awslogs-region\": \"${AWS_REGION}\",
+                    \"awslogs-stream-prefix\": \"migration\"
+                  }
+                }
+              }
+            ]" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          
+          echo "Created task definition: $TASK_DEF_ARN"
+          
+          # Run the migration task
+          TASK_ARN=$(aws ecs run-task \
+            --cluster $CLUSTER_NAME \
+            --task-definition $TASK_DEF_ARN \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SECURITY_GROUPS],assignPublicIp=DISABLED}" \
+            --query 'tasks[0].taskArn' \
+            --output text)
+          
+          echo "Started migration task: $TASK_ARN"
+          
+          # Wait for task to complete (with timeout)
+          echo "Waiting for migration task to complete..."
+          aws ecs wait tasks-stopped \
+            --cluster $CLUSTER_NAME \
+            --tasks $TASK_ARN \
+            --cli-read-timeout 300 \
+            --cli-connect-timeout 300
+          
+          # Check if task succeeded
+          EXIT_CODE=$(aws ecs describe-tasks \
+            --cluster $CLUSTER_NAME \
+            --tasks $TASK_ARN \
+            --query 'tasks[0].containers[0].exitCode' \
+            --output text)
+          
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "❌ Migration task failed with exit code: $EXIT_CODE"
+            echo "Check logs at: https://console.aws.amazon.com/cloudwatch/home?region=${AWS_REGION}#logsV2:log-groups/log-group/%2Fecs%2F${ENV}%2Fmigrations"
+            exit 1
+          fi
+          
+          echo "✅ Migrations completed successfully!"
+
+  run-seeders:
+    name: Run Database Seeders
+    runs-on: ubuntu-latest
+    needs: [determine-environment, build-and-push, run-migrations]
+    # Run seeders based on environment logic:
+    # - Dev/QA/Staging: Auto-run (idempotent, safe)
+    # - Production: Only via manual workflow_dispatch
+    if: needs.determine-environment.outputs.run_seeders == 'true'
+    environment: ${{ needs.determine-environment.outputs.environment }}
+    
+    steps:
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::564083281173:role/${{ needs.determine-environment.outputs.environment }}-github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: github-prisma-db-seeder-${{ github.run_id }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Run Seeder Task
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+          ENV: ${{ needs.determine-environment.outputs.environment }}
+        run: |
+          # Get cluster info
+          CLUSTER_NAME="${ENV}-cluster"
+          
+          # Get VPC configuration
+          SERVICE_INFO=$(aws ecs describe-services \
+            --cluster $CLUSTER_NAME \
+            --services ${ENV}-admin-service \
+            --query 'services[0].networkConfiguration.awsvpcConfiguration' \
+            --output json)
+          
+          SUBNETS=$(echo $SERVICE_INFO | jq -r '.subnets | join(",")')
+          SECURITY_GROUPS=$(echo $SERVICE_INFO | jq -r '.securityGroups | join(",")')
+          
+          # Get AWS Account ID (no additional permissions needed)
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          
+          # Get DB secret ARN using describe-secret (requires secretsmanager:DescribeSecret)
+          # This works with partial secret name (without suffix) and returns full ARN
+          # ECS task definitions require exact ARN (wildcards not supported in valueFrom)
+          DB_SECRET_ARN=$(aws secretsmanager describe-secret \
+            --secret-id ${ENV}-db-connection \
+            --region ${AWS_REGION} \
+            --query 'ARN' \
+            --output text)
+          
+          # Construct execution role ARN directly (no IAM GetRole permission needed)
+          EXECUTION_ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${ENV}-ecs-execution-role"
+          
+          # Register task definition for seeders
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --family ${ENV}-db-seeders \
+            --network-mode awsvpc \
+            --requires-compatibilities FARGATE \
+            --cpu 256 \
+            --memory 512 \
+            --execution-role-arn $EXECUTION_ROLE_ARN \
+            --container-definitions "[
+              {
+                \"name\": \"db-seeder\",
+                \"image\": \"$ECR_REGISTRY/$ENV/$ECR_REPOSITORY:$IMAGE_TAG\",
+                \"essential\": true,
+                \"command\": [\"npm\", \"run\", \"seed\"],
+                \"secrets\": [
+                  {
+                    \"name\": \"DATABASE_URL\",
+                    \"valueFrom\": \"${DB_SECRET_ARN}:url::\"
+                  }
+                ],
+                \"logConfiguration\": {
+                  \"logDriver\": \"awslogs\",
+                  \"options\": {
+                    \"awslogs-group\": \"/ecs/${ENV}/migrations\",
+                    \"awslogs-region\": \"${AWS_REGION}\",
+                    \"awslogs-stream-prefix\": \"seeder\"
+                  }
+                }
+              }
+            ]" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          
+          echo "Created seeder task definition: $TASK_DEF_ARN"
+          
+          # Run the seeder task
+          TASK_ARN=$(aws ecs run-task \
+            --cluster $CLUSTER_NAME \
+            --task-definition $TASK_DEF_ARN \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SECURITY_GROUPS],assignPublicIp=DISABLED}" \
+            --query 'tasks[0].taskArn' \
+            --output text)
+          
+          echo "Started seeder task: $TASK_ARN"
+          
+          # Wait for task to complete
+          echo "Waiting for seeder task to complete..."
+          aws ecs wait tasks-stopped \
+            --cluster $CLUSTER_NAME \
+            --tasks $TASK_ARN
+          
+          # Check if task succeeded
+          EXIT_CODE=$(aws ecs describe-tasks \
+            --cluster $CLUSTER_NAME \
+            --tasks $TASK_ARN \
+            --query 'tasks[0].containers[0].exitCode' \
+            --output text)
+          
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "⚠️  Seeder task failed with exit code: $EXIT_CODE"
+            echo "Check logs at: https://console.aws.amazon.com/cloudwatch/home?region=${AWS_REGION}#logsV2:log-groups/log-group/%2Fecs%2F${ENV}%2Fmigrations"
+            exit 1
+          fi
+          
+          echo "✅ Seeders completed successfully!"
+

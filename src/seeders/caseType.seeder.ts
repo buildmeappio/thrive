@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import { CaseType } from '../constants/caseType';
 import { PrismaClient } from '@prisma/client';
+import { CaseType } from '../constants/caseType';
 
 interface CaseTypeData {
     name: string;

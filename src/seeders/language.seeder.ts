@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { PrismaClient } from "@prisma/client";
-import { Language } from "src/constants/language";
+import { Language } from "../constants/language";
 
 interface LanguageData {
   name: string;
