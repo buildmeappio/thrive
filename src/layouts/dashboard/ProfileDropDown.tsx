@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { LogOut, Home, LifeBuoy, UserPlus } from 'lucide-react';
 import Link from 'next/link';
+import { ENV } from '@/constants/variables';
 
 type ProfileDropdownProps = {
   isMobile: boolean;
@@ -44,7 +45,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
   }, [session?.user?.image]);
 
   const getProfileImageUrl = () => {
-    return session?.user?.image || '/admin/images/avatar.png';
+    return session?.user?.image || `${ENV.NEXT_PUBLIC_CDN_URL}/images/admin-avatar.png`;
   };
 
   const renderDropdown = () => {
@@ -90,16 +91,16 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
           </li>
         </ul>
         <div className="py-1">
-          <a
-            onClick={() => {
-              signOut({ callbackUrl: '/login' });
+          <button
+            onClick={async () => {
               localStorage.removeItem('token');
+              await signOut({ callbackUrl: '/admin/login', redirect: true });
             }}
-            className="flex cursor-pointer items-center space-x-2 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
+            className="flex w-full cursor-pointer items-center space-x-2 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
           >
             <LogOut size={16} />
             <span>Sign out</span>
-          </a>
+          </button>
         </div>
       </div>
     );
@@ -130,15 +131,15 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
   }
 
   return (
-    <div className="relative" ref={avatarDesktopRef} style={{ width: 48, height: 48 }}>
+    <div className="relative flex-shrink-0" ref={avatarDesktopRef}>
       {imageLoading && (
         <div className="absolute inset-0 flex items-center justify-center rounded-full bg-gray-500 bg-opacity-50">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+          <div className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
         </div>
       )}
       <Image
         onClick={() => setDropdownOpen(prev => !prev)}
-        className="h-[50px] min-h-[50px] w-[50px] cursor-pointer rounded-full border border-[#DBDBFF] bg-white object-cover"
+        className="h-8 w-8 sm:h-10 sm:w-10 lg:h-[50px] lg:w-[50px] cursor-pointer rounded-full border border-[#DBDBFF] bg-white object-cover flex-shrink-0"
         src={getProfileImageUrl()}
         alt="User dropdown"
         height={48}

@@ -3,7 +3,7 @@ import { Roles, RoleType } from "@/domains/auth/constants/roles";
 export const ALLOWED_ROLES = new Set<RoleType>([
   Roles.SUPER_ADMIN,
   Roles.ADMIN,
-  Roles.STAFF,
+  Roles.STAFF
 ]);
 
 

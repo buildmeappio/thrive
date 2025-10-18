@@ -23,8 +23,8 @@ const PRIVATE_ROUTES = Object.freeze([URLS.DASHBOARD]);
 export { URLS, PUBLIC_ROUTES, PRIVATE_ROUTES };
 
 export const createRoute = (route: string) => {
-  if (!route.startsWith(PREFIX)) {
-    return PREFIX + route;
-  }
+  // if (!route.includes(PREFIX)) {
+    // return PREFIX + route;
+  // }
   return route;
 };

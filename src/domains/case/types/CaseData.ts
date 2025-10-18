@@ -3,13 +3,13 @@ export type CaseData = {
   number: string;
   claimant: string;
   organization: string;
-  caseType: string;
-  examFormat: string;
-  requestedSpecialty: string;
+  caseType: string; 
   status: string;
-  preferredLocation: string;
   urgencyLevel: string;
   reason: string;
   examinerId: string;
   submittedAt: string;
+  assignedAt?: string;
+  dueDate?: string | null;
 };
+

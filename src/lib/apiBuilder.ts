@@ -3,7 +3,6 @@ import type { Method, RouteCtx, Handler, User } from '@/types/apiBuilder';
 import { HttpError } from '@/utils/httpError';
 import z, { type ZodObject, type ZodAny, ZodError } from 'zod';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Validator = ZodObject<any> | ZodAny;
 
 class ApiBuilder<M extends Method | null = Method, TBody extends Record<string, unknown> = Record<string, unknown>> {

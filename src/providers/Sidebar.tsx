@@ -3,7 +3,9 @@ import React, { createContext, useContext, useState, type ReactNode } from 'reac
 
 interface SidebarContextType {
   isSidebarOpen: boolean;
+  isCollapsed: boolean;
   toggleSidebar: () => void;
+  toggleCollapse: () => void;
   closeSidebar: () => void;
   openSidebar: () => void;
 }
@@ -16,9 +18,14 @@ interface SidebarProviderProps {
 
 const SidebarProvider: React.FC<SidebarProviderProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(prev => !prev);
+  };
+
+  const toggleCollapse = () => {
+    setIsCollapsed(prev => !prev);
   };
 
   const closeSidebar = () => {
@@ -33,7 +40,9 @@ const SidebarProvider: React.FC<SidebarProviderProps> = ({ children }) => {
     <SidebarContext.Provider
       value={{
         isSidebarOpen,
+        isCollapsed,
         toggleSidebar,
+        toggleCollapse,
         closeSidebar,
         openSidebar,
       }}

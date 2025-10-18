@@ -1,5 +1,6 @@
-import { Organization, organizationHandlers } from "@/domains/organization";
-import { OrganizationRow } from "@/domains/organization/components/columns";
+import organizationActions from "@/domains/organization/actions";
+import { OrganizationData } from "@/domains/organization/types/OrganizationData";
+import OrganizationPageContent from "./OrganizationPageContent";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,12 +8,18 @@ export const metadata: Metadata = {
   description: "Organization",
 };
 
-const Page = async () => {
-  // Fetch organizations from the server
-  const orgs = await organizationHandlers.getOrganizations();
+export const dynamic = "force-dynamic";
 
-  // Map to table row shape
-  const data: OrganizationRow[] = orgs.map((org) => ({
+const Page = async () => {
+  const [orgs, types] = await Promise.all([
+    organizationActions.getOrganizations(),
+    organizationActions.getOrganizationTypes(),
+  ]);
+
+  const typeNames = types.map((t) => t.name);
+  const statusNames = ["PENDING", "ACCEPTED", "REJECTED"];
+
+  const data: OrganizationData[] = orgs.map((org) => ({
     id: org.id,
     name: org.name,
     website: org.website,
@@ -22,9 +29,10 @@ const Page = async () => {
     managerName: org.manager?.[0]?.account?.user?.firstName
       ? `${org.manager[0].account.user.firstName} ${org.manager[0].account.user.lastName}`
       : "",
+    managerEmail: org.manager?.[0]?.account?.user?.email ?? "",
   }));
 
-  return <Organization data={data} />;
+  return <OrganizationPageContent data={data} types={typeNames} statuses={statusNames} />;
 };
 
 export default Page;

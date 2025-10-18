@@ -4,6 +4,7 @@ import caseService from "../server/case.service";
 import { HttpError } from "@/utils/httpError";
 import { CaseStatus } from "../constants/case-status";
 import { sendMail } from "@/lib/email";
+import { ENV } from "@/constants/variables";
 
 function sendLinkToClaimant(email: string, link: string) {
   console.log(`Sending link to ${email}: ${link}`);
@@ -32,7 +33,7 @@ const readyForAppointment = async (caseId: string) => {
 
     const link = await caseService.generateSecureLink(updatedItem.id);
 
-    sendLinkToClaimant(caseItem.referral.claimant.emailAddress, link);
+    sendLinkToClaimant(caseItem.case.claimant.emailAddress, link);
   } catch (error) {
     throw HttpError.fromError(error, "Failed to ready for appointment");
   }
@@ -46,7 +47,7 @@ const readyForAppointmentEmailHtml = (link: string) => {
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
 
       <div style="text-align: center;">
-        <img src="https://localhost:3000/logo.png" alt="Thrive Assessment & Care" style="height: 48px; margin-bottom: 16px;" />
+        <img src="${ENV.NEXT_PUBLIC_CDN_URL}/images/thrive-logo.png" alt="Thrive Assessment & Care" style="height: 48px; margin-bottom: 16px;" />
       </div>
 
       <p style="font-family: 'Poppins', Arial, sans-serif; font-size: 16px; line-height: 1.5; color: #333;">

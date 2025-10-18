@@ -12,9 +12,7 @@ const listAllCases = async () => {
     assignToUserId = user?.accountId;
   }
 
-  const cases = await handlers.listCases({
-    assignToUserId,
-  });
+  const cases = await handlers.listCases(assignToUserId);
 
   return cases;
 };

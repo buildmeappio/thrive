@@ -10,6 +10,7 @@ const getOrganizations = async (): Promise<any[]> => {
   }
 
   const orgs = await organizationsService.listOrganizations();
+  console.log("organization list", orgs)
   return orgs.map(OrganizationDto.toOrganization);
 };
 

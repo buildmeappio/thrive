@@ -34,6 +34,7 @@ const ActionButton = ({ id }: { id: string }) => {
   );
 };
 
+
 const Content = ({
   children,
   first,
@@ -55,14 +56,14 @@ const Content = ({
 
 const columns: ColumnDef<CaseData>[] = [
   {
-    header: () => <Header first>Number</Header>,
+    header: () => <Header first>Case No.</Header>,
     accessorKey: "number",
     cell: ({ row }) => {
       return <Content first>{row.original.number}</Content>;
     },
   },
   {
-    header: () => <Header>Claimant</Header>,
+    header: () => <Header>Claimant Name</Header>,
     accessorKey: "claimant",
     cell: ({ row }) => {
       return <Content>{row.original.claimant}</Content>;
@@ -76,11 +77,25 @@ const columns: ColumnDef<CaseData>[] = [
     },
   },
   {
-    header: () => <Header>Case Type</Header>,
+    header: () => <Header>Type</Header>,
     accessorKey: "caseType",
     cell: ({ row }) => {
       return <Content>{row.original.caseType}</Content>;
     },
+  },
+  {
+    header: () => <Header>Status</Header>,
+    accessorKey: "status",
+    cell: ({ row }) => {
+      return <Content>{row.original.status}</Content>;
+    },
+  },
+  {
+    header: () => <Header>Urgency Level</Header>,
+    accessorKey: "urgencyLevel",
+    cell: ({ row }) => {
+      return <Content>{row.original.urgencyLevel}</Content>;
+    }
   },
   {
     header: () => <Header>Submitted At</Header>,
@@ -89,6 +104,7 @@ const columns: ColumnDef<CaseData>[] = [
       return <Content>{formatDate(row.original.submittedAt)}</Content>;
     },
   },
+
   {
     header: "",
     accessorKey: "id",

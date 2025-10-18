@@ -1,67 +1,149 @@
 "use client";
 
+import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-const rows = [
-  ["Dr. Emily Ross", "Physiatry", "Apr 15, 2025", "Ontario"],
-  ["Dr. Michael Chen", "Cardiology", "May 22, 2025", "British Columbia"],
-  ["Nurse Sarah", "Pediatrics", "Jun 10, 2025", "Alberta"],
-  ["Dr. Aisha Khan", "Neurology", "Jul 30, 2025", "Quebec"],
-  ["Dr. Robert Lee", "Oncology", "Aug 12, 2025", "Nova Scotia"],
-  ["Dr. Mia Patel", "Gastroenterology", "Sep 5, 2025", "Saskatchewan"],
-  ["Nurse James Smith", "Emergency Medicine", "Oct 18, 2025", "Manitoba"],
-];
+export type ExaminerRow = {
+  id: string;
+  name: string;
+  specialties: string;
+  licenseNumber: string;
+  province: string;
+};
 
-export default function NewExaminers() {
+type Props = {
+  items: ExaminerData[];                 // rows to show
+  listHref: string;                     // e.g. "/examiners"
+  buildDetailHref?: (id: string) => string; // defaults to `${listHref}/${id}`
+  visibleCount?: number;                // optional slice on dashboard
+  subtitle?: string;
+};
+
+export default function NewExaminers({
+  items,
+  listHref,
+  buildDetailHref = (id) => `${listHref}/${id}`,
+  visibleCount = 7,
+  subtitle = "Pending for verification",
+}: Props) {
+  const rows = items.slice(0, visibleCount);
+
   return (
     <section
       className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
       aria-labelledby="new-examiners-heading"
-      style={{ fontFamily: "Poppins, system-ui" }}
     >
-      <div className="flex items-center justify-between">
+      {/* Title + CTA */}
+      <div className="flex items-center justify-between gap-2 sm:gap-3">
         <h3
           id="new-examiners-heading"
-          className="text-[22px] font-semibold tracking-[-0.02em]"
+          className="font-degular font-[600] text-[20px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black"
         >
-          New <span className="bg-[linear-gradient(270deg,#01F4C8_50%,#00A8FF_65.19%)] bg-clip-text text-transparent">Medical</span> Examiners
+          New Examiners Applications
         </h3>
 
-        <button
-          type="button"
-          className="h-[34px] rounded-[20px] bg-[#0C108B] px-4 text-white text-sm"
+        <Link
+          href={listHref}
+          className="h-[30px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-3 sm:px-4 text-white text-xs sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0"
         >
           View All
-        </button>
+        </Link>
       </div>
 
-      <p className="mt-1 text-xs text-neutral-500">Pending for verification</p>
+      {/* Subline */}
+      <p className="mt-1 font-poppins font-[300] text-[12px] sm:text-[13.26px] leading-[100%] text-[#7A7A7A]">
+        {subtitle}
+      </p>
 
-      {/* Table */}
-      <div className="mt-4 overflow-hidden rounded-2xl border border-neutral-200">
-        <div className="grid grid-cols-5 bg-neutral-100/70 px-4 py-3 text-sm font-medium tracking-[-0.02em]">
-          <div className="col-span-2">Name</div>
-          <div>Specialty</div>
-          <div>Submitted On</div>
-          <div>Province</div>
-        </div>
-
-        <ul className="divide-y divide-neutral-200">
-          {rows.map((r, i) => (
-            <li
-              key={i}
-              className="grid grid-cols-5 items-center px-4 py-3 text-sm tracking-[-0.01em]"
-            >
-              <span className="col-span-2 text-[#1A1A1A]">{r[0]}</span>
-              <span className="text-neutral-700">{r[1]}</span>
-              <span className="text-neutral-700">{r[2]}</span>
-              <span className="flex items-center justify-between text-neutral-700">
-                {r[3]}
-                <ChevronRight className="h-4 w-4 text-[#00A8FF]" />
-              </span>
-            </li>
-          ))}
-        </ul>
+      {/* Table - Using shadcn components */}
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-[#E8E8E8]">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-[#F3F3F3] border-b-0 hover:bg-[#F3F3F3]">
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
+                Name
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
+                Email
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
+                Specialties
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
+                Province
+              </TableHead>
+              <TableHead className="text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-12 whitespace-nowrap">
+                Status
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => {
+              const href = buildDetailHref(r.id);
+              const statusText = r.status === "PENDING" ? "Pending" : r.status === "ACCEPTED" ? "Approved" : "Rejected";
+              
+              return (
+                <TableRow 
+                  key={r.id}
+                  className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
+                >
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#1A1A1A] font-poppins py-3">
+                    <span className="truncate block">{r.name}</span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">{r.email}</span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">
+                      {(() => {
+                        const specialties = r.specialties as string | string[] | undefined;
+                        if (Array.isArray(specialties)) {
+                          return specialties.map(specialty => 
+                            specialty.split('-').map(word => 
+                              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                            ).join(' ')
+                          ).join(", ");
+                        } else if (typeof specialties === 'string') {
+                          return specialties.split('-').map(word => 
+                            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                          ).join(' ');
+                        } else {
+                          return '-';
+                        }
+                      })()}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-3">
+                    <span className="truncate block">{r.province}</span>
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins truncate min-w-0 flex-1">
+                        {statusText}
+                      </span>
+                      <Link
+                        href={href}
+                        aria-label={`Open ${r.name}`}
+                        className="flex-shrink-0 grid h-5 w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
+                      >
+                        <ChevronRight className="h-3.5 w-3.5 text-[#00A8FF]" />
+                      </Link>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </div>
     </section>
   );

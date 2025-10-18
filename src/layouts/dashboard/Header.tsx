@@ -15,47 +15,51 @@ const Header = ({ title }: HeaderProps) => {
   const { isSidebarOpen, toggleSidebar } = useSidebar();
 
   return (
-    <header className="px-8">
-      <div className="relative flex w-full flex-col gap-4 p-4">
+    <header className="px-4 sm:px-6 md:px-8">
+      <div className="relative flex w-full flex-col gap-2 md:gap-4 py-4">
         {/* Mobile Header Row */}
-        <div className="flex items-center pt-4 justify-between bg-black md:hidden">
+        <div className="flex items-start gap-2 pt-2 md:hidden">
           {/* Mobile Menu Button */}
           <Button
             variant="ghost"
             size="sm"
             onClick={toggleSidebar}
-            className="p-2 hover:bg-gray-100"
+            className="p-2 hover:bg-gray-100 shrink-0"
           >
             {isSidebarOpen ? (
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5" />
             ) : (
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5" />
             )}
           </Button>
 
-          {/* Title for mobile */}
-          {typeof title === "string" ? (
-            <h1 className="text-xl text-left font-semibold text-[#000000] md:text-2xl lg:text-3xl">
-              {title}
-            </h1>
-          ) : (
-            title
-          )}
+          {/* Title for mobile - takes available space */}
+          <div className="flex-1 min-w-0 mr-2">
+            {typeof title === "string" ? (
+              <h1 className="text-lg font-semibold text-[#000000] leading-tight break-words">
+                {title}
+              </h1>
+            ) : (
+              <div className="w-full">{title}</div>
+            )}
+          </div>
 
           {/* Profile for mobile */}
           {session && <ProfileDropdown isMobile={true} session={session} />}
         </div>
 
         {/* Desktop Header Row */}
-        <div className="hidden md:flex md:items-center md:justify-between md:gap-4 pt-4">
+        <div className="hidden md:flex md:items-center md:justify-between md:gap-4 pt-2">
           {/* Title Section for desktop */}
-          {typeof title === "string" ? (
-            <h1 className="text-xl text-left font-semibold text-[#000000] md:text-2xl lg:text-3xl">
-              {title}
-            </h1>
-          ) : (
-            title
-          )}
+          <div className="flex-1 min-w-0">
+            {typeof title === "string" ? (
+              <h1 className="text-xl font-semibold text-[#000000] md:text-2xl lg:text-3xl">
+                {title}
+              </h1>
+            ) : (
+              title
+            )}
+          </div>
 
           {/* Profile Section for desktop */}
           {session && <ProfileDropdown isMobile={false} session={session} />}

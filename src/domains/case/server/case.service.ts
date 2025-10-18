@@ -1,73 +1,70 @@
 import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
-import { Case, Prisma } from "@prisma/client";
+import { Examination, Prisma, ExaminationSecureLinkStatus } from "@prisma/client";
 import { Roles } from "@/domains/auth/constants/roles";
 import { isAllowedRole } from "@/lib/rbac";
-import { CaseSecureLinkStatus } from "@prisma/client";
 import { v4 } from "uuid";
 
 export type ListCasesFilter = {
-  assignToUserId?: string | undefined;
-  caseTypes?: string[] | undefined;
-  statuses?: string[] | undefined;
+  assignToUserId?: string;
+  caseTypes?: string[];
+  statuses?: string[];
 };
 
 class CaseService {
-  async getCaseTypes(caseTypeNames: string[]) {
+  // Get case types based on provided names
+  async getCaseTypes(typeNames: string[]) {
     try {
-      const caseTypes = await prisma.caseType.findMany({
+      const types = await prisma.examinationType.findMany({
         where: {
-          name: {
-            in: caseTypeNames,
-          },
+          name: { in: typeNames },
         },
       });
 
-      if (caseTypes.length === 0) {
+      if (types.length === 0) {
         throw HttpError.notFound("Case type not found");
       }
 
-      return caseTypes;
+      return types;
     } catch (error) {
-      throw HttpError.fromError(error, "Failed to get case type");
+      throw HttpError.fromError(error, "Failed to get case types");
     }
   }
 
-  async doesCaseBelongToUser(caseItem: Case, userId: string) {
-    // if user is super admin, return true
+  // Check if the case belongs to the user
+  async doesCaseBelongToUser(exam: Examination, userId: string) {
     const user = await prisma.account.findFirst({
-      where: {
-        userId: userId,
-      },
-      include: {
-        role: true,
-      },
+      where: { userId },
+      include: { role: true },
     });
 
     if (!user) throw HttpError.notFound("User not found");
 
     if (user.role.name === Roles.SUPER_ADMIN) return true;
 
-    if (caseItem.assignToId !== user.id) {
+    if (exam.assignToId !== user.id) {
       throw HttpError.notFound("Case does not belong to user");
     }
 
     return true;
   }
 
+  // Retrieve a user's assignable account ID based on their roles
   async getAssignTo(userId: string) {
+    console.log("userId", userId);
+
     const accounts = await prisma.account.findMany({
-      where: {
-        userId: userId,
-      },
-      include: {
-        role: true,
-      },
+      where: { userId },
+      include: { role: true },
     });
 
+    console.log("roles", accounts);
     const isInvalidRole = accounts.some(
       (account) => !isAllowedRole(account.role.name)
     );
+
+    console.log("isInvalidRole", isInvalidRole);
+
     if (accounts.length === 0 || isInvalidRole) {
       throw HttpError.badRequest("Invalid role");
     }
@@ -81,7 +78,7 @@ class CaseService {
 
     const account = accounts.find(
       (account) =>
-        account.role.name == Roles.STAFF || account.role.name == Roles.ADMIN
+        account.role.name === Roles.STAFF || account.role.name === Roles.ADMIN
     );
 
     if (!account) {
@@ -90,13 +87,10 @@ class CaseService {
     return account.id;
   }
 
-  async getStatuses(statusNames: string[]) {
+  // Get the statuses for case types
+  async getStatuses() {
     try {
-      const statuses = await prisma.caseStatus.findMany({
-        where: {
-          name: { in: statusNames },
-        },
-      });
+      const statuses = await prisma.caseStatus.findMany();
 
       if (statuses.length === 0) {
         throw HttpError.notFound("Status not found");
@@ -108,25 +102,9 @@ class CaseService {
     }
   }
 
-  async getAllStatuses() {
-    try {
-      const statuses = await prisma.caseStatus.findMany({
-        where: {
-          deletedAt: null,
-        },
-        orderBy: {
-          name: "asc",
-        },
-      });
-
-      return statuses;
-    } catch (error) {
-      throw HttpError.fromError(error, "Failed to get all statuses");
-    }
-  }
-
+  // Convert filter object to a Prisma `where` clause
   async convertFilterToWhere(filter?: ListCasesFilter) {
-    const where: Prisma.CaseWhereInput = {};
+    const where: Prisma.ExaminationWhereInput = {};
 
     if (filter?.assignToUserId) {
       const assignToId = await this.getAssignTo(filter.assignToUserId);
@@ -134,14 +112,14 @@ class CaseService {
     }
 
     if (filter?.caseTypes) {
-      const caseTypes = await this.getCaseTypes(filter.caseTypes);
-      where.caseTypeId = {
-        in: caseTypes.map((caseType) => caseType.id),
-      };
+      const _types = await this.getCaseTypes(filter.caseTypes);
+      // where.caseTypeId = {
+      //   in: _types.map((t) => t.id),
+      // };
     }
 
     if (filter?.statuses) {
-      const statuses = await this.getStatuses(filter.statuses);
+      const statuses = await this.getStatuses();
       where.statusId = {
         in: statuses.map((status) => status.id),
       };
@@ -150,43 +128,78 @@ class CaseService {
     return where;
   }
 
-  async getCaseById(id: string) {
+  // Get case by ID
+  async listCases(assignToId?: string) {
     try {
-      const caseItem = await prisma.case.findUnique({
+      const cases = await prisma.examination.findMany({
         where: {
-          id,
+          ...(assignToId ? { assignToId } : {}),
+          case: {
+            deletedAt: null,
+            isDraft: false,
+          },
         },
         include: {
+          examiner: { include: { user: true } },
+          examinationType: true,
           status: true,
-          examFormat: true,
-          caseType: true,
-          assignTo: {
+          services: {
             include: {
-              user: {
-                include: {
-                  profilePhoto: true,
-                },
-              },
+              interpreter: { include: { language: true } },
+              transport: { include: { pickupAddress: true } },
             },
           },
-          referral: {
+          case: {
             include: {
+              caseType: true,
+              documents: { include: { document: true } },
+              claimant: { include: { address: true } },
               organization: true,
-              claimant: {
-                include: {
-                  address: true,
-                },
-              },
+              legalRepresentative: { include: { address: true } },
+              insurance: { include: { address: true } },
             },
           },
-          documents: {
-            include: {
-              document: true,
-            },
-          },
-          requestedSpecialty: true,
+        },
+        orderBy: {
+          createdAt: "desc",
         },
       });
+      console.log("list cases", cases);
+      return cases;
+    } catch (error) {
+      console.log("list cases", error);
+      throw HttpError.fromError(error, "Failed to list cases");
+    }
+  }
+
+
+  async getCaseById(id: string) {
+    try {
+      const caseItem = await prisma.examination.findUnique({
+        where: { id },
+        include: {
+          examiner: { include: { user: true } },  // Include examiner details
+          examinationType: true,  // Include examination type
+          status: true,
+          services: {
+            include: {
+              interpreter: { include: { language: true } },  // Include interpreter language
+              transport: { include: { pickupAddress: true } },  // Include transport details
+            },
+          },
+          case: {
+            include: {
+              caseType: true,  // Include case type
+              documents: { include: { document: true } },  // Include documents
+              claimant: { include: { address: true } },  // Include claimant details
+              organization: true,  // Include organization
+              legalRepresentative: { include: { address: true } },  // Include legal representative
+              insurance: { include: { address: true } },
+            },
+          },
+        },
+      });
+
       if (!caseItem) {
         throw HttpError.notFound("Case not found");
       }
@@ -197,43 +210,9 @@ class CaseService {
     }
   }
 
-  async listCases(where?: Prisma.CaseWhereInput) {
-    try {
-      const cases = await prisma.case.findMany({
-        where: {
-          ...where,
-          deletedAt: null,
-          referral: {
-            isDraft: false,
-          },
-        },
-        include: {
-          status: true,
-          caseType: true,
-          examFormat: true,
-          requestedSpecialty: true,
-          assignTo: {
-            include: {
-              user: true,
-            },
-          },
-          referral: {
-            include: {
-              organization: true,
-              claimant: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-      return cases;
-    } catch (error) {
-      throw HttpError.fromError(error, "Failed to list cases");
-    }
-  }
 
+
+  // Update case status
   async updateStatus(caseId: string, status: string) {
     try {
       const statusItem = await prisma.caseStatus.findFirst({
@@ -243,35 +222,37 @@ class CaseService {
         throw HttpError.notFound("Status not found");
       }
 
-      const caseItem = await prisma.case.update({
+      const exam = await prisma.examination.update({
         where: { id: caseId },
         data: { statusId: statusItem.id },
       });
 
-      return caseItem;
+      return exam;
     } catch (error) {
       throw HttpError.fromError(error, "Failed to update status");
     }
   }
 
+  // Generate a secure link for the case
   async generateSecureLink(caseId: string) {
     try {
-      const caseItem = await prisma.case.findUnique({
+      const exam = await prisma.examination.findUnique({
         where: { id: caseId },
       });
 
-      if (!caseItem) {
+      if (!exam) {
         throw HttpError.notFound("Case not found");
       }
 
       const token = v4();
       const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
-      await prisma.caseSecureLink.create({
+
+      await prisma.examinationSecureLink.create({
         data: {
-          caseId: caseId,
-          token: token,
-          expiresAt: expiresAt,
-          status: CaseSecureLinkStatus.PENDING,
+          examinationId: caseId,
+          token,
+          expiresAt,
+          status: ExaminationSecureLinkStatus.PENDING,
           lastOpenedAt: null,
           submittedAt: null,
         },

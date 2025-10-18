@@ -16,12 +16,22 @@ type SendArgs = {
 let transporterPromise: Promise<Transporter> | null = null;
 
 async function createTransporter(): Promise<Transporter> {
+  // Support both OAUTH_* and GOOGLE_*/GMAIL_* environment variable names
+  const clientId = process.env.OAUTH_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.OAUTH_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET;
+  const refreshToken = process.env.OAUTH_REFRES_TOKEN || process.env.OAUTH_REFRESH_TOKEN || process.env.GMAIL_REFRESH_TOKEN;
+  const user = process.env.OAUTH_USERNAME || process.env.GMAIL_USER;
+
+  if (!clientId || !clientSecret || !refreshToken || !user) {
+    throw new Error('Missing required OAuth email configuration. Please check your environment variables.');
+  }
+
   const oauth2 = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
+    clientId,
+    clientSecret,
     'https://developers.google.com/oauthplayground',
   );
-  oauth2.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
+  oauth2.setCredentials({ refresh_token: refreshToken });
   const { token } = await oauth2.getAccessToken();
   if (!token) throw new Error('Failed to obtain access token');
 
@@ -29,10 +39,10 @@ async function createTransporter(): Promise<Transporter> {
     service: 'gmail',
     auth: {
       type: 'OAuth2',
-      user: process.env.GMAIL_USER,
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+      user: user,
+      clientId: clientId,
+      clientSecret: clientSecret,
+      refreshToken: refreshToken,
       accessToken: token,
     },
   });
@@ -50,7 +60,8 @@ async function getTransporter(): Promise<Transporter> {
 }
 
 export async function sendMail(args: SendArgs) {
-  const from = `${args.fromName ?? "Thrive"} <${process.env.GMAIL_USER}>`;
+  const emailUser = process.env.OAUTH_USERNAME || process.env.GMAIL_USER;
+  const from = `${args.fromName ?? "Thrive"} <${emailUser}>`;
   const mail = {
     from,
     to: args.to,
