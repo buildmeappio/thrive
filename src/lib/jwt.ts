@@ -23,6 +23,7 @@ const getJwtSecret = (name: 'JWT_SET_PASSWORD_SECRET' | 'JWT_EXAMINER_INFO_REQUE
     throw new Error(`${name} secret must be defined in environment variables`);
   }
   return secret as string;
+}
 
 /**
  * Sign a token for password reset or account creation (uses PASSWORD_JWT_SECRET)
