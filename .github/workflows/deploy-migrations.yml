@@ -139,7 +139,7 @@ jobs:
           # Get VPC configuration from existing services
           SERVICE_INFO=$(aws ecs describe-services \
             --cluster $CLUSTER_NAME \
-            --services ${ENV}-admin-service \
+            --services ${ENV}-organization-service \
             --query 'services[0].networkConfiguration.awsvpcConfiguration' \
             --output json)
           
