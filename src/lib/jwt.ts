@@ -1,21 +1,28 @@
 import jwt, { SignOptions } from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || "";
-const JWT_SET_PASSWORD_SECRET = process.env.JWT_SET_PASSWORD_SECRET || "";
-const JWT_EXAMINER_INFO_REQUEST_SECRET = process.env.JWT_EXAMINER_INFO_REQUEST_SECRET || "";
-const JWT_ORGANIZATION_INFO_REQUEST_SECRET = process.env.JWT_ORGANIZATION_INFO_REQUEST_SECRET || JWT_EXAMINER_INFO_REQUEST_SECRET;
+// const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || "";
+// const JWT_SET_PASSWORD_SECRET = process.env.JWT_SET_PASSWORD_SECRET || "";
+// const JWT_EXAMINER_INFO_REQUEST_SECRET = process.env.JWT_EXAMINER_INFO_REQUEST_SECRET || "";
+// const JWT_ORGANIZATION_INFO_REQUEST_SECRET = process.env.JWT_ORGANIZATION_INFO_REQUEST_SECRET || JWT_EXAMINER_INFO_REQUEST_SECRET;
 
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET or NEXTAUTH_SECRET must be defined in environment variables");
-}
+// if (!JWT_SECRET) {
+//   throw new Error("JWT_SECRET or NEXTAUTH_SECRET must be defined in environment variables");
+// }
 
-if (!JWT_SET_PASSWORD_SECRET) {
-  throw new Error("JWT_SET_PASSWORD_SECRET must be defined in environment variables");
-}
+// if (!JWT_SET_PASSWORD_SECRET) {
+//   throw new Error("JWT_SET_PASSWORD_SECRET must be defined in environment variables");
+// }
 
-if (!JWT_EXAMINER_INFO_REQUEST_SECRET) {
-  throw new Error("JWT_EXAMINER_INFO_REQUEST_SECRET must be defined in environment variables");
-}
+// if (!JWT_EXAMINER_INFO_REQUEST_SECRET) {
+//   throw new Error("JWT_EXAMINER_INFO_REQUEST_SECRET must be defined in environment variables");
+// }
+
+const getJwtSecret = (name: 'JWT_SET_PASSWORD_SECRET' | 'JWT_EXAMINER_INFO_REQUEST_SECRET' | 'JWT_ORGANIZATION_INFO_REQUEST_SECRET' | 'NEXTAUTH_SECRET') => {
+  const secret = process.env[name];
+  if (!secret) {
+    throw new Error(`${name} secret must be defined in environment variables`);
+  }
+  return secret as string;
 
 /**
  * Sign a token for password reset or account creation (uses PASSWORD_JWT_SECRET)
@@ -28,6 +35,7 @@ export function signAccountToken(
   expiresIn: SignOptions['expiresIn'] = '7d'
 ): string {
   const options: SignOptions = { expiresIn };
+  const JWT_SET_PASSWORD_SECRET = getJwtSecret('JWT_SET_PASSWORD_SECRET');
   return jwt.sign(payload, JWT_SET_PASSWORD_SECRET, options);
 }
 
@@ -38,6 +46,7 @@ export function signAccountToken(
  */
 export function verifyAccountToken(token: string): any {
   try {
+    const JWT_SET_PASSWORD_SECRET = getJwtSecret('JWT_SET_PASSWORD_SECRET');
     return jwt.verify(token, JWT_SET_PASSWORD_SECRET);
   } catch {
     throw new Error("Invalid or expired token");
@@ -55,6 +64,7 @@ export function signExaminerResubmitToken(
   expiresIn: SignOptions['expiresIn'] = '30d'
 ): string {
   const options: SignOptions = { expiresIn };
+  const JWT_EXAMINER_INFO_REQUEST_SECRET = getJwtSecret('JWT_EXAMINER_INFO_REQUEST_SECRET');
   return jwt.sign(payload, JWT_EXAMINER_INFO_REQUEST_SECRET, options);
 }
 
@@ -65,6 +75,7 @@ export function signExaminerResubmitToken(
  */
 export function verifyExaminerResubmitToken(token: string): any {
   try {
+    const JWT_EXAMINER_INFO_REQUEST_SECRET = getJwtSecret('JWT_EXAMINER_INFO_REQUEST_SECRET');
     return jwt.verify(token, JWT_EXAMINER_INFO_REQUEST_SECRET);
   } catch {
     throw new Error("Invalid or expired resubmission token");
@@ -82,6 +93,7 @@ export function signOrganizationResubmitToken(
   expiresIn: SignOptions['expiresIn'] = '30d'
 ): string {
   const options: SignOptions = { expiresIn };
+  const JWT_ORGANIZATION_INFO_REQUEST_SECRET = getJwtSecret('JWT_ORGANIZATION_INFO_REQUEST_SECRET');
   return jwt.sign(payload, JWT_ORGANIZATION_INFO_REQUEST_SECRET, options);
 }
 
@@ -92,9 +104,9 @@ export function signOrganizationResubmitToken(
  */
 export function verifyOrganizationResubmitToken(token: string): any {
   try {
+    const JWT_ORGANIZATION_INFO_REQUEST_SECRET = getJwtSecret('JWT_ORGANIZATION_INFO_REQUEST_SECRET');
     return jwt.verify(token, JWT_ORGANIZATION_INFO_REQUEST_SECRET);
   } catch {
     throw new Error("Invalid or expired organization resubmission token");
   }
 }
-
