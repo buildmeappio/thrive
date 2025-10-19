@@ -9,7 +9,8 @@
     "reset": "prisma migrate reset",
     "seed": "prisma db seed",
     "docker:up": "docker compose -f docker-compose.dev.yaml up -d",
-    "docker:down": "docker compose -f docker-compose.dev.yaml down"
+    "docker:down": "docker compose -f docker-compose.dev.yaml down",
+    "db:sync": "chmod +x scripts/db-sync.sh && bash scripts/db-sync.sh"
   },
   "repository": {
     "type": "git",
