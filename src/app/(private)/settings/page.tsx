@@ -1,12 +1,12 @@
 import { Metadata } from "next";
-import { ActivationSteps } from "@/domains/dashboard";
+import { ActivationSteps } from "@/domains/setting";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import {
   getExaminerProfileAction,
   getSpecialtyPreferencesAction,
   getAvailabilityAction,
   getPayoutDetailsAction,
-} from "@/domains/dashboard/server/actions";
+} from "@/domains/setting/server/actions";
 import { redirect } from "next/navigation";
 import getLanguages from "@/domains/auth/actions/getLanguages";
 

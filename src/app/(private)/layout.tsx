@@ -2,8 +2,8 @@ import { type ReactNode, Suspense } from "react";
 import { SidebarProvider } from "@/providers/Sidebar";
 import { SearchProvider } from "@/providers/Search";
 import { getCurrentUser } from "@/domains/auth/server/session";
-import { getExaminerProfileAction } from "@/domains/dashboard/server/actions";
-import { Header } from "@/domains/dashboard";
+import { getExaminerProfileAction } from "@/domains/setting/server/actions";
+import { Header } from "@/domains/setting";
 import { redirect } from "next/navigation";
 import LayoutWrapper from "./layout-wrapper";
 

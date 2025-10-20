@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Upload, File, X, Download } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,7 @@ interface FileUploadInputProps {
   disabled?: boolean;
   className?: string;
   showIcon?: boolean;
+  maxSize?: number; // in bytes
 }
 
 const FileUploadInput: React.FC<FileUploadInputProps> = ({
@@ -42,8 +43,10 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
   disabled = false,
   className,
   showIcon = true,
+  maxSize = 10 * 1024 * 1024, // Default 10MB
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [sizeError, setSizeError] = useState<string | null>(null);
 
   const handleClick = () => {
     if (!disabled) {
@@ -53,6 +56,17 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
+    setSizeError(null);
+
+    if (file && file.size > maxSize) {
+      setSizeError(`File size exceeds maximum of ${formatFileSize(maxSize)}`);
+      onChange(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
     onChange(file);
   };
 
@@ -181,11 +195,14 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
         aria-label={label}
       />
 
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+      {(error || sizeError) && (
+        <p className="text-xs text-red-500 mt-1">{error || sizeError}</p>
+      )}
 
-      {accept && !error && (
+      {accept && !error && !sizeError && (
         <p className="text-xs text-[#9EA9AA] mt-1">
-          Accepted formats: {accept.replace(/\./g, "").toUpperCase()}
+          Accepted formats: {accept.replace(/\./g, "").toUpperCase()} • Max
+          size: {formatFileSize(maxSize)}
         </p>
       )}
     </div>

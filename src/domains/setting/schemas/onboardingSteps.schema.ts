@@ -5,6 +5,7 @@ export const profileInfoSchema = z.object({
   firstName: z.string().min(1, { message: "First name is required" }),
   lastName: z.string().min(1, { message: "Last name is required" }),
   phoneNumber: z.string().min(1, { message: "Phone number is required" }),
+  landlineNumber: z.string().optional(),
   emailAddress: z.string().email({ message: "Invalid email address" }),
   provinceOfResidence: z.string().min(1, { message: "Province is required" }),
   mailingAddress: z.string().min(1, { message: "Mailing address is required" }),

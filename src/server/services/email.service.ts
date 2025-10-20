@@ -90,7 +90,7 @@ class EmailService {
       const htmlContent = this.replacePlaceholders(template, data);
 
       await transporter.sendMail({
-        from: this.config.oauth.email,
+        from: `Thrive Medical Examiner Application <${this.config.oauth.email}>`,
         to: to,
         subject,
         html: htmlContent,

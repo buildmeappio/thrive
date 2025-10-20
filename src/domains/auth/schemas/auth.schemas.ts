@@ -39,6 +39,27 @@ export const step1PersonalInfoSchema = z.object({
       },
       { message: "Please enter a valid phone number" }
     ),
+  landlineNumber: z
+    .string()
+    .min(5, { message: "Please enter a valid landline number" })
+    .optional()
+    .refine(
+      (val) => {
+        try {
+          if (!val) {
+            return true;
+          }
+          // Handle both formats: "+1 (123) 456-7890" and raw digits
+          const cleanVal = val?.replace(/^\+1\s*/, "").replace(/\D/g, "");
+          const phone = parsePhoneNumberWithError(`+1${cleanVal}`);
+          return phone.countryCallingCode === "1";
+        } catch (error) {
+          console.error(error);
+          return false;
+        }
+      },
+      { message: "Please enter a valid landline number" }
+    ),
 
   emailAddress: z
     .string()

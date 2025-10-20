@@ -7,7 +7,7 @@ import { ENV } from "@/constants/variables";
 class AuthService {
   async sendOtp(email: string) {
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
-    const token = signOtpToken({ email, otp }, "5m");
+    const token = signOtpToken({ email, otp });
 
     await emailService.sendEmail(
       "Welcome to Our Platform!",

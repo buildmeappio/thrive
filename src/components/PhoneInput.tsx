@@ -4,7 +4,7 @@ import {
   parsePhoneNumber,
   isValidPhoneNumber,
 } from "libphonenumber-js";
-import { Phone } from "lucide-react";
+import { Phone, LucideIcon } from "lucide-react";
 import { Input } from "@/components/ui";
 
 interface PhoneInputProps {
@@ -14,10 +14,11 @@ interface PhoneInputProps {
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   disabled?: boolean;
   className?: string;
+  icon?: LucideIcon;
 }
 
 const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ name, value, onChange, onBlur, disabled, className }, ref) => {
+  ({ name, value, onChange, onBlur, disabled, className, icon }, ref) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = e.target.value;
 
@@ -67,7 +68,7 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
       <Input
         ref={ref}
         name={name}
-        icon={Phone}
+        icon={icon || Phone}
         type="tel"
         placeholder="+1 (123) 456-7890"
         value={value}

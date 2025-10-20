@@ -73,6 +73,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         phone: data.phoneNumber,
         provinceOfResidence: data.provinceOfResidence,
         mailingAddress: data.mailingAddress,
+        landlineNumber: data.landlineNumber,
 
         // step 2
         specialties: data.medicalSpecialty,

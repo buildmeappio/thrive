@@ -7,6 +7,7 @@ export type UpdateExaminerProfileInput = {
   firstName: string;
   lastName: string;
   phoneNumber: string;
+  landlineNumber?: string;
   emailAddress: string;
   provinceOfResidence: string;
   mailingAddress: string;
@@ -23,6 +24,7 @@ const updateExaminerProfile = async (payload: UpdateExaminerProfileInput) => {
         firstName: payload.firstName,
         lastName: payload.lastName,
         phoneNumber: payload.phoneNumber,
+        landlineNumber: payload.landlineNumber,
         emailAddress: payload.emailAddress,
         provinceOfResidence: payload.provinceOfResidence,
         mailingAddress: payload.mailingAddress,
@@ -40,6 +42,7 @@ const updateExaminerProfile = async (payload: UpdateExaminerProfileInput) => {
         firstName: updatedProfile.account.user.firstName,
         lastName: updatedProfile.account.user.lastName,
         phoneNumber: updatedProfile.account.user.phone || "",
+        landlineNumber: updatedProfile.landlineNumber || "",
         emailAddress: updatedProfile.account.user.email,
         provinceOfResidence: updatedProfile.provinceOfResidence || "",
         mailingAddress: updatedProfile.mailingAddress || "",

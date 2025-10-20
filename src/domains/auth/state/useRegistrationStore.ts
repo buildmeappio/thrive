@@ -26,6 +26,7 @@ export type Step1PersonalInfo = {
   emailAddress: string;
   provinceOfResidence: string;
   mailingAddress: string;
+  landlineNumber: string;
 };
 
 export type Step2MedicalCredentials = {
@@ -94,6 +95,7 @@ export const initialData: RegistrationData = {
   emailAddress: "",
   provinceOfResidence: "",
   mailingAddress: "",
+  landlineNumber: "",
   // Step 2
   medicalSpecialty: [],
   licenseNumber: "",
@@ -223,6 +225,7 @@ export const useRegistrationStore = create<Store>()(
           phoneNumber: examinerData.account?.user?.phone || "",
           provinceOfResidence: examinerData.provinceOfResidence || "",
           mailingAddress: examinerData.mailingAddress || "",
+          landlineNumber: examinerData.landlineNumber || "",
 
           // Step 2: Medical Credentials
           medicalSpecialty: examinerData.specialties || [],
@@ -310,6 +313,7 @@ export const selectStep1 = (d: RegistrationData): Step1PersonalInfo => ({
   emailAddress: d.emailAddress,
   provinceOfResidence: d.provinceOfResidence,
   mailingAddress: d.mailingAddress,
+  landlineNumber: d.landlineNumber,
 });
 
 export const selectStep2 = (d: RegistrationData): Step2MedicalCredentials => ({
