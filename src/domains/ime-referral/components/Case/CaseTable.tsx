@@ -25,7 +25,7 @@ import Pagination from '@/components/Pagination';
 import { CaseData } from '../../types/CaseData';
 import SearchInput from '@/components/SearchInput';
 import DateRangePicker from '@/components/DateRangePicker';
-import { ArrowRight, Filter, Info, Plus } from 'lucide-react';
+import { ArrowRight, Filter, Info, Plus, X } from 'lucide-react';
 import Link from 'next/link';
 import { formatDate } from '@/utils/dateTime';
 import { getCaseStatuses, getCaseTypes, getClaimTypes } from '../../actions';
@@ -71,6 +71,28 @@ const CaseTable = ({ caseList, caseStatuses, claimTypes, caseTypes }: CaseTableP
     claimType: 'ALL',
     specialty: 'ALL',
   });
+
+  // Check if any filters are active
+  const hasActiveFilters = useMemo(() => {
+    return (
+      query !== '' ||
+      filters.status !== 'ALL' ||
+      filters.claimType !== 'ALL' ||
+      filters.specialty !== 'ALL' ||
+      dateRange?.from !== undefined
+    );
+  }, [query, filters, dateRange]);
+
+  // Clear all filters function
+  const clearAllFilters = () => {
+    setQuery('');
+    setFilters({
+      status: 'ALL',
+      claimType: 'ALL',
+      specialty: 'ALL',
+    });
+    setDateRange(undefined);
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -128,13 +150,14 @@ const CaseTable = ({ caseList, caseStatuses, claimTypes, caseTypes }: CaseTableP
         </div>
         <div className="w-full flex-shrink-0 sm:w-auto">
           <LabeledSelect
-            label="Status"
-            value={filters.status ?? 'ALL'}
-            onChange={v => setFilters({ ...filters, status: v })}
-            options={statusOptions}
-            icon={<Filter className="h-4 w-4 flex-shrink-0 text-blue-900" strokeWidth={2} />}
+            label="Specialty"
+            value={filters.specialty ?? 'ALL'}
+            onChange={v => setFilters({ ...filters, specialty: v })}
+            options={specialtyOptions}
+            icon={<Plus className="h-4 w-4 flex-shrink-0 text-blue-900" strokeWidth={2} />}
           />
         </div>
+
         <div className="w-full flex-shrink-0 sm:w-auto">
           <LabeledSelect
             label="Claim Type"
@@ -145,17 +168,29 @@ const CaseTable = ({ caseList, caseStatuses, claimTypes, caseTypes }: CaseTableP
           />
         </div>
         <div className="w-full flex-shrink-0 sm:w-auto">
-          <LabeledSelect
-            label="Specialty"
-            value={filters.specialty ?? 'ALL'}
-            onChange={v => setFilters({ ...filters, specialty: v })}
-            options={specialtyOptions}
-            icon={<Plus className="h-4 w-4 flex-shrink-0 text-blue-900" strokeWidth={2} />}
-          />
-        </div>
-        <div className="w-full flex-shrink-0 sm:w-auto">
           <DateRangePicker value={dateRange} onChange={setDateRange} />
         </div>
+        <div className="w-full flex-shrink-0 sm:w-auto">
+          <LabeledSelect
+            label="Status"
+            value={filters.status ?? 'ALL'}
+            onChange={v => setFilters({ ...filters, status: v })}
+            options={statusOptions}
+            icon={<Filter className="h-4 w-4 flex-shrink-0 text-blue-900" strokeWidth={2} />}
+          />
+        </div>
+
+        {hasActiveFilters && (
+          <div className="w-full flex-shrink-0 sm:w-auto">
+            <button
+              onClick={clearAllFilters}
+              className="flex h-[44px] w-full cursor-pointer items-center justify-center gap-2 rounded-[30px] border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto"
+            >
+              <X className="h-4 w-4" />
+              Clear Filters
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Table */}

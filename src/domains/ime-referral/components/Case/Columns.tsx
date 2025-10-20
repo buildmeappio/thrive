@@ -1,20 +1,41 @@
 import { cn } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import Link from 'next/link';
 import { CaseData } from '../../types/CaseData';
 import { formatDate } from '@/utils/dateTime';
 
-const Header = ({ children, first }: { children: React.ReactNode; first?: boolean }) => {
+const Header = ({
+  children,
+  first,
+  sortable,
+  onClick,
+  sortDirection,
+}: {
+  children: React.ReactNode;
+  first?: boolean;
+  sortable?: boolean;
+  onClick?: () => void;
+  sortDirection?: false | 'asc' | 'desc';
+}) => {
   return (
-    <p
+    <div
       className={cn(
-        'font-poppins py-4 text-left text-[18px] leading-none font-semibold text-black',
-        first && 'pl-4'
+        'font-poppins flex items-center gap-2 py-4 text-left text-[18px] leading-none font-semibold text-black',
+        first && 'pl-4',
+        sortable && 'cursor-pointer transition-colors select-none hover:text-[#000093]'
       )}
+      onClick={sortable ? onClick : undefined}
     >
-      {children}
-    </p>
+      <span>{children}</span>
+      {sortable && (
+        <div className="flex items-center">
+          {sortDirection === false && <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+          {sortDirection === 'asc' && <ArrowUp className="h-4 w-4 text-[#000093]" />}
+          {sortDirection === 'desc' && <ArrowDown className="h-4 w-4 text-[#000093]" />}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -43,42 +64,92 @@ const Content = ({ children, first }: { children: React.ReactNode; first?: boole
 
 const columns: ColumnDef<CaseData>[] = [
   {
-    header: () => <Header first>Case No.</Header>,
+    header: ({ column }) => (
+      <Header
+        first
+        sortable
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        sortDirection={column.getIsSorted()}
+      >
+        Case No.
+      </Header>
+    ),
     accessorKey: 'number',
     cell: ({ row }) => {
       return <Content first>{row.original.number}</Content>;
     },
   },
   {
-    header: () => <Header>Claimant</Header>,
+    header: ({ column }) => (
+      <Header
+        sortable
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        sortDirection={column.getIsSorted()}
+      >
+        Claimant
+      </Header>
+    ),
     accessorKey: 'claimant',
     cell: ({ row }) => {
       return <Content>{row.original.claimant}</Content>;
     },
   },
   {
-    header: () => <Header>Date</Header>,
-    accessorKey: 'date',
+    header: ({ column }) => (
+      <Header
+        sortable
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        sortDirection={column.getIsSorted()}
+      >
+        Date
+      </Header>
+    ),
+    accessorKey: 'submittedAt',
     cell: ({ row }) => {
       return <Content>{formatDate(row.original.submittedAt)}</Content>;
     },
+    sortingFn: 'datetime',
   },
   {
-    header: () => <Header>Claim Type</Header>,
+    header: ({ column }) => (
+      <Header
+        sortable
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        sortDirection={column.getIsSorted()}
+      >
+        Claim Type
+      </Header>
+    ),
     accessorKey: 'claimType',
     cell: ({ row }) => {
       return <Content>{row.original.claimType}</Content>;
     },
   },
   {
-    header: () => <Header>Specialty</Header>,
+    header: ({ column }) => (
+      <Header
+        sortable
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        sortDirection={column.getIsSorted()}
+      >
+        Specialty
+      </Header>
+    ),
     accessorKey: 'specialty',
     cell: ({ row }) => {
       return <Content>{row.original.specialty}</Content>;
     },
   },
   {
-    header: () => <Header>Status</Header>,
+    header: ({ column }) => (
+      <Header
+        sortable
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        sortDirection={column.getIsSorted()}
+      >
+        Status
+      </Header>
+    ),
     accessorKey: 'status',
     cell: ({ row }) => {
       return <Content>{row.original.status}</Content>;
@@ -91,6 +162,7 @@ const columns: ColumnDef<CaseData>[] = [
       return <ActionButton id={row.original.id} />;
     },
     maxSize: 60,
+    enableSorting: false,
   },
 ];
 

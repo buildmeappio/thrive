@@ -32,7 +32,7 @@ const LabeledSelect = ({
         options={options}
         icon={icon || defaultIcon}
         placeholder={label}
-        className="h-[45px] rounded-full border border-gray-200 bg-white"
+        className="h-[45px] cursor-pointer rounded-full border border-gray-200 bg-white"
       />
     </div>
   );
