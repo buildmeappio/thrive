@@ -5,35 +5,27 @@ import jwt, {
 } from "jsonwebtoken";
 import { ENV } from "@/constants/variables";
 
-const checkJwtSecrets = () => {
-  if (
-    !ENV.JWT_OTP_SECRET ||
-    !ENV.JWT_SET_PASSWORD_SECRET ||
-    !ENV.JWT_EXAMINER_INFO_REQUEST_SECRET
-  ) {
-    throw new Error("JWT secrets are required");
+const getJwtSecret = (name: 'JWT_OTP_SECRET' | 'JWT_SET_PASSWORD_SECRET' | 'JWT_EXAMINER_INFO_REQUEST_SECRET') => {
+  const secret = process.env[name];
+  if (!secret) {
+    throw new Error(`${name} secret must be defined in environment variables`);
   }
-
-  return {
-    otpSecret: ENV.JWT_OTP_SECRET as Secret,
-    passwordSecret: ENV.JWT_SET_PASSWORD_SECRET as Secret,
-    examinerRequestSecret: ENV.JWT_EXAMINER_INFO_REQUEST_SECRET as Secret,
-  };
-};
-
-const { otpSecret, passwordSecret, examinerRequestSecret } = checkJwtSecrets();
+  return secret as string;
+}
 
 export function signOtpToken(
   payload: object,
   expiresIn: SignOptions["expiresIn"] = "5m"
 ): string {
   const options: SignOptions = { expiresIn };
-  return jwt.sign(payload, otpSecret, options);
+  const JWT_OTP_SECRET = getJwtSecret('JWT_OTP_SECRET');
+  return jwt.sign(payload, JWT_OTP_SECRET, options);
 }
 
 export function verifyOtpToken(token: string): JwtPayload | null {
   try {
-    return jwt.verify(token, otpSecret) as JwtPayload;
+    const JWT_OTP_SECRET = getJwtSecret('JWT_OTP_SECRET');
+    return jwt.verify(token, JWT_OTP_SECRET) as JwtPayload;
   } catch {
     return null;
   }
@@ -45,12 +37,14 @@ export function signPasswordToken(
   expiresIn: SignOptions["expiresIn"] = "7d"
 ): string {
   const options: SignOptions = { expiresIn };
-  return jwt.sign(payload, passwordSecret, options);
+  const JWT_SET_PASSWORD_SECRET = getJwtSecret('JWT_SET_PASSWORD_SECRET');
+  return jwt.sign(payload, JWT_SET_PASSWORD_SECRET, options);
 }
 
 export function verifyPasswordToken(token: string): JwtPayload | null {
   try {
-    return jwt.verify(token, passwordSecret) as JwtPayload;
+    const JWT_SET_PASSWORD_SECRET = getJwtSecret('JWT_SET_PASSWORD_SECRET');
+    return jwt.verify(token, JWT_SET_PASSWORD_SECRET) as JwtPayload;
   } catch {
     return null;
   }
@@ -67,12 +61,14 @@ export function signExaminerInfoToken(
   expiresIn: SignOptions["expiresIn"] = "7d"
 ): string {
   const options: SignOptions = { expiresIn };
-  return jwt.sign(payload, examinerRequestSecret, options);
+  const JWT_EXAMINER_INFO_REQUEST_SECRET = getJwtSecret('JWT_EXAMINER_INFO_REQUEST_SECRET');
+  return jwt.sign(payload, JWT_EXAMINER_INFO_REQUEST_SECRET, options);
 }
 
 export function verifyExaminerInfoToken(token: string): JwtPayload | null {
   try {
-    return jwt.verify(token, examinerRequestSecret) as JwtPayload;
+    const JWT_EXAMINER_INFO_REQUEST_SECRET = getJwtSecret('JWT_EXAMINER_INFO_REQUEST_SECRET');
+    return jwt.verify(token, JWT_EXAMINER_INFO_REQUEST_SECRET) as JwtPayload;
   } catch {
     return null;
   }
