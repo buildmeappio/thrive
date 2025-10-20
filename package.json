@@ -33,6 +33,8 @@
     "lightningcss-linux-x64-gnu": "^1.30.1"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.911.0",
+    "@aws-sdk/s3-request-presigner": "^3.911.0",
     "@hookform/resolvers": "^5.2.1",
     "@prisma/client": "^6.15.0",
     "@radix-ui/react-popover": "^1.1.15",

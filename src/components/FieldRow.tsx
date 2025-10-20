@@ -7,13 +7,15 @@ type FieldRowProps = {
   value: React.ReactNode;
   valueHref?: string;
   type: "text" | "document" | "link";
+  documentUrl?: string; // Add presigned URL support for documents
 };
 
-const FieldRow = ({ label, value, valueHref, type }: FieldRowProps) => {
+const FieldRow = ({ label, value, valueHref, type, documentUrl }: FieldRowProps) => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const fileName = typeof value === "string" ? value : "";
-  const fileUrl = `https://public-thrive-assets.s3.eu-north-1.amazonaws.com/documents/${encodeURIComponent(
+  // Use presigned URL if provided, otherwise fall back to old URL format
+  const fileUrl = documentUrl || `https://public-thrive-assets.s3.eu-north-1.amazonaws.com/documents/${encodeURIComponent(
     fileName
   )}`;
 
@@ -69,19 +71,47 @@ const FieldRow = ({ label, value, valueHref, type }: FieldRowProps) => {
 
       {/* Modal */}
       {isPreviewOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white w-[90%] h-[90%] rounded-lg shadow-lg relative">
-            <button
-              onClick={() => setIsPreviewOpen(false)}
-              className="absolute top-2 right-2 bg-gray-200 hover:bg-gray-300 rounded-full px-3 py-1 text-sm"
-            >
-              ✕
-            </button>
-            <iframe
-              src={fileUrl}
-              title="Document Preview"
-              className="w-full h-full rounded-lg"
-            />
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setIsPreviewOpen(false)}
+        >
+          <div 
+            className="bg-white w-full max-w-6xl h-[90vh] rounded-lg shadow-lg relative flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 truncate flex-1 pr-4">
+                {fileName}
+              </h3>
+              <div className="flex items-center gap-2">
+                <a
+                  href={fileUrl}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-lg hover:opacity-90 transition-opacity"
+                >
+                  Download
+                </a>
+                <button
+                  onClick={() => setIsPreviewOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            
+            {/* Preview Content */}
+            <div className="flex-1 overflow-hidden">
+              <iframe
+                src={fileUrl}
+                title="Document Preview"
+                className="w-full h-full"
+              />
+            </div>
           </div>
         </div>
       )}
