@@ -12,11 +12,11 @@ type PageProps = {
 };
 
 // helper to safely display values
-const safeValue = (value: any) => {
+const safeValue = (value: unknown): string => {
   if (value === null || value === undefined || value === "") {
     return "-";
   }
-  return value;
+  return String(value);
 };
 
 export async function generateMetadata({ params }: PageProps) {

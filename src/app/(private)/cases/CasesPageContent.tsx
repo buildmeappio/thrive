@@ -5,6 +5,13 @@ import CaseTableWithPagination from "@/domains/case/components/CaseTableWithPagi
 import Pagination from "@/components/Pagination";
 import { CaseData } from "@/domains/case/types/CaseData";
 import { DashboardShell } from "@/layouts/dashboard";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { ChevronDownIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface CasesPageContentProps {
   data: CaseData[];
@@ -43,6 +50,10 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
     }
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
+  const [toDate, setToDate] = useState<Date | undefined>(undefined);
+  const [fromDateOpen, setFromDateOpen] = useState(false);
+  const [toDateOpen, setToDateOpen] = useState(false);
 
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
     if (filterType === "dateRange") {
@@ -56,17 +67,39 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
     setActiveDropdown(null);
   };
 
-  const handleDateRangeChange = (field: "start" | "end", value: string) => {
+  const handleDateApply = () => {
     setFilters(prev => ({
       ...prev,
       dateRange: {
-        ...prev.dateRange,
-        [field]: value
+        start: fromDate ? format(fromDate, "yyyy-MM-dd") : "",
+        end: toDate ? format(toDate, "yyyy-MM-dd") : ""
       }
     }));
+    // Close any open popovers and the date dropdown after applying
+    setFromDateOpen(false);
+    setToDateOpen(false);
+    setActiveDropdown(null);
+  };
+
+  const handleDateClear = () => {
+    setFromDate(undefined);
+    setToDate(undefined);
+    setFilters(prev => ({
+      ...prev,
+      dateRange: {
+        start: "",
+        end: ""
+      }
+    }));
+    // Close any open popovers and the date dropdown after clearing
+    setFromDateOpen(false);
+    setToDateOpen(false);
+    setActiveDropdown(null);
   };
 
   const clearFilters = () => {
+    setFromDate(undefined);
+    setToDate(undefined);
     setFilters({
       claimType: "all",
       status: "all",
@@ -89,8 +122,8 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
     const handleClickOutside = (event: MouseEvent) => {
       if (activeDropdown) {
         const target = event.target as Element;
-        // Check if the click is outside any dropdown container
-        const isInsideDropdown = target.closest('.filter-dropdown');
+        // Check if the click is outside any dropdown container or calendar popover (rendered in a portal)
+        const isInsideDropdown = target.closest('.filter-dropdown, .date-popover-content');
         if (!isInsideDropdown) {
           setActiveDropdown(null);
         }
@@ -235,9 +268,9 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
                     : "border-gray-200 text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="2" y="3" width="12" height="10" rx="1" stroke="url(#dateGradient)" strokeWidth="1.5"/>
-                  <path d="M5 1V3M11 1V3M2 6H14" stroke="url(#dateGradient)" strokeWidth="1.5" strokeLinecap="round"/>
+                <svg className="w-4 h-4" fill="none" stroke="url(#dateGradient)" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="2" strokeWidth="1.5" />
+                  <path d="M16 2v4M8 2v4M3 10h18" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <span>Date</span>
                 <svg className={`w-4 h-4 transition-transform ${activeDropdown === "date" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,37 +278,91 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
                 </svg>
               </button>
               {activeDropdown === "date" && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-10 p-4">
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-                      <input
-                        type="date"
-                        value={filters.dateRange.start}
-                        onChange={(e) => handleDateRangeChange("start", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF]"
-                      />
+                <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-10 p-4">
+                  <div className="space-y-4">
+                    <div className="text-sm font-medium text-gray-700">Date</div>
+                    
+                    {/* From Date */}
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="from-date" className="px-1">
+                        From Date
+                      </Label>
+                      <Popover open={fromDateOpen} onOpenChange={setFromDateOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            id="from-date"
+                            className="w-full justify-between font-normal"
+                          >
+                            {fromDate ? fromDate.toLocaleDateString() : "Select date"}
+                            <ChevronDownIcon />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="date-popover-content w-[var(--radix-popover-trigger-width)] min-w-[var(--radix-popover-trigger-width)] overflow-hidden p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={fromDate}
+                            captionLayout="dropdown"
+                            className="w-full"
+                            classNames={{ root: "w-full" }}
+                            onSelect={(date) => {
+                              setFromDate(date);
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-                      <input
-                        type="date"
-                        value={filters.dateRange.end}
-                        onChange={(e) => handleDateRangeChange("end", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF]"
-                      />
+
+                    {/* To Date */}
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="to-date" className="px-1">
+                        To Date
+                      </Label>
+                      <Popover open={toDateOpen} onOpenChange={setToDateOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            id="to-date"
+                            className="w-full justify-between font-normal"
+                          >
+                            {toDate ? toDate.toLocaleDateString() : "Select date"}
+                            <ChevronDownIcon />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="date-popover-content w-[var(--radix-popover-trigger-width)] min-w-[var(--radix-popover-trigger-width)] overflow-hidden p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={toDate}
+                            captionLayout="dropdown"
+                            className="w-full"
+                            classNames={{ root: "w-full" }}
+                            onSelect={(date) => {
+                              setToDate(date);
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDateRangeChange("start", "");
-                        handleDateRangeChange("end", "");
-                        setActiveDropdown(null);
-                      }}
-                      className="w-full px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-200 rounded-md hover:bg-gray-50"
+
+                    {/* Apply Button */}
+                    <Button
+                      onClick={handleDateApply}
+                      disabled={!fromDate && !toDate}
+                      className="w-full bg-[#00A8FF] hover:bg-[#0099E6] text-white text-sm"
+                    >
+                      Apply
+                    </Button>
+
+                    {/* Clear Button */}
+                    {(fromDate || toDate) && (
+                      <Button
+                        onClick={handleDateClear}
+                        variant="outline"
+                        className="w-full border-gray-200 text-gray-700 hover:bg-gray-50 text-sm"
                     >
                       Clear Date Filter
-                    </button>
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}

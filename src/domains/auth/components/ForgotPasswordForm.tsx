@@ -51,8 +51,8 @@ const Form = () => {
 
       <Button
         type="submit"
-        variant="adminLogin"
-        size="adminLogin"
+        variant="default"
+        size="default"
         disabled={isSubmitting}
         className="w-full h-11 md:h-12 text-[15px]"
       >

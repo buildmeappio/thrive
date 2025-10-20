@@ -7,4 +7,6 @@ export type OrganizationData = {
     address?: string;
     managerName?: string;
     managerEmail?: string;
+    createdAt: string;
+    updatedAt: string;
 };

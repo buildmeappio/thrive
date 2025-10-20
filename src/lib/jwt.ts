@@ -45,7 +45,7 @@ export function signAccountToken(
  * @param token - The JWT token to verify
  * @returns Decoded token payload
  */
-export function verifyAccountToken(token: string): any {
+export function verifyAccountToken(token: string): string | jwt.JwtPayload {
   try {
     const JWT_SET_PASSWORD_SECRET = getJwtSecret('JWT_SET_PASSWORD_SECRET');
     return jwt.verify(token, JWT_SET_PASSWORD_SECRET);
@@ -74,7 +74,7 @@ export function signExaminerResubmitToken(
  * @param token - The JWT token to verify
  * @returns Decoded token payload
  */
-export function verifyExaminerResubmitToken(token: string): any {
+export function verifyExaminerResubmitToken(token: string): string | jwt.JwtPayload {
   try {
     const JWT_EXAMINER_INFO_REQUEST_SECRET = getJwtSecret('JWT_EXAMINER_INFO_REQUEST_SECRET');
     return jwt.verify(token, JWT_EXAMINER_INFO_REQUEST_SECRET);
@@ -103,7 +103,7 @@ export function signOrganizationResubmitToken(
  * @param token - The JWT token to verify
  * @returns Decoded token payload
  */
-export function verifyOrganizationResubmitToken(token: string): any {
+export function verifyOrganizationResubmitToken(token: string): string | jwt.JwtPayload {
   try {
     const JWT_ORGANIZATION_INFO_REQUEST_SECRET = getJwtSecret('JWT_ORGANIZATION_INFO_REQUEST_SECRET');
     return jwt.verify(token, JWT_ORGANIZATION_INFO_REQUEST_SECRET);

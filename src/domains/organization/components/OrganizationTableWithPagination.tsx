@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useEffect } from "react";
-import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender } from "@tanstack/react-table";
+import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender, type Row } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { OrganizationData } from "@/domains/organization/types/OrganizationData";
 import { cn } from "@/lib/utils";
@@ -33,7 +33,7 @@ const columnsDef = [
   {
     accessorKey: "name",
     header: "Organization",
-    cell: ({ row }: { row: any }) => (
+    cell: ({ row }: { row: Row<OrganizationData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("name")}
       </div>
@@ -42,7 +42,7 @@ const columnsDef = [
   {
     accessorKey: "typeName",
     header: "Type",
-    cell: ({ row }: { row: any }) => (
+    cell: ({ row }: { row: Row<OrganizationData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("typeName") || "N/A"}
       </div>
@@ -51,7 +51,7 @@ const columnsDef = [
   {
     accessorKey: "managerName",
     header: "Representative",
-    cell: ({ row }: { row: any }) => (
+    cell: ({ row }: { row: Row<OrganizationData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("managerName") || "N/A"}
       </div>
@@ -60,7 +60,7 @@ const columnsDef = [
   {
     accessorKey: "managerEmail",
     header: "Email",
-    cell: ({ row }: { row: any }) => (
+    cell: ({ row }: { row: Row<OrganizationData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("managerEmail") || "N/A"}
       </div>
@@ -69,7 +69,7 @@ const columnsDef = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }: { row: any }) => (
+    cell: ({ row }: { row: Row<OrganizationData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("status")}
       </div>
@@ -78,7 +78,7 @@ const columnsDef = [
   {
     header: "",
     accessorKey: "id",
-    cell: ({ row }: { row: any }) => {
+    cell: ({ row }: { row: Row<OrganizationData> }) => {
       return <ActionButton id={row.original.id} />;
     },
     maxSize: 60,
@@ -133,8 +133,8 @@ export default function OrganizationTableWithPagination({
     tableElement: (
       <>
         {/* Table */}
-        <div className="overflow-hidden rounded-md outline-none">
-          <Table className="border-0">
+        <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
+          <Table className="min-w-[1000px] border-0">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
