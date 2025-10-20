@@ -253,7 +253,6 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
     </>
   );
 }
-
 // Export pagination separately - now it receives the table instance
 export function CasePagination({ table }: { table: TanStackTable<CaseData> }) {
   return <Pagination table={table} />;
