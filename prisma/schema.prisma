@@ -599,6 +599,7 @@ model ExaminerProfile {
   mailingAddress                    String         @map("mailing_address") @db.Text
   specialties                       String[]       @map("specialties")
   licenseNumber                     String         @map("license_number") @db.VarChar(255)
+  landlineNumber                    String?        @map("landline_number") @db.VarChar(255)
   assessmentTypes                   String[]       @map("assessment_types")
   provinceOfLicensure               String         @map("province_of_licensure") @db.VarChar(255)
   licenseExpiryDate                 DateTime?      @map("license_expiry_date") @db.Date
