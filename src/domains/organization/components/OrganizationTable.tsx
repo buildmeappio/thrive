@@ -33,8 +33,8 @@ export default function OrganizationTable({ data }: Props) {
   }, [table]);
 
   return (
-    <div className="overflow-hidden rounded-md outline-none">
-      <Table className="border-0">
+    <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
+      <Table className="min-w-[1000px] border-0">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>

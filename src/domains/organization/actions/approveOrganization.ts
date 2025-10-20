@@ -26,9 +26,9 @@ const approveOrganization = async (id: string) => {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const organization = (await handlers.approveOrganization(id, user.accountId)) as OrganizationView;
+  const organization = await handlers.approveOrganization(id, user.accountId);
 
-//   await sendApprovalEmailToOrganization(organization);
+//   await sendApprovalEmailToOrganization(organization);    
   return organization;
 };
 

@@ -55,16 +55,18 @@ function CollapsibleSection({ title, children, isOpen = false }: CollapsibleSect
   );
 }
 
+import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
+
 interface CaseDetailContentProps {
-  caseDetails: any; // You can type this properly based on your case details structure
+  caseDetails: CaseDetailDtoType;
 }
 
 export default function CaseDetailContent({ caseDetails }: CaseDetailContentProps) {
-  const safeValue = (value: any) => {
+  const safeValue = (value: unknown): string => {
     if (value === null || value === undefined || value === "") {
       return "-";
     }
-    return value;
+    return String(value);
   };
 
   return (
@@ -188,7 +190,7 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
       {/* Documents */}
       <CollapsibleSection title="Documents">
         {caseDetails.case.documents && caseDetails.case.documents.length > 0 ? (
-          caseDetails.case.documents.map((document: any, index: number) => (
+          caseDetails.case.documents.map((document, index: number) => (
             <FieldRow key={document.id || index} label={safeValue(document.name)} value={safeValue(document.name)} type="document" />
           ))
         ) : (

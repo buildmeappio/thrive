@@ -36,7 +36,7 @@ export function signAccountToken(
  * @param token - The JWT token to verify
  * @returns Decoded token payload
  */
-export function verifyAccountToken(token: string): any {
+export function verifyAccountToken(token: string): string | jwt.JwtPayload {
   try {
     return jwt.verify(token, JWT_SET_PASSWORD_SECRET);
   } catch {
@@ -63,7 +63,7 @@ export function signExaminerResubmitToken(
  * @param token - The JWT token to verify
  * @returns Decoded token payload
  */
-export function verifyExaminerResubmitToken(token: string): any {
+export function verifyExaminerResubmitToken(token: string): string | jwt.JwtPayload {
   try {
     return jwt.verify(token, JWT_EXAMINER_INFO_REQUEST_SECRET);
   } catch {
@@ -90,7 +90,7 @@ export function signOrganizationResubmitToken(
  * @param token - The JWT token to verify
  * @returns Decoded token payload
  */
-export function verifyOrganizationResubmitToken(token: string): any {
+export function verifyOrganizationResubmitToken(token: string): string | jwt.JwtPayload {
   try {
     return jwt.verify(token, JWT_ORGANIZATION_INFO_REQUEST_SECRET);
   } catch {

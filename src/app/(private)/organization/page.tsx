@@ -1,5 +1,4 @@
 import organizationActions from "@/domains/organization/actions";
-import { OrganizationData } from "@/domains/organization/types/OrganizationData";
 import OrganizationPageContent from "./OrganizationPageContent";
 import { Metadata } from "next";
 
@@ -19,20 +18,7 @@ const Page = async () => {
   const typeNames = types.map((t) => t.name);
   const statusNames = ["PENDING", "ACCEPTED", "REJECTED"];
 
-  const data: OrganizationData[] = orgs.map((org) => ({
-    id: org.id,
-    name: org.name,
-    website: org.website,
-    status: org.status,
-    typeName: org.type?.name ?? "",
-    address: org.address ? `${org.address.street}, ${org.address.city}` : "",
-    managerName: org.manager?.[0]?.account?.user?.firstName
-      ? `${org.manager[0].account.user.firstName} ${org.manager[0].account.user.lastName}`
-      : "",
-    managerEmail: org.manager?.[0]?.account?.user?.email ?? "",
-  }));
-
-  return <OrganizationPageContent data={data} types={typeNames} statuses={statusNames} />;
+  return <OrganizationPageContent data={orgs} types={typeNames} statuses={statusNames} />;
 };
 
 export default Page;

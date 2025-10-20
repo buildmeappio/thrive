@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import type { Method, RouteCtx, Handler, User } from '@/types/apiBuilder';
 import { HttpError } from '@/utils/httpError';
-import z, { type ZodObject, type ZodAny, ZodError } from 'zod';
+import z, { type ZodObject, type ZodAny, ZodError, type ZodRawShape } from 'zod';
 
-type Validator = ZodObject<any> | ZodAny;
+type Validator = ZodObject<ZodRawShape> | ZodAny;
 
 class ApiBuilder<M extends Method | null = Method, TBody extends Record<string, unknown> = Record<string, unknown>> {
   private middlewares: Array<(req: NextRequest, ctx: RouteCtx<TBody>) => void | Promise<void>> = [];

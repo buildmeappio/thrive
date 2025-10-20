@@ -5,8 +5,20 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import examinerService from "../server/examiner.service";
 import { sendMail } from "@/lib/email";
 import { signAccountToken } from "@/lib/jwt";
-import { Roles } from "@/domains/auth/constants/roles";
 import { EXAMINER_APPROVED_SUBJECT, generateExaminerApprovedEmail } from "@/emails/examiner-approved";
+import { ExaminerProfile, Account, User, Documents, ExaminerLanguage, Language } from "@prisma/client";
+import { Roles } from "@/domains/auth/constants/roles";
+
+interface ExaminerWithRelations extends ExaminerProfile {
+  account: Account & {
+    user: User;
+  };
+  medicalLicenseDocument: Documents | null;
+  resumeDocument: Documents | null;
+  ndaDocument: Documents | null;
+  insuranceDocument: Documents | null;
+  examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
+}
 
 const approveExaminer = async (examinerId: string) => {
   const user = await getCurrentUser();
@@ -26,7 +38,7 @@ const approveExaminer = async (examinerId: string) => {
   return examiner;
 };
 
-async function sendApprovalEmailToExaminer(examiner: any) {
+async function sendApprovalEmailToExaminer(examiner: ExaminerWithRelations) {
   const userEmail = examiner.account?.user?.email;
   const firstName = examiner.account?.user?.firstName;
   const lastName = examiner.account?.user?.lastName;

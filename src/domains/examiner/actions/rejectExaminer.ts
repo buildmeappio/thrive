@@ -6,6 +6,18 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import examinerService from "../server/examiner.service";
 import emailService from "@/services/email.service";
 import { ENV } from "@/constants/variables";
+import { ExaminerProfile, Account, User, Documents, ExaminerLanguage, Language } from "@prisma/client";
+
+interface ExaminerWithRelations extends ExaminerProfile {
+  account: Account & {
+    user: User;
+  };
+  medicalLicenseDocument: Documents | null;
+  resumeDocument: Documents | null;
+  ndaDocument: Documents | null;
+  insuranceDocument: Documents | null;
+  examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
+}
 
 const rejectExaminer = async (examinerId: string, messageToExaminer: string) => {
   const user = await getCurrentUser();
@@ -37,7 +49,7 @@ const rejectExaminer = async (examinerId: string, messageToExaminer: string) => 
   return examiner;
 };
 
-async function sendRejectionEmailToExaminer(examiner: any, rejectionMessage: string) {
+async function sendRejectionEmailToExaminer(examiner: ExaminerWithRelations, rejectionMessage: string) {
   const userEmail = examiner.account?.user?.email;
   const firstName = examiner.account?.user?.firstName;
   const lastName = examiner.account?.user?.lastName;

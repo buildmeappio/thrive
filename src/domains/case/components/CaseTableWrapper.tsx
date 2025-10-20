@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender } from "@tanstack/react-table";
+import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender, type Row, type Table as TanStackTable } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CaseData } from "@/domains/case/types/CaseData";
 import Pagination from "@/components/Pagination";
@@ -43,7 +43,7 @@ const columnsDef = [
   {
     accessorKey: "number",
     header: "Case ID",
-    cell: ({ row }: { row: any }) => (
+    cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("number")}
       </div>
@@ -52,7 +52,7 @@ const columnsDef = [
   {
     accessorKey: "organization",
     header: "Company",
-    cell: ({ row }: { row: any }) => (
+    cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("organization")}
       </div>
@@ -61,7 +61,7 @@ const columnsDef = [
   {
     accessorKey: "caseType",
     header: "Claim Type",
-    cell: ({ row }: { row: any }) => (
+    cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("caseType")}
       </div>
@@ -70,7 +70,7 @@ const columnsDef = [
   {
     accessorKey: "submittedAt",
     header: "Date Received",
-    cell: ({ row }: { row: any }) => (
+    cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
         {formatDateShort(row.getValue("submittedAt"))}
       </div>
@@ -79,7 +79,7 @@ const columnsDef = [
   {
     accessorKey: "dueDate",
     header: "Due Date",
-    cell: ({ row }: { row: any }) => (
+    cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
         {row.getValue("dueDate") ? formatDateShort(row.getValue("dueDate")) : "N/A"}
       </div>
@@ -88,7 +88,7 @@ const columnsDef = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }: { row: any }) => (
+    cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("status")}
       </div>
@@ -97,7 +97,7 @@ const columnsDef = [
   {
     accessorKey: "urgencyLevel",
     header: "Priority",
-    cell: ({ row }: { row: any }) => (
+    cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("urgencyLevel")}
       </div>
@@ -106,7 +106,7 @@ const columnsDef = [
   {
     header: "",
     accessorKey: "id",
-    cell: ({ row }: { row: any }) => {
+    cell: ({ row }: { row: Row<CaseData> }) => {
       return <ActionButton id={row.original.id} />;
     },
     maxSize: 60,
@@ -145,17 +145,19 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
       const { start, end } = filters.dateRange;
       if (start) {
         result = result.filter((d) => {
-          const submittedDate = new Date(d.submittedAt);
+          if (!d.dueDate) return false; // Exclude cases without due dates
+          const dueDate = new Date(d.dueDate);
           const startDate = new Date(start);
-          return submittedDate >= startDate;
+          return dueDate >= startDate;
         });
       }
       if (end) {
         result = result.filter((d) => {
-          const submittedDate = new Date(d.submittedAt);
+          if (!d.dueDate) return false; // Exclude cases without due dates
+          const dueDate = new Date(d.dueDate);
           const endDate = new Date(end);
           endDate.setHours(23, 59, 59, 999); // Include the entire end date
-          return submittedDate <= endDate;
+          return dueDate <= endDate;
         });
       }
     }
@@ -188,8 +190,8 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
   return (
     <>
       {/* Table */}
-      <div className="overflow-hidden rounded-md outline-none">
-        <Table className="border-0">
+      <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
+        <Table className="min-w-[1000px] border-0">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
@@ -253,6 +255,6 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
 }
 
 // Export pagination separately - now it receives the table instance
-export function CasePagination({ table }: { table: any }) {
+export function CasePagination({ table }: { table: TanStackTable<CaseData> }) {
   return <Pagination table={table} />;
 }

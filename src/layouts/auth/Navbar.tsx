@@ -16,7 +16,7 @@ const Navbar = async () => {
             src={`${ENV.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
             alt="Thrive"
             sizes="(max-width: 768px) 100vw, 50vw"
-            width={120}
+            width={120}         
             height={120}
             className="h-[5.5rem] md:h-[6.5rem] w-auto"
           />

@@ -50,8 +50,7 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
     });
   };
 
-  const hasActiveFilters = filters.specialty !== "all" || 
-                          filters.status !== "all";
+  const hasActiveFilters = filters.specialty !== "all" || filters.status !== "all";
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -114,7 +113,7 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
         {/* Search and Filters Section - All in one line for mobile */}
         <div className="flex flex-row gap-4 items-center justify-between">
           {/* Search Bar - Left side */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 max-w-md min-w-0">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg className="h-5 w-5" fill="none" stroke="url(#searchGradient)" viewBox="0 0 24 24">

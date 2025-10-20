@@ -8,31 +8,13 @@ import handlers from "../server/handlers";
 import emailService from "@/services/email.service";
 import { ENV } from "@/constants/variables";
 
-type OrganizationView = {
-  id: string;
-  name: string;
-  website?: string | null;
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
-  type: any;
-  address: any;
-  manager: Array<{
-    account?: { 
-      user?: { 
-        email?: string | null;
-        firstName?: string | null;
-        lastName?: string | null;
-      } | null;
-    } | null;
-  }>;
-  createdAt: string | Date;
-  updatedAt: string | Date;
-};
+import { OrganizationType } from "@prisma/client";
 
 const rejectOrganization = async (id: string, reason: string) => {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const organization = (await handlers.rejectOrganization(id, user.accountId, reason)) as OrganizationView;
+  const organization = await handlers.rejectOrganization(id, user.accountId, reason);
 
   // Send rejection email
   try {
@@ -49,11 +31,10 @@ const rejectOrganization = async (id: string, reason: string) => {
   return organization;
 };
 
-async function sendRejectReasonToOrganization(org: OrganizationView, reason: string) {
-  const manager = org.manager?.[0];
-  const firstName = manager?.account?.user?.firstName || "";
-  const lastName = manager?.account?.user?.lastName || "";
-  const email = manager?.account?.user?.email;
+async function sendRejectReasonToOrganization(org: any, reason: string) {
+  const email = org.managerEmail;
+  const firstName = org.managerName?.split(' ')[0] || "";
+  const lastName = org.managerName?.split(' ').slice(1).join(' ') || "";
 
   if (!email) {
     console.error("Organization manager email not found");

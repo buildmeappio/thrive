@@ -46,8 +46,7 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
     });
   };
 
-  const hasActiveFilters = filters.type !== "all" || 
-                          filters.status !== "all";
+  const hasActiveFilters = filters.type !== "all" || filters.status !== "all";
 
   // Close dropdowns when clicking outside
   useEffect(() => {

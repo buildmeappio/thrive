@@ -7,6 +7,18 @@ import examinerService from "../server/examiner.service";
 import { signExaminerResubmitToken } from "@/lib/jwt";
 import emailService from "@/services/email.service";
 import { ENV } from "@/constants/variables";
+import { ExaminerProfile, Account, User, Documents, ExaminerLanguage, Language } from "@prisma/client";
+
+interface ExaminerWithRelations extends ExaminerProfile {
+  account: Account & {
+    user: User;
+  };
+  medicalLicenseDocument: Documents | null;
+  resumeDocument: Documents | null;
+  ndaDocument: Documents | null;
+  insuranceDocument: Documents | null;
+  examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
+}
 
 const requestMoreInfo = async (examinerId: string, message: string, documentsRequired: boolean = false) => {
   const user = await getCurrentUser();
@@ -35,7 +47,7 @@ const requestMoreInfo = async (examinerId: string, message: string, documentsReq
   return examiner;
 };
 
-async function sendRequestMoreInfoEmail(examiner: any, requestMessage: string, documentsRequired: boolean = false) {
+async function sendRequestMoreInfoEmail(examiner: ExaminerWithRelations, requestMessage: string, documentsRequired: boolean = false) {
   const userEmail = examiner.account?.user?.email;
   const firstName = examiner.account?.user?.firstName;
   const lastName = examiner.account?.user?.lastName;
