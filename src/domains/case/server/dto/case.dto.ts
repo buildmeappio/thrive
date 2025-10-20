@@ -83,6 +83,7 @@ export class CaseDto {
           name: document.document.name,
           type: document.document.type,
           size: document.document.size,
+          url: null as string | null, // Will be populated with presigned URL
         })),
         claimant: {
           id: examination.case.claimant.id,
