@@ -5,6 +5,7 @@ import {
   Mail,
   // MapPin,
   User,
+  PhoneCall,
 } from "lucide-react";
 import { ContinueButton, ProgressIndicator } from "@/components";
 import {
@@ -47,6 +48,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
       emailAddress: data.emailAddress,
       provinceOfResidence: data.provinceOfResidence,
       mailingAddress: data.mailingAddress,
+      landlineNumber: data.landlineNumber,
     },
     mode: "onSubmit",
   });
@@ -61,6 +63,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
       emailAddress: data.emailAddress,
       provinceOfResidence: data.provinceOfResidence,
       mailingAddress: data.mailingAddress,
+      landlineNumber: data.landlineNumber,
     });
   }, [
     data.firstName,
@@ -69,6 +72,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
     data.emailAddress,
     data.provinceOfResidence,
     data.mailingAddress,
+    data.landlineNumber,
     form,
   ]);
 
@@ -140,6 +144,13 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                 required
               />
 
+              <FormPhoneInput
+                name="landlineNumber"
+                label="Landline Number"
+                required
+                icon={PhoneCall}
+              />
+
               <FormField
                 name="emailAddress"
                 label="Email Address"
@@ -171,11 +182,15 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                 icon={null}
               />
 
-              <FormGoogleMapsInput
-                name="mailingAddress"
-                label="Mailing Address"
-                required
-              />
+              <div className="md:col-span-2 flex justify-center">
+                <div className="w-full max-w-md">
+                  <FormGoogleMapsInput
+                    name="mailingAddress"
+                    label="Mailing Address"
+                    required
+                  />
+                </div>
+              </div>
 
               {/* <FormField name="mailingAddress" label="Mailing Address" required>
                 {(field: UseFormRegisterReturn & { error?: boolean }) => (

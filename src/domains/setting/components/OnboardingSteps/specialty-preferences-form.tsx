@@ -11,7 +11,7 @@ import { medicalSpecialtyOptions, regionOptions } from "@/constants/options";
 import {
   assessmentTypeOptions,
   formatOptions,
-} from "@/domains/dashboard/constants";
+} from "@/domains/setting/constants";
 import { CircleCheck } from "lucide-react";
 import { updateSpecialtyPreferencesAction } from "../../server/actions";
 import { toast } from "sonner";

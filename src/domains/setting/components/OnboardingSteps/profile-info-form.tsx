@@ -6,6 +6,7 @@ import {
   // MapPin,
   User,
   CircleCheck,
+  PhoneCall,
 } from "lucide-react";
 import ProfilePhotoUpload from "@/components/ProfilePhotoUpload";
 import {
@@ -51,6 +52,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       firstName: initialData?.firstName || "",
       lastName: initialData?.lastName || "",
       phoneNumber: initialData?.phoneNumber || "",
+      landlineNumber: initialData?.landlineNumber || "",
       emailAddress: initialData?.emailAddress || "",
       provinceOfResidence: initialData?.provinceOfResidence || "",
       mailingAddress: initialData?.mailingAddress || "",
@@ -166,8 +168,16 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
             />
           </div>
 
-          {/* Second Row - Email, Province, Mailing Address */}
+          {/* Second Row - Landline Number, Email, Province */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormPhoneInput
+              name="landlineNumber"
+              label="Landline Number"
+              className="bg-[#F9F9F9]"
+              required
+              icon={PhoneCall}
+            />
+
             <FormField name="emailAddress" label="Email Address" required>
               {(field) => (
                 <Input
@@ -188,23 +198,16 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
               placeholder="Select Province"
               from="profile-info-form"
             />
+          </div>
 
+          {/* Third Row - Mailing Address */}
+          <div className="grid grid-cols-1 gap-4">
             <FormGoogleMapsInput
               name="mailingAddress"
               label="Mailing Address"
               required
               from="profile-info-form"
             />
-            {/* <FormField name="mailingAddress" label="Mailing Address" required>
-              {(field) => (
-                <Input
-                  {...field}
-                  placeholder="125 Bay Street, Suite 600"
-                  icon={MapPin}
-                  className="bg-[#F9F9F9]"
-                />
-              )}
-            </FormField> */}
           </div>
 
           {/* Profile Photo and Bio */}

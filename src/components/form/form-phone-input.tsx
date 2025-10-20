@@ -3,6 +3,7 @@ import React from "react";
 import { Controller, useFormContext, FieldPath, FieldValues } from "@/lib/form";
 import { Label } from "@/components/ui";
 import PhoneInput from "@/components/PhoneInput";
+import { LucideIcon } from "lucide-react";
 
 interface FormPhoneInputProps<TFieldValues extends FieldValues> {
   name: FieldPath<TFieldValues>;
@@ -11,6 +12,7 @@ interface FormPhoneInputProps<TFieldValues extends FieldValues> {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  icon?: LucideIcon;
 }
 
 const FormPhoneInput = <TFieldValues extends FieldValues>({
@@ -19,6 +21,7 @@ const FormPhoneInput = <TFieldValues extends FieldValues>({
   required = false,
   className = "",
   disabled = false,
+  icon,
 }: FormPhoneInputProps<TFieldValues>) => {
   const {
     control,
@@ -47,6 +50,7 @@ const FormPhoneInput = <TFieldValues extends FieldValues>({
             onBlur={field.onBlur}
             disabled={disabled}
             className={className}
+            icon={icon}
           />
         )}
       />

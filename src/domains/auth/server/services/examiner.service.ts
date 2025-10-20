@@ -139,6 +139,7 @@ class ExaminerService {
       phone?: string;
       provinceOfResidence?: string;
       mailingAddress?: string;
+      landlineNumber?: string;
 
       // Step 2: Medical Credentials
       specialties?: string[];
@@ -199,6 +200,7 @@ class ExaminerService {
             provinceOfResidence: data.provinceOfResidence,
           }),
           ...(data.mailingAddress && { mailingAddress: data.mailingAddress }),
+          ...(data.landlineNumber && { landlineNumber: data.landlineNumber }),
           ...(data.specialties && { specialties: data.specialties }),
           ...(data.licenseNumber && { licenseNumber: data.licenseNumber }),
           ...(data.provinceOfLicensure && {

@@ -13,6 +13,7 @@ export type UpdateMedicalExaminerInput = {
   phone?: string;
   provinceOfResidence?: string;
   mailingAddress?: string;
+  landlineNumber?: string;
 
   // step 2
   specialties?: string[];

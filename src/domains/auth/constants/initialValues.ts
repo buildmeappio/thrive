@@ -21,6 +21,7 @@ export const step1InitialValues: Omit<
   emailAddress: "",
   provinceOfResidence: null,
   mailingAddress: "",
+  landlineNumber: "",
 };
 
 export const step2InitialValues: Step2MedicalCredentialsInput = {

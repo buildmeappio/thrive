@@ -13,6 +13,7 @@ export type CreateMedicalExaminerInput = {
   phone: string;
   provinceOfResidence: string;
   mailingAddress: string;
+  landlineNumber: string;
 
   // step 2
   specialties: string[];
@@ -90,6 +91,7 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
         },
         provinceOfResidence: payload.provinceOfResidence,
         mailingAddress: payload.mailingAddress,
+        landlineNumber: payload.landlineNumber,
         specialties: payload.specialties,
         licenseNumber: payload.licenseNumber,
         provinceOfLicensure: payload.provinceOfLicensure,
@@ -144,7 +146,6 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
     };
   } catch (error) {
     throw HttpError.fromError(error, ErrorMessages.REGISTRATION_FAILED, 500);
-    console.error("Error in createMedicalExaminer handler:", error);
   }
 };
 

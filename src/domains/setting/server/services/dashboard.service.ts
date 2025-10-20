@@ -38,6 +38,7 @@ class DashboardService {
       firstName?: string;
       lastName?: string;
       phoneNumber?: string;
+      landlineNumber?: string;
       emailAddress?: string;
       provinceOfResidence?: string;
       mailingAddress?: string;
@@ -87,6 +88,9 @@ class DashboardService {
         }),
         ...(data.mailingAddress && {
           mailingAddress: data.mailingAddress,
+        }),
+        ...(data.landlineNumber !== undefined && {
+          landlineNumber: data.landlineNumber,
         }),
         ...(data.bio && {
           bio: data.bio,
