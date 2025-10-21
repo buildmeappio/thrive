@@ -80,6 +80,8 @@ export type CaseDetailDtoType = {
             name: string;
             website: string | null;
             status: string;
+            managerEmail?: string | null;
+            managerName?: string | null;
         };
         legalRepresentative: {
             id: string;

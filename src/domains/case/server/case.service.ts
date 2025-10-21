@@ -154,7 +154,19 @@ class CaseService {
               caseType: true,
               documents: { include: { document: true } },
               claimant: { include: { address: true } },
-              organization: true,
+              organization: {
+                include: {
+                  manager: {
+                    include: {
+                      account: {
+                        include: {
+                          user: true  // Include user to get email, firstName, lastName
+                        }
+                      }
+                    }
+                  }
+                }
+              },
               legalRepresentative: { include: { address: true } },
               insurance: { include: { address: true } },
             },
@@ -192,7 +204,19 @@ class CaseService {
               caseType: true,  // Include case type
               documents: { include: { document: true } },  // Include documents
               claimant: { include: { address: true } },  // Include claimant details
-              organization: true,  // Include organization
+              organization: {
+                include: {
+                  manager: {
+                    include: {
+                      account: {
+                        include: {
+                          user: true  // Include user to get email, firstName, lastName
+                        }
+                      }
+                    }
+                  }
+                }
+              },  // Include organization with manager details
               legalRepresentative: { include: { address: true } },  // Include legal representative
               insurance: { include: { address: true } },
             },

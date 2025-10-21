@@ -53,7 +53,19 @@ class DashboardService {
                         caseType: true,
                         documents: { include: { document: true } },
                         claimant: { include: { address: true } },
-                        organization: true,
+                        organization: {
+                            include: {
+                                manager: {
+                                    include: {
+                                        account: {
+                                            include: {
+                                                user: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
                         legalRepresentative: { include: { address: true } },
                         insurance: { include: { address: true } },
                     },
@@ -109,7 +121,19 @@ class DashboardService {
                         caseType: true,
                         documents: { include: { document: true } },
                         claimant: { include: { address: true } },
-                        organization: true,
+                        organization: {
+                            include: {
+                                manager: {
+                                    include: {
+                                        account: {
+                                            include: {
+                                                user: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
                         legalRepresentative: { include: { address: true } },
                         insurance: { include: { address: true } },
                     },
