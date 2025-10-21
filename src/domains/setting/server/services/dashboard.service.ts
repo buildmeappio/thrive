@@ -1,4 +1,5 @@
 import prisma from "@/lib/db";
+import { uploadFileToS3 } from "@/lib/s3";
 
 class DashboardService {
   /**
@@ -220,6 +221,27 @@ class DashboardService {
     });
 
     return updatedProfile;
+  }
+
+  // Add to dashboard.service.ts
+  async uploadProfilePhoto(file: File) {
+    const uploadResult = await uploadFileToS3(file);
+
+    if (!uploadResult.success) {
+      throw new Error(uploadResult.error || "Failed to upload profile photo");
+    }
+
+    // Construct CDN URL
+    const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL;
+    const profilePhotoUrl = cdnUrl
+      ? `${cdnUrl}/documents/examiner/${uploadResult.document.name}`
+      : null;
+
+    return {
+      documentId: uploadResult.document.id,
+      profilePhotoUrl,
+      document: uploadResult.document,
+    };
   }
 }
 

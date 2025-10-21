@@ -22,6 +22,11 @@ const SuccessPageContent = () => {
         description:
           "We could not find your account in our system. Please contact support for assistance.",
       },
+      token_used: {
+        title: "Token Already Used",
+        description:
+          "This password setup link has already been used. You can log in with your existing password or contact support if you need assistance.",
+      },
     };
 
   const errorData = error ? errorMessages[error] : null;

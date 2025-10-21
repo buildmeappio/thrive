@@ -30,19 +30,7 @@ const LoginForm = () => {
       if (result?.error) {
         toast.error(ErrorMessages.INVALID_CREDENTIALS);
       } else {
-        // Fetch the updated session after successful login
-        const response = await fetch("examiner/api/auth/session");
-        const session = await response.json();
-
-        // Check if activation is complete (activationStep should be "payout" when all steps are done)
-        const isActivationComplete = session?.user?.activationStep === "payout";
-
-        // Redirect based on activation status
-        if (isActivationComplete) {
-          window.location.href = createRoute(URLS.DASHBOARD);
-        } else {
-          window.location.href = createRoute(URLS.SETTINGS);
-        }
+        window.location.href = createRoute(URLS.DASHBOARD);
       }
     } catch {
       toast.error(ErrorMessages.LOGIN_FAILED);

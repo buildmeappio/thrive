@@ -10,6 +10,7 @@ import {
   Settings,
   HelpCircle,
   PcCase,
+  X,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { createRoute, URLS } from "@/constants/route";
@@ -141,10 +142,19 @@ const SideBar = ({
     <aside
       className={`fixed top-20 left-0 z-50 flex h-[calc(100vh-5rem)] w-[280px] transform-gpu flex-col bg-white transition-transform duration-300 ${
         isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-      } border-r border-gray-200 rounded-r-[50px]`}>
+      } border-r border-gray-200 rounded-r-[50px] md:pt-6`}>
       <div className="relative flex h-full min-h-0 w-full flex-col">
+        {/* Mobile Close Button */}
+        <div className="flex justify-end pt-2 pr-2 md:hidden">
+          <button
+            onClick={onMobileClose}
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
         {/* Sidebar Content */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-8">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-2">
           {/* Main Navigation - scrollable */}
           <nav className="flex-1 space-y-5 overflow-y-auto px-8">
             {medicalExaminerSidebarRoutes.map((item) => {

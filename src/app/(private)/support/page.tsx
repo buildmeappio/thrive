@@ -3,11 +3,11 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Support | Thrive - Examiner",
-  description: "Access your support to get help and assistance",
+  description: "Access your support to manage your support tickets",
 };
 
 const SupportPage = () => {
-  return <div></div>;
+  return <div className="space-y-4"></div>;
 };
 
 export default SupportPage;

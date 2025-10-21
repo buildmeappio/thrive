@@ -2,9 +2,9 @@
 
 import { type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import SideBar from "@/layouts/dashboard/Sidebar";
+import SideBar from "./Sidebar";
 import { useSidebar } from "@/providers/Sidebar";
-import { Header } from "@/layouts/dashboard";
+import Header from "./Header";
 
 type LayoutWrapperProps = {
   children: ReactNode;

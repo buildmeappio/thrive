@@ -24,7 +24,6 @@ import {
   profileInfoSchema,
   ProfileInfoInput,
 } from "../../schemas/onboardingSteps.schema";
-import { uploadFileToS3 } from "@/lib/s3";
 import { toast } from "sonner";
 
 interface ProfileInfoFormProps {
@@ -42,9 +41,6 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
-  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(
-    initialData?.profilePhotoUrl || null
-  );
 
   const form = useForm<ProfileInfoInput>({
     schema: profileInfoSchema,
@@ -73,32 +69,11 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
     setLoading(true);
     try {
-      let uploadedPhotoId = initialData?.profilePhotoId || null;
-
-      // Upload profile photo if a new one was selected
-      if (profilePhoto) {
-        const uploadResult = await uploadFileToS3(profilePhoto);
-
-        if (uploadResult.success) {
-          uploadedPhotoId = uploadResult.document.id;
-
-          // Update preview URL (construct CDN URL)
-          const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL;
-          if (cdnUrl) {
-            const uploadedUrl = `${cdnUrl}/documents/examiner/${uploadResult.document.name}`;
-            setProfilePhotoUrl(uploadedUrl);
-          }
-        } else {
-          toast.error(uploadResult.error || "Failed to upload profile photo");
-          setLoading(false);
-          return;
-        }
-      }
-
       const result = await updateExaminerProfileAction({
         examinerProfileId,
         ...values,
-        profilePhotoId: uploadedPhotoId,
+        profilePhotoId: initialData?.profilePhotoId || null,
+        profilePhoto: profilePhoto || undefined,
         activationStep: "profile", // Mark step 1 as completed
       });
 
@@ -186,6 +161,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
                   placeholder="s.ahmed@precisionmed.ca"
                   icon={Mail}
                   className="bg-[#F9F9F9]"
+                  disabled={true}
                 />
               )}
             </FormField>
@@ -218,7 +194,6 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
                 Profile Photo*
               </label>
               <ProfilePhotoUpload
-                currentPhotoUrl={profilePhotoUrl}
                 onPhotoChange={handlePhotoChange}
                 disabled={loading}
                 size="md"

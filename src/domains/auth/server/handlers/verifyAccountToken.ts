@@ -8,11 +8,28 @@ export type VerifyAccountTokenInput = {
 
 const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
   try {
+    console.log("Verifying token:", payload.token);
+
     // Verify token and extract user data
     const { userId } = tokenService.extractUserFromToken(payload.token);
+    console.log("Extracted userId:", userId);
 
     // Check if user exists
     const user = await userService.getUserById(userId);
+    console.log("User found:", !!user);
+    console.log("User password field:", user.password);
+    console.log("User password exists:", !!user.password);
+    console.log("User password type:", typeof user.password);
+    console.log("User password length:", user.password?.length);
+    console.log("Full user object:", JSON.stringify(user, null, 2));
+
+    // Check if user already has a password set (token already used)
+    if (user.password && user.password.trim() !== "") {
+      console.log("User already has password set - token already used");
+      throw HttpError.unauthorized(
+        "Token has already been used. Please log in with your existing password."
+      );
+    }
 
     return {
       success: true,
@@ -22,6 +39,7 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
       },
     };
   } catch (error) {
+    console.log("Token verification error:", error);
     throw HttpError.fromError(
       error,
       ErrorMessages.FAILED_TOKEN_VERIFICATION,
