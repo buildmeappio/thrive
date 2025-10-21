@@ -1,9 +1,10 @@
 'use client';
-
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import AddOnServices from './AddonServices';
 import AppointmentOptions from './AppointmentOptions';
+import ExaminerOptions from './ExaminerOptions';
 import UserInfo from './UserInfo';
 import { useClaimantAvailability } from '@/hooks/useCliamantAvailability';
 import { toast } from 'sonner';
@@ -40,6 +41,7 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
     caseSummary.claimantId
   );
   const router = useRouter();
+  const [currentStep, setCurrentStep] = useState<'appointments' | 'examiners'>('appointments');
 
   const form = useForm<ClaimantAvailabilityFormData>({
     resolver: zodResolver(claimantAvailabilitySchema),
@@ -84,13 +86,18 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
       {/* Form container */}
       <form onSubmit={form.handleSubmit(handleSubmit, onError)}>
         <div className="mx-auto w-full space-y-8">
-          <AppointmentOptions form={form} />
-          {/* <AddOnServices
-            form={form}
-            onSubmit={form.handleSubmit(handleSubmit, onError)}
-            isSubmitting={isSubmitting}
-            languages={convertToTypeOptions(languages)}
-          /> */}
+          {currentStep === 'appointments' ? (
+            <AppointmentOptions form={form} onCheckExaminers={() => setCurrentStep('examiners')} />
+          ) : (
+            <ExaminerOptions
+              onSelectAppointment={appointmentId => {
+                toast.success(`Appointment ${appointmentId} selected successfully!`);
+                console.log('Selected appointment:', appointmentId);
+                // You can add navigation or form submission logic here
+              }}
+              onBack={() => setCurrentStep('appointments')}
+            />
+          )}
         </div>
       </form>
     </div>

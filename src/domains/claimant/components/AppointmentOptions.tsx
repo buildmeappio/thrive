@@ -10,9 +10,10 @@ import { timeSlots } from '@/config/timeSlots';
 
 interface AppointmentOptionsProps {
   form: UseFormReturn<ClaimantAvailabilityFormData>;
+  onCheckExaminers: () => void;
 }
 
-const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
+const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form, onCheckExaminers }) => {
   const {
     register,
     watch,
@@ -98,7 +99,7 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
     if (isSelected) {
       return `${baseClass} bg-[#000093] text-white cursor-pointer`;
     } else if (appointmentClass) {
-      return `${baseClass} bg-[#E8F1FF] text-white cursor-pointer`;
+      return `${baseClass} bg-[#E8F1FF] text-black cursor-pointer`;
     } else if (todayClass) {
       return `${baseClass} bg-[#000093] text-white cursor-pointer`;
     } else if (isCurrentMonthView && isPast) {
@@ -379,6 +380,17 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
             <div className="text-sm text-red-500">{errors.accessibilityNotes.message}</div>
           )}
         </div>
+      </div>
+
+      {/* Check for Examiners Button */}
+      <div className="mt-8 text-center">
+        <button
+          type="button"
+          onClick={onCheckExaminers}
+          className="rounded-xl bg-[#000093] px-8 py-4 text-lg font-semibold text-white transition-colors duration-200 hover:bg-[#000080]"
+        >
+          Check for Examiners
+        </button>
       </div>
     </div>
   );
