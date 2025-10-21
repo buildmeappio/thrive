@@ -5,6 +5,7 @@ import ErrorMessages from '@/constants/ErrorMessages';
 import type { IMEFormData } from '@/store/useImeReferral';
 import type { ClaimantPreference } from '@prisma/client';
 import { DocumentService } from '@/services/fileUploadService';
+import { getE164PhoneNumber } from '@/utils/formatNumbers';
 
 export const createCase = async (formData: IMEFormData) => {
   const currentUser = await getCurrentUser();
@@ -109,6 +110,8 @@ export const createCase = async (formData: IMEFormData) => {
         throw new Error('Insurance date of loss is required');
       }
 
+      console.log('phone number', formData.step1?.phoneNumber);
+
       // 3. Create entities in parallel
       const [claimant, insurance, legalRep, caseType, currentAccount] = await Promise.all([
         tx.claimant.create({
@@ -117,13 +120,13 @@ export const createCase = async (formData: IMEFormData) => {
             lastName: formData.step1?.lastName || '',
             dateOfBirth: formData.step1?.dateOfBirth ? new Date(formData.step1.dateOfBirth) : null,
             gender: formData.step1?.gender || null,
-            phoneNumber: formData.step1?.phoneNumber || null,
+            phoneNumber: getE164PhoneNumber(formData.step1?.phoneNumber) || null,
             emailAddress: formData.step1?.emailAddress || null,
             relatedCasesDetails: formData.step1?.relatedCasesDetails || null,
             familyDoctorName: formData.step1?.familyDoctorName || null,
             familyDoctorEmailAddress: formData.step1?.familyDoctorEmail || null,
-            familyDoctorPhoneNumber: formData.step1?.familyDoctorPhone || null,
-            familyDoctorFaxNumber: formData.step1?.familyDoctorFax || null,
+            familyDoctorPhoneNumber: getE164PhoneNumber(formData.step1?.familyDoctorPhone) || null,
+            familyDoctorFaxNumber: getE164PhoneNumber(formData.step1?.familyDoctorFax) || null,
             addressId: claimantAddress.id,
             claimTypeId: claimTypeId,
           },
@@ -140,8 +143,8 @@ export const createCase = async (formData: IMEFormData) => {
             policyHolderIsClaimant: formData.step2?.policyHolderSameAsClaimant || false,
             policyHolderFirstName: formData.step2?.policyHolderFirstName || '',
             policyHolderLastName: formData.step2?.policyHolderLastName || '',
-            phoneNumber: formData.step2?.insurancePhone || '',
-            faxNumber: formData.step2?.insuranceFaxNo || '',
+            phoneNumber: getE164PhoneNumber(formData.step2?.insurancePhone) || '',
+            faxNumber: getE164PhoneNumber(formData.step2?.insuranceFaxNo) || '',
             addressId: insuranceAddress ? insuranceAddress.id : null,
           },
         }),
@@ -150,8 +153,8 @@ export const createCase = async (formData: IMEFormData) => {
               data: {
                 companyName: formData.step3?.legalCompanyName || null,
                 contactPersonName: formData.step3?.legalContactPerson || null,
-                phoneNumber: formData.step3?.legalPhone || null,
-                faxNumber: formData.step3?.legalFaxNo || null,
+                phoneNumber: getE164PhoneNumber(formData.step3?.legalPhone) || null,
+                faxNumber: getE164PhoneNumber(formData.step3?.legalFaxNo) || null,
                 addressId: legalAddress ? legalAddress.id : null,
               },
             })

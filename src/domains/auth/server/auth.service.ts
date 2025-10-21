@@ -14,6 +14,7 @@ import ErrorMessages from '@/constants/ErrorMessages';
 import jwt from 'jsonwebtoken';
 import SuccessMessages from '@/constants/SuccessMessages';
 import { Prisma } from '@prisma/client';
+import { getE164PhoneNumber } from '@/utils/formatNumbers';
 
 const getUserByEmail = async (email: string) => {
   try {
@@ -106,7 +107,7 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
         firstName,
         lastName,
         email: officialEmailAddress,
-        phone: phoneNumber,
+        phone: getE164PhoneNumber(phoneNumber),
       },
     });
 

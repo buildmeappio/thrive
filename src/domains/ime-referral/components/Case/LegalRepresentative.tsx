@@ -1,4 +1,4 @@
-import { showPhoneFax } from '@/utils/showPhoneFax';
+import { formatE164ForDisplay } from '@/utils/formatNumbers';
 import { getCaseDetails } from '../../actions';
 
 type LegalRepresentativeDetailsProps = {
@@ -21,12 +21,12 @@ const LegalRepresentative = ({ legalRepresentativeDetails }: LegalRepresentative
     },
     {
       label: 'Phone Number',
-      value: showPhoneFax(legalRepresentativeDetails?.phoneNumber),
+      value: formatE164ForDisplay(legalRepresentativeDetails?.phoneNumber),
       key: 'phoneNumber',
     },
     {
       label: 'Fax Number',
-      value: showPhoneFax(legalRepresentativeDetails?.faxNumber),
+      value: formatE164ForDisplay(legalRepresentativeDetails?.faxNumber),
       key: 'faxNumber',
     },
     {

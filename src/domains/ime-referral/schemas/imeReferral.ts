@@ -2,7 +2,7 @@ import ErrorMessages from '@/constants/ErrorMessages';
 import { z } from 'zod';
 import { DocumentUploadConfig } from '@/config/documentUpload';
 import { formatFileSize } from '@/utils/documentUpload';
-import { validateCanadianPhoneNumber } from '@/components/PhoneNumber';
+import { validateCanadianPhoneNumber } from '@/utils/formatNumbers';
 
 // File validation schema
 const FileSchema = z.instanceof(File).superRefine((file, ctx) => {

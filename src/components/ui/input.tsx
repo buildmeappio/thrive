@@ -12,7 +12,7 @@ function Input({ className, type, icon: Icon, iconPosition = 'left', ...props }:
     <div className="relative">
       {Icon && iconPosition === 'left' && (
         <Icon
-          className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#A4A4A4] md:h-5 md:w-5"
+          className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#A4A4A4]"
           strokeWidth={2}
         />
       )}
@@ -24,7 +24,7 @@ function Input({ className, type, icon: Icon, iconPosition = 'left', ...props }:
           'placeholder:text-[14px] placeholder:leading-none placeholder:font-normal placeholder:text-[#9EA9AA]',
           'focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none',
           'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
-          Icon && iconPosition === 'left' && 'pl-11',
+          Icon && iconPosition === 'left' && 'pl-10',
           Icon && iconPosition === 'right' && 'pr-11',
           className
         )}

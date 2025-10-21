@@ -1,6 +1,6 @@
 import { formatDate } from '@/utils/dateTime';
-import { showPhoneFax } from '@/utils/showPhoneFax';
 import { getCaseDetails } from '../../actions';
+import { formatE164ForDisplay } from '@/utils/formatNumbers';
 
 type InsuranceDetailsProps = {
   insuranceDetails: Awaited<ReturnType<typeof getCaseDetails>>['result']['case']['insurance'];
@@ -25,12 +25,12 @@ const InsuranceDetails = ({ insuranceDetails }: InsuranceDetailsProps) => {
     },
     {
       label: 'Phone Number',
-      value: showPhoneFax(insuranceDetails?.phoneNumber),
+      value: formatE164ForDisplay(insuranceDetails?.phoneNumber),
       key: 'phoneNumber',
     },
     {
       label: 'Fax Number',
-      value: showPhoneFax(insuranceDetails?.faxNumber),
+      value: formatE164ForDisplay(insuranceDetails?.faxNumber),
       key: 'faxNumber',
     },
     {

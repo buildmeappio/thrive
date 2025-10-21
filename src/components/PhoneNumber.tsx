@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { AsYouType, parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
+import { AsYouType } from 'libphonenumber-js';
 import { Phone } from 'lucide-react';
 import { Input } from '@/components/ui';
 import type { LucideIcon } from 'lucide-react';
@@ -22,13 +22,10 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
 
       // Allow 11 digits only if it starts with "1"
       const maxLength = digitsOnly.startsWith('1') ? 11 : 10;
-
-      if (digitsOnly.length > maxLength) {
-        return;
-      }
+      if (digitsOnly.length > maxLength) return;
 
       const formatter = new AsYouType('CA');
-      const formatted = formatter.input(inputValue);
+      const formatted = formatter.input(digitsOnly);
 
       const syntheticEvent = {
         ...e,
@@ -42,7 +39,32 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
       onChange(syntheticEvent as React.ChangeEvent<HTMLInputElement>);
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Backspace' && value) {
+        e.preventDefault();
+
+        let digitsOnly = value.replace(/\D/g, '');
+        if (digitsOnly.length === 0) return;
+
+        // Remove the last digit manually
+        digitsOnly = digitsOnly.slice(0, -1);
+
+        // Reformat with AsYouType
+        const formatter = new AsYouType('CA');
+        const newFormatted = formatter.input(digitsOnly);
+
+        const syntheticEvent = {
+          ...e,
+          target: {
+            name,
+            value: newFormatted,
+          },
+        } as unknown as React.ChangeEvent<HTMLInputElement>;
+
+        onChange(syntheticEvent);
+        return;
+      }
+
       const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
       const isDigit = /[0-9]/.test(e.key);
       const isFormatChar = /[\s\-().]/.test(e.key);
@@ -58,10 +80,10 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         name={name}
         icon={icon || Phone}
         type="tel"
-        placeholder="(123) 456-7890"
+        placeholder="(234) 956-7890"
         value={value}
         onChange={handleChange}
-        onKeyPress={handleKeyPress}
+        onKeyDown={handleKeyDown}
         onBlur={onBlur}
         disabled={disabled}
         className={className}
@@ -73,44 +95,3 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
 PhoneInput.displayName = 'PhoneInput';
 
 export default PhoneInput;
-
-// ✅ Validation allows 10 or 11 digits (11 only if starts with 1)
-export const validateCanadianPhoneNumber = (value: string | undefined): boolean => {
-  if (!value) return false;
-
-  try {
-    const digitsOnly = value.replace(/\D/g, '');
-    if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
-      return isValidPhoneNumber(`+${digitsOnly}`, 'CA');
-    }
-
-    if (digitsOnly.length === 10) {
-      return isValidPhoneNumber(`+1${digitsOnly}`, 'CA');
-    }
-
-    return false;
-  } catch {
-    return false;
-  }
-};
-
-// ✅ Convert to E.164 (handles both 10- and 11-digit inputs)
-export const getE164PhoneNumber = (value: string): string | null => {
-  try {
-    const digitsOnly = value.replace(/\D/g, '');
-
-    if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
-      const phoneNumber = parsePhoneNumber(`+${digitsOnly}`, 'CA');
-      return phoneNumber?.format('E.164') || null;
-    }
-
-    if (digitsOnly.length === 10) {
-      const phoneNumber = parsePhoneNumber(`+1${digitsOnly}`, 'CA');
-      return phoneNumber?.format('E.164') || null;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-};

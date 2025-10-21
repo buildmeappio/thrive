@@ -1,5 +1,5 @@
 import ErrorMessages from '@/constants/ErrorMessages';
-import jwt, { type Secret, type SignOptions, type JwtPayload } from 'jsonwebtoken';
+import jwt, { type SignOptions, type JwtPayload } from 'jsonwebtoken';
 
 const getJwtSecret = (name: 'otp' | 'password') => {
   let secret: string | null = null;

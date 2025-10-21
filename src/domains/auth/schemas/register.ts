@@ -1,5 +1,5 @@
-import { validateCanadianPhoneNumber } from '@/components/PhoneNumber';
 import ErrorMessages from '@/constants/ErrorMessages';
+import { validateCanadianPhoneNumber } from '@/utils/formatNumbers';
 import * as Yup from 'yup';
 
 // Step1

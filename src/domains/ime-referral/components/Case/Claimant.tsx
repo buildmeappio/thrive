@@ -1,7 +1,7 @@
 import { formatDate } from '@/utils/dateTime';
 import { formatAddress } from '@/utils/formatAddress';
-import { showPhoneFax } from '@/utils/showPhoneFax';
 import { getCaseDetails } from '../../actions';
+import { formatE164ForDisplay } from '@/utils/formatNumbers';
 
 type ClaimantProps = {
   claimantDetails: Awaited<ReturnType<typeof getCaseDetails>>['result']['case']['claimant'];
@@ -36,7 +36,7 @@ const Claimant = ({ claimantDetails }: ClaimantProps) => {
     },
     {
       label: 'Phone',
-      value: showPhoneFax(claimantDetails?.phoneNumber),
+      value: formatE164ForDisplay(claimantDetails?.phoneNumber),
       key: 'phoneNumber',
     },
     {
@@ -66,12 +66,12 @@ const Claimant = ({ claimantDetails }: ClaimantProps) => {
     },
     {
       label: 'Family Doctor Phone',
-      value: showPhoneFax(claimantDetails?.familyDoctorPhoneNumber),
+      value: formatE164ForDisplay(claimantDetails?.familyDoctorPhoneNumber),
       key: 'familyDoctorPhoneNumber',
     },
     {
       label: 'Family Doctor Fax',
-      value: showPhoneFax(claimantDetails?.familyDoctorFaxNumber),
+      value: formatE164ForDisplay(claimantDetails?.familyDoctorFaxNumber),
       key: 'familyDoctorFaxNumber',
     },
   ];
