@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import AddOnServices from './AddonServices';
 import AppointmentOptions from './AppointmentOptions';
 import ExaminerOptions from './ExaminerOptions';
+import AppointmentConfirmation from './AppointmentConfirmation';
 import UserInfo from './UserInfo';
 import { useClaimantAvailability } from '@/hooks/useCliamantAvailability';
 import { toast } from 'sonner';
@@ -41,7 +42,10 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
     caseSummary.claimantId
   );
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState<'appointments' | 'examiners'>('appointments');
+  const [currentStep, setCurrentStep] = useState<'appointments' | 'examiners' | 'confirmation'>(
+    'appointments'
+  );
+  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
 
   const form = useForm<ClaimantAvailabilityFormData>({
     resolver: zodResolver(claimantAvailabilitySchema),
@@ -71,31 +75,57 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
   return (
     <div>
       {/* Heading */}
-      <h1 className="py-4 text-center text-2xl leading-tight font-semibold tracking-normal capitalize sm:text-3xl lg:text-[36px]">
-        Help Us Schedule Your IME
-      </h1>
+      {currentStep !== 'confirmation' && (
+        <h1 className="py-4 text-center text-2xl leading-tight font-semibold tracking-normal capitalize sm:text-3xl lg:text-[36px]">
+          Help Us Schedule Your IME
+        </h1>
+      )}
 
-      {/* User Info */}
-      <UserInfo
-        caseId={caseSummary.caseId}
-        claimantFirstName={caseSummary.claimantFirstName ?? ''}
-        claimantLastName={caseSummary.claimantLastName ?? ''}
-        organizationName={caseSummary.organizationName ?? ''}
-      />
+      {/* User Info - Only show for appointments and examiners steps */}
+      {currentStep !== 'confirmation' && (
+        <UserInfo
+          caseId={caseSummary.caseId}
+          claimantFirstName={caseSummary.claimantFirstName ?? ''}
+          claimantLastName={caseSummary.claimantLastName ?? ''}
+          organizationName={caseSummary.organizationName ?? ''}
+        />
+      )}
 
       {/* Form container */}
       <form onSubmit={form.handleSubmit(handleSubmit, onError)}>
         <div className="mx-auto w-full space-y-8">
           {currentStep === 'appointments' ? (
             <AppointmentOptions form={form} onCheckExaminers={() => setCurrentStep('examiners')} />
-          ) : (
+          ) : currentStep === 'examiners' ? (
             <ExaminerOptions
               onSelectAppointment={appointmentId => {
-                toast.success(`Appointment ${appointmentId} selected successfully!`);
-                console.log('Selected appointment:', appointmentId);
-                // You can add navigation or form submission logic here
+                // Find the selected appointment from the data
+                const appointmentData = {
+                  id: appointmentId,
+                  date: 'May 10, 2025',
+                  time: '11:30 AM',
+                  doctor: {
+                    name: 'Dr. Mark Thompson',
+                    specialty: 'Cardiologist',
+                    credentials: 'FACC, ABIM',
+                  },
+                  clinic: 'Heart Health Institute',
+                  requirements: {
+                    interpreter: 'Required',
+                    transport: 'MedTransit',
+                    chaperone: 'Required',
+                  },
+                };
+                setSelectedAppointment(appointmentData);
+                setCurrentStep('confirmation');
               }}
               onBack={() => setCurrentStep('appointments')}
+            />
+          ) : (
+            <AppointmentConfirmation
+              appointment={selectedAppointment}
+              claimantName={caseSummary.claimantFirstName || 'Johnathan'}
+              onBack={() => setCurrentStep('examiners')}
             />
           )}
         </div>
