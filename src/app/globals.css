@@ -134,4 +134,32 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Increase base font size on mobile for better readability */
+  html {
+    font-size: 20px;
+  }
+  
+  @media (min-width: 640px) {
+    html {
+      font-size: 16px;
+    }
+  }
+  
+  /* Force dashboard components to render at 50% width on mobile for 2x zoom effect */
+  @media (max-width: 639px) {
+    /* Prevent horizontal scroll on body */
+    body {
+      overflow-x: hidden;
+    }
+    
+    /* Apply zoom effect to dashboard content */
+    .dashboard-zoom-mobile {
+      transform: scale(1.0);
+      transform-origin: top left;
+      width: 98%;
+      max-width: 98vw;
+      margin-bottom: 0.75rem;
+    }
+  }
 }

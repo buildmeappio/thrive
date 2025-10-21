@@ -8,8 +8,6 @@ import handlers from "../server/handlers";
 import emailService from "@/services/email.service";
 import { ENV } from "@/constants/variables";
 
-import { OrganizationType } from "@prisma/client";
-
 const rejectOrganization = async (id: string, reason: string) => {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
