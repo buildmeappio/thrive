@@ -67,6 +67,17 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
     return date.toDateString() === currentDate.toDateString();
   };
 
+  const isCurrentMonth = (): boolean => {
+    return (
+      currentMonth.getMonth() === currentDate.getMonth() &&
+      currentMonth.getFullYear() === currentDate.getFullYear()
+    );
+  };
+
+  const isPastDate = (date: Date): boolean => {
+    return date < currentDate && !isToday(date);
+  };
+
   const hasAppointment = (date: Date): boolean => {
     const dateStr = formatDate(date);
     return formData.appointments.some(apt => apt.date === dateStr);
@@ -77,22 +88,32 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
     const isSelected = selectedDate === dateStr;
     const todayClass = isToday(day);
     const appointmentClass = hasAppointment(day);
+    const isPast = isPastDate(day);
+    const isCurrentMonthView = isCurrentMonth();
+    const isWeekend = day.getDay() === 0 || day.getDay() === 6; // Sunday = 0, Saturday = 6
 
     const baseClass =
-      'h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 rounded-full text-xs sm:text-sm border-0 cursor-pointer hover:opacity-80';
+      'relative hover:opacity-80 rounded-full h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 flex items-center justify-center text-xs sm:text-sm';
 
     if (isSelected) {
-      return `${baseClass} bg-[#000093] text-white`;
+      return `${baseClass} bg-[#000093] text-white cursor-pointer`;
     } else if (appointmentClass) {
-      return `${baseClass} bg-[#E8F1FF] text-black`;
+      return `${baseClass} bg-[#E8F1FF] text-white cursor-pointer`;
     } else if (todayClass) {
-      return `${baseClass} bg-transparent text-[#2E94F0] font-semibold hover:bg-blue-100`;
+      return `${baseClass} bg-[#000093] text-white cursor-pointer`;
+    } else if (isCurrentMonthView && isPast) {
+      return `${baseClass} bg-transparent text-gray-400 cursor-not-allowed`;
+    } else if (isWeekend) {
+      return `${baseClass} bg-transparent text-gray-900`;
     } else {
-      return `${baseClass} bg-transparent text-gray-900 hover:bg-blue-100`;
+      return `${baseClass} bg-[#E8F1FF] text-black cursor-pointer`;
     }
   };
 
   const handleDateClick = (day: Date): void => {
+    if (isCurrentMonth() && isPastDate(day)) {
+      return; // Don't allow clicking on past dates in current month
+    }
     setSelectedDate(formatDate(day));
   };
 
@@ -140,7 +161,7 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
   const days = getDaysInMonth(currentMonth);
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-0">
+    <div className="mx-auto w-full max-w-7xl p-4 sm:px-6">
       <div className="py-8 text-center text-[28px] leading-[100%] font-semibold tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
         Choose Preferred Dates (2 to 3)
       </div>
@@ -149,7 +170,7 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
         <div className="mb-4 text-center text-red-500">{errors.appointments.message}</div>
       )}
 
-      <div className="flex flex-col space-y-8 lg:flex-row lg:justify-between lg:space-y-0 lg:space-x-8">
+      <div className="flex flex-col space-y-8 md:space-x-20 lg:flex-row lg:space-y-0">
         {/* Calendar Section */}
         <div className="flex-shrink-0 lg:max-w-none">
           <div className="space-y-4">
@@ -163,9 +184,12 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
                 <button
                   type="button"
                   onClick={() => navigateMonth('prev')}
-                  className="rounded p-1 hover:bg-gray-100"
+                  disabled={isCurrentMonth()}
+                  className={`rounded p-1 ${isCurrentMonth() ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                 >
-                  <ChevronLeft className="h-6 w-6 rounded-full bg-[#E8F1FF] p-1 text-[#0069FF] sm:h-8 sm:w-8" />
+                  <ChevronLeft
+                    className={`h-6 w-6 rounded-full p-1 text-[#0069FF] sm:h-8 sm:w-8 ${isCurrentMonth() ? 'bg-gray-200' : 'bg-[#E8F1FF]'}`}
+                  />
                 </button>
                 <span className="text-base font-medium sm:text-lg">
                   {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
@@ -173,7 +197,7 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
                 <button
                   type="button"
                   onClick={() => navigateMonth('next')}
-                  className="rounded p-1 hover:bg-gray-100"
+                  className="cursor-pointer rounded p-1"
                 >
                   <ChevronRight className="h-6 w-6 rounded-full bg-[#E8F1FF] p-1 text-[#0069FF] sm:h-8 sm:w-8" />
                 </button>
@@ -182,7 +206,7 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
               {/* Days header */}
               <div className="mb-3 grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 sm:mb-4 sm:gap-2 sm:text-sm">
                 {daysOfWeek.map(day => (
-                  <div key={day} className="p-1 sm:p-2">
+                  <div key={day} className="rounded-full">
                     {day}
                   </div>
                 ))}
@@ -191,7 +215,7 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
               {/* Calendar grid */}
               <div className="grid grid-cols-7 gap-1 sm:gap-2">
                 {days.map((day, index) => (
-                  <div key={index} className="flex items-center justify-center">
+                  <div key={index} className="flex flex-col items-center justify-center">
                     {day ? (
                       <button
                         type="button"
@@ -199,6 +223,9 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
                         onClick={() => handleDateClick(day)}
                       >
                         {day.getDate()}
+                        {isToday(day) && (
+                          <div className="absolute bottom-1.25 left-1/2 z-10 h-1 w-1 -translate-x-1/2 rounded-full bg-white"></div>
+                        )}
                       </button>
                     ) : (
                       <div className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10" />
@@ -223,14 +250,21 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
                   key={slot.id}
                   className="flex cursor-pointer items-center space-x-2 sm:space-x-3"
                 >
-                  <input
-                    type="radio"
-                    name="time"
-                    value={slot.id}
-                    checked={selectedTime === slot.id}
-                    onChange={e => setSelectedTime(e.target.value)}
-                    className="h-4 w-4"
-                  />
+                  <div className="relative">
+                    <input
+                      type="radio"
+                      name="time"
+                      value={slot.id}
+                      checked={selectedTime === slot.id}
+                      onChange={e => setSelectedTime(e.target.value)}
+                      className="sr-only"
+                    />
+                    <div className="h-4 w-4 rounded-full border-2 border-gray-400 bg-transparent">
+                      {selectedTime === slot.id && (
+                        <div className="m-0.5 h-2 w-2 rounded-full bg-[#000093]"></div>
+                      )}
+                    </div>
+                  </div>
                   <span className="text-sm leading-[140%] font-normal tracking-normal sm:text-base">
                     {slot.label}
                   </span>
@@ -257,7 +291,7 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
 
             <div className="space-y-3">
               {formData.appointments.map((apt, index) => (
-                <div key={index} className="relative rounded-lg border bg-gray-50 p-3">
+                <div key={index} className="relative rounded-lg p-3">
                   <div className="mb-2 text-[16px] leading-[100%] font-semibold tracking-normal sm:text-[18.87px]">
                     Option {index + 1}
                   </div>
@@ -294,12 +328,19 @@ const AppointmentOptions: React.FC<AppointmentOptionsProps> = ({ form }) => {
                 key={preference}
                 className="flex cursor-pointer items-center space-x-2 sm:space-x-3"
               >
-                <input
-                  type="radio"
-                  {...register('preference')}
-                  value={preference}
-                  className="h-4 w-4 text-blue-600"
-                />
+                <div className="relative">
+                  <input
+                    type="radio"
+                    {...register('preference')}
+                    value={preference}
+                    className="sr-only"
+                  />
+                  <div className="h-4 w-4 rounded-full border-2 border-gray-400 bg-transparent">
+                    {watch('preference') === preference && (
+                      <div className="m-0.5 h-2 w-2 rounded-full bg-[#000093]"></div>
+                    )}
+                  </div>
+                </div>
                 <span className="text-sm capitalize sm:text-base">
                   {preference === ClaimantPreference.IN_PERSON
                     ? 'In-Person'

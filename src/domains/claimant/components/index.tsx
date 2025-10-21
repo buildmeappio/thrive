@@ -67,34 +67,32 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="space-y-8 sm:space-y-10 lg:space-y-12">
-        {/* Heading */}
-        <h1 className="mt-4 text-center text-2xl leading-tight font-semibold tracking-normal capitalize sm:text-3xl lg:text-[36px]">
-          Help Us Schedule Your IME
-        </h1>
+    <div>
+      {/* Heading */}
+      <h1 className="py-4 text-center text-2xl leading-tight font-semibold tracking-normal capitalize sm:text-3xl lg:text-[36px]">
+        Help Us Schedule Your IME
+      </h1>
 
-        {/* User Info */}
-        <UserInfo
-          caseId={caseSummary.caseId}
-          claimantFirstName={caseSummary.claimantFirstName ?? ''}
-          claimantLastName={caseSummary.claimantLastName ?? ''}
-          organizationName={caseSummary.organizationName ?? ''}
-        />
+      {/* User Info */}
+      <UserInfo
+        caseId={caseSummary.caseId}
+        claimantFirstName={caseSummary.claimantFirstName ?? ''}
+        claimantLastName={caseSummary.claimantLastName ?? ''}
+        organizationName={caseSummary.organizationName ?? ''}
+      />
 
-        {/* Form container */}
-        <form onSubmit={form.handleSubmit(handleSubmit, onError)}>
-          <div className="mx-auto w-full max-w-[1020px] space-y-8">
-            <AppointmentOptions form={form} />
-            <AddOnServices
-              form={form}
-              onSubmit={form.handleSubmit(handleSubmit, onError)}
-              isSubmitting={isSubmitting}
-              languages={convertToTypeOptions(languages)}
-            />
-          </div>
-        </form>
-      </div>
+      {/* Form container */}
+      <form onSubmit={form.handleSubmit(handleSubmit, onError)}>
+        <div className="mx-auto w-full space-y-8">
+          <AppointmentOptions form={form} />
+          {/* <AddOnServices
+            form={form}
+            onSubmit={form.handleSubmit(handleSubmit, onError)}
+            isSubmitting={isSubmitting}
+            languages={convertToTypeOptions(languages)}
+          /> */}
+        </div>
+      </form>
     </div>
   );
 };

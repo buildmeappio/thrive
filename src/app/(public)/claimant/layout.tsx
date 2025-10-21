@@ -8,7 +8,7 @@ interface AuthLayoutProps {
 const AuthLayout = ({ children }: AuthLayoutProps) => {
   return (
     <>
-      <main className="bg-[#FFFFFF]">{children}</main>
+      <main className="bg-white">{children}</main>
       <Footer />
     </>
   );
