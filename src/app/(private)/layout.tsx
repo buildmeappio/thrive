@@ -2,10 +2,10 @@ import { type ReactNode, Suspense } from "react";
 import { SidebarProvider } from "@/providers/Sidebar";
 import { SearchProvider } from "@/providers/Search";
 import { getCurrentUser } from "@/domains/auth/server/session";
-import { getExaminerProfileAction } from "@/domains/setting/server/actions";
+import { getExaminerProfileAction } from "@/domains/setting/server";
 import { Header } from "@/domains/setting";
 import { redirect } from "next/navigation";
-import LayoutWrapper from "./layout-wrapper";
+import { Layout } from "@/layouts/dashboard";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -38,7 +38,7 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
   return (
     <SidebarProvider>
       <SearchProvider>
-        <LayoutWrapper isActivationComplete={isActivationComplete}>
+        <Layout isActivationComplete={isActivationComplete}>
           <Suspense
             fallback={
               <div className="flex h-full w-full flex-1 items-center justify-center">
@@ -48,7 +48,7 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
             <Header userName={user.name || "User"} />
             {children}
           </Suspense>
-        </LayoutWrapper>
+        </Layout>
       </SearchProvider>
     </SidebarProvider>
   );

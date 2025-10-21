@@ -43,6 +43,7 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
       firstName: profile.account.user.firstName,
       lastName: profile.account.user.lastName,
       phoneNumber: profile.account.user.phone || "",
+      landlineNumber: profile.landlineNumber || "",
       emailAddress: profile.account.user.email,
       provinceOfResidence: profile.provinceOfResidence || "",
       mailingAddress: profile.mailingAddress || "",

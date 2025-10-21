@@ -14,11 +14,13 @@ class TokenService {
 
       return decoded;
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        ErrorMessages.FAILED_TOKEN_VERIFICATION,
-        401
-      );
+      // If it's already an HttpError, re-throw it
+      if (error instanceof HttpError) {
+        throw error;
+      }
+
+      // For any other error (like JWT verification failure), throw unauthorized
+      throw HttpError.unauthorized(ErrorMessages.INVALID_OR_EXPIRED_TOKEN);
     }
   }
 

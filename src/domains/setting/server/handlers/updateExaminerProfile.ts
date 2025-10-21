@@ -12,6 +12,7 @@ export type UpdateExaminerProfileInput = {
   provinceOfResidence: string;
   mailingAddress: string;
   bio?: string;
+  profilePhoto?: File;
   profilePhotoId?: string | null;
   activationStep?: string;
 };

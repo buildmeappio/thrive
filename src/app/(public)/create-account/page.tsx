@@ -16,10 +16,17 @@ const Page = async ({
 }) => {
   const { token } = await searchParams;
 
+  if (!token) {
+    redirect("/create-account/success?error=invalid_token");
+  }
+
   try {
+    console.log("Create account page - verifying token:", token);
     // Verify token and check user exists
     await authActions.verifyAccountToken({ token });
+    console.log("Token verification successful");
   } catch (error) {
+    console.log("Token verification failed:", error);
     // Redirect to error page based on error type
     const errorMessage = error instanceof Error ? error.message : "unknown";
 
@@ -27,8 +34,13 @@ const Page = async ({
       redirect("/create-account/success?error=user_not_found");
     }
 
+    if (errorMessage.includes("already been used")) {
+      redirect("/create-account/success?error=token_used");
+    }
+
     redirect("/create-account/success?error=invalid_token");
   }
+
   return (
     <div className="bg-[#F4FBFF]">
       <div className="mx-auto min-h-screen max-w-[900px] p-6">
@@ -44,7 +56,7 @@ const Page = async ({
             boxShadow: "0px 0px 36.35px 0px #00000008",
           }}>
           <div className="-mb-6 pt-1 pb-1 md:mb-0">
-            {<SetPasswordForm token={token} />}
+            <SetPasswordForm token={token} />
           </div>
         </div>
       </div>

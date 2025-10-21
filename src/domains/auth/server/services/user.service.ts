@@ -15,6 +15,7 @@ class UserService {
           firstName: true,
           lastName: true,
           phone: true,
+          password: true,
           createdAt: true,
           updatedAt: true,
         },
