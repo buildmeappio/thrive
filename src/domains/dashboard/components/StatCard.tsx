@@ -58,7 +58,8 @@ export default function StatCard({
       className={cn(
         "relative rounded-[22px] shadow-[0_0_36.92px_rgba(0,0,0,0.08)]",
         colors.bg,
-        "px-[19px] pt-[17px] pb-[12px] pr-[28px] min-h-[128px]"
+        "px-[16px] sm:px-[19px] pt-[15px] sm:pt-[17px] pb-[10px] sm:pb-[12px] pr-[24px] sm:pr-[28px]",
+        "min-h-[160px] sm:min-h-[128px]"
       )}
       style={{ fontFamily: "Poppins, system-ui" }}
     >
@@ -108,7 +109,7 @@ export default function StatCard({
 
       {/* title */}
       <div className="mt-3">
-        <p className="text-white text-[18px] font-semibold tracking-[-0.03em] leading-none">
+        <p className="text-white text-[22px] sm:text-[18px] font-semibold tracking-[-0.03em] leading-tight">
           {title}
         </p>
       </div>
@@ -117,7 +118,7 @@ export default function StatCard({
       <div className="mt-2 flex items-end justify-between">
         <span className="relative inline-block leading-none">
           <span className="absolute -left-[10px] -top-[6px] h-[43px] w-[35px] rounded-[8px]" />
-          <span className="relative text-white text-[35px] leading-[43px] font-semibold">
+          <span className="relative text-white text-[48px] sm:text-[35px] leading-[50px] font-semibold">
             {value}
           </span>
         </span>

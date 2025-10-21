@@ -1,5 +1,5 @@
 // src/dto/case.dto.ts
-import { Examination, Case, CaseType, Documents, Claimant, Organization, LegalRepresentative, Insurance, ExaminationServices, ExaminationInterpreter, ExaminationTransport, Address, Language, ExaminationType, CaseDocument, CaseStatus } from "@prisma/client";
+import { Examination, Case, CaseType, Documents, Claimant, Organization, LegalRepresentative, Insurance, ExaminationServices, ExaminationInterpreter, ExaminationTransport, Address, Language, ExaminationType, CaseDocument, CaseStatus, OrganizationManager, Account, User } from "@prisma/client";
 import { CaseDetailDtoType } from "../../types/CaseDetailDtoType";
 
 export class CaseDto {
@@ -12,7 +12,13 @@ export class CaseDto {
       caseType: CaseType;
       documents: (CaseDocument & { document: Documents })[];
       claimant: Claimant & { address: Address };
-      organization: Organization;
+      organization: Organization & {
+        manager: (OrganizationManager & {
+          account: Account & {
+            user: User;
+          };
+        })[];
+      };
       legalRepresentative: LegalRepresentative & { address: Address };
       insurance: Insurance & { address: Address };
     };
@@ -107,6 +113,10 @@ export class CaseDto {
           name: examination.case.organization.name,
           website: examination.case.organization.website ?? null,
           status: examination.case.organization.status,
+          managerEmail: examination.case.organization.manager?.[0]?.account?.user?.email ?? null,
+          managerName: examination.case.organization.manager?.[0]?.account?.user 
+            ? `${examination.case.organization.manager[0].account.user.firstName} ${examination.case.organization.manager[0].account.user.lastName}`
+            : null,
         },
         legalRepresentative: examination.case.legalRepresentative
           ? {
@@ -153,7 +163,13 @@ export class CaseDto {
       caseType: CaseType;
       documents: (CaseDocument & { document: Documents })[];
       claimant: Claimant & { address: Address };
-      organization: Organization;
+      organization: Organization & {
+        manager: (OrganizationManager & {
+          account: Account & {
+            user: User;
+          };
+        })[];
+      };
       legalRepresentative: LegalRepresentative & { address: Address };
       insurance: Insurance & { address: Address };
     };
@@ -166,7 +182,13 @@ export class CaseDto {
       caseType: CaseType;
       documents: (CaseDocument & { document: Documents })[];
       claimant: Claimant & { address: Address };
-      organization: Organization;
+      organization: Organization & {
+        manager: (OrganizationManager & {
+          account: Account & {
+            user: User;
+          };
+        })[];
+      };
       legalRepresentative: LegalRepresentative & { address: Address };
       insurance: Insurance & { address: Address };
     };

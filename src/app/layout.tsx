@@ -15,6 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="light" style={{ colorScheme: "light" }}>
+      <head>
+        {/* Ensure proper mobile viewport to avoid auto zoom-out/scaling */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+      </head>
       <body className={`${degular.variable} ${poppins.variable} font-degular antialiased`}>
         <Provider>
           {children}

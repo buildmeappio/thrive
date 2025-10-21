@@ -62,7 +62,7 @@ export default function Dashboard({
   return (
     <div className="w-full max-w-full pb-6 sm:pb-10">
       {/* Row 1: Stat cards */}
-      <div className="w-full grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6 dashboard-zoom-mobile">
         <StatCard 
           title="Active Cases" 
           value={caseCount} 
@@ -97,9 +97,9 @@ export default function Dashboard({
       </div>
 
       {/* Row 2: Left tables + Right rail */}
-      <div className="w-full flex flex-col xl:flex-row gap-4 sm:gap-6">
+      <div className="w-full flex flex-col xl:flex-row gap-3 sm:gap-6">
         {/* Left: three stacked tables */}
-        <div className="w-full xl:w-8/12 flex flex-col gap-4 sm:gap-6 min-w-0">
+        <div className="w-full xl:w-8/12 flex flex-col gap-3 sm:gap-6 min-w-0 dashboard-zoom-mobile">
           <NewCases
             items={caseRows}
             listHref="/cases"
@@ -114,8 +114,8 @@ export default function Dashboard({
           />
         </div>
 
-        {/* Right: recent messages + recent updates */}
-        <div className="w-full xl:w-4/12 flex flex-row xl:flex-col gap-4 sm:gap-6">
+        {/* Right: recent messages + recent updates (stack on small screens) */}
+        <div className="w-full xl:w-4/12 flex flex-col gap-3 sm:gap-6 dashboard-zoom-mobile">
           <MessagesPanel
             items={[
               "New insurer onboarded: Maple Life",

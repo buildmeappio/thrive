@@ -12,7 +12,7 @@ const Shell = ({ children }: ShellProps) => {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 px-0 md:px-8 pt-24">
-        <div className="w-full max-w-full px-4 py-4">
+        <div className="w-full max-w-full px-2 sm:px-4 py-4 min-h-full">
           <Suspense
             fallback={
               <div className="flex h-full w-full flex-1 items-center justify-center">
