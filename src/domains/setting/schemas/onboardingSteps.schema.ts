@@ -32,10 +32,31 @@ export const profileInfoSchema = z.object({
     .refine((val) => !/^\s+$/.test(val), {
       message: "Last name cannot contain only spaces",
     }),
-  phoneNumber: z.string().min(1, { message: "Phone number is required" }),
-  landlineNumber: z.string().optional(),
-  emailAddress: z.string().email({ message: "Invalid email address" }),
-  provinceOfResidence: z.string().min(1, { message: "Province is required" }),
+  phoneNumber: z
+    .string()
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "Phone number is required",
+    }),
+  landlineNumber: z
+    .string()
+    .optional()
+    .transform((val) => val?.trim() || ""), // Trim whitespace, default to empty string
+  emailAddress: z
+    .string()
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "Email address is required",
+    })
+    .refine((val) => z.string().email().safeParse(val).success, {
+      message: "Invalid email address",
+    }),
+  provinceOfResidence: z
+    .string()
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "Province is required",
+    }),
   mailingAddress: z
     .string()
     .transform((val) => val.trim()) // Trim whitespace
