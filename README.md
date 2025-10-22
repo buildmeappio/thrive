@@ -2,6 +2,55 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### Environment Setup
+
+1. Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+# Google Maps API Configuration
+NEXT_PUBLIC_GOOGLE_PLACES_API_KEY=your_google_maps_api_key_here
+
+# Database Configuration
+DATABASE_URL=your_database_url_here
+
+# AWS Configuration (if using AWS services)
+AWS_REGION=your_aws_region
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_S3_BUCKET_NAME=your_s3_bucket_name
+
+# OAuth Configuration (if using Google OAuth)
+OAUTH_CLIENT_ID=your_oauth_client_id
+OAUTH_CLIENT_SECRET=your_oauth_client_secret
+OAUTH_REFRESH_TOKEN=your_oauth_refresh_token
+OAUTH_USERNAME=your_oauth_username
+
+# JWT Secrets
+JWT_OTP_SECRET=your_jwt_otp_secret
+JWT_OTP_SECRET_EXPIRY=your_jwt_otp_secret_expiry
+JWT_SET_PASSWORD_SECRET=your_jwt_set_password_secret
+JWT_SET_PASSWORD_SECRET_EXPIRY=your_jwt_set_password_secret_expiry
+JWT_FORGET_PASSWORD_SECRET=your_jwt_forget_password_secret
+JWT_FORGET_PASSWORD_EXPIRY=your_jwt_forget_password_secret_expiry
+JWT_EXAMINER_INFO_REQUEST_SECRET=your_jwt_examiner_info_request_secret
+JWT_EXAMINER_INFO_REQUEST_SECRET_EXPIRY=your_jwt_examiner_info_request_secret_expiry
+
+# Application URLs
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_CDN_URL=your_cdn_url
+```
+
+2. **Google Maps API Setup:**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+   - Create a new project or select an existing one
+   - Enable the following APIs:
+     - Maps JavaScript API
+     - Places API
+   - Create credentials (API Key)
+   - Add the API key to your `.env.local` file as `NEXT_PUBLIC_GOOGLE_PLACES_API_KEY`
+
+### Development Server
+
 First, run the development server:
 
 ```bash

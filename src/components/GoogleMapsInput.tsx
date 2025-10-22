@@ -47,6 +47,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
   const autoCompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { isLoaded } = useGoogleMaps();
+  const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 
   useEffect(() => {
     // Ensure Google Maps API is fully loaded
@@ -157,10 +158,17 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
       {error && (
         <span className="text-xs text-red-500 mt-1 block">{error}</span>
       )}
-      {!isLoaded && (
-        <span className="text-xs text-gray-500 mt-1 block">
-          Loading Google Maps...
-        </span>
+      {!API_KEY && (
+        <div className="text-xs text-amber-600 mt-1">
+          <strong>Note:</strong> Google Maps API key not configured. Please set
+          NEXT_PUBLIC_GOOGLE_PLACES_API_KEY in your environment variables.
+        </div>
+      )}
+      {API_KEY && !isLoaded && (
+        <div className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+          <div className="w-3 h-3 border border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+          <span>Initializing address search...</span>
+        </div>
       )}
     </div>
   );

@@ -13,12 +13,34 @@ export type LoginInput = z.infer<typeof loginSchema>;
 export const step1PersonalInfoSchema = z.object({
   firstName: z
     .string()
-    .min(2, { message: "First name must be at least 2 characters" })
-    .max(50, { message: "First name must be less than 50 characters" }),
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "First name is required",
+    })
+    .refine((val) => val.length >= 2, {
+      message: "First name must be at least 2 characters",
+    })
+    .refine((val) => val.length <= 50, {
+      message: "First name must be less than 50 characters",
+    })
+    .refine((val) => !/^\s+$/.test(val), {
+      message: "First name cannot contain only spaces",
+    }),
   lastName: z
     .string()
-    .min(2, { message: "Last name must be at least 2 characters" })
-    .max(50, { message: "Last name must be less than 50 characters" }),
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "Last name is required",
+    })
+    .refine((val) => val.length >= 2, {
+      message: "Last name must be at least 2 characters",
+    })
+    .refine((val) => val.length <= 50, {
+      message: "Last name must be less than 50 characters",
+    })
+    .refine((val) => !/^\s+$/.test(val), {
+      message: "Last name cannot contain only spaces",
+    }),
   phoneNumber: z
     .string()
     .min(5, { message: "Please enter a valid phone number" })
@@ -69,7 +91,13 @@ export const step1PersonalInfoSchema = z.object({
     .min(1, { message: "Province of residence is required" }),
   mailingAddress: z
     .string()
-    .min(10, { message: "Mailing address must be at least 10 characters" }),
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "Mailing address is required",
+    })
+    .refine((val) => val.length >= 10, {
+      message: "Mailing address must be at least 10 characters",
+    }),
 });
 
 export type Step1PersonalInfoInput = z.infer<typeof step1PersonalInfoSchema>;
@@ -80,7 +108,19 @@ export const step2MedicalCredentialsSchema = z.object({
     .min(1, { message: "Medical specialty is required" }),
   licenseNumber: z
     .string()
-    .min(5, { message: "License number must be at least 5 characters" }),
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "License number is required",
+    })
+    .refine((val) => val.length >= 5, {
+      message: "License number must be at least 5 characters",
+    })
+    .refine((val) => val.length <= 50, {
+      message: "License number must be less than 50 characters",
+    })
+    .refine((val) => !/^\s+$/.test(val), {
+      message: "License number cannot contain only spaces",
+    }),
   provinceOfLicensure: z
     .string({ error: "Province of licensure is required" })
     .min(1, { message: "Province of licensure is required" }),
@@ -91,12 +131,66 @@ export const step2MedicalCredentialsSchema = z.object({
     .any()
     .refine((val) => val !== null && val !== undefined && val !== "", {
       message: "Medical license document is required",
-    }),
+    })
+    .refine(
+      (val) => {
+        if (!val || val === "") return false;
+        // Check if it's a File object
+        if (val instanceof File) {
+          const allowedTypes = [
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          ];
+          return allowedTypes.includes(val.type);
+        }
+        // Check if it's an existing file object with type property
+        if (val.type) {
+          const allowedTypes = [
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          ];
+          return allowedTypes.includes(val.type);
+        }
+        return true; // Allow existing files without type check
+      },
+      {
+        message: "Medical license must be a PDF, DOC, or DOCX file",
+      }
+    ),
   cvResume: z
     .any()
     .refine((val) => val !== null && val !== undefined && val !== "", {
       message: "CV/Resume document is required",
-    }),
+    })
+    .refine(
+      (val) => {
+        if (!val || val === "") return false;
+        // Check if it's a File object
+        if (val instanceof File) {
+          const allowedTypes = [
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          ];
+          return allowedTypes.includes(val.type);
+        }
+        // Check if it's an existing file object with type property
+        if (val.type) {
+          const allowedTypes = [
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          ];
+          return allowedTypes.includes(val.type);
+        }
+        return true; // Allow existing files without type check
+      },
+      {
+        message: "CV/Resume must be a PDF, DOC, or DOCX file",
+      }
+    ),
 });
 
 export type Step2MedicalCredentialsInput = z.infer<

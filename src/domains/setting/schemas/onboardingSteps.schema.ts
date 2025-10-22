@@ -2,15 +2,75 @@ import { z } from "zod";
 
 // Schema for profile info
 export const profileInfoSchema = z.object({
-  firstName: z.string().min(1, { message: "First name is required" }),
-  lastName: z.string().min(1, { message: "Last name is required" }),
-  phoneNumber: z.string().min(1, { message: "Phone number is required" }),
-  landlineNumber: z.string().optional(),
-  emailAddress: z.string().email({ message: "Invalid email address" }),
-  provinceOfResidence: z.string().min(1, { message: "Province is required" }),
-  mailingAddress: z.string().min(1, { message: "Mailing address is required" }),
+  firstName: z
+    .string()
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "First name is required",
+    })
+    .refine((val) => val.length >= 2, {
+      message: "First name must be at least 2 characters",
+    })
+    .refine((val) => val.length <= 50, {
+      message: "First name must be less than 50 characters",
+    })
+    .refine((val) => !/^\s+$/.test(val), {
+      message: "First name cannot contain only spaces",
+    }),
+  lastName: z
+    .string()
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "Last name is required",
+    })
+    .refine((val) => val.length >= 2, {
+      message: "Last name must be at least 2 characters",
+    })
+    .refine((val) => val.length <= 50, {
+      message: "Last name must be less than 50 characters",
+    })
+    .refine((val) => !/^\s+$/.test(val), {
+      message: "Last name cannot contain only spaces",
+    }),
+  phoneNumber: z
+    .string()
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "Phone number is required",
+    }),
+  landlineNumber: z
+    .string()
+    .optional()
+    .transform((val) => val?.trim() || ""), // Trim whitespace, default to empty string
+  emailAddress: z
+    .string()
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "Email address is required",
+    })
+    .refine((val) => z.string().email().safeParse(val).success, {
+      message: "Invalid email address",
+    }),
+  provinceOfResidence: z
+    .string()
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "Province is required",
+    }),
+  mailingAddress: z
+    .string()
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "Mailing address is required",
+    })
+    .refine((val) => val.length >= 10, {
+      message: "Mailing address must be at least 10 characters",
+    }),
   profilePhoto: z.string().optional(),
-  bio: z.string().optional(),
+  bio: z
+    .string()
+    .optional()
+    .transform((val) => val?.trim() || ""), // Trim whitespace, default to empty string
 });
 
 export type ProfileInfoInput = z.infer<typeof profileInfoSchema>;
@@ -107,13 +167,28 @@ export const payoutDetailsSchema = z
       message: "Please select a payout method",
     }),
     // Direct Deposit fields
-    transitNumber: z.string().optional(),
-    institutionNumber: z.string().optional(),
-    accountNumber: z.string().optional(),
+    transitNumber: z
+      .string()
+      .optional()
+      .transform((val) => val?.trim() || ""), // Trim whitespace
+    institutionNumber: z
+      .string()
+      .optional()
+      .transform((val) => val?.trim() || ""), // Trim whitespace
+    accountNumber: z
+      .string()
+      .optional()
+      .transform((val) => val?.trim() || ""), // Trim whitespace
     // Cheque fields
-    chequeMailingAddress: z.string().optional(),
+    chequeMailingAddress: z
+      .string()
+      .optional()
+      .transform((val) => val?.trim() || ""), // Trim whitespace
     // Interac E-Transfer fields
-    interacEmail: z.string().optional(),
+    interacEmail: z
+      .string()
+      .optional()
+      .transform((val) => val?.trim() || ""), // Trim whitespace
   })
   .refine(
     (data) => {
