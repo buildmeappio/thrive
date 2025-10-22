@@ -3,7 +3,7 @@ import { getCaseDetails } from '../../actions';
 import { formatE164ForDisplay } from '@/utils/formatNumbers';
 
 type InsuranceDetailsProps = {
-  insuranceDetails: Awaited<ReturnType<typeof getCaseDetails>>['result']['case']['insurance'];
+  insuranceDetails: Awaited<ReturnType<typeof getCaseDetails>>['result']['insurance'];
 };
 
 const InsuranceDetails = ({ insuranceDetails }: InsuranceDetailsProps) => {

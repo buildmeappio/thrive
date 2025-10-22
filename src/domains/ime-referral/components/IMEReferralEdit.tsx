@@ -6,40 +6,44 @@ import ConsentInfo from './ConsentInfo';
 import ReferralSubmitted from './ReferralSubmitted';
 import ExaminationDetails from './ExaminationDetails';
 import LegalAndInsuranceDetailsForm from './LegalDetails';
-import ExaminationType from './ExaminationType';
-import type { getClaimTypes, getCaseTypes } from '../actions';
+import type { getClaimTypes, getCaseTypes, getCaseData } from '../actions';
 import { convertToTypeOptions } from '@/utils/convertToTypeOptions';
 import DocumentUpload from './DocumentUpload';
 import { type getExaminationTypes } from '@/domains/auth/server/handlers';
 import InsuranceDetails from './InsuranceDetails';
 import type { getLanguages } from '@/domains/claimant/actions';
 
-interface StepConfig {
+type StepConfig = {
   component: React.ComponentType<StepProps>;
-}
+};
 
-interface StepProps {
+type StepProps = {
   onNext: () => void;
   onPrevious: () => void;
   currentStep: number;
   totalSteps: number;
   mode?: 'create' | 'edit';
-}
+  initialData?: Awaited<ReturnType<typeof getCaseData>>['result'];
+};
 
-interface IMEReferralProps {
+type IMEReferralProps = {
+  examinationId: string;
   claimTypes: Awaited<ReturnType<typeof getClaimTypes>>['result'];
   examinationTypes: Awaited<ReturnType<typeof getExaminationTypes>>;
   caseTypes: Awaited<ReturnType<typeof getCaseTypes>>['result'];
   languages: Awaited<ReturnType<typeof getLanguages>>['result'];
   mode?: 'create' | 'edit';
-}
+  initialData?: Awaited<ReturnType<typeof getCaseData>>['result'];
+};
 
-const IMEReferral: React.FC<IMEReferralProps> = ({
+const IMEReferralEdit: React.FC<IMEReferralProps> = ({
+  examinationId,
   claimTypes,
   examinationTypes,
   caseTypes,
   languages,
-  mode = 'create',
+  mode = 'edit',
+  initialData,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -47,14 +51,21 @@ const IMEReferral: React.FC<IMEReferralProps> = ({
     () => [
       {
         component: (props: StepProps) => (
-          <ClaimantDetails claimTypes={convertToTypeOptions(claimTypes)} {...props} />
+          <ClaimantDetails
+            claimTypes={convertToTypeOptions(claimTypes)}
+            claimantData={initialData?.step1}
+            {...props}
+          />
         ),
       },
-      { component: InsuranceDetails },
-      { component: LegalAndInsuranceDetailsForm },
       {
         component: (props: StepProps) => (
-          <ExaminationType caseTypes={convertToTypeOptions(caseTypes)} {...props} />
+          <InsuranceDetails insuranceData={initialData?.step2} {...props} />
+        ),
+      },
+      {
+        component: (props: StepProps) => (
+          <LegalAndInsuranceDetailsForm legalData={initialData?.step3} {...props} />
         ),
       },
       {
@@ -62,18 +73,30 @@ const IMEReferral: React.FC<IMEReferralProps> = ({
           <ExaminationDetails
             examinationTypes={convertToTypeOptions(examinationTypes)}
             languages={convertToTypeOptions(languages)}
+            examinationData={initialData?.step5}
+            caseData={initialData?.step4}
             {...props}
           />
         ),
       },
-      { component: DocumentUpload },
       {
-        component: (props: StepProps) => <ConsentInfo {...props} mode={mode} />,
+        component: (props: StepProps) => (
+          <DocumentUpload initialData={initialData?.step6} {...props} />
+        ),
       },
-
+      {
+        component: (props: StepProps) => (
+          <ConsentInfo
+            examinationId={examinationId}
+            mode={mode}
+            initialData={initialData?.step7}
+            {...props}
+          />
+        ),
+      },
       { component: ReferralSubmitted },
     ],
-    [claimTypes, caseTypes, examinationTypes, languages]
+    [claimTypes, caseTypes, examinationTypes, languages, mode, initialData]
   );
 
   const goToNext = (): void => {
@@ -109,4 +132,4 @@ const IMEReferral: React.FC<IMEReferralProps> = ({
   return <div>{renderCurrentStep()}</div>;
 };
 
-export default IMEReferral;
+export default IMEReferralEdit;

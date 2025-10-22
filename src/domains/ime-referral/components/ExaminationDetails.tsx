@@ -31,13 +31,15 @@ import { locationOptions } from '@/config/locationType';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import CustomDatePicker from '@/components/CustomDatePicker';
 import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
-import { getExaminationBenefits } from '../actions';
+import { getCaseData, getExaminationBenefits } from '../actions';
 import MultiSelectBenefits from '@/components/MultiSelectDropDown';
 import log from '@/utils/log';
 
 interface ExaminationProps extends IMEReferralProps {
   examinationTypes: DropdownOption[];
   languages: DropdownOption[];
+  examinationData?: Awaited<ReturnType<typeof getCaseData>>['result']['step5'];
+  caseData?: Awaited<ReturnType<typeof getCaseData>>['result']['step4'];
 }
 
 const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
@@ -47,17 +49,21 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
   totalSteps,
   examinationTypes: examinationTypeOptions,
   languages: languageOptions,
+  examinationData,
+  caseData,
 }) => {
+  console.log('initial data', examinationData);
   const { data, setData, _hasHydrated } = useIMEReferralStore();
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [benefitsByType, setBenefitsByType] = useState<
     Record<string, Array<{ id: string; benefit: string }>>
   >({});
   const [loadingBenefits, setLoadingBenefits] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   const selectedExamTypes: ExaminationType[] = useMemo(
-    () => data.step4?.caseTypes || [],
-    [data.step4?.caseTypes]
+    () => data.step4?.caseTypes || caseData?.caseTypes || [],
+    [data.step4?.caseTypes, caseData?.caseTypes]
   );
 
   useEffect(() => {
@@ -90,8 +96,8 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
   }, [selectedExamTypes]);
 
   // Create initial values with proper structure
-  const initialValues = useMemo((): ExaminationData => {
-    const stepData = data.step5;
+  const formDefaultValues = useMemo((): ExaminationData => {
+    const stepData = examinationData || data.step5;
 
     if (stepData && stepData.examinations) {
       return stepData;
@@ -105,7 +111,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
       examinationType: stepData?.examinationType || '',
       examinations,
     };
-  }, [selectedExamTypes, data.step5]);
+  }, [selectedExamTypes, data.step5, examinationData]);
 
   const {
     register,
@@ -113,11 +119,28 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
     watch,
     setValue,
     trigger,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<ExaminationData>({
     resolver: zodResolver(ExaminationSchema),
-    defaultValues: initialValues,
+    defaultValues: formDefaultValues,
+    mode: 'onSubmit',
   });
+
+  // ✅ Reset form only once when component mounts or when external data loads
+  useEffect(() => {
+    if (!hasInitialized && _hasHydrated) {
+      reset(formDefaultValues);
+      setHasInitialized(true);
+    }
+  }, [hasInitialized, _hasHydrated, formDefaultValues, reset]);
+
+  // ✅ Reset form when examinationData prop changes (when loading saved data)
+  useEffect(() => {
+    if (examinationData && _hasHydrated && hasInitialized) {
+      reset(formDefaultValues);
+    }
+  }, [examinationData, _hasHydrated, hasInitialized]);
 
   const watchedValues = watch();
 
@@ -142,6 +165,20 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
       });
 
       setValue('examinations', updatedExaminations);
+    } else {
+      // Ensure services array exists for all examinations
+      const needsServicesInit = currentExaminations.some(
+        exam => !exam.services || exam.services.length === 0
+      );
+      if (needsServicesInit) {
+        const updatedExaminations = currentExaminations.map(exam => {
+          if (!exam.services || exam.services.length === 0) {
+            return createExaminationDetails(exam.examinationTypeId);
+          }
+          return exam;
+        });
+        setValue('examinations', updatedExaminations);
+      }
     }
   }, [selectedExamTypes, setValue, watchedValues.examinations]);
 
@@ -153,11 +190,12 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 
       if (!examination) return;
 
-      const updatedServices = updateServiceInArray(examination.services, serviceType, {
+      // Ensure services array exists
+      const services = examination.services || [];
+
+      const updatedServices = updateServiceInArray(services, serviceType, {
         enabled,
-        details: enabled
-          ? examination.services.find(s => s.type === serviceType)?.details || {}
-          : {},
+        details: enabled ? services.find(s => s.type === serviceType)?.details || {} : {},
       });
 
       const updatedExaminations = [...currentExaminations];
@@ -166,7 +204,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
         services: updatedServices,
       };
 
-      setValue('examinations', updatedExaminations, { shouldValidate: true });
+      setValue('examinations', updatedExaminations, { shouldDirty: true });
     },
     [watchedValues.examinations, setValue]
   );
@@ -184,10 +222,13 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 
       if (!examination) return;
 
-      const service = getServiceByType(examination.services, serviceType);
+      // Ensure services array exists
+      const services = examination.services || [];
+
+      const service = getServiceByType(services, serviceType);
       if (!service) return;
 
-      const updatedServices = updateServiceInArray(examination.services, serviceType, {
+      const updatedServices = updateServiceInArray(services, serviceType, {
         details: {
           ...service.details,
           [field]: value,
@@ -200,7 +241,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
         services: updatedServices,
       };
 
-      setValue('examinations', updatedExaminations, { shouldValidate: true });
+      setValue('examinations', updatedExaminations, { shouldDirty: true });
     },
     [watchedValues.examinations, setValue]
   );
@@ -212,12 +253,15 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 
       if (!examination) return;
 
-      const transportationService = getServiceByType(examination.services, 'transportation');
+      // Ensure services array exists
+      const services = examination.services || [];
+
+      const transportationService = getServiceByType(services, 'transportation');
 
       if (!transportationService) return;
 
       // Update all transportation fields at once with parsed data from GoogleMapsInput
-      const updatedServices = updateServiceInArray(examination.services, 'transportation', {
+      const updatedServices = updateServiceInArray(services, 'transportation', {
         enabled: transportationService.enabled,
         details: {
           ...transportationService.details,
@@ -235,7 +279,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
         services: updatedServices,
       };
 
-      setValue('examinations', updatedExaminations, { shouldValidate: true });
+      setValue('examinations', updatedExaminations, { shouldDirty: true });
     },
     [watchedValues.examinations, setValue]
   );
@@ -400,7 +444,9 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
       examinationIndex: number,
       renderContent?: () => React.ReactNode
     ) => {
-      const service = getServiceByType(examination.services, serviceType);
+      // Ensure services array exists
+      const services = examination.services || [];
+      const service = getServiceByType(services, serviceType);
       const isEnabled = service?.enabled || false;
 
       return (
@@ -536,7 +582,9 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                               onChange={(val: string) => {
                                 const updatedExaminations = [...(watchedValues.examinations || [])];
                                 updatedExaminations[index] = { ...examination, urgencyLevel: val };
-                                setValue('examinations', updatedExaminations);
+                                setValue('examinations', updatedExaminations, {
+                                  shouldDirty: true,
+                                });
                               }}
                               options={UrgencyLevels}
                               placeholder="Select"
@@ -567,7 +615,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                   dueDate: date ? date.toISOString().split('T')[0] : '',
                                 };
                                 setValue('examinations', updatedExaminations, {
-                                  shouldValidate: true,
+                                  shouldDirty: true,
                                 });
                               }}
                               className="bg-white"
@@ -590,7 +638,9 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                   ...examination,
                                   locationType: val,
                                 };
-                                setValue('examinations', updatedExaminations);
+                                setValue('examinations', updatedExaminations, {
+                                  shouldDirty: true,
+                                });
                               }}
                               options={locationOptions}
                               placeholder="Select"
@@ -619,7 +669,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                 ...examination,
                                 instructions: e.target.value,
                               };
-                              setValue('examinations', updatedExaminations);
+                              setValue('examinations', updatedExaminations, { shouldDirty: true });
                             }}
                             placeholder="Type here"
                             className={`mt-2 min-h-[100px] w-full rounded-md bg-white ${
@@ -647,9 +697,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                 ...examination,
                                 selectedBenefits: selectedIds,
                               };
-                              setValue('examinations', updatedExaminations, {
-                                shouldValidate: true,
-                              });
+                              setValue('examinations', updatedExaminations, { shouldDirty: true });
                             }}
                             disabled={isSubmitting}
                             loadingBenefits={loadingBenefits}
@@ -694,7 +742,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                 ...examination,
                                 additionalNotes: e.target.value,
                               };
-                              setValue('examinations', updatedExaminations);
+                              setValue('examinations', updatedExaminations, { shouldDirty: true });
                             }}
                             placeholder="Type here"
                             className={`mt-2 min-h-[100px] w-full resize-none rounded-md bg-white ${

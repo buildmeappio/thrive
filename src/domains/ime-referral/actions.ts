@@ -17,6 +17,17 @@ export const createIMEReferral = async (data: IMEFormData) => {
   return result;
 };
 
+export const updateIMEReferral = async (examinationId: string, data: IMEFormData) => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+
+  const result = await imeReferralHandlers.updateIMEReferral(examinationId, data);
+  return result;
+};
+
 export const getReferrals = async () => {
   const user = await getCurrentUser();
 
@@ -58,6 +69,17 @@ export const getCaseDetails = async (caseId: string) => {
   }
 
   const result = await imeReferralHandlers.getCaseDetails(caseId);
+  return result;
+};
+
+export const getCaseData = async (caseId: string) => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+
+  const result = await imeReferralHandlers.getCaseData(caseId);
   return result;
 };
 

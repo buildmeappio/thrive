@@ -20,12 +20,18 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui';
 import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
 import PhoneInput from '@/components/PhoneNumber';
+import { getCaseData } from '../actions';
 
-const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
+type InsuranceProps = IMEReferralProps & {
+  legalData?: Awaited<ReturnType<typeof getCaseData>>['result']['step3'];
+};
+
+const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
   onNext,
   onPrevious,
   currentStep,
   totalSteps,
+  legalData,
 }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
 
@@ -38,7 +44,7 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
     formState: { errors, isSubmitting },
   } = useForm<LegalDetails>({
     resolver: zodResolver(LegalDetailsSchema),
-    defaultValues: data.step3 || LegalDetailsInitialValues,
+    defaultValues: data.step3 || legalData || LegalDetailsInitialValues,
   });
 
   const watchedValues = watch();

@@ -18,7 +18,7 @@ const Page = async ({ params }: Props) => {
   const resolvedParams = await params;
   const caseDetails = await getReferralDetails(resolvedParams.id);
   if (!caseDetails.result) notFound();
-  return <IMEDetails caseData={caseDetails.result} />;
+  return <></>;
 };
 
 export default Page;

@@ -15,6 +15,7 @@ interface DocumentUploadProps {
   onPrevious?: () => void;
   currentStep?: number;
   totalSteps?: number;
+  documentData?: string[];
 }
 
 const DocumentUpload: React.FC<DocumentUploadProps> = ({

@@ -22,9 +22,11 @@ import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
 import PhoneInput from '@/components/PhoneNumber';
 import type { OrganizationTypeOption } from '@/domains/auth/components/Register/OrganizationInfo';
 import { Printer } from 'lucide-react';
+import { getCaseData } from '../actions';
 
 type CLaimTypeProps = IMEReferralProps & {
   claimTypes: OrganizationTypeOption[];
+  claimantData?: Awaited<ReturnType<typeof getCaseData>>['result']['step1'];
 };
 
 const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
@@ -32,6 +34,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
   currentStep,
   totalSteps,
   claimTypes: claimTypeOptions,
+  claimantData,
 }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
 
@@ -45,7 +48,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
     formState: { errors, isSubmitting },
   } = useForm<ClaimantDetails>({
     resolver: zodResolver(ClaimantDetailsSchema),
-    defaultValues: data.step1 || ClaimantDetailsInitialValues,
+    defaultValues: data.step1 || claimantData || ClaimantDetailsInitialValues,
     mode: 'onChange',
   });
 

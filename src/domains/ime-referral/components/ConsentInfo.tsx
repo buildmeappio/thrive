@@ -12,20 +12,24 @@ import { useIMEReferralStore } from '@/store/useImeReferral';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui';
 import ProgressIndicator from './ProgressIndicator';
-import { createIMEReferral } from '../actions';
+import { createIMEReferral, updateIMEReferral } from '../actions';
 
 type ConsentInfoProps = {
+  examinationId?: string;
   onNext?: () => void;
   onPrevious?: () => void;
   currentStep: number;
   totalSteps: number;
+  mode: 'create' | 'edit';
 };
 
 const ConsentInfo: React.FC<ConsentInfoProps> = ({
+  examinationId,
   onNext,
   onPrevious,
   currentStep,
   totalSteps,
+  mode,
 }) => {
   const { setData, data, _hasHydrated, reset } = useIMEReferralStore();
 
@@ -49,7 +53,13 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
         step7: values,
       };
 
-      const result = await createIMEReferral(completeData);
+      let result;
+
+      if (mode === 'edit' && examinationId) {
+        result = await updateIMEReferral(examinationId, completeData);
+      } else {
+        result = await createIMEReferral(completeData);
+      }
       if (result) {
         toast.success('IME Referral submitted successfully');
         if (onNext) onNext();

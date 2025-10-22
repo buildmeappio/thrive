@@ -21,12 +21,18 @@ import PhoneInput from '@/components/PhoneNumber';
 import { Dropdown } from '@/components/Dropdown';
 import { provinceOptions } from '@/config/ProvinceOptions';
 import { Printer } from 'lucide-react';
+import { getCaseData } from '../actions';
 
-const InsuranceDetails: React.FC<IMEReferralProps> = ({
+type InsuranceProps = IMEReferralProps & {
+  insuranceData?: Awaited<ReturnType<typeof getCaseData>>['result']['step2'];
+};
+
+const InsuranceDetails: React.FC<InsuranceProps> = ({
   onNext,
   onPrevious,
   currentStep,
   totalSteps,
+  insuranceData,
 }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
 
@@ -39,7 +45,7 @@ const InsuranceDetails: React.FC<IMEReferralProps> = ({
     trigger,
   } = useForm<InsuranceDetails>({
     resolver: zodResolver(InsuranceDetailsSchema),
-    defaultValues: data.step2 || InsuranceDetailsInitialValues,
+    defaultValues: data.step2 || insuranceData || InsuranceDetailsInitialValues,
   });
 
   const policyHolderSameAsClaimant = watch('policyHolderSameAsClaimant');

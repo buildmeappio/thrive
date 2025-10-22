@@ -4,7 +4,7 @@ import { getCaseDetails } from '../../actions';
 import { formatE164ForDisplay } from '@/utils/formatNumbers';
 
 type ClaimantProps = {
-  claimantDetails: Awaited<ReturnType<typeof getCaseDetails>>['result']['case']['claimant'];
+  claimantDetails: Awaited<ReturnType<typeof getCaseDetails>>['result']['claimant'];
 };
 
 const Claimant = ({ claimantDetails }: ClaimantProps) => {

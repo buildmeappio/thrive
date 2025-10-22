@@ -29,7 +29,8 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ examinationData }) => {
     return <div className="py-8 text-center">No case data available</div>;
   }
 
-  const { organization, claimant, insurance, legalRepresentative, documents } = caseData;
+  const { organization, documents } = caseData;
+  const { claimant, insurance, legalRepresentative } = examinationData;
 
   const accordionItems = [
     {

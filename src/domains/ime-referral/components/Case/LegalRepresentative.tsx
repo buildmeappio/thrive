@@ -4,7 +4,7 @@ import { getCaseDetails } from '../../actions';
 type LegalRepresentativeDetailsProps = {
   legalRepresentativeDetails: Awaited<
     ReturnType<typeof getCaseDetails>
-  >['result']['case']['legalRepresentative'];
+  >['result']['legalRepresentative'];
 };
 
 const LegalRepresentative = ({ legalRepresentativeDetails }: LegalRepresentativeDetailsProps) => {
