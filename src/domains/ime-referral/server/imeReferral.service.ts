@@ -6,6 +6,7 @@ import type { IMEFormData } from '@/store/useImeReferral';
 import type { ClaimantPreference } from '@prisma/client';
 import { DocumentService } from '@/services/fileUploadService';
 import { getE164PhoneNumber } from '@/utils/formatNumbers';
+import log from '@/utils/log';
 
 export const createCase = async (formData: IMEFormData) => {
   const currentUser = await getCurrentUser();
@@ -48,7 +49,7 @@ export const createCase = async (formData: IMEFormData) => {
         throw new Error(`File upload failed: ${uploadResult.error}`);
       }
     } catch (error) {
-      console.error('Error uploading files:', error);
+      log.error('Error uploading files:', error);
       throw new Error('Failed to upload documents. Please try again.');
     }
   }
@@ -320,7 +321,6 @@ export const createCase = async (formData: IMEFormData) => {
           })
         );
       }
-      console.log('created examination', createdExaminations);
       return {
         success: true,
         data: {
@@ -339,6 +339,21 @@ export const createCase = async (formData: IMEFormData) => {
 };
 
 const updateExamination = async (examinationId: string, formData: IMEFormData) => {
+  if (!formData.step1?.firstName || !formData.step1?.lastName) {
+    throw new Error('Claimant first name and last name are required');
+  }
+  if (!formData.step2?.insuranceCompanyName || !formData.step2?.insuranceEmailAddress) {
+    throw new Error('Insurance company name and email are required');
+  }
+  if (!formData.step2?.insurancePolicyNo || !formData.step2?.insuranceClaimNo) {
+    throw new Error('Insurance policy number and claim number are required');
+  }
+  if (!formData.step2?.policyHolderFirstName || !formData.step2?.policyHolderLastName) {
+    throw new Error('Policy holder first name and last name are required');
+  }
+  if (!formData.step1?.claimType) {
+    throw new Error('Claim Type is required');
+  }
   // Handle file uploads
   let uploadResult: { success: boolean; documents: any[]; uploadedFiles: any[]; error?: string } = {
     success: true,
@@ -356,7 +371,7 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
         throw new Error(`File upload failed: ${uploadResult.error}`);
       }
     } catch (error) {
-      console.error('Error uploading files:', error);
+      log.error('Error uploading files:', error);
       throw new Error('Failed to upload documents. Please try again.');
     }
   }
@@ -904,7 +919,7 @@ const getCaseDetails = async (caseId: string) => {
 
     return examination;
   } catch (error) {
-    console.error('Database error in getCaseDetails:', error);
+    log.error('Database error in getCaseDetails:', error);
     throw HttpError.handleServiceError(error, 'Error fetching case details');
   }
 };
@@ -1139,7 +1154,7 @@ const getCaseData = async (caseId: string) => {
           include: { address: true },
         },
         services: {
-          where: { enabled: true },
+          // REMOVED: where: { enabled: true }, - We need ALL services, not just enabled ones
           include: {
             interpreter: { include: { language: true } },
             transport: { include: { pickupAddress: true } },
@@ -1225,49 +1240,61 @@ const getCaseData = async (caseId: string) => {
         }
       : undefined;
 
-    // 🟢 Step 4: Case Types (FIXED)
+    // 🟢 Step 4: Case Types
     const step4 = {
       caseTypes: examination.examinationType
         ? [{ id: examination.examinationType.id, label: examination.examinationType.name }]
         : [],
     };
 
-    // Map services
-    const services = examination.services.map(svc => {
-      const base = {
-        type: svc.type as 'transportation' | 'interpreter' | 'chaperone',
-        enabled: svc.enabled,
-        details: {},
-      };
+    // 🟢 Step 5: Examination Details (FIXED - Always return all 3 services)
+    const servicesMap = {
+      transportation: examination.services.find(s => s.type === 'transportation'),
+      interpreter: examination.services.find(s => s.type === 'interpreter'),
+    };
 
-      if (svc.type === 'interpreter' && svc.interpreter?.language) {
-        base.details = {
-          language: svc.interpreter.language.name,
-        };
-      }
+    const services = [
+      {
+        type: 'transportation' as const,
+        enabled: servicesMap.transportation?.enabled ?? false,
+        details:
+          servicesMap.transportation?.enabled &&
+          servicesMap.transportation?.transport?.pickupAddress
+            ? {
+                pickupAddress: servicesMap.transportation.transport.pickupAddress.address ?? '',
+                streetAddress: servicesMap.transportation.transport.pickupAddress.street ?? '',
+                aptUnitSuite: servicesMap.transportation.transport.pickupAddress.suite ?? '',
+                city: servicesMap.transportation.transport.pickupAddress.city ?? '',
+                postalCode: servicesMap.transportation.transport.pickupAddress.postalCode ?? '',
+                province: servicesMap.transportation.transport.pickupAddress.province ?? '',
+              }
+            : {},
+      },
+      {
+        type: 'interpreter' as const,
+        enabled: servicesMap.interpreter?.enabled ?? false,
+        details:
+          servicesMap.interpreter?.enabled && servicesMap.interpreter?.interpreter?.language
+            ? {
+                language: servicesMap.interpreter.interpreter.language.id,
+              }
+            : {},
+      },
+    ];
 
-      if (svc.type === 'transportation' && svc.transport?.pickupAddress) {
-        base.details = {
-          pickupAddress: svc.transport.pickupAddress.address,
-          streetAddress: svc.transport.pickupAddress.street ?? '',
-          aptUnitSuite: svc.transport.pickupAddress.suite ?? '',
-          city: svc.transport.pickupAddress.city ?? '',
-          postalCode: svc.transport.pickupAddress.postalCode ?? '',
-          province: svc.transport.pickupAddress.province ?? '',
-        };
-      }
-
-      return base;
-    });
+    // Format date correctly - extract YYYY-MM-DD only
+    const formattedDueDate = examination.dueDate
+      ? examination.dueDate.toISOString().split('T')[0]
+      : '';
 
     const step5 = {
       reasonForReferral: caseData.reason ?? '',
-      examinationType: examination.examinationTypeId,
+      examinationType: caseData.caseTypeId ?? '',
       examinations: [
         {
           examinationTypeId: examination.examinationTypeId,
           urgencyLevel: examination.urgencyLevel ?? '',
-          dueDate: examination.dueDate?.toISOString() ?? '',
+          dueDate: formattedDueDate,
           instructions: examination.notes ?? '',
           locationType: examination.preference,
           selectedBenefits: examination.selectedBenefits?.map(sb => sb.benefitId) ?? [],
@@ -1300,7 +1327,7 @@ const getCaseData = async (caseId: string) => {
 
     return result;
   } catch (error) {
-    console.error('Database error in getCaseData:', error);
+    log.error('Database error in getCaseData:', error);
     throw HttpError.handleServiceError(error, 'Error fetching case details');
   }
 };

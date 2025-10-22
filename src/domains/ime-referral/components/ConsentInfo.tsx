@@ -57,13 +57,17 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
 
       if (mode === 'edit' && examinationId) {
         result = await updateIMEReferral(examinationId, completeData);
+        if (result) {
+          toast.success('IME Referral editted successfully');
+        }
       } else {
         result = await createIMEReferral(completeData);
+        if (result) {
+          toast.success('IME Referral submitted successfully');
+        }
       }
-      if (result) {
-        toast.success('IME Referral submitted successfully');
-        if (onNext) onNext();
-      }
+
+      if (onNext) onNext();
       reset();
     } catch (error) {
       console.error(error instanceof Error ? error.message : 'Submission failed');
