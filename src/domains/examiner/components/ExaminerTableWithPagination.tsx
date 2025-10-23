@@ -66,12 +66,18 @@ const columnsDef = [
     header: "Specialties",
     cell: ({ row }: { row: Row<ExaminerData> }) => {
       const specialties = row.getValue("specialties") as string | string[];
+      const formattedText = Array.isArray(specialties)
+        ? specialties.map((specialty: string) => formatText(specialty)).join(", ")
+        : formatText(specialties);
+      
+      // Truncate if longer than 50 characters
+      const displayText = formattedText.length > 50 
+        ? formattedText.substring(0, 50) + "..."
+        : formattedText;
+      
       return (
-        <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-          {Array.isArray(specialties)
-            ? specialties.map((specialty: string) => formatText(specialty)).join(", ")
-            : formatText(specialties)
-          }
+        <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap" title={formattedText}>
+          {displayText}
         </div>
       );
     },
