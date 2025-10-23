@@ -14,6 +14,7 @@ import ClaimTypeSeeder from "./seeders/claimType.seeder";
 import ExaminationTypeBenefitSeeder from "./seeders/examinationTypeBenefits.seeder";
 import ExaminerProfileSeeder from "./seeders/examinerProfile.seeder";
 import CasesSeeder from "./seeders/cases.seeder";
+import AdditionalCaseStatusSeeder from "./seeders/additionalCaseStatus.seeder";
 
 const seeds = [
   RoleSeeder,
@@ -22,6 +23,7 @@ const seeds = [
   AdminSeeder,
   CaseTypeSeeder,
   CaseStatusSeeder,
+  AdditionalCaseStatusSeeder,
   LanguageSeeder,
   ExaminationTypeSeeder,
   ExaminationTypeShortFormSeeder,

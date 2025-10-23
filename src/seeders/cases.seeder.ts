@@ -374,7 +374,6 @@ class CasesSeeder {
         const caseRecord = await this.db.case.create({
           data: {
             organizationId: organization.id,
-            claimantId: claimant.id,
             caseTypeId: caseType.id,
             consentForSubmission: true,
             isDraft: false,
@@ -412,6 +411,7 @@ class CasesSeeder {
           data: {
             caseNumber: caseData.caseNumber,
             caseId: caseRecord.id,
+            claimantId: claimant.id,
             examinationTypeId: examinationType.id,
             statusId: caseStatus.id,
             urgencyLevel: caseData.urgencyLevel,
