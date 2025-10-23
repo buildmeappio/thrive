@@ -13,10 +13,13 @@ interface ExaminerPageContentProps {
   statuses: string[];
 }
 
-// Utility function to capitalize first letter of every word
-const capitalizeFirstLetter = (str: string): string => {
+// Utility function to format text from database: remove _, -, and capitalize each word
+const formatText = (str: string): string => {
+  if (!str) return str;
   return str
+    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
     .split(' ')
+    .filter(word => word.length > 0)  // Remove empty strings
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 };
@@ -143,7 +146,7 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
                 }`}
               >
                  <Cross className="w-3.5 h-3.5 sm:w-4 sm:h-4" stroke="url(#specialtyGradient)" />
-                <span>{filters.specialty !== "all" ? capitalizeFirstLetter(filters.specialty) : "Specialty"}</span>
+                <span>{filters.specialty !== "all" ? formatText(filters.specialty) : "Specialty"}</span>
                 <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "specialty" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -173,7 +176,7 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
                           filters.specialty === specialty ? "bg-gray-100 text-[#00A8FF]" : ""
                         }`}
                       >
-                        {capitalizeFirstLetter(specialty)}
+                        {formatText(specialty)}
                       </button>
                     ))}
                   </div>
@@ -192,7 +195,7 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
                 }`}
               >
                  <Funnel className="w-3.5 h-3.5 sm:w-4 sm:h-4" stroke="url(#statusGradient)" />
-                <span>{filters.status !== "all" ? capitalizeFirstLetter(filters.status) : "Status"}</span>
+                <span>{filters.status !== "all" ? formatText(filters.status) : "Status"}</span>
                 <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -222,7 +225,7 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
                           filters.status === status ? "bg-gray-100 text-[#00A8FF]" : ""
                         }`}
                       >
-                        {capitalizeFirstLetter(status)}
+                        {formatText(status)}
                       </button>
                     ))}
                   </div>

@@ -13,9 +13,15 @@ interface OrganizationPageContentProps {
   statuses: string[];
 }
 
-// Utility function to capitalize first letter of every word
-const capitalizeFirstLetter = (str: string) => {
-  return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+// Utility function to format text from database: remove _, -, and capitalize each word
+const formatText = (str: string) => {
+  if (!str) return str;
+  return str
+    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0)  // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 interface FilterState {
@@ -139,7 +145,7 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
                 }`}
               >
                 <Cross className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ stroke: "url(#typeGradient)" }} />
-                <span>{filters.type !== "all" ? capitalizeFirstLetter(filters.type) : "Type"}</span>
+                <span>{filters.type !== "all" ? formatText(filters.type) : "Type"}</span>
                 <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "type" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -169,7 +175,7 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
                           filters.type === type ? "bg-gray-100 text-[#00A8FF]" : ""
                         }`}
                       >
-                        {capitalizeFirstLetter(type)}
+                        {formatText(type)}
                       </button>
                     ))}
                   </div>
@@ -188,7 +194,7 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
                 }`}
               >
                 <Funnel className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ stroke: "url(#statusGradient)" }} />
-                <span>{filters.status !== "all" ? capitalizeFirstLetter(filters.status) : "Status"}</span>
+                <span>{filters.status !== "all" ? formatText(filters.status) : "Status"}</span>
                 <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -218,7 +224,7 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
                           filters.status === status ? "bg-gray-100 text-[#00A8FF]" : ""
                         }`}
                       >
-                        {capitalizeFirstLetter(status)}
+                        {formatText(status)}
                       </button>
                     ))}
                   </div>

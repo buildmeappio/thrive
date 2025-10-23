@@ -43,7 +43,7 @@ class EmailService {
       throw new Error("Failed to fetch access token from Google OAuth2");
     }
 
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       service: "gmail",
       auth: {
         type: "OAuth2",
@@ -53,11 +53,11 @@ class EmailService {
         refreshToken,
         accessToken: token,
       },
-    });
+    } as any);
   }
 
   private async loadTemplate(templateName: string): Promise<string> {
-    const templatesDir = path.join(process.cwd(), "templates");
+    const templatesDir = path.join(process.cwd(), "templates", "emails");
     const templatePath = path.join(templatesDir, templateName);
 
     try {

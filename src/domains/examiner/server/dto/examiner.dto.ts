@@ -19,6 +19,7 @@ export class ExaminerDto {
       name: `${examiner.account.user.firstName} ${examiner.account.user.lastName}`.trim(),
       specialties: examiner.specialties || [],
       phone: examiner.account.user.phone || "",
+      landlineNumber: examiner.landlineNumber || undefined,
       email: examiner.account.user.email,
       province: examiner.provinceOfResidence || "",
       mailingAddress: examiner.mailingAddress || "",

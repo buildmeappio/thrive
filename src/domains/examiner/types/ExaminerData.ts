@@ -3,6 +3,7 @@ export type ExaminerData = {
   name: string;
   specialties: string[];
   phone: string;
+  landlineNumber?: string;
   email: string;
   province: string;
   mailingAddress: string;

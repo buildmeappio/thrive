@@ -17,7 +17,7 @@ export default function RequestMoreInfoModal({
   onClose,
   onSubmit,
   isLoading = false,
-  title = "Request More Info",
+  title = "Need More Info",
   maxLength = 200,
 }: Props) {
   const [messageToOrganization, setMessageToOrganization] = useState("");

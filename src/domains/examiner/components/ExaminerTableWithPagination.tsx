@@ -31,10 +31,13 @@ const ActionButton = ({ id }: { id: string }) => {
   );
 };
 
-// Utility function to capitalize first letter of each word
-const capitalizeWords = (text: string): string => {
+// Utility function to format text from database: remove _, -, and capitalize each word
+const formatText = (text: string): string => {
+  if (!text) return text;
   return text
+    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
     .split(' ')
+    .filter(word => word.length > 0)  // Remove empty strings
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 };
@@ -66,8 +69,8 @@ const columnsDef = [
       return (
         <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
           {Array.isArray(specialties)
-            ? specialties.map((specialty: string) => capitalizeWords(specialty)).join(", ")
-            : capitalizeWords(specialties)
+            ? specialties.map((specialty: string) => formatText(specialty)).join(", ")
+            : formatText(specialties)
           }
         </div>
       );
@@ -89,7 +92,7 @@ const columnsDef = [
       const status = row.getValue("status") as string;
       return (
         <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-          {status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}
+          {formatText(status)}
         </div>
       );
     },
@@ -160,7 +163,7 @@ export default function ExaminerTableWithPagination({ data, searchQuery = "", fi
     tableElement: (
       <>
         {/* Table */}
-        <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
+        <div className="overflow-x-auto rounded-md outline-none max-h-[60vh] lg:max-h-none">
           <Table className="min-w-[900px] border-0">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (

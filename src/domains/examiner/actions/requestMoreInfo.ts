@@ -6,7 +6,6 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import examinerService from "../server/examiner.service";
 import { signExaminerResubmitToken } from "@/lib/jwt";
 import emailService from "@/services/email.service";
-import { ENV } from "@/constants/variables";
 import { ExaminerProfile, Account, User, Documents, ExaminerLanguage, Language } from "@prisma/client";
 
 interface ExaminerWithRelations extends ExaminerProfile {
@@ -79,7 +78,7 @@ async function sendRequestMoreInfoEmail(examiner: ExaminerWithRelations, request
       requestMessage,
       resubmitLink,
       documentsRequired,
-      CDN_URL: ENV.NEXT_PUBLIC_CDN_URL,
+      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
     },
     userEmail
   );

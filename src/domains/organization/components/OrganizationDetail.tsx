@@ -13,6 +13,18 @@ import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import organizationActions from "../actions";
 import { toast } from "sonner";
+import { formatPhoneNumber } from "@/utils/phone";
+
+// Utility function to format text from database: remove _, -, and capitalize each word
+const formatText = (str: string): string => {
+  if (!str) return str;
+  return str
+    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0)  // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
 
 const mapStatus = { PENDING: "pending", ACCEPTED: "approved", REJECTED: "rejected" } as const;
 
@@ -27,11 +39,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
   const [status, setStatus] = useState(mapStatus[organization.status as keyof typeof mapStatus]);
   const [loadingAction, setLoadingAction] = useState<"approve" | "reject" | "request" | null>(null);
 
-  const type =
-    organization.type?.name
-      ?.split("_")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ") || "-";
+  const type = organization.type?.name ? formatText(organization.type.name) : "-";
 
   const handleRequestSubmit = async (messageToOrganization: string) => {
     // Check if manager email exists before proceeding
@@ -146,7 +154,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                 />
                 <FieldRow
                   label="Phone Number"
-                  value={organization.manager?.[0]?.account?.user?.phone || "-"}
+                  value={formatPhoneNumber(organization.manager?.[0]?.account?.user?.phone)}
                   type="text"
                 />
                 <FieldRow

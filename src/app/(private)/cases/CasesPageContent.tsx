@@ -19,10 +19,13 @@ interface CasesPageContentProps {
   priorityLevels: string[];
 }
 
-// Utility function to capitalize first letter of every word
-const capitalizeFirstLetter = (str: string): string => {
+// Utility function to format text from database: remove _, -, and capitalize each word
+const formatText = (str: string): string => {
+  if (!str) return str;
   return str
+    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
     .split(' ')
+    .filter(word => word.length > 0)  // Remove empty strings
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 };
@@ -329,7 +332,7 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
                   <circle cx="8" cy="8" r="6" stroke="url(#typeGradient)" strokeWidth="1.5"/>
                   <path d="M8 4V8M8 12H8.01" stroke="url(#typeGradient)" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
-                <span>{filters.claimType !== "all" ? capitalizeFirstLetter(filters.claimType) : "Claim Type"}</span>
+                <span>{filters.claimType !== "all" ? formatText(filters.claimType) : "Claim Type"}</span>
                 <svg className={`w-4 h-4 transition-transform ${activeDropdown === "claimType" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -359,7 +362,7 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
                           filters.claimType === type ? "bg-gray-100 text-[#00A8FF]" : ""
                         }`}
                       >
-                        {capitalizeFirstLetter(type)}
+                        {formatText(type)}
                       </button>
                     ))}
                   </div>
@@ -380,7 +383,7 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
                 <svg className="w-4 h-4" fill="none" stroke="url(#statusGradient)" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
-                <span>{filters.status !== "all" ? capitalizeFirstLetter(filters.status) : "Status"}</span>
+                <span>{filters.status !== "all" ? formatText(filters.status) : "Status"}</span>
                 <svg className={`w-4 h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -410,7 +413,7 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
                           filters.status === status ? "bg-gray-100 text-[#00A8FF]" : ""
                         }`}
                       >
-                        {capitalizeFirstLetter(status)}
+                        {formatText(status)}
                       </button>
                     ))}
                   </div>
@@ -431,7 +434,7 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
                 <svg className="w-4 h-4" fill="none" stroke="url(#priorityGradient)" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
-                <span>{filters.priority !== "all" ? capitalizeFirstLetter(filters.priority) : "Priority"}</span>
+                <span>{filters.priority !== "all" ? formatText(filters.priority) : "Priority"}</span>
                 <svg className={`w-4 h-4 transition-transform ${activeDropdown === "priority" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -461,7 +464,7 @@ export default function CasesPageContent({ data, types, statuses, priorityLevels
                           filters.priority === priority ? "bg-gray-100 text-[#00A8FF]" : ""
                         }`}
                       >
-                        {capitalizeFirstLetter(priority)}
+                        {formatText(priority)}
                       </button>
                     ))}
                   </div>

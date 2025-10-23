@@ -8,6 +8,17 @@ import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
+// Utility function to format text from database: remove _, -, and capitalize each word
+const formatText = (str: string) => {
+  if (!str) return str;
+  return str
+    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0)  // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 type Props = {
   data: OrganizationData[];
   types?: string[];
@@ -44,7 +55,7 @@ const columnsDef = [
     header: "Type",
     cell: ({ row }: { row: Row<OrganizationData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("typeName") || "N/A"}
+        {row.getValue("typeName") ? formatText(row.getValue("typeName")) : "N/A"}
       </div>
     ),
   },
@@ -71,7 +82,7 @@ const columnsDef = [
     header: "Status",
     cell: ({ row }: { row: Row<OrganizationData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("status")}
+        {formatText(row.getValue("status"))}
       </div>
     ),
   },
@@ -133,7 +144,7 @@ export default function OrganizationTableWithPagination({
     tableElement: (
       <>
         {/* Table */}
-        <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
+        <div className="overflow-x-auto rounded-md outline-none max-h-[60vh] lg:max-h-none">
           <Table className="min-w-[1000px] border-0">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (

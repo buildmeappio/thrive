@@ -4,7 +4,6 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import emailService from "@/services/email.service";
-import { ENV } from "@/constants/variables";
 import caseHandlers from "../server/handlers";
 import prisma from "@/lib/db";
 import { CaseDetailDtoType } from "../types/CaseDetailDtoType";
@@ -112,7 +111,7 @@ async function sendRejectionEmailToOrganization(caseDetails: CaseDetailDtoType, 
       organizationName,
       rejectionMessage,
       submittedDate,
-      CDN_URL: ENV.NEXT_PUBLIC_CDN_URL,
+      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
     },
     organizationEmail
   );
@@ -151,7 +150,7 @@ async function sendRejectionEmailToClaimant(caseDetails: CaseDetailDtoType, reje
       organizationName,
       rejectionMessage,
       submittedDate,
-      CDN_URL: ENV.NEXT_PUBLIC_CDN_URL,
+      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
     },
     claimantEmail
   );

@@ -9,6 +9,17 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { formatDateShort } from "@/utils/date";
 
+// Utility function to format text from database: remove _, -, and capitalize each word
+const formatText = (str: string) => {
+  if (!str) return str;
+  return str
+    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0)  // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 interface FilterState {
   claimType: string;
   status: string;
@@ -62,7 +73,7 @@ const columnsDef = [
     header: "Claim Type",
     cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("caseType")}
+        {formatText(row.getValue("caseType"))}
       </div>
     ),
   },
@@ -89,7 +100,7 @@ const columnsDef = [
     header: "Status",
     cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("status")}
+        {formatText(row.getValue("status"))}
       </div>
     ),
   },
@@ -98,7 +109,7 @@ const columnsDef = [
     header: "Priority",
     cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("urgencyLevel")}
+        {formatText(row.getValue("urgencyLevel"))}
       </div>
     ),
   },
@@ -190,7 +201,7 @@ export default function CaseTableWithPagination({ data, searchQuery = "", filter
     tableElement: (
       <>
         {/* Table */}
-        <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
+        <div className="overflow-x-auto rounded-md outline-none max-h-[60vh] lg:max-h-none">
           <Table className="min-w-[1000px] border-0">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (

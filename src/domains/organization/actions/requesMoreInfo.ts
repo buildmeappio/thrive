@@ -7,7 +7,6 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
 import { signOrganizationResubmitToken } from "@/lib/jwt";
 import emailService from "@/services/email.service";
-import { ENV } from "@/constants/variables";
 
 type OrganizationView = {
   id: string;
@@ -83,7 +82,7 @@ async function sendRequestMoreInfoEmail(org: OrganizationView, requestMessage: s
       organizationName: org.name,
       requestMessage,
       resubmitLink,
-      CDN_URL: ENV.NEXT_PUBLIC_CDN_URL,
+      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
     },
     email
   );
