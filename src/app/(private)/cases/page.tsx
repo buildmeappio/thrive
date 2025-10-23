@@ -25,7 +25,7 @@ const Page = async () => {
   const data: CaseData[] = flattenedCases.map((c) => ({
     id: c.id,
     number: c.caseNumber,
-    claimant: c.case.claimant.firstName + " " + c.case.claimant.lastName,
+    claimant: c.claimant.firstName + " " + c.claimant.lastName,
     organization: c.case.organization?.name || "Unknown",
     caseType: c.case.caseType.name,
     status: c.status.name,

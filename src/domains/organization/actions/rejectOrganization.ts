@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
 import emailService from "@/services/email.service";
 import { ENV } from "@/constants/variables";
+import { OrganizationData } from "../types/OrganizationData";
 
 const rejectOrganization = async (id: string, reason: string) => {
   const user = await getCurrentUser();
@@ -29,7 +30,7 @@ const rejectOrganization = async (id: string, reason: string) => {
   return organization;
 };
 
-async function sendRejectReasonToOrganization(org: any, reason: string) {
+async function sendRejectReasonToOrganization(org: OrganizationData, reason: string) {
   const email = org.managerEmail;
   const firstName = org.managerName?.split(' ')[0] || "";
   const lastName = org.managerName?.split(' ').slice(1).join(' ') || "";

@@ -143,6 +143,9 @@ class CaseService {
           examiner: { include: { user: true } },
           examinationType: true,
           status: true,
+          claimant: { include: { address: true } },
+          legalRepresentative: { include: { address: true } },
+          insurance: { include: { address: true } },
           services: {
             include: {
               interpreter: { include: { language: true } },
@@ -153,7 +156,6 @@ class CaseService {
             include: {
               caseType: true,
               documents: { include: { document: true } },
-              claimant: { include: { address: true } },
               organization: {
                 include: {
                   manager: {
@@ -167,8 +169,6 @@ class CaseService {
                   }
                 }
               },
-              legalRepresentative: { include: { address: true } },
-              insurance: { include: { address: true } },
             },
           },
         },
@@ -193,6 +193,9 @@ class CaseService {
           examiner: { include: { user: true } },  // Include examiner details
           examinationType: true,  // Include examination type
           status: true,
+          claimant: { include: { address: true } },  // Include claimant details
+          legalRepresentative: { include: { address: true } },  // Include legal representative
+          insurance: { include: { address: true } },  // Include insurance
           services: {
             include: {
               interpreter: { include: { language: true } },  // Include interpreter language
@@ -203,7 +206,6 @@ class CaseService {
             include: {
               caseType: true,  // Include case type
               documents: { include: { document: true } },  // Include documents
-              claimant: { include: { address: true } },  // Include claimant details
               organization: {
                 include: {
                   manager: {
@@ -217,8 +219,6 @@ class CaseService {
                   }
                 }
               },  // Include organization with manager details
-              legalRepresentative: { include: { address: true } },  // Include legal representative
-              insurance: { include: { address: true } },
             },
           },
         },

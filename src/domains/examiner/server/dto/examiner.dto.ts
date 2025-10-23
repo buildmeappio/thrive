@@ -14,8 +14,6 @@ type ExaminerWithRelations = ExaminerProfile & {
 
 export class ExaminerDto {
   static toExaminerData(examiner: ExaminerWithRelations): ExaminerData {
-    const s3BaseUrl = "https://public-thrive-assets.s3.eu-north-1.amazonaws.com";
-    
     return {
       id: examiner.id,
       name: `${examiner.account.user.firstName} ${examiner.account.user.lastName}`.trim(),
@@ -27,13 +25,13 @@ export class ExaminerDto {
       licenseNumber: examiner.licenseNumber || "",
       provinceOfLicensure: examiner.provinceOfLicensure || "",
       licenseExpiryDate: examiner.licenseExpiryDate?.toISOString() || "",
-      cvUrl: examiner.resumeDocument ? `${s3BaseUrl}/documents/${examiner.resumeDocument.name}` : undefined,
-      medicalLicenseUrl: examiner.medicalLicenseDocument ? `${s3BaseUrl}/documents/${examiner.medicalLicenseDocument.name}` : undefined,
+      cvUrl: undefined, // Will be set by handler with presigned URL
+      medicalLicenseUrl: undefined, // Will be set by handler with presigned URL
       languagesSpoken: examiner.examinerLanguages?.map((el) => el.language.name) || [],
       yearsOfIMEExperience: String(examiner.yearsOfIMEExperience || "0"),
       experienceDetails: examiner.bio || "",
-      insuranceProofUrl: examiner.insuranceDocument ? `${s3BaseUrl}/documents/${examiner.insuranceDocument.name}` : undefined,
-      signedNdaUrl: examiner.ndaDocument ? `${s3BaseUrl}/documents/${examiner.ndaDocument.name}` : undefined,
+      insuranceProofUrl: undefined, // Will be set by handler with presigned URL
+      signedNdaUrl: undefined, // Will be set by handler with presigned URL
       status: examiner.status,
       createdAt: examiner.createdAt.toISOString(),
       updatedAt: examiner.updatedAt.toISOString(),
