@@ -76,7 +76,7 @@ const columnsDef = [
         : formattedText;
       
       return (
-        <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap" title={formattedText}>
+        <div className="text-[#4D4D4D] font-poppins text-[16px] leading-tight max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap" title={formattedText}>
           {displayText}
         </div>
       );

@@ -23,26 +23,26 @@ const completeReview = async (
     throw new Error("Case not found");
   }
 
-  // Update case status to "Ready to Appointment" in database
+  // Update case status to "Waiting to be Scheduled" in database
   try {
-    // Find the "Ready to Appointment" status
-    const readyStatus = await prisma.caseStatus.findFirst({
+    // Find the "Waiting to be Scheduled" status
+    const waitingStatus = await prisma.caseStatus.findFirst({
       where: { 
-        name: "Ready to Appointment"
+        name: "Waiting to be Scheduled"
       },
     });
 
-    if (!readyStatus) {
-      throw new Error("Ready to Appointment status not found in database");
+    if (!waitingStatus) {
+      throw new Error("Waiting to be Scheduled status not found in database");
     }
 
     // Update the examination status
     await prisma.examination.update({
       where: { id: caseId },
-      data: { statusId: readyStatus.id },
+      data: { statusId: waitingStatus.id },
     });
 
-    console.log("✓ Case status updated to Ready to Appointment");
+    console.log("✓ Case status updated to Waiting to be Scheduled");
   } catch (dbError) {
     console.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");

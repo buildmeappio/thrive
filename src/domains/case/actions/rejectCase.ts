@@ -27,15 +27,12 @@ const rejectCase = async (
     throw new Error("Case not found");
   }
 
-  // Update case status to REJECTED in database
+  // Update case status to "Rejected" in database
   try {
     // Find the "Rejected" status
     const rejectedStatus = await prisma.caseStatus.findFirst({
       where: { 
-        name: {
-          contains: "Reject",
-          mode: "insensitive"
-        }
+        name: "Rejected"
       },
     });
 
@@ -49,7 +46,7 @@ const rejectCase = async (
       data: { statusId: rejectedStatus.id },
     });
 
-    console.log("✓ Case status updated to REJECTED");
+    console.log("✓ Case status updated to Rejected");
   } catch (dbError) {
     console.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");

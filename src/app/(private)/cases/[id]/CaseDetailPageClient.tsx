@@ -41,7 +41,21 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
-  const [caseStatus, setCaseStatus] = useState<"pending" | "reviewed" | "info_needed" | "rejected">("pending");
+
+  // Determine the current case status from database
+  const getCurrentStatus = (): "pending" | "reviewed" | "info_needed" | "rejected" => {
+    const statusName = caseDetails.status.name.toLowerCase();
+    if (statusName.includes("waiting") || statusName.includes("scheduled")) {
+      return "reviewed";
+    } else if (statusName.includes("information") || statusName.includes("info")) {
+      return "info_needed";
+    } else if (statusName.includes("reject")) {
+      return "rejected";
+    }
+    return "pending";
+  };
+  
+  const [caseStatus, setCaseStatus] = useState<"pending" | "reviewed" | "info_needed" | "rejected">(getCurrentStatus());
 
   const handleCompleteReview = async () => {
     setLoadingAction("review");
@@ -166,7 +180,7 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              More Info Needed
+              More Information Required
             </button>
           ) : caseStatus === "rejected" ? (
             <button
@@ -181,34 +195,34 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
           ) : (
             <>
               {/* Complete Review Button */}
-              <button
-                className="px-3 sm:px-4 py-2 sm:py-3 rounded-full border border-cyan-400 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "12px" }}
+          <button
+            className="px-3 sm:px-4 py-2 sm:py-3 rounded-full border border-cyan-400 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "12px" }}
                 onClick={handleCompleteReview}
-                disabled={loadingAction !== null}
-              >
+            disabled={loadingAction !== null}
+          >
                 {loadingAction === "review" ? "Completing..." : "Complete Review"}
-              </button>
+          </button>
 
               {/* Need More Info Button */}
-              <button
-                className="px-3 sm:px-4 py-2 sm:py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "12px" }}
-                onClick={() => setIsRequestOpen(true)}
-                disabled={loadingAction !== null}
-              >
+          <button
+            className="px-3 sm:px-4 py-2 sm:py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "12px" }}
+            onClick={() => setIsRequestOpen(true)}
+            disabled={loadingAction !== null}
+          >
                 {loadingAction === "request" ? "Sending..." : "Need More Info"}
-              </button>
+          </button>
 
-              {/* Reject Button */}
-              <button
-                className="px-3 sm:px-4 py-2 sm:py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "12px" }}
-                onClick={() => setIsRejectOpen(true)}
-                disabled={loadingAction !== null}
-              >
-                {loadingAction === "reject" ? "Rejecting..." : "Reject"}
-              </button>
+          {/* Reject Button */}
+          <button
+            className="px-3 sm:px-4 py-2 sm:py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "12px" }}
+            onClick={() => setIsRejectOpen(true)}
+            disabled={loadingAction !== null}
+          >
+            {loadingAction === "reject" ? "Rejecting..." : "Reject"}
+          </button>
             </>
           )}
         </div>
