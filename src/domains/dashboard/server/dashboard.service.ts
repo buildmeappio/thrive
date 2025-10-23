@@ -42,6 +42,9 @@ class DashboardService {
                 examiner: { include: { user: true } },
                 examinationType: true,
                 status: true,
+                claimant: { include: { address: true } },
+                legalRepresentative: { include: { address: true } },
+                insurance: { include: { address: true } },
                 services: {
                     include: {
                         interpreter: { include: { language: true } },
@@ -52,7 +55,6 @@ class DashboardService {
                     include: {
                         caseType: true,
                         documents: { include: { document: true } },
-                        claimant: { include: { address: true } },
                         organization: {
                             include: {
                                 manager: {
@@ -66,8 +68,6 @@ class DashboardService {
                                 }
                             }
                         },
-                        legalRepresentative: { include: { address: true } },
-                        insurance: { include: { address: true } },
                     },
                 },
             },
@@ -110,6 +110,9 @@ class DashboardService {
                 examiner: { include: { user: true } },
                 examinationType: true,
                 status: true,
+                claimant: { include: { address: true } },
+                legalRepresentative: { include: { address: true } },
+                insurance: { include: { address: true } },
                 services: {
                     include: {
                         interpreter: { include: { language: true } },
@@ -120,7 +123,6 @@ class DashboardService {
                     include: {
                         caseType: true,
                         documents: { include: { document: true } },
-                        claimant: { include: { address: true } },
                         organization: {
                             include: {
                                 manager: {
@@ -134,8 +136,6 @@ class DashboardService {
                                 }
                             }
                         },
-                        legalRepresentative: { include: { address: true } },
-                        insurance: { include: { address: true } },
                     },
                 },
             },

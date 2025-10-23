@@ -141,15 +141,15 @@ export default function ExaminerDetail({ examiner }: Props) {
                                 />
                                 <FieldRow
                                     label="CV / Resume"
-                                    value={examiner.cvUrl ? "Download" : "Not uploaded"}
-                                    valueHref={examiner.cvUrl}
-                                    type={examiner.cvUrl ? "link" : "text"}
+                                    value={examiner.cvUrl ? "CV_Resume.pdf" : "Not uploaded"}
+                                    type={examiner.cvUrl ? "document" : "text"}
+                                    documentUrl={examiner.cvUrl}
                                 />
                                 <FieldRow
                                     label="Medical License"
-                                    value={examiner.medicalLicenseUrl ? "Download" : "Not uploaded"}
-                                    valueHref={examiner.medicalLicenseUrl}
-                                    type={examiner.medicalLicenseUrl ? "link" : "text"}
+                                    value={examiner.medicalLicenseUrl ? "Medical_License.pdf" : "Not uploaded"}
+                                    type={examiner.medicalLicenseUrl ? "document" : "text"}
+                                    documentUrl={examiner.medicalLicenseUrl}
                                 />
                             </Section>
 

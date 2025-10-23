@@ -195,7 +195,7 @@ model Claimant {
   deletedAt                DateTime? @map("deleted_at") @db.Timestamptz()
 
   address              Address                @relation("ClaimantAddress", fields: [addressId], references: [id])
-  cases                Case[]                 @relation("ClaimantCases")
+  examinations         Examination[]          @relation("ExaminationClaimant")
   claimantAvailability ClaimantAvailability[] @relation("ClaimantAvailability")
   claimType            ClaimType              @relation("ClaimantClaimType", fields: [claimTypeId], references: [id])
 
@@ -211,7 +211,7 @@ model LegalRepresentative {
   addressId         String?  @map("address_id") @db.Uuid
   address           Address? @relation("LegalRepresentativeAddress", fields: [addressId], references: [id])
 
-  cases Case[] @relation("LegalRepresentativeCases")
+  examinations Examination[] @relation("ExaminationLegalRepresentative")
 
   @@map("legal_representatives")
 }
@@ -232,7 +232,7 @@ model Insurance {
   addressId              String?  @map("address_id") @db.Uuid
   address                Address? @relation("InsuranceAddress", fields: [addressId], references: [id])
 
-  cases Case[] @relation("InsuranceCases")
+  examinations Examination[] @relation("ExaminationInsurance")
 
   @@map("insurances")
 }
@@ -240,9 +240,6 @@ model Insurance {
 model Case {
   id                    String  @id @unique @default(uuid()) @db.Uuid
   organizationId        String? @map("organization_id") @db.Uuid
-  claimantId            String  @map("claimant_id") @db.Uuid
-  insuranceId           String? @map("insurance_id") @db.Uuid
-  legalRepresentativeId String? @map("legal_representative_id") @db.Uuid
   caseTypeId            String? @map("case_type_id") @db.Uuid
   reason                String? @map("reason") @db.VarChar(255)
   consentForSubmission  Boolean @default(false) @map("consent_for_submission")
@@ -253,9 +250,6 @@ model Case {
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
   organization        Organization?        @relation("OrganizationCases", fields: [organizationId], references: [id])
-  claimant            Claimant             @relation("ClaimantCases", fields: [claimantId], references: [id])
-  insurance           Insurance?           @relation("InsuranceCases", fields: [insuranceId], references: [id])
-  legalRepresentative LegalRepresentative? @relation("LegalRepresentativeCases", fields: [legalRepresentativeId], references: [id])
   caseType            CaseType?            @relation("CaseTypeCases", fields: [caseTypeId], references: [id])
   examinations        Examination[]        @relation("ExaminationCases")
   documents           CaseDocument[]       @relation("CaseDocuments")
@@ -286,6 +280,10 @@ model Examination {
   assignToId String?   @map("assign_to_id") @db.Uuid
   assignedAt DateTime? @map("assigned_at") @db.Timestamptz()
 
+  claimantId            String  @map("claimant_id") @db.Uuid
+  insuranceId           String? @map("insurance_id") @db.Uuid
+  legalRepresentativeId String? @map("legal_representative_id") @db.Uuid
+
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
@@ -299,6 +297,10 @@ model Examination {
   claimantAvailability ClaimantAvailability[]       @relation("ExaminationClaimantAvailability")
   services             ExaminationServices[]        @relation("ExaminationServices")
   selectedBenefits     ExaminationSelectedBenefit[] @relation("ExaminationSelectedBenefits")
+
+  claimant            Claimant             @relation("ExaminationClaimant", fields: [claimantId], references: [id])
+  insurance           Insurance?           @relation("ExaminationInsurance", fields: [insuranceId], references: [id])
+  legalRepresentative LegalRepresentative? @relation("ExaminationLegalRepresentative", fields: [legalRepresentativeId], references: [id])
 
   @@index([caseId])
   @@index([caseNumber])
@@ -467,10 +469,10 @@ model Documents {
   deletedAt         DateTime?         @map("deleted_at") @db.Timestamptz()
   users             User[]            @relation("ProfilePhoto")
   cases             CaseDocument[]    @relation("DocumentCases")
-  medicalLicenses   ExaminerProfile[] @relation(name: "ExmainerMedicalLicenseDocument")
-  examinerResume    ExaminerProfile[] @relation(name: "ExmainerResumeDocument")
-  examinerNDA       ExaminerProfile[] @relation(name: "ExmainerNDADocument")
-  examinerInsurance ExaminerProfile[] @relation(name: "ExmainerInsuranceDocument")
+  medicalLicenses   ExaminerProfile[] @relation(name: "ExaminerMedicalLicenseDocument")
+  examinerResume    ExaminerProfile[] @relation(name: "ExaminerResumeDocument")
+  examinerNDA       ExaminerProfile[] @relation(name: "ExaminerNDADocument")
+  examinerInsurance ExaminerProfile[] @relation(name: "ExaminerInsuranceDocument")
 
   @@map("documents")
 }
@@ -599,6 +601,7 @@ model ExaminerProfile {
   mailingAddress                    String         @map("mailing_address") @db.Text
   specialties                       String[]       @map("specialties")
   licenseNumber                     String         @map("license_number") @db.VarChar(255)
+  landlineNumber                    String?        @map("landline_number") @db.VarChar(255)
   assessmentTypes                   String[]       @map("assessment_types")
   provinceOfLicensure               String         @map("province_of_licensure") @db.VarChar(255)
   licenseExpiryDate                 DateTime?      @map("license_expiry_date") @db.Date
@@ -634,10 +637,10 @@ model ExaminerProfile {
   deletedAt                         DateTime?
 
   account                Account                 @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  medicalLicenseDocument Documents               @relation(name: "ExmainerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
-  resumeDocument         Documents               @relation(name: "ExmainerResumeDocument", references: [id], fields: [resumeDocumentId])
-  ndaDocument            Documents?              @relation(name: "ExmainerNDADocument", references: [id], fields: [NdaDocumentId])
-  insuranceDocument      Documents?              @relation(name: "ExmainerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
+  medicalLicenseDocument Documents               @relation(name: "ExaminerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
+  resumeDocument         Documents               @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
+  ndaDocument            Documents?              @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
+  insuranceDocument      Documents?              @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
   examinerLanguages      ExaminerLanguage[]
   weeklyHours            ExaminerWeeklyHours[]
   overrideHours          ExaminerOverrideHours[]

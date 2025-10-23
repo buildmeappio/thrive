@@ -41,6 +41,47 @@ export type CaseDetailDtoType = {
             notes: string | null;
         } | null;
     }>;
+    claimant: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        emailAddress: string | null;
+        phoneNumber: string | null;
+        gender: string | null;
+        dateOfBirth: Date | null;
+        address: Address | null;
+        relatedCases: string | null;
+    };
+    familyDoctor: {
+        name: string | null;
+        email: string | null;
+        phoneNumber: string | null;
+        faxNumber: string | null;
+    };
+    legalRepresentative: {
+        id: string;
+        companyName: string | null;
+        contactPersonName: string | null;
+        phoneNumber: string | null;
+        faxNumber: string | null;
+        address: Address | null;
+    } | null;
+    insurance: {
+        id: string;
+        emailAddress: string;
+        companyName: string;
+        contactPersonName: string;
+        policyNumber: string;
+        claimNumber: string;
+        dateOfLoss: Date;
+        policyHolderIsClaimant: boolean;
+        policyHolderFirstName: string;
+        policyHolderLastName: string;
+        phoneNumber: string;
+        faxNumber: string;
+        addressId: string | null;
+        address: Address | null;
+    } | null;
     case: {
         id: string;
         caseType: {
@@ -57,24 +98,6 @@ export type CaseDetailDtoType = {
             size: number;
             url: string | null;
         }>;
-        claimant: {
-            id: string;
-            firstName: string;
-            lastName: string;
-            emailAddress: string | null;
-            phoneNumber: string | null;
-            gender: string | null;
-            dateOfBirth: Date | null;
-            address: Address | null;
-            relatedCases: string | null;
-        };
-        familyDoctor: {
-            name: string | null;
-            email: string | null;
-            phoneNumber: string | null;
-            faxNumber: string | null;
-
-        };
         organization: {
             id: string;
             name: string;
@@ -83,32 +106,5 @@ export type CaseDetailDtoType = {
             managerEmail?: string | null;
             managerName?: string | null;
         };
-        legalRepresentative: {
-            id: string;
-            companyName: string | null;
-            contactPersonName: string | null;
-            phoneNumber: string | null;
-            faxNumber: string | null;
-            address: Address | null;
-
-        };
-
-        insurance: {
-            id: string;
-            emailAddress: string;
-            companyName: string;
-            contactPersonName: string;
-            policyNumber: string;
-            claimNumber: string;
-            dateOfLoss: Date;
-            policyHolderIsClaimant: boolean;
-            policyHolderFirstName: string;
-            policyHolderLastName: string;
-            phoneNumber: string;
-            faxNumber: string;
-            addressId: string | null;
-            address: Address | null;
-        };
-
     };
 };

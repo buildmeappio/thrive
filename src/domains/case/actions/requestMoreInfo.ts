@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import emailService from "@/services/email.service";
 import { ENV } from "@/constants/variables";
 import caseHandlers from "../server/handlers";
+import { CaseDetailDtoType } from "../types/CaseDetailDtoType";
 
 const requestMoreInfo = async (
   caseId: string,
@@ -40,7 +41,7 @@ const requestMoreInfo = async (
   revalidatePath(`/cases/${caseId}`);
 };
 
-async function sendRequestMoreInfoEmailToOrganization(caseDetails: any, requestMessage: string) {
+async function sendRequestMoreInfoEmailToOrganization(caseDetails: CaseDetailDtoType, requestMessage: string) {
   const organizationEmail = caseDetails.case.organization?.managerEmail;
   const organizationName = caseDetails.case.organization?.name || "Unknown Organization";
   const managerName = caseDetails.case.organization?.managerName || "";

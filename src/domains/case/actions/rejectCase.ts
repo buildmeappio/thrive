@@ -7,6 +7,7 @@ import emailService from "@/services/email.service";
 import { ENV } from "@/constants/variables";
 import caseHandlers from "../server/handlers";
 import prisma from "@/lib/db";
+import { CaseDetailDtoType } from "../types/CaseDetailDtoType";
 
 const rejectCase = async (
   caseId: string,
@@ -81,7 +82,7 @@ const rejectCase = async (
   revalidatePath(`/cases/${caseId}`);
 };
 
-async function sendRejectionEmailToOrganization(caseDetails: any, rejectionMessage: string) {
+async function sendRejectionEmailToOrganization(caseDetails: CaseDetailDtoType, rejectionMessage: string) {
   const organizationEmail = caseDetails.case.organization?.managerEmail;
   const organizationName = caseDetails.case.organization?.name || "Unknown Organization";
   const managerName = caseDetails.case.organization?.managerName || "";
@@ -121,10 +122,10 @@ async function sendRejectionEmailToOrganization(caseDetails: any, rejectionMessa
   }
 }
 
-async function sendRejectionEmailToClaimant(caseDetails: any, rejectionMessage: string) {
-  const claimantEmail = caseDetails.case.claimant?.emailAddress;
-  const firstName = caseDetails.case.claimant?.firstName || "";
-  const lastName = caseDetails.case.claimant?.lastName || "";
+async function sendRejectionEmailToClaimant(caseDetails: CaseDetailDtoType, rejectionMessage: string) {
+  const claimantEmail = caseDetails.claimant?.emailAddress;
+  const firstName = caseDetails.claimant?.firstName || "";
+  const lastName = caseDetails.claimant?.lastName || "";
   const organizationName = caseDetails.case.organization?.name || "Unknown Organization";
 
   if (!claimantEmail) {
