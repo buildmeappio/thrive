@@ -27,8 +27,6 @@ export type Case = {
       id: string;
       name: string;
     };
-    dueDate: Date | null;
-    urgencyLevel: 'HIGH' | 'MEDIUM' | 'LOW' | null;
     claimant: {
       id: string;
       firstName: string;
@@ -52,5 +50,7 @@ export type Case = {
       companyName: string | null;
       contactPersonName: string | null;
     } | null;
+    dueDate: Date | null;
+    urgencyLevel: 'HIGH' | 'MEDIUM' | 'LOW' | null;
   }[];
 };

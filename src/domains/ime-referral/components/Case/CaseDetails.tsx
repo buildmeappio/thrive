@@ -1,7 +1,6 @@
 'use client';
 
 import { ArrowLeft, ChevronDown } from 'lucide-react';
-import { getCaseDetails } from '../../actions';
 import {
   Accordion,
   AccordionContent,
@@ -16,15 +15,14 @@ import Documents from './Documents';
 import { formatDate } from '@/utils/dateTime';
 import useRouter from '@/hooks/useRouter';
 import { URLS } from '@/constants/routes';
+import { getCaseDetails } from '../../server/handlers';
 
 type CaseDetailsProps = {
   examinationData: Awaited<ReturnType<typeof getCaseDetails>>['result'];
 };
 
 const CaseDetails: React.FC<CaseDetailsProps> = ({ examinationData }) => {
-  if (!examinationData.case) {
-    throw new Error('Case is not present in examination');
-  }
+  console.log('examination data', examinationData);
   const caseData = examinationData.case;
   const router = useRouter();
 
