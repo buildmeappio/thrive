@@ -20,12 +20,20 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui';
 import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
 import PhoneInput from '@/components/PhoneNumber';
+import { getCaseData } from '../actions';
 
-const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
+type InsuranceProps = IMEReferralProps & {
+  legalData?: Awaited<ReturnType<typeof getCaseData>>['result']['step3'];
+  mode?: 'create' | 'edit';
+};
+
+const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
   onNext,
   onPrevious,
   currentStep,
   totalSteps,
+  legalData,
+  mode,
 }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
 
@@ -38,7 +46,7 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
     formState: { errors, isSubmitting },
   } = useForm<LegalDetails>({
     resolver: zodResolver(LegalDetailsSchema),
-    defaultValues: data.step3 || LegalDetailsInitialValues,
+    defaultValues: data.step3 || legalData || LegalDetailsInitialValues,
   });
 
   const watchedValues = watch();
@@ -103,9 +111,9 @@ const LegalRepresentativeComponent: React.FC<IMEReferralProps> = ({
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       <h1 className="mb-6 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
-        New Case Request
+        {mode === 'edit' ? 'Edit Case Request' : 'New Case Request'}
       </h1>
-      <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
+      <ProgressIndicator mode={mode} currentStep={currentStep} totalSteps={totalSteps} />
       <div
         className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[55px] md:py-8"
         style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}

@@ -9,12 +9,15 @@ import { DocumentUploadConfig } from '@/config/documentUpload';
 import BackButton from '@/components/BackButton';
 import ContinueButton from '@/components/ContinueButton';
 import { type DocumentUploadFormData, DocumentUploadSchema } from '../schemas/imeReferral';
+import { getCaseData } from '../server/handlers';
 
 interface DocumentUploadProps {
   onNext: () => void;
   onPrevious?: () => void;
   currentStep?: number;
   totalSteps?: number;
+  documentData?: Awaited<ReturnType<typeof getCaseData>>['result']['step6'];
+  mode?: 'create' | 'edit';
 }
 
 const DocumentUpload: React.FC<DocumentUploadProps> = ({
@@ -22,6 +25,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
   onPrevious,
   currentStep = 1,
   totalSteps = 1,
+  mode,
 }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
 
@@ -62,9 +66,9 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
   return (
     <>
       <h1 className="mb-6 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
-        New Case Request
+        {mode === 'edit' ? 'Edit Case Request' : 'New Case Request'}
       </h1>
-      <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
+      <ProgressIndicator mode={mode} currentStep={currentStep} totalSteps={totalSteps} />
       <div
         style={{ minHeight: '530px' }}
         className="rounded-4xl bg-white p-4 sm:p-6 md:px-[55px] md:py-8"

@@ -1,5 +1,5 @@
 export const locationOptions = [
-  { label: 'In-Person', value: 'in_person' },
-  { label: 'Virtual', value: 'virtual' },
-  { label: 'Either', value: 'either' },
+  { value: 'VIRTUAL', label: 'Virtual' },
+  { value: 'IN_PERSON', label: 'In Person' },
+  { value: 'EITHER', label: 'Either' },
 ];

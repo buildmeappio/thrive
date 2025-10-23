@@ -27,7 +27,7 @@ export const columns: ColumnDef<Case>[] = [
   },
   {
     id: 'claimantName',
-    accessorFn: row => `${row.claimant.firstName} ${row.claimant.lastName}`,
+    accessorFn: row => `A`,
     header: ({ column }) => {
       return (
         <Button
@@ -45,12 +45,6 @@ export const columns: ColumnDef<Case>[] = [
         <div className="flex items-center space-x-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-indigo-200 text-purple-700">
             <User className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="font-medium text-gray-900">{`${caseData.claimant.firstName} ${caseData.claimant.lastName}`}</div>
-            {caseData.claimant.emailAddress && (
-              <div className="text-sm text-gray-500">{caseData.claimant.emailAddress}</div>
-            )}
           </div>
         </div>
       );

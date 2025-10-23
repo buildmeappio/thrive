@@ -22,9 +22,12 @@ import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
 import PhoneInput from '@/components/PhoneNumber';
 import type { OrganizationTypeOption } from '@/domains/auth/components/Register/OrganizationInfo';
 import { Printer } from 'lucide-react';
+import { getCaseData } from '../actions';
 
 type CLaimTypeProps = IMEReferralProps & {
   claimTypes: OrganizationTypeOption[];
+  claimantData?: Awaited<ReturnType<typeof getCaseData>>['result']['step1'];
+  mode?: 'create' | 'edit';
 };
 
 const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
@@ -32,6 +35,8 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
   currentStep,
   totalSteps,
   claimTypes: claimTypeOptions,
+  claimantData,
+  mode,
 }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
 
@@ -45,7 +50,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
     formState: { errors, isSubmitting },
   } = useForm<ClaimantDetails>({
     resolver: zodResolver(ClaimantDetailsSchema),
-    defaultValues: data.step1 || ClaimantDetailsInitialValues,
+    defaultValues: data.step1 || claimantData || ClaimantDetailsInitialValues,
     mode: 'onChange',
   });
 
@@ -66,9 +71,9 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       <h1 className="mb-6 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
-        New Case Request
+        {mode === 'edit' ? 'Edit Case Request' : 'New Case Request'}
       </h1>
-      <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
+      <ProgressIndicator mode={mode} currentStep={currentStep} totalSteps={totalSteps} />
       <div
         className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[55px] md:py-8"
         style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}

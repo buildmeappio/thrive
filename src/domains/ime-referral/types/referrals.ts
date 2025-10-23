@@ -19,21 +19,7 @@ export type ReferralDetailsData = Prisma.CaseGetPayload<{
         };
       };
     };
-    claimant: {
-      include: {
-        address: true;
-      };
-    };
-    legalRepresentative: {
-      include: {
-        address: true;
-      };
-    };
-    insurance: {
-      include: {
-        address: true;
-      };
-    };
+
     documents: {
       include: {
         document: true;
@@ -43,6 +29,21 @@ export type ReferralDetailsData = Prisma.CaseGetPayload<{
       include: {
         examinationType: true;
         status: true;
+        claimant: {
+          include: {
+            address: true;
+          };
+        };
+        legalRepresentative: {
+          include: {
+            address: true;
+          };
+        };
+        insurance: {
+          include: {
+            address: true;
+          };
+        };
       };
     };
     examType: true;

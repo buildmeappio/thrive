@@ -1,17 +1,19 @@
 import React from 'react';
 
 export type ProgressIndicatorProps = {
+  mode?: 'create' | 'edit';
   currentStep: number;
   totalSteps: number;
   color?: string;
 };
 
 const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
+  mode,
   currentStep,
   totalSteps,
   color = '#000093',
 }) => {
-  const steps = [
+  let steps = [
     '',
     'Claimant Details',
     'Insurance Details',
@@ -22,6 +24,8 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
     'Consent',
     '',
   ];
+
+  steps = mode === 'edit' ? steps.filter(step => step !== 'Exam Types') : steps;
 
   // Fixed progress calculation - first step shows as reached
   const progressPercent = (currentStep / totalSteps) * 100;
