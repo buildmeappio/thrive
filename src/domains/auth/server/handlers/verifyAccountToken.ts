@@ -21,10 +21,20 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
     console.log("User password exists:", !!user.password);
     console.log("User password type:", typeof user.password);
     console.log("User password length:", user.password?.length);
+    console.log(
+      "User password starts with $2b$:",
+      user.password?.startsWith("$2b$")
+    );
     console.log("Full user object:", JSON.stringify(user, null, 2));
 
     // Check if user already has a password set (token already used)
-    if (user.password && user.password.trim() !== "") {
+    // A valid bcrypt hash starts with $2b$ and is typically 60 characters long
+    const isValidPasswordHash =
+      user.password &&
+      user.password.startsWith("$2b$") &&
+      user.password.length >= 60;
+
+    if (isValidPasswordHash) {
       console.log("User already has password set - token already used");
       throw HttpError.unauthorized(
         "Token has already been used. Please log in with your existing password."
