@@ -22,6 +22,9 @@ type CaseDetailsProps = {
 };
 
 const CaseDetails: React.FC<CaseDetailsProps> = ({ examinationData }) => {
+  if (!examinationData.case) {
+    throw new Error('Case is not present in examination');
+  }
   const caseData = examinationData.case;
   const router = useRouter();
 
