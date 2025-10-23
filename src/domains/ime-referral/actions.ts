@@ -23,8 +23,15 @@ export const updateIMEReferral = async (examinationId: string, data: IMEFormData
   if (!user) {
     redirect(URLS.LOGIN);
   }
+  if (!user.organizationId) {
+    throw new Error('Organization not found');
+  }
 
-  const result = await imeReferralHandlers.updateIMEReferral(examinationId, data);
+  const result = await imeReferralHandlers.updateIMEReferral(
+    examinationId,
+    data,
+    user.organizationId
+  );
   return result;
 };
 

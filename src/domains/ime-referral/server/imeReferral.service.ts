@@ -338,7 +338,27 @@ export const createCase = async (formData: IMEFormData) => {
   );
 };
 
-const updateExamination = async (examinationId: string, formData: IMEFormData) => {
+const updateExamination = async (examinationId: string, formData: IMEFormData, orgId: string) => {
+  const examination = await prisma.examination.findUnique({
+    where: { id: examinationId },
+    include: {
+      case: {
+        select: {
+          id: true,
+          organizationId: true,
+        },
+      },
+    },
+  });
+
+  if (!examination) {
+    throw new Error('Examination not found');
+  }
+
+  if (examination.case.organizationId !== orgId) {
+    throw new Error('Unauthorized: This examination belongs to another organization');
+  }
+
   if (!formData.step1?.firstName || !formData.step1?.lastName) {
     throw new Error('Claimant first name and last name are required');
   }
@@ -354,6 +374,7 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
   if (!formData.step1?.claimType) {
     throw new Error('Claim Type is required');
   }
+
   // Handle file uploads
   let uploadResult: { success: boolean; documents: any[]; uploadedFiles: any[]; error?: string } = {
     success: true,
@@ -399,51 +420,220 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
         throw new Error('Existing examination not found');
       }
 
-      // 2. Update or create addresses
-      const claimantAddress = await tx.address.upsert({
-        where: { id: existingExam.claimant.addressId },
-        update: {
-          address: formData.step1?.addressLookup || '',
-          street: formData.step1?.street || null,
-          city: formData.step1?.city || null,
-          province: formData.step1?.province || null,
-          postalCode: formData.step1?.postalCode || null,
-          suite: formData.step1?.suite || null,
+      // 2. Check if there are other examinations in the same case
+      const otherExaminationsInCase = await tx.examination.findMany({
+        where: {
+          caseId: existingExam.caseId,
+          id: { not: examinationId },
         },
-        create: {
-          address: formData.step1?.addressLookup || '',
-          street: formData.step1?.street || null,
-          city: formData.step1?.city || null,
-          province: formData.step1?.province || null,
-          postalCode: formData.step1?.postalCode || null,
-          suite: formData.step1?.suite || null,
+        select: {
+          id: true,
+          claimantId: true,
+          insuranceId: true,
+          legalRepresentativeId: true,
         },
       });
 
-      // 3. Update claimant
-      const claimant = await tx.claimant.update({
-        where: { id: existingExam.claimantId },
-        data: {
-          firstName: formData.step1?.firstName || '',
-          lastName: formData.step1?.lastName || '',
-          dateOfBirth: formData.step1?.dateOfBirth ? new Date(formData.step1.dateOfBirth) : null,
-          gender: formData.step1?.gender || null,
-          phoneNumber: getE164PhoneNumber(formData.step1?.phoneNumber) || null,
-          emailAddress: formData.step1?.emailAddress || null,
-          relatedCasesDetails: formData.step1?.relatedCasesDetails || null,
-          familyDoctorName: formData.step1?.familyDoctorName || null,
-          familyDoctorEmailAddress: formData.step1?.familyDoctorEmail || null,
-          familyDoctorPhoneNumber: getE164PhoneNumber(formData.step1?.familyDoctorPhone) || null,
-          familyDoctorFaxNumber: getE164PhoneNumber(formData.step1?.familyDoctorFax) || null,
-          addressId: claimantAddress.id,
-          claimTypeId: formData.step1?.claimType,
-        },
-      });
+      // Check individually for each entity
+      const hasOtherExamsWithSameClaimant = otherExaminationsInCase.some(
+        exam => exam.claimantId === existingExam.claimantId
+      );
+      const hasOtherExamsWithSameInsurance = otherExaminationsInCase.some(
+        exam => exam.insuranceId === existingExam.insuranceId
+      );
+      const hasOtherExamsWithSameLegal = otherExaminationsInCase.some(
+        exam => exam.legalRepresentativeId === existingExam.legalRepresentativeId
+      );
 
-      // 4. Update insurance address
-      const insuranceAddress = existingExam.insurance?.addressId
-        ? await tx.address.update({
-            where: { id: existingExam.insurance.addressId },
+      // 3. Helper function to check if claimant data has changed
+      const claimTypeId = formData.step1?.claimType;
+
+      const hasClaimantChanged = () => {
+        const current = existingExam.claimant;
+        return (
+          current.firstName !== (formData.step1?.firstName || '') ||
+          current.lastName !== (formData.step1?.lastName || '') ||
+          current.dateOfBirth?.toISOString() !==
+            (formData.step1?.dateOfBirth
+              ? new Date(formData.step1.dateOfBirth).toISOString()
+              : null) ||
+          current.gender !== (formData.step1?.gender || null) ||
+          current.phoneNumber !== (getE164PhoneNumber(formData.step1?.phoneNumber) || null) ||
+          current.emailAddress !== (formData.step1?.emailAddress || null) ||
+          current.relatedCasesDetails !== (formData.step1?.relatedCasesDetails || null) ||
+          current.familyDoctorName !== (formData.step1?.familyDoctorName || null) ||
+          current.familyDoctorEmailAddress !== (formData.step1?.familyDoctorEmail || null) ||
+          current.familyDoctorPhoneNumber !==
+            (getE164PhoneNumber(formData.step1?.familyDoctorPhone) || null) ||
+          current.familyDoctorFaxNumber !==
+            (getE164PhoneNumber(formData.step1?.familyDoctorFax) || null) ||
+          current.claimTypeId !== claimTypeId ||
+          current.address.address !== (formData.step1?.addressLookup || '') ||
+          current.address.street !== (formData.step1?.street || null) ||
+          current.address.city !== (formData.step1?.city || null) ||
+          current.address.province !== (formData.step1?.province || null) ||
+          current.address.postalCode !== (formData.step1?.postalCode || null) ||
+          current.address.suite !== (formData.step1?.suite || null)
+        );
+      };
+
+      // 4. Helper function to check if insurance data has changed
+      const hasInsuranceChanged = () => {
+        const current = existingExam.insurance;
+        if (!current) return true;
+
+        return (
+          current.emailAddress !== (formData.step2?.insuranceEmailAddress || '') ||
+          current.companyName !== (formData.step2?.insuranceCompanyName || '') ||
+          current.contactPersonName !== (formData.step2?.insuranceAdjusterContact || '') ||
+          current.policyNumber !== (formData.step2?.insurancePolicyNo || '') ||
+          current.claimNumber !== (formData.step2?.insuranceClaimNo || '') ||
+          current.dateOfLoss?.toISOString() !==
+            (formData.step2?.insuranceDateOfLoss
+              ? new Date(formData.step2.insuranceDateOfLoss).toISOString()
+              : null) ||
+          current.policyHolderIsClaimant !==
+            (formData.step2?.policyHolderSameAsClaimant || false) ||
+          current.policyHolderFirstName !== (formData.step2?.policyHolderFirstName || '') ||
+          current.policyHolderLastName !== (formData.step2?.policyHolderLastName || '') ||
+          current.phoneNumber !== (getE164PhoneNumber(formData.step2?.insurancePhone) || '') ||
+          current.faxNumber !== (getE164PhoneNumber(formData.step2?.insuranceFaxNo) || '') ||
+          (current.address &&
+            (current.address.address !== (formData.step2?.insuranceAddressLookup || '') ||
+              current.address.street !== (formData.step2?.insuranceStreetAddress || null) ||
+              current.address.city !== (formData.step2?.insuranceCity || null) ||
+              current.address.suite !== (formData.step2?.insuranceAptUnitSuite || null)))
+        );
+      };
+
+      // 5. Helper function to check if legal rep data has changed
+      const hasLegalChanged = () => {
+        const current = existingExam.legalRepresentative;
+
+        // If there was no legal rep before and now there is data, it's changed
+        if (!current && (formData.step3?.legalCompanyName || formData.step3?.legalContactPerson)) {
+          return true;
+        }
+
+        // If there was a legal rep before and now there's no data, it's changed
+        if (current && !formData.step3?.legalCompanyName && !formData.step3?.legalContactPerson) {
+          return true;
+        }
+
+        if (!current) return false;
+
+        return (
+          current.companyName !== (formData.step3?.legalCompanyName || null) ||
+          current.contactPersonName !== (formData.step3?.legalContactPerson || null) ||
+          current.phoneNumber !== (getE164PhoneNumber(formData.step3?.legalPhone) || null) ||
+          current.faxNumber !== (getE164PhoneNumber(formData.step3?.legalFaxNo) || null) ||
+          (current.address &&
+            (current.address.address !== (formData.step3?.legalAddressLookup || '') ||
+              current.address.street !== (formData.step3?.legalStreetAddress || null) ||
+              current.address.city !== (formData.step3?.legalCity || null) ||
+              current.address.province !== (formData.step3?.legalProvinceState || null) ||
+              current.address.postalCode !== (formData.step3?.legalPostalCode || null) ||
+              current.address.suite !== (formData.step3?.legalAptUnitSuite || null)))
+        );
+      };
+
+      // 6. Handle Claimant - Create new ONLY if shared with other exams AND data changed
+      let claimantId = existingExam.claimantId;
+
+      if (hasOtherExamsWithSameClaimant && hasClaimantChanged()) {
+        // Create new claimant and address
+        const claimantAddress = await tx.address.create({
+          data: {
+            address: formData.step1?.addressLookup || '',
+            street: formData.step1?.street || null,
+            city: formData.step1?.city || null,
+            province: formData.step1?.province || null,
+            postalCode: formData.step1?.postalCode || null,
+            suite: formData.step1?.suite || null,
+          },
+        });
+
+        if (!claimTypeId) {
+          throw new Error('Claim type id requires');
+        }
+
+        const newClaimant = await tx.claimant.create({
+          data: {
+            firstName: formData.step1?.firstName || '',
+            lastName: formData.step1?.lastName || '',
+            dateOfBirth: formData.step1?.dateOfBirth ? new Date(formData.step1.dateOfBirth) : null,
+            gender: formData.step1?.gender || null,
+            phoneNumber: getE164PhoneNumber(formData.step1?.phoneNumber) || null,
+            emailAddress: formData.step1?.emailAddress || null,
+            relatedCasesDetails: formData.step1?.relatedCasesDetails || null,
+            familyDoctorName: formData.step1?.familyDoctorName || null,
+            familyDoctorEmailAddress: formData.step1?.familyDoctorEmail || null,
+            familyDoctorPhoneNumber: getE164PhoneNumber(formData.step1?.familyDoctorPhone) || null,
+            familyDoctorFaxNumber: getE164PhoneNumber(formData.step1?.familyDoctorFax) || null,
+            addressId: claimantAddress.id,
+            claimTypeId: claimTypeId,
+          },
+        });
+
+        claimantId = newClaimant.id;
+      } else {
+        // Update existing claimant
+        const claimantAddress = await tx.address.upsert({
+          where: { id: existingExam.claimant.addressId },
+          update: {
+            address: formData.step1?.addressLookup || '',
+            street: formData.step1?.street || null,
+            city: formData.step1?.city || null,
+            province: formData.step1?.province || null,
+            postalCode: formData.step1?.postalCode || null,
+            suite: formData.step1?.suite || null,
+          },
+          create: {
+            address: formData.step1?.addressLookup || '',
+            street: formData.step1?.street || null,
+            city: formData.step1?.city || null,
+            province: formData.step1?.province || null,
+            postalCode: formData.step1?.postalCode || null,
+            suite: formData.step1?.suite || null,
+          },
+        });
+
+        await tx.claimant.update({
+          where: { id: existingExam.claimantId },
+          data: {
+            firstName: formData.step1?.firstName || '',
+            lastName: formData.step1?.lastName || '',
+            dateOfBirth: formData.step1?.dateOfBirth ? new Date(formData.step1.dateOfBirth) : null,
+            gender: formData.step1?.gender || null,
+            phoneNumber: getE164PhoneNumber(formData.step1?.phoneNumber) || null,
+            emailAddress: formData.step1?.emailAddress || null,
+            relatedCasesDetails: formData.step1?.relatedCasesDetails || null,
+            familyDoctorName: formData.step1?.familyDoctorName || null,
+            familyDoctorEmailAddress: formData.step1?.familyDoctorEmail || null,
+            familyDoctorPhoneNumber: getE164PhoneNumber(formData.step1?.familyDoctorPhone) || null,
+            familyDoctorFaxNumber: getE164PhoneNumber(formData.step1?.familyDoctorFax) || null,
+            addressId: claimantAddress.id,
+            claimTypeId: claimTypeId,
+          },
+        });
+      }
+
+      // 7. Handle Insurance - Create new ONLY if shared with other exams AND data changed
+      let insuranceId = existingExam.insuranceId;
+
+      if (!formData.step2?.insuranceDateOfLoss) {
+        throw new Error('Insurance date of loss is required');
+      }
+
+      if (hasOtherExamsWithSameInsurance && hasInsuranceChanged()) {
+        // Create new insurance and address
+        let insuranceAddress = null;
+        if (
+          formData.step2?.insuranceAddressLookup ||
+          formData.step2?.insuranceStreetAddress ||
+          formData.step2?.insuranceCity
+        ) {
+          insuranceAddress = await tx.address.create({
             data: {
               address: formData.step2?.insuranceAddressLookup || '',
               street: formData.step2?.insuranceStreetAddress || null,
@@ -452,123 +642,183 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
               province: null,
               postalCode: null,
             },
-          })
-        : null;
-
-      if (!formData.step2?.insuranceDateOfLoss) {
-        throw new Error('Insurance date of loss is required');
-      }
-
-      const insurance = await tx.insurance.update({
-        where: { id: existingExam.insuranceId! },
-        data: {
-          emailAddress: formData.step2?.insuranceEmailAddress || '',
-          companyName: formData.step2?.insuranceCompanyName || '',
-          contactPersonName: formData.step2?.insuranceAdjusterContact || '',
-          policyNumber: formData.step2?.insurancePolicyNo || '',
-          claimNumber: formData.step2?.insuranceClaimNo || '',
-          dateOfLoss: new Date(formData.step2?.insuranceDateOfLoss),
-          policyHolderIsClaimant: formData.step2?.policyHolderSameAsClaimant || false,
-          policyHolderFirstName: formData.step2?.policyHolderFirstName || '',
-          policyHolderLastName: formData.step2?.policyHolderLastName || '',
-          phoneNumber: getE164PhoneNumber(formData.step2?.insurancePhone) || '',
-          faxNumber: getE164PhoneNumber(formData.step2?.insuranceFaxNo) || '',
-          addressId: insuranceAddress?.id || null,
-        },
-      });
-
-      // 5. Update legal representative and address (FIXED)
-      let legalRepresentative;
-      if (existingExam.legalRepresentativeId) {
-        // Update existing legal address if it exists
-        let legalAddress;
-        if (existingExam.legalRepresentative?.addressId) {
-          legalAddress = await tx.address.update({
-            where: { id: existingExam.legalRepresentative.addressId },
-            data: {
-              address: formData.step3?.legalAddressLookup || '',
-              street: formData.step3?.legalStreetAddress || null,
-              city: formData.step3?.legalCity || null,
-              province: formData.step3?.legalProvinceState || null,
-              postalCode: formData.step3?.legalPostalCode || null,
-              suite: formData.step3?.legalAptUnitSuite || null,
-            },
-          });
-        } else if (
-          formData.step3?.legalAddressLookup ||
-          formData.step3?.legalStreetAddress ||
-          formData.step3?.legalCity
-        ) {
-          // Create new address if legal rep didn't have one before
-          legalAddress = await tx.address.create({
-            data: {
-              address: formData.step3?.legalAddressLookup || '',
-              street: formData.step3?.legalStreetAddress || null,
-              city: formData.step3?.legalCity || null,
-              province: formData.step3?.legalProvinceState || null,
-              postalCode: formData.step3?.legalPostalCode || null,
-              suite: formData.step3?.legalAptUnitSuite || null,
-            },
           });
         }
 
-        legalRepresentative = await tx.legalRepresentative.update({
-          where: { id: existingExam.legalRepresentativeId },
+        const newInsurance = await tx.insurance.create({
           data: {
-            companyName: formData.step3?.legalCompanyName || null,
-            contactPersonName: formData.step3?.legalContactPerson || null,
-            phoneNumber: getE164PhoneNumber(formData.step3?.legalPhone) || null,
-            faxNumber: getE164PhoneNumber(formData.step3?.legalFaxNo) || null,
-            addressId: legalAddress ? legalAddress.id : null,
-          },
-        });
-      } else if (formData.step3?.legalCompanyName || formData.step3?.legalContactPerson) {
-        // Create new legal representative if it didn't exist before
-        let legalAddress;
-        if (
-          formData.step3?.legalAddressLookup ||
-          formData.step3?.legalStreetAddress ||
-          formData.step3?.legalCity
-        ) {
-          legalAddress = await tx.address.create({
-            data: {
-              address: formData.step3?.legalAddressLookup || '',
-              street: formData.step3?.legalStreetAddress || null,
-              city: formData.step3?.legalCity || null,
-              province: formData.step3?.legalProvinceState || null,
-              postalCode: formData.step3?.legalPostalCode || null,
-              suite: formData.step3?.legalAptUnitSuite || null,
-            },
-          });
-        }
-
-        legalRepresentative = await tx.legalRepresentative.create({
-          data: {
-            companyName: formData.step3?.legalCompanyName || null,
-            contactPersonName: formData.step3?.legalContactPerson || null,
-            phoneNumber: getE164PhoneNumber(formData.step3?.legalPhone) || null,
-            faxNumber: getE164PhoneNumber(formData.step3?.legalFaxNo) || null,
-            addressId: legalAddress ? legalAddress.id : null,
+            emailAddress: formData.step2?.insuranceEmailAddress || '',
+            companyName: formData.step2?.insuranceCompanyName || '',
+            contactPersonName: formData.step2?.insuranceAdjusterContact || '',
+            policyNumber: formData.step2?.insurancePolicyNo || '',
+            claimNumber: formData.step2?.insuranceClaimNo || '',
+            dateOfLoss: new Date(formData.step2?.insuranceDateOfLoss),
+            policyHolderIsClaimant: formData.step2?.policyHolderSameAsClaimant || false,
+            policyHolderFirstName: formData.step2?.policyHolderFirstName || '',
+            policyHolderLastName: formData.step2?.policyHolderLastName || '',
+            phoneNumber: getE164PhoneNumber(formData.step2?.insurancePhone) || '',
+            faxNumber: getE164PhoneNumber(formData.step2?.insuranceFaxNo) || '',
+            addressId: insuranceAddress?.id || null,
           },
         });
 
-        // Link legal rep to examination
-        await tx.examination.update({
-          where: { id: examinationId },
+        insuranceId = newInsurance.id;
+      } else {
+        // Update existing insurance
+        const insuranceAddress = existingExam.insurance?.addressId
+          ? await tx.address.update({
+              where: { id: existingExam.insurance.addressId },
+              data: {
+                address: formData.step2?.insuranceAddressLookup || '',
+                street: formData.step2?.insuranceStreetAddress || null,
+                city: formData.step2?.insuranceCity || null,
+                suite: formData.step2?.insuranceAptUnitSuite || null,
+                province: null,
+                postalCode: null,
+              },
+            })
+          : null;
+
+        await tx.insurance.update({
+          where: { id: existingExam.insuranceId! },
           data: {
-            legalRepresentativeId: legalRepresentative.id,
+            emailAddress: formData.step2?.insuranceEmailAddress || '',
+            companyName: formData.step2?.insuranceCompanyName || '',
+            contactPersonName: formData.step2?.insuranceAdjusterContact || '',
+            policyNumber: formData.step2?.insurancePolicyNo || '',
+            claimNumber: formData.step2?.insuranceClaimNo || '',
+            dateOfLoss: new Date(formData.step2?.insuranceDateOfLoss),
+            policyHolderIsClaimant: formData.step2?.policyHolderSameAsClaimant || false,
+            policyHolderFirstName: formData.step2?.policyHolderFirstName || '',
+            policyHolderLastName: formData.step2?.policyHolderLastName || '',
+            phoneNumber: getE164PhoneNumber(formData.step2?.insurancePhone) || '',
+            faxNumber: getE164PhoneNumber(formData.step2?.insuranceFaxNo) || '',
+            addressId: insuranceAddress?.id || null,
           },
         });
       }
 
-      // 6. Update examination
+      // 8. Handle Legal Representative - Create new ONLY if shared with other exams AND data changed
+      let legalRepresentativeId = existingExam.legalRepresentativeId;
+
+      if (hasOtherExamsWithSameLegal && hasLegalChanged()) {
+        // Create new legal rep
+        if (formData.step3?.legalCompanyName || formData.step3?.legalContactPerson) {
+          let legalAddress = null;
+          if (
+            formData.step3?.legalAddressLookup ||
+            formData.step3?.legalStreetAddress ||
+            formData.step3?.legalCity
+          ) {
+            legalAddress = await tx.address.create({
+              data: {
+                address: formData.step3?.legalAddressLookup || '',
+                street: formData.step3?.legalStreetAddress || null,
+                city: formData.step3?.legalCity || null,
+                province: formData.step3?.legalProvinceState || null,
+                postalCode: formData.step3?.legalPostalCode || null,
+                suite: formData.step3?.legalAptUnitSuite || null,
+              },
+            });
+          }
+
+          const newLegalRep = await tx.legalRepresentative.create({
+            data: {
+              companyName: formData.step3?.legalCompanyName || null,
+              contactPersonName: formData.step3?.legalContactPerson || null,
+              phoneNumber: getE164PhoneNumber(formData.step3?.legalPhone) || null,
+              faxNumber: getE164PhoneNumber(formData.step3?.legalFaxNo) || null,
+              addressId: legalAddress?.id || null,
+            },
+          });
+
+          legalRepresentativeId = newLegalRep.id;
+        } else {
+          legalRepresentativeId = null;
+        }
+      } else {
+        // Update existing legal rep
+        if (existingExam.legalRepresentativeId) {
+          let legalAddress;
+          if (existingExam.legalRepresentative?.addressId) {
+            legalAddress = await tx.address.update({
+              where: { id: existingExam.legalRepresentative.addressId },
+              data: {
+                address: formData.step3?.legalAddressLookup || '',
+                street: formData.step3?.legalStreetAddress || null,
+                city: formData.step3?.legalCity || null,
+                province: formData.step3?.legalProvinceState || null,
+                postalCode: formData.step3?.legalPostalCode || null,
+                suite: formData.step3?.legalAptUnitSuite || null,
+              },
+            });
+          } else if (
+            formData.step3?.legalAddressLookup ||
+            formData.step3?.legalStreetAddress ||
+            formData.step3?.legalCity
+          ) {
+            legalAddress = await tx.address.create({
+              data: {
+                address: formData.step3?.legalAddressLookup || '',
+                street: formData.step3?.legalStreetAddress || null,
+                city: formData.step3?.legalCity || null,
+                province: formData.step3?.legalProvinceState || null,
+                postalCode: formData.step3?.legalPostalCode || null,
+                suite: formData.step3?.legalAptUnitSuite || null,
+              },
+            });
+          }
+
+          await tx.legalRepresentative.update({
+            where: { id: existingExam.legalRepresentativeId },
+            data: {
+              companyName: formData.step3?.legalCompanyName || null,
+              contactPersonName: formData.step3?.legalContactPerson || null,
+              phoneNumber: getE164PhoneNumber(formData.step3?.legalPhone) || null,
+              faxNumber: getE164PhoneNumber(formData.step3?.legalFaxNo) || null,
+              addressId: legalAddress ? legalAddress.id : null,
+            },
+          });
+        } else if (formData.step3?.legalCompanyName || formData.step3?.legalContactPerson) {
+          let legalAddress;
+          if (
+            formData.step3?.legalAddressLookup ||
+            formData.step3?.legalStreetAddress ||
+            formData.step3?.legalCity
+          ) {
+            legalAddress = await tx.address.create({
+              data: {
+                address: formData.step3?.legalAddressLookup || '',
+                street: formData.step3?.legalStreetAddress || null,
+                city: formData.step3?.legalCity || null,
+                province: formData.step3?.legalProvinceState || null,
+                postalCode: formData.step3?.legalPostalCode || null,
+                suite: formData.step3?.legalAptUnitSuite || null,
+              },
+            });
+          }
+
+          const newLegalRep = await tx.legalRepresentative.create({
+            data: {
+              companyName: formData.step3?.legalCompanyName || null,
+              contactPersonName: formData.step3?.legalContactPerson || null,
+              phoneNumber: getE164PhoneNumber(formData.step3?.legalPhone) || null,
+              faxNumber: getE164PhoneNumber(formData.step3?.legalFaxNo) || null,
+              addressId: legalAddress ? legalAddress.id : null,
+            },
+          });
+
+          legalRepresentativeId = newLegalRep.id;
+        }
+      }
+
+      // 9. Update examination with new/existing entity IDs
       const examinationTypeId = formData.step5?.examinations[0]?.examinationTypeId;
 
       if (examinationTypeId) {
         const examTypeExists = await tx.examinationType.findUnique({
           where: { id: examinationTypeId },
         });
-        console.log('examinationTypeId', examinationTypeId);
 
         if (!examTypeExists) {
           throw new Error(`Invalid examination type ID: ${examinationTypeId}`);
@@ -578,6 +828,9 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
       const examination = await tx.examination.update({
         where: { id: examinationId },
         data: {
+          claimantId,
+          insuranceId,
+          legalRepresentativeId,
           dueDate: formData.step5?.examinations[0]?.dueDate
             ? new Date(formData.step5.examinations[0].dueDate)
             : null,
@@ -595,17 +848,15 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
         },
       });
 
-      // 7. Update services - Smart update/create/delete logic
+      // 10. Update services
       if (formData.step5?.examinations[0]?.services) {
         const incomingServices = formData.step5.examinations[0].services;
         const existingServices = existingExam.services || [];
 
-        // Create a map of existing services by type for easy lookup
         const existingServiceMap = new Map(
           existingServices.map(service => [service.type, service])
         );
 
-        // Pre-fetch languages to avoid multiple queries
         const languageNames = incomingServices
           .filter(s => s.type === 'interpreter' && s.enabled && s.details?.language)
           .map(s => s.details!.language!);
@@ -617,21 +868,17 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
               })
             : [];
 
-        // Process each incoming service
         await Promise.all(
           incomingServices.map(async service => {
             const existingService = existingServiceMap.get(service.type);
 
             if (service.enabled) {
-              // Service is enabled - update or create
               if (existingService) {
-                // Update existing service
                 await tx.examinationServices.update({
                   where: { id: existingService.id },
                   data: { enabled: true },
                 });
 
-                // Update service-specific details
                 if (service.type === 'interpreter' && service.details?.language) {
                   let language = existingLanguages.find(l => l.name === service.details!.language);
                   if (!language) {
@@ -640,7 +887,6 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
                     });
                   }
 
-                  // Update or create interpreter record
                   if (existingService.interpreter) {
                     await tx.examinationInterpreter.update({
                       where: { id: existingService.interpreter.id },
@@ -659,10 +905,8 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
                 if (service.type === 'transportation') {
                   let transportAddressId: string | null = null;
 
-                  // Update or create transport address
                   if (service.details?.pickupAddress || service.details?.streetAddress) {
                     if (existingService.transport?.pickupAddressId) {
-                      // Update existing address
                       await tx.address.update({
                         where: { id: existingService.transport.pickupAddressId },
                         data: {
@@ -676,7 +920,6 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
                       });
                       transportAddressId = existingService.transport.pickupAddressId;
                     } else {
-                      // Create new address
                       const transportAddress = await tx.address.create({
                         data: {
                           address: service.details?.pickupAddress || '',
@@ -691,7 +934,6 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
                     }
                   }
 
-                  // Update or create transport record
                   if (existingService.transport) {
                     await tx.examinationTransport.update({
                       where: { id: existingService.transport.id },
@@ -712,7 +954,6 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
                   }
                 }
               } else {
-                // Create new service
                 const examService = await tx.examinationServices.create({
                   data: {
                     examinationId: examination.id,
@@ -762,10 +1003,8 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
                 }
               }
 
-              // Remove from map so we know it's been processed
               existingServiceMap.delete(service.type);
             } else if (existingService) {
-              // Service is disabled - delete it
               await tx.examinationServices.delete({
                 where: { id: existingService.id },
               });
@@ -774,7 +1013,6 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
           })
         );
 
-        // Delete any remaining services that weren't in the incoming data
         const servicesToDelete = Array.from(existingServiceMap.values());
         if (servicesToDelete.length > 0) {
           await tx.examinationServices.deleteMany({
@@ -785,7 +1023,7 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
         }
       }
 
-      // 8. Update selected benefits
+      // 11. Update selected benefits
       await tx.examinationSelectedBenefit.deleteMany({
         where: { examinationId },
       });
@@ -799,7 +1037,7 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
         });
       }
 
-      // 9. Update case documents (if new documents uploaded)
+      // 12. Update case documents (if new documents uploaded)
       if (uploadResult.success && uploadResult.documents.length > 0) {
         await Promise.all(
           uploadResult.documents.map(async document => {
@@ -817,9 +1055,9 @@ const updateExamination = async (examinationId: string, formData: IMEFormData) =
         success: true,
         data: {
           examinationId: examination.id,
-          claimantId: claimant.id,
-          insuranceId: insurance.id,
-          legalRepresentative: legalRepresentative?.id || null,
+          claimantId,
+          insuranceId,
+          legalRepresentativeId,
           documents: uploadResult.documents,
         },
       };
@@ -852,6 +1090,21 @@ const getCaseDetails = async (caseId: string) => {
     const examination = await prisma.examination.findUnique({
       where: { id: caseId },
       include: {
+        case: {
+          include: {
+            organization: {
+              select: {
+                name: true,
+              },
+            },
+            caseType: true,
+            documents: {
+              include: {
+                document: true,
+              },
+            },
+          },
+        },
         examinationType: true,
         status: true,
         examiner: {
@@ -891,21 +1144,6 @@ const getCaseDetails = async (caseId: string) => {
             transport: {
               include: {
                 pickupAddress: true,
-              },
-            },
-          },
-        },
-        case: {
-          include: {
-            organization: {
-              select: {
-                name: true,
-              },
-            },
-            caseType: true,
-            documents: {
-              include: {
-                document: true,
               },
             },
           },
@@ -1053,7 +1291,7 @@ const getCaseList = async (userId?: string, status?: string, take?: number) => {
               manager: {
                 some: {
                   account: {
-                    userId: userId,
+                    userId,
                   },
                 },
               },
@@ -1062,21 +1300,14 @@ const getCaseList = async (userId?: string, status?: string, take?: number) => {
         }),
       },
       ...(take && { take }),
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
       include: {
-        claimant: {
-          include: {
-            claimType: true,
-          },
-        },
         case: {
           include: {
             organization: {
               include: {
                 manager: {
-                  where: userId ? { account: { userId: userId } } : undefined,
+                  where: userId ? { account: { userId } } : undefined,
                   include: {
                     account: {
                       include: {
@@ -1087,6 +1318,11 @@ const getCaseList = async (userId?: string, status?: string, take?: number) => {
                 },
               },
             },
+          },
+        },
+        claimant: {
+          include: {
+            claimType: true,
           },
         },
         examinationType: true,
@@ -1101,12 +1337,13 @@ const getCaseList = async (userId?: string, status?: string, take?: number) => {
 
     const caseData = examinations.map(exam => {
       const creator = exam.case.organization?.manager[0];
+      const claimant = exam.claimant;
 
       return {
         id: exam.id,
         number: exam.caseNumber,
-        claimant: `${exam.claimant.firstName} ${exam.claimant.lastName}`,
-        claimType: exam.claimant.claimType.name,
+        claimant: claimant ? `${claimant.firstName} ${claimant.lastName}` : 'N/A',
+        claimType: claimant?.claimType?.name || 'N/A',
         status: exam.status.name,
         specialty: exam.examinationType.name,
         examiner: exam.examiner && `${exam.examiner.user.firstName} ${exam.examiner.user.lastName}`,
@@ -1154,7 +1391,6 @@ const getCaseData = async (caseId: string) => {
           include: { address: true },
         },
         services: {
-          // REMOVED: where: { enabled: true }, - We need ALL services, not just enabled ones
           include: {
             interpreter: { include: { language: true } },
             transport: { include: { pickupAddress: true } },

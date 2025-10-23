@@ -54,18 +54,19 @@ const IMEReferralEdit: React.FC<IMEReferralProps> = ({
           <ClaimantDetails
             claimTypes={convertToTypeOptions(claimTypes)}
             claimantData={initialData?.step1}
+            mode={mode}
             {...props}
           />
         ),
       },
       {
         component: (props: StepProps) => (
-          <InsuranceDetails insuranceData={initialData?.step2} {...props} />
+          <InsuranceDetails insuranceData={initialData?.step2} mode={mode} {...props} />
         ),
       },
       {
         component: (props: StepProps) => (
-          <LegalAndInsuranceDetailsForm legalData={initialData?.step3} {...props} />
+          <LegalAndInsuranceDetailsForm legalData={initialData?.step3} mode={mode} {...props} />
         ),
       },
       {
@@ -75,13 +76,14 @@ const IMEReferralEdit: React.FC<IMEReferralProps> = ({
             languages={convertToTypeOptions(languages)}
             examinationData={initialData?.step5}
             caseData={initialData?.step4}
+            mode={mode}
             {...props}
           />
         ),
       },
       {
         component: (props: StepProps) => (
-          <DocumentUpload initialData={initialData?.step6} {...props} />
+          <DocumentUpload documentData={initialData?.step6} mode={mode} {...props} />
         ),
       },
       {

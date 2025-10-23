@@ -40,6 +40,7 @@ interface ExaminationProps extends IMEReferralProps {
   languages: DropdownOption[];
   examinationData?: Awaited<ReturnType<typeof getCaseData>>['result']['step5'];
   caseData?: Awaited<ReturnType<typeof getCaseData>>['result']['step4'];
+  mode?: 'create' | 'edit';
 }
 
 const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
@@ -51,6 +52,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
   languages: languageOptions,
   examinationData,
   caseData,
+  mode,
 }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
@@ -93,9 +95,6 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
     fetchBenefits();
   }, [selectedExamTypes]);
 
-  // Helper function to ensure services array is complete
-  // NOTE: Only transportation and interpreter are actual services in DB
-  // supportPerson/chaperone is a boolean field on examination table
   const ensureCompleteServices = (services: ExaminationService[] = []): ExaminationService[] => {
     const serviceTypes: ExaminationService['type'][] = ['transportation', 'interpreter'];
     const completeServices: ExaminationService[] = [];
@@ -112,7 +111,6 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
     return completeServices;
   };
 
-  // Helper to fix date format
   const fixDateFormat = (date: string | undefined): string => {
     if (!date) return '';
     if (date.includes('T')) {
@@ -121,7 +119,6 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
     return date;
   };
 
-  // Create initial values - Priority: examinationData > store > default
   const formDefaultValues = useMemo((): ExaminationData => {
     if (examinationData?.examinations && examinationData.examinations.length > 0) {
       const examinations = examinationData.examinations.map(exam => {
@@ -181,7 +178,6 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
     mode: 'onSubmit',
   });
 
-  // Reset form when data is loaded
   useEffect(() => {
     if (_hasHydrated) {
       reset(formDefaultValues);
@@ -472,9 +468,9 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       <h1 className="mb-6 text-[24px] font-semibold sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px]">
-        New Case Request
+        {mode === 'edit' ? 'Edit Case Request' : 'New Case Request'}
       </h1>
-      <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
+      <ProgressIndicator mode={mode} currentStep={currentStep} totalSteps={totalSteps} />
       <div className="w-full max-w-full md:rounded-[30px]">
         <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
           <div className="w-full max-w-full space-y-6">

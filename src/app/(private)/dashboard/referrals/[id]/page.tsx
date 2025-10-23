@@ -1,7 +1,6 @@
 import { type Metadata } from 'next';
 import { getReferralDetails } from '@/domains/ime-referral/server/handlers';
 import { notFound } from 'next/navigation';
-import IMEDetails from '@/domains/ime-referral/components/IMEDetails';
 
 export const metadata: Metadata = {
   title: 'Case Details | Thrive',

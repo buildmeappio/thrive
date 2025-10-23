@@ -1,5 +1,4 @@
 import { type Metadata } from 'next';
-import ReferralList from '@/domains/ime-referral/components/ReferralList';
 import { getReferrals } from '@/domains/ime-referral/actions';
 
 export const metadata: Metadata = {

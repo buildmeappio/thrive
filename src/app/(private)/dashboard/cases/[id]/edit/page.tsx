@@ -16,9 +16,8 @@ export const metadata: Metadata = {
 const Page = async ({ params }: Props) => {
   const { id } = await params;
 
-  const examinationData = await getCaseData(id);
-
-  const [claimTypes, examinationTypes, caseTypes, languages] = await Promise.all([
+  const [examinationData, claimTypes, examinationTypes, caseTypes, languages] = await Promise.all([
+    getCaseData(id),
     getClaimTypes(),
     getExaminationTypes(),
     getCaseTypes(),
