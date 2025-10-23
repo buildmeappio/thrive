@@ -26,29 +26,26 @@ const requestMoreInfo = async (
     throw new Error("Case not found");
   }
 
-  // Update case status to "More Information Requested" in database
+  // Update case status to "More Information required" in database
   try {
-    // Find the "More Information Requested" or similar status
-    const infoRequestedStatus = await prisma.caseStatus.findFirst({
+    // Find the "More Information required" status
+    const infoRequiredStatus = await prisma.caseStatus.findFirst({
       where: { 
-        OR: [
-          { name: { contains: "Information", mode: "insensitive" } },
-          { name: { contains: "Info", mode: "insensitive" } },
-        ]
+        name: "More Information required"
       },
     });
 
-    if (!infoRequestedStatus) {
-      throw new Error("Info requested status not found in database");
+    if (!infoRequiredStatus) {
+      throw new Error("More Information required status not found in database");
     }
 
     // Update the examination status
     await prisma.examination.update({
       where: { id: caseId },
-      data: { statusId: infoRequestedStatus.id },
+      data: { statusId: infoRequiredStatus.id },
     });
 
-    console.log("✓ Case status updated to More Information Requested");
+    console.log("✓ Case status updated to More Information required");
   } catch (dbError) {
     console.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");

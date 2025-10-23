@@ -103,22 +103,40 @@ export default function NewExaminers({
                     <span className="block">{r.email}</span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[160px] sm:min-w-0">
-                    <span className="block">
+                    <span className="block max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap" title={(() => {
+                      const specialties = r.specialties as string | string[] | undefined;
+                      if (Array.isArray(specialties)) {
+                        return specialties.map(specialty => 
+                          specialty.split('-').map(word => 
+                            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                          ).join(' ')
+                        ).join(", ");
+                      } else if (typeof specialties === 'string') {
+                        return specialties.split('-').map(word => 
+                          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                        ).join(' ');
+                      } else {
+                        return '-';
+                      }
+                    })()}>
                       {(() => {
                         const specialties = r.specialties as string | string[] | undefined;
+                        let formattedText = '';
                         if (Array.isArray(specialties)) {
-                          return specialties.map(specialty => 
+                          formattedText = specialties.map(specialty => 
                             specialty.split('-').map(word => 
                               word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
                             ).join(' ')
                           ).join(", ");
                         } else if (typeof specialties === 'string') {
-                          return specialties.split('-').map(word => 
+                          formattedText = specialties.split('-').map(word => 
                             word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
                           ).join(' ');
                         } else {
                           return '-';
                         }
+                        // Truncate if longer than 40 characters
+                        return formattedText.length > 40 ? formattedText.substring(0, 40) + '...' : formattedText;
                       })()}
                     </span>
                   </TableCell>

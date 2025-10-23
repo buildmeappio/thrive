@@ -19,6 +19,9 @@ export class OrganizationsService {
             },
           },
         },
+        orderBy: {
+          createdAt: 'desc', // Sort by creation time, newest first
+        },
       });
     } catch (error) {
       console.error(error);
