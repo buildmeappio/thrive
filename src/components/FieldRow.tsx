@@ -42,7 +42,7 @@ const FieldRow = ({ label, value, valueHref, type, documentUrl }: FieldRowProps)
               <div className="flex items-center justify-start sm:justify-end gap-3">
                 <button
                   onClick={() => setIsPreviewOpen(true)}
-                  className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none text-[#4E4E4E] underline"
+                  className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight text-[#4E4E4E] underline"
                 >
                   Preview
                 </button>
@@ -51,7 +51,7 @@ const FieldRow = ({ label, value, valueHref, type, documentUrl }: FieldRowProps)
                   download
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none text-[#000080] underline"
+                  className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight text-[#000080] underline"
                 >
                   Download
                 </a>

@@ -6,7 +6,6 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
 import emailService from "@/services/email.service";
-import { ENV } from "@/constants/variables";
 import { OrganizationData } from "../types/OrganizationData";
 
 const rejectOrganization = async (id: string, reason: string) => {
@@ -48,7 +47,7 @@ async function sendRejectReasonToOrganization(org: OrganizationData, reason: str
       lastName,
       organizationName: org.name,
       rejectionMessage: reason,
-      CDN_URL: ENV.NEXT_PUBLIC_CDN_URL,
+      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
     },
     email
   );

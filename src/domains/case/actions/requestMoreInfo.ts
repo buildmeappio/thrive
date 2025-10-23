@@ -4,8 +4,8 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import emailService from "@/services/email.service";
-import { ENV } from "@/constants/variables";
 import caseHandlers from "../server/handlers";
+import prisma from "@/lib/db";
 import { CaseDetailDtoType } from "../types/CaseDetailDtoType";
 
 const requestMoreInfo = async (
@@ -24,6 +24,34 @@ const requestMoreInfo = async (
 
   if (!caseDetails) {
     throw new Error("Case not found");
+  }
+
+  // Update case status to "More Information Requested" in database
+  try {
+    // Find the "More Information Requested" or similar status
+    const infoRequestedStatus = await prisma.caseStatus.findFirst({
+      where: { 
+        OR: [
+          { name: { contains: "Information", mode: "insensitive" } },
+          { name: { contains: "Info", mode: "insensitive" } },
+        ]
+      },
+    });
+
+    if (!infoRequestedStatus) {
+      throw new Error("Info requested status not found in database");
+    }
+
+    // Update the examination status
+    await prisma.examination.update({
+      where: { id: caseId },
+      data: { statusId: infoRequestedStatus.id },
+    });
+
+    console.log("✓ Case status updated to More Information Requested");
+  } catch (dbError) {
+    console.error("⚠️ Failed to update case status:", dbError);
+    throw new Error("Failed to update case status in database");
   }
 
   // Send request more info email to organization
@@ -61,8 +89,8 @@ async function sendRequestMoreInfoEmailToOrganization(caseDetails: CaseDetailDto
       })
     : "Unknown";
 
-  // Build the update link - direct link to the case in organization dashboard
-  const updateLink = `${process.env.NEXT_PUBLIC_APP_URL}/organization/dashboard/ime-referral/${caseDetails.id}`;
+  // Build the update link - direct link to the case edit page in organization dashboard
+  const updateLink = `${process.env.NEXT_PUBLIC_APP_URL}/organization/dashboard/cases/${caseDetails.case.id}/edit`;
 
   const result = await emailService.sendEmail(
     `Additional Information Required - Case ${caseDetails.caseNumber}`,
@@ -75,7 +103,7 @@ async function sendRequestMoreInfoEmailToOrganization(caseDetails: CaseDetailDto
       requestMessage,
       submittedDate,
       updateLink,
-      CDN_URL: ENV.NEXT_PUBLIC_CDN_URL,
+      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
     },
     organizationEmail
   );

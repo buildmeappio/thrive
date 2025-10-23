@@ -54,7 +54,7 @@ const Form = () => {
         variant="default"
         size="default"
         disabled={isSubmitting}
-        className="w-full h-11 md:h-12 text-[15px]"
+        className="w-full h-11 md:h-12 text-[15px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] hover:opacity-90 text-white"
       >
         {isSubmitting ? "Sending..." : "Send Reset Link"}
       </Button>

@@ -14,6 +14,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+// Utility function to format text from database: remove _, -, and capitalize each word
+const formatText = (str: string): string => {
+  if (!str) return str;
+  return str
+    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0)  // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 type Props = {
   items: CaseDetailDtoType[];
   listHref: string;
@@ -84,7 +95,7 @@ export default function WaitingCases({
           <TableBody>
             {items?.map((r) => {
               const href = buildDetailHref(r.id);
-              const statusText = r.status?.name || "N/A";
+              const statusText = r.status?.name ? formatText(r.status.name) : "N/A";
               
               return (
                 <TableRow 
@@ -98,7 +109,7 @@ export default function WaitingCases({
                     <span className="block">{r.case.organization?.name || "N/A"}</span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[160px] sm:min-w-0">
-                    <span className="block">{r.case.caseType?.name || "N/A"}</span>
+                    <span className="block">{r.case.caseType?.name ? formatText(r.case.caseType.name) : "N/A"}</span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[140px] sm:min-w-0">
                     <span className="block">{formatDateShort(r.createdAt)}</span>

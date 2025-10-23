@@ -3,6 +3,7 @@
 import { formatDate } from "@/utils/date";
 import FieldRow from "@/components/FieldRow";
 import CollapsibleSection from "@/components/CollapsibleSection";
+import { formatPhoneNumber } from "@/utils/phone";
 
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
 
@@ -18,6 +19,42 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
     return String(value);
   };
 
+  // Utility function to format text from database: remove _, -, and capitalize each word
+  const formatText = (str: string): string => {
+    if (!str) return str;
+    return str
+      .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
+      .split(' ')
+      .filter(word => word.length > 0)  // Remove empty strings
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  // Format services for display
+  const formatServices = (): string => {
+    if (!caseDetails.services || caseDetails.services.length === 0) {
+      return "-";
+    }
+    
+    const enabledServices = caseDetails.services.filter(service => service.enabled);
+    
+    if (enabledServices.length === 0) {
+      return "-";
+    }
+    
+    return enabledServices.map(service => {
+      const serviceType = formatText(service.type);
+      
+      let details = serviceType;
+      
+      if (service.interpreter && service.interpreter.languageName) {
+        details += ` (${service.interpreter.languageName})`;
+      }
+      
+      return details;
+    }).join(", ");
+  };
+
   return (
     <div>
       {/* Claimant Details */}
@@ -31,7 +68,7 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
           type="text"
         />
         <FieldRow label="Gender" value={safeValue(caseDetails.claimant?.gender)} type="text" />
-        <FieldRow label="Phone" value={safeValue(caseDetails.claimant?.phoneNumber)} type="text" />
+        <FieldRow label="Phone" value={formatPhoneNumber(caseDetails.claimant?.phoneNumber)} type="text" />
         <FieldRow label="Email Address" value={safeValue(caseDetails.claimant?.emailAddress)} type="text" />
         <FieldRow
           label="Address Lookup"
@@ -53,8 +90,8 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
         <FieldRow label="Related Cases" value={safeValue(caseDetails.claimant?.relatedCases)} type="text" />
         <FieldRow label="Family Doctor" value={safeValue(caseDetails.familyDoctor?.name)} type="text" />
         <FieldRow label="Email Address" value={safeValue(caseDetails.familyDoctor?.email)} type="text" />
-        <FieldRow label="Phone" value={safeValue(caseDetails.familyDoctor?.phoneNumber)} type="text" />
-        <FieldRow label="Fax No." value={safeValue(caseDetails.familyDoctor?.faxNumber)} type="text" />
+        <FieldRow label="Phone" value={formatPhoneNumber(caseDetails.familyDoctor?.phoneNumber)} type="text" />
+        <FieldRow label="Fax No." value={formatPhoneNumber(caseDetails.familyDoctor?.faxNumber)} type="text" />
       </CollapsibleSection>
 
       {/* Insurance Details */}
@@ -76,8 +113,8 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
         />
         <FieldRow label="Policy Holder First Name" value={safeValue(caseDetails.insurance?.policyHolderFirstName)} type="text" />
         <FieldRow label="Policy Holder Last Name" value={safeValue(caseDetails.insurance?.policyHolderLastName)} type="text" />
-        <FieldRow label="Phone Number" value={safeValue(caseDetails.insurance?.phoneNumber)} type="text" />
-        <FieldRow label="Fax Number" value={safeValue(caseDetails.insurance?.faxNumber)} type="text" />
+        <FieldRow label="Phone Number" value={formatPhoneNumber(caseDetails.insurance?.phoneNumber)} type="text" />
+        <FieldRow label="Fax Number" value={formatPhoneNumber(caseDetails.insurance?.faxNumber)} type="text" />
         <FieldRow
           label="Address"
           value={
@@ -101,8 +138,8 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
       <CollapsibleSection title="Legal Representative">
         <FieldRow label="Organization" value={safeValue(caseDetails.legalRepresentative?.companyName)} type="text" />
         <FieldRow label="Contact Person" value={safeValue(caseDetails.legalRepresentative?.contactPersonName)} type="text" />
-        <FieldRow label="Phone Number" value={safeValue(caseDetails.legalRepresentative?.phoneNumber)} type="text" />
-        <FieldRow label="Fax Number" value={safeValue(caseDetails.legalRepresentative?.faxNumber)} type="text" />
+        <FieldRow label="Phone Number" value={formatPhoneNumber(caseDetails.legalRepresentative?.phoneNumber)} type="text" />
+        <FieldRow label="Fax Number" value={formatPhoneNumber(caseDetails.legalRepresentative?.faxNumber)} type="text" />
         <FieldRow
           label="Address"
           value={
@@ -126,12 +163,13 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
       <CollapsibleSection title="Examination Information">
         <FieldRow label="Examination Type" value={safeValue(caseDetails.examinationType?.name)} type="text" />
         <FieldRow label="Short Form" value={safeValue(caseDetails.examinationType?.shortForm)} type="text" />
+        <FieldRow label="Services" value={formatServices()} type="text" />
         <FieldRow
           label="Due Date"
           value={caseDetails.dueDate ? formatDate(caseDetails.dueDate.toISOString()) : "-"}
           type="text"
         />
-        <FieldRow label="Urgency Level" value={safeValue(caseDetails.urgencyLevel)} type="text" />
+        <FieldRow label="Urgency Level" value={caseDetails.urgencyLevel ? formatText(caseDetails.urgencyLevel) : "-"} type="text" />
         <FieldRow label="Notes" value={safeValue(caseDetails.notes)} type="text" />
         <FieldRow label="Additional Notes" value={safeValue(caseDetails.additionalNotes)} type="text" />
       </CollapsibleSection>

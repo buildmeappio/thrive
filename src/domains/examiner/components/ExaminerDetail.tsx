@@ -11,6 +11,36 @@ import { ExaminerData } from "../types/ExaminerData";
 import { approveExaminer, rejectExaminer, requestMoreInfo } from "../actions";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
+import { formatPhoneNumber } from "@/utils/phone";
+
+// Utility function to format text from database: remove _, -, and capitalize each word
+const formatText = (str: string): string => {
+  if (!str) return str;
+  return str
+    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0)  // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+// Utility function to format years of experience: keep numeric ranges like "1-2", format text like "less-than-1"
+const formatYearsOfExperience = (str: string): string => {
+  if (!str) return str;
+  
+  // Check if it's a numeric range like "1-2", "3-5", "10-15"
+  if (/^\d+-\d+$/.test(str)) {
+    return str; // Keep as is
+  }
+  
+  // Otherwise, format as text (replace hyphens/underscores with spaces and capitalize)
+  return str
+    .replace(/[-_]/g, ' ')
+    .split(' ')
+    .filter(word => word.length > 0)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
 
 
 const mapStatus = { PENDING: "pending", ACCEPTED: "approved", REJECTED: "rejected", INFO_REQUESTED: "info_requested" } as const;
@@ -90,8 +120,9 @@ export default function ExaminerDetail({ examiner }: Props) {
                             {/* Left column - Examiner Info */}
                         <Section title="What Organization Do You Represent?">
                                 <FieldRow label="Name" value={examiner.name || "-"} type="text" />
-                                <FieldRow label="Medical Specialties" value={examiner.specialties?.join(", ") || "-"} type="text" />
-                            <FieldRow label="Phone Number" value={examiner.phone || "-"} type="text" />
+                                <FieldRow label="Medical Specialties" value={examiner.specialties?.map(s => formatText(s)).join(", ") || "-"} type="text" />
+                            <FieldRow label="Phone Number" value={formatPhoneNumber(examiner.phone)} type="text" />
+                            <FieldRow label="Landline Number" value={formatPhoneNumber(examiner.landlineNumber)} type="text" />
                             <FieldRow label="Email Address" value={examiner.email || "-"} type="text" />
                                 <FieldRow label="Province" value={examiner.province || "-"} type="text" />
                                 <FieldRow label="Mailing Address" value={examiner.mailingAddress || "-"} type="text" />
@@ -106,11 +137,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                                 />
                                 <FieldRow
                                     label="Years of IME Experience"
-                                    value={
-                                        typeof examiner.yearsOfIMEExperience === "number"
-                                            ? String(examiner.yearsOfIMEExperience)
-                                            : "-"
-                                    }
+                                    value={examiner.yearsOfIMEExperience ? formatYearsOfExperience(examiner.yearsOfIMEExperience) : "-"}
                                     type="text"
                                 />
                                 <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[169px] flex flex-col">
