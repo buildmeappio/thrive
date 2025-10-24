@@ -35,6 +35,15 @@ const requestMoreInfo = async (id: string, message: string) => {
   // Fetch organization to get recipients
   const org = (await handlers.getOrganizationById(id)) as OrganizationView;
 
+  // Update organization status to INFO_REQUESTED
+  try {
+    await handlers.requestMoreInfoOrganization(id);
+    console.log("✓ Organization status updated to INFO_REQUESTED");
+  } catch (dbError) {
+    console.error("⚠️ Failed to update organization status:", dbError);
+    throw new Error("Failed to update organization status in database");
+  }
+
   // Send request for more info email
   try {
     await sendRequestMoreInfoEmail(org, message);
@@ -47,6 +56,7 @@ const requestMoreInfo = async (id: string, message: string) => {
   // Revalidate dashboard and organization pages
   revalidatePath("/dashboard");
   revalidatePath("/organization");
+  revalidatePath(`/organization/${id}`);
 
   return org;
 };

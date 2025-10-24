@@ -150,6 +150,46 @@ export class OrganizationsService {
     }
   }
 
+  async requestMoreInfoOrganization(id: string) {
+    try {
+      const updated = await prisma.$transaction(async (tx) => {
+        // Update status to INFO_REQUESTED
+        const res = await tx.organization.updateMany({
+          where: { id, status: "PENDING" },
+          data: {
+            status: "INFO_REQUESTED",
+          },
+        });
+        if (res.count === 0) {
+          const current = await tx.organization.findUnique({ where: { id }, select: { status: true } });
+          throw new HttpError(
+            409,
+            "Invalid status transition",
+            { details: { expected: "PENDING", actual: current?.status ?? "NOT_FOUND" } }
+          );
+        }
+        return tx.organization.findUnique({
+          where: { id },
+          include: {
+            type: true,
+            address: true,
+            manager: {
+              include: {
+                account: { include: { user: true } },
+                department: true,
+              },
+            },
+          },
+        });
+      });
+      if (!updated) throw new HttpError(404, "Organization not found");
+      return updated;
+    } catch (error) {
+      if (error instanceof HttpError) throw error;
+      console.error(error);
+      throw new HttpError(500, "Failed to update organization status to INFO_REQUESTED", { details: error });
+    }
+  }
 
   async listOrganizationTypes() {
     try {
