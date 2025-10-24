@@ -34,6 +34,10 @@ const Page = async ({ params }: Props) => {
 
   const status = caseStatus.result?.name;
 
+  if (!examinationData) {
+    throw new Error('Can not get the Case');
+  }
+
   if (!status) {
     throw new Error('Cannot get status');
   }
