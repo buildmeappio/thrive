@@ -8,9 +8,10 @@ const getExaminerById = async (id: string) => {
   const examinerData = ExaminerDto.toExaminerData(examiner);
 
   // Generate presigned URLs for documents
+  // Examiner documents are stored in S3 under documents/examiner/ folder
   if (examiner.resumeDocument) {
     try {
-      examinerData.cvUrl = await generatePresignedUrl(examiner.resumeDocument.name, 3600);
+      examinerData.cvUrl = await generatePresignedUrl(`examiner/${examiner.resumeDocument.name}`, 3600);
     } catch (error) {
       console.error(`Failed to generate presigned URL for CV:`, error);
     }
@@ -18,7 +19,7 @@ const getExaminerById = async (id: string) => {
 
   if (examiner.medicalLicenseDocument) {
     try {
-      examinerData.medicalLicenseUrl = await generatePresignedUrl(examiner.medicalLicenseDocument.name, 3600);
+      examinerData.medicalLicenseUrl = await generatePresignedUrl(`examiner/${examiner.medicalLicenseDocument.name}`, 3600);
     } catch (error) {
       console.error(`Failed to generate presigned URL for medical license:`, error);
     }
@@ -26,7 +27,7 @@ const getExaminerById = async (id: string) => {
 
   if (examiner.insuranceDocument) {
     try {
-      examinerData.insuranceProofUrl = await generatePresignedUrl(examiner.insuranceDocument.name, 3600);
+      examinerData.insuranceProofUrl = await generatePresignedUrl(`examiner/${examiner.insuranceDocument.name}`, 3600);
     } catch (error) {
       console.error(`Failed to generate presigned URL for insurance proof:`, error);
     }
@@ -34,7 +35,7 @@ const getExaminerById = async (id: string) => {
 
   if (examiner.ndaDocument) {
     try {
-      examinerData.signedNdaUrl = await generatePresignedUrl(examiner.ndaDocument.name, 3600);
+      examinerData.signedNdaUrl = await generatePresignedUrl(`examiner/${examiner.ndaDocument.name}`, 3600);
     } catch (error) {
       console.error(`Failed to generate presigned URL for NDA:`, error);
     }
