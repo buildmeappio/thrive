@@ -2,6 +2,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
 import { sendMail } from "@/lib/email";
@@ -28,7 +29,13 @@ const approveOrganization = async (id: string) => {
 
   const organization = await handlers.approveOrganization(id, user.accountId);
 
-//   await sendApprovalEmailToOrganization(organization);    
+//   await sendApprovalEmailToOrganization(organization);
+  
+  // Revalidate dashboard and organization pages
+  revalidatePath("/dashboard");
+  revalidatePath("/organization");
+  revalidatePath(`/organization/${id}`);
+  
   return organization;
 };
 

@@ -26,7 +26,12 @@ const formatText = (str: string): string => {
     .join(' ');
 };
 
-const mapStatus = { PENDING: "pending", ACCEPTED: "approved", REJECTED: "rejected" } as const;
+const mapStatus = { 
+  PENDING: "pending", 
+  ACCEPTED: "approved", 
+  REJECTED: "rejected",
+  INFO_REQUESTED: "info_requested"
+} as const;
 
 type OrganizationDetailProps = {
   organization: Awaited<ReturnType<typeof getOrganizationById>>;
@@ -36,7 +41,14 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
   const router = useRouter();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
-  const [status, setStatus] = useState(mapStatus[organization.status as keyof typeof mapStatus]);
+  
+  // Determine the current organization status from database
+  const getCurrentStatus = (): "pending" | "approved" | "rejected" | "info_requested" => {
+    const dbStatus = organization.status;
+    return mapStatus[dbStatus as keyof typeof mapStatus] || "pending";
+  };
+  
+  const [status, setStatus] = useState<"pending" | "approved" | "rejected" | "info_requested">(getCurrentStatus());
   const [loadingAction, setLoadingAction] = useState<"approve" | "reject" | "request" | null>(null);
 
   const type = organization.type?.name ? formatText(organization.type.name) : "-";
@@ -53,7 +65,9 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
     try {
       await organizationActions.requestMoreInfo(organization.id, messageToOrganization);
       setIsRequestOpen(false);
+      setStatus("info_requested");
       toast.success("Request sent. An email has been sent to the organization.");
+      router.refresh();
     } catch (error) {
       console.error("Failed to request more info:", error);
       toast.error("Failed to send request. Please try again.");
@@ -198,6 +212,19 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                 disabled
               >
                 Rejected
+              </button>
+            ) : status === "info_requested" ? (
+              <button
+                className={cn(
+                  "px-4 py-3 rounded-full border border-blue-500 text-blue-700 bg-blue-50 flex items-center gap-2 cursor-default"
+                )}
+                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                disabled
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                More Information Required
               </button>
             ) : (
               <>

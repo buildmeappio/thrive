@@ -86,8 +86,8 @@ async function sendRequestMoreInfoEmailToOrganization(caseDetails: CaseDetailDto
       })
     : "Unknown";
 
-  // Build the update link - direct link to the case edit page in organization dashboard
-  const updateLink = `${process.env.NEXT_PUBLIC_APP_URL}/organization/dashboard/cases/${caseDetails.case.id}/edit`;
+  // Build the update link - direct link to the case edit page in organization dashboard using examination ID
+  const updateLink = `${process.env.NEXT_PUBLIC_APP_URL}/organization/dashboard/cases/${caseDetails.id}/edit`;
 
   const result = await emailService.sendEmail(
     `Additional Information Required - Case ${caseDetails.caseNumber}`,

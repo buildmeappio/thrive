@@ -25,6 +25,7 @@ const rejectOrganization = async (id: string, reason: string) => {
   // Revalidate dashboard and organization pages
   revalidatePath("/dashboard");
   revalidatePath("/organization");
+  revalidatePath(`/organization/${id}`);
   
   return organization;
 };
