@@ -93,6 +93,8 @@ export type IMEFormData = {
   };
   step6?: {
     files: File[];
+    deletedDocuments: string[];
+    existingDocumentsCount: number;
   };
   step7?: {
     consentForSubmission: boolean;

@@ -7,6 +7,8 @@ import type { ClaimantPreference } from '@prisma/client';
 import { DocumentService } from '@/services/fileUploadService';
 import { getE164PhoneNumber } from '@/utils/formatNumbers';
 import log from '@/utils/log';
+import { CaseStatus } from '@/constants/CaseStatus';
+import { moveFilesToTemp } from '@/lib/s3-actions';
 
 export const createCase = async (formData: IMEFormData) => {
   const currentUser = await getCurrentUser();
@@ -394,6 +396,31 @@ const updateExamination = async (examinationId: string, formData: IMEFormData, o
     } catch (error) {
       log.error('Error uploading files:', error);
       throw new Error('Failed to upload documents. Please try again.');
+    }
+  }
+
+  // Handle deleted documents - move to temp folder
+  let deletionResult: {
+    success: boolean;
+    movedFiles: string[];
+    failedFiles: { filename: string; error: string }[];
+  } = {
+    success: true,
+    movedFiles: [],
+    failedFiles: [],
+  };
+
+  if (formData.step6?.deletedDocuments && formData.step6.deletedDocuments.length > 0) {
+    try {
+      deletionResult = await moveFilesToTemp(formData.step6.deletedDocuments);
+
+      if (!deletionResult.success) {
+        log.error('Some files failed to move to temp:', deletionResult.failedFiles);
+      } else {
+        log.info('✅ Successfully moved files to temp:', deletionResult.movedFiles);
+      }
+    } catch (error) {
+      log.error('Error moving files to temp:', error);
     }
   }
 
@@ -825,12 +852,24 @@ const updateExamination = async (examinationId: string, formData: IMEFormData, o
         }
       }
 
+      const pendingStatus = await tx.caseStatus.findFirst({
+        where: {
+          name: CaseStatus.PENDING,
+          deletedAt: null,
+        },
+      });
+
+      if (!pendingStatus) {
+        throw new Error('Pending status not found in the system');
+      }
+
       const examination = await tx.examination.update({
         where: { id: examinationId },
         data: {
           claimantId,
           insuranceId,
           legalRepresentativeId,
+          statusId: pendingStatus.id,
           dueDate: formData.step5?.examinations[0]?.dueDate
             ? new Date(formData.step5.examinations[0].dueDate)
             : null,
@@ -1037,7 +1076,39 @@ const updateExamination = async (examinationId: string, formData: IMEFormData, o
         });
       }
 
-      // 12. Update case documents (if new documents uploaded)
+      // 12. Handle deleted documents - remove from database
+      if (deletionResult.success && deletionResult.movedFiles.length > 0) {
+        // Find documents by name through the Documents model
+        const documentsToDelete = await tx.documents.findMany({
+          where: {
+            name: { in: deletionResult.movedFiles },
+          },
+          select: { id: true },
+        });
+
+        if (documentsToDelete.length > 0) {
+          const documentIds = documentsToDelete.map(doc => doc.id);
+
+          // Delete the CaseDocument relationships first
+          await tx.caseDocument.deleteMany({
+            where: {
+              documentId: { in: documentIds },
+              caseId: existingExam.caseId,
+            },
+          });
+
+          // Then delete the Document records
+          await tx.documents.deleteMany({
+            where: {
+              id: { in: documentIds },
+            },
+          });
+
+          log.info('✅ Deleted document records from database:', deletionResult.movedFiles);
+        }
+      }
+
+      // 13. Update case documents (if new documents uploaded)
       if (uploadResult.success && uploadResult.documents.length > 0) {
         await Promise.all(
           uploadResult.documents.map(async document => {
@@ -1059,6 +1130,7 @@ const updateExamination = async (examinationId: string, formData: IMEFormData, o
           insuranceId,
           legalRepresentativeId,
           documents: uploadResult.documents,
+          deletedDocuments: deletionResult.movedFiles,
         },
       };
     },
@@ -1374,6 +1446,19 @@ const getCaseStatuses = async () => {
   }
 };
 
+const getCaseStatusById = async (id: string) => {
+  try {
+    const status = await prisma.examination.findUnique({
+      where: { id },
+      select: { status: { select: { id: true, name: true } } },
+    });
+
+    return status?.status;
+  } catch (error) {
+    throw HttpError.handleServiceError(error, 'Error fetching examination status');
+  }
+};
+
 const getCaseData = async (caseId: string) => {
   try {
     const examination = await prisma.examination.findUnique({
@@ -1577,6 +1662,7 @@ const imeReferralService = {
   getExaminationBenefits,
   getCaseList,
   getCaseStatuses,
+  getCaseStatusById,
   getCaseData,
   updateExamination,
 };
