@@ -120,24 +120,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
   };
 
   const formDefaultValues = useMemo((): ExaminationData => {
-    if (examinationData?.examinations && examinationData.examinations.length > 0) {
-      const examinations = examinationData.examinations.map(exam => {
-        const fixed = {
-          ...exam,
-          dueDate: fixDateFormat(exam.dueDate),
-          services: ensureCompleteServices(exam.services),
-        };
-        return fixed;
-      });
-
-      const result = {
-        ...examinationData,
-        examinations,
-      };
-      return result;
-    }
-
-    // Priority 2: Data from Zustand store
+    // Priority 1: Data from Zustand store (if user has edited)
     if (data.step5?.examinations && data.step5.examinations.length > 0) {
       const examinations = data.step5.examinations.map(exam => {
         const fixed = {
@@ -155,6 +138,25 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
       return result;
     }
 
+    // Priority 2: Data from database (initial load in edit mode)
+    if (examinationData?.examinations && examinationData.examinations.length > 0) {
+      const examinations = examinationData.examinations.map(exam => {
+        const fixed = {
+          ...exam,
+          dueDate: fixDateFormat(exam.dueDate),
+          services: ensureCompleteServices(exam.services),
+        };
+        return fixed;
+      });
+
+      const result = {
+        ...examinationData,
+        examinations,
+      };
+      return result;
+    }
+
+    // Priority 3: Create new examinations based on selected types
     const examinations = selectedExamTypes.map(examType => createExaminationDetails(examType.id));
 
     return {
@@ -162,7 +164,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
       examinationType: '',
       examinations,
     };
-  }, [examinationData, data.step5, selectedExamTypes]);
+  }, [data.step5, examinationData, selectedExamTypes]);
 
   const {
     register,
