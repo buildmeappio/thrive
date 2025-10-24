@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender, type Row } from "@tanstack/react-table";
+import { useReactTable, getCoreRowModel, getPaginationRowModel, getSortedRowModel, SortingState, flexRender, type Row, type Column } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { cn } from "@/lib/utils";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
 
 interface FilterState {
@@ -42,10 +42,38 @@ const formatText = (text: string): string => {
     .join(' ');
 };
 
+const SortableHeader = ({ column, children }: { column: Column<ExaminerData, unknown>; children: React.ReactNode }) => {
+  const sortDirection = column.getIsSorted();
+  
+  const handleSort = () => {
+    if (sortDirection === false) {
+      column.toggleSorting(false); // Set to ascending
+    } else if (sortDirection === 'asc') {
+      column.toggleSorting(true); // Set to descending
+    } else {
+      column.clearSorting(); // Clear sorting (back to original)
+    }
+  };
+  
+  return (
+    <div
+      className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
+      onClick={handleSort}
+    >
+      <span>{children}</span>
+      {sortDirection === false && <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+      {sortDirection === 'asc' && <ArrowUp className="h-4 w-4 text-[#000093]" />}
+      {sortDirection === 'desc' && <ArrowDown className="h-4 w-4 text-[#000093]" />}
+    </div>
+  );
+};
+
 const columnsDef = [
   {
     accessorKey: "name",
-    header: "Name",
+    header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+      <SortableHeader column={column}>Name</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<ExaminerData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
         {row.getValue("name")}
@@ -54,7 +82,9 @@ const columnsDef = [
   },
   {
     accessorKey: "email",
-    header: "Email",
+    header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+      <SortableHeader column={column}>Email</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<ExaminerData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
         {row.getValue("email")}
@@ -63,7 +93,9 @@ const columnsDef = [
   },
   {
     accessorKey: "specialties",
-    header: "Specialties",
+    header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+      <SortableHeader column={column}>Specialties</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<ExaminerData> }) => {
       const specialties = row.getValue("specialties") as string | string[];
       const formattedText = Array.isArray(specialties)
@@ -84,7 +116,9 @@ const columnsDef = [
   },
   {
     accessorKey: "province",
-    header: "Province",
+    header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+      <SortableHeader column={column}>Province</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<ExaminerData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
         {row.getValue("province")}
@@ -93,7 +127,9 @@ const columnsDef = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+      <SortableHeader column={column}>Status</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<ExaminerData> }) => {
       const status = row.getValue("status") as string;
       return (
@@ -110,11 +146,13 @@ const columnsDef = [
       return <ActionButton id={row.original.id} />;
     },
     maxSize: 60,
+    enableSorting: false,
   },
 ];
 
 export default function ExaminerTableWithPagination({ data, searchQuery = "", filters }: Props) {
   const [query, setQuery] = useState(searchQuery);
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   // Update internal query when searchQuery prop changes
   useEffect(() => {
@@ -155,7 +193,10 @@ export default function ExaminerTableWithPagination({ data, searchQuery = "", fi
   const table = useReactTable({
     data: filtered,
     columns: columnsDef,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 

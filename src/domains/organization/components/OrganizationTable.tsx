@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { OrganizationData } from "../types/OrganizationData";
 import {
-  flexRender, getCoreRowModel, getPaginationRowModel,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import {
@@ -16,6 +20,8 @@ type Props = { data: OrganizationData[]; types?: string[] };
 
 
 export default function OrganizationTable({ data }: Props) {
+  const [sorting, setSorting] = useState<SortingState>([]);
+
   const filtered = useMemo(() => {
     return data;
   }, [data]);
@@ -23,7 +29,10 @@ export default function OrganizationTable({ data }: Props) {
   const table = useReactTable({
     data: filtered,
     columns: columnsDef,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
