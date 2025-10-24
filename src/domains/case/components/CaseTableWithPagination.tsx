@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender, type Row } from "@tanstack/react-table";
+import { useReactTable, getCoreRowModel, getPaginationRowModel, getSortedRowModel, SortingState, flexRender, type Row, type Column } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CaseData } from "@/domains/case/types/CaseData";
 import { cn } from "@/lib/utils";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
 import { formatDateShort } from "@/utils/date";
 
@@ -49,10 +49,38 @@ const ActionButton = ({ id }: { id: string }) => {
   );
 };
 
+const SortableHeader = ({ column, children }: { column: Column<CaseData, unknown>; children: React.ReactNode }) => {
+  const sortDirection = column.getIsSorted();
+  
+  const handleSort = () => {
+    if (sortDirection === false) {
+      column.toggleSorting(false); // Set to ascending
+    } else if (sortDirection === 'asc') {
+      column.toggleSorting(true); // Set to descending
+    } else {
+      column.clearSorting(); // Clear sorting (back to original)
+    }
+  };
+  
+  return (
+    <div
+      className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
+      onClick={handleSort}
+    >
+      <span>{children}</span>
+      {sortDirection === false && <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+      {sortDirection === 'asc' && <ArrowUp className="h-4 w-4 text-[#000093]" />}
+      {sortDirection === 'desc' && <ArrowDown className="h-4 w-4 text-[#000093]" />}
+    </div>
+  );
+};
+
 const columnsDef = [
   {
     accessorKey: "number",
-    header: "Case ID",
+    header: ({ column }: { column: Column<CaseData, unknown> }) => (
+      <SortableHeader column={column}>Case ID</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("number")}
@@ -61,7 +89,9 @@ const columnsDef = [
   },
   {
     accessorKey: "organization",
-    header: "Company",
+    header: ({ column }: { column: Column<CaseData, unknown> }) => (
+      <SortableHeader column={column}>Company</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("organization")}
@@ -70,7 +100,9 @@ const columnsDef = [
   },
   {
     accessorKey: "caseType",
-    header: "Claim Type",
+    header: ({ column }: { column: Column<CaseData, unknown> }) => (
+      <SortableHeader column={column}>Claim Type</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {formatText(row.getValue("caseType"))}
@@ -79,7 +111,9 @@ const columnsDef = [
   },
   {
     accessorKey: "submittedAt",
-    header: "Date Received",
+    header: ({ column }: { column: Column<CaseData, unknown> }) => (
+      <SortableHeader column={column}>Date Received</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
         {formatDateShort(row.getValue("submittedAt"))}
@@ -88,7 +122,9 @@ const columnsDef = [
   },
   {
     accessorKey: "dueDate",
-    header: "Due Date",
+    header: ({ column }: { column: Column<CaseData, unknown> }) => (
+      <SortableHeader column={column}>Due Date</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
         {row.getValue("dueDate") ? formatDateShort(row.getValue("dueDate")) : "N/A"}
@@ -97,7 +133,9 @@ const columnsDef = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: ({ column }: { column: Column<CaseData, unknown> }) => (
+      <SortableHeader column={column}>Status</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {formatText(row.getValue("status"))}
@@ -106,7 +144,9 @@ const columnsDef = [
   },
   {
     accessorKey: "urgencyLevel",
-    header: "Priority",
+    header: ({ column }: { column: Column<CaseData, unknown> }) => (
+      <SortableHeader column={column}>Priority</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {formatText(row.getValue("urgencyLevel"))}
@@ -120,11 +160,13 @@ const columnsDef = [
       return <ActionButton id={row.original.id} />;
     },
     maxSize: 60,
+    enableSorting: false,
   },
 ];
 
 export default function CaseTableWithPagination({ data, searchQuery = "", filters }: Props) {
   const [query, setQuery] = useState(searchQuery);
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   // Update internal query when searchQuery prop changes
   useEffect(() => {
@@ -187,7 +229,10 @@ export default function CaseTableWithPagination({ data, searchQuery = "", filter
   const table = useReactTable({
     data: filtered,
     columns: columnsDef,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 

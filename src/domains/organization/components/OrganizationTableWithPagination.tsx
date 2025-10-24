@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
-import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender, type Row } from "@tanstack/react-table";
+import { useState, useMemo, useEffect } from "react";
+import { useReactTable, getCoreRowModel, getPaginationRowModel, getSortedRowModel, SortingState, flexRender, type Row, type Column } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { OrganizationData } from "@/domains/organization/types/OrganizationData";
 import { cn } from "@/lib/utils";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
 
 // Utility function to format text from database: remove _, -, and capitalize each word
@@ -40,10 +40,38 @@ const ActionButton = ({ id }: { id: string }) => {
   );
 };
 
+const SortableHeader = ({ column, children }: { column: Column<OrganizationData, unknown>; children: React.ReactNode }) => {
+  const sortDirection = column.getIsSorted();
+  
+  const handleSort = () => {
+    if (sortDirection === false) {
+      column.toggleSorting(false); // Set to ascending
+    } else if (sortDirection === 'asc') {
+      column.toggleSorting(true); // Set to descending
+    } else {
+      column.clearSorting(); // Clear sorting (back to original)
+    }
+  };
+  
+  return (
+    <div
+      className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
+      onClick={handleSort}
+    >
+      <span>{children}</span>
+      {sortDirection === false && <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+      {sortDirection === 'asc' && <ArrowUp className="h-4 w-4 text-[#000093]" />}
+      {sortDirection === 'desc' && <ArrowDown className="h-4 w-4 text-[#000093]" />}
+    </div>
+  );
+};
+
 const columnsDef = [
   {
     accessorKey: "name",
-    header: "Organization",
+    header: ({ column }: { column: Column<OrganizationData, unknown> }) => (
+      <SortableHeader column={column}>Organization</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<OrganizationData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("name")}
@@ -52,7 +80,9 @@ const columnsDef = [
   },
   {
     accessorKey: "typeName",
-    header: "Type",
+    header: ({ column }: { column: Column<OrganizationData, unknown> }) => (
+      <SortableHeader column={column}>Type</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<OrganizationData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("typeName") ? formatText(row.getValue("typeName")) : "N/A"}
@@ -61,7 +91,9 @@ const columnsDef = [
   },
   {
     accessorKey: "managerName",
-    header: "Representative",
+    header: ({ column }: { column: Column<OrganizationData, unknown> }) => (
+      <SortableHeader column={column}>Representative</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<OrganizationData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("managerName") || "N/A"}
@@ -70,7 +102,9 @@ const columnsDef = [
   },
   {
     accessorKey: "managerEmail",
-    header: "Email",
+    header: ({ column }: { column: Column<OrganizationData, unknown> }) => (
+      <SortableHeader column={column}>Email</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<OrganizationData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {row.getValue("managerEmail") || "N/A"}
@@ -79,7 +113,9 @@ const columnsDef = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: ({ column }: { column: Column<OrganizationData, unknown> }) => (
+      <SortableHeader column={column}>Status</SortableHeader>
+    ),
     cell: ({ row }: { row: Row<OrganizationData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
         {formatText(row.getValue("status"))}
@@ -93,6 +129,7 @@ const columnsDef = [
       return <ActionButton id={row.original.id} />;
     },
     maxSize: 60,
+    enableSorting: false,
   },
 ];
 
@@ -101,6 +138,8 @@ export default function OrganizationTableWithPagination({
   searchQuery = "",
   filters = { type: "all", status: "all" }
 }: Props) {
+  const [sorting, setSorting] = useState<SortingState>([]);
+
   const filtered = useMemo(() => {
     let result = data;
 
@@ -130,7 +169,10 @@ export default function OrganizationTableWithPagination({
   const table = useReactTable({
     data: filtered,
     columns: columnsDef,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
