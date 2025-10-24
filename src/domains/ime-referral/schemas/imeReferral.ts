@@ -437,36 +437,55 @@ export const updateServiceInArray = (
 
 // step5 - Document Upload Schema
 
-export const DocumentUploadSchema = z.object({
-  files: z
-    .array(FileSchema)
-    .min(1, ErrorMessages.DOCUMENT_UPLOAD_REQUIRED)
-    .max(
-      DocumentUploadConfig.MAX_FILES_COUNT,
-      `${ErrorMessages.TOO_MANY_FILES} (maximum ${DocumentUploadConfig.MAX_FILES_COUNT} files allowed)`
-    )
-    .refine(
-      files => {
-        const seen = new Set();
-        for (const file of files) {
-          const key = `${file.name}-${file.size}`;
-          if (seen.has(key)) {
-            return false;
+export const DocumentUploadSchema = z
+  .object({
+    files: z
+      .array(FileSchema)
+      .max(
+        DocumentUploadConfig.MAX_FILES_COUNT,
+        `${ErrorMessages.TOO_MANY_FILES} (maximum ${DocumentUploadConfig.MAX_FILES_COUNT} files allowed)`
+      )
+      .refine(
+        files => {
+          const seen = new Set();
+          for (const file of files) {
+            const key = `${file.name}-${file.size}`;
+            if (seen.has(key)) {
+              return false;
+            }
+            seen.add(key);
           }
-          seen.add(key);
+          return true;
+        },
+        {
+          message: ErrorMessages.DUPLICATE_FILE,
         }
-        return true;
-      },
-      {
-        message: ErrorMessages.DUPLICATE_FILE,
-      }
-    ),
-});
+      ),
+    // .default([]),
+    deletedDocuments: z.array(z.string()),
+    existingDocumentsCount: z.number(),
+  })
+  .refine(
+    data => {
+      // Calculate total remaining documents
+      const newFilesCount = data.files.length;
+      const remainingExistingCount = data.existingDocumentsCount - data.deletedDocuments.length;
+      const totalDocuments = newFilesCount + remainingExistingCount;
+
+      return totalDocuments >= 1;
+    },
+    {
+      message: ErrorMessages.DOCUMENT_UPLOAD_REQUIRED,
+      path: ['files'],
+    }
+  );
 
 export type DocumentUploadFormData = z.infer<typeof DocumentUploadSchema>;
 
 export const DocumentUploadInitialValues: DocumentUploadFormData = {
   files: [],
+  deletedDocuments: [],
+  existingDocumentsCount: 0,
 };
 
 // Step 6 - Review & Submit Schema

@@ -133,3 +133,14 @@ export const getCaseStatuses = async () => {
   const result = await imeReferralHandlers.getCaseStatuses();
   return result;
 };
+
+export const getCaseStatusById = async (id: string) => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+
+  const result = await imeReferralHandlers.getCaseStatusById(id);
+  return result;
+};

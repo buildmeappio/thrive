@@ -2,6 +2,7 @@ import { getExaminationTypes } from '@/domains/auth/server/handlers';
 import { getLanguages } from '@/domains/claimant/actions';
 import { getCaseTypes, getClaimTypes } from '@/domains/ime-referral/actions';
 import IMEReferral from '@/domains/ime-referral/components';
+import { removeUUIDLanguages } from '@/utils/filterLanguages';
 import { type Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -19,12 +20,14 @@ const IMEReferralPage = async () => {
     getLanguages(),
   ]);
 
+  const filteredLanguages = removeUUIDLanguages(languageOptions);
+
   return (
     <IMEReferral
       claimTypes={claimTypes.result}
       examinationTypes={examinationTypes}
       caseTypes={caseTypes.result}
-      languages={languageOptions.result}
+      languages={filteredLanguages.result}
     />
   );
 };

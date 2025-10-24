@@ -8,6 +8,7 @@ import { getCurrentUser } from '@/domains/auth/server/session';
 import { redirect } from 'next/navigation';
 import { URLS } from '@/constants/routes';
 import log from '@/utils/log';
+import { CaseStatus } from '@/constants/CaseStatus';
 
 export const metadata: Metadata = {
   title: 'Dashboard | Thrive',
@@ -29,7 +30,11 @@ const DashboardPage = async () => {
     }
 
     const [newDashboardCases, inProgressDashboardCases, moreInfoDashboardCases] = await Promise.all(
-      [getCaseList(undefined, 3), getCaseList(undefined, 3), getCaseList(undefined, 3)]
+      [
+        getCaseList(undefined, 3),
+        getCaseList(CaseStatus.PENDING, 3),
+        getCaseList(CaseStatus.INFO_REQUIRED, 3),
+      ]
     );
 
     if (newDashboardCases.result.length === 0) {

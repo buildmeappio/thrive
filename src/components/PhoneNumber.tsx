@@ -43,11 +43,27 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
       if (e.key === 'Backspace' && value) {
         e.preventDefault();
 
-        let digitsOnly = value.replace(/\D/g, '');
-        if (digitsOnly.length === 0) return;
+        const input = e.target as HTMLInputElement;
+        const cursorPos = input.selectionStart || 0;
 
-        // Remove the last digit manually
-        digitsOnly = digitsOnly.slice(0, -1);
+        if (cursorPos === 0) return;
+
+        // Find which digit position the cursor is at
+        let digitCount = 0;
+        let digitIndex = -1;
+
+        for (let i = 0; i < cursorPos; i++) {
+          if (/\d/.test(value[i])) {
+            digitCount++;
+            digitIndex = digitCount - 1;
+          }
+        }
+
+        if (digitIndex === -1) return;
+
+        // Remove the digit at the cursor position
+        let digitsOnly = value.replace(/\D/g, '');
+        digitsOnly = digitsOnly.slice(0, digitIndex) + digitsOnly.slice(digitIndex + 1);
 
         // Reformat with AsYouType
         const formatter = new AsYouType('CA');
@@ -62,6 +78,22 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         } as unknown as React.ChangeEvent<HTMLInputElement>;
 
         onChange(syntheticEvent);
+
+        // Restore cursor position after formatting
+        setTimeout(() => {
+          let newCursorPos = 0;
+          let digitsFound = 0;
+
+          for (let i = 0; i < newFormatted.length && digitsFound < digitIndex; i++) {
+            if (/\d/.test(newFormatted[i])) {
+              digitsFound++;
+            }
+            newCursorPos = i + 1;
+          }
+
+          input.setSelectionRange(newCursorPos, newCursorPos);
+        }, 0);
+
         return;
       }
 
