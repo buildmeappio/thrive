@@ -1,49 +1,43 @@
-// import { randomUUID } from 'crypto';
-// import prisma from '@/lib/prisma';
-// import emailService from '../services/emailService';
+import { randomUUID } from 'crypto';
+import prisma from '@/lib/prisma';
+import log from '@/utils/log';
 
-const createSecureLink = async (examinationId: string) => {
-  // const token = randomUUID();
-  // const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24 hours
+interface CreateSecureLinkOptions {
+  examinationId: string;
+  userType: 'claimant' | 'examiner' | 'organization';
+  expiresInHours?: number;
+}
 
-  // // 1. Create secure link record
-  // const secureLink = await prisma.examinationSecureLink.create({
-  //   data: {
-  //     examinationId,
-  //     token,
-  //     expiresAt,
-  //   },
-  // });
+const createSecureLink = async (
+  examinationId: string,
+  userType: 'claimant' | 'examiner' | 'organization' = 'claimant',
+  expiresInHours: number = 24
+): Promise<string> => {
+  try {
+    const token = randomUUID();
+    const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
 
-  // // 2. Fetch claimant email through referral
-  // const examinationData = await prisma.examination.findUnique({
-  //   where: { caseNumber: examinationId },
-  //   include: {
-  //     case: {
-  //       include: {
-  //         claimant: true,
-  //       },
-  //     },
-  //   },
-  // });
+    // Create secure link record
+    const secureLink = await prisma.examinationSecureLink.create({
+      data: {
+        examinationId,
+        token,
+        expiresAt,
+        status: 'PENDING',
+      },
+    });
 
-  // const claimantEmail = examinationData?.referral?.claimant?.emailAddress;
+    // Generate the secure link URL
+    const baseUrl = 'https://portal-dev.thriveassessmentcare.com';
+    const link = `${baseUrl}/claimant/availability/${secureLink.token}`;
 
-  // if (!claimantEmail) {
-  //   throw new Error(`No claimant email found for examination ${examinationId}`);
-  // }
+    log.info(`Created secure link for examination ${examinationId}: ${link}`);
 
-  // // 3. Send email with secure link
-  // const link = `http://localhost:3000/claimant/availability/${secureLink.token}`;
-
-  // await emailService.sendEmail(
-  //   'Set your Availability - Thrive',
-  //   'otp.html',
-  //   { link },
-  //   claimantEmail
-  // );
-
-  // return link;
-  return `https://example.com/secure-link/${examinationId}`;
+    return link;
+  } catch (error) {
+    log.error('Error creating secure link:', error);
+    throw new Error('Failed to create secure link');
+  }
 };
+
 export default createSecureLink;

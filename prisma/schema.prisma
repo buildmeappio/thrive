@@ -238,21 +238,21 @@ model Insurance {
 }
 
 model Case {
-  id                    String  @id @unique @default(uuid()) @db.Uuid
-  organizationId        String? @map("organization_id") @db.Uuid
-  caseTypeId            String? @map("case_type_id") @db.Uuid
-  reason                String? @map("reason") @db.VarChar(255)
-  consentForSubmission  Boolean @default(false) @map("consent_for_submission")
-  isDraft               Boolean @default(false) @map("is_draft")
+  id                   String  @id @unique @default(uuid()) @db.Uuid
+  organizationId       String? @map("organization_id") @db.Uuid
+  caseTypeId           String? @map("case_type_id") @db.Uuid
+  reason               String? @map("reason") @db.VarChar(255)
+  consentForSubmission Boolean @default(false) @map("consent_for_submission")
+  isDraft              Boolean @default(false) @map("is_draft")
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  organization        Organization?        @relation("OrganizationCases", fields: [organizationId], references: [id])
-  caseType            CaseType?            @relation("CaseTypeCases", fields: [caseTypeId], references: [id])
-  examinations        Examination[]        @relation("ExaminationCases")
-  documents           CaseDocument[]       @relation("CaseDocuments")
+  organization Organization?  @relation("OrganizationCases", fields: [organizationId], references: [id])
+  caseType     CaseType?      @relation("CaseTypeCases", fields: [caseTypeId], references: [id])
+  examinations Examination[]  @relation("ExaminationCases")
+  documents    CaseDocument[] @relation("CaseDocuments")
 
   @@map("cases")
 }

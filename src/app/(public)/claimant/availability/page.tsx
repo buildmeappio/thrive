@@ -2,6 +2,7 @@ import { getCaseSummaryByJWT } from '@/domains/claimant/actions';
 import { type Metadata } from 'next';
 import ClaimantAvailability from '@/domains/claimant/components';
 import getLanguages from '@/domains/claimant/server/handlers/getLanguages';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'Set Availability - Thrive',
@@ -12,20 +13,16 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ token: string }>
   const languages = await getLanguages();
 
   if (!token) {
-    return (
-      <div className="flex h-[500px] items-center justify-center p-4 text-red-600">
-        Invalid access. Please check your link or contact support.
-      </div>
+    redirect(
+      '/claimant/availability/success?status=error&message=Invalid access. Please check your link or contact support.'
     );
   }
 
   const caseSummary = await getCaseSummaryByJWT(token);
 
   if (caseSummary.success === false || !caseSummary.result) {
-    return (
-      <div className="flex h-[500px] items-center justify-center p-4 text-red-600">
-        Invalid or expired token. Please check your link or contact support.
-      </div>
+    redirect(
+      '/claimant/availability/success?status=error&message=Invalid or expired token. Please check your link or contact support.'
     );
   }
 
