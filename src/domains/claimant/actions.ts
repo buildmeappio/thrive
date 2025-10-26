@@ -18,6 +18,16 @@ export const getCaseSummary = async (tkn: string) => {
   }
 };
 
+export const getCaseSummaryByJWT = async (token: string) => {
+  try {
+    const result = await claimantHandlers.getCaseSummaryByJWT(token);
+    return result;
+  } catch (error) {
+    console.error('Error fetching case summary by JWT:', error);
+    return { success: false, result: null };
+  }
+};
+
 export const createClaimantAvailability = async (data: CreateClaimantAvailabilityData) => {
   try {
     const result = await claimantHandlers.createClaimantAvailability(data);

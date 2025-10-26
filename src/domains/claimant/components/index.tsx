@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import AddOnServices from './AddonServices';
 import AppointmentOptions from './AppointmentOptions';
 import ExaminerOptions from './ExaminerOptions';
 import AppointmentConfirmation from './AppointmentConfirmation';
@@ -10,7 +9,6 @@ import UserInfo from './UserInfo';
 import { useClaimantAvailability } from '@/hooks/useCliamantAvailability';
 import { toast } from 'sonner';
 import { type getLanguages } from '../actions';
-import { convertToTypeOptions } from '@/utils/convertToTypeOptions';
 import {
   type ClaimantAvailabilityFormData,
   claimantAvailabilityInitialValues,
@@ -33,10 +31,7 @@ type ClaimantAvailabilityComponentProps = ClaimantAvailabilityProps & {
   languages: Awaited<ReturnType<typeof getLanguages>>['result'];
 };
 
-const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
-  caseSummary,
-  languages,
-}) => {
+const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({ caseSummary }) => {
   const { isSubmitting, submitAvailability } = useClaimantAvailability(
     caseSummary.caseId,
     caseSummary.claimantId
