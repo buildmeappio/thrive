@@ -11,68 +11,7 @@ export type CaseDetailsData = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-  claimant: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    dateOfBirth: Date | null;
-    gender: string | null;
-    phoneNumber: string | null;
-    emailAddress: string | null;
-    relatedCasesDetails: string | null;
-    familyDoctorName: string | null;
-    familyDoctorEmailAddress: string | null;
-    familyDoctorPhoneNumber: string | null;
-    familyDoctorFaxNumber: string | null;
-    address: {
-      id: string;
-      address: string;
-      street: string | null;
-      city: string | null;
-      province: string | null;
-      postalCode: string | null;
-      suite: string | null;
-    };
-  };
-  insurance: {
-    id: string;
-    companyName: string;
-    emailAddress: string;
-    contactPersonName: string;
-    policyNumber: string;
-    claimNumber: string;
-    dateOfLoss: Date;
-    policyHolderIsClaimant: boolean;
-    policyHolderFirstName: string;
-    policyHolderLastName: string;
-    phoneNumber: string;
-    faxNumber: string;
-    address: {
-      id: string;
-      address: string;
-      street: string | null;
-      city: string | null;
-      province: string | null;
-      postalCode: string | null;
-      suite: string | null;
-    } | null;
-  } | null;
-  legalRepresentative: {
-    id: string;
-    companyName: string | null;
-    contactPersonName: string | null;
-    phoneNumber: string | null;
-    faxNumber: string | null;
-    address: {
-      id: string;
-      address: string;
-      street: string | null;
-      city: string | null;
-      province: string | null;
-      postalCode: string | null;
-      suite: string | null;
-    } | null;
-  } | null;
+
   caseType: {
     id: string;
     name: string;
@@ -93,6 +32,68 @@ export type CaseDetailsData = {
     status: {
       id: string;
       name: string;
+    };
+    legalRepresentative: {
+      id: string;
+      companyName: string | null;
+      contactPersonName: string | null;
+      phoneNumber: string | null;
+      faxNumber: string | null;
+      address: {
+        id: string;
+        address: string;
+        street: string | null;
+        city: string | null;
+        province: string | null;
+        postalCode: string | null;
+        suite: string | null;
+      } | null;
+    } | null;
+    insurance: {
+      id: string;
+      companyName: string;
+      emailAddress: string;
+      contactPersonName: string;
+      policyNumber: string;
+      claimNumber: string;
+      dateOfLoss: Date;
+      policyHolderIsClaimant: boolean;
+      policyHolderFirstName: string;
+      policyHolderLastName: string;
+      phoneNumber: string;
+      faxNumber: string;
+      address: {
+        id: string;
+        address: string;
+        street: string | null;
+        city: string | null;
+        province: string | null;
+        postalCode: string | null;
+        suite: string | null;
+      } | null;
+    } | null;
+    claimant: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      dateOfBirth: Date | null;
+      gender: string | null;
+      phoneNumber: string | null;
+      emailAddress: string | null;
+      relatedCasesDetails: string | null;
+      familyDoctorName: string | null;
+      familyDoctorEmailAddress: string | null;
+      familyDoctorPhoneNumber: string | null;
+      familyDoctorFaxNumber: string | null;
+      address: {
+        id: string;
+        address: string;
+        street: string | null;
+        city: string | null;
+        province: string | null;
+        postalCode: string | null;
+        suite: string | null;
+      };
     };
   }[];
 };

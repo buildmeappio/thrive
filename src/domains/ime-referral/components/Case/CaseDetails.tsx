@@ -1,7 +1,6 @@
 'use client';
 
 import { ArrowLeft, ChevronDown } from 'lucide-react';
-import { getCaseDetails } from '../../actions';
 import {
   Accordion,
   AccordionContent,
@@ -16,12 +15,14 @@ import Documents from './Documents';
 import { formatDate } from '@/utils/dateTime';
 import useRouter from '@/hooks/useRouter';
 import { URLS } from '@/constants/routes';
+import { getCaseDetails } from '../../server/handlers';
 
 type CaseDetailsProps = {
   examinationData: Awaited<ReturnType<typeof getCaseDetails>>['result'];
 };
 
 const CaseDetails: React.FC<CaseDetailsProps> = ({ examinationData }) => {
+  console.log('examination data', examinationData);
   const caseData = examinationData.case;
   const router = useRouter();
 
@@ -29,7 +30,8 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ examinationData }) => {
     return <div className="py-8 text-center">No case data available</div>;
   }
 
-  const { organization, claimant, insurance, legalRepresentative, documents } = caseData;
+  const { organization, documents } = caseData;
+  const { claimant, insurance, legalRepresentative } = examinationData;
 
   const accordionItems = [
     {
