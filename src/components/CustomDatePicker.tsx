@@ -143,8 +143,8 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
       return;
     }
 
-    const newDate = new Date(date);
-    newDate.setHours(0, 0, 0, 0);
+    const newDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    newDate.setHours(12, 0, 0, 0);
 
     onDateChange(newDate);
     setShowCalendar(false);
