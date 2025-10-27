@@ -65,6 +65,7 @@ enum OrganizationStatus {
   PENDING
   ACCEPTED
   REJECTED
+  INFO_REQUESTED
 }
 
 model Organization {

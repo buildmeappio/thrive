@@ -21,17 +21,17 @@ const getCaseSummaryByJWT = async (token: string) => {
     };
 
     // Get the examination with case and claimant information
-    const examination = await prisma.examination.findUnique({
+    const examination = (await prisma.examination.findUnique({
       where: { id: examinationId },
       include: {
         case: {
           include: {
-            claimant: true,
             organization: true,
           },
         },
+        claimant: true,
       },
-    });
+    })) as any;
 
     if (!examination) {
       return { success: false, message: 'Examination not found', result: null };
@@ -42,9 +42,9 @@ const getCaseSummaryByJWT = async (token: string) => {
       success: true,
       result: {
         caseId: examination.caseId,
-        claimantId: examination.case.claimantId,
-        claimantFirstName: examination.case.claimant.firstName,
-        claimantLastName: examination.case.claimant.lastName,
+        claimantId: examination.claimantId,
+        claimantFirstName: examination.claimant.firstName,
+        claimantLastName: examination.claimant.lastName,
         organizationName: examination.case.organization?.name || null,
         email,
         examinationId,

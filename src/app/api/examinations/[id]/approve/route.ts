@@ -9,9 +9,9 @@ import log from '@/utils/log';
  * API endpoint to approve an examination and send approval link to claimant
  * POST /api/examinations/[id]/approve
  */
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const examinationId = params.id;
+    const { id: examinationId } = await params;
 
     // Get current user for authorization
     const currentUser = await getCurrentUser();
