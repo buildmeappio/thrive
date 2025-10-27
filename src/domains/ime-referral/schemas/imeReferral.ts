@@ -44,11 +44,13 @@ export const ClaimantDetailsSchema = z.object({
   claimType: z.string().min(1, 'Claim type is required'),
   firstName: z
     .string()
+    .trim()
     .min(1, ErrorMessages.FIRST_NAME_REQUIRED)
     .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.FIRST_NAME_INVALID),
 
   lastName: z
     .string()
+    .trim()
     .min(1, ErrorMessages.LAST_NAME_REQUIRED)
     .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.LAST_NAME_INVALID),
 
@@ -89,9 +91,9 @@ export const ClaimantDetailsSchema = z.object({
     })
     .optional(),
 
-  street: z.string().optional(),
-  suite: z.string().optional(),
-  city: z.string().optional(),
+  street: z.string().trim().optional(),
+  suite: z.string().trim().optional(),
+  city: z.string().trim().optional(),
 
   postalCode: z
     .string()
@@ -103,8 +105,8 @@ export const ClaimantDetailsSchema = z.object({
   province: z.string().optional(),
 
   // Optional family doctor fields
-  relatedCasesDetails: z.string().optional(),
-  familyDoctorName: z.string().optional(),
+  relatedCasesDetails: z.string().trim().optional(),
+  familyDoctorName: z.string().trim().optional(),
   familyDoctorEmail: z
     .string()
     .refine(val => val === '' || z.string().email().safeParse(val).success, {
@@ -153,19 +155,19 @@ export const ClaimantDetailsInitialValues: ClaimantDetails = {
 
 // Step 2 - Insurance Details Schema
 export const InsuranceDetailsSchema = z.object({
-  insuranceCompanyName: z.string().min(1, 'Insurance company name is required'),
+  insuranceCompanyName: z.string().trim().min(1, 'Insurance company name is required'),
   insuranceAdjusterContact: z.string().min(1, 'Adjuster/contact is required'),
-  insurancePolicyNo: z.string().min(1, 'Policy number is required'),
-  insuranceClaimNo: z.string().min(1, 'Claim number is required'),
+  insurancePolicyNo: z.string().trim().min(1, 'Policy number is required'),
+  insuranceClaimNo: z.string().trim().min(1, 'Claim number is required'),
   insuranceDateOfLoss: z.string().min(1, 'Date of loss is required'),
 
   // Optional address fields
-  insuranceAddressLookup: z.string().optional(),
+  insuranceAddressLookup: z.string().trim().optional(),
   insurancePostalCode: z.string().optional(),
   insuranceProvince: z.string().optional(),
-  insuranceStreetAddress: z.string().optional(),
-  insuranceAptUnitSuite: z.string().optional(),
-  insuranceCity: z.string().optional(),
+  insuranceStreetAddress: z.string().trim().optional(),
+  insuranceAptUnitSuite: z.string().trim().optional(),
+  insuranceCity: z.string().trim().optional(),
 
   insurancePhone: z
     .string()
@@ -181,8 +183,8 @@ export const InsuranceDetailsSchema = z.object({
 
   // Policy Holder fields
   policyHolderSameAsClaimant: z.boolean().optional(),
-  policyHolderFirstName: z.string().min(1, 'First name is required'),
-  policyHolderLastName: z.string().min(1, 'Last name is required'),
+  policyHolderFirstName: z.string().trim().min(1, 'First name is required'),
+  policyHolderLastName: z.string().trim().min(1, 'Last name is required'),
 });
 
 export type InsuranceDetails = z.infer<typeof InsuranceDetailsSchema>;
@@ -212,14 +214,20 @@ export const LegalDetailsSchema = z.object({
   // Legal Representative fields - all optional
   legalCompanyName: z
     .union([
-      z.string().regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.COMPANY_NAME_INVALID),
+      z
+        .string()
+        .trim()
+        .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.COMPANY_NAME_INVALID),
       z.literal(''),
     ])
     .optional(),
 
   legalContactPerson: z
     .union([
-      z.string().regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.CONTACT_PERSON_INVALID),
+      z
+        .string()
+        .trim()
+        .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.CONTACT_PERSON_INVALID),
       z.literal(''),
     ])
     .optional(),
@@ -238,10 +246,10 @@ export const LegalDetailsSchema = z.object({
     })
     .optional(),
 
-  legalAddressLookup: z.string().optional(),
-  legalStreetAddress: z.string().optional(),
-  legalAptUnitSuite: z.string().optional(),
-  legalCity: z.string().optional(),
+  legalAddressLookup: z.string().trim().optional(),
+  legalStreetAddress: z.string().trim().optional(),
+  legalAptUnitSuite: z.string().trim().optional(),
+  legalCity: z.string().trim().optional(),
   legalPostalCode: z
     .union([
       z.string().regex(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/, ErrorMessages.INVALID_POSTAL_CODE),
@@ -293,18 +301,18 @@ const ExaminationDetailsSchema = z.object({
   examinationTypeId: z.string().min(1, 'Examination type is required'),
   urgencyLevel: z.string().min(1, 'Urgency level is required'),
   dueDate: z.string().min(1, 'Due date is required'),
-  instructions: z.string().min(1, 'Instructions are required'),
+  instructions: z.string().trim().min(1, 'Instructions are required'),
   selectedBenefits: z.array(z.string()).optional(),
   locationType: z.string().min(1, 'Location type is required'),
   services: z.array(ExaminationServiceSchema),
-  additionalNotes: z.string().optional(),
+  additionalNotes: z.string().trim().optional(),
   supportPerson: z.boolean().optional(),
 });
 
 // Main Examination Schema (Step 5)
 export const ExaminationSchema = z
   .object({
-    reasonForReferral: z.string().min(1, 'Reason for referral is required'),
+    reasonForReferral: z.string().trim().min(1, 'Reason for referral is required'),
     examinationType: z.string().min(1, 'Case type is required'),
     examinations: z.array(ExaminationDetailsSchema).min(1, 'At least one examination is required'),
   })

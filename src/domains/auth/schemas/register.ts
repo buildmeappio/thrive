@@ -7,6 +7,7 @@ export const OrganizationInfoSchema = Yup.object({
   organizationType: Yup.string().required(ErrorMessages.ORGANIZATION_TYPE_REQUIRED),
 
   organizationName: Yup.string()
+    .trim()
     .min(2, ErrorMessages.ADDRESS_LOOKUP_MIN)
     .required(ErrorMessages.ORGANIZATION_NAME_REQUIRED),
 
@@ -14,11 +15,12 @@ export const OrganizationInfoSchema = Yup.object({
     .min(5, ErrorMessages.ADDRESS_LOOKUP_MIN)
     .required(ErrorMessages.ADDRESS_LOOKUP_REQUIRED),
 
-  streetAddress: Yup.string().required(ErrorMessages.STREET_REQUIRED),
+  streetAddress: Yup.string().trim().required(ErrorMessages.STREET_REQUIRED),
 
-  aptUnitSuite: Yup.string().optional(),
+  aptUnitSuite: Yup.string().trim().optional(),
 
   city: Yup.string()
+    .trim()
     .matches(/^[A-Za-z\s]+$/, ErrorMessages.INVALID_NAME)
     .required(ErrorMessages.CITY_REQUIRED),
 
@@ -28,7 +30,7 @@ export const OrganizationInfoSchema = Yup.object({
 
   provinceOfResidence: Yup.string().optional(),
 
-  organizationWebsite: Yup.string().url(ErrorMessages.INVALID_URL).optional(),
+  organizationWebsite: Yup.string().trim().url(ErrorMessages.INVALID_URL).optional(),
 });
 
 export const OrganizationInfoInitialValues = {
@@ -46,10 +48,12 @@ export const OrganizationInfoInitialValues = {
 // Step2
 export const OfficeDetailsSchema = Yup.object({
   firstName: Yup.string()
+    .trim()
     .matches(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.FIRST_NAME_INVALID)
     .required(ErrorMessages.FIRST_NAME_REQUIRED),
 
   lastName: Yup.string()
+    .trim()
     .matches(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.LAST_NAME_INVALID)
     .required(ErrorMessages.LAST_NAME_REQUIRED),
 
