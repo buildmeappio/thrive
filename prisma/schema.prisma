@@ -239,21 +239,21 @@ model Insurance {
 }
 
 model Case {
-  id                    String  @id @unique @default(uuid()) @db.Uuid
-  organizationId        String? @map("organization_id") @db.Uuid
-  caseTypeId            String? @map("case_type_id") @db.Uuid
-  reason                String? @map("reason") @db.VarChar(255)
-  consentForSubmission  Boolean @default(false) @map("consent_for_submission")
-  isDraft               Boolean @default(false) @map("is_draft")
+  id                   String  @id @unique @default(uuid()) @db.Uuid
+  organizationId       String? @map("organization_id") @db.Uuid
+  caseTypeId           String? @map("case_type_id") @db.Uuid
+  reason               String? @map("reason") @db.VarChar(255)
+  consentForSubmission Boolean @default(false) @map("consent_for_submission")
+  isDraft              Boolean @default(false) @map("is_draft")
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  organization        Organization?        @relation("OrganizationCases", fields: [organizationId], references: [id])
-  caseType            CaseType?            @relation("CaseTypeCases", fields: [caseTypeId], references: [id])
-  examinations        Examination[]        @relation("ExaminationCases")
-  documents           CaseDocument[]       @relation("CaseDocuments")
+  organization Organization?  @relation("OrganizationCases", fields: [organizationId], references: [id])
+  caseType     CaseType?      @relation("CaseTypeCases", fields: [caseTypeId], references: [id])
+  examinations Examination[]  @relation("ExaminationCases")
+  documents    CaseDocument[] @relation("CaseDocuments")
 
   @@map("cases")
 }
@@ -423,6 +423,7 @@ model Language {
 
   examinationInterpreter ExaminationInterpreter[] @relation("ExaminationInterpreter")
   examinerLanguages      ExaminerLanguage[]
+  interpreterLanguages   InterpreterLanguage[]
 
   @@map("languages")
 }
@@ -711,4 +712,94 @@ model ExaminerOverrideTimeSlot {
 
   @@index([overrideHourId])
   @@map("examiner_override_time_slots")
+}
+
+model Chaperone {
+  id        String  @id @unique @default(uuid()) @db.Uuid
+  firstName String  @map("first_name") @db.VarChar(255)
+  lastName  String  @map("last_name") @db.VarChar(255)
+  email     String  @unique @map("email") @db.VarChar(255)
+  phone     String? @map("phone") @db.VarChar(255)
+  gender    String? @map("gender") @db.VarChar(255)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  @@map("chaperones")
+}
+
+enum AvailabilityBlock {
+  MORNING
+  AFTERNOON
+  EVENING
+}
+
+model Interpreter {
+  id            String    @id @unique @default(uuid()) @db.Uuid
+  companyName   String    @map("company_name") @db.VarChar(255)
+  contactPerson String    @map("contact_person") @db.VarChar(255)
+  email         String    @unique @map("email") @db.VarChar(255)
+  phone         String?   @map("phone") @db.VarChar(255)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz()
+
+  languages    InterpreterLanguage[]     @relation("InterpreterLanguages")
+  availability InterpreterAvailability[] @relation("InterpreterAvailability")
+
+  @@map("interpreters")
+}
+
+model InterpreterLanguage {
+  id            String   @id @unique @default(uuid()) @db.Uuid
+  interpreterId String   @map("interpreter_id") @db.Uuid
+  languageId    String   @map("language_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  interpreter Interpreter @relation("InterpreterLanguages", fields: [interpreterId], references: [id], onDelete: Cascade)
+  language    Language    @relation(fields: [languageId], references: [id], onDelete: Restrict)
+
+  @@unique([interpreterId, languageId])
+  @@index([languageId])
+  @@map("interpreter_languages")
+}
+
+model InterpreterAvailability {
+  id            String            @id @unique @default(uuid()) @db.Uuid
+  interpreterId String            @map("interpreter_id") @db.Uuid
+  weekday       Int               @map("weekday") @db.SmallInt
+  block         AvailabilityBlock @map("block")
+  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
+
+  interpreter Interpreter @relation("InterpreterAvailability", fields: [interpreterId], references: [id], onDelete: Cascade)
+
+  @@unique([interpreterId, weekday, block])
+  @@index([interpreterId])
+  @@map("interpreter_availability")
+}
+
+enum TransporterStatus {
+  SUSPENDED
+  ACTIVE
+}
+
+model Transporter {
+  id            String            @id @default(uuid()) @db.Uuid
+  companyName   String            @map("company_name") @db.VarChar(255)
+  contactPerson String            @map("contact_person") @db.VarChar(255)
+  phone         String            @map("phone") @db.VarChar(20)
+  email         String            @map("email") @db.VarChar(255)
+  serviceAreas  Json              @map("service_areas") // Array of {province: string, address: string}
+  vehicleTypes  String[]          @map("vehicle_types") // Array of vehicle types
+  fleetInfo     String?           @map("fleet_info") @db.Text
+  baseAddress   String            @map("base_address") @db.Text
+  status        TransporterStatus @default(ACTIVE) @map("status")
+  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt     DateTime?         @map("deleted_at") @db.Timestamptz()
+
+  @@map("transporters")
 }
