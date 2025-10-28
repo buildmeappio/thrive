@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -17,14 +17,21 @@ import useRouter from '@/hooks/useRouter';
 
 interface ChaperoneComponentProps {
   chaperones: ChaperoneData[];
+  createTrigger?: number; // Add this prop
 }
 
-const ChaperoneComponent = ({ chaperones }: ChaperoneComponentProps) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+const ChaperoneComponent = ({ chaperones, createTrigger }: ChaperoneComponentProps) => {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
   const [selectedChaperone, setSelectedChaperone] = useState<Chaperone | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter(); 
+
+  useEffect(() => {
+    if (createTrigger && createTrigger > 0) {
+      handleCreate();
+    }
+  }, [createTrigger]);
 
   const handleCreate = () => {
     setDialogMode('create');
@@ -80,14 +87,6 @@ const ChaperoneComponent = ({ chaperones }: ChaperoneComponentProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-          Chaperones
-        </h1>
-        </div>
-      </div>
-
       <ChaperoneTable chaperoneList={chaperones} onEdit={handleEdit} onCreate={handleCreate} />
 
       <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>

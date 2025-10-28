@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { DashboardShell } from "@/layouts/dashboard";
-import ChaperoneComponent from "@/domains/services/components/Chaperone";
 import { getChaperones } from "@/domains/services/actions";
+import ChaperonesPageContent from "./ChaperonePageContent";
 
 export const metadata: Metadata = {
   title: "Chaperone | Thrive Admin",
@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 const Page = async () => {
   const chaperones = await getChaperones();
+  
   if (!chaperones.success) {
     return (
       <DashboardShell>
@@ -21,12 +22,11 @@ const Page = async () => {
       </DashboardShell>
     );
   }
+  
   return (
-    <DashboardShell>
-      <div className="mb-6">
-        <ChaperoneComponent chaperones={chaperones.result} />
-      </div>
-    </DashboardShell>
+    <ChaperonesPageContent 
+      chaperoneList={chaperones.result || []}
+    />
   );
 };
 
