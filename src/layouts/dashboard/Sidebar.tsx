@@ -13,16 +13,24 @@ import {
   ChevronLeft,
   Menu,
   X,
+  ChevronDown,
+  Settings,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useSidebar } from "@/providers/Sidebar";
 import { cn } from "@/lib/utils";
 
+type SubRoute = {
+  label: string;
+  href: string;
+};
+
 type Route = {
   icon: LucideIcon;
   label: string;
-  href: string;
+  href?: string;
   index: number;
+  subRoutes?: SubRoute[];
 };
 
 export const routes: Route[] = [
@@ -45,12 +53,21 @@ export const routes: Route[] = [
     href: "/cases",
     index: 3,
   },
-  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 4 },
+  {
+    icon: Settings,
+    label: "Services",
+    index: 4,
+    subRoutes: [
+      { label: "Chaperone", href: "/dashboard/chaperones" },
+    ],
+  },
+  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 5 },
 ];
 
 const Sidebar = () => {
   const pathname = usePathname();
   const [selectedBtn, setSelectedBtn] = useState<number | null>(null);
+  const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
 
   const { isSidebarOpen: isMobileOpen, isCollapsed, toggleCollapse, closeSidebar: onMobileClose } =
     useSidebar();
@@ -64,6 +81,18 @@ const Sidebar = () => {
     if (typeof window !== "undefined") {
       localStorage.setItem("selectedSidebarIndex", index.toString());
     }
+  };
+
+  const toggleMenu = (index: number) => {
+    setExpandedMenus((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
   };
 
   const initializeSelectedSidebarIndex = () => {
@@ -94,12 +123,22 @@ const Sidebar = () => {
       return;
     }
 
-    const matchedItem = routes.find((item) =>
-      checkIsPartOfSidebar(pathname, item.href)
-    );
+    const matchedItem = routes.find((item) => {
+      if (item.href && checkIsPartOfSidebar(pathname, item.href)) {
+        return true;
+      }
+      if (item.subRoutes) {
+        return item.subRoutes.some((sub) => checkIsPartOfSidebar(pathname, sub.href));
+      }
+      return false;
+    });
 
     if (matchedItem) {
       setSelectedSidebarIndex(matchedItem.index);
+      // Auto-expand if it's a submenu item
+      if (matchedItem.subRoutes) {
+        setExpandedMenus((prev) => new Set(prev).add(matchedItem.index));
+      }
     }
   }, [pathname]);
 
@@ -163,9 +202,12 @@ const Sidebar = () => {
               isCollapsed ? "px-4" : "px-3 md:px-6"
             )}>
               {routes.map((item) => {
+                const hasSubRoutes = item.subRoutes && item.subRoutes.length > 0;
+                const isExpanded = expandedMenus.has(item.index);
                 const isSelected = selectedBtn === item.index;
-                const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/dashboard");
-                const active = isSelected || isActive;
+                const isActive = item.href ? (pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/dashboard")) : false;
+                const isSubActive = hasSubRoutes && item.subRoutes!.some((sub) => pathname === sub.href || pathname.startsWith(sub.href));
+                const active = isSelected || isActive || isSubActive;
                 const Icon = item.icon;
                 
                 return (
@@ -179,9 +221,8 @@ const Sidebar = () => {
                       }
                     }}
                     className={cn(
-                      "group relative flex w-full items-center text-left font-medium transition-all duration-200 mb-3 md:mb-4",
-                      "text-xs md:text-sm",
-                      isCollapsed ? "justify-center rounded-full px-3 py-2" : "justify-start rounded-full gap-2 md:gap-3 pl-3 md:pl-4 py-1.5 md:py-2",
+                      "group relative flex w-full items-center text-left text-sm font-medium transition-all duration-200 mb-4",
+                      isCollapsed ? "justify-center rounded-full px-3 py-2" : "justify-start rounded-full gap-3 pl-4 py-2",
                       active
                         ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white shadow-sm hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80"
                         : "bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]"
@@ -190,14 +231,13 @@ const Sidebar = () => {
                   >
                     <span
                       className={cn(
-                        "flex items-center justify-center rounded-full",
-                        "h-6 w-6 md:h-7 md:w-7",
+                        "flex h-7 w-7 items-center justify-center rounded-full",
                         active
                           ? "bg-white/30 text-white"
                           : "bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]"
                       )}
                     >
-                      <Icon size={16} className="md:w-[18px] md:h-[18px]" />
+                      <Icon size={18} />
                     </span>
                     {!isCollapsed && (
                       <span className={cn(active ? "text-white" : "text-inherit")}>
