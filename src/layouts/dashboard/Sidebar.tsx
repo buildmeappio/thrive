@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   Menu,
   X,
+  Truck,
   ChevronDown,
   Settings,
 } from "lucide-react";
@@ -54,12 +55,18 @@ export const routes: Route[] = [
     index: 3,
   },
   {
+    icon: Truck,
+    label: "Transporters",
+    href: "/transporter",
+    index: 4,
+  },
+  {
     icon: Settings,
     label: "Services",
-    index: 4,
+    index: 5,
     subRoutes: [{ label: "Chaperone", href: "/dashboard/chaperones" }],
   },
-  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 5 },
+  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 6 },
 ];
 
 const Sidebar = () => {
@@ -162,15 +169,13 @@ const Sidebar = () => {
           isCollapsed
             ? "md:w-[90px]"
             : "w-[240px] md:w-[280px] max-w-[240px] md:max-w-[280px]"
-        )}
-      >
+        )}>
         <div className="relative flex h-full min-h-0 w-full flex-col pt-2">
           {/* Close button for mobile */}
           <button
             className="absolute top-3 right-3 z-10 flex h-7 w-7 items-center justify-center rounded-lg bg-transparent text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 md:hidden"
             onClick={onMobileClose}
-            aria-label="Close sidebar"
-          >
+            aria-label="Close sidebar">
             <X size={18} />
           </button>
 
@@ -179,8 +184,7 @@ const Sidebar = () => {
             <button
               className="absolute top-12 -right-3 z-10 hidden h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-[#DBDBFF] bg-[#F1F1FF] text-gray-500 transition-colors hover:bg-[#000093]/10 md:flex"
               onClick={toggleCollapse}
-              aria-label="Collapse sidebar"
-            >
+              aria-label="Collapse sidebar">
               <ChevronLeft
                 size={20}
                 className="text-[#000093] transition-transform duration-300"
@@ -193,14 +197,12 @@ const Sidebar = () => {
             className={cn(
               "mb-2 flex items-center p-3 md:p-6",
               isCollapsed ? "justify-center" : "justify-center"
-            )}
-          >
+            )}>
             {isCollapsed ? (
               <button
                 onClick={toggleCollapse}
                 className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-gray-100"
-                aria-label="Expand sidebar"
-              >
+                aria-label="Expand sidebar">
                 <Menu className="h-6 w-6 text-[#000093]" />
               </button>
             ) : null}
@@ -212,8 +214,7 @@ const Sidebar = () => {
               className={cn(
                 "flex-1 space-y-3 md:space-y-4 overflow-y-auto",
                 isCollapsed ? "px-4" : "px-3 md:px-6"
-              )}
-            >
+              )}>
               {routes.map((item) => {
                 const hasSubRoutes =
                   item.subRoutes && item.subRoutes.length > 0;
@@ -252,24 +253,21 @@ const Sidebar = () => {
                             ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
                             : "bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]"
                         )}
-                        title={item.label}
-                      >
+                        title={item.label}>
                         <span
                           className={cn(
                             "flex h-7 w-7 items-center justify-center rounded-full",
                             active
                               ? "bg-white/30 text-white"
                               : "bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]"
-                          )}
-                        >
+                          )}>
                           <Icon size={18} />
                         </span>
                         {!isCollapsed && (
                           <span
                             className={cn(
                               active ? "text-white" : "text-inherit"
-                            )}
-                          >
+                            )}>
                             {item.label}
                           </span>
                         )}
@@ -287,8 +285,7 @@ const Sidebar = () => {
                             ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
                             : "bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]"
                         )}
-                        title={item.label}
-                      >
+                        title={item.label}>
                         <div className="flex items-center gap-3">
                           <span
                             className={cn(
@@ -296,8 +293,7 @@ const Sidebar = () => {
                               active
                                 ? "bg-white/30 text-white"
                                 : "bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]"
-                            )}
-                          >
+                            )}>
                             <Icon size={18} />
                           </span>
                           {!isCollapsed && <span>{item.label}</span>}
@@ -324,8 +320,7 @@ const Sidebar = () => {
                               pathname === sub.href
                                 ? "text-[#FFFFFF] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]"
                                 : "text-[#7B8B91] hover:text-[#000093]"
-                            )}
-                          >
+                            )}>
                             {sub.label}
                           </Link>
                         ))}
@@ -341,8 +336,7 @@ const Sidebar = () => {
               className={cn(
                 "flex-shrink-0",
                 isCollapsed ? "p-4" : "p-3 md:p-6"
-              )}
-            >
+              )}>
               <button
                 onClick={handleLogout}
                 className={cn(
@@ -351,8 +345,7 @@ const Sidebar = () => {
                     ? "justify-center px-3 py-3"
                     : "justify-center gap-1.5 md:gap-2 px-4 md:px-6 py-2 md:py-3"
                 )}
-                title="Log Out"
-              >
+                title="Log Out">
                 <LogOut size={16} className="text-white md:w-5 md:h-5" />
                 {!isCollapsed && (
                   <span className="text-xs md:text-sm">Log Out</span>
