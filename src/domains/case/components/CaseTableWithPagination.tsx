@@ -1,8 +1,24 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReactTable, getCoreRowModel, getPaginationRowModel, getSortedRowModel, SortingState, flexRender, type Row, type Column } from "@tanstack/react-table";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  flexRender,
+  type Row,
+  type Column,
+} from "@tanstack/react-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { CaseData } from "@/domains/case/types/CaseData";
 import { cn } from "@/lib/utils";
 import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
@@ -13,11 +29,11 @@ import { formatDateShort } from "@/utils/date";
 const formatText = (str: string) => {
   if (!str) return str;
   return str
-    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
-    .split(' ')
-    .filter(word => word.length > 0)  // Remove empty strings
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+    .replace(/[-_]/g, " ") // Replace - and _ with spaces
+    .split(" ")
+    .filter((word) => word.length > 0) // Remove empty strings
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 };
 
 interface FilterState {
@@ -49,28 +65,40 @@ const ActionButton = ({ id }: { id: string }) => {
   );
 };
 
-const SortableHeader = ({ column, children }: { column: Column<CaseData, unknown>; children: React.ReactNode }) => {
+const SortableHeader = ({
+  column,
+  children,
+}: {
+  column: Column<CaseData, unknown>;
+  children: React.ReactNode;
+}) => {
   const sortDirection = column.getIsSorted();
-  
+
   const handleSort = () => {
     if (sortDirection === false) {
       column.toggleSorting(false); // Set to ascending
-    } else if (sortDirection === 'asc') {
+    } else if (sortDirection === "asc") {
       column.toggleSorting(true); // Set to descending
     } else {
       column.clearSorting(); // Clear sorting (back to original)
     }
   };
-  
+
   return (
     <div
       className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
       onClick={handleSort}
     >
       <span>{children}</span>
-      {sortDirection === false && <ArrowUpDown className="h-4 w-4 text-gray-400" />}
-      {sortDirection === 'asc' && <ArrowUp className="h-4 w-4 text-[#000093]" />}
-      {sortDirection === 'desc' && <ArrowDown className="h-4 w-4 text-[#000093]" />}
+      {sortDirection === false && (
+        <ArrowUpDown className="h-4 w-4 text-gray-400" />
+      )}
+      {sortDirection === "asc" && (
+        <ArrowUp className="h-4 w-4 text-[#000093]" />
+      )}
+      {sortDirection === "desc" && (
+        <ArrowDown className="h-4 w-4 text-[#000093]" />
+      )}
     </div>
   );
 };
@@ -127,7 +155,9 @@ const columnsDef = [
     ),
     cell: ({ row }: { row: Row<CaseData> }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-        {row.getValue("dueDate") ? formatDateShort(row.getValue("dueDate")) : "N/A"}
+        {row.getValue("dueDate")
+          ? formatDateShort(row.getValue("dueDate"))
+          : "N/A"}
       </div>
     ),
   },
@@ -164,7 +194,11 @@ const columnsDef = [
   },
 ];
 
-export default function CaseTableWithPagination({ data, searchQuery = "", filters }: Props) {
+export default function CaseTableWithPagination({
+  data,
+  searchQuery = "",
+  filters,
+}: Props) {
   const [query, setQuery] = useState(searchQuery);
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -250,7 +284,10 @@ export default function CaseTableWithPagination({ data, searchQuery = "", filter
           <Table className="min-w-[1000px] border-0">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
+                <TableRow
+                  className="bg-[#F3F3F3] border-b-0"
+                  key={headerGroup.id}
+                >
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
@@ -258,15 +295,15 @@ export default function CaseTableWithPagination({ data, searchQuery = "", filter
                         "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap",
                         header.index === 0 && "rounded-l-2xl",
                         header.index === headerGroup.headers.length - 1 &&
-                        "rounded-r-2xl w-[60px]"
+                          "rounded-r-2xl w-[60px]"
                       )}
                     >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   ))}
                 </TableRow>
@@ -283,7 +320,10 @@ export default function CaseTableWithPagination({ data, searchQuery = "", filter
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="px-6 py-3">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -302,6 +342,6 @@ export default function CaseTableWithPagination({ data, searchQuery = "", filter
           </Table>
         </div>
       </>
-    )
+    ),
   };
 }
