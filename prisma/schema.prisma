@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -16,10 +10,10 @@ datasource db {
 model OrganizationType {
   id            String         @id @unique @default(uuid()) @db.Uuid
   name          String         @map("name") @db.VarChar(255)
-  description   String?        @map("description") @db.Text
-  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt     DateTime?      @map("deleted_at") @db.Timestamptz()
+  description   String?        @map("description")
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime?      @map("deleted_at") @db.Timestamptz(6)
   organizations Organization[] @relation("OrganizationType")
 
   @@map("organization_types")
@@ -28,9 +22,9 @@ model OrganizationType {
 model Department {
   id        String                @id @unique @default(uuid()) @db.Uuid
   name      String                @map("name") @db.VarChar(255)
-  createdAt DateTime              @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime              @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime?             @map("deleted_at") @db.Timestamptz()
+  createdAt DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime?             @map("deleted_at") @db.Timestamptz(6)
   managers  OrganizationManager[] @relation("DepartmentManager")
 
   @@map("departments")
@@ -39,9 +33,9 @@ model Department {
 model Role {
   id        String    @id @unique @default(uuid()) @db.Uuid
   name      String    @map("name") @db.VarChar(255)
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   accounts  Account[] @relation("AccountRole")
 
   @@map("roles")
@@ -50,13 +44,12 @@ model Role {
 model VerificationCodes {
   id        String    @id @unique @default(uuid()) @db.Uuid
   code      String    @map("code") @db.VarChar(255)
-  expiresAt DateTime  @map("expires_at") @db.Timestamptz()
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
   accountId String    @map("account_id") @db.Uuid
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
-
-  account Account @relation(name: "AccountVerification", fields: [accountId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  account   Account   @relation("AccountVerification", fields: [accountId], references: [id])
 
   @@map("verification_codes")
 }
@@ -65,113 +58,104 @@ enum OrganizationStatus {
   PENDING
   ACCEPTED
   REJECTED
-  INFO_REQUESTED
 }
 
 model Organization {
-  id                     String             @id @unique @default(uuid()) @db.Uuid
-  typeId                 String             @map("type_id") @db.Uuid
-  addressId              String             @map("address_id") @db.Uuid
-  address                Address            @relation("Address", fields: [addressId], references: [id])
-  type                   OrganizationType   @relation(name: "OrganizationType", fields: [typeId], references: [id])
-  name                   String             @map("name") @db.VarChar(255)
-  website                String?            @map("website") @db.VarChar(255)
-  isAuthorized           Boolean            @default(false) @map("is_authorized")
-  dataSharingConsent     Boolean            @default(false) @map("data_sharing_consent")
-  agreeToTermsAndPrivacy Boolean            @default(false) @map("agree_to_terms_and_privacy")
-  status                 OrganizationStatus @default(PENDING) @map("status")
-  approvedBy             String?            @map("approved_by") @db.Uuid
-  approvedAt             DateTime?          @map("approved_at") @db.Timestamptz()
-  rejectedBy             String?            @map("rejected_by") @db.Uuid
-  rejectedAt             DateTime?          @map("rejected_at") @db.Timestamptz()
-  rejectedReason         String?            @map("rejected_reason") @db.Text
-
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
-
-  manager OrganizationManager[] @relation("OrganizationManager")
-  cases   Case[]                @relation("OrganizationCases")
+  id                     String                @id @unique @default(uuid()) @db.Uuid
+  typeId                 String                @map("type_id") @db.Uuid
+  addressId              String                @map("address_id") @db.Uuid
+  name                   String                @map("name") @db.VarChar(255)
+  website                String?               @map("website") @db.VarChar(255)
+  isAuthorized           Boolean               @default(false) @map("is_authorized")
+  dataSharingConsent     Boolean               @default(false) @map("data_sharing_consent")
+  agreeToTermsAndPrivacy Boolean               @default(false) @map("agree_to_terms_and_privacy")
+  status                 OrganizationStatus    @default(PENDING) @map("status")
+  approvedBy             String?               @map("approved_by") @db.Uuid
+  approvedAt             DateTime?             @map("approved_at") @db.Timestamptz(6)
+  rejectedBy             String?               @map("rejected_by") @db.Uuid
+  rejectedAt             DateTime?             @map("rejected_at") @db.Timestamptz(6)
+  rejectedReason         String?               @map("rejected_reason")
+  createdAt              DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt              DateTime?             @map("deleted_at") @db.Timestamptz(6)
+  cases                  Case[]                @relation("OrganizationCases")
+  manager                OrganizationManager[] @relation("OrganizationManager")
+  address                Address               @relation("Address", fields: [addressId], references: [id])
+  type                   OrganizationType      @relation("OrganizationType", fields: [typeId], references: [id])
 
   @@map("organizations")
 }
 
 model OrganizationManager {
-  id             String    @id @unique @default(uuid()) @db.Uuid
-  organizationId String    @map("organization_id") @db.Uuid
-  accountId      String    @map("account_id") @db.Uuid
-  jobTitle       String?   @map("job_title") @db.VarChar(255)
-  departmentId   String?   @map("department_id") @db.Uuid
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz()
-
-  account      Account      @relation(name: "AccountManager", fields: [accountId], references: [id])
-  organization Organization @relation(name: "OrganizationManager", fields: [organizationId], references: [id])
-  department   Department?  @relation(name: "DepartmentManager", fields: [departmentId], references: [id])
+  id             String       @id @unique @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  accountId      String       @map("account_id") @db.Uuid
+  jobTitle       String?      @map("job_title") @db.VarChar(255)
+  departmentId   String?      @map("department_id") @db.Uuid
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?    @map("deleted_at") @db.Timestamptz(6)
+  account        Account      @relation("AccountManager", fields: [accountId], references: [id])
+  department     Department?  @relation("DepartmentManager", fields: [departmentId], references: [id])
+  organization   Organization @relation("OrganizationManager", fields: [organizationId], references: [id])
 
   @@map("organization_managers")
 }
 
 model User {
-  id             String    @id @unique @default(uuid()) @db.Uuid
-  firstName      String    @map("first_name") @db.VarChar(255)
-  lastName       String    @map("last_name") @db.VarChar(255)
-  email          String    @unique @map("email") @db.VarChar(255)
-  password       String?   @map("password") @db.VarChar(255)
-  phone          String?   @map("phone") @db.VarChar(255)
-  gender         String?   @map("gender") @db.VarChar(255)
-  dateOfBirth    DateTime? @map("date_of_birth") @db.Timestamptz()
-  profilePhotoId String?   @map("profile_photo_id") @db.Uuid
-
-  profilePhoto Documents? @relation(name: "ProfilePhoto", fields: [profilePhotoId], references: [id])
-
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
-  accounts  Account[] @relation("AccountUser")
+  id             String     @id @unique @default(uuid()) @db.Uuid
+  firstName      String     @map("first_name") @db.VarChar(255)
+  lastName       String     @map("last_name") @db.VarChar(255)
+  email          String     @unique @map("email") @db.VarChar(255)
+  password       String?    @map("password") @db.VarChar(255)
+  phone          String?    @map("phone") @db.VarChar(255)
+  gender         String?    @map("gender") @db.VarChar(255)
+  dateOfBirth    DateTime?  @map("date_of_birth") @db.Timestamptz(6)
+  profilePhotoId String?    @map("profile_photo_id") @db.Uuid
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?  @map("deleted_at") @db.Timestamptz(6)
+  accounts       Account[]  @relation("AccountUser")
+  profilePhoto   Documents? @relation("ProfilePhoto", fields: [profilePhotoId], references: [id])
 
   @@map("users")
 }
 
 model Account {
-  id         String    @id @unique @default(uuid()) @db.Uuid
-  roleId     String    @map("role_id") @db.Uuid
-  userId     String    @map("user_id") @db.Uuid
-  isVerified Boolean   @default(false) @map("is_verified")
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz()
-
-  role                 Role                  @relation(name: "AccountRole", fields: [roleId], references: [id])
-  user                 User                  @relation(name: "AccountUser", fields: [userId], references: [id])
-  verificationCodes    VerificationCodes[]   @relation("AccountVerification")
-  managers             OrganizationManager[] @relation("AccountManager")
-  examinations         Examination[]         @relation("ExaminerCases")
+  id                   String                @id @unique @default(uuid()) @db.Uuid
+  roleId               String                @map("role_id") @db.Uuid
+  userId               String                @map("user_id") @db.Uuid
+  isVerified           Boolean               @default(false) @map("is_verified")
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime?             @map("deleted_at") @db.Timestamptz(6)
+  role                 Role                  @relation("AccountRole", fields: [roleId], references: [id])
+  user                 User                  @relation("AccountUser", fields: [userId], references: [id])
   assignedExaminations Examination[]         @relation("AssignedCases")
+  examinations         Examination[]         @relation("ExaminerCases")
   examinerProfiles     ExaminerProfile[]
+  managers             OrganizationManager[] @relation("AccountManager")
+  verificationCodes    VerificationCodes[]   @relation("AccountVerification")
 
   @@map("accounts")
 }
 
 model Address {
-  id         String  @id @unique @default(uuid()) @db.Uuid
-  address    String  @map("address") @db.Text
-  street     String? @map("street") @db.VarChar(255)
-  province   String? @map("province") @db.VarChar(255)
-  city       String? @map("city") @db.VarChar(255)
-  postalCode String? @map("postal_code") @db.VarChar(255)
-  suite      String? @map("suite") @db.VarChar(255)
-
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
-
-  organizations        Organization[]         @relation("Address")
+  id                   String                 @id @unique @default(uuid()) @db.Uuid
+  address              String                 @map("address")
+  street               String?                @map("street") @db.VarChar(255)
+  province             String?                @map("province") @db.VarChar(255)
+  city                 String?                @map("city") @db.VarChar(255)
+  postalCode           String?                @map("postal_code") @db.VarChar(255)
+  suite                String?                @map("suite") @db.VarChar(255)
+  createdAt            DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime?              @map("deleted_at") @db.Timestamptz(6)
   claimants            Claimant[]             @relation("ClaimantAddress")
   examinationTransport ExaminationTransport[] @relation("ExaminationTransport")
-  legalRepresentatives LegalRepresentative[]  @relation("LegalRepresentativeAddress")
   insurances           Insurance[]            @relation("InsuranceAddress")
+  legalRepresentatives LegalRepresentative[]  @relation("LegalRepresentativeAddress")
+  organizations        Organization[]         @relation("Address")
 
   @@map("addresses")
 }
@@ -196,7 +180,7 @@ model Claimant {
   deletedAt                DateTime? @map("deleted_at") @db.Timestamptz()
 
   address              Address                @relation("ClaimantAddress", fields: [addressId], references: [id])
-  examinations         Examination[]          @relation("ExaminationClaimant")
+  cases                Case[]                 @relation("ClaimantCases")
   claimantAvailability ClaimantAvailability[] @relation("ClaimantAvailability")
   claimType            ClaimType              @relation("ClaimantClaimType", fields: [claimTypeId], references: [id])
 
@@ -212,7 +196,7 @@ model LegalRepresentative {
   addressId         String?  @map("address_id") @db.Uuid
   address           Address? @relation("LegalRepresentativeAddress", fields: [addressId], references: [id])
 
-  examinations Examination[] @relation("ExaminationLegalRepresentative")
+  cases Case[] @relation("LegalRepresentativeCases")
 
   @@map("legal_representatives")
 }
@@ -233,7 +217,7 @@ model Insurance {
   addressId              String?  @map("address_id") @db.Uuid
   address                Address? @relation("InsuranceAddress", fields: [addressId], references: [id])
 
-  examinations Examination[] @relation("ExaminationInsurance")
+  cases Case[] @relation("InsuranceCases")
 
   @@map("insurances")
 }
@@ -241,6 +225,9 @@ model Insurance {
 model Case {
   id                    String  @id @unique @default(uuid()) @db.Uuid
   organizationId        String? @map("organization_id") @db.Uuid
+  claimantId            String  @map("claimant_id") @db.Uuid
+  insuranceId           String? @map("insurance_id") @db.Uuid
+  legalRepresentativeId String? @map("legal_representative_id") @db.Uuid
   caseTypeId            String? @map("case_type_id") @db.Uuid
   reason                String? @map("reason") @db.VarChar(255)
   consentForSubmission  Boolean @default(false) @map("consent_for_submission")
@@ -251,17 +238,14 @@ model Case {
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
   organization        Organization?        @relation("OrganizationCases", fields: [organizationId], references: [id])
+  claimant            Claimant             @relation("ClaimantCases", fields: [claimantId], references: [id])
+  insurance           Insurance?           @relation("InsuranceCases", fields: [insuranceId], references: [id])
+  legalRepresentative LegalRepresentative? @relation("LegalRepresentativeCases", fields: [legalRepresentativeId], references: [id])
   caseType            CaseType?            @relation("CaseTypeCases", fields: [caseTypeId], references: [id])
   examinations        Examination[]        @relation("ExaminationCases")
   documents           CaseDocument[]       @relation("CaseDocuments")
 
   @@map("cases")
-}
-
-enum UrgencyLevel {
-  HIGH
-  MEDIUM
-  LOW
 }
 
 model Examination {
@@ -281,10 +265,6 @@ model Examination {
   assignToId String?   @map("assign_to_id") @db.Uuid
   assignedAt DateTime? @map("assigned_at") @db.Timestamptz()
 
-  claimantId            String  @map("claimant_id") @db.Uuid
-  insuranceId           String? @map("insurance_id") @db.Uuid
-  legalRepresentativeId String? @map("legal_representative_id") @db.Uuid
-
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
@@ -299,128 +279,95 @@ model Examination {
   services             ExaminationServices[]        @relation("ExaminationServices")
   selectedBenefits     ExaminationSelectedBenefit[] @relation("ExaminationSelectedBenefits")
 
-  claimant            Claimant             @relation("ExaminationClaimant", fields: [claimantId], references: [id])
-  insurance           Insurance?           @relation("ExaminationInsurance", fields: [insuranceId], references: [id])
-  legalRepresentative LegalRepresentative? @relation("ExaminationLegalRepresentative", fields: [legalRepresentativeId], references: [id])
-
   @@index([caseId])
   @@index([caseNumber])
   @@map("examinations")
-}
-
-enum ExaminationSecureLinkStatus {
-  PENDING
-  SUBMITTED
-  INVALID
 }
 
 model ExaminationSecureLink {
   id            String                      @id @unique @default(uuid()) @db.Uuid
   examinationId String                      @map("examination_id") @db.Uuid
   token         String                      @map("token") @db.VarChar(255)
-  expiresAt     DateTime                    @map("expires_at") @db.Timestamptz()
-  lastOpenedAt  DateTime?                   @map("last_opened_at") @db.Timestamptz()
-  submittedAt   DateTime?                   @map("submitted_at") @db.Timestamptz()
+  expiresAt     DateTime                    @map("expires_at") @db.Timestamptz(6)
+  lastOpenedAt  DateTime?                   @map("last_opened_at") @db.Timestamptz(6)
+  submittedAt   DateTime?                   @map("submitted_at") @db.Timestamptz(6)
   status        ExaminationSecureLinkStatus @default(PENDING) @map("status")
-
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
-
-  examination Examination @relation("ExaminationSecureLink", fields: [examinationId], references: [id])
+  createdAt     DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime                    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime?                   @map("deleted_at") @db.Timestamptz(6)
+  examination   Examination                 @relation("ExaminationSecureLink", fields: [examinationId], references: [id])
 
   @@map("examination_secure_links")
 }
 
-enum ClaimantPreference {
-  IN_PERSON
-  VIRTUAL
-  EITHER
-}
-
 model ClaimantAvailability {
-  id                 String             @id @unique @default(uuid()) @db.Uuid
-  examinationId      String             @map("examination_id") @db.Uuid
-  claimantId         String             @map("claimant_id") @db.Uuid
-  preference         ClaimantPreference @map("preference")
-  accessibilityNotes String?            @map("accessibility_notes") @db.Text
-  consentAck         Boolean            @default(false) @map("consent_ack")
-
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
-
-  examination Examination                 @relation("ExaminationClaimantAvailability", fields: [examinationId], references: [id])
-  claimant    Claimant                    @relation("ClaimantAvailability", fields: [claimantId], references: [id])
-  slots       ClaimantAvailabilitySlots[] @relation("ClaimantAvailabilitySlots")
+  id                 String                      @id @unique @default(uuid()) @db.Uuid
+  examinationId      String                      @map("examination_id") @db.Uuid
+  claimantId         String                      @map("claimant_id") @db.Uuid
+  preference         ClaimantPreference          @map("preference")
+  accessibilityNotes String?                     @map("accessibility_notes")
+  consentAck         Boolean                     @default(false) @map("consent_ack")
+  createdAt          DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime                    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt          DateTime?                   @map("deleted_at") @db.Timestamptz(6)
+  claimant           Claimant                    @relation("ClaimantAvailability", fields: [claimantId], references: [id])
+  examination        Examination                 @relation("ExaminationClaimantAvailability", fields: [examinationId], references: [id])
+  slots              ClaimantAvailabilitySlots[] @relation("ClaimantAvailabilitySlots")
 
   @@map("claimant_availability")
 }
 
-enum TimeBand {
-  MORNING
-  AFTERNOON
-  EVENING
-  EITHER
-}
-
 model ClaimantAvailabilitySlots {
-  id             String    @id @unique @default(uuid()) @db.Uuid
-  availabilityId String    @map("availability_id") @db.Uuid
-  date           DateTime  @map("date") @db.Date
-  startTime      String    @map("start_time") @db.VarChar(255)
-  endTime        String    @map("end_time") @db.VarChar(255)
-  start          DateTime  @map("start") @db.Timestamptz()
-  end            DateTime  @map("end") @db.Timestamptz()
-  timeBand       TimeBand  @map("time_band")
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz()
-
-  availability ClaimantAvailability @relation("ClaimantAvailabilitySlots", fields: [availabilityId], references: [id])
+  id             String               @id @unique @default(uuid()) @db.Uuid
+  availabilityId String               @map("availability_id") @db.Uuid
+  date           DateTime             @map("date") @db.Date
+  startTime      String               @map("start_time") @db.VarChar(255)
+  endTime        String               @map("end_time") @db.VarChar(255)
+  start          DateTime             @map("start") @db.Timestamptz(6)
+  end            DateTime             @map("end") @db.Timestamptz(6)
+  timeBand       TimeBand             @map("time_band")
+  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?            @map("deleted_at") @db.Timestamptz(6)
+  availability   ClaimantAvailability @relation("ClaimantAvailabilitySlots", fields: [availabilityId], references: [id])
 
   @@map("claimant_availability_slots")
 }
 
 model ExaminationServices {
-  id            String  @id @unique @default(uuid()) @db.Uuid
-  examinationId String  @map("examination_id") @db.Uuid
-  type          String  @map("type") @db.VarChar(255)
-  enabled       Boolean @default(false) @map("enabled")
-
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
-
-  examination Examination             @relation("ExaminationServices", fields: [examinationId], references: [id])
-  interpreter ExaminationInterpreter? @relation("ExaminationInterpreter")
-  transport   ExaminationTransport?   @relation("ExaminationTransport")
+  id            String                  @id @unique @default(uuid()) @db.Uuid
+  examinationId String                  @map("examination_id") @db.Uuid
+  type          String                  @map("type") @db.VarChar(255)
+  enabled       Boolean                 @default(false) @map("enabled")
+  createdAt     DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime?               @map("deleted_at") @db.Timestamptz(6)
+  interpreter   ExaminationInterpreter? @relation("ExaminationInterpreter")
+  examination   Examination             @relation("ExaminationServices", fields: [examinationId], references: [id])
+  transport     ExaminationTransport?   @relation("ExaminationTransport")
 
   @@map("examination_services")
 }
 
 model ExaminationInterpreter {
-  id                   String @id @unique @default(uuid()) @db.Uuid
-  examinationServiceId String @unique @map("examination_service_id") @db.Uuid
-  languageId           String @map("language_id") @db.Uuid
-
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
-
-  examinationService ExaminationServices @relation("ExaminationInterpreter", fields: [examinationServiceId], references: [id])
-  language           Language            @relation("ExaminationInterpreter", fields: [languageId], references: [id])
+  id                   String              @id @unique @default(uuid()) @db.Uuid
+  examinationServiceId String              @unique @map("examination_service_id") @db.Uuid
+  languageId           String              @map("language_id") @db.Uuid
+  createdAt            DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime?           @map("deleted_at") @db.Timestamptz(6)
+  examinationService   ExaminationServices @relation("ExaminationInterpreter", fields: [examinationServiceId], references: [id])
+  language             Language            @relation("ExaminationInterpreter", fields: [languageId], references: [id])
 
   @@map("examination_interpreter")
 }
 
 model Language {
-  id        String    @id @unique @default(uuid()) @db.Uuid
-  name      String    @map("name") @db.VarChar(255)
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
-
+  id                     String                   @id @unique @default(uuid()) @db.Uuid
+  name                   String                   @map("name") @db.VarChar(255)
+  createdAt              DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt              DateTime?                @map("deleted_at") @db.Timestamptz(6)
   examinationInterpreter ExaminationInterpreter[] @relation("ExaminationInterpreter")
   examinerLanguages      ExaminerLanguage[]
 
@@ -428,18 +375,16 @@ model Language {
 }
 
 model ExaminationTransport {
-  id                   String  @id @unique @default(uuid()) @db.Uuid
-  examinationServiceId String  @unique @map("examination_service_id") @db.Uuid
-  pickupAddressId      String? @map("pickup_address_id") @db.Uuid
-  rawLookup            String? @map("raw_lookup") @db.Text
-  notes                String? @map("notes") @db.Text
-
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
-
-  examinationService ExaminationServices @relation("ExaminationTransport", fields: [examinationServiceId], references: [id])
-  pickupAddress      Address?            @relation("ExaminationTransport", fields: [pickupAddressId], references: [id])
+  id                   String              @id @unique @default(uuid()) @db.Uuid
+  examinationServiceId String              @unique @map("examination_service_id") @db.Uuid
+  pickupAddressId      String?             @map("pickup_address_id") @db.Uuid
+  rawLookup            String?             @map("raw_lookup")
+  notes                String?             @map("notes")
+  createdAt            DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime?           @map("deleted_at") @db.Timestamptz(6)
+  examinationService   ExaminationServices @relation("ExaminationTransport", fields: [examinationServiceId], references: [id])
+  pickupAddress        Address?            @relation("ExaminationTransport", fields: [pickupAddressId], references: [id])
 
   @@map("examination_transport")
 }
@@ -448,12 +393,11 @@ model CaseDocument {
   id         String    @id @unique @default(uuid()) @db.Uuid
   caseId     String    @map("case_id") @db.Uuid
   documentId String    @map("document_id") @db.Uuid
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz()
-
-  case     Case      @relation("CaseDocuments", fields: [caseId], references: [id])
-  document Documents @relation("DocumentCases", fields: [documentId], references: [id])
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz(6)
+  case       Case      @relation("CaseDocuments", fields: [caseId], references: [id])
+  document   Documents @relation("DocumentCases", fields: [documentId], references: [id])
 
   @@unique([caseId, documentId])
   @@map("case_documents")
@@ -462,18 +406,17 @@ model CaseDocument {
 model Documents {
   id                String            @id @unique @default(uuid()) @db.Uuid
   name              String            @map("name") @db.VarChar(255)
-  displayName       String?           @map("display_name") @db.VarChar(255)
   type              String            @map("type") @db.VarChar(255)
-  size              Int               @map("size") @db.Integer
-  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt         DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt         DateTime?         @map("deleted_at") @db.Timestamptz()
-  users             User[]            @relation("ProfilePhoto")
+  size              Int               @map("size")
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime?         @map("deleted_at") @db.Timestamptz(6)
+  displayName       String?           @map("display_name") @db.VarChar(255)
   cases             CaseDocument[]    @relation("DocumentCases")
-  medicalLicenses   ExaminerProfile[] @relation(name: "ExaminerMedicalLicenseDocument")
-  examinerResume    ExaminerProfile[] @relation(name: "ExaminerResumeDocument")
-  examinerNDA       ExaminerProfile[] @relation(name: "ExaminerNDADocument")
-  examinerInsurance ExaminerProfile[] @relation(name: "ExaminerInsuranceDocument")
+  medicalLicenses   ExaminerProfile[] @relation(name: "ExmainerMedicalLicenseDocument")
+  examinerResume    ExaminerProfile[] @relation(name: "ExmainerResumeDocument")
+  examinerNDA       ExaminerProfile[] @relation(name: "ExmainerNDADocument")
+  examinerInsurance ExaminerProfile[] @relation(name: "ExmainerInsuranceDocument")
 
   @@map("documents")
 }
@@ -482,41 +425,39 @@ model ExaminationType {
   id           String                   @id @unique @default(uuid()) @db.Uuid
   name         String                   @unique @map("name") @db.VarChar(255)
   shortForm    String?                  @map("short_form") @db.VarChar(255)
-  description  String?                  @map("description") @db.Text
-  createdAt    DateTime                 @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt    DateTime                 @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt    DateTime?                @map("deleted_at") @db.Timestamptz()
-  examinations Examination[]            @relation("ExaminationType")
+  description  String?                  @map("description")
+  createdAt    DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime?                @map("deleted_at") @db.Timestamptz(6)
   benefits     ExaminationTypeBenefit[] @relation("ExaminationTypeBenefits")
+  examinations Examination[]            @relation("ExaminationType")
 
   @@map("examination_types")
 }
 
 model ExaminationTypeBenefit {
-  id                String    @id @unique @default(uuid()) @db.Uuid
-  examinationTypeId String    @map("examination_type_id") @db.Uuid
-  benefit           String    @map("benefit") @db.VarChar(500)
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()
-
-  examinationType ExaminationType              @relation("ExaminationTypeBenefits", fields: [examinationTypeId], references: [id], onDelete: Cascade)
-  selectedByExams ExaminationSelectedBenefit[] @relation("SelectedBenefits")
+  id                String                       @id @unique @default(uuid()) @db.Uuid
+  examinationTypeId String                       @map("examination_type_id") @db.Uuid
+  benefit           String                       @map("benefit") @db.VarChar(500)
+  createdAt         DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime?                    @map("deleted_at") @db.Timestamptz(6)
+  selectedByExams   ExaminationSelectedBenefit[] @relation("SelectedBenefits")
+  examinationType   ExaminationType              @relation("ExaminationTypeBenefits", fields: [examinationTypeId], references: [id], onDelete: Cascade)
 
   @@index([examinationTypeId])
   @@map("examination_type_benefits")
 }
 
 model ExaminationSelectedBenefit {
-  id            String    @id @unique @default(uuid()) @db.Uuid
-  examinationId String    @map("examination_id") @db.Uuid
-  benefitId     String    @map("benefit_id") @db.Uuid
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz()
-
-  examination Examination            @relation("ExaminationSelectedBenefits", fields: [examinationId], references: [id], onDelete: Cascade)
-  benefit     ExaminationTypeBenefit @relation("SelectedBenefits", fields: [benefitId], references: [id], onDelete: Cascade)
+  id            String                 @id @unique @default(uuid()) @db.Uuid
+  examinationId String                 @map("examination_id") @db.Uuid
+  benefitId     String                 @map("benefit_id") @db.Uuid
+  createdAt     DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime?              @map("deleted_at") @db.Timestamptz(6)
+  benefit       ExaminationTypeBenefit @relation("SelectedBenefits", fields: [benefitId], references: [id], onDelete: Cascade)
+  examination   Examination            @relation("ExaminationSelectedBenefits", fields: [examinationId], references: [id], onDelete: Cascade)
 
   @@unique([examinationId, benefitId])
   @@index([examinationId])
@@ -527,24 +468,23 @@ model ExaminationSelectedBenefit {
 model CaseType {
   id          String    @id @unique @default(uuid()) @db.Uuid
   name        String    @map("name") @db.VarChar(255)
-  description String?   @map("description") @db.Text
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz()
+  description String?   @map("description")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
   cases       Case[]    @relation("CaseTypeCases")
 
   @@map("case_types")
 }
 
 model ClaimType {
-  id          String    @id @unique @default(uuid()) @db.Uuid
-  name        String    @map("name") @db.VarChar(255)
-  description String?   @map("description") @db.Text
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz()
-
-  claimants Claimant[] @relation("ClaimantClaimType")
+  id          String     @id @unique @default(uuid()) @db.Uuid
+  name        String     @map("name") @db.VarChar(255)
+  description String?    @map("description")
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?  @map("deleted_at") @db.Timestamptz(6)
+  claimants   Claimant[] @relation("ClaimantClaimType")
 
   @@map("claim_types")
 }
@@ -552,43 +492,34 @@ model ClaimType {
 model PrismaSeed {
   id        String    @id @unique @default(uuid()) @db.Uuid
   name      String    @map("name") @db.VarChar(255)
-  runAt     DateTime  @map("run_at") @db.Timestamptz()
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+  runAt     DateTime  @map("run_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   @@map("_prisma_seeds")
 }
 
 model CaseStatus {
-  id          String    @id @unique @default(uuid()) @db.Uuid
-  name        String    @map("name") @db.VarChar(255)
-  description String?   @map("description") @db.Text
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz()
-
+  id           String        @id @unique @default(uuid()) @db.Uuid
+  name         String        @map("name") @db.VarChar(255)
+  description  String?       @map("description")
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime?     @map("deleted_at") @db.Timestamptz(6)
   examinations Examination[] @relation("CaseStatus")
 
   @@map("case_statuses")
 }
 
-enum ExaminerStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
-  INFO_REQUESTED
-}
-
 model ExaminerLanguage {
-  id                String   @id @default(uuid()) @db.Uuid
-  examinerProfileId String   @map("examiner_profile_id") @db.Uuid
-  languageId        String   @map("language_id") @db.Uuid
-  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  examinerProfile ExaminerProfile @relation(fields: [examinerProfileId], references: [id], onDelete: Cascade)
-  language        Language        @relation(fields: [languageId], references: [id], onDelete: Restrict)
+  id                String          @id @default(uuid()) @db.Uuid
+  examinerProfileId String          @map("examiner_profile_id") @db.Uuid
+  languageId        String          @map("language_id") @db.Uuid
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+  examinerProfile   ExaminerProfile @relation(fields: [examinerProfileId], references: [id], onDelete: Cascade)
+  language          Language        @relation(fields: [languageId], references: [id])
 
   @@unique([examinerProfileId, languageId])
   @@index([languageId])
@@ -602,7 +533,6 @@ model ExaminerProfile {
   mailingAddress                    String         @map("mailing_address") @db.Text
   specialties                       String[]       @map("specialties")
   licenseNumber                     String         @map("license_number") @db.VarChar(255)
-  landlineNumber                    String?        @map("landline_number") @db.VarChar(255)
   assessmentTypes                   String[]       @map("assessment_types")
   provinceOfLicensure               String         @map("province_of_licensure") @db.VarChar(255)
   licenseExpiryDate                 DateTime?      @map("license_expiry_date") @db.Date
@@ -638,10 +568,10 @@ model ExaminerProfile {
   deletedAt                         DateTime?
 
   account                Account                 @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  medicalLicenseDocument Documents               @relation(name: "ExaminerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
-  resumeDocument         Documents               @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
-  ndaDocument            Documents?              @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
-  insuranceDocument      Documents?              @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
+  medicalLicenseDocument Documents               @relation(name: "ExmainerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
+  resumeDocument         Documents               @relation(name: "ExmainerResumeDocument", references: [id], fields: [resumeDocumentId])
+  ndaDocument            Documents?              @relation(name: "ExmainerNDADocument", references: [id], fields: [NdaDocumentId])
+  insuranceDocument      Documents?              @relation(name: "ExmainerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
   examinerLanguages      ExaminerLanguage[]
   weeklyHours            ExaminerWeeklyHours[]
   overrideHours          ExaminerOverrideHours[]
@@ -650,16 +580,15 @@ model ExaminerProfile {
 }
 
 model ExaminerWeeklyHours {
-  id                String    @id @default(uuid()) @db.Uuid
-  examinerProfileId String    @map("examiner_profile_id") @db.Uuid
-  dayOfWeek         String    @map("day_of_week") @db.VarChar(20)
-  enabled           Boolean   @default(true) @map("enabled")
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()
-
-  examinerProfile ExaminerProfile          @relation(fields: [examinerProfileId], references: [id], onDelete: Cascade)
-  timeSlots       ExaminerWeeklyTimeSlot[]
+  id                String                   @id @default(uuid()) @db.Uuid
+  examinerProfileId String                   @map("examiner_profile_id") @db.Uuid
+  dayOfWeek         String                   @map("day_of_week") @db.VarChar(20)
+  enabled           Boolean                  @default(true) @map("enabled")
+  createdAt         DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime?                @map("deleted_at") @db.Timestamptz(6)
+  examinerProfile   ExaminerProfile          @relation(fields: [examinerProfileId], references: [id], onDelete: Cascade)
+  timeSlots         ExaminerWeeklyTimeSlot[]
 
   @@unique([examinerProfileId, dayOfWeek])
   @@index([examinerProfileId])
@@ -667,30 +596,28 @@ model ExaminerWeeklyHours {
 }
 
 model ExaminerWeeklyTimeSlot {
-  id           String    @id @default(uuid()) @db.Uuid
-  weeklyHourId String    @map("weekly_hour_id") @db.Uuid
-  startTime    String    @map("start_time") @db.VarChar(20)
-  endTime      String    @map("end_time") @db.VarChar(20)
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz()
-
-  weeklyHour ExaminerWeeklyHours @relation(fields: [weeklyHourId], references: [id], onDelete: Cascade)
+  id           String              @id @default(uuid()) @db.Uuid
+  weeklyHourId String              @map("weekly_hour_id") @db.Uuid
+  startTime    String              @map("start_time") @db.VarChar(20)
+  endTime      String              @map("end_time") @db.VarChar(20)
+  createdAt    DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime?           @map("deleted_at") @db.Timestamptz(6)
+  weeklyHour   ExaminerWeeklyHours @relation(fields: [weeklyHourId], references: [id], onDelete: Cascade)
 
   @@index([weeklyHourId])
   @@map("examiner_weekly_time_slots")
 }
 
 model ExaminerOverrideHours {
-  id                String    @id @default(uuid()) @db.Uuid
-  examinerProfileId String    @map("examiner_profile_id") @db.Uuid
-  date              DateTime  @map("date") @db.Date
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()
-
-  examinerProfile ExaminerProfile            @relation(fields: [examinerProfileId], references: [id], onDelete: Cascade)
-  timeSlots       ExaminerOverrideTimeSlot[]
+  id                String                     @id @default(uuid()) @db.Uuid
+  examinerProfileId String                     @map("examiner_profile_id") @db.Uuid
+  date              DateTime                   @map("date") @db.Date
+  createdAt         DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime?                  @map("deleted_at") @db.Timestamptz(6)
+  examinerProfile   ExaminerProfile            @relation(fields: [examinerProfileId], references: [id], onDelete: Cascade)
+  timeSlots         ExaminerOverrideTimeSlot[]
 
   @@unique([examinerProfileId, date])
   @@index([examinerProfileId])
@@ -699,16 +626,67 @@ model ExaminerOverrideHours {
 }
 
 model ExaminerOverrideTimeSlot {
-  id             String    @id @default(uuid()) @db.Uuid
-  overrideHourId String    @map("override_hour_id") @db.Uuid
-  startTime      String    @map("start_time") @db.VarChar(20)
-  endTime        String    @map("end_time") @db.VarChar(20)
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz()
-
-  overrideHour ExaminerOverrideHours @relation(fields: [overrideHourId], references: [id], onDelete: Cascade)
+  id             String                @id @default(uuid()) @db.Uuid
+  overrideHourId String                @map("override_hour_id") @db.Uuid
+  startTime      String                @map("start_time") @db.VarChar(20)
+  endTime        String                @map("end_time") @db.VarChar(20)
+  createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime?             @map("deleted_at") @db.Timestamptz(6)
+  overrideHour   ExaminerOverrideHours @relation(fields: [overrideHourId], references: [id], onDelete: Cascade)
 
   @@index([overrideHourId])
   @@map("examiner_override_time_slots")
+}
+
+model Chaperone {
+  id        String    @id @unique @default(uuid()) @db.Uuid
+  firstName String    @map("first_name") @db.VarChar(255)
+  lastName  String    @map("last_name") @db.VarChar(255)
+  email     String    @unique @map("email") @db.VarChar(255)
+  phone     String?   @map("phone") @db.VarChar(255)
+  gender    String?   @map("gender") @db.VarChar(255)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@map("chaperones")
+}
+
+enum OrganizationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum UrgencyLevel {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ExaminationSecureLinkStatus {
+  PENDING
+  SUBMITTED
+  INVALID
+}
+
+enum ClaimantPreference {
+  IN_PERSON
+  VIRTUAL
+  EITHER
+}
+
+enum TimeBand {
+  MORNING
+  AFTERNOON
+  EVENING
+  EITHER
+}
+
+enum ExaminerStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  INFO_REQUESTED
 }
