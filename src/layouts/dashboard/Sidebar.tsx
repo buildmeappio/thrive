@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   Menu,
   X,
+  Languages,
   Truck,
   ChevronDown,
   Settings,
@@ -55,18 +56,24 @@ export const routes: Route[] = [
     index: 3,
   },
   {
+    icon: Languages,
+    label: "Interpreters",
+    href: "/interpreter",
+    index: 4,
+  },
+  {
     icon: Truck,
     label: "Transporters",
     href: "/transporter",
-    index: 4,
+    index: 5,
   },
   {
     icon: Settings,
     label: "Services",
-    index: 5,
+    index: 6,
     subRoutes: [{ label: "Chaperone", href: "/dashboard/chaperones" }],
   },
-  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 6 },
+  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 7 },
 ];
 
 const Sidebar = () => {
@@ -107,7 +114,7 @@ const Sidebar = () => {
   const initializeSelectedSidebarIndex = () => {
     if (typeof window === "undefined") {
       return;
-    }
+np    }
     const storedSelectedBtn = localStorage.getItem("selectedSidebarIndex");
     if (!isValidSidebarIndex(storedSelectedBtn)) {
       setSelectedSidebarIndex(-1);
