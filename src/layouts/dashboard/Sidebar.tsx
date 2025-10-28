@@ -55,12 +55,18 @@ export const routes: Route[] = [
     index: 3,
   },
   {
+    icon: Truck,
+    label: "Transporters",
+    href: "/transporter",
+    index: 4,
+  },
+  {
     icon: Settings,
     label: "Services",
-    index: 4,
+    index: 5,
     subRoutes: [{ label: "Chaperone", href: "/dashboard/chaperones" }],
   },
-  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 5 },
+  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 6 },
 ];
 
 const Sidebar = () => {
@@ -247,24 +253,21 @@ const Sidebar = () => {
                             ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
                             : "bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]"
                         )}
-                        title={item.label}
-                      >
+                        title={item.label}>
                         <span
                           className={cn(
                             "flex h-7 w-7 items-center justify-center rounded-full",
                             active
                               ? "bg-white/30 text-white"
                               : "bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]"
-                          )}
-                        >
+                          )}>
                           <Icon size={18} />
                         </span>
                         {!isCollapsed && (
                           <span
                             className={cn(
                               active ? "text-white" : "text-inherit"
-                            )}
-                          >
+                            )}>
                             {item.label}
                           </span>
                         )}
@@ -282,8 +285,7 @@ const Sidebar = () => {
                             ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
                             : "bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]"
                         )}
-                        title={item.label}
-                      >
+                        title={item.label}>
                         <div className="flex items-center gap-3">
                           <span
                             className={cn(
@@ -291,8 +293,7 @@ const Sidebar = () => {
                               active
                                 ? "bg-white/30 text-white"
                                 : "bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]"
-                            )}
-                          >
+                            )}>
                             <Icon size={18} />
                           </span>
                           {!isCollapsed && <span>{item.label}</span>}
@@ -319,8 +320,7 @@ const Sidebar = () => {
                               pathname === sub.href
                                 ? "text-[#FFFFFF] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]"
                                 : "text-[#7B8B91] hover:text-[#000093]"
-                            )}
-                          >
+                            )}>
                             {sub.label}
                           </Link>
                         ))}
