@@ -13,6 +13,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -85,97 +86,95 @@ const ChaperoneTable = ({
   }, [query, table]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="w-full md:w-auto">
-          <SearchInput
-            placeholder="Search chaperones..."
-            value={query}
-            onChange={setQuery}
-          />
-        </div>
-
-        <Button
-          onClick={onCreate}
-          className="flex items-center rounded-lg gap-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]"
-        >
-          <Plus size={20} />
-          <span>Add Chaperone</span>
-        </Button>
-      </div>
-
-      <div className="rounded-lg border bg-white shadow-sm">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className={cn(
-                      "bg-white",
-                      header.column.columnDef.maxSize && "w-[60px]"
-                    )}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
+    <div>
+      <div className="bg-white rounded-[28px] shadow-sm px-4 sm:px-6 py-4 sm:py-6 w-full">
+        <div className="space-y-4">
+          <div className="overflow-x-auto rounded-lg">
+            <Table className="border-0 shadow-none">
+              <TableHeader>
+                {table.getHeaderGroups().map((hg) => (
+                  <TableRow className="bg-[#F3F3F3] border-b-0" key={hg.id}>
+                    {hg.headers.map((h) => {
+                      const isSortable = h.column.getCanSort();
+                      const sort = h.column.getIsSorted();
+                      return (
+                        <TableHead
+                          key={h.id}
+                          onClick={
+                            isSortable
+                              ? h.column.getToggleSortingHandler()
+                              : undefined
+                          }
+                          className={cn(
+                            "select-none",
+                            h.index === 0 && "rounded-l-xl",
+                            h.index === hg.headers.length - 1 &&
+                              "rounded-r-xl w-[60px]",
+                            isSortable && "cursor-pointer"
+                          )}
+                        >
+                          <div className="flex items-center gap-1">
+                            {h.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  h.column.columnDef.header,
+                                  h.getContext()
+                                )}
+                            {isSortable && (
+                              <span className="text-xs text-gray-500">
+                                {sort === "asc"
+                                  ? "▲"
+                                  : sort === "desc"
+                                  ? "▼"
+                                  : ""}
+                              </span>
+                            )}
+                          </div>
+                        </TableHead>
+                      );
+                    })}
+                  </TableRow>
                 ))}
-              </TableRow>
-            ))}
-          </TableHeader>
+              </TableHeader>
 
-          <TableBody>
-            {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="border-b last:border-0"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <p className="text-muted-foreground text-sm">
+              <TableBody>
+                {table.getRowModel().rows.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                      className="bg-white border-0 border-b-1"
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center text-black font-poppins text-[16px] leading-none"
+                    >
                       {query
                         ? "No chaperones found matching your search"
-                        : "No chaperones found"}
-                    </p>
-                    {query && (
-                      <button
-                        onClick={() => setQuery("")}
-                        className="text-sm text-[#000093] hover:underline"
-                      >
-                        Clear search
-                      </button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                        : "No Chaperones Found"}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       </div>
-
-      {filtered.length > 0 && <Pagination table={table} />}
+      <div className="mt-6 px-6">
+        <Pagination table={table} />
+      </div>
     </div>
   );
 };

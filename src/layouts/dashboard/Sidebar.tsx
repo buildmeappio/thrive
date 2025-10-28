@@ -57,9 +57,7 @@ export const routes: Route[] = [
     icon: Settings,
     label: "Services",
     index: 4,
-    subRoutes: [
-      { label: "Chaperone", href: "/dashboard/chaperones" },
-    ],
+    subRoutes: [{ label: "Chaperone", href: "/dashboard/chaperones" }],
   },
   { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 5 },
 ];
@@ -69,8 +67,12 @@ const Sidebar = () => {
   const [selectedBtn, setSelectedBtn] = useState<number | null>(null);
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
 
-  const { isSidebarOpen: isMobileOpen, isCollapsed, toggleCollapse, closeSidebar: onMobileClose } =
-    useSidebar();
+  const {
+    isSidebarOpen: isMobileOpen,
+    isCollapsed,
+    toggleCollapse,
+    closeSidebar: onMobileClose,
+  } = useSidebar();
 
   const isValidSidebarIndex = (index: string | null) => {
     return index && !isNaN(Number(index)) && Number(index) >= 0;
@@ -128,7 +130,9 @@ const Sidebar = () => {
         return true;
       }
       if (item.subRoutes) {
-        return item.subRoutes.some((sub) => checkIsPartOfSidebar(pathname, sub.href));
+        return item.subRoutes.some((sub) =>
+          checkIsPartOfSidebar(pathname, sub.href)
+        );
       }
       return false;
     });
@@ -155,7 +159,9 @@ const Sidebar = () => {
           "transition-all duration-300",
           "top-16 sm:top-20 lg:top-24 h-[calc(100vh-64px)] sm:h-[calc(100vh-80px)] lg:h-[calc(100vh-96px)]",
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-          isCollapsed ? "md:w-[90px]" : "w-[240px] md:w-[280px] max-w-[240px] md:max-w-[280px]"
+          isCollapsed
+            ? "md:w-[90px]"
+            : "w-[240px] md:w-[280px] max-w-[240px] md:max-w-[280px]"
         )}
       >
         <div className="relative flex h-full min-h-0 w-full flex-col pt-2">
@@ -175,15 +181,20 @@ const Sidebar = () => {
               onClick={toggleCollapse}
               aria-label="Collapse sidebar"
             >
-              <ChevronLeft size={20} className="text-[#000093] transition-transform duration-300" />
+              <ChevronLeft
+                size={20}
+                className="text-[#000093] transition-transform duration-300"
+              />
             </button>
           )}
 
           {/* Logo */}
-          <div className={cn(
-            "mb-2 flex items-center p-3 md:p-6",
-            isCollapsed ? "justify-center" : "justify-center"
-          )}>
+          <div
+            className={cn(
+              "mb-2 flex items-center p-3 md:p-6",
+              isCollapsed ? "justify-center" : "justify-center"
+            )}
+          >
             {isCollapsed ? (
               <button
                 onClick={toggleCollapse}
@@ -197,70 +208,155 @@ const Sidebar = () => {
 
           {/* Nav */}
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <nav className={cn(
-              "flex-1 space-y-3 md:space-y-4 overflow-y-auto",
-              isCollapsed ? "px-4" : "px-3 md:px-6"
-            )}>
+            <nav
+              className={cn(
+                "flex-1 space-y-3 md:space-y-4 overflow-y-auto",
+                isCollapsed ? "px-4" : "px-3 md:px-6"
+              )}
+            >
               {routes.map((item) => {
-                const hasSubRoutes = item.subRoutes && item.subRoutes.length > 0;
+                const hasSubRoutes =
+                  item.subRoutes && item.subRoutes.length > 0;
                 const isExpanded = expandedMenus.has(item.index);
                 const isSelected = selectedBtn === item.index;
-                const isActive = item.href ? (pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/dashboard")) : false;
-                const isSubActive = hasSubRoutes && item.subRoutes!.some((sub) => pathname === sub.href || pathname.startsWith(sub.href));
+                const isActive = item.href
+                  ? pathname === item.href ||
+                    (pathname.startsWith(item.href) &&
+                      item.href !== "/dashboard")
+                  : false;
+                const isSubActive =
+                  hasSubRoutes &&
+                  item.subRoutes!.some(
+                    (sub) =>
+                      pathname === sub.href || pathname.startsWith(sub.href)
+                  );
                 const active = isSelected || isActive || isSubActive;
                 const Icon = item.icon;
-                
+
                 return (
-                  <Link
-                    key={item.index}
-                    href={item.href}
-                    onClick={() => {
-                      setSelectedSidebarIndex(item.index);
-                      if (onMobileClose) {
-                        onMobileClose();
-                      }
-                    }}
-                    className={cn(
-                      "group relative flex w-full items-center text-left text-sm font-medium transition-all duration-200 mb-4",
-                      isCollapsed ? "justify-center rounded-full px-3 py-2" : "justify-start rounded-full gap-3 pl-4 py-2",
-                      active
-                        ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white shadow-sm hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80"
-                        : "bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]"
+                  <div key={item.index}>
+                    {item.href ? (
+                      // Normal clickable route
+                      <Link
+                        href={item.href}
+                        onClick={() => {
+                          setSelectedSidebarIndex(item.index);
+                          if (onMobileClose) onMobileClose();
+                        }}
+                        className={cn(
+                          "group relative flex w-full items-center text-left text-sm font-medium transition-all duration-200 mb-4",
+                          isCollapsed
+                            ? "justify-center rounded-full px-3 py-2"
+                            : "justify-start rounded-full gap-3 pl-4 py-2",
+                          active
+                            ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
+                            : "bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]"
+                        )}
+                        title={item.label}
+                      >
+                        <span
+                          className={cn(
+                            "flex h-7 w-7 items-center justify-center rounded-full",
+                            active
+                              ? "bg-white/30 text-white"
+                              : "bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]"
+                          )}
+                        >
+                          <Icon size={18} />
+                        </span>
+                        {!isCollapsed && (
+                          <span
+                            className={cn(
+                              active ? "text-white" : "text-inherit"
+                            )}
+                          >
+                            {item.label}
+                          </span>
+                        )}
+                      </Link>
+                    ) : (
+                      // Parent menu with subRoutes
+                      <button
+                        onClick={() => toggleMenu(item.index)}
+                        className={cn(
+                          "group relative flex w-full items-center text-left text-sm font-medium transition-all duration-200 mb-4",
+                          isCollapsed
+                            ? "justify-center rounded-full px-3 py-2"
+                            : "justify-between rounded-full gap-3 pl-4 py-2",
+                          active
+                            ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
+                            : "bg-[#EEF1F3] text-[#7B8B91] hover:bg-[#E7EBEE] hover:text-[#000093]"
+                        )}
+                        title={item.label}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={cn(
+                              "flex h-7 w-7 items-center justify-center rounded-full",
+                              active
+                                ? "bg-white/30 text-white"
+                                : "bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]"
+                            )}
+                          >
+                            <Icon size={18} />
+                          </span>
+                          {!isCollapsed && <span>{item.label}</span>}
+                        </div>
+                        {!isCollapsed && (
+                          <ChevronDown size={16} className="mr-2" />
+                        )}
+                      </button>
                     )}
-                    title={item.label}
-                  >
-                    <span
-                      className={cn(
-                        "flex h-7 w-7 items-center justify-center rounded-full",
-                        active
-                          ? "bg-white/30 text-white"
-                          : "bg-[#E0E6E9] text-[#A3ADB3] group-hover:text-[#000093]"
-                      )}
-                    >
-                      <Icon size={18} />
-                    </span>
-                    {!isCollapsed && (
-                      <span className={cn(active ? "text-white" : "text-inherit")}>
-                        {item.label}
-                      </span>
+
+                    {/* Submenu items */}
+                    {hasSubRoutes && isExpanded && !isCollapsed && (
+                      <div className="ml-10 space-y-2">
+                        {item.subRoutes!.map((sub) => (
+                          <Link
+                            key={sub.href}
+                            href={sub.href}
+                            onClick={() => {
+                              setSelectedSidebarIndex(item.index);
+                              if (onMobileClose) onMobileClose();
+                            }}
+                            className={cn(
+                              "block text-sm rounded-full px-3 py-1.5 transition-colors",
+                              pathname === sub.href
+                                ? "text-[#FFFFFF] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]"
+                                : "text-[#7B8B91] hover:text-[#000093]"
+                            )}
+                          >
+                            {sub.label}
+                          </Link>
+                        ))}
+                      </div>
                     )}
-                  </Link>
+                  </div>
                 );
               })}
             </nav>
 
             {/* Logout */}
-            <div className={cn("flex-shrink-0", isCollapsed ? "p-4" : "p-3 md:p-6")}>
+            <div
+              className={cn(
+                "flex-shrink-0",
+                isCollapsed ? "p-4" : "p-3 md:p-6"
+              )}
+            >
               <button
                 onClick={handleLogout}
                 className={cn(
                   "flex w-full cursor-pointer items-center rounded-full bg-[#00005D] font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#00005D]/90 active:scale-95",
-                  isCollapsed ? "justify-center px-3 py-3" : "justify-center gap-1.5 md:gap-2 px-4 md:px-6 py-2 md:py-3"
+                  isCollapsed
+                    ? "justify-center px-3 py-3"
+                    : "justify-center gap-1.5 md:gap-2 px-4 md:px-6 py-2 md:py-3"
                 )}
                 title="Log Out"
               >
                 <LogOut size={16} className="text-white md:w-5 md:h-5" />
-                {!isCollapsed && <span className="text-xs md:text-sm">Log Out</span>}
+                {!isCollapsed && (
+                  <span className="text-xs md:text-sm">Log Out</span>
+                )}
               </button>
             </div>
           </div>
