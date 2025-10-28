@@ -54,12 +54,6 @@ model VerificationCodes {
   @@map("verification_codes")
 }
 
-enum OrganizationStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
-}
-
 model Organization {
   id                     String                @id @unique @default(uuid()) @db.Uuid
   typeId                 String                @map("type_id") @db.Uuid
@@ -161,123 +155,115 @@ model Address {
 }
 
 model Claimant {
-  id                       String    @id @unique @default(uuid()) @db.Uuid
-  firstName                String    @map("first_name") @db.VarChar(255)
-  lastName                 String    @map("last_name") @db.VarChar(255)
-  dateOfBirth              DateTime? @map("date_of_birth") @db.Date
-  gender                   String?   @map("gender") @db.VarChar(50)
-  phoneNumber              String?   @map("phone_number") @db.VarChar(255)
-  emailAddress             String?   @map("email_address") @db.VarChar(255)
-  relatedCasesDetails      String?   @map("related_cases_details") @db.Text
-  familyDoctorName         String?   @map("family_doctor_name") @db.VarChar(255)
-  familyDoctorEmailAddress String?   @map("family_doctor_email_address") @db.VarChar(255)
-  familyDoctorPhoneNumber  String?   @map("family_doctor_phone_number") @db.VarChar(255)
-  familyDoctorFaxNumber    String?   @map("family_doctor_fax_number") @db.VarChar(255)
-  addressId                String    @map("address_id") @db.Uuid
-  claimTypeId              String    @map("claim_type_id") @db.Uuid
-  createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt                DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt                DateTime? @map("deleted_at") @db.Timestamptz()
-
-  address              Address                @relation("ClaimantAddress", fields: [addressId], references: [id])
-  cases                Case[]                 @relation("ClaimantCases")
-  claimantAvailability ClaimantAvailability[] @relation("ClaimantAvailability")
-  claimType            ClaimType              @relation("ClaimantClaimType", fields: [claimTypeId], references: [id])
+  id                       String                 @id @unique @default(uuid()) @db.Uuid
+  firstName                String                 @map("first_name") @db.VarChar(255)
+  lastName                 String                 @map("last_name") @db.VarChar(255)
+  dateOfBirth              DateTime?              @map("date_of_birth") @db.Date
+  gender                   String?                @map("gender") @db.VarChar(50)
+  phoneNumber              String?                @map("phone_number") @db.VarChar(255)
+  emailAddress             String?                @map("email_address") @db.VarChar(255)
+  relatedCasesDetails      String?                @map("related_cases_details")
+  familyDoctorName         String?                @map("family_doctor_name") @db.VarChar(255)
+  familyDoctorEmailAddress String?                @map("family_doctor_email_address") @db.VarChar(255)
+  familyDoctorPhoneNumber  String?                @map("family_doctor_phone_number") @db.VarChar(255)
+  familyDoctorFaxNumber    String?                @map("family_doctor_fax_number") @db.VarChar(255)
+  addressId                String                 @map("address_id") @db.Uuid
+  createdAt                DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt                DateTime?              @map("deleted_at") @db.Timestamptz(6)
+  claimTypeId              String                 @map("claim_type_id") @db.Uuid
+  claimantAvailability     ClaimantAvailability[] @relation("ClaimantAvailability")
+  address                  Address                @relation("ClaimantAddress", fields: [addressId], references: [id])
+  claimType                ClaimType              @relation("ClaimantClaimType", fields: [claimTypeId], references: [id])
+  examinations             Examination[]          @relation("ExaminationClaimant")
 
   @@map("claimants")
 }
 
 model LegalRepresentative {
-  id                String   @id @unique @default(uuid()) @db.Uuid
-  companyName       String?  @map("company_name") @db.VarChar(255)
-  contactPersonName String?  @map("contact_person") @db.VarChar(255)
-  phoneNumber       String?  @map("phone_number") @db.VarChar(255)
-  faxNumber         String?  @map("fax_number") @db.VarChar(255)
-  addressId         String?  @map("address_id") @db.Uuid
-  address           Address? @relation("LegalRepresentativeAddress", fields: [addressId], references: [id])
-
-  cases Case[] @relation("LegalRepresentativeCases")
+  id                String        @id @unique @default(uuid()) @db.Uuid
+  companyName       String?       @map("company_name") @db.VarChar(255)
+  contactPersonName String?       @map("contact_person") @db.VarChar(255)
+  phoneNumber       String?       @map("phone_number") @db.VarChar(255)
+  faxNumber         String?       @map("fax_number") @db.VarChar(255)
+  addressId         String?       @map("address_id") @db.Uuid
+  examinations      Examination[] @relation("ExaminationLegalRepresentative")
+  address           Address?      @relation("LegalRepresentativeAddress", fields: [addressId], references: [id])
 
   @@map("legal_representatives")
 }
 
 model Insurance {
-  id                     String   @id @unique @default(uuid()) @db.Uuid
-  emailAddress           String   @map("email_address") @db.VarChar(255)
-  companyName            String   @map("company_name") @db.VarChar(255)
-  contactPersonName      String   @map("contact_person") @db.VarChar(255)
-  policyNumber           String   @map("policy_number") @db.VarChar(255)
-  claimNumber            String   @map("claim_number") @db.VarChar(255)
-  dateOfLoss             DateTime @map("date_of_loss") @db.Timestamptz()
-  policyHolderIsClaimant Boolean  @default(false) @map("policy_holder_is_claimant")
-  policyHolderFirstName  String   @map("policy_holder_first_name") @db.VarChar(255)
-  policyHolderLastName   String   @map("policy_holder_last_name") @db.VarChar(255)
-  phoneNumber            String   @map("phone_number") @db.VarChar(255)
-  faxNumber              String   @map("fax_number") @db.VarChar(255)
-  addressId              String?  @map("address_id") @db.Uuid
-  address                Address? @relation("InsuranceAddress", fields: [addressId], references: [id])
-
-  cases Case[] @relation("InsuranceCases")
+  id                     String        @id @unique @default(uuid()) @db.Uuid
+  emailAddress           String        @map("email_address") @db.VarChar(255)
+  companyName            String        @map("company_name") @db.VarChar(255)
+  contactPersonName      String        @map("contact_person") @db.VarChar(255)
+  policyNumber           String        @map("policy_number") @db.VarChar(255)
+  claimNumber            String        @map("claim_number") @db.VarChar(255)
+  dateOfLoss             DateTime      @map("date_of_loss") @db.Timestamptz(6)
+  policyHolderIsClaimant Boolean       @default(false) @map("policy_holder_is_claimant")
+  policyHolderFirstName  String        @map("policy_holder_first_name") @db.VarChar(255)
+  policyHolderLastName   String        @map("policy_holder_last_name") @db.VarChar(255)
+  phoneNumber            String        @map("phone_number") @db.VarChar(255)
+  faxNumber              String        @map("fax_number") @db.VarChar(255)
+  addressId              String?       @map("address_id") @db.Uuid
+  examinations           Examination[] @relation("ExaminationInsurance")
+  address                Address?      @relation("InsuranceAddress", fields: [addressId], references: [id])
 
   @@map("insurances")
 }
 
 model Case {
-  id                    String  @id @unique @default(uuid()) @db.Uuid
-  organizationId        String? @map("organization_id") @db.Uuid
-  claimantId            String  @map("claimant_id") @db.Uuid
-  insuranceId           String? @map("insurance_id") @db.Uuid
-  legalRepresentativeId String? @map("legal_representative_id") @db.Uuid
-  caseTypeId            String? @map("case_type_id") @db.Uuid
-  reason                String? @map("reason") @db.VarChar(255)
-  consentForSubmission  Boolean @default(false) @map("consent_for_submission")
-  isDraft               Boolean @default(false) @map("is_draft")
-
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
-
-  organization        Organization?        @relation("OrganizationCases", fields: [organizationId], references: [id])
-  claimant            Claimant             @relation("ClaimantCases", fields: [claimantId], references: [id])
-  insurance           Insurance?           @relation("InsuranceCases", fields: [insuranceId], references: [id])
-  legalRepresentative LegalRepresentative? @relation("LegalRepresentativeCases", fields: [legalRepresentativeId], references: [id])
-  caseType            CaseType?            @relation("CaseTypeCases", fields: [caseTypeId], references: [id])
-  examinations        Examination[]        @relation("ExaminationCases")
-  documents           CaseDocument[]       @relation("CaseDocuments")
+  id                   String         @id @unique @default(uuid()) @db.Uuid
+  organizationId       String?        @map("organization_id") @db.Uuid
+  caseTypeId           String?        @map("case_type_id") @db.Uuid
+  reason               String?        @map("reason") @db.VarChar(255)
+  consentForSubmission Boolean        @default(false) @map("consent_for_submission")
+  isDraft              Boolean        @default(false) @map("is_draft")
+  createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime?      @map("deleted_at") @db.Timestamptz(6)
+  documents            CaseDocument[] @relation("CaseDocuments")
+  caseType             CaseType?      @relation("CaseTypeCases", fields: [caseTypeId], references: [id])
+  organization         Organization?  @relation("OrganizationCases", fields: [organizationId], references: [id])
+  examinations         Examination[]  @relation("ExaminationCases")
 
   @@map("cases")
 }
 
 model Examination {
-  id                String             @id @unique @default(uuid()) @db.Uuid
-  caseNumber        String             @map("case_number") @db.VarChar(255)
-  caseId            String             @map("case_id") @db.Uuid
-  examinationTypeId String             @map("examination_type_id") @db.Uuid
-  dueDate           DateTime?          @map("due_date") @db.Timestamptz()
-  notes             String?            @map("notes") @db.Text
-  additionalNotes   String?            @map("additional_notes") @db.Text
-  urgencyLevel      UrgencyLevel?      @map("urgency_level")
-  examinerId        String?            @map("examiner_id") @db.Uuid
-  statusId          String             @map("status_id") @db.Uuid
-  preference        ClaimantPreference @map("preference")
-  supportPerson     Boolean            @default(false) @map("support_person")
-
-  assignToId String?   @map("assign_to_id") @db.Uuid
-  assignedAt DateTime? @map("assigned_at") @db.Timestamptz()
-
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
-
-  case                 Case                         @relation("ExaminationCases", fields: [caseId], references: [id])
-  examinationType      ExaminationType              @relation("ExaminationType", fields: [examinationTypeId], references: [id])
-  examiner             Account?                     @relation("ExaminerCases", fields: [examinerId], references: [id])
-  status               CaseStatus                   @relation("CaseStatus", fields: [statusId], references: [id])
-  assignTo             Account?                     @relation("AssignedCases", fields: [assignToId], references: [id])
-  secureLinks          ExaminationSecureLink[]      @relation("ExaminationSecureLink")
-  claimantAvailability ClaimantAvailability[]       @relation("ExaminationClaimantAvailability")
-  services             ExaminationServices[]        @relation("ExaminationServices")
-  selectedBenefits     ExaminationSelectedBenefit[] @relation("ExaminationSelectedBenefits")
+  id                    String                       @id @unique @default(uuid()) @db.Uuid
+  caseNumber            String                       @map("case_number") @db.VarChar(255)
+  caseId                String                       @map("case_id") @db.Uuid
+  examinationTypeId     String                       @map("examination_type_id") @db.Uuid
+  dueDate               DateTime?                    @map("due_date") @db.Timestamptz(6)
+  notes                 String?                      @map("notes")
+  additionalNotes       String?                      @map("additional_notes")
+  urgencyLevel          UrgencyLevel?                @map("urgency_level")
+  examinerId            String?                      @map("examiner_id") @db.Uuid
+  statusId              String                       @map("status_id") @db.Uuid
+  preference            ClaimantPreference           @map("preference")
+  supportPerson         Boolean                      @default(false) @map("support_person")
+  assignToId            String?                      @map("assign_to_id") @db.Uuid
+  assignedAt            DateTime?                    @map("assigned_at") @db.Timestamptz(6)
+  createdAt             DateTime                     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime                     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt             DateTime?                    @map("deleted_at") @db.Timestamptz(6)
+  claimantId            String                       @map("claimant_id") @db.Uuid
+  insuranceId           String?                      @map("insurance_id") @db.Uuid
+  legalRepresentativeId String?                      @map("legal_representative_id") @db.Uuid
+  claimantAvailability  ClaimantAvailability[]       @relation("ExaminationClaimantAvailability")
+  secureLinks           ExaminationSecureLink[]      @relation("ExaminationSecureLink")
+  selectedBenefits      ExaminationSelectedBenefit[] @relation("ExaminationSelectedBenefits")
+  services              ExaminationServices[]        @relation("ExaminationServices")
+  assignTo              Account?                     @relation("AssignedCases", fields: [assignToId], references: [id])
+  case                  Case                         @relation("ExaminationCases", fields: [caseId], references: [id])
+  claimant              Claimant                     @relation("ExaminationClaimant", fields: [claimantId], references: [id])
+  examinationType       ExaminationType              @relation("ExaminationType", fields: [examinationTypeId], references: [id])
+  examiner              Account?                     @relation("ExaminerCases", fields: [examinerId], references: [id])
+  insurance             Insurance?                   @relation("ExaminationInsurance", fields: [insuranceId], references: [id])
+  legalRepresentative   LegalRepresentative?         @relation("ExaminationLegalRepresentative", fields: [legalRepresentativeId], references: [id])
+  status                CaseStatus                   @relation("CaseStatus", fields: [statusId], references: [id])
 
   @@index([caseId])
   @@index([caseNumber])
@@ -413,10 +399,11 @@ model Documents {
   deletedAt         DateTime?         @map("deleted_at") @db.Timestamptz(6)
   displayName       String?           @map("display_name") @db.VarChar(255)
   cases             CaseDocument[]    @relation("DocumentCases")
-  medicalLicenses   ExaminerProfile[] @relation(name: "ExmainerMedicalLicenseDocument")
-  examinerResume    ExaminerProfile[] @relation(name: "ExmainerResumeDocument")
-  examinerNDA       ExaminerProfile[] @relation(name: "ExmainerNDADocument")
-  examinerInsurance ExaminerProfile[] @relation(name: "ExmainerInsuranceDocument")
+  examinerInsurance ExaminerProfile[] @relation("ExaminerInsuranceDocument")
+  medicalLicenses   ExaminerProfile[] @relation("ExaminerMedicalLicenseDocument")
+  examinerNDA       ExaminerProfile[] @relation("ExaminerNDADocument")
+  examinerResume    ExaminerProfile[] @relation("ExaminerResumeDocument")
+  users             User[]            @relation("ProfilePhoto")
 
   @@map("documents")
 }
@@ -527,54 +514,54 @@ model ExaminerLanguage {
 }
 
 model ExaminerProfile {
-  id                                String         @id @default(uuid()) @db.Uuid
-  accountId                         String         @map("account_id") @db.Uuid
-  provinceOfResidence               String         @map("province_of_residence") @db.VarChar(255)
-  mailingAddress                    String         @map("mailing_address") @db.Text
-  specialties                       String[]       @map("specialties")
-  licenseNumber                     String         @map("license_number") @db.VarChar(255)
-  assessmentTypes                   String[]       @map("assessment_types")
-  provinceOfLicensure               String         @map("province_of_licensure") @db.VarChar(255)
-  licenseExpiryDate                 DateTime?      @map("license_expiry_date") @db.Date
-  medicalLicenseDocumentId          String         @map("medical_license_document_id") @db.Uuid
-  resumeDocumentId                  String         @map("resume_document_id") @db.Uuid
-  NdaDocumentId                     String?        @map("nda_document_id") @db.Uuid
-  insuranceDocumentId               String?        @map("insurance_document_id") @db.Uuid
-  isForensicAssessmentTrained       Boolean        @map("is_forensic_assessment_trained")
-  yearsOfIMEExperience              String         @map("years_of_ime_experience") @db.VarChar(255)
-  bio                               String         @map("bio") @db.Text
-  preferredRegions                  String?        @map("preferred_regions") @db.VarChar(255)
-  maxTravelDistance                 String?        @map("max_travel_distance") @db.VarChar(255)
-  acceptVirtualAssessments          Boolean?       @map("accept_virtual_assessments")
-  bufferTime                        String?        @map("buffer_time") @db.VarChar(20)
-  advanceBooking                    String?        @map("advance_booking") @db.VarChar(20)
-  payoutMethod                      String?        @map("payout_method") @db.VarChar(20)
-  transitNumber                     String?        @map("transit_number") @db.VarChar(5)
-  institutionNumber                 String?        @map("institution_number") @db.VarChar(3)
-  accountNumber                     String?        @map("account_number") @db.VarChar(12)
-  chequeMailingAddress              String?        @map("cheque_mailing_address") @db.Text
-  interacEmail                      String?        @map("interac_email") @db.VarChar(255)
-  isConsentToBackgroundVerification Boolean        @map("is_consent_to_background_verification")
-  agreeToTerms                      Boolean        @map("agree_to_terms")
-  status                            ExaminerStatus @default(PENDING) @map("status")
-  activationStep                    String?        @map("activation_step") @db.VarChar(255)
-  approvedBy                        String?        @map("approved_by") @db.Uuid
-  approvedAt                        DateTime?      @map("approved_at") @db.Timestamptz()
-  rejectedBy                        String?        @map("rejected_by") @db.Uuid
-  rejectedAt                        DateTime?      @map("rejected_at") @db.Timestamptz()
-  rejectedReason                    String?        @map("rejected_reason") @db.Text
-  createdAt                         DateTime       @default(now()) @db.Timestamptz()
-  updatedAt                         DateTime       @updatedAt @db.Timestamptz()
+  id                                String                  @id @default(uuid()) @db.Uuid
+  accountId                         String                  @map("account_id") @db.Uuid
+  provinceOfResidence               String                  @map("province_of_residence") @db.VarChar(255)
+  mailingAddress                    String                  @map("mailing_address")
+  specialties                       String[]                @map("specialties")
+  licenseNumber                     String                  @map("license_number") @db.VarChar(255)
+  provinceOfLicensure               String                  @map("province_of_licensure") @db.VarChar(255)
+  licenseExpiryDate                 DateTime?               @map("license_expiry_date") @db.Date
+  medicalLicenseDocumentId          String                  @map("medical_license_document_id") @db.Uuid
+  resumeDocumentId                  String                  @map("resume_document_id") @db.Uuid
+  NdaDocumentId                     String?                 @map("nda_document_id") @db.Uuid
+  insuranceDocumentId               String?                 @map("insurance_document_id") @db.Uuid
+  isForensicAssessmentTrained       Boolean                 @map("is_forensic_assessment_trained")
+  yearsOfIMEExperience              String                  @map("years_of_ime_experience") @db.VarChar(255)
+  bio                               String                  @map("bio")
+  isConsentToBackgroundVerification Boolean                 @map("is_consent_to_background_verification")
+  agreeToTerms                      Boolean                 @map("agree_to_terms")
+  status                            ExaminerStatus          @default(PENDING) @map("status")
+  approvedBy                        String?                 @map("approved_by") @db.Uuid
+  approvedAt                        DateTime?               @map("approved_at") @db.Timestamptz(6)
+  rejectedBy                        String?                 @map("rejected_by") @db.Uuid
+  rejectedAt                        DateTime?               @map("rejected_at") @db.Timestamptz(6)
+  rejectedReason                    String?                 @map("rejected_reason")
+  createdAt                         DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt                         DateTime                @updatedAt @db.Timestamptz(6)
   deletedAt                         DateTime?
-
-  account                Account                 @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  medicalLicenseDocument Documents               @relation(name: "ExmainerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
-  resumeDocument         Documents               @relation(name: "ExmainerResumeDocument", references: [id], fields: [resumeDocumentId])
-  ndaDocument            Documents?              @relation(name: "ExmainerNDADocument", references: [id], fields: [NdaDocumentId])
-  insuranceDocument      Documents?              @relation(name: "ExmainerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
-  examinerLanguages      ExaminerLanguage[]
-  weeklyHours            ExaminerWeeklyHours[]
-  overrideHours          ExaminerOverrideHours[]
+  acceptVirtualAssessments          Boolean?                @map("accept_virtual_assessments")
+  maxTravelDistance                 String?                 @map("max_travel_distance") @db.VarChar(255)
+  preferredRegions                  String?                 @map("preferred_regions") @db.VarChar(255)
+  activationStep                    String?                 @map("activation_step") @db.VarChar(255)
+  assessmentTypes                   String[]                @map("assessment_types")
+  advanceBooking                    String?                 @map("advance_booking") @db.VarChar(20)
+  bufferTime                        String?                 @map("buffer_time") @db.VarChar(20)
+  accountNumber                     String?                 @map("account_number") @db.VarChar(12)
+  chequeMailingAddress              String?                 @map("cheque_mailing_address")
+  institutionNumber                 String?                 @map("institution_number") @db.VarChar(3)
+  interacEmail                      String?                 @map("interac_email") @db.VarChar(255)
+  payoutMethod                      String?                 @map("payout_method") @db.VarChar(20)
+  transitNumber                     String?                 @map("transit_number") @db.VarChar(5)
+  landlineNumber                    String?                 @map("landline_number") @db.VarChar(255)
+  examinerLanguages                 ExaminerLanguage[]
+  overrideHours                     ExaminerOverrideHours[]
+  account                           Account                 @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  insuranceDocument                 Documents?              @relation("ExaminerInsuranceDocument", fields: [insuranceDocumentId], references: [id])
+  medicalLicenseDocument            Documents               @relation("ExaminerMedicalLicenseDocument", fields: [medicalLicenseDocumentId], references: [id])
+  ndaDocument                       Documents?              @relation("ExaminerNDADocument", fields: [NdaDocumentId], references: [id])
+  resumeDocument                    Documents               @relation("ExaminerResumeDocument", fields: [resumeDocumentId], references: [id])
+  weeklyHours                       ExaminerWeeklyHours[]
 
   @@map("examiner_profiles")
 }
@@ -657,6 +644,7 @@ enum OrganizationStatus {
   PENDING
   ACCEPTED
   REJECTED
+  INFO_REQUESTED
 }
 
 enum UrgencyLevel {

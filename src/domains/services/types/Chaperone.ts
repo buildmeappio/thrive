@@ -18,7 +18,7 @@ export type ChaperoneData = {
   phone: string | null;
   gender: string | null;
   fullName: string;
-  createdAt: string;
+  createdAt: Date;
 };
 
 export type CreateChaperoneInput = {
