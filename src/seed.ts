@@ -16,6 +16,7 @@ import ExaminationTypeBenefitSeeder from "./seeders/examinationTypeBenefits.seed
 import ExaminerProfileSeeder from "./seeders/examinerProfile.seeder";
 import CasesSeeder from "./seeders/cases.seeder";
 import AdditionalCaseStatusSeeder from "./seeders/additionalCaseStatus.seeder";
+import TransporterSeeder from "./seeders/transporter.seeder";
 
 const seeds = [
   RoleSeeder,
@@ -33,6 +34,7 @@ const seeds = [
   ExaminationTypeBenefitSeeder,
   ExaminerProfileSeeder,
   CasesSeeder,
+  TransporterSeeder,
 ];
 
 const prisma = new PrismaClient();
