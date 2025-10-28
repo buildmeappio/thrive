@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   Menu,
   X,
+  Languages,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useSidebar } from "@/providers/Sidebar";
@@ -45,7 +46,13 @@ export const routes: Route[] = [
     href: "/cases",
     index: 3,
   },
-  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 4 },
+  {
+    icon: Languages,
+    label: "Interpreters",
+    href: "/interpreter",
+    index: 4,
+  },
+  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 5 },
 ];
 
 const Sidebar = () => {
