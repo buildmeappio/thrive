@@ -71,8 +71,9 @@ const ChaperoneComponent = ({ chaperones, createTrigger }: ChaperoneComponentPro
           router.refresh();
         }
       }
-    } catch (error: any) {
-      toast.error(error?.message || `Failed to ${dialogMode} chaperone`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : `Failed to ${dialogMode} chaperone`;
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -87,7 +88,7 @@ const ChaperoneComponent = ({ chaperones, createTrigger }: ChaperoneComponentPro
 
   return (
     <div className="space-y-6">
-      <ChaperoneTable chaperoneList={chaperones} onEdit={handleEdit} onCreate={handleCreate} />
+      <ChaperoneTable chaperoneList={chaperones} onEdit={handleEdit} />
 
       <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
         <DialogContent className="min-w-[400px] sm:min-w-[500px] lg:min-w-[600px]">

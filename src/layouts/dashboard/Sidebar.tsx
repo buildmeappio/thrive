@@ -114,7 +114,7 @@ const Sidebar = () => {
   const initializeSelectedSidebarIndex = () => {
     if (typeof window === "undefined") {
       return;
-np    }
+    }
     const storedSelectedBtn = localStorage.getItem("selectedSidebarIndex");
     if (!isValidSidebarIndex(storedSelectedBtn)) {
       setSelectedSidebarIndex(-1);

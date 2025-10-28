@@ -6,7 +6,6 @@ import ChaperoneComponent from "@/domains/services/components/Chaperone";
 import { ChaperoneData } from "@/domains/services/types/Chaperone";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import Pagination from "@/components/Pagination";
 
 interface ChaperonesPageContentProps {
   chaperoneList: ChaperoneData[];

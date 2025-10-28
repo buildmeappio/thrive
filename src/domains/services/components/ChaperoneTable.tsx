@@ -13,7 +13,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -21,23 +20,18 @@ import {
 import { createChaperoneColumns } from "./ChaperoneColumns";
 import { cn } from "@/lib/utils";
 import Pagination from "@/components/Pagination";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ChaperoneData } from "../types/Chaperone";
-import SearchInput from "@/components/ui/SearchInput";
 
 type ChaperoneTableProps = {
   chaperoneList: ChaperoneData[];
   onEdit: (chaperone: ChaperoneData) => void;
-  onCreate: () => void;
 };
 
 const ChaperoneTable = ({
   chaperoneList,
   onEdit,
-  onCreate,
 }: ChaperoneTableProps) => {
-  const [query, setQuery] = useState("");
+  const [query] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const filtered = useMemo(() => {
