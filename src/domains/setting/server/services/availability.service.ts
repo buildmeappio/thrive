@@ -1,7 +1,14 @@
 import prisma from "@/lib/db";
 
 export type WeeklyHoursData = {
-  dayOfWeek: string;
+  dayOfWeek:
+    | "MONDAY"
+    | "TUESDAY"
+    | "WEDNESDAY"
+    | "THURSDAY"
+    | "FRIDAY"
+    | "SATURDAY"
+    | "SUNDAY";
   enabled: boolean;
   timeSlots: {
     startTime: string;
@@ -19,22 +26,48 @@ export type OverrideHoursData = {
 
 class AvailabilityService {
   /**
-   * Save or update examiner weekly hours
+   * Get availability provider ID for an examiner profile
+   * Creates one if it doesn't exist
+   */
+  async getAvailabilityProviderId(examinerProfileId: string): Promise<string> {
+    let availabilityProvider = await prisma.availabilityProvider.findFirst({
+      where: {
+        providerType: "EXAMINER",
+        refId: examinerProfileId,
+        deletedAt: null,
+      },
+    });
+
+    if (!availabilityProvider) {
+      // Create availability provider if it doesn't exist
+      availabilityProvider = await prisma.availabilityProvider.create({
+        data: {
+          providerType: "EXAMINER",
+          refId: examinerProfileId,
+        },
+      });
+    }
+
+    return availabilityProvider.id;
+  }
+
+  /**
+   * Save or update provider weekly hours
    */
   async saveWeeklyHours(
-    examinerProfileId: string,
+    availabilityProviderId: string,
     weeklyHoursData: WeeklyHoursData[]
   ) {
-    // Delete all existing weekly hours for this examiner
-    await prisma.examinerWeeklyHours.deleteMany({
-      where: { examinerProfileId },
+    // Delete all existing weekly hours for this provider
+    await prisma.providerWeeklyHours.deleteMany({
+      where: { availabilityProviderId },
     });
 
     // Create new weekly hours
     const createPromises = weeklyHoursData.map(async (dayData) => {
-      const weeklyHour = await prisma.examinerWeeklyHours.create({
+      const weeklyHour = await prisma.providerWeeklyHours.create({
         data: {
-          examinerProfileId,
+          availabilityProviderId,
           dayOfWeek: dayData.dayOfWeek,
           enabled: dayData.enabled,
         },
@@ -42,7 +75,7 @@ class AvailabilityService {
 
       // Create time slots for this day
       if (dayData.timeSlots.length > 0) {
-        await prisma.examinerWeeklyTimeSlot.createMany({
+        await prisma.providerWeeklyTimeSlot.createMany({
           data: dayData.timeSlots.map((slot) => ({
             weeklyHourId: weeklyHour.id,
             startTime: slot.startTime,
@@ -60,12 +93,12 @@ class AvailabilityService {
   }
 
   /**
-   * Get examiner weekly hours
+   * Get provider weekly hours
    */
-  async getWeeklyHours(examinerProfileId: string) {
-    const weeklyHours = await prisma.examinerWeeklyHours.findMany({
+  async getWeeklyHours(availabilityProviderId: string) {
+    const weeklyHours = await prisma.providerWeeklyHours.findMany({
       where: {
-        examinerProfileId,
+        availabilityProviderId,
         deletedAt: null,
       },
       include: {
@@ -83,15 +116,15 @@ class AvailabilityService {
   }
 
   /**
-   * Save or update examiner override hours
+   * Save or update provider override hours
    */
   async saveOverrideHours(
-    examinerProfileId: string,
+    availabilityProviderId: string,
     overrideHoursData: OverrideHoursData[]
   ) {
-    // Delete all existing override hours for this examiner
-    await prisma.examinerOverrideHours.deleteMany({
-      where: { examinerProfileId },
+    // Delete all existing override hours for this provider
+    await prisma.providerOverrideHours.deleteMany({
+      where: { availabilityProviderId },
     });
 
     // Create new override hours
@@ -104,16 +137,16 @@ class AvailabilityService {
         parseInt(day)
       );
 
-      const overrideHour = await prisma.examinerOverrideHours.create({
+      const overrideHour = await prisma.providerOverrideHours.create({
         data: {
-          examinerProfileId,
+          availabilityProviderId,
           date: dateObj,
         },
       });
 
       // Create time slots for this date
       if (overrideData.timeSlots.length > 0) {
-        await prisma.examinerOverrideTimeSlot.createMany({
+        await prisma.providerOverrideTimeSlot.createMany({
           data: overrideData.timeSlots.map((slot) => ({
             overrideHourId: overrideHour.id,
             startTime: slot.startTime,
@@ -131,12 +164,12 @@ class AvailabilityService {
   }
 
   /**
-   * Get examiner override hours
+   * Get provider override hours
    */
-  async getOverrideHours(examinerProfileId: string) {
-    const overrideHours = await prisma.examinerOverrideHours.findMany({
+  async getOverrideHours(availabilityProviderId: string) {
+    const overrideHours = await prisma.providerOverrideHours.findMany({
       where: {
-        examinerProfileId,
+        availabilityProviderId,
         deletedAt: null,
       },
       include: {
@@ -154,68 +187,26 @@ class AvailabilityService {
   }
 
   /**
-   * Save booking options
-   */
-  async saveBookingOptions(
-    examinerProfileId: string,
-    bufferTime?: string,
-    advanceBooking?: string
-  ) {
-    const updatedProfile = await prisma.examinerProfile.update({
-      where: { id: examinerProfileId },
-      data: {
-        bufferTime,
-        advanceBooking,
-      },
-    });
-
-    return updatedProfile;
-  }
-
-  /**
-   * Get booking options
-   */
-  async getBookingOptions(examinerProfileId: string) {
-    const profile = await prisma.examinerProfile.findUnique({
-      where: { id: examinerProfileId },
-      select: {
-        bufferTime: true,
-        advanceBooking: true,
-      },
-    });
-
-    return profile;
-  }
-
-  /**
-   * Save complete availability (weekly hours, override hours, and booking options)
+   * Save complete availability (weekly hours and override hours)
    */
   async saveCompleteAvailability(
     examinerProfileId: string,
     data: {
       weeklyHours: WeeklyHoursData[];
       overrideHours?: OverrideHoursData[];
-      bookingOptions?: {
-        bufferTime?: string;
-        advanceBooking?: string;
-      };
     }
   ) {
+    // Get availability provider ID
+    const availabilityProviderId = await this.getAvailabilityProviderId(
+      examinerProfileId
+    );
+
     // Save weekly hours
-    await this.saveWeeklyHours(examinerProfileId, data.weeklyHours);
+    await this.saveWeeklyHours(availabilityProviderId, data.weeklyHours);
 
     // Save override hours if provided
     if (data.overrideHours && data.overrideHours.length > 0) {
-      await this.saveOverrideHours(examinerProfileId, data.overrideHours);
-    }
-
-    // Save booking options if provided
-    if (data.bookingOptions) {
-      await this.saveBookingOptions(
-        examinerProfileId,
-        data.bookingOptions.bufferTime,
-        data.bookingOptions.advanceBooking
-      );
+      await this.saveOverrideHours(availabilityProviderId, data.overrideHours);
     }
 
     return {
@@ -225,19 +216,22 @@ class AvailabilityService {
   }
 
   /**
-   * Get complete availability (weekly hours, override hours, and booking options)
+   * Get complete availability (weekly hours and override hours)
    */
   async getCompleteAvailability(examinerProfileId: string) {
-    const [weeklyHours, overrideHours, bookingOptions] = await Promise.all([
-      this.getWeeklyHours(examinerProfileId),
-      this.getOverrideHours(examinerProfileId),
-      this.getBookingOptions(examinerProfileId),
+    // Get availability provider ID
+    const availabilityProviderId = await this.getAvailabilityProviderId(
+      examinerProfileId
+    );
+
+    const [weeklyHours, overrideHours] = await Promise.all([
+      this.getWeeklyHours(availabilityProviderId),
+      this.getOverrideHours(availabilityProviderId),
     ]);
 
     return {
       weeklyHours,
       overrideHours,
-      bookingOptions,
     };
   }
 }

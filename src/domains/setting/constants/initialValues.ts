@@ -29,8 +29,4 @@ export const availabilityInitialValues: AvailabilityPreferencesInput = {
     saturday: { enabled: false, timeSlots: [] },
   },
   overrideHours: [],
-  bookingOptions: {
-    bufferTime: "15",
-    advanceBooking: "30",
-  },
 };

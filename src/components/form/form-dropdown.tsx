@@ -14,6 +14,7 @@ interface FormDropdownProps<TFieldValues extends FieldValues> {
   icon?: React.ReactNode;
   className?: string;
   from?: string;
+  disabled?: boolean;
 }
 
 const FormDropdown = <TFieldValues extends FieldValues>({
@@ -26,6 +27,7 @@ const FormDropdown = <TFieldValues extends FieldValues>({
   icon = null,
   className = "",
   from = "",
+  disabled = false,
 }: FormDropdownProps<TFieldValues>) => {
   const {
     control,
@@ -56,6 +58,7 @@ const FormDropdown = <TFieldValues extends FieldValues>({
             multiSelect={multiSelect}
             icon={icon}
             from={from}
+            disabled={disabled}
           />
         )}
       />

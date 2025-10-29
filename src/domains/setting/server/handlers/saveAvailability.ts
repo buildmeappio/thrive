@@ -17,10 +17,6 @@ export type SaveAvailabilityInput = {
     date: string;
     timeSlots: { startTime: string; endTime: string }[];
   }[];
-  bookingOptions?: {
-    bufferTime?: string;
-    advanceBooking?: string;
-  };
   activationStep?: string;
 };
 
@@ -30,7 +26,14 @@ const saveAvailability = async (payload: SaveAvailabilityInput) => {
     const weeklyHoursArray: WeeklyHoursData[] = Object.entries(
       payload.weeklyHours
     ).map(([dayOfWeek, data]) => ({
-      dayOfWeek,
+      dayOfWeek: dayOfWeek.toUpperCase() as
+        | "MONDAY"
+        | "TUESDAY"
+        | "WEDNESDAY"
+        | "THURSDAY"
+        | "FRIDAY"
+        | "SATURDAY"
+        | "SUNDAY",
       enabled: data.enabled,
       timeSlots: data.timeSlots,
     }));
@@ -44,7 +47,6 @@ const saveAvailability = async (payload: SaveAvailabilityInput) => {
       {
         weeklyHours: weeklyHoursArray,
         overrideHours: overrideHoursArray,
-        bookingOptions: payload.bookingOptions,
       }
     );
 

@@ -121,13 +121,19 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
       },
     });
 
-    // Create languages and send email in parallel
+    // Create languages, availability provider, and send email in parallel
     await Promise.all([
       prisma.examinerLanguage.createMany({
         data: payload.languagesSpoken.map((language) => ({
           examinerProfileId: examinerProfile.id,
           languageId: language,
         })),
+      }),
+      prisma.availabilityProvider.create({
+        data: {
+          providerType: "EXAMINER",
+          refId: examinerProfile.id,
+        },
       }),
       emailService.sendEmail(
         "Your Thrive Medical Examiner Application Has Been Received",

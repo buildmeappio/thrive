@@ -145,12 +145,6 @@ export const overrideHoursSchema = z.array(
 export const availabilityPreferencesSchema = z.object({
   weeklyHours: weeklyHoursSchema,
   overrideHours: overrideHoursSchema.optional(),
-  bookingOptions: z
-    .object({
-      bufferTime: z.string().optional(),
-      advanceBooking: z.string().optional(),
-    })
-    .optional(),
 });
 
 export type TimeSlot = z.infer<typeof timeSlotSchema>;

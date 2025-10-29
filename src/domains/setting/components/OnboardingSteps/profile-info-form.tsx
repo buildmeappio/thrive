@@ -18,7 +18,7 @@ import {
 } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
-import { provinceOptions } from "@/constants/options";
+import { provinces } from "@/constants/options";
 import { updateExaminerProfileAction } from "../../server/actions";
 import {
   profileInfoSchema,
@@ -170,7 +170,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
               name="provinceOfResidence"
               label="Province of Residence"
               required
-              options={provinceOptions}
+              options={provinces}
               placeholder="Select Province"
               from="profile-info-form"
             />

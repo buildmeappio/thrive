@@ -5,13 +5,57 @@ export type GetAvailabilityInput = {
   examinerProfileId: string;
 };
 
+type WeeklyHoursWithTimeSlots = {
+  id: string;
+  availabilityProviderId: string;
+  dayOfWeek:
+    | "MONDAY"
+    | "TUESDAY"
+    | "WEDNESDAY"
+    | "THURSDAY"
+    | "FRIDAY"
+    | "SATURDAY"
+    | "SUNDAY";
+  enabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  timeSlots: {
+    id: string;
+    weeklyHourId: string;
+    startTime: string;
+    endTime: string;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
+  }[];
+};
+
+type OverrideHoursWithTimeSlots = {
+  id: string;
+  availabilityProviderId: string;
+  date: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  timeSlots: {
+    id: string;
+    overrideHourId: string;
+    startTime: string;
+    endTime: string;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
+  }[];
+};
+
 const getAvailability = async (payload: GetAvailabilityInput) => {
   try {
     const availability = await availabilityService.getCompleteAvailability(
       payload.examinerProfileId
     );
 
-    // Initialize with default values for all days
+    // Initialize with default values for all days (using lowercase keys for form compatibility)
     const defaultTimeSlot = [{ startTime: "8:00 AM", endTime: "11:00 AM" }];
     const weeklyHoursObject: {
       [key: string]: {
@@ -35,44 +79,46 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
     };
 
     // Override with actual data from database
-    availability.weeklyHours.forEach((dayData) => {
-      weeklyHoursObject[dayData.dayOfWeek] = {
+    availability.weeklyHours.forEach((dayData: WeeklyHoursWithTimeSlots) => {
+      // Convert uppercase enum to lowercase key for form compatibility
+      const dayKey =
+        dayData.dayOfWeek.toLowerCase() as keyof typeof weeklyHoursObject;
+      weeklyHoursObject[dayKey] = {
         enabled: dayData.enabled,
-        timeSlots: dayData.timeSlots.map((slot) => ({
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-        })),
+        timeSlots: dayData.timeSlots.map(
+          (slot: { startTime: string; endTime: string }) => ({
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+          })
+        ),
       };
     });
 
     // Transform override hours
-    const overrideHoursArray = availability.overrideHours.map((override) => {
-      const date = new Date(override.date);
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      const year = date.getFullYear();
+    const overrideHoursArray = availability.overrideHours.map(
+      (override: OverrideHoursWithTimeSlots) => {
+        const date = new Date(override.date);
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const year = date.getFullYear();
 
-      return {
-        date: `${month}-${day}-${year}`,
-        timeSlots: override.timeSlots.map((slot) => ({
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-        })),
-      };
-    });
+        return {
+          date: `${month}-${day}-${year}`,
+          timeSlots: override.timeSlots.map(
+            (slot: { startTime: string; endTime: string }) => ({
+              startTime: slot.startTime,
+              endTime: slot.endTime,
+            })
+          ),
+        };
+      }
+    );
 
     return {
       success: true,
       data: {
         weeklyHours: weeklyHoursObject,
         overrideHours: overrideHoursArray,
-        bookingOptions: availability.bookingOptions
-          ? {
-              bufferTime: availability.bookingOptions.bufferTime ?? undefined,
-              advanceBooking:
-                availability.bookingOptions.advanceBooking ?? undefined,
-            }
-          : undefined,
       },
     };
   } catch (error) {

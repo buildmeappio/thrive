@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui";
 import {
   BackButton,
@@ -13,7 +13,6 @@ import {
 } from "@/domains/auth/schemas/auth.schemas";
 import { step2InitialValues } from "@/domains/auth/constants/initialValues";
 import { RegStepProps } from "@/domains/auth/types/index";
-import { medicalSpecialtyOptions } from "@/constants/options";
 import {
   RegistrationData,
   useRegistrationStore,
@@ -22,7 +21,9 @@ import {
 import { FormProvider, FormField, FormDropdown } from "@/components/form";
 import { Controller, UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
-import { provinceOptions } from "@/constants/options";
+import { provinces } from "@/constants/options";
+import getExamTypesAction from "@/server/actions/getExamTypes";
+import { ExamTypesResponse, ExamType } from "@/server/types/examTypes";
 
 const MedicalCredentials: React.FC<RegStepProps> = ({
   onNext,
@@ -32,10 +33,43 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
 }) => {
   const { data, merge } = useRegistrationStore();
   const [isClient, setIsClient] = React.useState(false);
+  const [examTypes, setExamTypes] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+  const [loadingExamTypes, setLoadingExamTypes] = useState(true);
 
   // Ensure component only renders on client to avoid hydration mismatch
   React.useEffect(() => {
     setIsClient(true);
+  }, []);
+
+  // Fetch exam types from database
+  useEffect(() => {
+    const fetchExamTypes = async () => {
+      try {
+        setLoadingExamTypes(true);
+        const result: ExamTypesResponse = await getExamTypesAction();
+
+        if (result.success) {
+          const formattedExamTypes = result.data.map((examType: ExamType) => ({
+            value: examType.id,
+            label: examType.name,
+          }));
+          setExamTypes(formattedExamTypes);
+        } else {
+          console.error("Failed to fetch exam types:", result.message);
+          setExamTypes([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch exam types:", error);
+        // Fallback to empty array if fetch fails
+        setExamTypes([]);
+      } finally {
+        setLoadingExamTypes(false);
+      }
+    };
+
+    fetchExamTypes();
   }, []);
 
   const form = useForm<Step2MedicalCredentialsInput>({
@@ -118,12 +152,15 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
           <div className="mt-4 grid grid-cols-1 gap-x-14 gap-y-4 md:mt-8 md:grid-cols-2 md:px-0 px-8">
             <FormDropdown
               name="medicalSpecialty"
-              label="Medical Specialties"
-              options={medicalSpecialtyOptions}
+              label="Medical Specialties (Exam Types)"
+              options={examTypes}
               required
-              placeholder="Select Specialty"
+              placeholder={
+                loadingExamTypes ? "Loading exam types..." : "Select Exam Type"
+              }
               multiSelect={true}
               icon={null}
+              disabled={loadingExamTypes}
             />
 
             <FormField name="licenseNumber" label="License Number" required>
@@ -139,7 +176,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
             <FormDropdown
               name="provinceOfLicensure"
               label="Province of Licensure"
-              options={provinceOptions}
+              options={provinces}
               required
               placeholder="Select Province"
               icon={null}
