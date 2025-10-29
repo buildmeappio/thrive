@@ -638,13 +638,13 @@ model ExaminerProfile {
   updatedAt                         DateTime       @updatedAt @db.Timestamptz()
   deletedAt                         DateTime?
 
-  account                Account               @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  medicalLicenseDocument Documents             @relation(name: "ExaminerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
-  resumeDocument         Documents             @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
-  ndaDocument            Documents?            @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
-  insuranceDocument      Documents?            @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
+  account                Account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  medicalLicenseDocument Documents          @relation(name: "ExaminerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
+  resumeDocument         Documents          @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
+  ndaDocument            Documents?         @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
+  insuranceDocument      Documents?         @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
   examinerLanguages      ExaminerLanguage[]
-  availabilityProvider   AvailabilityProvider? @relation("ExaminerAvailabilityProvider")
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'EXAMINER' } })
 
   @@map("examiner_profiles")
 }
@@ -677,11 +677,9 @@ model AvailabilityProvider {
   weeklyHours   ProviderWeeklyHours[]   @relation("ProviderWeeklyHours")
   overrideHours ProviderOverrideHours[] @relation("ProviderOverrideHours")
 
-  // Provider relations
-  examinerProfile ExaminerProfile? @relation("ExaminerAvailabilityProvider", fields: [refId], references: [id], onDelete: Cascade, map: "availability_providers_examiner_ref_id_fkey")
-  chaperone       Chaperone?       @relation("ChaperoneAvailabilityProvider", fields: [refId], references: [id], onDelete: Cascade, map: "availability_providers_chaperone_ref_id_fkey")
-  interpreter     Interpreter?     @relation("InterpreterAvailabilityProvider", fields: [refId], references: [id], onDelete: Cascade, map: "availability_providers_interpreter_ref_id_fkey")
-  transporter     Transporter?     @relation("TransporterAvailabilityProvider", fields: [refId], references: [id], onDelete: Cascade, map: "availability_providers_transporter_ref_id_fkey")
+  // Provider relations - polymorphic relationship
+  // No foreign key constraints since refId can point to different tables based on providerType
+  // Use application-level validation to ensure data integrity
 
   /// Prevents the same entity from being registered twice,
   /// even under a different type.
@@ -797,7 +795,7 @@ model Chaperone {
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  availabilityProvider AvailabilityProvider? @relation("ChaperoneAvailabilityProvider")
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'CHAPERONE' } })
 
   @@map("chaperones")
 }
@@ -812,8 +810,8 @@ model Interpreter {
   updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt     DateTime? @map("deleted_at") @db.Timestamptz()
 
-  languages            InterpreterLanguage[] @relation("InterpreterLanguages")
-  availabilityProvider AvailabilityProvider? @relation("InterpreterAvailabilityProvider")
+  languages InterpreterLanguage[] @relation("InterpreterLanguages")
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'INTERPRETER' } })
 
   @@map("interpreters")
 }
@@ -850,7 +848,7 @@ model Transporter {
   updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt     DateTime?         @map("deleted_at") @db.Timestamptz()
 
-  availabilityProvider AvailabilityProvider? @relation("TransporterAvailabilityProvider")
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'TRANSPORTER' } })
 
   @@map("transporters")
 }
