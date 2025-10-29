@@ -3,7 +3,14 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Language } from "@prisma/client";
+
+type Language = {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+};
 
 // Document types for handling both new uploads and existing documents
 export type ExistingDocument = {

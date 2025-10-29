@@ -23,6 +23,7 @@ export interface DropdownProps {
   error?: string;
   multiSelect?: boolean;
   from?: string;
+  disabled?: boolean;
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -38,6 +39,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   error,
   multiSelect = false,
   from = "",
+  disabled = false,
 }) => {
   const uniqueOptions = React.useMemo(() => {
     const seen = new Set<string>();
@@ -126,6 +128,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             name={id}>
             <SelectTrigger
               id={id}
+              disabled={disabled}
               className={`h-[55px] w-full text-[#000000] rounded-[7.56px] border-none shadow-none bg-[${
                 from === "profile-info-form" ? "#F9F9F9" : "#F2F5F6"
               }] ${
@@ -157,6 +160,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             <button
               type="button"
               id={id}
+              disabled={disabled}
               className={`h-[55px] w-full rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 ${
                 icon ? "pl-10" : "pl-3"
               } text-[14px] leading-[120%] font-normal tracking-[0.5%] text-left focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 relative ${

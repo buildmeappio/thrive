@@ -29,7 +29,7 @@ import {
 } from "@/components/form";
 import { UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
-import { provinceOptions } from "@/constants/options";
+import { provinces } from "@/constants/options";
 
 const PersonalInfo: React.FC<RegStepProps> = ({
   onNext,
@@ -176,7 +176,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
               <FormDropdown
                 name="provinceOfResidence"
                 label="Province of Residence"
-                options={provinceOptions}
+                options={provinces}
                 required
                 placeholder="Select Province"
                 icon={null}

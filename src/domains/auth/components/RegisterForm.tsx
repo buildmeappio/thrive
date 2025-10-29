@@ -11,8 +11,15 @@ import {
   ThankYou,
 } from "./RegisterationSteps";
 import { RegStepProps } from "@/domains/auth/types/index";
-import { Language } from "@prisma/client";
 import { useRegistrationStore } from "@/domains/auth/state/useRegistrationStore";
+
+type Language = {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+};
 
 interface Step {
   component: React.ComponentType<RegStepProps>;

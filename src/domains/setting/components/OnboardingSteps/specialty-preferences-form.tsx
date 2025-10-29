@@ -7,7 +7,7 @@ import {
   specialtyPreferencesSchema,
   SpecialtyPreferencesInput,
 } from "../../schemas/onboardingSteps.schema";
-import { medicalSpecialtyOptions, regionOptions } from "@/constants/options";
+import { medicalSpecialtyOptions, provinces } from "@/constants/options";
 import {
   assessmentTypeOptions,
   formatOptions,
@@ -135,7 +135,7 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
               name="regionsServed"
               label="Regions Served"
               required
-              options={regionOptions}
+              options={provinces}
               placeholder="Select regions"
               className=""
               multiSelect

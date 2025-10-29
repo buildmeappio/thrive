@@ -1,15 +1,22 @@
-export const provinceOptions = [
-  { value: "Ontario", label: "Ontario" },
-  { value: "British Columbia  ", label: "British Columbia" },
+// Single source of truth for Canadian provinces and territories
+export type Province = {
+  value: string;
+  label: string;
+};
+
+export const provinces: Province[] = [
+  { value: "Alberta", label: "Alberta" },
+  { value: "British Columbia", label: "British Columbia" },
   { value: "Manitoba", label: "Manitoba" },
   { value: "New Brunswick", label: "New Brunswick" },
   { value: "Newfoundland and Labrador", label: "Newfoundland and Labrador" },
+  { value: "Northwest Territories", label: "Northwest Territories" },
   { value: "Nova Scotia", label: "Nova Scotia" },
+  { value: "Nunavut", label: "Nunavut" },
+  { value: "Ontario", label: "Ontario" },
   { value: "Prince Edward Island", label: "Prince Edward Island" },
   { value: "Quebec", label: "Quebec" },
   { value: "Saskatchewan", label: "Saskatchewan" },
-  { value: "Northwest Territories", label: "Northwest Territories" },
-  { value: "Nunavut", label: "Nunavut" },
   { value: "Yukon", label: "Yukon" },
 ];
 
@@ -57,23 +64,6 @@ export const timeOptions = [
   "10:00 PM",
   "11:00 PM",
   "12:00 AM",
-];
-
-export const regionOptions = [
-  { value: "toronto", label: "Toronto" },
-  { value: "ottawa", label: "Ottawa" },
-  { value: "hamilton", label: "Hamilton" },
-  { value: "london", label: "London" },
-  { value: "kitchener", label: "Kitchener" },
-  { value: "windsor", label: "Windsor" },
-  { value: "kingston", label: "Kingston" },
-  { value: "barrie", label: "Barrie" },
-  { value: "thunder-bay", label: "Thunder Bay" },
-  { value: "sudbury", label: "Sudbury" },
-  { value: "sault-ste-marie", label: "Sault Ste. Marie" },
-  { value: "north-bay", label: "North Bay" },
-  { value: "timmins", label: "Timmins" },
-  { value: "other", label: "Other" },
 ];
 
 export const medicalSpecialtyOptions = [

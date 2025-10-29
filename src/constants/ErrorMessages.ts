@@ -163,4 +163,6 @@ export default Object.freeze({
   ACCOUNT_ALREADY_EXISTS: "An account with this email already exists",
   INVALID_EXAMINER_INFO_TOKEN: "Invalid or expired examiner info token",
   FAILED_UPDATE_EXAMINER_PROFILE: "Failed to update examiner profile",
+  // Exam Type errors
+  EXAM_TYPES_NOT_FOUND: "No exam types found",
 });

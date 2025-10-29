@@ -21,7 +21,7 @@ import {
   useRegistrationStore,
   RegistrationData,
 } from "@/domains/auth/state/useRegistrationStore";
-import { regionOptions } from "@/constants/options";
+import { provinces } from "@/constants/options";
 
 const Availablity: React.FC<RegStepProps> = ({
   onNext,
@@ -90,10 +90,10 @@ const Availablity: React.FC<RegStepProps> = ({
             <div className="mt-6 md:px-0 px-8 grid grid-cols-1 gap-x-14 gap-y-5 md:mt-8 md:grid-cols-2">
               <FormDropdown
                 name="preferredRegions"
-                label="Preferred Regions"
-                options={regionOptions}
+                label="Preferred Provinces"
+                options={provinces}
                 required
-                placeholder="Toronto"
+                placeholder="Select Province"
                 icon={null}
                 multiSelect
               />
