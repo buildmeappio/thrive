@@ -1,8 +1,15 @@
-import { cn } from "@/lib/utils";
 import { TransporterData, VEHICLE_TYPES } from "../types/TransporterData";
-import { ColumnDef, Column } from "@tanstack/react-table";
+import { ColumnDef, Column, Row } from "@tanstack/react-table";
 import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
+import { capitalizeWords } from "@/utils/text";
+
+// Utility function to truncate text with ellipsis
+const truncateText = (text: string | null | undefined, maxLength: number = 28): string => {
+  if (!text) return "N/A";
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + "...";
+};
 
 const SortableHeader = ({
   column,
@@ -51,16 +58,6 @@ const ActionButton = ({ id }: { id: string }) => {
   );
 };
 
-const Content = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <p
-      className={cn(
-        "text-left font-poppins text-[#4D4D4D] font-regular text-[16px] leading-none py-2 whitespace-nowrap"
-      )}>
-      {children}
-    </p>
-  );
-};
 
 const columns: ColumnDef<TransporterData>[] = [
   {
@@ -69,9 +66,21 @@ const columns: ColumnDef<TransporterData>[] = [
     ),
     accessorKey: "companyName",
     enableSorting: true,
-    cell: ({ row }) => {
-      return <Content>{row.original.companyName}</Content>;
+    cell: ({ row }: { row: Row<TransporterData> }) => {
+      const companyName = row.getValue("companyName") as string;
+      const capitalizedName = capitalizeWords(companyName);
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          title={capitalizedName}
+        >
+          {truncateText(capitalizedName, 28)}
+        </div>
+      );
     },
+    minSize: 150,
+    maxSize: 250,
+    size: 200,
   },
   {
     header: ({ column }) => (
@@ -79,9 +88,21 @@ const columns: ColumnDef<TransporterData>[] = [
     ),
     accessorKey: "contactPerson",
     enableSorting: true,
-    cell: ({ row }) => {
-      return <Content>{row.original.contactPerson}</Content>;
+    cell: ({ row }: { row: Row<TransporterData> }) => {
+      const contactPerson = row.getValue("contactPerson") as string;
+      const capitalizedPerson = capitalizeWords(contactPerson);
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          title={capitalizedPerson}
+        >
+          {truncateText(capitalizedPerson, 28)}
+        </div>
+      );
     },
+    minSize: 150,
+    maxSize: 250,
+    size: 200,
   },
   {
     header: ({ column }) => (
@@ -89,9 +110,20 @@ const columns: ColumnDef<TransporterData>[] = [
     ),
     accessorKey: "email",
     enableSorting: true,
-    cell: ({ row }) => {
-      return <Content>{row.original.email}</Content>;
+    cell: ({ row }: { row: Row<TransporterData> }) => {
+      const email = row.getValue("email") as string;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          title={email}
+        >
+          {truncateText(email, 30)}
+        </div>
+      );
     },
+    minSize: 180,
+    maxSize: 300,
+    size: 220,
   },
   {
     header: ({ column }) => (
@@ -99,8 +131,8 @@ const columns: ColumnDef<TransporterData>[] = [
     ),
     accessorKey: "vehicleTypes",
     enableSorting: true,
-    cell: ({ row }) => {
-      const vehicleTypes = row.original.vehicleTypes;
+    cell: ({ row }: { row: Row<TransporterData> }) => {
+      const vehicleTypes = row.getValue("vehicleTypes") as string[];
 
       const formatVehicleTypes = (types: string[]) => {
         return types
@@ -114,8 +146,18 @@ const columns: ColumnDef<TransporterData>[] = [
       const displayText = Array.isArray(vehicleTypes)
         ? formatVehicleTypes(vehicleTypes)
         : vehicleTypes;
-      return <Content>{displayText}</Content>;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          title={displayText}
+        >
+          {truncateText(displayText, 25)}
+        </div>
+      );
     },
+    minSize: 150,
+    maxSize: 300,
+    size: 220,
   },
   {
     header: ({ column }) => (
@@ -123,16 +165,26 @@ const columns: ColumnDef<TransporterData>[] = [
     ),
     accessorKey: "status",
     enableSorting: true,
-    cell: ({ row }) => {
-      const status = row.original.status;
+    cell: ({ row }: { row: Row<TransporterData> }) => {
+      const status = row.getValue("status") as string;
       const statusText =
         status === "ACTIVE"
           ? "Active"
           : status === "SUSPENDED"
           ? "Suspended"
           : "";
-      return <Content>{statusText}</Content>;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          title={statusText}
+        >
+          {truncateText(statusText, 20)}
+        </div>
+      );
     },
+    minSize: 120,
+    maxSize: 180,
+    size: 150,
   },
   {
     header: "",
@@ -140,7 +192,9 @@ const columns: ColumnDef<TransporterData>[] = [
     cell: ({ row }) => {
       return <ActionButton id={row.original.id} />;
     },
+    minSize: 60,
     maxSize: 60,
+    size: 60,
     enableSorting: false,
   },
 ];

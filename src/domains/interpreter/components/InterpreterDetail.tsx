@@ -14,7 +14,8 @@ import { Trash2, Edit2, X, Check } from "lucide-react";
 import { getWeekdayLabel, getBlockLabel, WEEKDAYS, AVAILABILITY_BLOCKS } from "../constants";
 import { AvailabilityBlock, Language } from "@prisma/client";
 import DeleteInterpreterModal from "./DeleteInterpreterModal";
-import { filterUUIDLanguages } from "../utils/languageUtils";
+import { filterUUIDLanguages } from "@/utils/languageUtils";
+import { capitalizeWords } from "@/utils/text";
 
 type Props = { interpreter: InterpreterData };
 
@@ -269,7 +270,7 @@ export default function InterpreterDetail({ interpreter }: Props) {
       <div className="mb-6 flex justify-between items-start">
         <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
           <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
-            {interpreter.companyName}
+            {capitalizeWords(interpreter.companyName)}
           </span>
         </h1>
         <div className="flex gap-2">
@@ -344,8 +345,8 @@ export default function InterpreterDetail({ interpreter }: Props) {
               <Section title="Company Information">
                 {!isEditMode ? (
                   <>
-                    <FieldRow label="Company Name" value={interpreter.companyName} type="text" />
-                    <FieldRow label="Contact Person" value={interpreter.contactPerson} type="text" />
+                    <FieldRow label="Company Name" value={capitalizeWords(interpreter.companyName)} type="text" />
+                    <FieldRow label="Contact Person" value={capitalizeWords(interpreter.contactPerson)} type="text" />
                     <FieldRow label="Email" value={interpreter.email} type="text" />
                     <FieldRow label="Phone" value={formatPhoneNumber(interpreter.phone) || "N/A"} type="text" />
                   </>
@@ -543,7 +544,7 @@ export default function InterpreterDetail({ interpreter }: Props) {
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
         isDeleting={isDeleting}
-        interpreterName={interpreter.companyName}
+        interpreterName={capitalizeWords(interpreter.companyName)}
       />
     </DashboardShell>
   );

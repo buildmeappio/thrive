@@ -7,6 +7,7 @@ import { OrganizationData } from "@/domains/organization/types/OrganizationData"
 import { cn } from "@/lib/utils";
 import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
+import { capitalizeWords } from "@/utils/text";
 
 // Utility function to format text from database: remove _, -, and capitalize each word
 const formatText = (str: string) => {
@@ -81,12 +82,13 @@ const columnsDef = [
     ),
     cell: ({ row }: { row: Row<OrganizationData> }) => {
       const name = row.getValue("name") as string;
+      const capitalizedName = capitalizeWords(name);
       return (
         <div 
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
-          title={name}
+          title={capitalizedName}
         >
-          {truncateText(name, 28)}
+          {truncateText(capitalizedName, 28)}
         </div>
       );
     },
@@ -122,12 +124,13 @@ const columnsDef = [
     ),
     cell: ({ row }: { row: Row<OrganizationData> }) => {
       const managerName = (row.getValue("managerName") as string) || "N/A";
+      const capitalizedManagerName = capitalizeWords(managerName);
       return (
         <div 
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
-          title={managerName}
+          title={capitalizedManagerName}
         >
-          {truncateText(managerName, 28)}
+          {truncateText(capitalizedManagerName, 28)}
         </div>
       );
     },

@@ -14,6 +14,9 @@ import { cn } from "@/lib/utils";
 import { TransporterData } from "../types/TransporterData";
 import columns from "./columns";
 
+// Extract columnsDef for width calculations
+const columnsDef = columns;
+
 interface TransporterTableProps {
   table: ReactTable<TransporterData>;
 }
@@ -21,30 +24,41 @@ interface TransporterTableProps {
 export default function TransporterTable({ table }: TransporterTableProps) {
   return (
     <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
-      <div className="overflow-hidden rounded-md outline-none">
-        <Table className="border-0">
+      <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
+        <Table className="w-full border-0 table-fixed">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 className="bg-[#F3F3F3] border-b-0"
                 key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className={cn(
-                      "px-6 text-left text-base font-medium text-black whitespace-nowrap",
-                      header.index === 0 && "rounded-l-2xl",
-                      header.index === headerGroup.headers.length - 1 &&
-                        "rounded-r-2xl w-[60px]"
-                    )}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  const columnDef = columnsDef[header.index];
+                  const minWidth = columnDef?.minSize || 'auto';
+                  const maxWidth = columnDef?.maxSize || 'auto';
+                  const width = columnDef?.size || 'auto';
+                  return (
+                    <TableHead
+                      key={header.id}
+                      style={{
+                        minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
+                        maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+                        width: typeof width === 'number' ? `${width}px` : width,
+                      }}
+                      className={cn(
+                        "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
+                        header.index === 0 && "rounded-l-2xl",
+                        header.index === headerGroup.headers.length - 1 &&
+                        "rounded-r-2xl"
+                      )}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -56,21 +70,36 @@ export default function TransporterTable({ table }: TransporterTableProps) {
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className="bg-white border-0 border-b-1">
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="px-6 py-3">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+                  {row.getVisibleCells().map((cell) => {
+                    const columnIndex = cell.column.getIndex();
+                    const columnDef = columnsDef[columnIndex];
+                    const minWidth = columnDef?.minSize || 'auto';
+                    const maxWidth = columnDef?.maxSize || 'auto';
+                    const width = columnDef?.size || 'auto';
+                    return (
+                      <TableCell 
+                        key={cell.id} 
+                        style={{
+                          minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
+                          maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+                          width: typeof width === 'number' ? `${width}px` : width,
+                        }}
+                        className="px-6 py-3 overflow-hidden align-middle"
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))
             ) : (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center text-black font-poppins text-[16px] leading-none">
+                  className="h-24 text-center text-black font-poppins text-[16px] leading-normal">
                   No Transporters Found
                 </TableCell>
               </TableRow>

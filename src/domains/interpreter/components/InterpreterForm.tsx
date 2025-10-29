@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { WEEKDAYS, AVAILABILITY_BLOCKS } from "../constants";
 import { AvailabilityBlock, Language } from "@prisma/client";
 import { getLanguages } from "../actions";
-import { filterUUIDLanguages } from "../utils/languageUtils";
+import { filterUUIDLanguages } from "@/utils/languageUtils";
 import { Check, Globe } from "lucide-react";
 
 type FormData = {

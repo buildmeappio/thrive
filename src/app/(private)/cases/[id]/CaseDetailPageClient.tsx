@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { convertTo12HourFormat, formatDate } from "@/utils/date";
 import CaseDetailContent from "@/app/(private)/cases/[id]/CaseDetailContent";
+import { capitalizeWords } from "@/utils/text";
 import RequestMoreInfoModal from "@/domains/case/components/RequestMoreInfoModal";
 import RejectModal from "@/domains/case/components/RejectModal";
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
@@ -127,7 +128,7 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
           {/* Created by section */}
           <div className="flex items-center gap-2 sm:gap-1">
             <span>Created by</span>
-            <span className="font-medium text-gray-900">{safeValue(caseDetails.case.organization?.name || "Unknown")}</span>
+            <span className="font-medium text-gray-900">{capitalizeWords(safeValue(caseDetails.case.organization?.name || "Unknown"))}</span>
           </div>
           
           {/* Created at section */}
