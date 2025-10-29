@@ -1,11 +1,10 @@
-import { Interpreter, InterpreterLanguage, InterpreterAvailability, Language } from "@prisma/client";
+import { Interpreter, InterpreterLanguage, Language } from "@prisma/client";
 import { InterpreterData } from "../../types/InterpreterData";
 
 type InterpreterWithRelations = Interpreter & {
   languages: (InterpreterLanguage & {
     language: Language;
   })[];
-  availability: InterpreterAvailability[];
 };
 
 export class InterpreterDto {
@@ -20,13 +19,9 @@ export class InterpreterDto {
         id: il.language.id,
         name: il.language.name,
       })),
-      availability: interpreter.availability.map(a => ({
-        id: a.id,
-        weekday: a.weekday,
-        block: a.block,
-      })),
       createdAt: interpreter.createdAt,
       updatedAt: interpreter.updatedAt,
+      deletedAt: interpreter.deletedAt ?? undefined,
     };
   }
 

@@ -81,12 +81,10 @@ export default function CreateTransporterPageContent() {
       }
 
       const result = await createTransporter({
-        ...formData,
         companyName: trimmedCompanyName,
         contactPerson: trimmedContactPerson,
         email: trimmedEmail,
         phone: formData.phone.trim() || undefined,
-        baseAddress: "", // Default empty string for baseAddress
         serviceAreas: validServiceAreas,
       });
 

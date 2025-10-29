@@ -1,6 +1,5 @@
 import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
-import { AvailabilityBlock } from "@prisma/client";
 
 type CreateInterpreterInput = {
   companyName: string;
@@ -8,7 +7,6 @@ type CreateInterpreterInput = {
   email: string;
   phone?: string;
   languageIds: string[];
-  availability: Array<{ weekday: number; block: AvailabilityBlock }>;
 };
 
 type UpdateInterpreterInput = {
@@ -17,7 +15,6 @@ type UpdateInterpreterInput = {
   email?: string;
   phone?: string;
   languageIds?: string[];
-  availability?: Array<{ weekday: number; block: AvailabilityBlock }>;
 };
 
 class InterpreterService {
@@ -63,7 +60,6 @@ class InterpreterService {
                 language: true,
               },
             },
-            availability: true,
           },
           orderBy: { createdAt: "desc" },
           skip,
@@ -94,12 +90,6 @@ class InterpreterService {
             include: {
               language: true,
             },
-          },
-          availability: {
-            orderBy: [
-              { weekday: 'asc' },
-              { block: 'asc' }
-            ]
           },
         },
       });
@@ -140,9 +130,6 @@ class InterpreterService {
               languageId,
             })),
           },
-          availability: {
-            create: data.availability,
-          },
         },
         include: {
           languages: {
@@ -150,7 +137,6 @@ class InterpreterService {
               language: true,
             },
           },
-          availability: true,
         },
       });
 
@@ -209,18 +195,6 @@ class InterpreterService {
         };
       }
 
-      // Handle availability update
-      if (data.availability) {
-        // Delete existing availability and create new ones
-        await prisma.interpreterAvailability.deleteMany({
-          where: { interpreterId: id },
-        });
-
-        updateData.availability = {
-          create: data.availability,
-        };
-      }
-
       const interpreter = await prisma.interpreter.update({
         where: { id },
         data: updateData,
@@ -230,7 +204,6 @@ class InterpreterService {
               language: true,
             },
           },
-          availability: true,
         },
       });
 

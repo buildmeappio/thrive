@@ -25,9 +25,6 @@ export interface CreateTransporterData {
   phone: string;
   email: string;
   serviceAreas: ServiceArea[];
-  vehicleTypes: string[];
-  fleetInfo?: string;
-  baseAddress: string;
 }
 
 export interface UpdateTransporterData {
@@ -36,9 +33,6 @@ export interface UpdateTransporterData {
   phone?: string;
   email?: string;
   serviceAreas?: ServiceArea[];
-  vehicleTypes?: string[];
-  fleetInfo?: string;
-  baseAddress?: string;
   status?: "ACTIVE" | "SUSPENDED";
 }
 

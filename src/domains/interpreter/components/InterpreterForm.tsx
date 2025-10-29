@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { WEEKDAYS, AVAILABILITY_BLOCKS } from "../constants";
-import { AvailabilityBlock, Language } from "@prisma/client";
+import { Language } from "@prisma/client";
 import { getLanguages } from "../actions";
 import { filterUUIDLanguages } from "@/utils/languageUtils";
 import { Check, Globe } from "lucide-react";
@@ -14,7 +13,6 @@ type FormData = {
   email: string;
   phone: string;
   languageIds: string[];
-  availability: Array<{ weekday: number; block: AvailabilityBlock }>;
 };
 
 type Props = {
@@ -40,7 +38,6 @@ export default function InterpreterForm({
       email: "",
       phone: "",
       languageIds: [],
-      availability: [],
     }
   );
 
@@ -67,33 +64,6 @@ export default function InterpreterForm({
     }));
   };
 
-  const handleAvailabilityToggle = (weekday: number, block: AvailabilityBlock) => {
-    setFormData((prev) => {
-      const exists = prev.availability.some(
-        (a) => a.weekday === weekday && a.block === block
-      );
-
-      if (exists) {
-        return {
-          ...prev,
-          availability: prev.availability.filter(
-            (a) => !(a.weekday === weekday && a.block === block)
-          ),
-        };
-      } else {
-        return {
-          ...prev,
-          availability: [...prev.availability, { weekday, block }],
-        };
-      }
-    });
-  };
-
-  const isAvailabilitySelected = (weekday: number, block: AvailabilityBlock) => {
-    return formData.availability.some(
-      (a) => a.weekday === weekday && a.block === block
-    );
-  };
 
   // Validation handlers
   const handleCompanyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -291,41 +261,8 @@ export default function InterpreterForm({
         </div>
       </div>
 
-      {/* Languages & Availability Section - 2 columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-        {/* Left - Availability */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Availability</h2>
-          <div className="rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 p-6">
-            <div className="space-y-4">
-              {WEEKDAYS.map((day) => (
-                <div key={day.value} className="space-y-3">
-                  <p className="text-sm font-semibold text-gray-800 mb-2">{day.label}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {AVAILABILITY_BLOCKS.map((block) => (
-                      <button
-                        key={block.value}
-                        type="button"
-                        onClick={() => handleAvailabilityToggle(day.value, block.value)}
-                        className={cn(
-                          "px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 transform hover:scale-105",
-                          "border-2 shadow-sm",
-                          isAvailabilitySelected(day.value, block.value)
-                            ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white border-transparent shadow-lg shadow-cyan-500/30"
-                            : "bg-white border-gray-300 text-gray-700 hover:border-[#00A8FF] hover:bg-cyan-50 hover:text-[#00A8FF]"
-                        )}
-                      >
-                        {block.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right - Languages */}
+      {/* Languages Section */}
+      <div>
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Languages <span className="text-red-500">*</span>

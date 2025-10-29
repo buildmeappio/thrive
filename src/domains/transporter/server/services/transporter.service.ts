@@ -2,6 +2,7 @@ import prisma from "@/lib/db";
 import {
   CreateTransporterData,
   UpdateTransporterData,
+  TransporterData,
 } from "../../types/TransporterData";
 
 export class TransporterService {
@@ -14,13 +15,19 @@ export class TransporterService {
           phone: data.phone,
           email: data.email,
           serviceAreas: JSON.parse(JSON.stringify(data.serviceAreas)),
-          vehicleTypes: data.vehicleTypes,
-          fleetInfo: data.fleetInfo,
-          baseAddress: data.baseAddress,
         },
       });
 
-      return { success: true, data: transporter };
+      // Transform Prisma result to TransporterData
+      const transformed: TransporterData = {
+        ...transporter,
+        serviceAreas: transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
+        vehicleTypes: [], // Default since not in schema
+        fleetInfo: undefined,
+        baseAddress: "", // Default since not in schema
+      };
+
+      return { success: true, data: transformed };
     } catch (error) {
       console.error("Error creating transporter:", error);
       return { success: false, error: "Failed to create transporter" };
@@ -59,9 +66,18 @@ export class TransporterService {
         prisma.transporter.count({ where }),
       ]);
 
+      // Transform Prisma results to TransporterData
+      const transformed: TransporterData[] = transporters.map((t) => ({
+        ...t,
+        serviceAreas: t.serviceAreas as unknown as TransporterData["serviceAreas"],
+        vehicleTypes: [], // Default since not in schema
+        fleetInfo: undefined,
+        baseAddress: "", // Default since not in schema
+      }));
+
       return {
         success: true,
-        data: transporters,
+        data: transformed,
         pagination: {
           page,
           limit,
@@ -85,7 +101,16 @@ export class TransporterService {
         return { success: false, error: "Transporter not found" };
       }
 
-      return { success: true, data: transporter };
+      // Transform Prisma result to TransporterData
+      const transformed: TransporterData = {
+        ...transporter,
+        serviceAreas: transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
+        vehicleTypes: [], // Default since not in schema
+        fleetInfo: undefined,
+        baseAddress: "", // Default since not in schema
+      };
+
+      return { success: true, data: transformed };
     } catch (error) {
       console.error("Error fetching transporter:", error);
       return { success: false, error: "Failed to fetch transporter" };
@@ -97,15 +122,28 @@ export class TransporterService {
       const transporter = await prisma.transporter.update({
         where: { id },
         data: {
-          ...data,
+          companyName: data.companyName,
+          contactPerson: data.contactPerson,
+          phone: data.phone,
+          email: data.email,
           serviceAreas: data.serviceAreas
             ? JSON.parse(JSON.stringify(data.serviceAreas))
             : undefined,
+          status: data.status,
           updatedAt: new Date(),
         },
       });
 
-      return { success: true, data: transporter };
+      // Transform Prisma result to TransporterData
+      const transformed: TransporterData = {
+        ...transporter,
+        serviceAreas: transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
+        vehicleTypes: [], // Default since not in schema
+        fleetInfo: undefined,
+        baseAddress: "", // Default since not in schema
+      };
+
+      return { success: true, data: transformed };
     } catch (error) {
       console.error("Error updating transporter:", error);
       return { success: false, error: "Failed to update transporter" };
