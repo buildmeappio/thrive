@@ -152,7 +152,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
           <div className="mt-4 grid grid-cols-1 gap-x-14 gap-y-4 md:mt-8 md:grid-cols-2 md:px-0 px-8">
             <FormDropdown
               name="medicalSpecialty"
-              label="Medical Specialties (Exam Types)"
+              label="Medical Specialties"
               options={examTypes}
               required
               placeholder={
