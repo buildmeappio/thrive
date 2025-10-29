@@ -7,10 +7,7 @@ interface TransporterData {
   contactPerson: string;
   phone: string;
   email: string;
-  serviceAreas: { province: string; address: string }[];
-  vehicleTypes: string[];
-  fleetInfo?: string;
-  baseAddress: string;
+  serviceAreas: { province: string }[];
   status: "ACTIVE" | "SUSPENDED";
   availability?: {
     weeklyHours: {
@@ -48,15 +45,7 @@ class TransporterSeeder {
         contactPerson: "John Smith",
         phone: "+1-416-555-0101",
         email: "john@metromedical.com",
-        serviceAreas: [
-          { province: "Ontario", address: "Toronto, ON" },
-          { province: "Ontario", address: "Mississauga, ON" },
-          { province: "Ontario", address: "Brampton, ON" },
-        ],
-        vehicleTypes: ["Wheelchair Accessible", "Standard Sedan", "Minivan"],
-        fleetInfo:
-          "Fleet of 15 vehicles including 5 wheelchair accessible vans",
-        baseAddress: "123 Main Street, Toronto, ON M1A 1A1",
+        serviceAreas: [{ province: "Ontario" }, { province: "Quebec" }],
         status: "ACTIVE",
         availability: {
           weeklyHours: [
@@ -108,14 +97,7 @@ class TransporterSeeder {
         contactPerson: "Maria Garcia",
         phone: "+1-416-555-0102",
         email: "maria@saferide.ca",
-        serviceAreas: [
-          { province: "Ontario", address: "Ottawa, ON" },
-          { province: "Ontario", address: "Kingston, ON" },
-          { province: "Quebec", address: "Montreal, QC" },
-        ],
-        vehicleTypes: ["Wheelchair Accessible", "SUV", "Minivan"],
-        fleetInfo: "Specialized medical transport with trained drivers",
-        baseAddress: "456 Queen Street, Ottawa, ON K1A 0A1",
+        serviceAreas: [{ province: "Ontario" }, { province: "Quebec" }],
         status: "ACTIVE",
       },
       {
@@ -123,19 +105,7 @@ class TransporterSeeder {
         contactPerson: "David Wilson",
         phone: "+1-604-555-0103",
         email: "david@coastalmedical.ca",
-        serviceAreas: [
-          { province: "British Columbia", address: "Vancouver, BC" },
-          { province: "British Columbia", address: "Burnaby, BC" },
-          { province: "British Columbia", address: "Richmond, BC" },
-        ],
-        vehicleTypes: [
-          "Wheelchair Accessible",
-          "Standard Sedan",
-          "Minivan",
-          "SUV",
-        ],
-        fleetInfo: "Certified medical transport with 24/7 availability",
-        baseAddress: "789 Granville Street, Vancouver, BC V6Z 1A1",
+        serviceAreas: [{ province: "British Columbia" }],
         status: "ACTIVE",
       },
       {
@@ -143,14 +113,7 @@ class TransporterSeeder {
         contactPerson: "Sarah Johnson",
         phone: "+1-403-555-0104",
         email: "sarah@prairietransport.ca",
-        serviceAreas: [
-          { province: "Alberta", address: "Calgary, AB" },
-          { province: "Alberta", address: "Edmonton, AB" },
-          { province: "Saskatchewan", address: "Saskatoon, SK" },
-        ],
-        vehicleTypes: ["Wheelchair Accessible", "Minivan", "SUV"],
-        fleetInfo: "Long-distance medical transport specialist",
-        baseAddress: "321 8th Avenue, Calgary, AB T2P 1A1",
+        serviceAreas: [{ province: "Alberta" }, { province: "Saskatchewan" }],
         status: "ACTIVE",
       },
       {
@@ -159,13 +122,10 @@ class TransporterSeeder {
         phone: "+1-902-555-0105",
         email: "robert@atlanticmedical.ca",
         serviceAreas: [
-          { province: "Nova Scotia", address: "Halifax, NS" },
-          { province: "New Brunswick", address: "Fredericton, NB" },
-          { province: "Prince Edward Island", address: "Charlottetown, PE" },
+          { province: "Nova Scotia" },
+          { province: "New Brunswick" },
+          { province: "Prince Edward Island" },
         ],
-        vehicleTypes: ["Wheelchair Accessible", "Standard Sedan", "Minivan"],
-        fleetInfo: "Regional medical transport covering Maritime provinces",
-        baseAddress: "654 Spring Garden Road, Halifax, NS B3H 1A1",
         status: "SUSPENDED",
       },
     ];
@@ -212,9 +172,6 @@ class TransporterSeeder {
             phone: transporterData.phone,
             email: transporterData.email,
             serviceAreas: transporterData.serviceAreas,
-            vehicleTypes: transporterData.vehicleTypes,
-            fleetInfo: transporterData.fleetInfo,
-            baseAddress: transporterData.baseAddress,
             status: transporterData.status,
           },
         });
@@ -223,10 +180,7 @@ class TransporterSeeder {
           `✅ Created transporter: "${companyName}" (ID: ${transporter.id})`
         );
         console.log(
-          `   ✓ Service areas: ${transporterData.serviceAreas.length} regions`
-        );
-        console.log(
-          `   ✓ Vehicle types: ${transporterData.vehicleTypes.join(", ")}`
+          `   ✓ Service areas: ${transporterData.serviceAreas.length} provinces`
         );
         console.log(`   ✓ Status: ${transporterData.status}`);
 
