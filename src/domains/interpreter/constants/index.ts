@@ -1,11 +1,3 @@
-import { AvailabilityBlock } from "@prisma/client";
-
-export const AVAILABILITY_BLOCKS: { value: AvailabilityBlock; label: string }[] = [
-  { value: "MORNING", label: "Morning" },
-  { value: "AFTERNOON", label: "Afternoon" },
-  { value: "EVENING", label: "Evening" },
-];
-
 export const WEEKDAYS = [
   { value: 0, label: "Monday", short: "Mon" },
   { value: 1, label: "Tuesday", short: "Tue" },
@@ -22,9 +14,5 @@ export const getWeekdayLabel = (weekday: number): string => {
 
 export const getWeekdayShort = (weekday: number): string => {
   return WEEKDAYS.find(w => w.value === weekday)?.short ?? "N/A";
-};
-
-export const getBlockLabel = (block: AvailabilityBlock): string => {
-  return AVAILABILITY_BLOCKS.find(b => b.value === block)?.label ?? block;
 };
 

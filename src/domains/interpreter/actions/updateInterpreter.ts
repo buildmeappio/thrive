@@ -1,7 +1,6 @@
 "use server";
 import interpreterService from "../server/interpreter.service";
 import { InterpreterDto } from "../server/dto/interpreter.dto";
-import { AvailabilityBlock } from "@prisma/client";
 
 type UpdateInterpreterInput = {
   companyName?: string;
@@ -9,7 +8,6 @@ type UpdateInterpreterInput = {
   email?: string;
   phone?: string;
   languageIds?: string[];
-  availability?: Array<{ weekday: number; block: AvailabilityBlock }>;
 };
 
 const updateInterpreter = async (id: string, data: UpdateInterpreterInput) => {

@@ -11,8 +11,7 @@ import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
 import { useRouter } from "next/navigation";
 import { Trash2, Edit2, X, Check } from "lucide-react";
-import { getWeekdayLabel, getBlockLabel, WEEKDAYS, AVAILABILITY_BLOCKS } from "../constants";
-import { AvailabilityBlock, Language } from "@prisma/client";
+import { Language } from "@prisma/client";
 import DeleteInterpreterModal from "./DeleteInterpreterModal";
 import { filterUUIDLanguages } from "@/utils/languageUtils";
 import { capitalizeWords } from "@/utils/text";
@@ -34,10 +33,6 @@ export default function InterpreterDetail({ interpreter }: Props) {
     email: interpreter.email,
     phone: interpreter.phone || "",
     languageIds: interpreter.languages.map(l => l.id),
-    availability: interpreter.availability.map(a => ({
-      weekday: a.weekday,
-      block: a.block
-    }))
   });
 
   // Fetch all languages for the dropdown
@@ -90,10 +85,6 @@ export default function InterpreterDetail({ interpreter }: Props) {
       email: interpreter.email,
       phone: interpreter.phone || "",
       languageIds: interpreter.languages.map(l => l.id),
-      availability: interpreter.availability.map(a => ({
-        weekday: a.weekday,
-        block: a.block
-      }))
     });
   };
 
@@ -133,7 +124,6 @@ export default function InterpreterDetail({ interpreter }: Props) {
         email: trimmedEmail,
         phone: formData.phone.trim() || undefined,
         languageIds: formData.languageIds,
-        availability: formData.availability
       });
       toast.success("Interpreter updated successfully!");
       setIsEditMode(false);
@@ -153,34 +143,6 @@ export default function InterpreterDetail({ interpreter }: Props) {
         ? prev.languageIds.filter(id => id !== languageId)
         : [...prev.languageIds, languageId]
     }));
-  };
-
-  const handleAvailabilityToggle = (weekday: number, block: AvailabilityBlock) => {
-    setFormData(prev => {
-      const exists = prev.availability.some(
-        a => a.weekday === weekday && a.block === block
-      );
-      
-      if (exists) {
-        return {
-          ...prev,
-          availability: prev.availability.filter(
-            a => !(a.weekday === weekday && a.block === block)
-          )
-        };
-      } else {
-        return {
-          ...prev,
-          availability: [...prev.availability, { weekday, block }]
-        };
-      }
-    });
-  };
-
-  const isAvailabilitySelected = (weekday: number, block: AvailabilityBlock) => {
-    return formData.availability.some(
-      a => a.weekday === weekday && a.block === block
-    );
   };
 
   // Validation handlers
@@ -464,76 +426,6 @@ export default function InterpreterDetail({ interpreter }: Props) {
               </Section>
             </div>
 
-            {/* Right side - Availability */}
-            <Section title="Availability">
-                {!isEditMode ? (
-                  <div className="rounded-lg bg-[#F6F6F6] px-4 py-3">
-                    {interpreter.availability.length > 0 ? (
-                      <div className="space-y-3">
-                        {(() => {
-                          const grouped = interpreter.availability.reduce((acc, avail) => {
-                            const day = getWeekdayLabel(avail.weekday);
-                            if (!acc[day]) {
-                              acc[day] = [];
-                            }
-                            acc[day].push(getBlockLabel(avail.block));
-                            return acc;
-                          }, {} as Record<string, string[]>);
-
-                          return Object.entries(grouped).map(([day, blocks]) => (
-                            <div key={day} className="flex items-start gap-3">
-                              <span className="text-sm font-semibold font-poppins text-[#000080] min-w-[100px]">
-                                {day}:
-                              </span>
-                              <div className="flex flex-wrap gap-2">
-                                {blocks.map((block, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium font-poppins bg-[#E0F2FE] text-[#0369A1] border border-[#BAE6FD]"
-                                  >
-                                    {block}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          ));
-                        })()}
-                      </div>
-                    ) : (
-                      <p className="font-poppins text-sm text-[#4E4E4E]">
-                        No availability set
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="rounded-lg bg-[#F6F6F6] px-4 py-3">
-                    <div className="space-y-3">
-                      {WEEKDAYS.map((day) => (
-                        <div key={day.value} className="space-y-2">
-                          <p className="text-sm font-medium text-gray-700">{day.label}</p>
-                          <div className="flex flex-wrap gap-2">
-                            {AVAILABILITY_BLOCKS.map((block) => (
-                              <button
-                                key={block.value}
-                                type="button"
-                                onClick={() => handleAvailabilityToggle(day.value, block.value)}
-                                className={cn(
-                                  "px-3 py-1 rounded-full text-xs font-medium transition-colors",
-                                  isAvailabilitySelected(day.value, block.value)
-                                    ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
-                                    : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                                )}
-                              >
-                                {block.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </Section>
           </div>
         </div>
       </div>

@@ -6,7 +6,6 @@ import { DashboardShell } from "@/layouts/dashboard";
 import InterpreterForm from "@/domains/interpreter/components/InterpreterForm";
 import { createInterpreter } from "@/domains/interpreter/actions";
 import { toast } from "sonner";
-import { AvailabilityBlock } from "@prisma/client";
 
 type FormData = {
   companyName: string;
@@ -14,7 +13,6 @@ type FormData = {
   email: string;
   phone: string;
   languageIds: string[];
-  availability: Array<{ weekday: number; block: AvailabilityBlock }>;
 };
 
 export default function InterpreterCreateContent() {
@@ -30,7 +28,6 @@ export default function InterpreterCreateContent() {
         email: data.email,
         phone: data.phone || undefined,
         languageIds: data.languageIds,
-        availability: data.availability,
       });
       
       toast.success("Interpreter added successfully!");

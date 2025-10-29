@@ -1,11 +1,3 @@
-import { AvailabilityBlock } from "@prisma/client";
-
-export type InterpreterAvailability = {
-  id: string;
-  weekday: number;
-  block: AvailabilityBlock;
-};
-
 export type InterpreterLanguage = {
   id: string;
   name: string;
@@ -18,14 +10,13 @@ export type InterpreterData = {
   email: string;
   phone?: string;
   languages: InterpreterLanguage[];
-  availability: InterpreterAvailability[];
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
 };
 
-export type InterpreterListItem = Omit<InterpreterData, 'availability'> & {
+export type InterpreterListItem = InterpreterData & {
   languageCount: number;
-  availabilityCount: number;
 };
 
 export type InterpreterFilters = {

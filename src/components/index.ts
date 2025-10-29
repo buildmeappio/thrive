@@ -12,7 +12,7 @@ export { default as Dropdown } from "./Dropdown";
 export { default as FieldRow } from "./FieldRow";
 export { default as Image } from "./Image";
 export { default as Pagination } from "./Pagination";
-export { default as PasswordInput } from "./PasswordInput";
+export { PasswordInput } from "./PasswordInput";
 export { default as PhoneNumber } from "./PhoneNumber";
 export { default as Section } from "./Section";
 
