@@ -189,9 +189,15 @@ export default function InterpreterDetail({ interpreter }: Props) {
     value = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
     // Remove leading spaces - first character must be a letter
     value = value.replace(/^\s+/, '');
-    // Remove trailing spaces
-    value = value.replace(/\s+$/, '');
     setFormData(prev => ({ ...prev, companyName: value }));
+  };
+
+  const handleCompanyNameBlur = () => {
+    // Remove trailing spaces only when user finishes typing (on blur)
+    setFormData(prev => ({
+      ...prev,
+      companyName: prev.companyName.replace(/\s+$/, '').trim()
+    }));
   };
 
   const handleContactPersonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,9 +206,15 @@ export default function InterpreterDetail({ interpreter }: Props) {
     value = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
     // Remove leading spaces - first character must be a letter
     value = value.replace(/^\s+/, '');
-    // Remove trailing spaces
-    value = value.replace(/\s+$/, '');
     setFormData(prev => ({ ...prev, contactPerson: value }));
+  };
+
+  const handleContactPersonBlur = () => {
+    // Remove trailing spaces only when user finishes typing (on blur)
+    setFormData(prev => ({
+      ...prev,
+      contactPerson: prev.contactPerson.replace(/\s+$/, '').trim()
+    }));
   };
 
   // Check if field contains only spaces
@@ -211,14 +223,34 @@ export default function InterpreterDetail({ interpreter }: Props) {
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    let value = e.target.value;
+    // Remove spaces from email immediately - prevent typing spaces at all
+    value = value.replace(/\s/g, '');
     setFormData(prev => ({ ...prev, email: value }));
+  };
+
+  const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Prevent spacebar from being typed
+    if (e.key === ' ') {
+      e.preventDefault();
+    }
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Only allow numbers
-    const filtered = value.replace(/[^0-9]/g, '');
+    // Allow numbers and + (only at the start)
+    let filtered = value.replace(/[^0-9+]/g, '');
+    // If + exists, ensure it's only at the start
+    if (filtered.includes('+')) {
+      const plusCount = (filtered.match(/\+/g) || []).length;
+      // If there are multiple +, keep only the first one
+      if (plusCount > 1) {
+        filtered = '+' + filtered.replace(/\+/g, '');
+      } else if (!filtered.startsWith('+')) {
+        // Move + to the start if it's not there
+        filtered = '+' + filtered.replace(/\+/g, '');
+      }
+    }
     setFormData(prev => ({ ...prev, phone: filtered }));
   };
 
@@ -325,6 +357,7 @@ export default function InterpreterDetail({ interpreter }: Props) {
                         type="text"
                         value={formData.companyName}
                         onChange={handleCompanyNameChange}
+                        onBlur={handleCompanyNameBlur}
                         maxLength={25}
                         className={cn(
                           "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all",
@@ -344,6 +377,7 @@ export default function InterpreterDetail({ interpreter }: Props) {
                         type="text"
                         value={formData.contactPerson}
                         onChange={handleContactPersonChange}
+                        onBlur={handleContactPersonBlur}
                         maxLength={25}
                         className={cn(
                           "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all",
@@ -363,6 +397,7 @@ export default function InterpreterDetail({ interpreter }: Props) {
                         type="email"
                         value={formData.email}
                         onChange={handleEmailChange}
+                        onKeyDown={handleEmailKeyDown}
                         className={cn(
                           "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all",
                           (formData.email && !isValidEmail(formData.email)) || isOnlySpaces(formData.email)
@@ -385,7 +420,7 @@ export default function InterpreterDetail({ interpreter }: Props) {
                         value={formData.phone}
                         onChange={handlePhoneChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A8FF]"
-                        placeholder="Enter phone number (numbers only)"
+                        placeholder="Enter phone number (e.g., +1234567890)"
                       />
                     </div>
                   </div>
