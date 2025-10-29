@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, ProviderType, Weekday } from "@prisma/client";
+import AvailabilityProviderSeeder from "./availabilityProvider.seeder";
 
 interface TransporterData {
   companyName: string;
@@ -11,6 +12,16 @@ interface TransporterData {
   fleetInfo?: string;
   baseAddress: string;
   status: "ACTIVE" | "SUSPENDED";
+  availability?: {
+    weeklyHours: {
+      dayOfWeek: Weekday;
+      enabled: boolean;
+      timeSlots: {
+        startTime: string;
+        endTime: string;
+      }[];
+    }[];
+  };
 }
 
 class TransporterSeeder {
@@ -47,6 +58,50 @@ class TransporterSeeder {
           "Fleet of 15 vehicles including 5 wheelchair accessible vans",
         baseAddress: "123 Main Street, Toronto, ON M1A 1A1",
         status: "ACTIVE",
+        availability: {
+          weeklyHours: [
+            {
+              dayOfWeek: Weekday.MONDAY,
+              enabled: true,
+              timeSlots: [
+                { startTime: "08:00", endTime: "12:00" },
+                { startTime: "13:00", endTime: "17:00" },
+              ],
+            },
+            {
+              dayOfWeek: Weekday.TUESDAY,
+              enabled: true,
+              timeSlots: [
+                { startTime: "08:00", endTime: "12:00" },
+                { startTime: "13:00", endTime: "17:00" },
+              ],
+            },
+            {
+              dayOfWeek: Weekday.WEDNESDAY,
+              enabled: true,
+              timeSlots: [
+                { startTime: "08:00", endTime: "12:00" },
+                { startTime: "13:00", endTime: "17:00" },
+              ],
+            },
+            {
+              dayOfWeek: Weekday.THURSDAY,
+              enabled: true,
+              timeSlots: [
+                { startTime: "08:00", endTime: "12:00" },
+                { startTime: "13:00", endTime: "17:00" },
+              ],
+            },
+            {
+              dayOfWeek: Weekday.FRIDAY,
+              enabled: true,
+              timeSlots: [
+                { startTime: "08:00", endTime: "12:00" },
+                { startTime: "13:00", endTime: "17:00" },
+              ],
+            },
+          ],
+        },
       },
       {
         companyName: "SafeRide Transportation",
@@ -174,6 +229,19 @@ class TransporterSeeder {
           `   ✓ Vehicle types: ${transporterData.vehicleTypes.join(", ")}`
         );
         console.log(`   ✓ Status: ${transporterData.status}`);
+
+        // Create availability provider if availability data is provided
+        if (transporterData.availability) {
+          const availabilitySeeder = AvailabilityProviderSeeder.getInstance(
+            this.db
+          );
+          await availabilitySeeder.createAvailabilityProvider({
+            providerType: ProviderType.TRANSPORTER,
+            refId: transporter.id,
+            weeklyHours: transporterData.availability.weeklyHours,
+          });
+          console.log(`   ✓ Created availability schedule`);
+        }
       } catch (error) {
         console.error(`❌ Error creating transporter: ${companyName}`, error);
         throw error;

@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, ProviderType, Weekday } from "@prisma/client";
+import AvailabilityProviderSeeder from "./availabilityProvider.seeder";
 
 interface InterpreterData {
   companyName: string;
@@ -8,8 +9,12 @@ interface InterpreterData {
   phone: string;
   languages: string[]; // Language names
   availability: {
-    weekday: number; // 0=Monday, 6=Sunday
-    blocks: ("MORNING" | "AFTERNOON" | "EVENING")[];
+    weekday: Weekday;
+    enabled: boolean;
+    timeSlots: {
+      startTime: string;
+      endTime: string;
+    }[];
   }[];
 }
 
@@ -39,11 +44,44 @@ class InterpreterSeeder {
         phone: "+1-416-555-0101",
         languages: ["Spanish", "English"],
         availability: [
-          { weekday: 0, blocks: ["MORNING", "AFTERNOON"] }, // Monday
-          { weekday: 1, blocks: ["MORNING", "AFTERNOON", "EVENING"] }, // Tuesday
-          { weekday: 2, blocks: ["MORNING", "AFTERNOON"] }, // Wednesday
-          { weekday: 3, blocks: ["AFTERNOON", "EVENING"] }, // Thursday
-          { weekday: 4, blocks: ["MORNING"] }, // Friday
+          {
+            weekday: Weekday.MONDAY,
+            enabled: true,
+            timeSlots: [
+              { startTime: "09:00", endTime: "12:00" },
+              { startTime: "13:00", endTime: "17:00" },
+            ],
+          },
+          {
+            weekday: Weekday.TUESDAY,
+            enabled: true,
+            timeSlots: [
+              { startTime: "09:00", endTime: "12:00" },
+              { startTime: "13:00", endTime: "17:00" },
+              { startTime: "18:00", endTime: "21:00" },
+            ],
+          },
+          {
+            weekday: Weekday.WEDNESDAY,
+            enabled: true,
+            timeSlots: [
+              { startTime: "09:00", endTime: "12:00" },
+              { startTime: "13:00", endTime: "17:00" },
+            ],
+          },
+          {
+            weekday: Weekday.THURSDAY,
+            enabled: true,
+            timeSlots: [
+              { startTime: "13:00", endTime: "17:00" },
+              { startTime: "18:00", endTime: "21:00" },
+            ],
+          },
+          {
+            weekday: Weekday.FRIDAY,
+            enabled: true,
+            timeSlots: [{ startTime: "09:00", endTime: "12:00" }],
+          },
         ],
       },
       {
@@ -53,9 +91,31 @@ class InterpreterSeeder {
         phone: "+1-416-555-0102",
         languages: ["French", "English"],
         availability: [
-          { weekday: 0, blocks: ["AFTERNOON", "EVENING"] }, // Monday
-          { weekday: 2, blocks: ["MORNING", "AFTERNOON"] }, // Wednesday
-          { weekday: 4, blocks: ["MORNING", "AFTERNOON", "EVENING"] }, // Friday
+          {
+            weekday: Weekday.MONDAY,
+            enabled: true,
+            timeSlots: [
+              { startTime: "13:00", endTime: "17:00" },
+              { startTime: "18:00", endTime: "21:00" },
+            ],
+          },
+          {
+            weekday: Weekday.WEDNESDAY,
+            enabled: true,
+            timeSlots: [
+              { startTime: "09:00", endTime: "12:00" },
+              { startTime: "13:00", endTime: "17:00" },
+            ],
+          },
+          {
+            weekday: Weekday.FRIDAY,
+            enabled: true,
+            timeSlots: [
+              { startTime: "09:00", endTime: "12:00" },
+              { startTime: "13:00", endTime: "17:00" },
+              { startTime: "18:00", endTime: "21:00" },
+            ],
+          },
         ],
       },
       {
@@ -65,9 +125,28 @@ class InterpreterSeeder {
         phone: "+1-416-555-0103",
         languages: ["Spanish", "French"],
         availability: [
-          { weekday: 1, blocks: ["MORNING", "AFTERNOON"] }, // Tuesday
-          { weekday: 3, blocks: ["MORNING", "AFTERNOON", "EVENING"] }, // Thursday
-          { weekday: 5, blocks: ["MORNING"] }, // Saturday
+          {
+            weekday: Weekday.TUESDAY,
+            enabled: true,
+            timeSlots: [
+              { startTime: "09:00", endTime: "12:00" },
+              { startTime: "13:00", endTime: "17:00" },
+            ],
+          },
+          {
+            weekday: Weekday.THURSDAY,
+            enabled: true,
+            timeSlots: [
+              { startTime: "09:00", endTime: "12:00" },
+              { startTime: "13:00", endTime: "17:00" },
+              { startTime: "18:00", endTime: "21:00" },
+            ],
+          },
+          {
+            weekday: Weekday.SATURDAY,
+            enabled: true,
+            timeSlots: [{ startTime: "09:00", endTime: "12:00" }],
+          },
         ],
       },
     ];
@@ -77,9 +156,7 @@ class InterpreterSeeder {
     console.log("✅ Interpreters seed process completed.");
   }
 
-  private async createInterpreters(
-    data: InterpreterData[]
-  ): Promise<void> {
+  private async createInterpreters(data: InterpreterData[]): Promise<void> {
     if (!data || !Array.isArray(data) || data.length === 0) {
       throw new Error("Interpreter data must be a non-empty array");
     }
@@ -147,26 +224,20 @@ class InterpreterSeeder {
           }
         }
 
-        // Create availability slots
+        // Create availability provider if availability data is provided
         if (
           interpreterData.availability &&
           interpreterData.availability.length > 0
         ) {
-          for (const avail of interpreterData.availability) {
-            for (const block of avail.blocks) {
-              await this.db.interpreterAvailability.create({
-                data: {
-                  interpreterId: interpreter.id,
-                  weekday: avail.weekday,
-                  block: block,
-                },
-              });
-            }
-          }
-
-          console.log(
-            `   ✓ Created ${interpreterData.availability.reduce((sum, a) => sum + a.blocks.length, 0)} availability slots`
+          const availabilitySeeder = AvailabilityProviderSeeder.getInstance(
+            this.db
           );
+          await availabilitySeeder.createAvailabilityProvider({
+            providerType: ProviderType.INTERPRETER,
+            refId: interpreter.id,
+            weeklyHours: interpreterData.availability,
+          });
+          console.log(`   ✓ Created availability schedule`);
         }
       } catch (error) {
         console.error(`❌ Error creating interpreter: ${companyName}`, error);
@@ -199,4 +270,3 @@ class InterpreterSeeder {
 }
 
 export default InterpreterSeeder;
-
