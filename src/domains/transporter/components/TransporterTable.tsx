@@ -14,9 +14,6 @@ import { cn } from "@/lib/utils";
 import { TransporterData } from "../types/TransporterData";
 import columns from "./columns";
 
-// Extract columnsDef for width calculations
-const columnsDef = columns;
-
 interface TransporterTableProps {
   table: ReactTable<TransporterData>;
 }
@@ -32,23 +29,29 @@ export default function TransporterTable({ table }: TransporterTableProps) {
                 className="bg-[#F3F3F3] border-b-0"
                 key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
-                  const columnDef = columnsDef[header.index];
-                  const minWidth = columnDef?.minSize || 'auto';
-                  const maxWidth = columnDef?.maxSize || 'auto';
-                  const width = columnDef?.size || 'auto';
+                  const columnDef = columns[header.index];
+                  const minWidth = columnDef?.minSize || "auto";
+                  const maxWidth = columnDef?.maxSize || "auto";
+                  const width = columnDef?.size || "auto";
                   return (
                     <TableHead
                       key={header.id}
                       style={{
-                        minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
-                        maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
-                        width: typeof width === 'number' ? `${width}px` : width,
+                        minWidth:
+                          typeof minWidth === "number"
+                            ? `${minWidth}px`
+                            : minWidth,
+                        maxWidth:
+                          typeof maxWidth === "number"
+                            ? `${maxWidth}px`
+                            : maxWidth,
+                        width: typeof width === "number" ? `${width}px` : width,
                       }}
                       className={cn(
                         "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
                         header.index === 0 && "rounded-l-2xl",
                         header.index === headerGroup.headers.length - 1 &&
-                        "rounded-r-2xl"
+                          "rounded-r-2xl"
                       )}>
                       {header.isPlaceholder
                         ? null
@@ -72,20 +75,26 @@ export default function TransporterTable({ table }: TransporterTableProps) {
                   className="bg-white border-0 border-b-1">
                   {row.getVisibleCells().map((cell) => {
                     const columnIndex = cell.column.getIndex();
-                    const columnDef = columnsDef[columnIndex];
-                    const minWidth = columnDef?.minSize || 'auto';
-                    const maxWidth = columnDef?.maxSize || 'auto';
-                    const width = columnDef?.size || 'auto';
+                    const columnDef = columns[columnIndex];
+                    const minWidth = columnDef?.minSize || "auto";
+                    const maxWidth = columnDef?.maxSize || "auto";
+                    const width = columnDef?.size || "auto";
                     return (
-                      <TableCell 
-                        key={cell.id} 
+                      <TableCell
+                        key={cell.id}
                         style={{
-                          minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
-                          maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
-                          width: typeof width === 'number' ? `${width}px` : width,
+                          minWidth:
+                            typeof minWidth === "number"
+                              ? `${minWidth}px`
+                              : minWidth,
+                          maxWidth:
+                            typeof maxWidth === "number"
+                              ? `${maxWidth}px`
+                              : maxWidth,
+                          width:
+                            typeof width === "number" ? `${width}px` : width,
                         }}
-                        className="px-6 py-3 overflow-hidden align-middle"
-                      >
+                        className="px-6 py-3 overflow-hidden align-middle">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
