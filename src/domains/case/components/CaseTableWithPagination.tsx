@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
 import { formatDateShort } from "@/utils/date";
+import { capitalizeWords } from "@/utils/text";
 
 // Utility function to format text from database: remove _, -, and capitalize each word
 const formatText = (str: string) => {
@@ -138,12 +139,13 @@ const columnsDef = [
     ),
     cell: ({ row }: { row: Row<CaseData> }) => {
       const organization = row.getValue("organization") as string;
+      const capitalizedOrg = capitalizeWords(organization);
       return (
         <div 
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
-          title={organization}
+          title={capitalizedOrg}
         >
-          {truncateText(organization, 28)}
+          {truncateText(capitalizedOrg, 28)}
         </div>
       );
     },

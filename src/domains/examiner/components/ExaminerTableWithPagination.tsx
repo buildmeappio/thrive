@@ -7,6 +7,7 @@ import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { cn } from "@/lib/utils";
 import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
+import { capitalizeWords } from "@/utils/text";
 
 interface FilterState {
   specialty: string;
@@ -83,12 +84,13 @@ const columnsDef = [
     ),
     cell: ({ row }: { row: Row<ExaminerData> }) => {
       const name = row.getValue("name") as string;
+      const capitalizedName = capitalizeWords(name);
       return (
         <div 
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
-          title={name}
+          title={capitalizedName}
         >
-          {truncateText(name, 28)}
+          {truncateText(capitalizedName, 28)}
         </div>
       );
     },

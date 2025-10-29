@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import organizationActions from "../actions";
 import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
+import { capitalizeWords } from "@/utils/text";
 
 // Utility function to format text from database: remove _, -, and capitalize each word
 const formatText = (str: string): string => {
@@ -126,7 +127,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
       {/* Organization Name Heading */}
       <div className="mb-6">
         <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-          {organization.name}
+          {capitalizeWords(organization.name)}
         </h1>
       </div>
 
@@ -137,7 +138,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
             {/* Left Column - Organization Details */}
             <div className="flex flex-col gap-6 lg:gap-10">
               <Section title="Organization Details">
-                <FieldRow label="Organization Name" value={organization.name} type="text" />
+                <FieldRow label="Organization Name" value={capitalizeWords(organization.name)} type="text" />
                 <FieldRow label="Organization Type" value={type} type="text" />
                 
                 {/* Custom Address Lookup Field */}
@@ -161,7 +162,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                   label="Full Name"
                   value={
                     organization.manager?.[0]?.account?.user
-                      ? `${organization.manager?.[0]?.account?.user.firstName ?? ""} ${organization.manager?.[0]?.account?.user.lastName ?? ""}`.trim() || "-"
+                      ? capitalizeWords(`${organization.manager?.[0]?.account?.user.firstName ?? ""} ${organization.manager?.[0]?.account?.user.lastName ?? ""}`.trim() || "-")
                       : "-"
                   }
                   type="text"

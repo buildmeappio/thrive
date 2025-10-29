@@ -9,6 +9,7 @@ import { updateTransporter } from "../server/actions";
 import { Check, Edit, X } from "lucide-react";
 import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
+import { capitalizeWords } from "@/utils/text";
 import { provinceOptions } from "@/constants/options";
 import { VEHICLE_TYPES, TRANSPORTER_STATUSES } from "../types/TransporterData";
 
@@ -27,7 +28,6 @@ export default function TransporterDetail({ transporter }: Props) {
     contactPerson: transporter.contactPerson,
     phone: transporter.phone,
     email: transporter.email,
-    baseAddress: transporter.baseAddress,
     fleetInfo: transporter.fleetInfo || "",
     status: transporter.status,
     serviceAreas: transporter.serviceAreas,
@@ -37,7 +37,39 @@ export default function TransporterDetail({ transporter }: Props) {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      const result = await updateTransporter(transporter.id, formData);
+      // Validate email
+      if (!isValidEmail(formData.email)) {
+        toast.error("Please enter a valid email address");
+        setIsLoading(false);
+        return;
+      }
+
+      // Trim all fields before validation
+      const trimmedCompanyName = formData.companyName.trim();
+      const trimmedContactPerson = formData.contactPerson.trim();
+      const trimmedEmail = formData.email.trim();
+
+      // Check if required fields are not empty after trimming
+      if (!trimmedCompanyName || !trimmedContactPerson || !trimmedEmail) {
+        toast.error("Please fill in all required fields");
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if fields contain only spaces
+      if (isOnlySpaces(formData.companyName) || isOnlySpaces(formData.contactPerson)) {
+        toast.error("Fields cannot contain only spaces");
+        setIsLoading(false);
+        return;
+      }
+
+      const result = await updateTransporter(transporter.id, {
+        ...formData,
+        companyName: trimmedCompanyName,
+        contactPerson: trimmedContactPerson,
+        email: trimmedEmail,
+        phone: formData.phone.trim() || undefined,
+      });
       if (result.success) {
         toast.success("Transporter updated successfully");
         setIsEditing(false);
@@ -59,7 +91,6 @@ export default function TransporterDetail({ transporter }: Props) {
       contactPerson: transporter.contactPerson,
       phone: transporter.phone,
       email: transporter.email,
-      baseAddress: transporter.baseAddress,
       fleetInfo: transporter.fleetInfo || "",
       status: transporter.status,
       serviceAreas: transporter.serviceAreas,
@@ -104,13 +135,85 @@ export default function TransporterDetail({ transporter }: Props) {
     }));
   };
 
+  // Validation handlers
+  const handleCompanyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    value = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
+    value = value.replace(/^\s+/, ''); // Remove leading spaces
+    setFormData((prev) => ({ ...prev, companyName: value }));
+  };
+
+  const handleCompanyNameBlur = () => {
+    setFormData((prev) => ({
+      ...prev,
+      companyName: prev.companyName.replace(/\s+$/, '').trim() // Remove trailing spaces on blur
+    }));
+  };
+
+  const handleContactPersonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    value = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
+    value = value.replace(/^\s+/, ''); // Remove leading spaces
+    setFormData((prev) => ({ ...prev, contactPerson: value }));
+  };
+
+  const handleContactPersonBlur = () => {
+    setFormData((prev) => ({
+      ...prev,
+      contactPerson: prev.contactPerson.replace(/\s+$/, '').trim() // Remove trailing spaces on blur
+    }));
+  };
+
+  const isOnlySpaces = (value: string) => {
+    return value.trim().length === 0 && value.length > 0;
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    value = value.replace(/\s/g, ''); // Remove all spaces immediately
+    setFormData((prev) => ({ ...prev, email: value }));
+  };
+
+  const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === ' ') {
+      e.preventDefault(); // Prevent spacebar from being typed
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow numbers and + (only at the start)
+    let filtered = value.replace(/[^0-9+]/g, '');
+    // If + exists, ensure it's only at the start
+    if (filtered.includes('+')) {
+      const plusCount = (filtered.match(/\+/g) || []).length;
+      // If there are multiple +, keep only the first one
+      if (plusCount > 1) {
+        filtered = '+' + filtered.replace(/\+/g, '');
+      } else if (!filtered.startsWith('+')) {
+        // Move + to the start if it's not there
+        filtered = '+' + filtered.replace(/\+/g, '');
+      }
+    }
+    setFormData((prev) => ({ ...prev, phone: filtered }));
+  };
+
+  // Email validation - must have at least one letter before @
+  const isValidEmail = (email: string) => {
+    if (!email || !email.includes('@')) return false;
+    const [localPart, domain] = email.split('@');
+    if (!localPart || !domain || !domain.includes('.')) return false;
+    // Must have at least one letter (a-z or A-Z) in the local part before @
+    return /[a-zA-Z]/.test(localPart) && /^[a-zA-Z0-9._-]+$/.test(localPart) && /^[^\s@]+\.[^\s@]+$/.test(domain);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {transporter.companyName}
+            {capitalizeWords(transporter.companyName)}
           </h1>
         </div>
         <div className="flex gap-2">
@@ -152,19 +255,27 @@ export default function TransporterDetail({ transporter }: Props) {
                 type="text"
                 value={
                   isEditing ? (
-                    <input
-                      type="text"
-                      value={formData.companyName}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          companyName: e.target.value,
-                        }))
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    <div>
+                      <input
+                        type="text"
+                        value={formData.companyName}
+                        onChange={handleCompanyNameChange}
+                        onBlur={handleCompanyNameBlur}
+                        maxLength={25}
+                        className={cn(
+                          "w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all",
+                          isOnlySpaces(formData.companyName)
+                            ? "border-red-300 focus:ring-red-500"
+                            : "border-gray-300 focus:ring-[#00A8FF]"
+                        )}
+                        placeholder="Enter company name (alphabets only, max 25)"
+                      />
+                      {isOnlySpaces(formData.companyName) && (
+                        <p className="text-xs text-red-500 mt-1">Company name cannot be only spaces</p>
+                      )}
+                    </div>
                   ) : (
-                    transporter.companyName
+                    capitalizeWords(transporter.companyName)
                   )
                 }
               />
@@ -173,19 +284,27 @@ export default function TransporterDetail({ transporter }: Props) {
                 type="text"
                 value={
                   isEditing ? (
-                    <input
-                      type="text"
-                      value={formData.contactPerson}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          contactPerson: e.target.value,
-                        }))
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    <div>
+                      <input
+                        type="text"
+                        value={formData.contactPerson}
+                        onChange={handleContactPersonChange}
+                        onBlur={handleContactPersonBlur}
+                        maxLength={25}
+                        className={cn(
+                          "w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all",
+                          isOnlySpaces(formData.contactPerson)
+                            ? "border-red-300 focus:ring-red-500"
+                            : "border-gray-300 focus:ring-[#00A8FF]"
+                        )}
+                        placeholder="Enter contact person name (alphabets only, max 25)"
+                      />
+                      {isOnlySpaces(formData.contactPerson) && (
+                        <p className="text-xs text-red-500 mt-1">Contact person cannot be only spaces</p>
+                      )}
+                    </div>
                   ) : (
-                    transporter.contactPerson
+                    capitalizeWords(transporter.contactPerson)
                   )
                 }
               />
@@ -194,17 +313,24 @@ export default function TransporterDetail({ transporter }: Props) {
                 type="text"
                 value={
                   isEditing ? (
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          email: e.target.value,
-                        }))
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    <div>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={handleEmailChange}
+                        onKeyDown={handleEmailKeyDown}
+                        className={cn(
+                          "w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all",
+                          formData.email && !isValidEmail(formData.email)
+                            ? "border-red-300 focus:ring-red-500"
+                            : "border-gray-300 focus:ring-[#00A8FF]"
+                        )}
+                        placeholder="Enter email address"
+                      />
+                      {formData.email && !isValidEmail(formData.email) && (
+                        <p className="text-xs text-red-500 mt-1">Please enter a valid email address</p>
+                      )}
+                    </div>
                   ) : (
                     transporter.email
                   )
@@ -218,38 +344,12 @@ export default function TransporterDetail({ transporter }: Props) {
                     <input
                       type="tel"
                       value={formData.phone}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          phone: e.target.value,
-                        }))
-                      }
+                      onChange={handlePhoneChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter phone number (numbers only, + allowed at start)"
                     />
                   ) : (
                     formatPhoneNumber(transporter.phone)
-                  )
-                }
-              />
-              <FieldRow
-                label="Base Address"
-                type="text"
-                value={
-                  isEditing ? (
-                    <textarea
-                      value={formData.baseAddress}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          baseAddress: e.target.value,
-                        }))
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      rows={3}
-                      placeholder="Enter base address"
-                    />
-                  ) : (
-                    transporter.baseAddress
                   )
                 }
               />

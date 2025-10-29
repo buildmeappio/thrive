@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
 import { formatPhoneNumber } from "@/utils/phone";
+import { capitalizeWords } from "@/utils/text";
 
 interface FilterState {
   languageId: string;
@@ -70,12 +71,13 @@ const columnsDef = [
     ),
     cell: ({ row }: { row: Row<InterpreterData> }) => {
       const companyName = row.getValue("companyName") as string;
+      const capitalizedName = capitalizeWords(companyName);
       return (
         <div 
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
-          title={companyName}
+          title={capitalizedName}
         >
-          {truncateText(companyName, 28)}
+          {truncateText(capitalizedName, 28)}
         </div>
       );
     },
@@ -90,12 +92,13 @@ const columnsDef = [
     ),
     cell: ({ row }: { row: Row<InterpreterData> }) => {
       const contactPerson = row.getValue("contactPerson") as string;
+      const capitalizedPerson = capitalizeWords(contactPerson);
       return (
         <div 
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
-          title={contactPerson}
+          title={capitalizedPerson}
         >
-          {truncateText(contactPerson, 28)}
+          {truncateText(capitalizedPerson, 28)}
         </div>
       );
     },

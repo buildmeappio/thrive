@@ -4,6 +4,7 @@ import { formatDate } from "@/utils/date";
 import FieldRow from "@/components/FieldRow";
 import CollapsibleSection from "@/components/CollapsibleSection";
 import { formatPhoneNumber } from "@/utils/phone";
+import { capitalizeWords } from "@/utils/text";
 
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
 
@@ -60,8 +61,8 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
       {/* Claimant Details */}
       <CollapsibleSection title="Claimant Details" isOpen={true}>
         <FieldRow label="Type of Claim" value={safeValue(caseDetails.case.caseType?.name)} type="text" />
-        <FieldRow label="First Name" value={safeValue(caseDetails.claimant?.firstName)} type="text" />
-        <FieldRow label="Last Name" value={safeValue(caseDetails.claimant?.lastName)} type="text" />
+        <FieldRow label="First Name" value={capitalizeWords(safeValue(caseDetails.claimant?.firstName))} type="text" />
+        <FieldRow label="Last Name" value={capitalizeWords(safeValue(caseDetails.claimant?.lastName))} type="text" />
         <FieldRow
           label="Date of Birth"
           value={caseDetails.claimant?.dateOfBirth ? formatDate(caseDetails.claimant.dateOfBirth.toISOString()) : "-"}
@@ -98,7 +99,7 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
       <CollapsibleSection title="Insurance Details">
         <FieldRow label="Company Name" value={safeValue(caseDetails.insurance?.companyName)} type="text" />
         <FieldRow label="Email Address" value={safeValue(caseDetails.insurance?.emailAddress)} type="text" />
-        <FieldRow label="Contact Person" value={safeValue(caseDetails.insurance?.contactPersonName)} type="text" />
+        <FieldRow label="Contact Person" value={capitalizeWords(safeValue(caseDetails.insurance?.contactPersonName))} type="text" />
         <FieldRow label="Policy Number" value={safeValue(caseDetails.insurance?.policyNumber)} type="text" />
         <FieldRow label="Claim Number" value={safeValue(caseDetails.insurance?.claimNumber)} type="text" />
         <FieldRow
@@ -111,8 +112,8 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
           value={caseDetails.insurance?.policyHolderIsClaimant ? "Yes" : "No"}
           type="text"
         />
-        <FieldRow label="Policy Holder First Name" value={safeValue(caseDetails.insurance?.policyHolderFirstName)} type="text" />
-        <FieldRow label="Policy Holder Last Name" value={safeValue(caseDetails.insurance?.policyHolderLastName)} type="text" />
+        <FieldRow label="Policy Holder First Name" value={capitalizeWords(safeValue(caseDetails.insurance?.policyHolderFirstName))} type="text" />
+        <FieldRow label="Policy Holder Last Name" value={capitalizeWords(safeValue(caseDetails.insurance?.policyHolderLastName))} type="text" />
         <FieldRow label="Phone Number" value={formatPhoneNumber(caseDetails.insurance?.phoneNumber)} type="text" />
         <FieldRow label="Fax Number" value={formatPhoneNumber(caseDetails.insurance?.faxNumber)} type="text" />
         <FieldRow
@@ -137,7 +138,7 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
       {/* Legal Representative */}
       <CollapsibleSection title="Legal Representative">
         <FieldRow label="Organization" value={safeValue(caseDetails.legalRepresentative?.companyName)} type="text" />
-        <FieldRow label="Contact Person" value={safeValue(caseDetails.legalRepresentative?.contactPersonName)} type="text" />
+        <FieldRow label="Contact Person" value={capitalizeWords(safeValue(caseDetails.legalRepresentative?.contactPersonName))} type="text" />
         <FieldRow label="Phone Number" value={formatPhoneNumber(caseDetails.legalRepresentative?.phoneNumber)} type="text" />
         <FieldRow label="Fax Number" value={formatPhoneNumber(caseDetails.legalRepresentative?.faxNumber)} type="text" />
         <FieldRow

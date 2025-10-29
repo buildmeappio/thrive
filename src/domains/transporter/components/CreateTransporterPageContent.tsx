@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Section from "@/components/Section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -18,6 +17,7 @@ import { toast } from "sonner";
 import { provinceOptions } from "@/constants/options";
 import { VEHICLE_TYPES } from "../types/TransporterData";
 import { X, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function CreateTransporterPageContent() {
   const router = useRouter();
@@ -27,7 +27,6 @@ export default function CreateTransporterPageContent() {
     contactPerson: "",
     phone: "",
     email: "",
-    baseAddress: "",
     serviceAreas: [{ province: "", address: "" }],
     vehicleTypes: [],
   });
@@ -37,6 +36,32 @@ export default function CreateTransporterPageContent() {
     setIsLoading(true);
 
     try {
+      // Validate email
+      if (!isValidEmail(formData.email)) {
+        toast.error("Please enter a valid email address");
+        setIsLoading(false);
+        return;
+      }
+
+      // Trim all fields before validation
+      const trimmedCompanyName = formData.companyName.trim();
+      const trimmedContactPerson = formData.contactPerson.trim();
+      const trimmedEmail = formData.email.trim();
+
+      // Check if required fields are not empty after trimming
+      if (!trimmedCompanyName || !trimmedContactPerson || !trimmedEmail) {
+        toast.error("Please fill in all required fields");
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if fields contain only spaces
+      if (isOnlySpaces(formData.companyName) || isOnlySpaces(formData.contactPerson)) {
+        toast.error("Fields cannot contain only spaces");
+        setIsLoading(false);
+        return;
+      }
+
       // Validate service areas
       const validServiceAreas = formData.serviceAreas.filter(
         (area) => area.province && area.address
@@ -44,17 +69,24 @@ export default function CreateTransporterPageContent() {
 
       if (validServiceAreas.length === 0) {
         toast.error("Please add at least one service area");
+        setIsLoading(false);
         return;
       }
 
       // Validate vehicle types
       if (formData.vehicleTypes.length === 0) {
         toast.error("Please select at least one vehicle type");
+        setIsLoading(false);
         return;
       }
 
       const result = await createTransporter({
         ...formData,
+        companyName: trimmedCompanyName,
+        contactPerson: trimmedContactPerson,
+        email: trimmedEmail,
+        phone: formData.phone.trim() || undefined,
+        baseAddress: "", // Default empty string for baseAddress
         serviceAreas: validServiceAreas,
       });
 
@@ -109,6 +141,78 @@ export default function CreateTransporterPageContent() {
     }));
   };
 
+  // Validation handlers
+  const handleCompanyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    value = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
+    value = value.replace(/^\s+/, ''); // Remove leading spaces
+    setFormData((prev) => ({ ...prev, companyName: value }));
+  };
+
+  const handleCompanyNameBlur = () => {
+    setFormData((prev) => ({
+      ...prev,
+      companyName: prev.companyName.replace(/\s+$/, '').trim() // Remove trailing spaces on blur
+    }));
+  };
+
+  const handleContactPersonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    value = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
+    value = value.replace(/^\s+/, ''); // Remove leading spaces
+    setFormData((prev) => ({ ...prev, contactPerson: value }));
+  };
+
+  const handleContactPersonBlur = () => {
+    setFormData((prev) => ({
+      ...prev,
+      contactPerson: prev.contactPerson.replace(/\s+$/, '').trim() // Remove trailing spaces on blur
+    }));
+  };
+
+  const isOnlySpaces = (value: string) => {
+    return value.trim().length === 0 && value.length > 0;
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    value = value.replace(/\s/g, ''); // Remove all spaces immediately
+    setFormData((prev) => ({ ...prev, email: value }));
+  };
+
+  const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === ' ') {
+      e.preventDefault(); // Prevent spacebar from being typed
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow numbers and + (only at the start)
+    let filtered = value.replace(/[^0-9+]/g, '');
+    // If + exists, ensure it's only at the start
+    if (filtered.includes('+')) {
+      const plusCount = (filtered.match(/\+/g) || []).length;
+      // If there are multiple +, keep only the first one
+      if (plusCount > 1) {
+        filtered = '+' + filtered.replace(/\+/g, '');
+      } else if (!filtered.startsWith('+')) {
+        // Move + to the start if it's not there
+        filtered = '+' + filtered.replace(/\+/g, '');
+      }
+    }
+    setFormData((prev) => ({ ...prev, phone: filtered }));
+  };
+
+  // Email validation - must have at least one letter before @
+  const isValidEmail = (email: string) => {
+    if (!email || !email.includes('@')) return false;
+    const [localPart, domain] = email.split('@');
+    if (!localPart || !domain || !domain.includes('.')) return false;
+    // Must have at least one letter (a-z or A-Z) in the local part before @
+    return /[a-zA-Z]/.test(localPart) && /^[a-zA-Z0-9._-]+$/.test(localPart) && /^[^\s@]+\.[^\s@]+$/.test(domain);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -137,15 +241,20 @@ export default function CreateTransporterPageContent() {
                 </label>
                 <Input
                   value={formData.companyName}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      companyName: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter company name"
+                  onChange={handleCompanyNameChange}
+                  onBlur={handleCompanyNameBlur}
+                  maxLength={25}
+                  className={cn(
+                    isOnlySpaces(formData.companyName)
+                      ? "border-red-300 focus:ring-red-500"
+                      : ""
+                  )}
+                  placeholder="Enter company name (alphabets only, max 25)"
                   required
                 />
+                {isOnlySpaces(formData.companyName) && (
+                  <p className="text-xs text-red-500 mt-1">Company name cannot be only spaces</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -153,15 +262,20 @@ export default function CreateTransporterPageContent() {
                 </label>
                 <Input
                   value={formData.contactPerson}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      contactPerson: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter contact person name"
+                  onChange={handleContactPersonChange}
+                  onBlur={handleContactPersonBlur}
+                  maxLength={25}
+                  className={cn(
+                    isOnlySpaces(formData.contactPerson)
+                      ? "border-red-300 focus:ring-red-500"
+                      : ""
+                  )}
+                  placeholder="Enter contact person name (alphabets only, max 25)"
                   required
                 />
+                {isOnlySpaces(formData.contactPerson) && (
+                  <p className="text-xs text-red-500 mt-1">Contact person cannot be only spaces</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -170,15 +284,19 @@ export default function CreateTransporterPageContent() {
                 <Input
                   type="email"
                   value={formData.email}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      email: e.target.value,
-                    }))
-                  }
+                  onChange={handleEmailChange}
+                  onKeyDown={handleEmailKeyDown}
+                  className={cn(
+                    formData.email && !isValidEmail(formData.email)
+                      ? "border-red-300 focus:ring-red-500"
+                      : ""
+                  )}
                   placeholder="Enter email address"
                   required
                 />
+                {formData.email && !isValidEmail(formData.email) && (
+                  <p className="text-xs text-red-500 mt-1">Please enter a valid email address</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -187,30 +305,8 @@ export default function CreateTransporterPageContent() {
                 <Input
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      phone: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter phone number"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Base Address *
-                </label>
-                <Textarea
-                  value={formData.baseAddress}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      baseAddress: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter base address"
-                  rows={3}
+                  onChange={handlePhoneChange}
+                  placeholder="Enter phone number (numbers only, + allowed at start)"
                   required
                 />
               </div>
