@@ -14,9 +14,6 @@ export class TransporterService {
           phone: data.phone,
           email: data.email,
           serviceAreas: JSON.parse(JSON.stringify(data.serviceAreas)),
-          vehicleTypes: data.vehicleTypes,
-          fleetInfo: data.fleetInfo,
-          baseAddress: data.baseAddress,
         },
       });
 
@@ -94,6 +91,8 @@ export class TransporterService {
 
   static async update(id: string, data: UpdateTransporterData) {
     try {
+      console.log("TransporterService.update called with:", { id, data });
+
       const transporter = await prisma.transporter.update({
         where: { id },
         data: {
@@ -105,6 +104,7 @@ export class TransporterService {
         },
       });
 
+      console.log("Transporter updated successfully:", transporter);
       return { success: true, data: transporter };
     } catch (error) {
       console.error("Error updating transporter:", error);

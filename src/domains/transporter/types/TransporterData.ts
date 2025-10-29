@@ -10,9 +10,6 @@ export interface TransporterData {
   phone: string;
   email: string;
   serviceAreas: ServiceArea[];
-  vehicleTypes: string[];
-  fleetInfo?: string;
-  baseAddress: string;
   status: "ACTIVE" | "SUSPENDED";
   createdAt: Date;
   updatedAt: Date;
@@ -25,9 +22,6 @@ export interface CreateTransporterData {
   phone: string;
   email: string;
   serviceAreas: ServiceArea[];
-  vehicleTypes: string[];
-  fleetInfo?: string;
-  baseAddress: string;
 }
 
 export interface UpdateTransporterData {
@@ -36,17 +30,8 @@ export interface UpdateTransporterData {
   phone?: string;
   email?: string;
   serviceAreas?: ServiceArea[];
-  vehicleTypes?: string[];
-  fleetInfo?: string;
-  baseAddress?: string;
   status?: "ACTIVE" | "SUSPENDED";
 }
-
-export const VEHICLE_TYPES = [
-  { value: "cars", label: "Cars" },
-  { value: "vans", label: "Vans" },
-  { value: "wheelchair-accessible", label: "Wheelchair Accessible" },
-] as const;
 
 export const TRANSPORTER_STATUSES = [
   { value: "ACTIVE", label: "Active" },

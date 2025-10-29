@@ -638,80 +638,149 @@ model ExaminerProfile {
   updatedAt                         DateTime       @updatedAt @db.Timestamptz()
   deletedAt                         DateTime?
 
-  account                Account                 @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  medicalLicenseDocument Documents               @relation(name: "ExaminerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
-  resumeDocument         Documents               @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
-  ndaDocument            Documents?              @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
-  insuranceDocument      Documents?              @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
+  account                Account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  medicalLicenseDocument Documents          @relation(name: "ExaminerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
+  resumeDocument         Documents          @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
+  ndaDocument            Documents?         @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
+  insuranceDocument      Documents?         @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
   examinerLanguages      ExaminerLanguage[]
-  weeklyHours            ExaminerWeeklyHours[]
-  overrideHours          ExaminerOverrideHours[]
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'EXAMINER' } })
 
   @@map("examiner_profiles")
 }
 
-model ExaminerWeeklyHours {
-  id                String    @id @default(uuid()) @db.Uuid
-  examinerProfileId String    @map("examiner_profile_id") @db.Uuid
-  dayOfWeek         String    @map("day_of_week") @db.VarChar(20)
-  enabled           Boolean   @default(true) @map("enabled")
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()
-
-  examinerProfile ExaminerProfile          @relation(fields: [examinerProfileId], references: [id], onDelete: Cascade)
-  timeSlots       ExaminerWeeklyTimeSlot[]
-
-  @@unique([examinerProfileId, dayOfWeek])
-  @@index([examinerProfileId])
-  @@map("examiner_weekly_hours")
+enum ProviderType {
+  EXAMINER
+  CHAPERONE
+  INTERPRETER
+  TRANSPORTER
 }
 
-model ExaminerWeeklyTimeSlot {
-  id           String    @id @default(uuid()) @db.Uuid
-  weeklyHourId String    @map("weekly_hour_id") @db.Uuid
-  startTime    String    @map("start_time") @db.VarChar(20)
-  endTime      String    @map("end_time") @db.VarChar(20)
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz()
+model AvailabilityProvider {
+  id String @id @default(uuid()) @db.Uuid
 
-  weeklyHour ExaminerWeeklyHours @relation(fields: [weeklyHourId], references: [id], onDelete: Cascade)
+  /// What kind of resource this is (doctor, chaperone, interpreter, etc.)
+  providerType ProviderType @map("provider_type")
+
+  /// ID of the concrete row in its own table.
+  /// - If providerType = EXAMINER  -> refId = ExaminerProfile.id
+  /// - If providerType = CHAPERONE -> refId = Chaperone.id
+  /// - If providerType = INTERPRETER -> refId = Interpreter.id
+  /// - If providerType = TRANSPORTER -> refId = Transporter.id
+  refId String @map("ref_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  // Availability relations
+  weeklyHours   ProviderWeeklyHours[]   @relation("ProviderWeeklyHours")
+  overrideHours ProviderOverrideHours[] @relation("ProviderOverrideHours")
+
+  // Provider relations - polymorphic relationship
+  // No foreign key constraints since refId can point to different tables based on providerType
+  // Use application-level validation to ensure data integrity
+
+  /// Prevents the same entity from being registered twice,
+  /// even under a different type.
+  @@unique([refId])
+  @@map("availability_providers")
+}
+
+/// Day-of-week template availability lives here.
+/// Each provider has at most 1 row per weekday.
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+/// High-level "I work on Mondays, 09:00-12:00 and 14:00-17:00"
+/// The individual windows go in ProviderWeeklyTimeSlot.
+model ProviderWeeklyHours {
+  id                     String @id @default(uuid()) @db.Uuid
+  availabilityProviderId String @map("availability_provider_id") @db.Uuid
+
+  dayOfWeek Weekday @map("day_of_week")
+  enabled   Boolean @default(true) @map("enabled")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  provider  AvailabilityProvider     @relation("ProviderWeeklyHours", fields: [availabilityProviderId], references: [id], onDelete: Cascade)
+  timeSlots ProviderWeeklyTimeSlot[]
+
+  @@unique([availabilityProviderId, dayOfWeek])
+  @@index([availabilityProviderId])
+  @@map("provider_weekly_hours")
+}
+
+/// Multiple slots inside a weekday.
+/// Example: 09:00-12:00, 14:00-17:00 on MONDAY.
+model ProviderWeeklyTimeSlot {
+  id           String @id @default(uuid()) @db.Uuid
+  weeklyHourId String @map("weekly_hour_id") @db.Uuid
+
+  /// Store as string like "09:00" / "14:30"
+  /// We don't force timezone math here.
+  startTime String @map("start_time") @db.VarChar(20)
+  endTime   String @map("end_time") @db.VarChar(20)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  weeklyHour ProviderWeeklyHours @relation(fields: [weeklyHourId], references: [id], onDelete: Cascade)
 
   @@index([weeklyHourId])
-  @@map("examiner_weekly_time_slots")
+  @@map("provider_weekly_time_slots")
 }
 
-model ExaminerOverrideHours {
-  id                String    @id @default(uuid()) @db.Uuid
-  examinerProfileId String    @map("examiner_profile_id") @db.Uuid
-  date              DateTime  @map("date") @db.Date
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()
+/// Date-specific override. "On 2025-11-03, here's my special schedule".
+/// This replaces the weekday template for that date.
+model ProviderOverrideHours {
+  id                     String @id @default(uuid()) @db.Uuid
+  availabilityProviderId String @map("availability_provider_id") @db.Uuid
 
-  examinerProfile ExaminerProfile            @relation(fields: [examinerProfileId], references: [id], onDelete: Cascade)
-  timeSlots       ExaminerOverrideTimeSlot[]
+  /// Which calendar day is overridden
+  date DateTime @map("date") @db.Date
 
-  @@unique([examinerProfileId, date])
-  @@index([examinerProfileId])
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  provider  AvailabilityProvider       @relation("ProviderOverrideHours", fields: [availabilityProviderId], references: [id], onDelete: Cascade)
+  timeSlots ProviderOverrideTimeSlot[]
+
+  /// 1 override record per provider per date.
+  @@unique([availabilityProviderId, date])
+  @@index([availabilityProviderId])
   @@index([date])
-  @@map("examiner_override_hours")
+  @@map("provider_override_hours")
 }
 
-model ExaminerOverrideTimeSlot {
-  id             String    @id @default(uuid()) @db.Uuid
-  overrideHourId String    @map("override_hour_id") @db.Uuid
-  startTime      String    @map("start_time") @db.VarChar(20)
-  endTime        String    @map("end_time") @db.VarChar(20)
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz()
+/// Multiple windows inside that override date.
+model ProviderOverrideTimeSlot {
+  id             String @id @default(uuid()) @db.Uuid
+  overrideHourId String @map("override_hour_id") @db.Uuid
 
-  overrideHour ExaminerOverrideHours @relation(fields: [overrideHourId], references: [id], onDelete: Cascade)
+  /// Again "09:00", "13:30", etc.
+  startTime String @map("start_time") @db.VarChar(20)
+  endTime   String @map("end_time") @db.VarChar(20)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  overrideHour ProviderOverrideHours @relation(fields: [overrideHourId], references: [id], onDelete: Cascade)
 
   @@index([overrideHourId])
-  @@map("examiner_override_time_slots")
+  @@map("provider_override_time_slots")
 }
 
 model Chaperone {
@@ -726,13 +795,9 @@ model Chaperone {
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  @@map("chaperones")
-}
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'CHAPERONE' } })
 
-enum AvailabilityBlock {
-  MORNING
-  AFTERNOON
-  EVENING
+  @@map("chaperones")
 }
 
 model Interpreter {
@@ -745,8 +810,8 @@ model Interpreter {
   updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt     DateTime? @map("deleted_at") @db.Timestamptz()
 
-  languages    InterpreterLanguage[]     @relation("InterpreterLanguages")
-  availability InterpreterAvailability[] @relation("InterpreterAvailability")
+  languages InterpreterLanguage[] @relation("InterpreterLanguages")
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'INTERPRETER' } })
 
   @@map("interpreters")
 }
@@ -766,21 +831,6 @@ model InterpreterLanguage {
   @@map("interpreter_languages")
 }
 
-model InterpreterAvailability {
-  id            String            @id @unique @default(uuid()) @db.Uuid
-  interpreterId String            @map("interpreter_id") @db.Uuid
-  weekday       Int               @map("weekday") @db.SmallInt
-  block         AvailabilityBlock @map("block")
-  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
-
-  interpreter Interpreter @relation("InterpreterAvailability", fields: [interpreterId], references: [id], onDelete: Cascade)
-
-  @@unique([interpreterId, weekday, block])
-  @@index([interpreterId])
-  @@map("interpreter_availability")
-}
-
 enum TransporterStatus {
   SUSPENDED
   ACTIVE
@@ -792,14 +842,13 @@ model Transporter {
   contactPerson String            @map("contact_person") @db.VarChar(255)
   phone         String            @map("phone") @db.VarChar(20)
   email         String            @map("email") @db.VarChar(255)
-  serviceAreas  Json              @map("service_areas") // Array of {province: string, address: string}
-  vehicleTypes  String[]          @map("vehicle_types") // Array of vehicle types
-  fleetInfo     String?           @map("fleet_info") @db.Text
-  baseAddress   String            @map("base_address") @db.Text
+  serviceAreas  Json              @map("service_areas") // Array of {province: string}
   status        TransporterStatus @default(ACTIVE) @map("status")
   createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt     DateTime?         @map("deleted_at") @db.Timestamptz()
+
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'TRANSPORTER' } })
 
   @@map("transporters")
 }

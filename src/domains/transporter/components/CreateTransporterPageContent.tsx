@@ -5,19 +5,11 @@ import { useRouter } from "next/navigation";
 import Section from "@/components/Section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { createTransporter } from "../server/actions";
+import { createTransporter } from "../server";
 import { toast } from "sonner";
 import { provinceOptions } from "@/constants/options";
-import { VEHICLE_TYPES } from "../types/TransporterData";
-import { X, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TransporterFormHandler } from "../server";
 
 export default function CreateTransporterPageContent() {
   const router = useRouter();
@@ -27,8 +19,7 @@ export default function CreateTransporterPageContent() {
     contactPerson: "",
     phone: "",
     email: "",
-    serviceAreas: [{ province: "", address: "" }],
-    vehicleTypes: [],
+    serviceAreas: [],
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,59 +27,17 @@ export default function CreateTransporterPageContent() {
     setIsLoading(true);
 
     try {
-      // Validate email
-      if (!isValidEmail(formData.email)) {
-        toast.error("Please enter a valid email address");
+      // Validate and sanitize form data using the handler
+      const validation =
+        TransporterFormHandler.validateAndSanitizeFormData(formData);
+
+      if (!validation.isValid) {
+        toast.error(validation.errors[0]); // Show first error
         setIsLoading(false);
         return;
       }
 
-      // Trim all fields before validation
-      const trimmedCompanyName = formData.companyName.trim();
-      const trimmedContactPerson = formData.contactPerson.trim();
-      const trimmedEmail = formData.email.trim();
-
-      // Check if required fields are not empty after trimming
-      if (!trimmedCompanyName || !trimmedContactPerson || !trimmedEmail) {
-        toast.error("Please fill in all required fields");
-        setIsLoading(false);
-        return;
-      }
-
-      // Check if fields contain only spaces
-      if (isOnlySpaces(formData.companyName) || isOnlySpaces(formData.contactPerson)) {
-        toast.error("Fields cannot contain only spaces");
-        setIsLoading(false);
-        return;
-      }
-
-      // Validate service areas
-      const validServiceAreas = formData.serviceAreas.filter(
-        (area) => area.province && area.address
-      );
-
-      if (validServiceAreas.length === 0) {
-        toast.error("Please add at least one service area");
-        setIsLoading(false);
-        return;
-      }
-
-      // Validate vehicle types
-      if (formData.vehicleTypes.length === 0) {
-        toast.error("Please select at least one vehicle type");
-        setIsLoading(false);
-        return;
-      }
-
-      const result = await createTransporter({
-        ...formData,
-        companyName: trimmedCompanyName,
-        contactPerson: trimmedContactPerson,
-        email: trimmedEmail,
-        phone: formData.phone.trim() || undefined,
-        baseAddress: "", // Default empty string for baseAddress
-        serviceAreas: validServiceAreas,
-      });
+      const result = await createTransporter(validation.sanitizedData!);
 
       if (result.success) {
         toast.success("Transporter created successfully");
@@ -103,114 +52,80 @@ export default function CreateTransporterPageContent() {
     }
   };
 
-  const addServiceArea = () => {
-    setFormData((prev) => ({
-      ...prev,
-      serviceAreas: [...prev.serviceAreas, { province: "", address: "" }],
-    }));
+  const toggleProvince = (province: string) => {
+    setFormData((prev) => {
+      const existingAreas = prev.serviceAreas || [];
+      const existingProvince = existingAreas.find(
+        (area) => area.province === province
+      );
+
+      if (existingProvince) {
+        // Remove the province
+        return {
+          ...prev,
+          serviceAreas: existingAreas.filter(
+            (area) => area.province !== province
+          ),
+        };
+      } else {
+        // Add the province
+        return {
+          ...prev,
+          serviceAreas: [...existingAreas, { province, address: "" }],
+        };
+      }
+    });
   };
 
-  const removeServiceArea = (index: number) => {
-    if (formData.serviceAreas.length > 1) {
-      setFormData((prev) => ({
-        ...prev,
-        serviceAreas: prev.serviceAreas.filter((_, i) => i !== index),
-      }));
-    }
-  };
-
-  const updateServiceArea = (
-    index: number,
-    field: "province" | "address",
-    value: string
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      serviceAreas: prev.serviceAreas.map((area, i) =>
-        i === index ? { ...area, [field]: value } : area
-      ),
-    }));
-  };
-
-  const toggleVehicleType = (vehicleType: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      vehicleTypes: prev.vehicleTypes.includes(vehicleType)
-        ? prev.vehicleTypes.filter((vt) => vt !== vehicleType)
-        : [...prev.vehicleTypes, vehicleType],
-    }));
-  };
-
-  // Validation handlers
+  // Input handlers using the form handler service
   const handleCompanyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
-    value = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
-    value = value.replace(/^\s+/, ''); // Remove leading spaces
-    setFormData((prev) => ({ ...prev, companyName: value }));
+    const sanitizedValue = TransporterFormHandler.handleCompanyNameChange(
+      e.target.value
+    );
+    setFormData((prev) => ({ ...prev, companyName: sanitizedValue }));
   };
 
   const handleCompanyNameBlur = () => {
-    setFormData((prev) => ({
-      ...prev,
-      companyName: prev.companyName.replace(/\s+$/, '').trim() // Remove trailing spaces on blur
-    }));
+    const trimmedValue = TransporterFormHandler.handleCompanyNameBlur(
+      formData.companyName
+    );
+    setFormData((prev) => ({ ...prev, companyName: trimmedValue }));
   };
 
-  const handleContactPersonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
-    value = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
-    value = value.replace(/^\s+/, ''); // Remove leading spaces
-    setFormData((prev) => ({ ...prev, contactPerson: value }));
+  const handleContactPersonChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const sanitizedValue = TransporterFormHandler.handleContactPersonChange(
+      e.target.value
+    );
+    setFormData((prev) => ({ ...prev, contactPerson: sanitizedValue }));
   };
 
   const handleContactPersonBlur = () => {
-    setFormData((prev) => ({
-      ...prev,
-      contactPerson: prev.contactPerson.replace(/\s+$/, '').trim() // Remove trailing spaces on blur
-    }));
-  };
-
-  const isOnlySpaces = (value: string) => {
-    return value.trim().length === 0 && value.length > 0;
+    const trimmedValue = TransporterFormHandler.handleContactPersonBlur(
+      formData.contactPerson
+    );
+    setFormData((prev) => ({ ...prev, contactPerson: trimmedValue }));
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
-    value = value.replace(/\s/g, ''); // Remove all spaces immediately
-    setFormData((prev) => ({ ...prev, email: value }));
+    const sanitizedValue = TransporterFormHandler.handleEmailChange(
+      e.target.value
+    );
+    setFormData((prev) => ({ ...prev, email: sanitizedValue }));
   };
 
   const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === ' ') {
+    if (e.key === " ") {
       e.preventDefault(); // Prevent spacebar from being typed
     }
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Allow numbers and + (only at the start)
-    let filtered = value.replace(/[^0-9+]/g, '');
-    // If + exists, ensure it's only at the start
-    if (filtered.includes('+')) {
-      const plusCount = (filtered.match(/\+/g) || []).length;
-      // If there are multiple +, keep only the first one
-      if (plusCount > 1) {
-        filtered = '+' + filtered.replace(/\+/g, '');
-      } else if (!filtered.startsWith('+')) {
-        // Move + to the start if it's not there
-        filtered = '+' + filtered.replace(/\+/g, '');
-      }
-    }
-    setFormData((prev) => ({ ...prev, phone: filtered }));
-  };
-
-  // Email validation - must have at least one letter before @
-  const isValidEmail = (email: string) => {
-    if (!email || !email.includes('@')) return false;
-    const [localPart, domain] = email.split('@');
-    if (!localPart || !domain || !domain.includes('.')) return false;
-    // Must have at least one letter (a-z or A-Z) in the local part before @
-    return /[a-zA-Z]/.test(localPart) && /^[a-zA-Z0-9._-]+$/.test(localPart) && /^[^\s@]+\.[^\s@]+$/.test(domain);
+    const sanitizedValue = TransporterFormHandler.handlePhoneChange(
+      e.target.value
+    );
+    setFormData((prev) => ({ ...prev, phone: sanitizedValue }));
   };
 
   return (
@@ -237,7 +152,7 @@ export default function CreateTransporterPageContent() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company Name *
+                  Company Name <span className="text-red-500">*</span>
                 </label>
                 <Input
                   value={formData.companyName}
@@ -245,20 +160,22 @@ export default function CreateTransporterPageContent() {
                   onBlur={handleCompanyNameBlur}
                   maxLength={25}
                   className={cn(
-                    isOnlySpaces(formData.companyName)
+                    TransporterFormHandler.isOnlySpaces(formData.companyName)
                       ? "border-red-300 focus:ring-red-500"
                       : ""
                   )}
                   placeholder="Enter company name (alphabets only, max 25)"
                   required
                 />
-                {isOnlySpaces(formData.companyName) && (
-                  <p className="text-xs text-red-500 mt-1">Company name cannot be only spaces</p>
+                {TransporterFormHandler.isOnlySpaces(formData.companyName) && (
+                  <p className="text-xs text-red-500 mt-1">
+                    Company name cannot be only spaces
+                  </p>
                 )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contact Person *
+                  Contact Person <span className="text-red-500">*</span>
                 </label>
                 <Input
                   value={formData.contactPerson}
@@ -266,20 +183,24 @@ export default function CreateTransporterPageContent() {
                   onBlur={handleContactPersonBlur}
                   maxLength={25}
                   className={cn(
-                    isOnlySpaces(formData.contactPerson)
+                    TransporterFormHandler.isOnlySpaces(formData.contactPerson)
                       ? "border-red-300 focus:ring-red-500"
                       : ""
                   )}
                   placeholder="Enter contact person name (alphabets only, max 25)"
                   required
                 />
-                {isOnlySpaces(formData.contactPerson) && (
-                  <p className="text-xs text-red-500 mt-1">Contact person cannot be only spaces</p>
+                {TransporterFormHandler.isOnlySpaces(
+                  formData.contactPerson
+                ) && (
+                  <p className="text-xs text-red-500 mt-1">
+                    Contact person cannot be only spaces
+                  </p>
                 )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email *
+                  Email <span className="text-red-500">*</span>
                 </label>
                 <Input
                   type="email"
@@ -287,111 +208,95 @@ export default function CreateTransporterPageContent() {
                   onChange={handleEmailChange}
                   onKeyDown={handleEmailKeyDown}
                   className={cn(
-                    formData.email && !isValidEmail(formData.email)
+                    formData.email &&
+                      !TransporterFormHandler.isValidEmail(formData.email)
                       ? "border-red-300 focus:ring-red-500"
                       : ""
                   )}
                   placeholder="Enter email address"
                   required
                 />
-                {formData.email && !isValidEmail(formData.email) && (
-                  <p className="text-xs text-red-500 mt-1">Please enter a valid email address</p>
-                )}
+                {formData.email &&
+                  !TransporterFormHandler.isValidEmail(formData.email) && (
+                    <p className="text-xs text-red-500 mt-1">
+                      Please enter a valid email address
+                    </p>
+                  )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone *
+                  Phone <span className="text-red-500">*</span>
                 </label>
                 <Input
                   type="tel"
                   value={formData.phone}
                   onChange={handlePhoneChange}
+                  className={cn(
+                    formData.phone &&
+                      !TransporterFormHandler.isValidPhone(formData.phone)
+                      ? "border-red-300 focus:ring-red-500"
+                      : ""
+                  )}
                   placeholder="Enter phone number (numbers only, + allowed at start)"
                   required
                 />
+                {formData.phone &&
+                  !TransporterFormHandler.isValidPhone(formData.phone) && (
+                    <p className="text-xs text-red-500 mt-1">
+                      Please enter a valid phone number
+                    </p>
+                  )}
               </div>
-            </div>
-          </Section>
-
-          {/* Vehicle Types */}
-          <Section title="Vehicle Types">
-            <div className="space-y-2">
-              {VEHICLE_TYPES.map((type) => (
-                <label key={type.value} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.vehicleTypes.includes(type.value)}
-                    onChange={() => toggleVehicleType(type.value)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span>{type.label}</span>
-                </label>
-              ))}
             </div>
           </Section>
         </div>
 
-        {/* Right Column - Service Areas */}
+        {/* Right Column - Service Provinces */}
         <div className="space-y-6">
-          <Section title="Service Areas">
+          <Section title="Service Provinces">
             <div className="space-y-4">
-              {formData.serviceAreas.map((area, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex gap-4 items-end">
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Province
-                      </label>
-                      <Select
-                        value={area.province}
-                        onValueChange={(value) =>
-                          updateServiceArea(index, "province", value)
-                        }>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Province" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {provinceOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {formData.serviceAreas.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeServiceArea(index)}
-                        className="text-red-600 hover:text-red-800">
-                        <X className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Address
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Provinces <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                  {provinceOptions.map((option) => (
+                    <label
+                      key={option.value}
+                      className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.serviceAreas.some(
+                          (area) => area.province === option.value
+                        )}
+                        onChange={() => toggleProvince(option.value)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm">{option.label}</span>
                     </label>
-                    <Input
-                      value={area.address}
-                      onChange={(e) =>
-                        updateServiceArea(index, "address", e.target.value)
-                      }
-                      placeholder="Enter address"
-                    />
-                  </div>
+                  ))}
                 </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={addServiceArea}
-                className="w-full border-dashed">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Service Area
-              </Button>
+                {formData.serviceAreas.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-sm text-gray-600 mb-2">
+                      Selected provinces:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.serviceAreas.map((area) => (
+                        <span
+                          key={area.province}
+                          className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                          {
+                            provinceOptions.find(
+                              (p) => p.value === area.province
+                            )?.label
+                          }
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </Section>
         </div>

@@ -32,10 +32,8 @@ export default function TransporterPageContent({
     query,
     setQuery,
     statusFilter,
-    vehicleTypeFilter,
     activeDropdown,
     setActiveDropdown,
-    uniqueVehicleTypes,
     filtered,
     handleFilterChange,
     clearFilters,
@@ -55,7 +53,7 @@ export default function TransporterPageContent({
   // Reset to first page when searching or filtering
   useEffect(() => {
     table.setPageIndex(0);
-  }, [query, statusFilter, vehicleTypeFilter, table]);
+  }, [query, statusFilter, table]);
 
   return (
     <div className="space-y-6">
@@ -64,13 +62,8 @@ export default function TransporterPageContent({
       <SearchAndFilters
         query={query}
         onQueryChange={setQuery}
-        vehicleTypeFilter={vehicleTypeFilter}
-        onVehicleTypeChange={(value) =>
-          handleFilterChange("vehicleType", value)
-        }
         statusFilter={statusFilter}
-        onStatusChange={(value) => handleFilterChange("status", value)}
-        uniqueVehicleTypes={uniqueVehicleTypes}
+        onStatusChange={handleFilterChange}
         statuses={statuses}
         activeDropdown={activeDropdown}
         onDropdownToggle={setActiveDropdown}

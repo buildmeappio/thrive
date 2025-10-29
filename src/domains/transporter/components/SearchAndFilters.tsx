@@ -7,11 +7,8 @@ import FilterDropdown from "./FilterDropdown";
 interface SearchAndFiltersProps {
   query: string;
   onQueryChange: (query: string) => void;
-  vehicleTypeFilter: string;
-  onVehicleTypeChange: (value: string) => void;
   statusFilter: string;
   onStatusChange: (value: string) => void;
-  uniqueVehicleTypes: string[];
   statuses: string[];
   activeDropdown: string | null;
   onDropdownToggle: (dropdown: string | null) => void;
@@ -22,22 +19,14 @@ interface SearchAndFiltersProps {
 export default function SearchAndFilters({
   query,
   onQueryChange,
-  vehicleTypeFilter,
-  onVehicleTypeChange,
   statusFilter,
   onStatusChange,
-  uniqueVehicleTypes,
   statuses,
   activeDropdown,
   onDropdownToggle,
   hasActiveFilters,
   onClearFilters,
 }: SearchAndFiltersProps) {
-  const vehicleTypeOptions = uniqueVehicleTypes.map((type) => ({
-    value: type,
-    label: type,
-  }));
-
   const statusOptions = statuses.map((status) => ({
     value: status,
     label:
@@ -99,21 +88,6 @@ export default function SearchAndFilters({
 
         {/* Filter Buttons - Wrap on mobile */}
         <div className="flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
-          {/* Vehicle Type Filter */}
-          <FilterDropdown
-            label="Vehicle Type"
-            value={vehicleTypeFilter}
-            options={vehicleTypeOptions}
-            isOpen={activeDropdown === "vehicleType"}
-            onToggle={() =>
-              onDropdownToggle(
-                activeDropdown === "vehicleType" ? null : "vehicleType"
-              )
-            }
-            onChange={onVehicleTypeChange}
-            gradientId="typeGradient"
-          />
-
           {/* Status Filter */}
           <FilterDropdown
             label="Status"
