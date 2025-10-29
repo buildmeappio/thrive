@@ -6,7 +6,6 @@ import { TransporterData } from "../types/TransporterData";
 export function useTransporterFilters(data: TransporterData[]) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [vehicleTypeFilter, setVehicleTypeFilter] = useState<string>("all");
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   // Close dropdowns when clicking outside
@@ -30,17 +29,6 @@ export function useTransporterFilters(data: TransporterData[]) {
     };
   }, [activeDropdown]);
 
-  // Get unique vehicle types from data
-  const uniqueVehicleTypes = useMemo(() => {
-    const vehicleTypesSet = new Set<string>();
-    data.forEach((d) => {
-      if (Array.isArray(d.vehicleTypes)) {
-        d.vehicleTypes.forEach((v) => vehicleTypesSet.add(v));
-      }
-    });
-    return Array.from(vehicleTypesSet).sort();
-  }, [data]);
-
   // Filter data based on current filters
   const filtered = useMemo(() => {
     let result = data;
@@ -50,57 +38,36 @@ export function useTransporterFilters(data: TransporterData[]) {
       result = result.filter((d) => d.status === statusFilter);
     }
 
-    // Filter by vehicle type
-    if (vehicleTypeFilter !== "all") {
-      result = result.filter((d) => {
-        if (Array.isArray(d.vehicleTypes)) {
-          return d.vehicleTypes.includes(vehicleTypeFilter);
-        }
-        return d.vehicleTypes === vehicleTypeFilter;
-      });
-    }
-
     // Filter by search query
     const q = query.trim().toLowerCase();
     if (q) {
       result = result.filter((d) =>
-        [d.companyName, d.contactPerson, d.email, d.vehicleTypes]
+        [d.companyName, d.contactPerson, d.email]
           .filter(Boolean)
           .some((v) => String(v).toLowerCase().includes(q))
       );
     }
 
     return result;
-  }, [data, query, statusFilter, vehicleTypeFilter]);
+  }, [data, query, statusFilter]);
 
-  const handleFilterChange = (
-    filterType: "vehicleType" | "status",
-    value: string
-  ) => {
-    if (filterType === "vehicleType") {
-      setVehicleTypeFilter(value);
-    } else {
-      setStatusFilter(value);
-    }
+  const handleFilterChange = (value: string) => {
+    setStatusFilter(value);
     setActiveDropdown(null);
   };
 
   const clearFilters = () => {
-    setVehicleTypeFilter("all");
     setStatusFilter("all");
   };
 
-  const hasActiveFilters =
-    vehicleTypeFilter !== "all" || statusFilter !== "all";
+  const hasActiveFilters = statusFilter !== "all";
 
   return {
     query,
     setQuery,
     statusFilter,
-    vehicleTypeFilter,
     activeDropdown,
     setActiveDropdown,
-    uniqueVehicleTypes,
     filtered,
     handleFilterChange,
     clearFilters,

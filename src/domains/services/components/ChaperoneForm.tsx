@@ -11,7 +11,7 @@ import {
   CreateChaperoneInput,
   UpdateChaperoneInput,
 } from "../types/Chaperone";
-import { Dropdown } from "@/components/Dropdown";
+import Dropdown from "@/components/Dropdown";
 import { genderOptions } from "@/config/GenderOptions";
 import PhoneInput from "@/components/PhoneNumber";
 import { ChaperoneFormData, chaperoneFormSchema } from "../schemas/chaperones";

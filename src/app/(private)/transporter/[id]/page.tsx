@@ -2,16 +2,17 @@ import React from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import TransporterDetail from "@/domains/transporter/components/TransporterDetail";
-import { getTransporterById } from "@/domains/transporter/server/actions";
+import { getTransporterById } from "@/domains/transporter/server";
 import { TransporterData } from "@/domains/transporter/types/TransporterData";
 import { DashboardShell } from "@/layouts/dashboard";
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const result = await getTransporterById(params.id);
+  const { id } = await params;
+  const result = await getTransporterById(id);
 
   if (!result.success) {
     return {
@@ -26,7 +27,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function TransporterDetailPage({ params }: Props) {
-  const result = await getTransporterById(params.id);
+  const { id } = await params;
+  const result = await getTransporterById(id);
 
   if (!result.success) {
     notFound();

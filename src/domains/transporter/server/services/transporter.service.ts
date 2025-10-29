@@ -22,9 +22,6 @@ export class TransporterService {
       const transformed: TransporterData = {
         ...transporter,
         serviceAreas: transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
-        vehicleTypes: [], // Default since not in schema
-        fleetInfo: undefined,
-        baseAddress: "", // Default since not in schema
       };
 
       return { success: true, data: transformed };
@@ -70,9 +67,6 @@ export class TransporterService {
       const transformed: TransporterData[] = transporters.map((t) => ({
         ...t,
         serviceAreas: t.serviceAreas as unknown as TransporterData["serviceAreas"],
-        vehicleTypes: [], // Default since not in schema
-        fleetInfo: undefined,
-        baseAddress: "", // Default since not in schema
       }));
 
       return {
@@ -105,9 +99,6 @@ export class TransporterService {
       const transformed: TransporterData = {
         ...transporter,
         serviceAreas: transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
-        vehicleTypes: [], // Default since not in schema
-        fleetInfo: undefined,
-        baseAddress: "", // Default since not in schema
       };
 
       return { success: true, data: transformed };
@@ -119,6 +110,8 @@ export class TransporterService {
 
   static async update(id: string, data: UpdateTransporterData) {
     try {
+      console.log("TransporterService.update called with:", { id, data });
+
       const transporter = await prisma.transporter.update({
         where: { id },
         data: {
@@ -138,11 +131,9 @@ export class TransporterService {
       const transformed: TransporterData = {
         ...transporter,
         serviceAreas: transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
-        vehicleTypes: [], // Default since not in schema
-        fleetInfo: undefined,
-        baseAddress: "", // Default since not in schema
       };
 
+      console.log("Transporter updated successfully:", transporter);
       return { success: true, data: transformed };
     } catch (error) {
       console.error("Error updating transporter:", error);
