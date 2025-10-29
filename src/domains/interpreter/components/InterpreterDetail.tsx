@@ -14,6 +14,7 @@ import { Trash2, Edit2, X, Check } from "lucide-react";
 import { getWeekdayLabel, getBlockLabel, WEEKDAYS, AVAILABILITY_BLOCKS } from "../constants";
 import { AvailabilityBlock, Language } from "@prisma/client";
 import DeleteInterpreterModal from "./DeleteInterpreterModal";
+import { filterUUIDLanguages } from "../utils/languageUtils";
 
 type Props = { interpreter: InterpreterData };
 
@@ -43,7 +44,9 @@ export default function InterpreterDetail({ interpreter }: Props) {
     const fetchLanguages = async () => {
       try {
         const languages = await getLanguages();
-        setAllLanguages(languages);
+        // Filter out UUID languages
+        const filteredLanguages = filterUUIDLanguages(languages);
+        setAllLanguages(filteredLanguages);
       } catch (error) {
         console.error("Failed to fetch languages:", error);
       }
@@ -94,17 +97,26 @@ export default function InterpreterDetail({ interpreter }: Props) {
   };
 
   const handleSave = async () => {
+    // Trim all fields for validation
+    const trimmedCompanyName = formData.companyName.trim();
+    const trimmedContactPerson = formData.contactPerson.trim();
+    const trimmedEmail = formData.email.trim();
+    
     // Validation
-    if (!formData.companyName.trim()) {
-      toast.error("Company name is required");
+    if (!trimmedCompanyName) {
+      toast.error("Company name is required and cannot be only spaces");
       return;
     }
-    if (!formData.contactPerson.trim()) {
-      toast.error("Contact person is required");
+    if (!trimmedContactPerson) {
+      toast.error("Contact person is required and cannot be only spaces");
       return;
     }
-    if (!formData.email.trim()) {
-      toast.error("Email is required");
+    if (!trimmedEmail) {
+      toast.error("Email is required and cannot be only spaces");
+      return;
+    }
+    if (!isValidEmail(trimmedEmail)) {
+      toast.error("Please enter a valid email address");
       return;
     }
     if (formData.languageIds.length === 0) {
@@ -115,10 +127,10 @@ export default function InterpreterDetail({ interpreter }: Props) {
     setIsSaving(true);
     try {
       await updateInterpreter(interpreter.id, {
-        companyName: formData.companyName,
-        contactPerson: formData.contactPerson,
-        email: formData.email,
-        phone: formData.phone || undefined,
+        companyName: trimmedCompanyName,
+        contactPerson: trimmedContactPerson,
+        email: trimmedEmail,
+        phone: formData.phone.trim() || undefined,
         languageIds: formData.languageIds,
         availability: formData.availability
       });
@@ -168,6 +180,55 @@ export default function InterpreterDetail({ interpreter }: Props) {
     return formData.availability.some(
       a => a.weekday === weekday && a.block === block
     );
+  };
+
+  // Validation handlers
+  const handleCompanyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    // Only allow alphabets, spaces, and limit to 25 characters
+    value = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
+    // Remove leading spaces - first character must be a letter
+    value = value.replace(/^\s+/, '');
+    // Remove trailing spaces
+    value = value.replace(/\s+$/, '');
+    setFormData(prev => ({ ...prev, companyName: value }));
+  };
+
+  const handleContactPersonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    // Only allow alphabets, spaces, and limit to 25 characters
+    value = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 25);
+    // Remove leading spaces - first character must be a letter
+    value = value.replace(/^\s+/, '');
+    // Remove trailing spaces
+    value = value.replace(/\s+$/, '');
+    setFormData(prev => ({ ...prev, contactPerson: value }));
+  };
+
+  // Check if field contains only spaces
+  const isOnlySpaces = (value: string) => {
+    return value.trim().length === 0 && value.length > 0;
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, email: value }));
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Only allow numbers
+    const filtered = value.replace(/[^0-9]/g, '');
+    setFormData(prev => ({ ...prev, phone: filtered }));
+  };
+
+  // Email validation - must have at least one letter before @
+  const isValidEmail = (email: string) => {
+    if (!email || !email.includes('@')) return false;
+    const [localPart, domain] = email.split('@');
+    if (!localPart || !domain || !domain.includes('.')) return false;
+    // Must have at least one letter (a-z or A-Z) in the local part before @
+    return /[a-zA-Z]/.test(localPart) && /^[a-zA-Z0-9._-]+$/.test(localPart) && /^[^\s@]+\.[^\s@]+$/.test(domain);
   };
 
   return (
@@ -263,39 +324,68 @@ export default function InterpreterDetail({ interpreter }: Props) {
                       <input
                         type="text"
                         value={formData.companyName}
-                        onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A8FF]"
-                        placeholder="Enter company name"
+                        onChange={handleCompanyNameChange}
+                        maxLength={25}
+                        className={cn(
+                          "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all",
+                          isOnlySpaces(formData.companyName)
+                            ? "border-red-300 focus:ring-red-500"
+                            : "border-gray-300 focus:ring-[#00A8FF]"
+                        )}
+                        placeholder="Enter company name (alphabets only, max 25)"
                       />
+                      {isOnlySpaces(formData.companyName) && (
+                        <p className="text-xs text-red-500 mt-1">Company name cannot be only spaces</p>
+                      )}
                     </div>
                     <div className="flex flex-col gap-2">
                       <label className="text-sm font-medium text-gray-700">Contact Person *</label>
                       <input
                         type="text"
                         value={formData.contactPerson}
-                        onChange={(e) => setFormData(prev => ({ ...prev, contactPerson: e.target.value }))}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A8FF]"
-                        placeholder="Enter contact person"
+                        onChange={handleContactPersonChange}
+                        maxLength={25}
+                        className={cn(
+                          "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all",
+                          isOnlySpaces(formData.contactPerson)
+                            ? "border-red-300 focus:ring-red-500"
+                            : "border-gray-300 focus:ring-[#00A8FF]"
+                        )}
+                        placeholder="Enter contact person (alphabets only, max 25)"
                       />
+                      {isOnlySpaces(formData.contactPerson) && (
+                        <p className="text-xs text-red-500 mt-1">Contact person cannot be only spaces</p>
+                      )}
                     </div>
                     <div className="flex flex-col gap-2">
                       <label className="text-sm font-medium text-gray-700">Email *</label>
                       <input
                         type="email"
                         value={formData.email}
-                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A8FF]"
+                        onChange={handleEmailChange}
+                        className={cn(
+                          "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all",
+                          (formData.email && !isValidEmail(formData.email)) || isOnlySpaces(formData.email)
+                            ? "border-red-300 focus:ring-red-500"
+                            : "border-gray-300 focus:ring-[#00A8FF]"
+                        )}
                         placeholder="Enter email"
                       />
+                      {formData.email && !isValidEmail(formData.email) && (
+                        <p className="text-xs text-red-500 mt-1">Please enter a valid email address</p>
+                      )}
+                      {isOnlySpaces(formData.email) && (
+                        <p className="text-xs text-red-500 mt-1">Email cannot be only spaces</p>
+                      )}
                     </div>
                     <div className="flex flex-col gap-2">
                       <label className="text-sm font-medium text-gray-700">Phone</label>
                       <input
                         type="tel"
                         value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                        onChange={handlePhoneChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A8FF]"
-                        placeholder="Enter phone number"
+                        placeholder="Enter phone number (numbers only)"
                       />
                     </div>
                   </div>

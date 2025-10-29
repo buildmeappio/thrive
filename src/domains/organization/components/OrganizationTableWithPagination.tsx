@@ -19,6 +19,13 @@ const formatText = (str: string) => {
     .join(' ');
 };
 
+// Utility function to truncate text with ellipsis
+const truncateText = (text: string | null | undefined, maxLength: number = 28): string => {
+  if (!text) return "N/A";
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + "...";
+};
+
 type Props = {
   data: OrganizationData[];
   types?: string[];
@@ -72,55 +79,101 @@ const columnsDef = [
     header: ({ column }: { column: Column<OrganizationData, unknown> }) => (
       <SortableHeader column={column}>Organization</SortableHeader>
     ),
-    cell: ({ row }: { row: Row<OrganizationData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("name")}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<OrganizationData> }) => {
+      const name = row.getValue("name") as string;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          title={name}
+        >
+          {truncateText(name, 28)}
+        </div>
+      );
+    },
+    minSize: 180,
+    maxSize: 300,
+    size: 240,
   },
   {
     accessorKey: "typeName",
     header: ({ column }: { column: Column<OrganizationData, unknown> }) => (
       <SortableHeader column={column}>Type</SortableHeader>
     ),
-    cell: ({ row }: { row: Row<OrganizationData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("typeName") ? formatText(row.getValue("typeName")) : "N/A"}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<OrganizationData> }) => {
+      const typeName = row.getValue("typeName") as string;
+      const formattedType = typeName ? formatText(typeName) : "N/A";
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          title={formattedType}
+        >
+          {truncateText(formattedType, 20)}
+        </div>
+      );
+    },
+    minSize: 120,
+    maxSize: 200,
+    size: 150,
   },
   {
     accessorKey: "managerName",
     header: ({ column }: { column: Column<OrganizationData, unknown> }) => (
       <SortableHeader column={column}>Representative</SortableHeader>
     ),
-    cell: ({ row }: { row: Row<OrganizationData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("managerName") || "N/A"}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<OrganizationData> }) => {
+      const managerName = (row.getValue("managerName") as string) || "N/A";
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          title={managerName}
+        >
+          {truncateText(managerName, 28)}
+        </div>
+      );
+    },
+    minSize: 150,
+    maxSize: 250,
+    size: 200,
   },
   {
     accessorKey: "managerEmail",
     header: ({ column }: { column: Column<OrganizationData, unknown> }) => (
       <SortableHeader column={column}>Email</SortableHeader>
     ),
-    cell: ({ row }: { row: Row<OrganizationData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("managerEmail") || "N/A"}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<OrganizationData> }) => {
+      const email = (row.getValue("managerEmail") as string) || "N/A";
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          title={email}
+        >
+          {truncateText(email, 30)}
+        </div>
+      );
+    },
+    minSize: 180,
+    maxSize: 300,
+    size: 220,
   },
   {
     accessorKey: "status",
     header: ({ column }: { column: Column<OrganizationData, unknown> }) => (
       <SortableHeader column={column}>Status</SortableHeader>
     ),
-    cell: ({ row }: { row: Row<OrganizationData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {formatText(row.getValue("status"))}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<OrganizationData> }) => {
+      const status = formatText(row.getValue("status") as string);
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          title={status}
+        >
+          {truncateText(status, 20)}
+        </div>
+      );
+    },
+    minSize: 120,
+    maxSize: 180,
+    size: 140,
   },
   {
     header: "",
@@ -128,7 +181,9 @@ const columnsDef = [
     cell: ({ row }: { row: Row<OrganizationData> }) => {
       return <ActionButton id={row.original.id} />;
     },
+    minSize: 60,
     maxSize: 60,
+    size: 60,
     enableSorting: false,
   },
 ];
@@ -186,29 +241,40 @@ export default function OrganizationTableWithPagination({
     tableElement: (
       <>
         {/* Table */}
-        <div className="overflow-x-auto rounded-md outline-none max-h-[60vh] lg:max-h-none">
-          <Table className="min-w-[1000px] border-0">
+        <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
+          <Table className="w-full border-0 table-fixed">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      className={cn(
-                        "px-6 py-2 text-left text-base font-medium text-black",
-                        header.index === 0 && "rounded-l-2xl",
-                        header.index === headerGroup.headers.length - 1 &&
-                        "rounded-r-2xl w-[60px]"
-                      )}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
+                  {headerGroup.headers.map((header) => {
+                    const columnDef = columnsDef[header.index];
+                    const minWidth = columnDef?.minSize || 'auto';
+                    const maxWidth = columnDef?.maxSize || 'auto';
+                    const width = columnDef?.size || 'auto';
+                    return (
+                      <TableHead
+                        key={header.id}
+                        style={{
+                          minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
+                          maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+                          width: typeof width === 'number' ? `${width}px` : width,
+                        }}
+                        className={cn(
+                          "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
+                          header.index === 0 && "rounded-l-2xl",
+                          header.index === headerGroup.headers.length - 1 &&
+                          "rounded-r-2xl"
                         )}
-                    </TableHead>
-                  ))}
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
               ))}
             </TableHeader>
@@ -221,18 +287,33 @@ export default function OrganizationTableWithPagination({
                     data-state={row.getIsSelected() && "selected"}
                     className="bg-white border-0 border-b-1"
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="px-6 py-3">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
+                    {row.getVisibleCells().map((cell) => {
+                      const columnIndex = cell.column.getIndex();
+                      const columnDef = columnsDef[columnIndex];
+                      const minWidth = columnDef?.minSize || 'auto';
+                      const maxWidth = columnDef?.maxSize || 'auto';
+                      const width = columnDef?.size || 'auto';
+                      return (
+                        <TableCell 
+                          key={cell.id} 
+                          style={{
+                            minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
+                            maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+                            width: typeof width === 'number' ? `${width}px` : width,
+                          }}
+                          className="px-6 py-3 overflow-hidden align-middle"
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
                   <TableCell
                     colSpan={columnsDef.length}
-                    className="h-24 text-center text-black font-poppins text-[16px] leading-none"
+                    className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
                   >
                     No Organizations Found
                   </TableCell>

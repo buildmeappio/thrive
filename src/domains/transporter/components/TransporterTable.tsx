@@ -13,7 +13,6 @@ import {
 import { cn } from "@/lib/utils";
 import { TransporterData } from "../types/TransporterData";
 import columns from "./columns";
-import Pagination from "@/components/Pagination";
 
 interface TransporterTableProps {
   table: ReactTable<TransporterData>;
@@ -78,11 +77,6 @@ export default function TransporterTable({ table }: TransporterTableProps) {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      {/* Pagination - Outside the card */}
-      <div className="mt-4 px-4">
-        <Pagination table={table} />
       </div>
     </div>
   );
