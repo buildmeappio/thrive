@@ -14,6 +14,7 @@ import SearchAndFilters from "./SearchAndFilters";
 import TransporterTable from "./TransporterTable";
 import { useTransporterFilters } from "../hooks/useTransporterFilters";
 import columns from "./columns";
+import Pagination from "@/components/Pagination";
 
 interface TransporterPageContentProps {
   data: TransporterData[];
@@ -78,6 +79,11 @@ export default function TransporterPageContent({
       />
 
       <TransporterTable table={table} />
+
+      {/* Pagination - Outside the table card */}
+      <div className="mt-4 px-6">
+        <Pagination table={table} />
+      </div>
     </div>
   );
 }
