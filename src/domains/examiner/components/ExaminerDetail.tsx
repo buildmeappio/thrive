@@ -12,6 +12,7 @@ import { approveExaminer, rejectExaminer, requestMoreInfo } from "../actions";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
+import { capitalizeWords } from "@/utils/text";
 
 // Utility function to format text from database: remove _, -, and capitalize each word
 const formatText = (str: string): string => {
@@ -106,7 +107,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                 <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
                     Review{" "}
                     <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
-                        {examiner.name}
+                        {capitalizeWords(examiner.name)}
                     </span>{" "}
                     Profile
                 </h1>
@@ -119,7 +120,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
                             {/* Left column - Examiner Info */}
                         <Section title="What Organization Do You Represent?">
-                                <FieldRow label="Name" value={examiner.name || "-"} type="text" />
+                                <FieldRow label="Name" value={capitalizeWords(examiner.name || "-")} type="text" />
                                 <FieldRow label="Medical Specialties" value={examiner.specialties?.map(s => formatText(s)).join(", ") || "-"} type="text" />
                             <FieldRow label="Phone Number" value={formatPhoneNumber(examiner.phone)} type="text" />
                             <FieldRow label="Landline Number" value={formatPhoneNumber(examiner.landlineNumber)} type="text" />

@@ -13,7 +13,7 @@ type DropdownProps = {
   className?: string;
 };
 
-export const Dropdown: React.FC<DropdownProps> = ({
+const Dropdown: React.FC<DropdownProps> = ({
   id,
   label,
   value,
@@ -69,3 +69,5 @@ export const Dropdown: React.FC<DropdownProps> = ({
     </div>
   );
 };
+
+export default Dropdown;

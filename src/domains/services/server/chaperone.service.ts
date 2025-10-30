@@ -285,7 +285,7 @@ export const getChaperones = async (): Promise<ChaperoneData[]> => {
       fullName: `${chaperone.firstName} ${chaperone.lastName}`,
       createdAt: chaperone.createdAt,
     }));
-  } catch (error) {
+  } catch {
     throw HttpError.internalServerError("Internal server error");
   }
 };

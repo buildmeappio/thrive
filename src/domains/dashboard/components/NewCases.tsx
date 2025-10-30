@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
 import { formatDateShort } from "@/utils/date";
+import { capitalizeWords } from "@/utils/text";
 import {
   Table,
   TableBody,
@@ -116,7 +117,7 @@ export default function NewCases({
                     <span className="block">{r.caseNumber}</span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[160px] sm:min-w-0">
-                    <span className="block">{r.case.organization?.name || "N/A"}</span>
+                    <span className="block">{capitalizeWords(r.case.organization?.name || "N/A")}</span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[160px] sm:min-w-0">
                     <span className="block">{r.case.caseType?.name ? formatText(r.case.caseType.name) : "N/A"}</span>

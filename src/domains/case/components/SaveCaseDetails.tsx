@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Dropdown } from "@/components/Dropdown";
+import Dropdown from "@/components/Dropdown";
 import caseActions from "../actions";
 import { CaseStatus } from "../constants/case-status";
 import { CaseStatus as PrismaCaseStatus } from "@prisma/client";
