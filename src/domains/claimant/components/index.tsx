@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import AppointmentOptions from './AppointmentOptions';
+// import AppointmentOptions from './AppointmentOptions'; // Commented out - Step 1 is disabled
 import ExaminerOptions from './ExaminerOptions';
 import AppointmentConfirmation from './AppointmentConfirmation';
 import UserInfo from './UserInfo';
@@ -24,6 +24,7 @@ type ClaimantAvailabilityProps = {
     claimantFirstName: string | null;
     claimantLastName: string | null;
     organizationName?: string | null;
+    examinationId: string;
   };
 };
 
@@ -32,13 +33,13 @@ type ClaimantAvailabilityComponentProps = ClaimantAvailabilityProps & {
 };
 
 const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({ caseSummary }) => {
-  const { isSubmitting, submitAvailability } = useClaimantAvailability(
+  const { isSubmitting: _isSubmitting, submitAvailability } = useClaimantAvailability(
     caseSummary.caseId,
     caseSummary.claimantId
   );
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<'appointments' | 'examiners' | 'confirmation'>(
-    'appointments'
+    'examiners'
   );
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
 
@@ -89,28 +90,15 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({ ca
       {/* Form container */}
       <form onSubmit={form.handleSubmit(handleSubmit, onError)}>
         <div className="mx-auto w-full space-y-8">
-          {currentStep === 'appointments' ? (
+          {/* Step 1 - Appointments (commented out for now) */}
+          {/* {currentStep === 'appointments' ? (
             <AppointmentOptions form={form} onCheckExaminers={() => setCurrentStep('examiners')} />
-          ) : currentStep === 'examiners' ? (
+          ) : currentStep === 'examiners' ? ( */}
+          {currentStep === 'examiners' ? (
             <ExaminerOptions
-              onSelectAppointment={appointmentId => {
-                // Find the selected appointment from the data
-                const appointmentData = {
-                  id: appointmentId,
-                  date: 'May 10, 2025',
-                  time: '11:30 AM',
-                  doctor: {
-                    name: 'Dr. Mark Thompson',
-                    specialty: 'Cardiologist',
-                    credentials: 'FACC, ABIM',
-                  },
-                  clinic: 'Heart Health Institute',
-                  requirements: {
-                    interpreter: 'Required',
-                    transport: 'MedTransit',
-                    chaperone: 'Required',
-                  },
-                };
+              examId={caseSummary.examinationId}
+              caseId={caseSummary.caseId}
+              onSelectAppointment={appointmentData => {
                 setSelectedAppointment(appointmentData);
                 setCurrentStep('confirmation');
               }}

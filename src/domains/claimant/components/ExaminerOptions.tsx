@@ -1,96 +1,209 @@
 'use client';
-import React from 'react';
-import { User, MapPin, HelpCircle, Car, UserPlus, ArrowRight, Star } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, ArrowRight, Star, Calendar, Clock } from 'lucide-react';
+import { getAvailableExaminers } from '../actions';
+import { toast } from 'sonner';
+import type {
+  AvailableExaminersResult,
+  DayAvailability,
+  ExaminerAvailabilityOption,
+} from '../types/examinerAvailability';
+import { format } from 'date-fns';
 
-interface AppointmentOption {
-  id: string;
-  date: string;
-  time: string;
-  doctor: {
-    name: string;
-    specialty: string;
-    credentials: string;
-  };
-  clinic: string;
-  requirements: {
-    interpreter: string;
-    transport: string;
-    chaperone: string;
-  };
+interface ExaminerOption {
+  examinerId: string;
+  examinerName: string;
+  providerId: string;
+  specialty?: string;
+}
+
+interface SlotOption {
+  start: Date;
+  end: Date;
+  examiners: ExaminerOption[];
+}
+
+interface SelectedAppointment {
+  examinerId: string;
+  examinerName: string;
+  date: Date;
+  slotStart: Date;
+  slotEnd: Date;
+  specialty?: string;
 }
 
 interface ExaminerOptionsProps {
-  onSelectAppointment: (appointmentId: string) => void;
+  examId: string;
+  caseId: string;
+  onSelectAppointment: (appointment: SelectedAppointment) => void;
   onBack?: () => void;
 }
 
-const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({ onSelectAppointment }) => {
-  const appointmentOptions: AppointmentOption[] = [
-    {
-      id: '1',
-      date: 'May 8, 2025',
-      time: '9:00 AM',
-      doctor: {
-        name: 'Dr. Fiona Greene',
-        specialty: 'Orthopedic Surgeon',
-        credentials: 'FRCSC, CIME',
-      },
-      clinic: 'Greene Medical Clinic',
-      requirements: {
-        interpreter: 'Not Required',
-        transport: 'FleetX',
-        chaperone: 'Not Required',
-      },
-    },
-    {
-      id: '2',
-      date: 'May 10, 2025',
-      time: '11:30 AM',
-      doctor: {
-        name: 'Dr. Mark Thompson',
-        specialty: 'Cardiologist',
-        credentials: 'FACC, ABIM',
-      },
-      clinic: 'Heart Health Institute',
-      requirements: {
-        interpreter: 'Required',
-        transport: 'MedTransit',
-        chaperone: 'Required',
-      },
-    },
-    {
-      id: '3',
-      date: 'May 12, 2025',
-      time: '1:00 PM',
-      doctor: {
-        name: 'Dr. Sarah Lee',
-        specialty: 'Pediatrician',
-        credentials: 'FAAP',
-      },
-      clinic: 'Child Wellness Center',
-      requirements: {
-        interpreter: 'Not Required',
-        transport: 'KidCare',
-        chaperone: 'Required',
-      },
-    },
-    {
-      id: '4',
-      date: 'May 15, 2025',
-      time: '3:30 PM',
-      doctor: {
-        name: 'Dr. Samuel Patel',
-        specialty: 'Dermatologist',
-        credentials: 'AAD',
-      },
-      clinic: 'Clear Skin Clinic',
-      requirements: {
-        interpreter: 'Required',
-        transport: 'SkinSafe',
-        chaperone: 'Not Required',
-      },
-    },
-  ];
+const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({ examId, onSelectAppointment }) => {
+  const [loading, setLoading] = useState(true);
+  const [availabilityData, setAvailabilityData] = useState<AvailableExaminersResult | null>(null);
+  const [selectedDateIndex, setSelectedDateIndex] = useState(0);
+  const [selectedSlotIndex, setSelectedSlotIndex] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Default settings - these could be made configurable
+  const settings = {
+    noOfDaysForWindow: 7, // Max 7 days
+    numberOfWorkingHours: 8,
+    startOfWorking: '09:00',
+    slotDurationMinutes: 60,
+  };
+
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      try {
+        setLoading(true);
+        setErrorMessage(null);
+        // Start from today
+        const startDate = new Date();
+        startDate.setHours(0, 0, 0, 0);
+
+        const result = await getAvailableExaminers({
+          examId,
+          startDate,
+          settings,
+        });
+
+        if (result.success && result.result) {
+          // Convert date strings back to Date objects (dates get serialized as strings over network)
+          const processedResult = {
+            ...result.result,
+            days: result.result.days.map(
+              (day: {
+                date: string | Date;
+                weekday: string;
+                slots: Array<{
+                  start: string | Date;
+                  end: string | Date;
+                  examiners: ExaminerAvailabilityOption[];
+                }>;
+              }) => ({
+                ...day,
+                date: new Date(day.date),
+                weekday: day.weekday, // Preserve weekday property
+                slots: day.slots.map(
+                  (slot: {
+                    start: string | Date;
+                    end: string | Date;
+                    examiners: ExaminerAvailabilityOption[];
+                  }) => ({
+                    ...slot,
+                    start: new Date(slot.start),
+                    end: new Date(slot.end),
+                    examiners: slot.examiners, // Preserve examiners array
+                  })
+                ),
+              })
+            ),
+            startDate: new Date(result.result.startDate),
+            endDate: new Date(result.result.endDate),
+            dueDate: result.result.dueDate ? new Date(result.result.dueDate) : null,
+          };
+          setAvailabilityData(processedResult);
+          setErrorMessage(null);
+        } else {
+          const errorMsg =
+            (result as { error?: string }).error ||
+            'Failed to load examiner availability. Please try again.';
+          setErrorMessage(errorMsg);
+          toast.error(errorMsg);
+          console.error('Failed to load availability:', result);
+        }
+      } catch (error) {
+        console.error('Error fetching examiner availability:', error);
+        const errorMsg =
+          error instanceof Error ? error.message : 'An error occurred while loading availability.';
+        setErrorMessage(errorMsg);
+        toast.error(errorMsg);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAvailability();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [examId]);
+
+  const formatTime = (date: Date): string => {
+    return format(date, 'h:mm a');
+  };
+
+  const formatSqlDate = (date: Date): string => {
+    return format(date, 'EEEE, MMMM d');
+  };
+
+  const handleSlotSelection = (slot: SlotOption, day: DayAvailability) => {
+    if (slot.examiners.length === 0) return;
+
+    // For now, select the first examiner (could add examiner selection UI later)
+    const selectedExaminer = slot.examiners[0];
+
+    const appointment: SelectedAppointment = {
+      examinerId: selectedExaminer.examinerId,
+      examinerName: selectedExaminer.examinerName,
+      date: day.date,
+      slotStart: slot.start,
+      slotEnd: slot.end,
+      specialty: selectedExaminer.specialty,
+    };
+
+    onSelectAppointment(appointment);
+  };
+
+  if (loading) {
+    return (
+      <div className="mx-auto mb-16 w-full max-w-7xl p-4 sm:px-6">
+        <div className="py-8 text-center text-[28px] leading-[100%] font-semibold tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
+          Choose Your Appointment
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-lg text-gray-600">Loading available examiners...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error message if there's an error
+  if (errorMessage) {
+    return (
+      <div className="mx-auto mb-16 w-full max-w-7xl p-4 sm:px-6">
+        <div className="py-8 text-center text-[28px] leading-[100%] font-semibold tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
+          Choose Your Appointment
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="max-w-2xl rounded-lg border-2 border-red-200 bg-red-50 p-6">
+            <div className="mb-2 text-lg font-semibold text-red-800">
+              Unable to Load Availability
+            </div>
+            <div className="text-base text-red-700">{errorMessage}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!availabilityData || availabilityData.days.length === 0) {
+    return (
+      <div className="mx-auto mb-16 w-full max-w-7xl p-4 sm:px-6">
+        <div className="py-8 text-center text-[28px] leading-[100%] font-semibold tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
+          Choose Your Appointment
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-lg text-gray-600">
+            No available examiners found for this examination.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const selectedDay = availabilityData.days[selectedDateIndex];
+  const maxDaysToShow = Math.min(availabilityData.days.length, 7);
 
   return (
     <div className="mx-auto mb-16 w-full max-w-7xl p-4 sm:px-6">
@@ -98,89 +211,88 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({ onSelectAppointment }
         Choose Your Appointment
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
-        {appointmentOptions.map(appointment => (
-          <div
-            key={appointment.id}
-            className="relative rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-50 to-blue-50 p-6 shadow-lg transition-shadow duration-300 hover:shadow-xl"
+      {/* Date Tabs */}
+      <div className="mb-8 flex flex-wrap justify-center gap-2">
+        {availabilityData.days.slice(0, maxDaysToShow).map((day, index) => (
+          <button
+            key={index}
+            onClick={() => {
+              setSelectedDateIndex(index);
+              setSelectedSlotIndex(null);
+            }}
+            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+              selectedDateIndex === index
+                ? 'bg-[#000093] text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
           >
-            {/* Date/Time Label */}
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#E0E0FF] px-4 py-1 text-sm font-medium text-black">
-              {appointment.date} - {appointment.time}
-            </div>
+            <Calendar className="mr-2 inline h-4 w-4" />
+            {formatSqlDate(day.date)}
+          </button>
+        ))}
+      </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              {/* Left Section - Doctor & Clinic Info */}
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <User className="mt-0.5 h-5 w-5 fill-[#000093] text-[#000093]" />
-                  <div>
-                    <p className="font-medium text-gray-900">{appointment.doctor.name}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <Star className="h-4 w-4 text-[#000093]" />
-                  <p className="font-medium text-gray-900">
-                    {appointment.doctor.specialty} | {appointment.doctor.credentials}
-                  </p>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <MapPin className="mt-0.5 h-5 w-5 text-[#000093]" />
-                  <div>
-                    <p className="font-medium text-gray-900">{appointment.clinic}</p>
-                  </div>
+      {/* Slots for Selected Date */}
+      {selectedDay && selectedDay.slots.length > 0 ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {selectedDay.slots.map((slot, slotIndex) => (
+            <div
+              key={slotIndex}
+              className={`relative rounded-xl border-2 p-6 transition-all duration-200 ${
+                selectedSlotIndex === slotIndex
+                  ? 'border-[#000093] bg-[#E8F1FF] shadow-lg'
+                  : 'border-gray-200 bg-white hover:border-[#000093] hover:shadow-md'
+              }`}
+            >
+              {/* Time Header */}
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-5 w-5 text-[#000093]" />
+                  <span className="text-lg font-semibold text-gray-900">
+                    {formatTime(slot.start)} - {formatTime(slot.end)}
+                  </span>
                 </div>
               </div>
 
-              {/* Right Section - Requirements */}
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <HelpCircle className="h-5 w-5 text-[#000093]" />
-                  <div>
-                    <span className="text-sm text-gray-600">Interpreter: </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      {appointment.requirements.interpreter}
-                    </span>
+              {/* Available Examiners */}
+              <div className="mb-4 space-y-3">
+                {slot.examiners.map((examiner, examinerIndex) => (
+                  <div
+                    key={examinerIndex}
+                    className="flex items-center space-x-3 rounded-lg bg-gray-50 p-3"
+                  >
+                    <User className="h-5 w-5 flex-shrink-0 text-[#000093]" />
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">{examiner.examinerName}</p>
+                      {examiner.specialty && (
+                        <div className="mt-1 flex items-center space-x-1">
+                          <Star className="h-3 w-3 text-[#000093]" />
+                          <p className="text-sm text-gray-600">{examiner.specialty}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <Car className="h-5 w-5 text-[#000093]" />
-                  <div>
-                    <span className="text-sm text-gray-600">Transport: </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      {appointment.requirements.transport}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <UserPlus className="h-5 w-5 text-[#000093]" />
-                  <div>
-                    <span className="text-sm text-gray-600">Chaperone: </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      {appointment.requirements.chaperone}
-                    </span>
-                  </div>
-                </div>
+                ))}
               </div>
-            </div>
 
-            {/* Select Button */}
-            <div className="mt-6 flex justify-center">
+              {/* Select Button */}
               <button
-                onClick={() => onSelectAppointment(appointment.id)}
-                className="flex w-1/2 cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#000080] px-4 py-2 font-medium text-white transition-colors duration-200"
+                onClick={() => handleSlotSelection(slot, selectedDay)}
+                className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-lg bg-[#000080] px-4 py-2 font-medium text-white transition-colors duration-200 hover:bg-[#000093]"
               >
-                <span>Select This Appointment</span>
+                <span>Select This Slot</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-lg text-gray-600">
+            No available slots for {formatSqlDate(selectedDay.date)}.
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

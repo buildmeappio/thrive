@@ -26,8 +26,14 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ token: string }>
     );
   }
 
-  const { caseId, claimantId, claimantFirstName, claimantLastName, organizationName } =
-    caseSummary.result;
+  const {
+    caseId,
+    claimantId,
+    claimantFirstName,
+    claimantLastName,
+    organizationName,
+    examinationId,
+  } = caseSummary.result;
 
   return (
     <ClaimantAvailability
@@ -37,6 +43,7 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ token: string }>
         claimantFirstName,
         claimantLastName,
         organizationName,
+        examinationId,
       }}
       languages={languages.result}
     />

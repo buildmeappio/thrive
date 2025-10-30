@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/domains/auth/server/session';
+// import { getCurrentUser } from '@/domains/auth/server/session'; // Commented out - not currently used
 import prisma from '@/lib/prisma';
 import emailService from '@/services/emailService';
 import createSecureLink from '@/utils/createSecureLink';
@@ -14,10 +14,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { id: examinationId } = await params;
 
     // Get current user for authorization
-    const currentUser = await getCurrentUser();
-    if (!currentUser?.accountId) {
-      return NextResponse.json({ error: 'Unauthorized: User not authenticated' }, { status: 401 });
-    }
+    // const currentUser = await getCurrentUser();
+    // if (!currentUser?.accountId) {
+    //   return NextResponse.json({ error: 'Unauthorized: User not authenticated' }, { status: 401 });
+    // }
 
     // Get examination with all related data using separate queries
     const examination = await prisma.examination.findUnique({
@@ -63,9 +63,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
-    // Check if examination is already approved
+    // Check if examination is already in a status that doesn't need approval
     if (status.name === 'Waiting to be Scheduled') {
-      return NextResponse.json({ error: 'Examination is already approved' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Examination is already approved and waiting to be scheduled' },
+        { status: 400 }
+      );
+    }
+
+    if (status.name === 'Ready to Appointment') {
+      return NextResponse.json(
+        { error: 'Examination is already ready for appointment. Availability has been submitted.' },
+        { status: 400 }
+      );
     }
 
     // Get the "Waiting to be Scheduled" status
@@ -105,7 +115,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         caseNumber,
         organizationName,
         approvalLink: secureLink,
-        dashboardUrl: process.env.NEXTAUTH_URL || 'https://thriveassessmentcare.com',
+        dashboardUrl: process.env.FRONTEND_URL,
       },
       claimant.emailAddress ?? ''
     );

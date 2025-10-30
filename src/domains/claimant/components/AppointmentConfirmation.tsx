@@ -1,24 +1,17 @@
 'use client';
 import React from 'react';
-import { Check, User, Star, MapPin, HelpCircle, Car, UserPlus } from 'lucide-react';
+import { Check, User, Star } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface AppointmentConfirmationProps {
   appointment: {
-    id: string;
-    date: string;
-    time: string;
-    doctor: {
-      name: string;
-      specialty: string;
-      credentials: string;
-    };
-    clinic: string;
-    requirements: {
-      interpreter: string;
-      transport: string;
-      chaperone: string;
-    };
-  };
+    examinerId: string;
+    examinerName: string;
+    date: Date;
+    slotStart: Date;
+    slotEnd: Date;
+    specialty?: string;
+  } | null;
   claimantName: string;
   onBack?: () => void;
 }
@@ -27,6 +20,17 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
   appointment,
   claimantName,
 }) => {
+  if (!appointment) {
+    return (
+      <div className="py-12 text-center">
+        <p className="text-lg text-gray-600">No appointment selected.</p>
+      </div>
+    );
+  }
+
+  const formattedDate = format(appointment.date, 'EEEE, MMMM d, yyyy');
+  const formattedTime = `${format(appointment.slotStart, 'h:mm a')} - ${format(appointment.slotEnd, 'h:mm a')}`;
+
   return (
     <div>
       {/* Success Icon */}
@@ -43,7 +47,7 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
         </h1>
         <p className="text-lg font-medium text-gray-900">Your appointment has been confirmed.</p>
         <p className="text-lg font-medium text-gray-900">
-          {appointment.date} – {appointment.time} at {appointment.clinic}
+          {formattedDate} – {formattedTime}
         </p>
       </div>
 
@@ -52,66 +56,21 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
         <div className="relative mb-8 rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-50 to-blue-50 p-6 shadow-lg">
           {/* Date/Time Label */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#E0E0FF] px-4 py-1 text-sm font-medium text-black">
-            {appointment.date} – {appointment.time}
+            {formattedDate} – {formattedTime}
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* Left Section - Doctor & Clinic Info */}
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <User className="mt-0.5 h-5 w-5 text-[#000093]" />
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <p className="font-medium text-gray-900">{appointment.doctor.name}</p>
+          <div className="space-y-4 pt-4">
+            {/* Examiner Info */}
+            <div className="flex items-start space-x-3">
+              <User className="mt-0.5 h-5 w-5 text-[#000093]" />
+              <div>
+                <p className="font-medium text-gray-900">{appointment.examinerName}</p>
+                {appointment.specialty && (
+                  <div className="mt-2 flex items-center space-x-2">
+                    <Star className="h-4 w-4 text-[#000093]" />
+                    <p className="text-sm text-gray-600">{appointment.specialty}</p>
                   </div>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Star className="h-4 w-4 text-[#000093]" />
-                <p className="font-medium text-gray-900">
-                  {appointment.doctor.specialty} | {appointment.doctor.credentials}
-                </p>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <MapPin className="mt-0.5 h-5 w-5 text-[#000093]" />
-                <div>
-                  <p className="font-medium text-gray-900">{appointment.clinic}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Section - Requirements */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <HelpCircle className="h-5 w-5 text-[#000093]" />
-                <div>
-                  <span className="text-sm text-gray-600">Interpreter: </span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {appointment.requirements.interpreter}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Car className="h-5 w-5 text-[#000093]" />
-                <div>
-                  <span className="text-sm text-gray-600">Transport: </span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {appointment.requirements.transport}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <UserPlus className="h-5 w-5 text-[#000093]" />
-                <div>
-                  <span className="text-sm text-gray-600">Chaperone: </span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {appointment.requirements.chaperone}
-                  </span>
-                </div>
+                )}
               </div>
             </div>
           </div>

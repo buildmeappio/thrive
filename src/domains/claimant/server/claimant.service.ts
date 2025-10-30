@@ -90,6 +90,15 @@ const createClaimantAvailability = async (data: CreateClaimantAvailabilityData) 
   }
 
   try {
+    // Get the "Ready to Appointment" status before the transaction
+    const readyToAppointmentStatus = await prisma.caseStatus.findFirst({
+      where: { name: 'Ready to Appointment' },
+    });
+
+    if (!readyToAppointmentStatus) {
+      throw new Error('Ready to Appointment status not found in system');
+    }
+
     const result = await prisma.$transaction(async tx => {
       const availability = await tx.claimantAvailability.create({
         data: {
@@ -116,6 +125,12 @@ const createClaimantAvailability = async (data: CreateClaimantAvailabilityData) 
           })
         )
       );
+
+      // Update examination status from "Waiting to be Scheduled" to "Ready to Appointment"
+      await tx.examination.update({
+        where: { id: data.caseId },
+        data: { statusId: readyToAppointmentStatus.id },
+      });
 
       return {
         availability,
