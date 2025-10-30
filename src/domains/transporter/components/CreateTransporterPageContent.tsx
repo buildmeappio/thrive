@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -5,15 +6,17 @@ import { useRouter } from "next/navigation";
 import Section from "@/components/Section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createTransporter } from "../server";
+import { createTransporter, saveTransporterAvailabilityAction } from "../server";
 import { toast } from "sonner";
 import { provinceOptions } from "@/constants/options";
 import { cn } from "@/lib/utils";
 import { TransporterFormHandler } from "../server";
+import { WeeklyHours, OverrideHours, WeeklyHoursState, OverrideHoursState } from "@/components/availability";
 
 export default function CreateTransporterPageContent() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"weeklyHours" | "overrideHours">("weeklyHours");
   const [formData, setFormData] = useState({
     companyName: "",
     contactPerson: "",
@@ -21,6 +24,16 @@ export default function CreateTransporterPageContent() {
     email: "",
     serviceAreas: [],
   });
+  const [weeklyHours, setWeeklyHours] = useState<WeeklyHoursState>({
+    sunday: { enabled: false, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    monday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    tuesday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    wednesday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    thursday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    friday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    saturday: { enabled: false, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+  });
+  const [overrideHours, setOverrideHours] = useState<OverrideHoursState>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +52,14 @@ export default function CreateTransporterPageContent() {
 
       const result = await createTransporter(validation.sanitizedData!);
 
-      if (result.success) {
+      if (result.success && result.data?.id) {
+        // Save availability after transporter is created
+        await saveTransporterAvailabilityAction({
+          transporterId: result.data.id,
+          weeklyHours,
+          overrideHours,
+        } as any);
+        
         toast.success("Transporter created successfully");
         router.push("/transporter");
       } else {
@@ -259,7 +279,7 @@ export default function CreateTransporterPageContent() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Select Provinces <span className="text-red-500">*</span>
                 </label>
-                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                <div className="grid grid-cols-2 gap-2 border border-gray-200 rounded-lg p-3">
                   {provinceOptions.map((option) => (
                     <label
                       key={option.value}
@@ -272,7 +292,7 @@ export default function CreateTransporterPageContent() {
                         onChange={() => toggleProvince(option.value)}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="text-sm">{option.label}</span>
+                      <span className="text-base">{option.label}</span>
                     </label>
                   ))}
                 </div>
@@ -295,6 +315,54 @@ export default function CreateTransporterPageContent() {
                       ))}
                     </div>
                   </div>
+                )}
+              </div>
+            </div>
+          </Section>
+        </div>
+
+        {/* Availability Section - Full Width */}
+        <div className="col-span-full">
+          <Section title="Set Your Availability">
+            <div>
+              <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("weeklyHours")}
+                    className={`pb-2 px-4 transition-colors cursor-pointer relative ${
+                      activeTab === "weeklyHours"
+                        ? "text-black font-bold"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    Weekly Hours
+                    {activeTab === "weeklyHours" && (
+                      <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("overrideHours")}
+                    className={`pb-2 px-4 transition-colors cursor-pointer relative ${
+                      activeTab === "overrideHours"
+                        ? "text-black font-bold"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    Override Hours
+                    {activeTab === "overrideHours" && (
+                      <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div className="mt-4">
+                {activeTab === "weeklyHours" && (
+                  <WeeklyHours value={weeklyHours} onChange={setWeeklyHours} />
+                )}
+                {activeTab === "overrideHours" && (
+                  <OverrideHours value={overrideHours} onChange={setOverrideHours} />
                 )}
               </div>
             </div>

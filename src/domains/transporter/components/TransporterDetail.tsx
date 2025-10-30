@@ -13,6 +13,8 @@ import { capitalizeWords } from "@/utils/text";
 import { provinceOptions } from "@/constants/options";
 import { TRANSPORTER_STATUSES } from "../types/TransporterData";
 import { TransporterFormHandler } from "../server";
+import { WeeklyHours, OverrideHours, WeeklyHoursState, OverrideHoursState } from "@/components/availability";
+import { getTransporterAvailabilityAction, saveTransporterAvailabilityAction } from "../server";
 import { useRouter } from "next/navigation";
 import { showDeleteConfirmation } from "@/components";
 
@@ -28,6 +30,7 @@ export default function TransporterDetail({ transporter }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [activeTab, setActiveTab] = useState<"weeklyHours" | "overrideHours">("weeklyHours");
   const [formData, setFormData] = useState({
     companyName: transporter.companyName,
     contactPerson: transporter.contactPerson,
@@ -36,6 +39,35 @@ export default function TransporterDetail({ transporter }: Props) {
     status: transporter.status,
     serviceAreas: transporter.serviceAreas || [],
   });
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [weeklyHours, setWeeklyHours] = useState<WeeklyHoursState>({
+    sunday: { enabled: false, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    monday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    tuesday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    wednesday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    thursday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    friday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    saturday: { enabled: false, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+  });
+  const [overrideHours, setOverrideHours] = useState<OverrideHoursState>([]);
+
+  React.useEffect(() => {
+    const fetchAvailability = async () => {
+      try {
+        setAvailabilityLoading(true);
+        const res = await getTransporterAvailabilityAction({ transporterId: transporter.id } as any);
+        if ((res as any)?.success && (res as any).data) {
+          setWeeklyHours((res as any).data.weeklyHours);
+          setOverrideHours((res as any).data.overrideHours);
+        }
+      } catch (e) {
+        console.error("Failed to fetch availability", e);
+      } finally {
+        setAvailabilityLoading(false);
+      }
+    };
+    fetchAvailability();
+  }, [transporter.id]);
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -60,6 +92,11 @@ export default function TransporterDetail({ transporter }: Props) {
 
       const result = await updateTransporter(transporter.id, updateData);
       if (result.success) {
+        await saveTransporterAvailabilityAction({
+          transporterId: transporter.id,
+          weeklyHours,
+          overrideHours,
+        } as any);
         toast.success("Transporter updated successfully");
         setIsEditing(false);
         // Refresh the page to get updated data
@@ -356,6 +393,63 @@ export default function TransporterDetail({ transporter }: Props) {
               />
             </div>
           </Section>
+
+          <Section title="Availability">
+            {availabilityLoading ? (
+              <div className="text-sm text-gray-500">Loading availability...</div>
+            ) : (
+              <div>
+                <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("weeklyHours")}
+                      className={`pb-2 px-4 transition-colors cursor-pointer relative ${
+                        activeTab === "weeklyHours"
+                          ? "text-black font-bold"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      Weekly Hours
+                      {activeTab === "weeklyHours" && (
+                        <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("overrideHours")}
+                      className={`pb-2 px-4 transition-colors cursor-pointer relative ${
+                        activeTab === "overrideHours"
+                          ? "text-black font-bold"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      Override Hours
+                      {activeTab === "overrideHours" && (
+                        <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  {activeTab === "weeklyHours" && (
+                    <WeeklyHours 
+                      value={weeklyHours} 
+                      onChange={isEditing ? setWeeklyHours : () => {}} 
+                      disabled={!isEditing}
+                    />
+                  )}
+                  {activeTab === "overrideHours" && (
+                    <OverrideHours 
+                      value={overrideHours} 
+                      onChange={isEditing ? setOverrideHours : () => {}} 
+                      disabled={!isEditing}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+          </Section>
         </div>
 
         {/* Right Column - Service Provinces */}
@@ -367,7 +461,7 @@ export default function TransporterDetail({ transporter }: Props) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Select Provinces <span className="text-red-500">*</span>
                   </label>
-                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                  <div className="grid grid-cols-2 gap-2 border border-gray-200 rounded-lg p-3">
                     {provinceOptions.map((option) => (
                       <label
                         key={option.value}
@@ -380,7 +474,7 @@ export default function TransporterDetail({ transporter }: Props) {
                           onChange={() => toggleProvince(option.value)}
                           className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
-                        <span className="text-sm">{option.label}</span>
+                        <span className="text-base">{option.label}</span>
                       </label>
                     ))}
                   </div>

@@ -1,0 +1,73 @@
+import { interpreterAvailabilityService } from "../services/availability.service";
+import { HttpError } from "@/utils/httpError";
+
+export type GetAvailabilityInput = {
+  interpreterId: string;
+};
+
+type WeeklyHoursWithTimeSlots = {
+  dayOfWeek:
+    | "MONDAY"
+    | "TUESDAY"
+    | "WEDNESDAY"
+    | "THURSDAY"
+    | "FRIDAY"
+    | "SATURDAY"
+    | "SUNDAY";
+  enabled: boolean;
+  timeSlots: { startTime: string; endTime: string }[];
+};
+
+type OverrideHoursWithTimeSlots = {
+  date: Date;
+  timeSlots: { startTime: string; endTime: string }[];
+};
+
+const getAvailability = async (payload: GetAvailabilityInput) => {
+  try {
+    const availability = await interpreterAvailabilityService.getCompleteAvailability(
+      payload.interpreterId
+    );
+
+    const defaultTimeSlot = [{ startTime: "8:00 AM", endTime: "11:00 AM" }];
+    const weeklyHoursObject: {
+      [key: string]: { enabled: boolean; timeSlots: { startTime: string; endTime: string }[] };
+    } = {
+      sunday: { enabled: false, timeSlots: defaultTimeSlot },
+      monday: { enabled: true, timeSlots: defaultTimeSlot },
+      tuesday: { enabled: true, timeSlots: defaultTimeSlot },
+      wednesday: { enabled: true, timeSlots: defaultTimeSlot },
+      thursday: { enabled: true, timeSlots: defaultTimeSlot },
+      friday: { enabled: true, timeSlots: defaultTimeSlot },
+      saturday: { enabled: false, timeSlots: defaultTimeSlot },
+    };
+
+    availability.weeklyHours.forEach((dayData: WeeklyHoursWithTimeSlots) => {
+      const dayKey = dayData.dayOfWeek.toLowerCase() as keyof typeof weeklyHoursObject;
+      weeklyHoursObject[dayKey] = {
+        enabled: dayData.enabled,
+        timeSlots: dayData.timeSlots.map((slot) => ({ startTime: slot.startTime, endTime: slot.endTime })),
+      };
+    });
+
+    const overrideHoursArray = availability.overrideHours.map((override: OverrideHoursWithTimeSlots) => {
+      const date = new Date(override.date);
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const year = date.getFullYear();
+      return {
+        date: `${month}-${day}-${year}`,
+        timeSlots: override.timeSlots.map((slot) => ({ startTime: slot.startTime, endTime: slot.endTime })),
+      };
+    });
+
+    return { success: true as const, data: { weeklyHours: weeklyHoursObject, overrideHours: overrideHoursArray } };
+  } catch (error) {
+    console.error("Error fetching interpreter availability:", error);
+    throw HttpError.internalServerError("Failed to fetch interpreter availability");
+  }
+};
+
+export default getAvailability;
+
+

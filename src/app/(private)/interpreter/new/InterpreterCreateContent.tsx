@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardShell } from "@/layouts/dashboard";
 import InterpreterForm from "@/domains/interpreter/components/InterpreterForm";
-import { createInterpreter } from "@/domains/interpreter/actions";
+import { createInterpreter, saveInterpreterAvailabilityAction } from "@/domains/interpreter/actions";
 import { toast } from "sonner";
+import { WeeklyHoursState, OverrideHoursState } from "@/components/availability";
 
 type FormData = {
   companyName: string;
@@ -13,6 +14,8 @@ type FormData = {
   email: string;
   phone: string;
   languageIds: string[];
+  weeklyHours: WeeklyHoursState;
+  overrideHours: OverrideHoursState;
 };
 
 export default function InterpreterCreateContent() {
@@ -22,13 +25,22 @@ export default function InterpreterCreateContent() {
   const handleSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
-      await createInterpreter({
+      const interpreter = await createInterpreter({
         companyName: data.companyName,
         contactPerson: data.contactPerson,
         email: data.email,
         phone: data.phone || undefined,
         languageIds: data.languageIds,
       });
+      
+      // Save availability after interpreter is created
+      if (interpreter?.id) {
+        await saveInterpreterAvailabilityAction({
+          interpreterId: interpreter.id,
+          weeklyHours: data.weeklyHours,
+          overrideHours: data.overrideHours,
+        });
+      }
       
       toast.success("Interpreter added successfully!");
       router.push("/interpreter");

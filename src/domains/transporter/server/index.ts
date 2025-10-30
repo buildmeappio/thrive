@@ -7,3 +7,5 @@ export { TransporterService } from "./services/transporter.service";
 export { TransporterFormHandler } from "./handlers/transporterForm.handler";
 export { ValidationService } from "./services/validation.service";
 export { InputService } from "./services/input.service";
+export { getTransporterAvailabilityAction } from "./actions/getAvailability";
+export { saveTransporterAvailabilityAction } from "./actions/saveAvailability";
