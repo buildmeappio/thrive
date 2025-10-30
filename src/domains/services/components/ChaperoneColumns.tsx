@@ -1,7 +1,8 @@
 import { cn } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, ArrowUp, ArrowDown, Edit } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, Edit, ArrowRight } from 'lucide-react';
 import { ChaperoneData } from '../types/Chaperone';
+import React, { useRef, useEffect, useState } from 'react';
 
 const Header = ({
   children,
@@ -19,8 +20,8 @@ const Header = ({
   return (
     <div
       className={cn(
-        'font-poppins flex items-center gap-2 py-4 text-left text-[18px] leading-none font-semibold text-black',
-        first && 'pl-4',
+        'font-poppins flex items-center gap-2 text-left text-[16px] leading-5 font-semibold text-black',
+        first && '',
         sortable && 'cursor-pointer transition-colors select-none hover:text-[#000093]'
       )}
       onClick={sortable ? onClick : undefined}
@@ -37,31 +38,45 @@ const Header = ({
   );
 };
 
-const ActionButton = ({ onEdit }: { onEdit: () => void }) => {
+const ActionButtons = ({ onView }: { onView: () => void }) => {
   return (
-    <button onClick={onEdit} className="h-full w-full cursor-pointer">
-      <div className="flex h-[30px] w-[40px] items-center justify-center rounded-full bg-[#E0E0FF] p-0 hover:opacity-80">
-        <Edit className="h-4 w-4 text-[#000093]" />
-      </div>
-    </button>
+    <div className="flex items-center gap-2 justify-end">
+      <button 
+        onClick={onView} 
+        className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-[#E0E0FF] hover:bg-[#D0D0FF] transition-colors cursor-pointer"
+        title="View details"
+      >
+        <ArrowRight className="h-4 w-4 text-[#000093]" />
+      </button>
+    </div>
   );
 };
 
-const Content = ({ children, first }: { children: React.ReactNode; first?: boolean }) => {
+const Content = ({ children, className, title }: { children: React.ReactNode; className?: string; title?: string }) => {
+  const textRef = useRef<HTMLDivElement>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  useEffect(() => {
+    const element = textRef.current;
+    if (element) {
+      // Check if text is truncated (scrollWidth > clientWidth means text is cut off)
+      setShowTooltip(element.scrollWidth > element.clientWidth);
+    }
+  }, [children]);
+
   return (
-    <p
-      className={cn(
-        'font-poppins font-regular py-2 text-left text-[16px] leading-none text-[#4D4D4D]',
-        first && 'pl-4'
-      )}
+    <div 
+      ref={textRef}
+      className={cn("text-[#4D4D4D] font-poppins text-[16px] leading-5 overflow-hidden text-ellipsis whitespace-nowrap", className)}
+      title={showTooltip ? title : undefined}
     >
       {children}
-    </p>
+    </div>
   );
 };
 
 export const createChaperoneColumns = (
-  onEdit: (chaperone: ChaperoneData) => void
+  onView: (chaperone: ChaperoneData) => void,
 ): ColumnDef<ChaperoneData>[] => [
   {
     header: ({ column }) => (
@@ -76,8 +91,11 @@ export const createChaperoneColumns = (
     ),
     accessorKey: 'fullName',
     cell: ({ row }) => {
-      return <Content first>{row.original.fullName}</Content>;
+      const fullName = row.original.fullName;
+      return <Content title={fullName}>{fullName}</Content>;
     },
+    size: 200,
+    maxSize: 250,
   },
   {
     header: ({ column }) => (
@@ -91,8 +109,11 @@ export const createChaperoneColumns = (
     ),
     accessorKey: 'email',
     cell: ({ row }) => {
-      return <Content>{row.original.email}</Content>;
+      const email = row.original.email;
+      return <Content title={email}>{email}</Content>;
     },
+    size: 250,
+    maxSize: 300,
   },
   {
     header: ({ column }) => (
@@ -106,8 +127,11 @@ export const createChaperoneColumns = (
     ),
     accessorKey: 'phone',
     cell: ({ row }) => {
-      return <Content>{row.original.phone || 'N/A'}</Content>;
+      const phone = row.original.phone || 'N/A';
+      return <Content title={phone}>{phone}</Content>;
     },
+    size: 180,
+    maxSize: 200,
   },
   {
     header: ({ column }) => (
@@ -121,8 +145,14 @@ export const createChaperoneColumns = (
     ),
     accessorKey: 'gender',
     cell: ({ row }) => {
-      return <Content>{row.original.gender || 'N/A'}</Content>;
+      const gender = row.original.gender;
+      const displayGender = gender 
+        ? gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase()
+        : 'N/A';
+      return <Content title={displayGender}>{displayGender}</Content>;
     },
+    size: 120,
+    maxSize: 150,
   },
   {
     header: ({ column }) => (
@@ -136,23 +166,27 @@ export const createChaperoneColumns = (
     ),
     accessorKey: 'createdAt',
     cell: ({ row }) => {
-      return <Content>{row.original.createdAt
-          ? new Date(row.original.createdAt).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            })
-          : 'N/A'}</Content>;
+      const date = row.original.createdAt
+        ? new Date(row.original.createdAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })
+        : 'N/A';
+      return <Content title={date}>{date}</Content>;
     },
     sortingFn: 'datetime',
+    size: 150,
+    maxSize: 180,
   },
   {
     header: '',
     accessorKey: 'id',
     cell: ({ row }) => {
-      return <ActionButton onEdit={() => onEdit(row.original)} />;
+      return <ActionButtons onView={() => onView(row.original)} />;
     },
-    maxSize: 60,
+    size: 80,
+    maxSize: 100,
     enableSorting: false,
   },
 ];
