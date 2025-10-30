@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/PasswordInput";
 import { signIn } from "next-auth/react";
 import { loginSchema, LoginInput } from "@/domains/auth/schemas/auth.schemas";
-import { useRouter } from "next/navigation";
+import useRouter from "@/hooks/useRouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { URLS } from "@/constants/page";
+import { URLS } from "@/constants/route";
 import Link from "next/link";
+import { toast } from "sonner";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -29,22 +30,21 @@ const LoginForm = () => {
   const onSubmit = async (values: LoginInput) => {
     const res = await signIn("credentials", {
       redirect: false,
-      callbackUrl: URLS.DASHBOARD,
       email: values.email,
       password: values.password,
     });
 
     if (res?.ok) {
-      router.replace(res?.url || URLS.DASHBOARD);
-      console.log(`Login successful`);
+      toast.success('Login successful');
+      router.replace(URLS.DASHBOARD);
       return;
     }
 
-    console.log(`Login failed`);
+    toast.error('Invalid email or password. Please try again.');
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
       <div>
         <Label htmlFor="email" className="text-black text-sm md:text-[15px]">
           Email<span className="text-red-500">*</span>
@@ -54,9 +54,8 @@ const LoginForm = () => {
           type="email"
           placeholder="Enter your email address"
           disabled={isSubmitting}
-          className={`mt-1 h-11 md:h-12 border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed ${
-            errors.email ? "ring-1 ring-red-500" : ""
-          }`}
+          className={`mt-1 h-11 md:h-12 border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed ${errors.email ? "ring-1 ring-red-500" : ""
+            }`}
           {...register("email")}
         />
         <p className="min-h-[16px] text-xs text-red-500">
@@ -72,9 +71,8 @@ const LoginForm = () => {
           id="password"
           placeholder="Enter your password"
           disabled={isSubmitting}
-          className={`h-11 md:h-12 ${
-            errors.password ? "ring-1 ring-red-500" : ""
-          }`}
+          className={`h-11 md:h-12 ${errors.password ? "ring-1 ring-red-500" : ""
+            }`}
           {...register("password")}
         />
         <p className="min-h-[16px] text-xs text-red-500">
@@ -93,10 +91,10 @@ const LoginForm = () => {
 
       <Button
         type="submit"
-        variant="adminLogin"
-        size="adminLogin"
+        variant="default"
+        size="default"
         disabled={isSubmitting}
-        className="w-full h-11 md:h-12"
+        className="w-full h-11 md:h-12 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] hover:opacity-90 text-white"
       >
         {isSubmitting ? "Logging in..." : "Log In"}
       </Button>

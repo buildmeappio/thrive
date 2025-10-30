@@ -1,189 +1,202 @@
-import {
-  Case,
-  Organization,
-  ExamFormat,
-  RequestedSpecialty,
-  CaseStatus,
-  IMEReferral,
-  CaseType,
-  Claimant,
-  Address,
-  Account,
-  User,
-  Documents,
-  CaseDocument,
-} from "@prisma/client";
+// src/dto/case.dto.ts
+import { Examination, Case, CaseType, Documents, Claimant, Organization, LegalRepresentative, Insurance, ExaminationServices, ExaminationInterpreter, ExaminationTransport, Address, Language, ExaminationType, CaseDocument, CaseStatus, OrganizationManager, Account, User } from "@prisma/client";
+import { CaseDetailDtoType } from "../../types/CaseDetailDtoType";
 
-type CaseDetailWithRelations = Case & {
-  referral: IMEReferral & {
-    claimant: Claimant & {
-      address?: Address | null;
+export class CaseDto {
+  static toCaseDetailDto(examination: Examination & {
+    examinationType: ExaminationType;
+    status: CaseStatus,
+    examiner: { user: { id: string; firstName: string; lastName: string; email: string } };
+    services: (ExaminationServices & { interpreter?: ExaminationInterpreter & { language: Language }; transport?: ExaminationTransport & { pickupAddress: Address } })[];
+    claimant: Claimant & { address: Address };
+    case: Case & {
+      caseType: CaseType;
+      documents: (CaseDocument & { document: Documents })[];
+      organization: Organization & {
+        manager: (OrganizationManager & {
+          account: Account & {
+            user: User;
+          };
+        })[];
+      };
     };
-    organization?: Organization | null;
-  };
-  caseType: CaseType;
-  examFormat: ExamFormat;
-  requestedSpecialty: RequestedSpecialty;
-  status: CaseStatus;
-  assignTo?: (Account & {
-    user?: (User & {
-      profilePhoto?: Documents | null;
-    }) | null;
-  }) | null;
-  documents: Array<
-    CaseDocument & {
-      document: Documents;
-    }
-  >;
-};
-
-type CaseWithRelations = Case & {
-  status: CaseStatus;
-  caseType: CaseType;
-  examFormat: ExamFormat;
-  requestedSpecialty: RequestedSpecialty;
-  assignTo?:
-    | (Account & {
-        user: User;
-      })
-    | null;
-  referral: IMEReferral & {
-    claimant: Claimant;
-    organization?: Organization | null;
-  };
-};
-
-class CaseDto {
-  static toCaseDto(c: CaseWithRelations) {
+    legalRepresentative: LegalRepresentative & { address: Address };
+    insurance: Insurance & { address: Address };
+  }): CaseDetailDtoType {
     return {
-      id: c.id,
-      referral: {
-        id: c.referral.id,
-        number: c.caseNumber,
-      },
-      claimant: {
-        id: c.referral.claimant.id,
-        name: c.referral.claimant.firstName + ' ' + c.referral.claimant.lastName,
-        email: c.referral.claimant.emailAddress,
-        phone: c.referral.claimant.phoneNumber,
-        gender: c.referral.claimant.gender,
-        dateOfBirth: c.referral.claimant.dateOfBirth,
-      },
-      organization: c.referral.organization ? {
-        id: c.referral.organization?.id,
-        name: c.referral.organization?.name,
-        website: c.referral.organization?.website,
-        status: c.referral.organization?.status,
-      } : null,
-      caseType: {
-        id: c.caseType.id,
-        name: c.caseType.name,
-      },
-      examFormat: {
-        id: c.examFormat.id,
-        name: c.examFormat.name,
-      },
-      requestedSpecialty: {
-        id: c.requestedSpecialty.id,
-        name: c.requestedSpecialty.name,
-      },
+      id: examination.id,
+      caseNumber: examination.caseNumber,
+      urgencyLevel: examination.urgencyLevel,
+      assignedAt: examination.assignedAt,
+      createdAt: examination.createdAt,
       status: {
-        id: c.status.id,
-        name: c.status.name,
+        id: examination.status.id,
+        name: examination.status.name,
       },
-      preferredLocation: c.preferredLocation,
-      urgencyLevel: c.urgencyLevel,
-      reason: c.reason,
-      examinerId: c.examinerId,
-      assignTo: c.assignTo ? {
-        id: c.assignTo?.id,
-        name: c.assignTo?.user.firstName + " " + c.assignTo?.user.lastName,
-        email: c.assignTo?.user.email,
-        phone: c.assignTo?.user.phone,
-        gender: c.assignTo?.user.gender,
-        dateOfBirth: c.assignTo?.user.dateOfBirth,
-      } : null,
-      assignedAt: c.assignedAt,
-      createdAt: c.createdAt,
-      updatedAt: c.updatedAt,
-      deletedAt: c.deletedAt,
+      dueDate: examination.dueDate,
+      notes: examination.notes,
+      additionalNotes: examination.additionalNotes,
+      supportPerson: examination.supportPerson,
+      examinationType: {
+        id: examination.examinationType.id,
+        name: examination.examinationType.name,
+        shortForm: examination.examinationType.shortForm,
+      },
+      examiner: examination.examiner
+        ? {
+          id: examination.examiner?.user?.id ?? null,
+          firstName: examination.examiner?.user?.firstName ?? null,
+          lastName: examination.examiner?.user?.lastName ?? null,
+          email: examination.examiner?.user?.email ?? null,
+        }
+        : null,
+
+      services: examination.services.map(service => ({
+        type: service.type,
+        enabled: service.enabled,
+        interpreter: service.interpreter
+          ? {
+            languageId: service.interpreter.language.id,
+            languageName: service.interpreter.language.name,
+          }
+          : null,
+        transport: service.transport
+          ? service.transport.pickupAddress
+            ? {
+              address: service.transport.pickupAddress.address ?? null,
+              street: service.transport.pickupAddress.street ?? null,
+              province: service.transport.pickupAddress.province ?? null,
+              city: service.transport.pickupAddress.city ?? null,
+              notes: service.transport.notes ?? null,
+            }
+            : null
+          : null,
+      })),
+
+      claimant: {
+        id: examination.claimant.id,
+        firstName: examination.claimant.firstName,
+        lastName: examination.claimant.lastName,
+        emailAddress: examination.claimant.emailAddress ?? null,
+        gender: examination.claimant.gender ?? null,
+        phoneNumber: examination.claimant.phoneNumber ?? null,
+        dateOfBirth: examination.claimant.dateOfBirth ?? null,
+        address: examination.claimant.address,
+        relatedCases: examination.claimant.relatedCasesDetails ?? null,
+      },
+      familyDoctor: {
+        name: examination.claimant.familyDoctorName ?? null,
+        email: examination.claimant.familyDoctorEmailAddress ?? null,
+        phoneNumber: examination.claimant.familyDoctorPhoneNumber ?? null,
+        faxNumber: examination.claimant.familyDoctorFaxNumber ?? null,
+      },
+      legalRepresentative: examination.legalRepresentative
+        ? {
+          id: examination.legalRepresentative.id,
+          companyName: examination.legalRepresentative.companyName ?? null,
+          contactPersonName:
+            examination.legalRepresentative.contactPersonName ?? null,
+          phoneNumber: examination.legalRepresentative.phoneNumber ?? null,
+          faxNumber: examination.legalRepresentative.faxNumber ?? null,
+          address: examination.legalRepresentative.address ?? null,
+        }
+        : null,
+      insurance: examination.insurance
+        ? {
+          id: examination.insurance.id,
+          emailAddress: examination.insurance.emailAddress,
+          companyName: examination.insurance.companyName,
+          contactPersonName: examination.insurance.contactPersonName,
+          policyNumber: examination.insurance.policyNumber,
+          claimNumber: examination.insurance.claimNumber,
+          dateOfLoss: examination.insurance.dateOfLoss,
+          policyHolderIsClaimant:
+            examination.insurance.policyHolderIsClaimant,
+          policyHolderFirstName:
+            examination.insurance.policyHolderFirstName,
+          policyHolderLastName: examination.insurance.policyHolderLastName,
+          phoneNumber: examination.insurance.phoneNumber,
+          faxNumber: examination.insurance.faxNumber,
+          addressId: examination.insurance.addressId ?? null,
+          address: examination.insurance.address ?? null,
+        }
+        : null,
+      case: {
+        id: examination.case.id,
+        caseType: examination.case.caseType
+          ? {
+            id: examination.case.caseType.id,
+            name: examination.case.caseType.name,
+          }
+          : null,
+        reason: examination.case.reason ?? null,
+        consentForSubmission: examination.case.consentForSubmission,
+        isDraft: examination.case.isDraft,
+        documents: examination.case.documents.map(document => ({
+          id: document.document.id,
+          name: document.document.name,
+          type: document.document.type,
+          size: document.document.size,
+          url: null as string | null, // Will be populated with presigned URL
+        })),
+        organization: {
+          id: examination.case.organization.id,
+          name: examination.case.organization.name,
+          website: examination.case.organization.website ?? null,
+          status: examination.case.organization.status,
+          managerEmail: examination.case.organization.manager?.[0]?.account?.user?.email ?? null,
+          managerName: examination.case.organization.manager?.[0]?.account?.user 
+            ? `${examination.case.organization.manager[0].account.user.firstName} ${examination.case.organization.manager[0].account.user.lastName}`
+            : null,
+        },
+      }
+
     };
   }
 
-  static toCaseDetailDto(c: CaseDetailWithRelations) {
-    return {
-      id: c.id,
-      referral: {
-        id: c.referral.id,
-        number: c.caseNumber,
-      },
-      claimant: {
-        id: c.referral.claimant.id,
-        firstName: c.referral.claimant.firstName,
-        lastName: c.referral.claimant.lastName,
-        email: c.referral.claimant.emailAddress,
-        phone: c.referral.claimant.phoneNumber,
-        gender: c.referral.claimant.gender,
-        dateOfBirth: c.referral.claimant.dateOfBirth,
-        address: c.referral.claimant.address ? {
-          id: c.referral.claimant.address?.id,
-          address: c.referral.claimant.address.address,
-          street: c.referral.claimant.address.street,
-          province: c.referral.claimant.address?.province,
-          city: c.referral.claimant.address?.city,
-          postalCode: c.referral.claimant.address?.postalCode,
-        } : null,
-      },
-      caseType: {
-        id: c.caseType.id,
-        name: c.caseType.name,
-      },
-      organization: c.referral.organization ? {
-        id: c.referral.organization?.id,
-        name: c.referral.organization?.name,
-        website: c.referral.organization?.website,
-        status: c.referral.organization?.status,
-      } : null,
-      examFormat: {
-        id: c.examFormat.id,
-        name: c.examFormat.name,
-      },
-      requestedSpecialty: {
-        id: c.requestedSpecialty.id,
-        name: c.requestedSpecialty.name,
-      },
-      status: {
-        id: c.status.id,
-        name: c.status.name,
-      },
-      preferredLocation: c.preferredLocation,
-      urgencyLevel: c.urgencyLevel,
-      reason: c.reason,
-      examinerId: c.examinerId,
-      assignTo: c.assignTo && c.assignTo.user ? {
-        id: c.assignTo?.id,
-        name: c.assignTo?.user.firstName + " " + c.assignTo?.user.lastName,
-        email: c.assignTo?.user.email,
-        phone: c.assignTo?.user.phone,
-        gender: c.assignTo?.user.gender,
-        dateOfBirth: c.assignTo?.user.dateOfBirth,
-        profileImage: c.assignTo?.user.profilePhoto?.name,
-      } : null,
-      documents: c.documents.map((d) => ({
-        id: d.id,
-        documentId: d.document.id,
-        documentName: d.document.name,
-        documentType: d.document.type,
-        documentSize: d.document.size,
-        createdAt: d.createdAt,
-        updatedAt: d.updatedAt,
-      })),
-      assignedAt: c.assignedAt,
-      createdAt: c.createdAt,
-      updatedAt: c.updatedAt,
-      deletedAt: c.deletedAt,
+  static toCaseDto(examinations: Examination & {
+    examinationType: ExaminationType;
+    status: CaseStatus,
+    examiner: { user: { id: string; firstName: string; lastName: string; email: string } };
+    services: (ExaminationServices & { interpreter?: ExaminationInterpreter & { language: Language }; transport?: ExaminationTransport & { pickupAddress: Address } })[];
+    claimant: Claimant & { address: Address };
+    case: Case & {
+      caseType: CaseType;
+      documents: (CaseDocument & { document: Documents })[];
+      organization: Organization & {
+        manager: (OrganizationManager & {
+          account: Account & {
+            user: User;
+          };
+        })[];
+      };
     };
+    legalRepresentative: LegalRepresentative & { address: Address };
+    insurance: Insurance & { address: Address };
+  } | Array<Examination & {
+    examinationType: ExaminationType;
+    status: CaseStatus,
+    examiner: { user: { id: string; firstName: string; lastName: string; email: string } };
+    services: (ExaminationServices & { interpreter?: ExaminationInterpreter & { language: Language }; transport?: ExaminationTransport & { pickupAddress: Address } })[];
+    claimant: Claimant & { address: Address };
+    case: Case & {
+      caseType: CaseType;
+      documents: (CaseDocument & { document: Documents })[];
+      organization: Organization & {
+        manager: (OrganizationManager & {
+          account: Account & {
+            user: User;
+          };
+        })[];
+      };
+    };
+    legalRepresentative: LegalRepresentative & { address: Address };
+    insurance: Insurance & { address: Address };
+  }>): CaseDetailDtoType[] {
+    if (Array.isArray(examinations)) {
+      return examinations.map(examination => this.toCaseDetailDto(examination));
+    } else {
+      return [this.toCaseDetailDto(examinations)];
+    }
   }
 }
-
-export default CaseDto;

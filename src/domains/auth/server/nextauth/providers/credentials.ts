@@ -10,6 +10,7 @@ export const credentials = CredentialsProvider({
   async authorize(creds) {
     if (!creds?.email || !creds?.password) return null;
     const u = await authHandlers.login({ email: creds.email, password: creds.password });
+    console.log(u);
     if (!u) throw new Error("Invalid credentials");
 		return {
 			id: u.id,

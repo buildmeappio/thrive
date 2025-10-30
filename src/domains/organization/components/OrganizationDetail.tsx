@@ -1,96 +1,179 @@
+// OrganizationDetail.tsx
 "use client";
 
 import React, { useState } from "react";
 import Section from "@/components/Section";
 import FieldRow from "@/components/FieldRow";
-import RequestInfoModal from "./RequestInfoModal";
+import RequestOrgInfoModal from "@/components/modal/RequestOrgInfoModal";
 import { DashboardShell } from "@/layouts/dashboard";
 import getOrganizationById from "../server/handlers/getOrganizationById";
 import { cn } from "@/lib/utils";
+import RejectOrgModal from "@/components/modal/RejectOrgModal";
+import { Check } from "lucide-react";
+import { useRouter } from "next/navigation";
+import organizationActions from "../actions";
+import { toast } from "sonner";
+import { formatPhoneNumber } from "@/utils/phone";
 
-const mapStatus = {
-  PENDING: "pending",
-  ACCEPTED: "approved",
-  REJECTED: "rejected",
+// Utility function to format text from database: remove _, -, and capitalize each word
+const formatText = (str: string): string => {
+  if (!str) return str;
+  return str
+    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0)  // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
+
+const mapStatus = { 
+  PENDING: "pending", 
+  ACCEPTED: "approved", 
+  REJECTED: "rejected",
+  INFO_REQUESTED: "info_requested"
+} as const;
 
 type OrganizationDetailProps = {
   organization: Awaited<ReturnType<typeof getOrganizationById>>;
 };
 
 const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
+  const router = useRouter();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
-  const [status, setStatus] = useState(mapStatus[organization.status]);
-  console.log(status);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+  
+  // Determine the current organization status from database
+  const getCurrentStatus = (): "pending" | "approved" | "rejected" | "info_requested" => {
+    const dbStatus = organization.status;
+    return mapStatus[dbStatus as keyof typeof mapStatus] || "pending";
+  };
+  
+  const [status, setStatus] = useState<"pending" | "approved" | "rejected" | "info_requested">(getCurrentStatus());
+  const [loadingAction, setLoadingAction] = useState<"approve" | "reject" | "request" | null>(null);
 
-  const type =
-    organization.type?.name
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ") || "-";
+  const type = organization.type?.name ? formatText(organization.type.name) : "-";
 
-  const handleRequestSubmit = async (text: string) => {
-    // TODO: call your API
-    // await api.requestMoreInfo({ orgId: organization.id, message: text });
-    setIsRequestOpen(false);
+  const handleRequestSubmit = async (messageToOrganization: string) => {
+    // Check if manager email exists before proceeding
+    const managerEmail = organization.manager?.[0]?.account?.user?.email;
+    if (!managerEmail) {
+      toast.error("Cannot send request: No manager email found.");
+      return;
+    }
+
+    setLoadingAction("request");
+    try {
+      await organizationActions.requestMoreInfo(organization.id, messageToOrganization);
+      setIsRequestOpen(false);
+      setStatus("info_requested");
+      toast.success("Request sent. An email has been sent to the organization.");
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to request more info:", error);
+      toast.error("Failed to send request. Please try again.");
+    } finally {
+      setLoadingAction(null);
+    }
   };
 
-  const handleApproveExaminer = async () => {
-    setIsLoading(true);
-    // TODO: call your API
-    // await api.approveExaminer({ orgId: organization.id });
-    setIsLoading(false);
-    setStatus("approved");
+  const handleApprove = async () => {
+    // Check if manager email exists before proceeding
+    const managerEmail = organization.manager?.[0]?.account?.user?.email;
+    if (!managerEmail) {
+      toast.error("Cannot approve organization: No manager email found.");
+      return;
+    }
+
+    setLoadingAction("approve");
+    try {
+      await organizationActions.approveOrganization(organization.id);
+      setStatus("approved");
+      toast.success("Organization approved successfully! An email has been sent to the organization.");
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to approve organization:", error);
+      toast.error("Failed to approve organization. Please try again.");
+    } finally {
+      setLoadingAction(null);
+    }
   };
 
-  const handleRejectExaminer = async () => {
-    setIsLoading(true);
-    // TODO: call your API
-    // await api.rejectExaminer({ orgId: organization.id });
-    setIsLoading(false);
-    setStatus("rejected");
+  const handleRejectSubmit = async (messageToOrganization: string) => {
+    // Check if manager email exists before proceeding
+    const managerEmail = organization.manager?.[0]?.account?.user?.email;
+    if (!managerEmail) {
+      toast.error("Cannot reject organization: No manager email found.");
+      return;
+    }
+
+    setLoadingAction("reject");
+    try {
+      await organizationActions.rejectOrganization(organization.id, messageToOrganization);
+      setIsRejectOpen(false);
+      setStatus("rejected");
+      toast.success("Organization rejected. An email has been sent to the organization.");
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to reject organization:", error);
+      toast.error("Failed to reject organization. Please try again.");
+    } finally {
+      setLoadingAction(null);
+    }
   };
 
   return (
-    <DashboardShell
-      title={
-        <h2 className="text-3xl font-bold w-full text-left">
-          Review{" "}
-          <span className="bg-[linear-gradient(270deg,#01F4C8_50%,#00A8FF_65.19%)] bg-clip-text text-transparent">
-            {organization.name}
-          </span>{" "}
-          Profile
-        </h2>
-      }
-    >
-      <div className="w-full flex flex-col items-center">
-        <div className="bg-white rounded-2xl shadow px-4 md:px-12 py-8 w-full">
-          <div className="flex flex-col lg:flex-row gap-10 w-full">
-            <div className="flex flex-col gap-10 w-1/2">
-              <Section title="Organization Info">
-                <FieldRow label="Name" value={organization.name} type="text" />
-                <FieldRow label="Type" value={type} type="text"/>
-                <FieldRow label="Website" value={organization.website || "-"} type="text"/>
-              </Section>
+    <DashboardShell>
+      {/* Organization Name Heading */}
+      <div className="mb-6">
+        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+          {organization.name}
+        </h1>
+      </div>
 
-              <Section title="Manager Info">
+      <div className="w-full flex flex-col items-center min-h-[72vh]">
+        <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full flex-1 flex flex-col">
+          {/* Two-column layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 w-full flex-1">
+            {/* Left Column - Organization Details */}
+            <div className="flex flex-col gap-6 lg:gap-10">
+              <Section title="Organization Details">
+                <FieldRow label="Organization Name" value={organization.name} type="text" />
+                <FieldRow label="Organization Type" value={type} type="text" />
+                
+                {/* Custom Address Lookup Field */}
+                <div className="rounded-lg bg-[#F6F6F6] px-3 sm:px-4 py-2">
+                  <div className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] mb-1.5 sm:mb-2">
+                    Address Lookup
+                  </div>
+                  <div className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight tracking-[-0.03em] text-[#000080] break-words">
+                    {organization.address?.address || "-"}
+                  </div>
+                </div>
+                
+                <FieldRow label="Organization Website" value={organization.website || "-"} type="text" />
+              </Section>
+            </div>
+
+            {/* Right Column - Personal Details */}
+            <div className="flex flex-col gap-6 lg:gap-10">
+              <Section title="Personal Details">
                 <FieldRow
-                  label="Name"
+                  label="Full Name"
                   value={
-                    `${organization.manager?.[0]?.account.user.firstName} ${organization.manager?.[0]?.account.user.lastName}` ||
-                    "-"
+                    organization.manager?.[0]?.account?.user
+                      ? `${organization.manager?.[0]?.account?.user.firstName ?? ""} ${organization.manager?.[0]?.account?.user.lastName ?? ""}`.trim() || "-"
+                      : "-"
                   }
                   type="text"
                 />
                 <FieldRow
-                  label="Email"
-                  value={organization.manager?.[0]?.account.user.email || "-"}
+                  label="Phone Number"
+                  value={formatPhoneNumber(organization.manager?.[0]?.account?.user?.phone)}
                   type="text"
                 />
                 <FieldRow
-                  label="Phone"
-                  value={organization.manager?.[0]?.account.user.phone || "-"}
+                  label="Email Address"
+                  value={organization.manager?.[0]?.account?.user?.email || "-"}
                   type="text"
                 />
                 <FieldRow
@@ -105,130 +188,96 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                 />
               </Section>
             </div>
-
-            <div className="flex flex-col gap-8 w-1/2">
-              <Section title="Address">
-                <FieldRow
-                  label="Address"
-                  value={organization.address.address || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="Province"
-                  value={organization.address.province || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="City"
-                  value={organization.address.city || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="Postal Code"
-                  value={organization.address.postalCode || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="Suite"
-                  value={organization.address.suite || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="Street"
-                  value={organization.address.street || "-"}
-                  type="text"
-                />
-              </Section>
-
-              <Section title="Legal & Compliance">
-                <FieldRow
-                  label="Data Sharing Consent"
-                  value={
-                    organization.dataSharingConsent === true ? "Yes" : "No"
-                  }
-                  type="text"
-                />
-                <FieldRow
-                  label="Agree to Terms and Privacy"
-                  value={
-                    organization.agreeToTermsAndPrivacy === true ? "Yes" : "No"
-                  }
-                  type="text"
-                />
-              </Section>
-            </div>
           </div>
 
-          <div className="mt-8 flex gap-3 justify-end">
-            <button
-              className={cn("px-4 py-3 rounded-full border border-cyan-400 text-cyan-400 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed",
-                isLoading || status === "rejected" || status === "approved" && "cursor-not-allowed"
-              )}
-              style={{
-                fontFamily: "Poppins, sans-serif",
-                fontWeight: 400,
-                lineHeight: "100%",
-                fontSize: "14px",
-              }}
-              disabled={isLoading || status === "rejected"}
-              onClick={handleApproveExaminer}
-            >
-              {status === "approved"
-                ? "Approved"
-                : isLoading
-                ? "Approving..."
-                : "Approve Examiner"}
-            </button>
-            <button
-              onClick={() => setIsRequestOpen(true)}
-              className={cn("px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed",
-                isLoading || status === "rejected" || status === "approved" && "cursor-not-allowed"
-              )}
-              style={{
-                fontFamily: "Poppins, sans-serif",
-                fontWeight: 400,
-                lineHeight: "100%",
-                fontSize: "14px",
-              }}
-              disabled={
-                isLoading || status === "rejected" || status === "approved"
-              }
-            >
-              {status === "rejected"
-                ? "Requested More Info"
-                : isLoading
-                ? "Requesting..."
-                : "Request More Info"}
-            </button>
-            <button
-              className={cn("px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed",
-                isLoading || status === "rejected" || status === "approved" && "cursor-not-allowed"
-              )}
-              style={{
-                fontFamily: "Poppins, sans-serif",
-                fontWeight: 400,
-                lineHeight: "100%",
-                fontSize: "14px",
-              }}
-              disabled={isLoading || status === "accepted"}
-              onClick={handleRejectExaminer}
-            >
-              {status === "rejected"
-                ? "Rejected"
-                : isLoading
-                ? "Rejecting..."
-                : "Reject Examiner"}
-            </button>
+          {/* Actions */}
+          <div className="mt-auto pt-6 sm:pt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-end">
+            {status === "approved" ? (
+              <button
+                className={cn(
+                  "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-green-50 flex items-center gap-2 cursor-default"
+                )}
+                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                disabled
+              >
+                <Check className="w-4 h-4" />
+                Approved
+              </button>
+            ) : status === "rejected" ? (
+              <button
+                className={cn(
+                  "px-4 py-3 rounded-full text-white bg-red-700 flex items-center gap-2 cursor-default"
+                )}
+                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                disabled
+              >
+                Rejected
+              </button>
+            ) : status === "info_requested" ? (
+              <button
+                className={cn(
+                  "px-4 py-3 rounded-full border border-blue-500 text-blue-700 bg-blue-50 flex items-center gap-2 cursor-default"
+                )}
+                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                disabled
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                More Information Required
+              </button>
+            ) : (
+              <>
+                <button
+                  className={cn(
+                    "px-4 py-3 rounded-full border border-cyan-400 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  )}
+                  style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                  disabled={loadingAction !== null}
+                  onClick={handleApprove}
+                >
+                  {loadingAction === "approve" ? "Approving..." : "Approve"}
+                </button>
+
+                <button
+                  onClick={() => setIsRequestOpen(true)}
+                  className={cn(
+                    "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  )}
+                  style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                  disabled={loadingAction !== null}
+                >
+                  {loadingAction === "request" ? "Requesting..." : "Request More Info"}
+                </button>
+
+                <button
+                  className={cn(
+                    "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                  )}
+                  style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                  disabled={loadingAction !== null}
+                  onClick={() => setIsRejectOpen(true)}
+                >
+                  {loadingAction === "reject" ? "Rejecting..." : "Reject Organization"}
+                </button>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Modal mount */}
-        <RequestInfoModal
+        <RequestOrgInfoModal
           open={isRequestOpen}
           onClose={() => setIsRequestOpen(false)}
           onSubmit={handleRequestSubmit}
           title="Request More Info"
-          placeholder="Type here"
+          maxLength={200}
+        />
+
+        <RejectOrgModal
+          open={isRejectOpen}
+          onClose={() => setIsRejectOpen(false)}
+          onSubmit={handleRejectSubmit}
+          title="Reason for Rejection"
           maxLength={200}
         />
       </div>

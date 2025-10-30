@@ -1,16 +1,78 @@
+import { OrganizationType } from "@prisma/client";
+
+interface OrganizationInputData {
+  id: string;
+  name: string;
+  website?: string | null;
+  status: string;
+  type: OrganizationType;
+  address: {
+    id: string;
+    address: string;
+    street?: string | null;
+    province?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    suite?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date | null;
+  } | null;
+  manager: Array<{
+    account?: {
+      user?: {
+        email?: string;
+        firstName?: string;
+        lastName?: string;
+      };
+    };
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface OrganizationTypeData {
+  id: string;
+  name: string;
+}
+
 export class OrganizationDto {
-  static toOrganization(data: any) {
+  static toOrganization(data: OrganizationInputData) {
+    // Convert address object to formatted string
+    const formatAddress = (address: OrganizationInputData['address']): string | null => {
+      if (!address) return null;
+      
+      const parts = [
+        address.suite,
+        address.street,
+        address.city,
+        address.province,
+        address.postalCode
+      ].filter(Boolean);
+      
+      return parts.length > 0 ? parts.join(', ') : address.address;
+    };
+
     return {
       id: data.id,
       name: data.name,
       website: data.website,
       status: data.status,
-      type: data.type,
-      address: data.address,
-      manager: data.manager,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      // Add other fields as needed
+      typeName: data.type.name,
+      address: formatAddress(data.address),
+      managerName: data.manager[0]?.account?.user ? 
+        `${data.manager[0].account.user.firstName} ${data.manager[0].account.user.lastName}` : 
+        undefined,
+      managerEmail: data.manager[0]?.account?.user?.email,
+      createdAt: data.createdAt.toISOString(),
+      updatedAt: data.updatedAt.toISOString(),
     };
+  }
+
+  static toOrganizationTypes(data: OrganizationType): OrganizationTypeData {
+    return {
+      id: data.id,
+      name: data.name,
+    }
   }
 }

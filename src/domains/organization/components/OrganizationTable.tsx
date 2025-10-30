@@ -1,69 +1,76 @@
 "use client";
 
-import { OrganizationRow } from "./columns";
+import React, { useEffect, useMemo, useState } from "react";
+import { OrganizationData } from "../types/OrganizationData";
 import {
   flexRender,
   getCoreRowModel,
-  useReactTable,
   getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
 } from "@tanstack/react-table";
-
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import React from "react";
-import { columns } from "./columns";
+import columnsDef from "./columns";
 import { cn } from "@/lib/utils";
-import Pagination from "@/components/Pagination";
 
-interface OrganizationTableProps {
-  data: OrganizationRow[];
-}
+type Props = { data: OrganizationData[]; types?: string[] };
 
-const OrganizationTable: React.FC<OrganizationTableProps> = ({ data }: OrganizationTableProps) => {
+
+export default function OrganizationTable({ data }: Props) {
+  const [sorting, setSorting] = useState<SortingState>([]);
+
+  const filtered = useMemo(() => {
+    return data;
+  }, [data]);
+
   const table = useReactTable({
-    data,
-    columns: columns,
+    data: filtered,
+    columns: columnsDef,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  // reset to first page when searching or filtering
+  useEffect(() => {
+    table.setPageIndex(0);
+  }, [table]);
+
   return (
-    <div className="overflow-hidden rounded-md outline-none">
-      <Table className="border-0">
+    <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
+      <Table className="min-w-[1000px] border-0">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead
-                    className={cn(
-                      header.index === 0 && "rounded-l-xl",
-                      header.index === headerGroup.headers.length - 1 &&
-                        "rounded-r-xl w-[60px]"
+              {headerGroup.headers.map((header) => (
+                <TableHead
+                  key={header.id}
+                  className={cn(
+                    "px-6 py-4 text-left text-sm font-medium text-gray-700",
+                    header.index === 0 && "rounded-l-xl",
+                    header.index === headerGroup.headers.length - 1 &&
+                    "rounded-r-xl"
+                  )}
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
                     )}
-                    key={header.id}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                );
-              })}
+                </TableHead>
+              ))}
             </TableRow>
           ))}
         </TableHeader>
+
         <TableBody>
-          {table.getRowModel().rows?.length ? (
+          {table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
@@ -71,7 +78,7 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({ data }: Organizat
                 className="bg-white border-0 border-b-1"
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell key={cell.id} className="px-6 py-4">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -79,22 +86,17 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({ data }: Organizat
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center text-black font-poppins text-[16px] leading-none">
+              <TableCell
+                colSpan={columnsDef.length}
+                className="h-24 text-center text-black font-poppins text-[16px] leading-none"
+              >
                 No Organizations Found
               </TableCell>
             </TableRow>
           )}
         </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={columns.length} className="p-0">
-              <Pagination table={table} />
-            </TableCell>
-          </TableRow>
-        </TableFooter>
       </Table>
     </div>
   );
-};
+}
 
-export default OrganizationTable;

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { URLS } from "@/constants/page";
+import { URLS } from "@/constants/route";
 import Link from "next/link";
 import * as z from "zod";
 
@@ -51,10 +51,10 @@ const Form = () => {
 
       <Button
         type="submit"
-        variant="adminLogin"
-        size="adminLogin"
+        variant="default"
+        size="default"
         disabled={isSubmitting}
-        className="w-full h-11 md:h-12 text-[15px]"
+        className="w-full h-11 md:h-12 text-[15px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] hover:opacity-90 text-white"
       >
         {isSubmitting ? "Sending..." : "Send Reset Link"}
       </Button>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin } from 'lucide-react';
+// import { MapPin } from 'lucide-react';
 
 type DropdownProps = {
   id: string;
@@ -21,7 +21,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
   options,
   required = false,
   placeholder = 'Select an option',
-  icon = <MapPin size={16} color="#A4A4A4" strokeWidth={2} />,
+  // icon = <MapPin size={16} color="#A4A4A4" strokeWidth={2} />,
   className = '',
 }) => {
   return (
