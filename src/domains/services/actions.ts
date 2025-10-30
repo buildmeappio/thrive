@@ -50,3 +50,14 @@ export const getChaperoneById = async (id: string) => {
   return result;
 };
 
+export const deleteChaperone = async (id: string) => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+
+  const result = await chaperoneHandlers.deleteChaperone(id);
+  return result;
+};
+

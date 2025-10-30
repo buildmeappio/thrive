@@ -23,19 +23,16 @@ import Pagination from "@/components/Pagination";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChaperoneData } from "../types/Chaperone";
-import SearchInput from "@/components/ui/SearchInput";
+import { useRouter } from "next/navigation";
 
 type ChaperoneTableProps = {
   chaperoneList: ChaperoneData[];
-  onEdit: (chaperone: ChaperoneData) => void;
-  onCreate: () => void;
 };
 
 const ChaperoneTable = ({
   chaperoneList,
-  onEdit,
-  onCreate,
 }: ChaperoneTableProps) => {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -60,7 +57,15 @@ const ChaperoneTable = ({
     });
   }, [chaperoneList, query]);
 
-  const columns = useMemo(() => createChaperoneColumns(onEdit), [onEdit]);
+  const handleView = (chaperone: ChaperoneData) => {
+    router.push(`/dashboard/chaperones/${chaperone.id}`);
+  };
+
+  const handleCreate = () => {
+    router.push('/dashboard/chaperones/new');
+  };
+
+  const columns = useMemo(() => createChaperoneColumns(handleView), [router]);
 
   const table = useReactTable({
     data: filtered,
@@ -85,36 +90,60 @@ const ChaperoneTable = ({
   }, [query, table]);
 
   return (
-    <div className="space-y-6">
+    <>
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <linearGradient id="searchGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#01F4C8" />
+            <stop offset="100%" stopColor="#00A8FF" />
+          </linearGradient>
+        </defs>
+      </svg>
+
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="w-full md:w-auto">
-          <SearchInput
-            placeholder="Search chaperones..."
-            value={query}
-            onChange={setQuery}
-          />
+        <div className="flex-1 md:max-w-md">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5" fill="none" stroke="url(#searchGradient)" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Search chaperones..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-full bg-white text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
+            />
+          </div>
         </div>
 
         <Button
-          onClick={onCreate}
-          className="flex items-center rounded-lg gap-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]"
+          onClick={handleCreate}
+          className="h-[50px] w-[170px] px-4 flex items-center rounded-full gap-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] cursor-pointer"
         >
-          <Plus size={20} />
-          <span>Add Chaperone</span>
+          <Plus size={30} />
+          <span className='text-[16px]'>Add Chaperone</span>
         </Button>
       </div>
 
-      <div className="rounded-lg border bg-white shadow-sm">
-        <Table>
+      <div className="mt-6 bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
+        <div className="overflow-x-auto rounded-md outline-none max-h-[60vh] lg:max-h-none">
+          <Table className="min-w-[1000px] border-0">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+              <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
+                {headerGroup.headers.map((header, index) => (
                   <TableHead
                     key={header.id}
+                    style={{ 
+                      maxWidth: header.column.columnDef.maxSize ? `${header.column.columnDef.maxSize}px` : undefined,
+                      width: header.column.columnDef.size ? `${header.column.columnDef.size}px` : undefined
+                    }}
                     className={cn(
-                      "bg-white",
-                      header.column.columnDef.maxSize && "w-[60px]"
+                      "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap",
+                      index === 0 && "rounded-l-2xl",
+                      index === headerGroup.headers.length - 1 && "rounded-r-2xl"
                     )}
                   >
                     {header.isPlaceholder
@@ -135,10 +164,17 @@ const ChaperoneTable = ({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="border-b last:border-0"
+                  className="bg-white border-0 border-b-1"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell 
+                      key={cell.id} 
+                      style={{ 
+                        maxWidth: cell.column.columnDef.maxSize ? `${cell.column.columnDef.maxSize}px` : undefined,
+                        width: cell.column.columnDef.size ? `${cell.column.columnDef.size}px` : undefined
+                      }}
+                      className="px-6"
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -151,10 +187,10 @@ const ChaperoneTable = ({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-black font-poppins text-[16px] leading-none"
                 >
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <p className="text-muted-foreground text-sm">
+                    <p>
                       {query
                         ? "No chaperones found matching your search"
                         : "No chaperones found"}
@@ -173,10 +209,15 @@ const ChaperoneTable = ({
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
-      {filtered.length > 0 && <Pagination table={table} />}
-    </div>
+      {filtered.length > 0 && (
+        <div className="px-6 mt-4">
+          <Pagination table={table} />
+        </div>
+      )}
+    </>
   );
 };
 
