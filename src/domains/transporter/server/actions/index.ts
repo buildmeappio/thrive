@@ -3,3 +3,5 @@ export { getTransporters } from "./getTransporters";
 export { getTransporterById } from "./getTransporterById";
 export { updateTransporter } from "./updateTransporter";
 export { deleteTransporter } from "./deleteTransporter";
+export { getTransporterAvailabilityAction } from "./getAvailability";
+export { saveTransporterAvailabilityAction } from "./saveAvailability";

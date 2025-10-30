@@ -15,6 +15,8 @@ import { Language } from "@prisma/client";
 import DeleteInterpreterModal from "./DeleteInterpreterModal";
 import { filterUUIDLanguages } from "@/utils/languageUtils";
 import { capitalizeWords } from "@/utils/text";
+import { WeeklyHours, OverrideHours, WeeklyHoursState, OverrideHoursState } from "@/components/availability";
+import { getInterpreterAvailabilityAction, saveInterpreterAvailabilityAction } from "../actions";
 
 type Props = { interpreter: InterpreterData };
 
@@ -25,6 +27,18 @@ export default function InterpreterDetail({ interpreter }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [allLanguages, setAllLanguages] = useState<Language[]>([]);
+  const [activeTab, setActiveTab] = useState<"weeklyHours" | "overrideHours">("weeklyHours");
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [weeklyHours, setWeeklyHours] = useState<WeeklyHoursState>({
+    sunday: { enabled: false, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    monday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    tuesday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    wednesday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    thursday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    friday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    saturday: { enabled: false, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+  });
+  const [overrideHours, setOverrideHours] = useState<OverrideHoursState>([]);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -49,6 +63,24 @@ export default function InterpreterDetail({ interpreter }: Props) {
     };
     fetchLanguages();
   }, []);
+
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      try {
+        setAvailabilityLoading(true);
+        const res = await getInterpreterAvailabilityAction({ interpreterId: interpreter.id });
+        if (res?.success && res.data) {
+          setWeeklyHours(res.data.weeklyHours);
+          setOverrideHours(res.data.overrideHours);
+        }
+      } catch (e) {
+        console.error("Failed to fetch availability", e);
+      } finally {
+        setAvailabilityLoading(false);
+      }
+    };
+    fetchAvailability();
+  }, [interpreter.id]);
 
   const handleDeleteClick = () => {
     setIsDeleteModalOpen(true);
@@ -124,6 +156,12 @@ export default function InterpreterDetail({ interpreter }: Props) {
         email: trimmedEmail,
         phone: formData.phone.trim() || undefined,
         languageIds: formData.languageIds,
+      });
+      // Save availability as well
+      await saveInterpreterAvailabilityAction({
+        interpreterId: interpreter.id,
+        weeklyHours,
+        overrideHours,
       });
       toast.success("Interpreter updated successfully!");
       setIsEditMode(false);
@@ -300,20 +338,14 @@ export default function InterpreterDetail({ interpreter }: Props) {
 
       <div className="w-full flex flex-col items-center">
         <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-            {/* Left side - Company Information & Languages */}
-            <div className="flex flex-col gap-6 lg:gap-10">
-              {/* Company Information */}
-              <Section title="Company Information">
-                {!isEditMode ? (
-                  <>
-                    <FieldRow label="Company Name" value={capitalizeWords(interpreter.companyName)} type="text" />
-                    <FieldRow label="Contact Person" value={capitalizeWords(interpreter.contactPerson)} type="text" />
-                    <FieldRow label="Email" value={interpreter.email} type="text" />
-                    <FieldRow label="Phone" value={formatPhoneNumber(interpreter.phone) || "N/A"} type="text" />
-                  </>
-                ) : (
-                  <div className="space-y-4">
+          {isEditMode ? (
+            <>
+              {/* Edit Mode - Two Column Layout: Company Info | Languages */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 mb-6 lg:mb-10">
+                {/* Left Column - Company Information */}
+                <div>
+                  <Section title="Company Information">
+                    <div className="space-y-4">
                     <div className="flex flex-col gap-2">
                       <label className="text-sm font-medium text-gray-700">Company Name *</label>
                       <input
@@ -387,46 +419,184 @@ export default function InterpreterDetail({ interpreter }: Props) {
                       />
                     </div>
                   </div>
-                )}
-              </Section>
+                  </Section>
+                </div>
 
-              {/* Languages */}
-              <Section title="Languages">
-                {!isEditMode ? (
-                  <div className="flex flex-wrap gap-2">
-                    {interpreter.languages.map((lang) => (
-                      <span
-                        key={lang.id}
-                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
-                      >
-                        {lang.name}
-                      </span>
-                    ))}
-                  </div>
+                {/* Right Column - Languages */}
+                <div>
+                  <Section title="Languages">
+                    <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 max-h-60 overflow-y-auto">
+                      <div className="flex flex-col gap-2">
+                        {allLanguages.map((lang) => (
+                          <label
+                            key={lang.id}
+                            className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.languageIds.includes(lang.id)}
+                              onChange={() => handleLanguageToggle(lang.id)}
+                              className="w-4 h-4 text-[#00A8FF] border-gray-300 rounded focus:ring-[#00A8FF]"
+                            />
+                            <span className="text-sm text-gray-700">{lang.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </Section>
+                </div>
+              </div>
+
+              {/* Availability - Full Width in Edit Mode */}
+              <Section title="Availability">
+                {availabilityLoading ? (
+                  <div className="text-sm text-gray-500">Loading availability...</div>
                 ) : (
-                  <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 max-h-60 overflow-y-auto">
-                    <div className="flex flex-col gap-2">
-                      {allLanguages.map((lang) => (
-                        <label
+              <div>
+                <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("weeklyHours")}
+                      className={`pb-2 px-4 transition-colors cursor-pointer relative ${
+                        activeTab === "weeklyHours"
+                          ? "text-black font-bold"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      Weekly Hours
+                      {activeTab === "weeklyHours" && (
+                        <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("overrideHours")}
+                      className={`pb-2 px-4 transition-colors cursor-pointer relative ${
+                        activeTab === "overrideHours"
+                          ? "text-black font-bold"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      Override Hours
+                      {activeTab === "overrideHours" && (
+                        <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  {activeTab === "weeklyHours" && (
+                    <WeeklyHours 
+                      value={weeklyHours} 
+                      onChange={isEditMode ? setWeeklyHours : () => {}} 
+                      disabled={!isEditMode}
+                    />
+                  )}
+                  {activeTab === "overrideHours" && (
+                    <OverrideHours 
+                      value={overrideHours} 
+                      onChange={isEditMode ? setOverrideHours : () => {}} 
+                      disabled={!isEditMode}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+              </Section>
+            </>
+          ) : (
+            <>
+              {/* View Mode - Two Column Layout: Company Info | Languages */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 mb-6 lg:mb-10">
+                {/* Left Column - Company Information */}
+                <div>
+                  <Section title="Company Information">
+                    <>
+                      <FieldRow label="Company Name" value={capitalizeWords(interpreter.companyName)} type="text" />
+                      <FieldRow label="Contact Person" value={capitalizeWords(interpreter.contactPerson)} type="text" />
+                      <FieldRow label="Email" value={interpreter.email} type="text" />
+                      <FieldRow label="Phone" value={formatPhoneNumber(interpreter.phone) || "N/A"} type="text" />
+                    </>
+                  </Section>
+                </div>
+
+                {/* Right Column - Languages */}
+                <div>
+                  <Section title="Languages">
+                    <div className="flex flex-wrap gap-2">
+                      {interpreter.languages.map((lang) => (
+                        <span
                           key={lang.id}
-                          className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded"
+                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
                         >
-                          <input
-                            type="checkbox"
-                            checked={formData.languageIds.includes(lang.id)}
-                            onChange={() => handleLanguageToggle(lang.id)}
-                            className="w-4 h-4 text-[#00A8FF] border-gray-300 rounded focus:ring-[#00A8FF]"
-                          />
-                          <span className="text-sm text-gray-700">{lang.name}</span>
-                        </label>
+                          {lang.name}
+                        </span>
                       ))}
+                    </div>
+                  </Section>
+                </div>
+              </div>
+
+              {/* Availability - Full Width in View Mode */}
+              <Section title="Availability">
+                {availabilityLoading ? (
+                  <div className="text-sm text-gray-500">Loading availability...</div>
+                ) : (
+                  <div>
+                    <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
+                      <div className="flex gap-4">
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("weeklyHours")}
+                          className={`pb-2 px-4 transition-colors cursor-pointer relative ${
+                            activeTab === "weeklyHours"
+                              ? "text-black font-bold"
+                              : "text-gray-500 hover:text-gray-700"
+                          }`}
+                        >
+                          Weekly Hours
+                          {activeTab === "weeklyHours" && (
+                            <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("overrideHours")}
+                          className={`pb-2 px-4 transition-colors cursor-pointer relative ${
+                            activeTab === "overrideHours"
+                              ? "text-black font-bold"
+                              : "text-gray-500 hover:text-gray-700"
+                          }`}
+                        >
+                          Override Hours
+                          {activeTab === "overrideHours" && (
+                            <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      {activeTab === "weeklyHours" && (
+                        <WeeklyHours 
+                          value={weeklyHours} 
+                          onChange={() => {}} 
+                          disabled={true}
+                        />
+                      )}
+                      {activeTab === "overrideHours" && (
+                        <OverrideHours 
+                          value={overrideHours} 
+                          onChange={() => {}} 
+                          disabled={true}
+                        />
+                      )}
                     </div>
                   </div>
                 )}
               </Section>
-            </div>
-
-          </div>
+            </>
+          )}
         </div>
       </div>
 

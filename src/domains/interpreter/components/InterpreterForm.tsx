@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils";
 import { Language } from "@prisma/client";
 import { getLanguages } from "../actions";
 import { filterUUIDLanguages } from "@/utils/languageUtils";
-import { Check, Globe } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
+import { WeeklyHours, OverrideHours, WeeklyHoursState, OverrideHoursState } from "@/components/availability";
 
 type FormData = {
   companyName: string;
@@ -13,6 +14,8 @@ type FormData = {
   email: string;
   phone: string;
   languageIds: string[];
+  weeklyHours: WeeklyHoursState;
+  overrideHours: OverrideHoursState;
 };
 
 type Props = {
@@ -31,6 +34,8 @@ export default function InterpreterForm({
   isLoading = false,
 }: Props) {
   const [allLanguages, setAllLanguages] = useState<Language[]>([]);
+  const [activeTab, setActiveTab] = useState<"weeklyHours" | "overrideHours">("weeklyHours");
+  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>(
     initialData || {
       companyName: "",
@@ -38,6 +43,16 @@ export default function InterpreterForm({
       email: "",
       phone: "",
       languageIds: [],
+      weeklyHours: {
+        sunday: { enabled: false, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+        monday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+        tuesday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+        wednesday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+        thursday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+        friday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+        saturday: { enabled: false, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+      },
+      overrideHours: [],
     }
   );
 
@@ -54,6 +69,27 @@ export default function InterpreterForm({
     };
     fetchLanguages();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (languageDropdownOpen) {
+        const target = event.target as Element;
+        const isInsideDropdown = target.closest('.language-dropdown');
+        if (!isInsideDropdown) {
+          setLanguageDropdownOpen(false);
+        }
+      }
+    };
+
+    if (languageDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [languageDropdownOpen]);
 
   const handleLanguageToggle = (languageId: string) => {
     setFormData((prev) => ({
@@ -264,41 +300,137 @@ export default function InterpreterForm({
       {/* Languages Section */}
       <div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">
             Languages <span className="text-red-500">*</span>
           </h2>
-          <div className="rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 p-6 max-h-[500px] overflow-y-auto">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {allLanguages.map((lang) => {
-                const isSelected = formData.languageIds.includes(lang.id);
-                return (
-                  <button
-                    key={lang.id}
-                    type="button"
-                    onClick={() => handleLanguageToggle(lang.id)}
-                    className={cn(
-                      "relative px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 transform hover:scale-105",
-                      "border-2 shadow-sm flex items-center justify-center gap-2",
-                      isSelected
-                        ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white border-transparent shadow-lg shadow-cyan-500/30"
-                        : "bg-white border-gray-300 text-gray-700 hover:border-[#00A8FF] hover:bg-cyan-50 hover:text-[#00A8FF]"
-                    )}
-                  >
-                    {isSelected && (
-                      <Check className="w-4 h-4 absolute top-2 right-2 bg-white/20 rounded-full p-0.5" />
-                    )}
-                    <Globe className={cn(
-                      "w-4 h-4",
-                      isSelected ? "text-white" : "text-gray-400"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-gray-700">
+                Languages <span className="text-red-500">*</span>
+              </label>
+              <div className="relative language-dropdown">
+                <button
+                  type="button"
+                  onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+                  className={cn(
+                    "w-full px-4 py-3 border rounded-xl text-left focus:outline-none focus:ring-2 focus:border-transparent transition-all",
+                    formData.languageIds.length === 0
+                      ? "border-red-300 focus:ring-red-500"
+                      : "border-gray-300 focus:ring-[#00A8FF]"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={cn(
+                      "text-sm",
+                      formData.languageIds.length === 0
+                        ? "text-gray-400"
+                        : "text-gray-700"
+                    )}>
+                      {formData.languageIds.length === 0
+                        ? "Select languages..."
+                        : formData.languageIds.length === 1
+                        ? allLanguages.find(l => l.id === formData.languageIds[0])?.name || "1 language selected"
+                        : `${formData.languageIds.length} languages selected`}
+                    </span>
+                    <ChevronDown className={cn(
+                      "w-5 h-5 text-gray-400 transition-transform",
+                      languageDropdownOpen && "rotate-180"
                     )} />
-                    <span>{lang.name}</span>
-                  </button>
-                );
-              })}
+                  </div>
+                </button>
+                {languageDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto">
+                    <div className="py-2">
+                      {allLanguages.map((language) => {
+                        const isSelected = formData.languageIds.includes(language.id);
+                        return (
+                          <button
+                            key={language.id}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleLanguageToggle(language.id);
+                            }}
+                            className={cn(
+                              "w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2",
+                              isSelected ? "bg-gray-50" : ""
+                            )}
+                          >
+                            <div className={cn(
+                              "w-4 h-4 border-2 rounded flex items-center justify-center transition-colors",
+                              isSelected
+                                ? "border-[#00A8FF] bg-[#00A8FF]"
+                                : "border-gray-300"
+                            )}>
+                              {isSelected && (
+                                <Check className="w-3 h-3 text-white" />
+                              )}
+                            </div>
+                            <span className={isSelected ? "text-[#00A8FF] font-medium" : "text-gray-700"}>
+                              {language.name}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {formData.languageIds.length === 0 && (
+                <p className="text-xs text-red-500 mt-1">At least one language is required</p>
+              )}
             </div>
           </div>
-          {formData.languageIds.length === 0 && (
-            <p className="text-xs text-red-500 mt-2">At least one language is required</p>
+        </div>
+      </div>
+
+      {/* Availability Section */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Set Your Availability</h2>
+        <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={() => setActiveTab("weeklyHours")}
+              className={`pb-2 px-4 transition-colors cursor-pointer relative ${
+                activeTab === "weeklyHours"
+                  ? "text-black font-bold"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Weekly Hours
+              {activeTab === "weeklyHours" && (
+                <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("overrideHours")}
+              className={`pb-2 px-4 transition-colors cursor-pointer relative ${
+                activeTab === "overrideHours"
+                  ? "text-black font-bold"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Override Hours
+              {activeTab === "overrideHours" && (
+                <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+              )}
+            </button>
+          </div>
+        </div>
+        <div className="mt-4">
+          {activeTab === "weeklyHours" && (
+            <WeeklyHours
+              value={formData.weeklyHours}
+              onChange={(weeklyHours) => setFormData((prev) => ({ ...prev, weeklyHours }))}
+            />
+          )}
+          {activeTab === "overrideHours" && (
+            <OverrideHours
+              value={formData.overrideHours}
+              onChange={(overrideHours) => setFormData((prev) => ({ ...prev, overrideHours }))}
+            />
           )}
         </div>
       </div>

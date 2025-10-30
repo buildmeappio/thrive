@@ -145,7 +145,7 @@ export default function InterpreterPageContent({ data, languages }: InterpreterP
                 </svg>
               </button>
               {activeDropdown === "language" && (
-                <div className="absolute top-full left-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <div className="absolute top-full right-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                   <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
                     <button
                       onClick={(e) => {
