@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardShell } from "@/layouts/dashboard";
 import ChaperoneComponent from "@/domains/services/components/Chaperone";
 import { ChaperoneData } from "@/domains/services/types/Chaperone";
@@ -14,8 +15,8 @@ interface ChaperonesPageContentProps {
 export default function ChaperonesPageContent({
   chaperoneList,
 }: ChaperonesPageContentProps) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [createTrigger, setCreateTrigger] = useState(0);
 
   // Filter chaperones based on search query
   const filteredChaperones = useMemo(() => {
@@ -38,8 +39,7 @@ export default function ChaperonesPageContent({
   }, [chaperoneList, searchQuery]);
 
   const handleAddClick = () => {
-    // Trigger the create function in ChaperoneComponent
-    setCreateTrigger((prev) => prev + 1);
+    router.push("/dashboard/chaperones/new");
   };
 
   return (
@@ -105,7 +105,6 @@ export default function ChaperonesPageContent({
         {/* Chaperone Component wrapped in card with padding */}
         <ChaperoneComponent
           chaperones={filteredChaperones}
-          createTrigger={createTrigger}
         />
       </div>
     </DashboardShell>
