@@ -1,5 +1,11 @@
 import type { NextConfig } from 'next';
 
+const frontendURL = process.env.FRONTEND_URL;
+
+if (!frontendURL) {
+  throw new Error('FRONTEND_URL is not set');
+}
+
 const nextConfig: NextConfig = {
   /* config options here */
   basePath: '/organization',
@@ -20,7 +26,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/claimant/:path*',
-        destination: '/organization/claimant/:path*',
+        destination: `${frontendURL}/organization/claimant/:path*`,
         basePath: false,
       },
     ];

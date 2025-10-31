@@ -79,6 +79,26 @@ jobs:
 
       - name: Create .env file from secrets
         run: |
+          # Set the base for the frontend URL based on environment
+          case "${{ needs.select.outputs.target_env }}" in
+            prod)
+              FRONTEND_URL="https://portal.thriveassessmentcare.com"
+              ;;
+            dev)
+              FRONTEND_URL="https://portal-dev.thriveassessmentcare.com"
+              ;;
+            staging)
+              FRONTEND_URL="https://portal-stg.thriveassessmentcare.com"
+              ;;
+            qa)
+              FRONTEND_URL="https://portal-qa.thriveassessmentcare.com"
+              ;;
+            *)
+              echo "Unsupported environment for frontend URL: ${{ needs.select.outputs.target_env }}"
+              exit 1
+              ;;
+          esac
+
           cat <<EOF > .env
           ENVIRONMENT=${{ needs.select.outputs.target_env }}
           NEXT_PUBLIC_ENVIRONMENT=${{ needs.select.outputs.target_env }}
@@ -86,6 +106,7 @@ jobs:
           AWS_REGION=${{ vars.AWS_REGION }}
           NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          FRONTEND_URL=$FRONTEND_URL
           EOF
 
       - name: Build and Push container
