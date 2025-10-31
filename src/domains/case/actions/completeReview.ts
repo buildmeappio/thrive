@@ -4,15 +4,12 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import emailService from "@/services/email.service";
-import { ENV } from "@/constants/variables";
 import caseHandlers from "../server/handlers";
 import prisma from "@/lib/db";
-import { signClaimantApproveToken } from "@/lib/jwt";
 import { CaseDetailDtoType } from "../types/CaseDetailDtoType";
+import createSecureLink from "@/utils/createSecureLink";
 
-const completeReview = async (
-  caseId: string
-): Promise<void> => {
+const completeReview = async (caseId: string): Promise<void> => {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
@@ -27,8 +24,8 @@ const completeReview = async (
   try {
     // Find the "Waiting to be Scheduled" status
     const waitingStatus = await prisma.caseStatus.findFirst({
-      where: { 
-        name: "Waiting to be Scheduled"
+      where: {
+        name: "Waiting to be Scheduled",
       },
     });
 
@@ -67,28 +64,25 @@ async function sendApprovalEmailToClaimant(caseDetails: CaseDetailDtoType) {
   const claimantEmail = caseDetails.claimant?.emailAddress;
   const firstName = caseDetails.claimant?.firstName || "";
   const lastName = caseDetails.claimant?.lastName || "";
-  const organizationName = caseDetails.case.organization?.name || "Unknown Organization";
+  const organizationName =
+    caseDetails.case.organization?.name || "Unknown Organization";
 
   if (!claimantEmail) {
     console.error("Claimant email not found");
     throw new Error("Claimant email not found");
   }
 
-  // Generate JWT token with case id and exam id
-  const token = signClaimantApproveToken({
-    caseId: caseDetails.case.id,
-    examId: caseDetails.id,
-    claimantEmail: claimantEmail,
-  });
+  // Create secure link using the utility function
+  // This will generate JWT token with correct payload (email, caseId, examinationId)
+  // and store reference token in ExaminationSecureLink table
+  // caseDetails.id is the examination ID
+  const availabilityLink = await createSecureLink(caseDetails.id, 24);
 
-  // Build the availability link
-  const availabilityLink = `${ENV.NEXT_PUBLIC_APP_URL}${ENV.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL}?token=${token}`;
-
-  const submittedDate = caseDetails.createdAt 
-    ? new Date(caseDetails.createdAt).toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+  const submittedDate = caseDetails.createdAt
+    ? new Date(caseDetails.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       })
     : "Unknown";
 
@@ -102,7 +96,10 @@ async function sendApprovalEmailToClaimant(caseDetails: CaseDetailDtoType) {
       organizationName,
       submittedDate,
       availabilityLink,
-      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
+      CDN_URL:
+        process.env.NEXT_PUBLIC_CDN_URL ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        "",
     },
     claimantEmail
   );
@@ -113,4 +110,3 @@ async function sendApprovalEmailToClaimant(caseDetails: CaseDetailDtoType) {
 }
 
 export default completeReview;
-
