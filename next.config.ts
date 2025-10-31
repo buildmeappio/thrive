@@ -16,6 +16,15 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  async rewrites() {
+    return [
+      {
+        source: '/claimant/availability',
+        destination: '/organization/claimant/availability',
+        basePath: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
