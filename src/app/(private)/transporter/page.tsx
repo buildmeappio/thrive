@@ -13,7 +13,9 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Transporter() {
-  const result = await getTransporters(1, 10, "");
+  // Fetch all transporters (using large limit to get all records)
+  // For better performance with large datasets, consider implementing server-side pagination
+  const result = await getTransporters(1, 10000, "");
   const transporters = result.success
     ? (result.data as unknown as TransporterData[])
     : [];

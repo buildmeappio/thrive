@@ -2,7 +2,10 @@ import React from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import TransporterDetail from "@/domains/transporter/components/TransporterDetail";
-import { getTransporterById } from "@/domains/transporter/server";
+import {
+  getTransporterById,
+  getTransporterAvailabilityAction,
+} from "@/domains/transporter/server";
 import { TransporterData } from "@/domains/transporter/types/TransporterData";
 import { DashboardShell } from "@/layouts/dashboard";
 
@@ -34,10 +37,21 @@ export default async function TransporterDetailPage({ params }: Props) {
     notFound();
   }
 
+  // Fetch availability on the server
+  const availabilityResult = await getTransporterAvailabilityAction({
+    transporterId: id,
+  });
+
+  const availability =
+    availabilityResult.success && availabilityResult.data
+      ? availabilityResult.data
+      : null;
+
   return (
     <DashboardShell>
       <TransporterDetail
         transporter={result.data as unknown as TransporterData}
+        initialAvailability={availability}
       />
     </DashboardShell>
   );

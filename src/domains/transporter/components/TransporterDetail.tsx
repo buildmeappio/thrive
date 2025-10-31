@@ -13,8 +13,13 @@ import { capitalizeWords } from "@/utils/text";
 import { provinceOptions } from "@/constants/options";
 import { TRANSPORTER_STATUSES } from "../types/TransporterData";
 import { TransporterFormHandler } from "../server";
-import { WeeklyHours, OverrideHours, WeeklyHoursState, OverrideHoursState } from "@/components/availability";
-import { getTransporterAvailabilityAction, saveTransporterAvailabilityAction } from "../server";
+import {
+  WeeklyHours,
+  OverrideHours,
+  WeeklyHoursState,
+  OverrideHoursState,
+} from "@/components/availability";
+import { saveTransporterAvailabilityAction } from "../server";
 import { useRouter } from "next/navigation";
 import { showDeleteConfirmation } from "@/components";
 
@@ -23,14 +28,56 @@ const mapStatus = {
   SUSPENDED: "suspended",
 } as const;
 
-type Props = { transporter: TransporterData };
+type Props = {
+  transporter: TransporterData;
+  initialAvailability: {
+    weeklyHours: WeeklyHoursState;
+    overrideHours: OverrideHoursState;
+  } | null;
+};
 
-export default function TransporterDetail({ transporter }: Props) {
+const getDefaultWeeklyHours = (): WeeklyHoursState => ({
+  sunday: {
+    enabled: false,
+    timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+  },
+  monday: {
+    enabled: true,
+    timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+  },
+  tuesday: {
+    enabled: true,
+    timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+  },
+  wednesday: {
+    enabled: true,
+    timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+  },
+  thursday: {
+    enabled: true,
+    timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+  },
+  friday: {
+    enabled: true,
+    timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+  },
+  saturday: {
+    enabled: false,
+    timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+  },
+});
+
+export default function TransporterDetail({
+  transporter,
+  initialAvailability,
+}: Props) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [activeTab, setActiveTab] = useState<"weeklyHours" | "overrideHours">("weeklyHours");
+  const [activeTab, setActiveTab] = useState<"weeklyHours" | "overrideHours">(
+    "weeklyHours"
+  );
   const [formData, setFormData] = useState({
     companyName: transporter.companyName,
     contactPerson: transporter.contactPerson,
@@ -39,35 +86,13 @@ export default function TransporterDetail({ transporter }: Props) {
     status: transporter.status,
     serviceAreas: transporter.serviceAreas || [],
   });
-  const [availabilityLoading, setAvailabilityLoading] = useState(false);
-  const [weeklyHours, setWeeklyHours] = useState<WeeklyHoursState>({
-    sunday: { enabled: false, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
-    monday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
-    tuesday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
-    wednesday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
-    thursday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
-    friday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
-    saturday: { enabled: false, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
-  });
-  const [overrideHours, setOverrideHours] = useState<OverrideHoursState>([]);
-
-  React.useEffect(() => {
-    const fetchAvailability = async () => {
-      try {
-        setAvailabilityLoading(true);
-        const res = await getTransporterAvailabilityAction({ transporterId: transporter.id } as any);
-        if ((res as any)?.success && (res as any).data) {
-          setWeeklyHours((res as any).data.weeklyHours);
-          setOverrideHours((res as any).data.overrideHours);
-        }
-      } catch (e) {
-        console.error("Failed to fetch availability", e);
-      } finally {
-        setAvailabilityLoading(false);
-      }
-    };
-    fetchAvailability();
-  }, [transporter.id]);
+  const hasAvailability = initialAvailability !== null;
+  const [weeklyHours, setWeeklyHours] = useState<WeeklyHoursState>(
+    initialAvailability?.weeklyHours || getDefaultWeeklyHours()
+  );
+  const [overrideHours, setOverrideHours] = useState<OverrideHoursState>(
+    initialAvailability?.overrideHours || []
+  );
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -120,6 +145,9 @@ export default function TransporterDetail({ transporter }: Props) {
       status: transporter.status,
       serviceAreas: transporter.serviceAreas || [],
     });
+    // Reset availability to initial state
+    setWeeklyHours(initialAvailability?.weeklyHours || getDefaultWeeklyHours());
+    setOverrideHours(initialAvailability?.overrideHours || []);
     setIsEditing(false);
   };
 
@@ -221,42 +249,42 @@ export default function TransporterDetail({ transporter }: Props) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             {capitalizeWords(transporter.companyName)}
           </h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           {isEditing ? (
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <button
                 onClick={handleSave}
                 disabled={isLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 shadow-sm text-white rounded-lg hover:bg-green-700 disabled:opacity-50">
-                <Check className="w-4 h-4" />
+                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-green-600 shadow-sm text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex-1 sm:flex-initial">
+                <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 {isLoading ? "Saving..." : "Save"}
               </button>
               <button
                 onClick={handleCancel}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-500 shadow-sm text-white rounded-lg hover:bg-gray-600">
-                <X className="w-4 h-4" />
+                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-gray-500 shadow-sm text-white rounded-lg hover:bg-gray-600 flex-1 sm:flex-initial">
+                <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 Cancel
               </button>
             </div>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80 text-white rounded-lg">
-                <Edit className="w-4 h-4" />
+                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80 text-white rounded-lg flex-1 sm:flex-initial">
+                <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 Edit
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 shadow-sm text-white rounded-lg hover:bg-red-700 disabled:opacity-50">
-                <Trash2 className="w-4 h-4" />
+                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-red-600 shadow-sm text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex-1 sm:flex-initial">
+                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>
             </div>
@@ -264,17 +292,18 @@ export default function TransporterDetail({ transporter }: Props) {
         </div>
       </div>
 
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white rounded-lg p-6">
-        {/* Left Column - Basic Information */}
-        <div className="space-y-6">
-          <Section title="Basic Information">
-            <div className="space-y-4">
-              <FieldRow
-                label="Company Name *"
-                type="text"
-                value={
-                  isEditing ? (
+      {/* Layout - Changes based on edit mode */}
+      {isEditing ? (
+        // Edit Mode: Single column layout with everything stacked
+        <div className="bg-white rounded-lg p-6">
+          <div className="space-y-6">
+            {/* Basic Information */}
+            <Section title="Basic Information">
+              <div className="space-y-4">
+                <FieldRow
+                  label="Company Name *"
+                  type="text"
+                  value={
                     <div>
                       <input
                         type="text"
@@ -300,16 +329,12 @@ export default function TransporterDetail({ transporter }: Props) {
                         </p>
                       )}
                     </div>
-                  ) : (
-                    capitalizeWords(transporter.companyName)
-                  )
-                }
-              />
-              <FieldRow
-                label="Contact Person *"
-                type="text"
-                value={
-                  isEditing ? (
+                  }
+                />
+                <FieldRow
+                  label="Contact Person *"
+                  type="text"
+                  value={
                     <div>
                       <input
                         type="text"
@@ -335,16 +360,12 @@ export default function TransporterDetail({ transporter }: Props) {
                         </p>
                       )}
                     </div>
-                  ) : (
-                    capitalizeWords(transporter.contactPerson)
-                  )
-                }
-              />
-              <FieldRow
-                label="Email *"
-                type="text"
-                value={
-                  isEditing ? (
+                  }
+                />
+                <FieldRow
+                  label="Email *"
+                  type="text"
+                  value={
                     <div>
                       <input
                         type="email"
@@ -369,16 +390,12 @@ export default function TransporterDetail({ transporter }: Props) {
                           </p>
                         )}
                     </div>
-                  ) : (
-                    transporter.email
-                  )
-                }
-              />
-              <FieldRow
-                label="Phone *"
-                type="text"
-                value={
-                  isEditing ? (
+                  }
+                />
+                <FieldRow
+                  label="Phone *"
+                  type="text"
+                  value={
                     <input
                       type="tel"
                       value={formData.phone}
@@ -386,19 +403,14 @@ export default function TransporterDetail({ transporter }: Props) {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Enter phone number (numbers only, + allowed at start)"
                     />
-                  ) : (
-                    formatPhoneNumber(transporter.phone)
-                  )
-                }
-              />
-            </div>
-          </Section>
+                  }
+                />
+              </div>
+            </Section>
 
-          <Section title="Availability">
-            {availabilityLoading ? (
-              <div className="text-sm text-gray-500">Loading availability...</div>
-            ) : (
-              <div>
+            {/* Availability */}
+            <Section title="Availability">
+              <div className="w-full min-w-0">
                 <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
                   <div className="flex gap-4">
                     <button
@@ -408,8 +420,7 @@ export default function TransporterDetail({ transporter }: Props) {
                         activeTab === "weeklyHours"
                           ? "text-black font-bold"
                           : "text-gray-500 hover:text-gray-700"
-                      }`}
-                    >
+                      }`}>
                       Weekly Hours
                       {activeTab === "weeklyHours" && (
                         <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
@@ -422,8 +433,7 @@ export default function TransporterDetail({ transporter }: Props) {
                         activeTab === "overrideHours"
                           ? "text-black font-bold"
                           : "text-gray-500 hover:text-gray-700"
-                      }`}
-                    >
+                      }`}>
                       Override Hours
                       {activeTab === "overrideHours" && (
                         <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
@@ -431,50 +441,48 @@ export default function TransporterDetail({ transporter }: Props) {
                     </button>
                   </div>
                 </div>
-                <div className="mt-4">
+                <div className="mt-4 w-full min-w-0 overflow-x-auto">
                   {activeTab === "weeklyHours" && (
-                    <WeeklyHours 
-                      value={weeklyHours} 
-                      onChange={isEditing ? setWeeklyHours : () => {}} 
-                      disabled={!isEditing}
+                    <WeeklyHours
+                      value={weeklyHours}
+                      onChange={setWeeklyHours}
+                      disabled={false}
                     />
                   )}
                   {activeTab === "overrideHours" && (
-                    <OverrideHours 
-                      value={overrideHours} 
-                      onChange={isEditing ? setOverrideHours : () => {}} 
-                      disabled={!isEditing}
+                    <OverrideHours
+                      value={overrideHours}
+                      onChange={setOverrideHours}
+                      disabled={false}
                     />
                   )}
                 </div>
               </div>
-            )}
-          </Section>
-        </div>
+            </Section>
 
-        {/* Right Column - Service Provinces */}
-        <div className="space-y-6">
-          <Section title="Service Provinces">
-            {isEditing ? (
-              <div className="space-y-4">
-                <div>
+            {/* Service Provinces - Below Availability in Edit Mode */}
+            <Section title="Service Provinces">
+              <div className="space-y-4 min-w-0 w-full">
+                <div className="min-w-0 w-full">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Select Provinces <span className="text-red-500">*</span>
                   </label>
-                  <div className="grid grid-cols-2 gap-2 border border-gray-200 rounded-lg p-3">
+                  <div className="flex flex-col gap-2 border border-gray-200 rounded-lg p-3 min-w-0 w-full max-h-64 overflow-y-auto">
                     {provinceOptions.map((option) => (
                       <label
                         key={option.value}
-                        className="flex items-center space-x-2 cursor-pointer">
+                        className="flex items-center space-x-2 cursor-pointer min-w-0">
                         <input
                           type="checkbox"
                           checked={formData.serviceAreas.some(
                             (area) => area.province === option.value
                           )}
                           onChange={() => toggleProvince(option.value)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
                         />
-                        <span className="text-base">{option.label}</span>
+                        <span className="text-base min-w-0 truncate">
+                          {option.label}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -500,29 +508,10 @@ export default function TransporterDetail({ transporter }: Props) {
                   )}
                 </div>
               </div>
-            ) : (
-              <div className="space-y-2">
-                {(transporter.serviceAreas || []).length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {(transporter.serviceAreas || []).map((area) => (
-                      <span
-                        key={area.province}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                        {provinceOptions.find((p) => p.value === area.province)
-                          ?.label || area.province}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-sm">No provinces selected</p>
-                )}
-              </div>
-            )}
-          </Section>
+            </Section>
 
-          {/* Status Management - Bottom Right */}
-          <Section title="Status Management">
-            {isEditing ? (
+            {/* Status Management - Below Service Provinces in Edit Mode */}
+            <Section title="Status Management">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Status
@@ -543,7 +532,120 @@ export default function TransporterDetail({ transporter }: Props) {
                   ))}
                 </select>
               </div>
-            ) : (
+            </Section>
+          </div>
+        </div>
+      ) : (
+        // View Mode: Two column layout
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px] gap-6 lg:gap-8 bg-white rounded-lg p-6">
+          {/* Left Column - Basic Information */}
+          <div className="space-y-6 min-w-0 w-full">
+            <Section title="Basic Information">
+              <div className="space-y-4">
+                <FieldRow
+                  label="Company Name *"
+                  type="text"
+                  value={capitalizeWords(transporter.companyName)}
+                />
+                <FieldRow
+                  label="Contact Person *"
+                  type="text"
+                  value={capitalizeWords(transporter.contactPerson)}
+                />
+                <FieldRow
+                  label="Email *"
+                  type="text"
+                  value={transporter.email}
+                />
+                <FieldRow
+                  label="Phone *"
+                  type="text"
+                  value={formatPhoneNumber(transporter.phone)}
+                />
+              </div>
+            </Section>
+
+            <Section title="Availability">
+              {hasAvailability ? (
+                <div className="w-full min-w-0">
+                  <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("weeklyHours")}
+                        className={`pb-2 px-4 transition-colors cursor-pointer relative ${
+                          activeTab === "weeklyHours"
+                            ? "text-black font-bold"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}>
+                        Weekly Hours
+                        {activeTab === "weeklyHours" && (
+                          <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("overrideHours")}
+                        className={`pb-2 px-4 transition-colors cursor-pointer relative ${
+                          activeTab === "overrideHours"
+                            ? "text-black font-bold"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}>
+                        Override Hours
+                        {activeTab === "overrideHours" && (
+                          <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-4 w-full min-w-0 overflow-x-auto">
+                    {activeTab === "weeklyHours" && (
+                      <WeeklyHours
+                        value={weeklyHours}
+                        onChange={() => {}}
+                        disabled={true}
+                      />
+                    )}
+                    {activeTab === "overrideHours" && (
+                      <OverrideHours
+                        value={overrideHours}
+                        onChange={() => {}}
+                        disabled={true}
+                      />
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500">
+                  Availability is not set.
+                </div>
+              )}
+            </Section>
+          </div>
+
+          {/* Right Column - Service Provinces */}
+          <div className="space-y-6 min-w-0 w-full max-w-full">
+            <Section title="Service Provinces">
+              <div className="space-y-2">
+                {(transporter.serviceAreas || []).length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {(transporter.serviceAreas || []).map((area) => (
+                      <span
+                        key={area.province}
+                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                        {provinceOptions.find((p) => p.value === area.province)
+                          ?.label || area.province}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm">No provinces selected</p>
+                )}
+              </div>
+            </Section>
+
+            {/* Status Management - Bottom Right */}
+            <Section title="Status Management">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-700">
                   Current Status:
@@ -560,10 +662,10 @@ export default function TransporterDetail({ transporter }: Props) {
                   {transporter.status === "SUSPENDED" && "Suspended"}
                 </span>
               </div>
-            )}
-          </Section>
+            </Section>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

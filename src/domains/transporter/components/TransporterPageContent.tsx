@@ -7,6 +7,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   SortingState,
+  PaginationState,
   useReactTable,
 } from "@tanstack/react-table";
 import TransporterHeader from "./TransporterHeader";
@@ -26,6 +27,10 @@ export default function TransporterPageContent({
   statuses,
 }: TransporterPageContentProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 20, // Show 20 records per page instead of default 10
+  });
 
   // Use custom hook for filter management
   const {
@@ -43,17 +48,36 @@ export default function TransporterPageContent({
   const table = useReactTable({
     data: filtered,
     columns,
-    state: { sorting },
+    state: { sorting, pagination },
     onSortingChange: setSorting,
+    onPaginationChange: (updater) => {
+      setPagination((prev) => {
+        const next = typeof updater === "function" ? updater(prev) : updater;
+        // Reset to page 0 if page size changed
+        if (next.pageSize !== prev.pageSize) {
+          return { ...next, pageIndex: 0 };
+        }
+        return next;
+      });
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: false, // Client-side pagination
   });
 
   // Reset to first page when searching or filtering
   useEffect(() => {
     table.setPageIndex(0);
   }, [query, statusFilter, table]);
+
+  // Ensure page index is valid when filtered data changes
+  useEffect(() => {
+    const maxPageIndex = table.getPageCount() - 1;
+    if (pagination.pageIndex > maxPageIndex && maxPageIndex >= 0) {
+      table.setPageIndex(maxPageIndex);
+    }
+  }, [filtered.length, pagination.pageIndex, table]);
 
   return (
     <div className="space-y-6">
