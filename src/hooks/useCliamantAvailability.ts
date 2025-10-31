@@ -49,6 +49,39 @@ export function transformFormDataToDbFormat(
   claimantId: string
 ): CreateClaimantAvailabilityData {
   const slots: ClaimantAvailabilitySlot[] = formData.appointments.map((apt: any) => {
+    // If we have actual slot times from the selected appointment, use them
+    if (apt.slotStart && apt.slotEnd) {
+      const start = new Date(apt.slotStart);
+      const end = new Date(apt.slotEnd);
+      const date = new Date(start);
+      date.setHours(0, 0, 0, 0);
+
+      // Format times as HH:mm
+      const startTime = `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`;
+      const endTime = `${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')}`;
+
+      // Determine time band based on start hour
+      let timeBand: TimeBand = TimeBand.EITHER;
+      const hour = start.getHours();
+      if (hour < 12) {
+        timeBand = TimeBand.MORNING;
+      } else if (hour < 17) {
+        timeBand = TimeBand.AFTERNOON;
+      } else {
+        timeBand = TimeBand.EVENING;
+      }
+
+      return {
+        date: date.toISOString().split('T')[0],
+        startTime,
+        endTime,
+        start,
+        end,
+        timeBand,
+      };
+    }
+
+    // Fallback to old logic for backward compatibility
     const [day, month, year] = apt.date.split('-');
     const date = new Date(parseInt(year), getMonthIndex(month), parseInt(day));
 

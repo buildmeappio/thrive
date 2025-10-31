@@ -3,17 +3,12 @@ import { type NextAuthOptions } from 'next-auth';
 import { callbacks } from './callbacks';
 import { providers } from './providers';
 
-const cookiePath = process.env.BASE_PATH;
+// Provide a default BASE_PATH for local development if not set
+const cookiePath = process.env.BASE_PATH || '/organization';
 
-if (!cookiePath) {
-  throw new Error('BASE_PATH is not set');
-}
-
-const cookiePrefix = cookiePath.split(cookiePath).pop();
-
-if (!cookiePrefix) {
-  throw new Error('BASE_PATH is not set');
-}
+// Since cookie configuration is commented out, we don't need to throw errors
+// But we keep this for future use when cookies are enabled
+// const cookiePrefix = cookiePath.split('/').filter(Boolean).pop() || 'organization';
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt', maxAge: 2 * 60 * 60 },
