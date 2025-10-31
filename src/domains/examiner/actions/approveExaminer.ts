@@ -1,13 +1,23 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import examinerService from "../server/examiner.service";
 import { sendMail } from "@/lib/email";
 import { signAccountToken } from "@/lib/jwt";
-import { EXAMINER_APPROVED_SUBJECT, generateExaminerApprovedEmail } from "@/emails/examiner-approved";
-import { ExaminerProfile, Account, User, Documents, ExaminerLanguage, Language } from "@prisma/client";
+import {
+  EXAMINER_APPROVED_SUBJECT,
+  generateExaminerApprovedEmail,
+} from "@/emails/examiner-approved";
+import {
+  ExaminerProfile,
+  Account,
+  User,
+  Documents,
+  ExaminerLanguage,
+  Language,
+} from "@prisma/client";
 import { Roles } from "@/domains/auth/constants/roles";
+import { HttpError } from "@/utils/httpError";
 
 interface ExaminerWithRelations extends ExaminerProfile {
   account: Account & {
@@ -22,17 +32,27 @@ interface ExaminerWithRelations extends ExaminerProfile {
 
 const approveExaminer = async (examinerId: string) => {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    throw HttpError.unauthorized(
+      "You must be logged in to approve an examiner"
+    );
+  }
 
   // Approve the examiner
-  const examiner = await examinerService.approveExaminer(examinerId, user.accountId);
+  const examiner = await examinerService.approveExaminer(
+    examinerId,
+    user.accountId
+  );
 
   // Send approval email with token (don't fail approval if email fails)
   try {
     await sendApprovalEmailToExaminer(examiner);
     console.log("✓ Approval email sent successfully");
   } catch (emailError) {
-    console.error("⚠️ Failed to send approval email (but approval succeeded):", emailError);
+    console.error(
+      "⚠️ Failed to send approval email (but approval succeeded):",
+      emailError
+    );
   }
 
   return examiner;
@@ -73,6 +93,4 @@ async function sendApprovalEmailToExaminer(examiner: ExaminerWithRelations) {
   });
 }
 
-
 export default approveExaminer;
-
