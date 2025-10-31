@@ -3,6 +3,13 @@
 import React from "react";
 import { daysOptions, timeOptions, DayOfWeek } from "@/constants/options";
 import { WeeklyHoursState } from "./types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Props = {
   value: WeeklyHoursState;
@@ -28,7 +35,10 @@ export default function WeeklyHours({ value, onChange, disabled }: Props) {
       ...value,
       [day]: {
         ...value[day],
-        timeSlots: [...currentSlots, { startTime: newStartTime, endTime: newEndTime }],
+        timeSlots: [
+          ...currentSlots,
+          { startTime: newStartTime, endTime: newEndTime },
+        ],
       },
     });
   };
@@ -63,8 +73,10 @@ export default function WeeklyHours({ value, onChange, disabled }: Props) {
         const dayData = value[key];
         if (!dayData) return null;
         return (
-          <div key={day.value} className="flex items-start gap-4">
-            <div className="flex items-center min-w-[120px] pt-2">
+          <div
+            key={day.value}
+            className="flex flex-col sm:flex-row items-start gap-2 sm:gap-4">
+            <div className="flex items-center min-w-0 sm:min-w-[120px] pt-2 flex-shrink-0">
               <input
                 type="checkbox"
                 id={day.value}
@@ -75,67 +87,80 @@ export default function WeeklyHours({ value, onChange, disabled }: Props) {
               />
               <label
                 htmlFor={day.value}
-                className={`ml-2 text-sm font-medium ${dayData.enabled ? "text-gray-900" : "text-gray-400"}`}
-              >
+                className={`ml-2 text-sm font-medium whitespace-nowrap ${
+                  dayData.enabled ? "text-gray-900" : "text-gray-400"
+                }`}>
                 {day.label}
               </label>
             </div>
-            <div className="flex-1 space-y-2">
+            <div className="flex-1 space-y-2 min-w-0 w-full max-w-full">
               {dayData.timeSlots.length > 0 ? (
                 dayData.timeSlots.map((slot, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <select
-                      value={slot.startTime}
-                      onChange={(e) =>
-                        onChange({
-                          ...value,
-                          [key]: {
-                            ...dayData,
-                            timeSlots: dayData.timeSlots.map((s, i) =>
-                              i === index ? { ...s, startTime: e.target.value } : s
-                            ),
-                          },
-                        })
-                      }
-                      disabled={disabled || !dayData.enabled}
-                      className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[120px] disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"
-                    >
-                      {timeOptions.map((time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={slot.endTime}
-                      onChange={(e) =>
-                        onChange({
-                          ...value,
-                          [key]: {
-                            ...dayData,
-                            timeSlots: dayData.timeSlots.map((s, i) =>
-                              i === index ? { ...s, endTime: e.target.value } : s
-                            ),
-                          },
-                        })
-                      }
-                      disabled={disabled || !dayData.enabled}
-                      className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[120px] disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50"
-                    >
-                      {timeOptions.map((time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
-                      ))}
-                    </select>
+                  <div
+                    key={index}
+                    className="grid gap-2 items-center w-full"
+                    style={{ gridTemplateColumns: "1fr 1fr auto" }}>
+                    <div className="min-w-0 w-full">
+                      <Select
+                        value={slot.startTime}
+                        onValueChange={(val) =>
+                          onChange({
+                            ...value,
+                            [key]: {
+                              ...dayData,
+                              timeSlots: dayData.timeSlots.map((s, i) =>
+                                i === index ? { ...s, startTime: val } : s
+                              ),
+                            },
+                          })
+                        }
+                        disabled={disabled || !dayData.enabled}>
+                        <SelectTrigger className="w-full px-4 py-2 h-auto border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] disabled:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timeOptions.map((time) => (
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="min-w-0 w-full">
+                      <Select
+                        value={slot.endTime}
+                        onValueChange={(val) =>
+                          onChange({
+                            ...value,
+                            [key]: {
+                              ...dayData,
+                              timeSlots: dayData.timeSlots.map((s, i) =>
+                                i === index ? { ...s, endTime: val } : s
+                              ),
+                            },
+                          })
+                        }
+                        disabled={disabled || !dayData.enabled}>
+                        <SelectTrigger className="w-full px-4 py-2 h-auto border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] disabled:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timeOptions.map((time) => (
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     {index === 0 ? (
                       <button
                         type="button"
                         onClick={() => addTimeSlot(key)}
                         disabled={disabled || !dayData.enabled}
                         className="p-2 text-[#00A8FF] hover:text-[#0097E5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Add time slot"
-                      >
+                        title="Add time slot">
                         +
                       </button>
                     ) : (
@@ -144,15 +169,16 @@ export default function WeeklyHours({ value, onChange, disabled }: Props) {
                         onClick={() => removeTimeSlot(key, index)}
                         disabled={disabled || !dayData.enabled}
                         className="p-2 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Remove time slot"
-                      >
+                        title="Remove time slot">
                         ×
                       </button>
                     )}
                   </div>
                 ))
               ) : (
-                <div className="text-sm text-gray-400 italic">No time slots</div>
+                <div className="text-sm text-gray-400 italic">
+                  No time slots
+                </div>
               )}
             </div>
           </div>
@@ -161,5 +187,3 @@ export default function WeeklyHours({ value, onChange, disabled }: Props) {
     </div>
   );
 }
-
-

@@ -75,7 +75,10 @@ class InterpreterAvailabilityService {
     return prisma.providerWeeklyHours.findMany({
       where: { availabilityProviderId, deletedAt: null },
       include: {
-        timeSlots: { where: { deletedAt: null }, orderBy: { startTime: "asc" } },
+        timeSlots: {
+          where: { deletedAt: null },
+          orderBy: { startTime: "asc" },
+        },
       },
       orderBy: { dayOfWeek: "asc" },
     });
@@ -91,7 +94,11 @@ class InterpreterAvailabilityService {
 
     const createPromises = overrideHoursData.map(async (overrideData) => {
       const [month, day, year] = overrideData.date.split("-");
-      const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      const dateObj = new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day)
+      );
 
       const overrideHour = await prisma.providerOverrideHours.create({
         data: { availabilityProviderId, date: dateObj },
@@ -118,7 +125,10 @@ class InterpreterAvailabilityService {
     return prisma.providerOverrideHours.findMany({
       where: { availabilityProviderId, deletedAt: null },
       include: {
-        timeSlots: { where: { deletedAt: null }, orderBy: { startTime: "asc" } },
+        timeSlots: {
+          where: { deletedAt: null },
+          orderBy: { startTime: "asc" },
+        },
       },
       orderBy: { date: "asc" },
     });
@@ -126,9 +136,14 @@ class InterpreterAvailabilityService {
 
   async saveCompleteAvailability(
     interpreterId: string,
-    data: { weeklyHours: WeeklyHoursData[]; overrideHours?: OverrideHoursData[] }
+    data: {
+      weeklyHours: WeeklyHoursData[];
+      overrideHours?: OverrideHoursData[];
+    }
   ) {
-    const availabilityProviderId = await this.getAvailabilityProviderId(interpreterId);
+    const availabilityProviderId = await this.getAvailabilityProviderId(
+      interpreterId
+    );
     await this.saveWeeklyHours(availabilityProviderId, data.weeklyHours);
     if (data.overrideHours && data.overrideHours.length > 0) {
       await this.saveOverrideHours(availabilityProviderId, data.overrideHours);
@@ -137,15 +152,28 @@ class InterpreterAvailabilityService {
   }
 
   async getCompleteAvailability(interpreterId: string) {
-    const availabilityProviderId = await this.getAvailabilityProviderId(interpreterId);
+    // Check if availability provider exists without creating one
+    const availabilityProvider = await prisma.availabilityProvider.findFirst({
+      where: {
+        providerType: "INTERPRETER",
+        refId: interpreterId,
+        deletedAt: null,
+      },
+    });
+
+    if (!availabilityProvider) {
+      return { weeklyHours: [], overrideHours: [], hasData: false };
+    }
+
     const [weeklyHours, overrideHours] = await Promise.all([
-      this.getWeeklyHours(availabilityProviderId),
-      this.getOverrideHours(availabilityProviderId),
+      this.getWeeklyHours(availabilityProvider.id),
+      this.getOverrideHours(availabilityProvider.id),
     ]);
-    return { weeklyHours, overrideHours };
+
+    const hasData = weeklyHours.length > 0 || overrideHours.length > 0;
+    return { weeklyHours, overrideHours, hasData };
   }
 }
 
-export const interpreterAvailabilityService = new InterpreterAvailabilityService();
-
-
+export const interpreterAvailabilityService =
+  new InterpreterAvailabilityService();
