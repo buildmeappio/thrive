@@ -3,8 +3,18 @@ import { type NextAuthOptions } from 'next-auth';
 import { callbacks } from './callbacks';
 import { providers } from './providers';
 
-const prefix = process.env.APP_COOKIE_PREFIX ?? 'org'; // unique per app
-const cookiePath = process.env.APP_COOKIE_PATH ?? '/organization'; // app basePath
+const cookiePath = process.env.BASE_PATH;
+
+if (!cookiePath) {
+  throw new Error('BASE_PATH is not set');
+}
+
+const cookiePrefix = cookiePath.split('/').pop();
+
+if (!cookiePrefix) {
+  throw new Error('BASE_PATH is not set');
+}
+
 const isProd = process.env.NODE_ENV === 'production';
 
 export const authOptions: NextAuthOptions = {
@@ -18,7 +28,7 @@ export const authOptions: NextAuthOptions = {
   // 🔑 Key piece: unique names + path scoping
   cookies: {
     sessionToken: {
-      name: `__Secure-${prefix}.session-token`,
+      name: `__Secure-${cookiePrefix}.session-token`,
       options: {
         path: cookiePath,
         httpOnly: true,
@@ -28,7 +38,7 @@ export const authOptions: NextAuthOptions = {
     },
     // NextAuth uses this for CSRF on POSTs to /api/auth/*
     csrfToken: {
-      name: `__Secure-${prefix}.csrf-token`,
+      name: `__Secure-${cookiePrefix}.csrf-token`,
       options: {
         path: cookiePath,
         httpOnly: false,
@@ -38,19 +48,19 @@ export const authOptions: NextAuthOptions = {
     },
     // OAuth helpers (only used during sign-in flows)
     pkceCodeVerifier: {
-      name: `__Secure-${prefix}.pkce.code_verifier`,
+      name: `__Secure-${cookiePrefix}.pkce.code_verifier`,
       options: { path: cookiePath, httpOnly: true, sameSite: 'lax', secure: isProd },
     },
     state: {
-      name: `__Secure-${prefix}.oauth.state`,
+      name: `__Secure-${cookiePrefix}.oauth.state`,
       options: { path: cookiePath, httpOnly: true, sameSite: 'lax', secure: isProd },
     },
     nonce: {
-      name: `__Secure-${prefix}.nonce`,
+      name: `__Secure-${cookiePrefix}.nonce`,
       options: { path: cookiePath, httpOnly: true, sameSite: 'lax', secure: isProd },
     },
     callbackUrl: {
-      name: `__Secure-${prefix}.callback-url`,
+      name: `__Secure-${cookiePrefix}.callback-url`,
       options: { path: cookiePath, httpOnly: false, sameSite: 'lax', secure: isProd },
     },
   },

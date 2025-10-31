@@ -6,9 +6,15 @@ if (!frontendURL) {
   throw new Error('FRONTEND_URL is not set');
 }
 
+const basePath = process.env.BASE_PATH;
+
+if (!basePath) {
+  throw new Error('BASE_PATH is not set');
+}
+
 const nextConfig: NextConfig = {
   /* config options here */
-  basePath: '/organization',
+  basePath,
   images: {
     remotePatterns: [
       {
@@ -26,7 +32,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/claimant/:path*',
-        destination: `${frontendURL}/organization/claimant/:path*`,
+        destination: `${frontendURL}${basePath}/claimant/:path*`,
         basePath: false,
       },
     ];

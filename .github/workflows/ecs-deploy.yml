@@ -59,6 +59,7 @@ jobs:
       ECS_SERVICE: ${{ vars.ECS_SERVICE }}
       CONTAINER_NAME: ${{ vars.CONTAINER_NAME || 'organization' }}
       AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+      BASE_PATH: "/${{ vars.CONTAINER_NAME || 'organization' }}"
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -99,6 +100,7 @@ jobs:
               ;;
           esac
 
+          BASE_PATH="/${{ vars.CONTAINER_NAME || 'organization' }}"
           cat <<EOF > .env
           ENVIRONMENT=${{ needs.select.outputs.target_env }}
           NEXT_PUBLIC_ENVIRONMENT=${{ needs.select.outputs.target_env }}
@@ -107,6 +109,7 @@ jobs:
           NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
           FRONTEND_URL=$FRONTEND_URL
+          BASE_PATH=$BASE_PATH
           EOF
 
       - name: Build and Push container
@@ -135,6 +138,7 @@ jobs:
       ECS_SERVICE: ${{ vars.ECS_SERVICE }}
       CONTAINER_NAME: ${{ vars.CONTAINER_NAME || 'organization' }}
       AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+      BASE_PATH: "/${{ vars.CONTAINER_NAME || 'organization' }}"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
