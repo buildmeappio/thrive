@@ -30,6 +30,9 @@ export default withAuth(
         const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
         // If it's a protected route, require a valid token
+        console.log('isProtectedRoute', isProtectedRoute);
+        console.log('token', token);
+        console.log('pathname', pathname);
         if (isProtectedRoute) {
           return !!token;
         }
