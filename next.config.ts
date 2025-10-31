@@ -19,8 +19,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/claimant/availability',
-        destination: '/organization/claimant/availability',
+        source: '/claimant/:path*',
+        destination: '/organization/claimant/:path*',
         basePath: false,
       },
     ];
