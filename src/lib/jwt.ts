@@ -1,12 +1,14 @@
 import ErrorMessages from '@/constants/ErrorMessages';
 import jwt, { type SignOptions, type JwtPayload } from 'jsonwebtoken';
 
-const getJwtSecret = (name: 'otp' | 'password') => {
+const getJwtSecret = (name: 'otp' | 'password' | 'claimant_approve') => {
   let secret: string | null = null;
   if (name === 'otp') {
     secret = process.env.JWT_OTP_SECRET as string;
-  } else {
+  } else if (name === 'password') {
     secret = process.env.JWT_SET_PASSWORD_SECRET as string;
+  } else if (name === 'claimant_approve') {
+    secret = process.env.JWT_CLAIMANT_APPROVE_SECRET as string;
   }
   if (!secret) {
     throw new Error(ErrorMessages.JWT_SECRETS_REQUIRED);
@@ -63,6 +65,25 @@ export function verifyResetPasswordToken(token: string): JwtPayload | null {
   try {
     const passwordSecret = getJwtSecret('password');
     return jwt.verify(token, passwordSecret) as JwtPayload;
+  } catch {
+    return null;
+  }
+}
+
+// ----- Claimant Approval Tokens -----
+export function signClaimantApprovalToken(
+  payload: { email: string; caseId: string; examinationId: string },
+  expiresIn: SignOptions['expiresIn'] = '7d'
+): string {
+  const claimantSecret = getJwtSecret('claimant_approve');
+  const options: SignOptions = { expiresIn };
+  return jwt.sign(payload, claimantSecret, options);
+}
+
+export function verifyClaimantApprovalToken(token: string): JwtPayload | null {
+  try {
+    const claimantSecret = getJwtSecret('claimant_approve');
+    return jwt.verify(token, claimantSecret) as JwtPayload;
   } catch {
     return null;
   }

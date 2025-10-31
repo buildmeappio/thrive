@@ -2,6 +2,7 @@
 
 import { claimantHandlers } from './server';
 import { type CreateClaimantAvailabilityData } from './types/claimantAvailability';
+import { type GetAvailableExaminersParams } from './types/examinerAvailability';
 
 export const getClaimant = async (token: string) => {
   const result = await claimantHandlers.getClaimant(token);
@@ -14,6 +15,16 @@ export const getCaseSummary = async (tkn: string) => {
     return result;
   } catch (error) {
     console.error('Error fetching case summary:', error);
+    return { success: false, result: null };
+  }
+};
+
+export const getCaseSummaryByJWT = async (token: string) => {
+  try {
+    const result = await claimantHandlers.getCaseSummaryByJWT(token);
+    return result;
+  } catch (error) {
+    console.error('Error fetching case summary by JWT:', error);
     return { success: false, result: null };
   }
 };
@@ -35,5 +46,15 @@ export const getLanguages = async () => {
   } catch (error) {
     console.error('Error fetching languages:', error);
     return { success: false, result: [] };
+  }
+};
+
+export const getAvailableExaminers = async (params: GetAvailableExaminersParams) => {
+  try {
+    const result = await claimantHandlers.getAvailableExaminers(params);
+    return result;
+  } catch (error) {
+    console.error('Error fetching available examiners:', error);
+    return { success: false, result: null };
   }
 };

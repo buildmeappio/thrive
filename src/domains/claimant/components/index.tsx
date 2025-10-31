@@ -1,14 +1,14 @@
 'use client';
-
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import AddOnServices from './AddonServices';
-import AppointmentOptions from './AppointmentOptions';
+// import AppointmentOptions from './AppointmentOptions'; // Commented out - Step 1 is disabled
+import ExaminerOptions from './ExaminerOptions';
+import AppointmentConfirmation from './AppointmentConfirmation';
 import UserInfo from './UserInfo';
 import { useClaimantAvailability } from '@/hooks/useCliamantAvailability';
 import { toast } from 'sonner';
 import { type getLanguages } from '../actions';
-import { convertToTypeOptions } from '@/utils/convertToTypeOptions';
 import {
   type ClaimantAvailabilityFormData,
   claimantAvailabilityInitialValues,
@@ -24,6 +24,7 @@ type ClaimantAvailabilityProps = {
     claimantFirstName: string | null;
     claimantLastName: string | null;
     organizationName?: string | null;
+    examinationId: string;
   };
 };
 
@@ -31,15 +32,16 @@ type ClaimantAvailabilityComponentProps = ClaimantAvailabilityProps & {
   languages: Awaited<ReturnType<typeof getLanguages>>['result'];
 };
 
-const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
-  caseSummary,
-  languages,
-}) => {
-  const { isSubmitting, submitAvailability } = useClaimantAvailability(
+const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({ caseSummary }) => {
+  const { isSubmitting: _isSubmitting, submitAvailability } = useClaimantAvailability(
     caseSummary.caseId,
     caseSummary.claimantId
   );
   const router = useRouter();
+  const [currentStep, setCurrentStep] = useState<'appointments' | 'examiners' | 'confirmation'>(
+    'examiners'
+  );
+  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
 
   const form = useForm<ClaimantAvailabilityFormData>({
     resolver: zodResolver(claimantAvailabilitySchema),
@@ -67,34 +69,50 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="space-y-8 sm:space-y-10 lg:space-y-12">
-        {/* Heading */}
-        <h1 className="mt-4 text-center text-2xl leading-tight font-semibold tracking-normal capitalize sm:text-3xl lg:text-[36px]">
+    <div>
+      {/* Heading */}
+      {currentStep !== 'confirmation' && (
+        <h1 className="py-4 text-center text-2xl leading-tight font-semibold tracking-normal capitalize sm:text-3xl lg:text-[36px]">
           Help Us Schedule Your IME
         </h1>
+      )}
 
-        {/* User Info */}
+      {/* User Info - Only show for appointments and examiners steps */}
+      {currentStep !== 'confirmation' && (
         <UserInfo
           caseId={caseSummary.caseId}
           claimantFirstName={caseSummary.claimantFirstName ?? ''}
           claimantLastName={caseSummary.claimantLastName ?? ''}
           organizationName={caseSummary.organizationName ?? ''}
         />
+      )}
 
-        {/* Form container */}
-        <form onSubmit={form.handleSubmit(handleSubmit, onError)}>
-          <div className="mx-auto w-full max-w-[1020px] space-y-8">
-            <AppointmentOptions form={form} />
-            <AddOnServices
-              form={form}
-              onSubmit={form.handleSubmit(handleSubmit, onError)}
-              isSubmitting={isSubmitting}
-              languages={convertToTypeOptions(languages)}
+      {/* Form container */}
+      <form onSubmit={form.handleSubmit(handleSubmit, onError)}>
+        <div className="mx-auto w-full space-y-8">
+          {/* Step 1 - Appointments (commented out for now) */}
+          {/* {currentStep === 'appointments' ? (
+            <AppointmentOptions form={form} onCheckExaminers={() => setCurrentStep('examiners')} />
+          ) : currentStep === 'examiners' ? ( */}
+          {currentStep === 'examiners' ? (
+            <ExaminerOptions
+              examId={caseSummary.examinationId}
+              caseId={caseSummary.caseId}
+              onSelectAppointment={appointmentData => {
+                setSelectedAppointment(appointmentData);
+                setCurrentStep('confirmation');
+              }}
+              onBack={() => setCurrentStep('appointments')}
             />
-          </div>
-        </form>
-      </div>
+          ) : (
+            <AppointmentConfirmation
+              appointment={selectedAppointment}
+              claimantName={caseSummary.claimantFirstName || 'Johnathan'}
+              onBack={() => setCurrentStep('examiners')}
+            />
+          )}
+        </div>
+      </form>
     </div>
   );
 };

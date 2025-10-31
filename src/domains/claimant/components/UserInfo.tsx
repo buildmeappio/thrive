@@ -38,10 +38,10 @@ const UserInfo: React.FC<UserInfoProps> = ({
             Hi {claimantFirstName} {claimantLastName},
           </h2>
           <p className="mb-8 text-base font-light sm:text-lg lg:text-[18.87px]">
-            We&apos;ve received a request to schedule your independent medical examination (IME).
+            We’ve received a request to schedule your independent medical examination (IME). Please
+            tell us when you&apos;re available.
             <br className="hidden sm:inline" />
-            Please tell us when you&apos;re available. This will help us match you with the right
-            specialist.
+            This will help us match you with the right specialist.
           </p>
         </div>
       </div>
