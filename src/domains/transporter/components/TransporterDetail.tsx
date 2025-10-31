@@ -9,6 +9,7 @@ import { updateTransporter, deleteTransporter } from "../server";
 import { Check, Edit, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
+import PhoneInput from "@/components/PhoneNumber";
 import { capitalizeWords } from "@/utils/text";
 import { provinceOptions } from "@/constants/options";
 import { TRANSPORTER_STATUSES } from "../types/TransporterData";
@@ -240,10 +241,7 @@ export default function TransporterDetail({
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitizedValue = TransporterFormHandler.handlePhoneChange(
-      e.target.value
-    );
-    setFormData((prev) => ({ ...prev, phone: sanitizedValue }));
+    setFormData((prev) => ({ ...prev, phone: e.target.value }));
   };
 
   return (
@@ -396,12 +394,11 @@ export default function TransporterDetail({
                   label="Phone *"
                   type="text"
                   value={
-                    <input
-                      type="tel"
+                    <PhoneInput
+                      name="phone"
                       value={formData.phone}
                       onChange={handlePhoneChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter phone number (numbers only, + allowed at start)"
+                      className="w-full"
                     />
                   }
                 />

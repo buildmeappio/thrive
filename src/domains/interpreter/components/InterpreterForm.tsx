@@ -6,6 +6,7 @@ import { Language } from "@prisma/client";
 import { getLanguages } from "../actions";
 import { filterUUIDLanguages } from "@/utils/languageUtils";
 import { Check, ChevronDown } from "lucide-react";
+import PhoneInput from "@/components/PhoneNumber";
 import {
   WeeklyHours,
   OverrideHours,
@@ -185,21 +186,7 @@ export default function InterpreterForm({
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Allow numbers and + (only at the start)
-    let filtered = value.replace(/[^0-9+]/g, "");
-    // If + exists, ensure it's only at the start
-    if (filtered.includes("+")) {
-      const plusCount = (filtered.match(/\+/g) || []).length;
-      // If there are multiple +, keep only the first one
-      if (plusCount > 1) {
-        filtered = "+" + filtered.replace(/\+/g, "");
-      } else if (!filtered.startsWith("+")) {
-        // Move + to the start if it's not there
-        filtered = "+" + filtered.replace(/\+/g, "");
-      }
-    }
-    setFormData((prev) => ({ ...prev, phone: filtered }));
+    setFormData((prev) => ({ ...prev, phone: e.target.value }));
   };
 
   // Email validation - must have at least one letter before @
@@ -331,12 +318,11 @@ export default function InterpreterForm({
 
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">Phone</label>
-            <input
-              type="tel"
+            <PhoneInput
+              name="phone"
               value={formData.phone}
               onChange={handlePhoneChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent transition-all"
-              placeholder="Enter phone number (e.g., +1234567890)"
+              className="w-full"
             />
           </div>
         </div>

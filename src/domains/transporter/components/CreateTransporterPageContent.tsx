@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Section from "@/components/Section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import PhoneInput from "@/components/PhoneNumber";
 import {
   createTransporter,
   saveTransporterAvailabilityAction,
@@ -172,10 +173,7 @@ export default function CreateTransporterPageContent() {
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitizedValue = TransporterFormHandler.handlePhoneChange(
-      e.target.value
-    );
-    setFormData((prev) => ({ ...prev, phone: sanitizedValue }));
+    setFormData((prev) => ({ ...prev, phone: e.target.value }));
   };
 
   return (
@@ -277,8 +275,8 @@ export default function CreateTransporterPageContent() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Phone <span className="text-red-500">*</span>
                 </label>
-                <Input
-                  type="tel"
+                <PhoneInput
+                  name="phone"
                   value={formData.phone}
                   onChange={handlePhoneChange}
                   className={cn(
@@ -287,13 +285,11 @@ export default function CreateTransporterPageContent() {
                       ? "border-red-300 focus:ring-red-500"
                       : ""
                   )}
-                  placeholder="Enter phone number (numbers only, + allowed at start)"
-                  required
                 />
                 {formData.phone &&
                   !TransporterFormHandler.isValidPhone(formData.phone) && (
                     <p className="text-xs text-red-500 mt-1">
-                      Please enter a valid phone number
+                      Please enter a valid Canadian phone number
                     </p>
                   )}
               </div>

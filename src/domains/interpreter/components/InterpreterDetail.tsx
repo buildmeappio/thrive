@@ -9,6 +9,7 @@ import { InterpreterData } from "../types/InterpreterData";
 import { deleteInterpreter, updateInterpreter, getLanguages } from "../actions";
 import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
+import PhoneInput from "@/components/PhoneNumber";
 import { useRouter } from "next/navigation";
 import { Trash2, Edit2, X, Check } from "lucide-react";
 import { Language } from "@prisma/client";
@@ -268,21 +269,7 @@ export default function InterpreterDetail({
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Allow numbers and + (only at the start)
-    let filtered = value.replace(/[^0-9+]/g, "");
-    // If + exists, ensure it's only at the start
-    if (filtered.includes("+")) {
-      const plusCount = (filtered.match(/\+/g) || []).length;
-      // If there are multiple +, keep only the first one
-      if (plusCount > 1) {
-        filtered = "+" + filtered.replace(/\+/g, "");
-      } else if (!filtered.startsWith("+")) {
-        // Move + to the start if it's not there
-        filtered = "+" + filtered.replace(/\+/g, "");
-      }
-    }
-    setFormData((prev) => ({ ...prev, phone: filtered }));
+    setFormData((prev) => ({ ...prev, phone: e.target.value }));
   };
 
   // Email validation - must have at least one letter before @
@@ -465,12 +452,11 @@ export default function InterpreterDetail({
                         <label className="text-sm font-medium text-gray-700">
                           Phone
                         </label>
-                        <input
-                          type="tel"
+                        <PhoneInput
+                          name="phone"
                           value={formData.phone}
                           onChange={handlePhoneChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A8FF]"
-                          placeholder="Enter phone number (e.g., +1234567890)"
+                          className="w-full"
                         />
                       </div>
                     </div>
