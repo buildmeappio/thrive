@@ -20,10 +20,10 @@ export const chaperoneFormSchema = z.object({
     .toLowerCase(),
   phone: z
     .string()
-    .refine((val) => val === "" || validateCanadianPhoneNumber(val), {
+    .optional()
+    .refine((val) => !val || val === "" || validateCanadianPhoneNumber(val), {
       message: "The phone number is not valid",
-    })
-    .optional(),
+    }),
   gender: z
     .string()
     .optional()

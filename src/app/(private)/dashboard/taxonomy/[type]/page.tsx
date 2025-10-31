@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import TaxonomyPage from "@/domains/taxonomy/components/TaxonomyPage";
 import { getTaxonomies, getExaminationTypes } from "@/domains/taxonomy/actions";
 import { TaxonomyType } from "@/domains/taxonomy/types/Taxonomy";
@@ -22,6 +23,25 @@ type PageProps = {
     type: string;
   };
 };
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { type } = await params;
+  
+  // Validate the type parameter
+  if (!validTypes.includes(type as TaxonomyType)) {
+    return {
+      title: "Not Found | Thrive Admin",
+      description: "Page not found",
+    };
+  }
+
+  const config = TaxonomyConfigs[type as TaxonomyType];
+  
+  return {
+    title: `${config.name} | Thrive Admin`,
+    description: `Manage ${config.name.toLowerCase()}`,
+  };
+}
 
 export default async function TaxonomyDynamicPage({ params }: PageProps) {
   const { type } = await params;

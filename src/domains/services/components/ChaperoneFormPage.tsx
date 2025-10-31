@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,8 @@ import {
   ChaperoneWithAvailability,
 } from "../types/Chaperone";
 import { WeeklyHours, OverrideHours, Weekday } from "../types/Availability";
+import { ChaperoneFormData, chaperoneFormSchema } from "../schemas/chaperones";
+import PhoneInput from "@/components/PhoneNumber";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -79,7 +82,10 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+    setValue,
+    watch,
+  } = useForm<ChaperoneFormData>({
+    resolver: zodResolver(chaperoneFormSchema),
     defaultValues: {
       firstName: chaperone?.firstName || "",
       lastName: chaperone?.lastName || "",
@@ -89,14 +95,108 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
     },
   });
 
-  const handleFormSubmit = async (data: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    gender: string;
-  }) => {
+  const phone = watch("phone");
+
+  // Helper function to convert time string to minutes since midnight
+  const timeToMinutes = (timeStr: string): number => {
+    const [time, period] = timeStr.split(' ');
+    const [hours, minutes] = time.split(':').map(Number);
+    
+    let hour24 = hours;
+    if (period === 'PM' && hours !== 12) hour24 += 12;
+    if (period === 'AM' && hours === 12) hour24 = 0;
+    
+    return hour24 * 60 + minutes;
+  };
+
+  // Validate time slots for overlaps and invalid ranges
+  const validateTimeSlots = (): { isValid: boolean; errorMessage?: string } => {
+    // Check weekly hours
+    for (const dayHours of weeklyHours) {
+      if (!dayHours.enabled || dayHours.timeSlots.length === 0) continue;
+
+      for (let i = 0; i < dayHours.timeSlots.length; i++) {
+        const slot = dayHours.timeSlots[i];
+        const startMinutes = timeToMinutes(slot.startTime);
+        const endMinutes = timeToMinutes(slot.endTime);
+
+        // Check if start time is greater than or equal to end time
+        if (startMinutes >= endMinutes) {
+          return {
+            isValid: false,
+            errorMessage: `Invalid time range in ${dayHours.dayOfWeek}: Start time must be before end time`,
+          };
+        }
+
+        // Check for overlaps with other slots on the same day
+        for (let j = i + 1; j < dayHours.timeSlots.length; j++) {
+          const otherSlot = dayHours.timeSlots[j];
+          const otherStartMinutes = timeToMinutes(otherSlot.startTime);
+          const otherEndMinutes = timeToMinutes(otherSlot.endTime);
+
+          const hasOverlap =
+            (startMinutes >= otherStartMinutes && startMinutes < otherEndMinutes) ||
+            (endMinutes > otherStartMinutes && endMinutes <= otherEndMinutes) ||
+            (startMinutes <= otherStartMinutes && endMinutes >= otherEndMinutes);
+
+          if (hasOverlap) {
+            return {
+              isValid: false,
+              errorMessage: `Overlapping time slots in ${dayHours.dayOfWeek}`,
+            };
+          }
+        }
+      }
+    }
+
+    // Check override hours
+    for (const dateHours of overrideHours) {
+      for (let i = 0; i < dateHours.timeSlots.length; i++) {
+        const slot = dateHours.timeSlots[i];
+        const startMinutes = timeToMinutes(slot.startTime);
+        const endMinutes = timeToMinutes(slot.endTime);
+
+        // Check if start time is greater than or equal to end time
+        if (startMinutes >= endMinutes) {
+          return {
+            isValid: false,
+            errorMessage: `Invalid time range in override date ${dateHours.date}: Start time must be before end time`,
+          };
+        }
+
+        // Check for overlaps with other slots on the same date
+        for (let j = i + 1; j < dateHours.timeSlots.length; j++) {
+          const otherSlot = dateHours.timeSlots[j];
+          const otherStartMinutes = timeToMinutes(otherSlot.startTime);
+          const otherEndMinutes = timeToMinutes(otherSlot.endTime);
+
+          const hasOverlap =
+            (startMinutes >= otherStartMinutes && startMinutes < otherEndMinutes) ||
+            (endMinutes > otherStartMinutes && endMinutes <= otherEndMinutes) ||
+            (startMinutes <= otherStartMinutes && endMinutes >= otherEndMinutes);
+
+          if (hasOverlap) {
+            return {
+              isValid: false,
+              errorMessage: `Overlapping time slots in override date ${dateHours.date}`,
+            };
+          }
+        }
+      }
+    }
+
+    return { isValid: true };
+  };
+
+  const handleFormSubmit = async (data: ChaperoneFormData) => {
     try {
+      // Validate time slots before submission
+      const validation = validateTimeSlots();
+      if (!validation.isValid) {
+        toast.error(validation.errorMessage || 'Please fix time slot errors before submitting');
+        return;
+      }
+
       setIsSubmitting(true);
 
       // Filter only enabled days for weekly hours
@@ -161,9 +261,7 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                 </Label>
                 <Input
                   id="firstName"
-                  {...register("firstName", {
-                    required: "First name is required",
-                  })}
+                  {...register("firstName")}
                   placeholder="Enter first name"
                   disabled={isSubmitting}
                 />
@@ -180,9 +278,7 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                 </Label>
                 <Input
                   id="lastName"
-                  {...register("lastName", {
-                    required: "Last name is required",
-                  })}
+                  {...register("lastName")}
                   placeholder="Enter last name"
                   disabled={isSubmitting}
                 />
@@ -200,13 +296,7 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                 <Input
                   id="email"
                   type="email"
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Invalid email address",
-                    },
-                  })}
+                  {...register("email")}
                   placeholder="Enter email"
                   disabled={isSubmitting}
                 />
@@ -217,12 +307,15 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
 
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  {...register("phone")}
-                  placeholder="Enter phone number"
+                <PhoneInput
+                  name="phone"
+                  value={phone || ""}
+                  onChange={(e) => setValue("phone", e.target.value, { shouldValidate: true })}
                   disabled={isSubmitting}
                 />
+                {errors.phone && (
+                  <p className="text-sm text-red-500">{errors.phone.message}</p>
+                )}
               </div>
 
               <div className="space-y-2 w-1/4">

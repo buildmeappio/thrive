@@ -89,7 +89,7 @@ export const routes: Route[] = [
         href: "/dashboard/taxonomy/examinationType",
       },
       {
-        label: "Examination Type Benefits",
+        label: "Benefits",
         href: "/dashboard/taxonomy/examinationTypeBenefit",
       },
       { label: "Languages", href: "/dashboard/taxonomy/language" },
@@ -99,7 +99,7 @@ export const routes: Route[] = [
       },
     ],
   },
-  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 6 },
+  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 8 },
 ];
 
 const Sidebar = () => {
@@ -265,10 +265,10 @@ const Sidebar = () => {
                   : false;
                 const isSubActive =
                   hasSubRoutes &&
-                  item.subRoutes!.some(
-                    (sub) =>
-                      pathname === sub.href || pathname.startsWith(sub.href)
-                  );
+                  item.subRoutes!.some((sub) => {
+                    // Exact match or starts with the href followed by a slash
+                    return pathname === sub.href || pathname.startsWith(sub.href + '/');
+                  });
                 const active = isSelected || isActive || isSubActive;
                 const Icon = item.icon;
 
@@ -359,7 +359,7 @@ const Sidebar = () => {
                         {item.subRoutes!.map((sub) => {
                           const isSubActive =
                             pathname === sub.href ||
-                            pathname.startsWith(sub.href);
+                            pathname.startsWith(sub.href + '/');
                           return (
                             <Link
                               key={sub.href}

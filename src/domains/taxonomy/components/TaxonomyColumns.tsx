@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, ArrowUp, ArrowDown, Edit } from 'lucide-react';
 import { TaxonomyData } from '../types/Taxonomy';
-import { formatDate } from '@/utils/date';
+import { formatDate, formatTaxonomyName } from '@/utils/date';
 import React, { useRef, useEffect, useState } from 'react';
 
 const Header = ({
@@ -41,7 +41,7 @@ const Header = ({
 
 const ActionButton = ({ onEdit }: { onEdit: () => void }) => {
   return (
-    <button onClick={onEdit} className="h-full w-full cursor-pointer">
+    <button onClick={onEdit} className="cursor-pointer">
       <div className="flex h-[30px] w-[40px] items-center justify-center rounded-full bg-[#E0E0FF] p-0 hover:opacity-80">
         <Edit className="h-4 w-4 text-[#000093]" />
       </div>
@@ -99,7 +99,11 @@ export const createTaxonomyColumns = (
     cell: ({ row }) => {
       const value = row.original[field];
       const displayValue = value !== null && value !== undefined ? String(value) : 'N/A';
-      return <Content title={displayValue}>{displayValue}</Content>;
+      // Format name fields (like 'name', 'benefit', 'examinationTypeName')
+      const formattedValue = (field === 'name' || field === 'benefit' || field.toLowerCase().includes('name')) 
+        ? formatTaxonomyName(displayValue) 
+        : displayValue;
+      return <Content title={formattedValue}>{formattedValue}</Content>;
     },
     size: field === 'description' ? 250 : 200,
     maxSize: field === 'description' ? 300 : 250,
@@ -131,7 +135,11 @@ export const createTaxonomyColumns = (
     header: '',
     accessorKey: 'id',
     cell: ({ row }) => {
-      return <ActionButton onEdit={() => onEdit(row.original)} />;
+      return (
+        <div className="flex justify-end">
+          <ActionButton onEdit={() => onEdit(row.original)} />
+        </div>
+      );
     },
     size: 60,
     maxSize: 80,

@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { OverrideHours } from '../types/Availability';
 import { format } from 'date-fns';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, AlertCircle } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -18,6 +18,12 @@ type OverrideHoursSectionProps = {
   overrideHours: OverrideHours[];
   onChange: (overrideHours: OverrideHours[]) => void;
   disabled?: boolean;
+};
+
+type TimeSlotError = {
+  date: string;
+  slotIndex: number;
+  message: string;
 };
 
 // Generate time options in 30-minute intervals
@@ -35,6 +41,18 @@ const generateTimeOptions = () => {
 };
 
 const timeOptions = generateTimeOptions();
+
+// Helper function to convert time string to minutes since midnight
+const timeToMinutes = (timeStr: string): number => {
+  const [time, period] = timeStr.split(' ');
+  const [hours, minutes] = time.split(':').map(Number);
+  
+  let hour24 = hours;
+  if (period === 'PM' && hours !== 12) hour24 += 12;
+  if (period === 'AM' && hours === 12) hour24 = 0;
+  
+  return hour24 * 60 + minutes;
+};
 
 // Helper function to add hours to a time string
 const addHoursToTime = (timeStr: string, hoursToAdd: number): string => {
@@ -62,6 +80,57 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
   onChange,
   disabled = false,
 }) => {
+  const [errors, setErrors] = useState<TimeSlotError[]>([]);
+
+  // Validate time slots whenever overrideHours changes
+  useEffect(() => {
+    const newErrors: TimeSlotError[] = [];
+
+    overrideHours.forEach((dateHours) => {
+      dateHours.timeSlots.forEach((slot, slotIndex) => {
+        const startMinutes = timeToMinutes(slot.startTime);
+        const endMinutes = timeToMinutes(slot.endTime);
+
+        // Check if start time is greater than or equal to end time
+        if (startMinutes >= endMinutes) {
+          newErrors.push({
+            date: dateHours.date,
+            slotIndex,
+            message: 'Start time must be before end time',
+          });
+        }
+
+        // Check for overlaps with other slots on the same date
+        dateHours.timeSlots.forEach((otherSlot, otherIndex) => {
+          if (slotIndex >= otherIndex) return; // Only check once per pair
+
+          const otherStartMinutes = timeToMinutes(otherSlot.startTime);
+          const otherEndMinutes = timeToMinutes(otherSlot.endTime);
+
+          // Check if slots overlap
+          const hasOverlap =
+            (startMinutes >= otherStartMinutes && startMinutes < otherEndMinutes) ||
+            (endMinutes > otherStartMinutes && endMinutes <= otherEndMinutes) ||
+            (startMinutes <= otherStartMinutes && endMinutes >= otherEndMinutes);
+
+          if (hasOverlap) {
+            newErrors.push({
+              date: dateHours.date,
+              slotIndex,
+              message: 'Time slots cannot overlap',
+            });
+          }
+        });
+      });
+    });
+
+    setErrors(newErrors);
+  }, [overrideHours]);
+
+  const getSlotError = (date: string, slotIndex: number): string | undefined => {
+    return errors.find((e) => e.date === date && e.slotIndex === slotIndex)?.message;
+  };
+
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
@@ -210,80 +279,91 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
         {sortedOverrideHours.length > 0 ? (
           sortedOverrideHours.map((override) => (
             <div key={override.date} className="space-y-3">
-              {override.timeSlots.map((slot, slotIndex) => (
-                <div key={slotIndex} className="flex items-center gap-4">
-                  {slotIndex === 0 && (
-                    <Checkbox
-                      id={`date-${override.date}`}
-                      checked={true}
-                      onCheckedChange={(checked) => handleToggleDate(override.date, !!checked)}
-                      disabled={disabled}
-                      className="w-5 h-5"
-                    />
-                  )}
-                  {slotIndex > 0 && <div className="w-5" />}
-                  
-                  {slotIndex === 0 && (
-                    <label
-                      htmlFor={`date-${override.date}`}
-                      className="min-w-[100px] text-base font-poppins text-gray-900 cursor-pointer"
-                    >
+              {override.timeSlots.map((slot, slotIndex) => {
+                const error = getSlotError(override.date, slotIndex);
+                return (
+                  <div key={slotIndex} className="space-y-1">
+                    <div className="flex items-center gap-4">
+                      {slotIndex === 0 && (
+                        <Checkbox
+                          id={`date-${override.date}`}
+                          checked={true}
+                          onCheckedChange={(checked) => handleToggleDate(override.date, !!checked)}
+                          disabled={disabled}
+                          className="w-5 h-5"
+                        />
+                      )}
+                      {slotIndex > 0 && <div className="w-5" />}
+                      
+                      {slotIndex === 0 && (
+                        <label
+                          htmlFor={`date-${override.date}`}
+                          className="min-w-[100px] text-base font-poppins text-gray-900 cursor-pointer"
+                        >
                       {format(new Date(override.date), 'MM-dd-yyyy')}
                     </label>
                   )}
                   {slotIndex > 0 && <div className="min-w-[100px]" />}
                   
-                  <Select
-                    value={slot.startTime}
-                    onValueChange={(value) => handleUpdateSlot(override.date, slotIndex, 'startTime', value)}
-                    disabled={disabled}
-                  >
-                    <SelectTrigger className="flex-1 h-11 rounded-lg border border-gray-300 bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeOptions.map((time) => (
-                        <SelectItem key={time} value={time}>{time}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select
-                    value={slot.endTime}
-                    onValueChange={(value) => handleUpdateSlot(override.date, slotIndex, 'endTime', value)}
-                    disabled={disabled}
-                  >
-                    <SelectTrigger className="flex-1 h-11 rounded-lg border border-gray-300 bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeOptions.map((time) => (
-                        <SelectItem key={time} value={time}>{time}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
-                  {slotIndex === 0 ? (
-                    <button
-                      type="button"
-                      onClick={() => handleAddSlot(override.date)}
-                      disabled={disabled}
-                      className="flex items-center justify-center w-10 h-10 text-cyan-500 hover:text-cyan-600 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <Plus size={24} />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSlot(override.date, slotIndex)}
-                      disabled={disabled}
-                      className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-red-500 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  )}
-                </div>
-              ))}
+                      <Select
+                        value={slot.startTime}
+                        onValueChange={(value) => handleUpdateSlot(override.date, slotIndex, 'startTime', value)}
+                        disabled={disabled}
+                      >
+                        <SelectTrigger className={`flex-1 h-11 rounded-lg border bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400 ${error ? 'border-red-500' : 'border-gray-300'}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timeOptions.map((time) => (
+                            <SelectItem key={time} value={time}>{time}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select
+                        value={slot.endTime}
+                        onValueChange={(value) => handleUpdateSlot(override.date, slotIndex, 'endTime', value)}
+                        disabled={disabled}
+                      >
+                        <SelectTrigger className={`flex-1 h-11 rounded-lg border bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400 ${error ? 'border-red-500' : 'border-gray-300'}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timeOptions.map((time) => (
+                            <SelectItem key={time} value={time}>{time}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      
+                      {slotIndex === 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => handleAddSlot(override.date)}
+                          disabled={disabled}
+                          className="flex items-center justify-center w-10 h-10 text-cyan-500 hover:text-cyan-600 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <Plus size={24} />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSlot(override.date, slotIndex)}
+                          disabled={disabled}
+                          className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-red-500 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      )}
+                    </div>
+                    {error && (
+                      <div className="flex items-center gap-2 ml-[125px] text-red-500 text-sm">
+                        <AlertCircle size={16} />
+                        <span>{error}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ))
         ) : (

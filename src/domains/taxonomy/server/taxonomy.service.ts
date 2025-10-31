@@ -36,10 +36,17 @@ export const createTaxonomy = async (type: TaxonomyType, data: CreateTaxonomyInp
       }
     }
 
+    // Special handling for examinationTypeBenefit to only include valid fields
+    let createData: any = { ...data };
+    if (type === 'examinationTypeBenefit') {
+      createData = {
+        examinationTypeId: data.examinationTypeId,
+        benefit: data.benefit,
+      };
+    }
+
     const result = await model.create({
-      data: {
-        ...data,
-      },
+      data: createData,
     });
 
     return result;
@@ -47,7 +54,8 @@ export const createTaxonomy = async (type: TaxonomyType, data: CreateTaxonomyInp
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Intwernal server error");
+    console.error(`Error creating ${type}:`, error);
+    throw HttpError.internalServerError("Internal server error");
   }
 };
 
@@ -82,9 +90,17 @@ export const updateTaxonomy = async (type: TaxonomyType, id: string, data: Updat
       }
     }
 
+    // Special handling for examinationTypeBenefit to only include valid fields
+    let updateData: any = { ...data };
+    if (type === 'examinationTypeBenefit') {
+      updateData = {};
+      if (data.examinationTypeId !== undefined) updateData.examinationTypeId = data.examinationTypeId;
+      if (data.benefit !== undefined) updateData.benefit = data.benefit;
+    }
+
     const result = await model.update({
       where: { id },
-      data,
+      data: updateData,
     });
 
     return result;
@@ -92,6 +108,7 @@ export const updateTaxonomy = async (type: TaxonomyType, id: string, data: Updat
     if (error instanceof HttpError) {
       throw error;
     }
+    console.error(`Error updating ${type}:`, error);
     throw HttpError.internalServerError("Internal server error");
   }
 };

@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, AlertCircle } from 'lucide-react';
 import { WeeklyHours, Weekday } from '../types/Availability';
 import {
   Select,
@@ -16,6 +16,12 @@ type WeeklyHoursSectionProps = {
   weeklyHours: WeeklyHours[];
   onChange: (weeklyHours: WeeklyHours[]) => void;
   disabled?: boolean;
+};
+
+type TimeSlotError = {
+  day: Weekday;
+  slotIndex: number;
+  message: string;
 };
 
 const DAYS: { value: Weekday; label: string }[] = [
@@ -44,6 +50,18 @@ const generateTimeOptions = () => {
 
 const timeOptions = generateTimeOptions();
 
+// Helper function to convert time string to minutes since midnight
+const timeToMinutes = (timeStr: string): number => {
+  const [time, period] = timeStr.split(' ');
+  const [hours, minutes] = time.split(':').map(Number);
+  
+  let hour24 = hours;
+  if (period === 'PM' && hours !== 12) hour24 += 12;
+  if (period === 'AM' && hours === 12) hour24 = 0;
+  
+  return hour24 * 60 + minutes;
+};
+
 // Helper function to add hours to a time string
 const addHoursToTime = (timeStr: string, hoursToAdd: number): string => {
   // Parse time string (e.g., "10:00 AM")
@@ -66,6 +84,59 @@ const addHoursToTime = (timeStr: string, hoursToAdd: number): string => {
 };
 
 const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, onChange, disabled = false }) => {
+  const [errors, setErrors] = useState<TimeSlotError[]>([]);
+
+  // Validate time slots whenever weeklyHours changes
+  useEffect(() => {
+    const newErrors: TimeSlotError[] = [];
+
+    weeklyHours.forEach((dayHours) => {
+      if (!dayHours.enabled || dayHours.timeSlots.length === 0) return;
+
+      dayHours.timeSlots.forEach((slot, slotIndex) => {
+        const startMinutes = timeToMinutes(slot.startTime);
+        const endMinutes = timeToMinutes(slot.endTime);
+
+        // Check if start time is greater than or equal to end time
+        if (startMinutes >= endMinutes) {
+          newErrors.push({
+            day: dayHours.dayOfWeek,
+            slotIndex,
+            message: 'Start time must be before end time',
+          });
+        }
+
+        // Check for overlaps with other slots on the same day
+        dayHours.timeSlots.forEach((otherSlot, otherIndex) => {
+          if (slotIndex >= otherIndex) return; // Only check once per pair
+
+          const otherStartMinutes = timeToMinutes(otherSlot.startTime);
+          const otherEndMinutes = timeToMinutes(otherSlot.endTime);
+
+          // Check if slots overlap
+          const hasOverlap =
+            (startMinutes >= otherStartMinutes && startMinutes < otherEndMinutes) ||
+            (endMinutes > otherStartMinutes && endMinutes <= otherEndMinutes) ||
+            (startMinutes <= otherStartMinutes && endMinutes >= otherEndMinutes);
+
+          if (hasOverlap) {
+            newErrors.push({
+              day: dayHours.dayOfWeek,
+              slotIndex,
+              message: 'Time slots cannot overlap',
+            });
+          }
+        });
+      });
+    });
+
+    setErrors(newErrors);
+  }, [weeklyHours]);
+
+  const getSlotError = (day: Weekday, slotIndex: number): string | undefined => {
+    return errors.find((e) => e.day === day && e.slotIndex === slotIndex)?.message;
+  };
+
   const handleDayToggle = (day: Weekday, checked: boolean) => {
     const updated = weeklyHours.map((wh) =>
       wh.dayOfWeek === day ? { ...wh, enabled: checked } : wh
@@ -193,78 +264,89 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
                 </button>
               </div>
             ) : (
-              dayHours.timeSlots.map((slot, slotIndex) => (
-                <div key={slotIndex} className="flex items-center gap-4">
-                  {slotIndex === 0 ? (
-                    <div className="flex items-center gap-3 min-w-[140px]">
-                      <Checkbox
-                        id={`day-${day.value}`}
-                        checked={dayHours.enabled}
-                        onCheckedChange={(checked) => handleDayToggle(day.value, !!checked)}
-                        disabled={disabled}
-                        className="w-5 h-5"
-                      />
-                      <label
-                        htmlFor={`day-${day.value}`}
-                        className={`text-base font-poppins cursor-pointer select-none ${
-                          dayHours.enabled ? 'text-gray-900' : 'text-gray-400'
-                        }`}
+              dayHours.timeSlots.map((slot, slotIndex) => {
+                const error = getSlotError(day.value, slotIndex);
+                return (
+                  <div key={slotIndex} className="space-y-1">
+                    <div className="flex items-center gap-4">
+                      {slotIndex === 0 ? (
+                        <div className="flex items-center gap-3 min-w-[140px]">
+                          <Checkbox
+                            id={`day-${day.value}`}
+                            checked={dayHours.enabled}
+                            onCheckedChange={(checked) => handleDayToggle(day.value, !!checked)}
+                            disabled={disabled}
+                            className="w-5 h-5"
+                          />
+                          <label
+                            htmlFor={`day-${day.value}`}
+                            className={`text-base font-poppins cursor-pointer select-none ${
+                              dayHours.enabled ? 'text-gray-900' : 'text-gray-400'
+                            }`}
+                          >
+                            {day.label}
+                          </label>
+                        </div>
+                      ) : (
+                        <div className="min-w-[140px]" />
+                      )}
+                      <Select
+                        value={slot.startTime}
+                        onValueChange={(value) => handleUpdateSlot(day.value, slotIndex, 'startTime', value)}
+                        disabled={!dayHours.enabled || disabled}
                       >
-                        {day.label}
-                      </label>
+                        <SelectTrigger className={`h-11 rounded-lg border bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400 ${error ? 'border-red-500' : 'border-gray-300'}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timeOptions.map((time) => (
+                            <SelectItem key={time} value={time}>{time}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select
+                        value={slot.endTime}
+                        onValueChange={(value) => handleUpdateSlot(day.value, slotIndex, 'endTime', value)}
+                        disabled={!dayHours.enabled || disabled}
+                      >
+                        <SelectTrigger className={`h-11 rounded-lg border bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400 ${error ? 'border-red-500' : 'border-gray-300'}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {timeOptions.map((time) => (
+                            <SelectItem key={time} value={time}>{time}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {slotIndex === 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => dayHours.enabled && handleAddSlot(day.value)}
+                          disabled={!dayHours.enabled || disabled}
+                          className="flex items-center justify-center w-10 h-10 text-cyan-500 hover:text-cyan-600 disabled:text-gray-300 disabled:cursor-not-allowed"
+                        >
+                          <Plus size={24} />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSlot(day.value, slotIndex)}
+                          disabled={!dayHours.enabled || disabled}
+                          className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-red-500 disabled:cursor-not-allowed"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      )}
                     </div>
-                  ) : (
-                    <div className="min-w-[140px]" />
-                  )}
-                  <Select
-                    value={slot.startTime}
-                    onValueChange={(value) => handleUpdateSlot(day.value, slotIndex, 'startTime', value)}
-                    disabled={!dayHours.enabled || disabled}
-                  >
-                    <SelectTrigger className="h-11 rounded-lg border border-gray-300 bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeOptions.map((time) => (
-                        <SelectItem key={time} value={time}>{time}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select
-                    value={slot.endTime}
-                    onValueChange={(value) => handleUpdateSlot(day.value, slotIndex, 'endTime', value)}
-                    disabled={!dayHours.enabled || disabled}
-                  >
-                    <SelectTrigger className="h-11 rounded-lg border border-gray-300 bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeOptions.map((time) => (
-                        <SelectItem key={time} value={time}>{time}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {slotIndex === 0 ? (
-                    <button
-                      type="button"
-                      onClick={() => dayHours.enabled && handleAddSlot(day.value)}
-                      disabled={!dayHours.enabled || disabled}
-                      className="flex items-center justify-center w-10 h-10 text-cyan-500 hover:text-cyan-600 disabled:text-gray-300 disabled:cursor-not-allowed"
-                    >
-                      <Plus size={24} />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSlot(day.value, slotIndex)}
-                      disabled={!dayHours.enabled || disabled}
-                      className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-red-500 disabled:cursor-not-allowed"
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  )}
-                </div>
-              ))
+                    {error && (
+                      <div className="flex items-center gap-2 ml-[140px] text-red-500 text-sm">
+                        <AlertCircle size={16} />
+                        <span>{error}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             )}
           </div>
         );
