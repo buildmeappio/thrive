@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -6,17 +5,27 @@ import { useRouter } from "next/navigation";
 import Section from "@/components/Section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createTransporter, saveTransporterAvailabilityAction } from "../server";
+import {
+  createTransporter,
+  saveTransporterAvailabilityAction,
+} from "../server";
 import { toast } from "sonner";
 import { provinceOptions } from "@/constants/options";
 import { cn } from "@/lib/utils";
 import { TransporterFormHandler } from "../server";
-import { WeeklyHours, OverrideHours, WeeklyHoursState, OverrideHoursState } from "@/components/availability";
+import {
+  WeeklyHours,
+  OverrideHours,
+  WeeklyHoursState,
+  OverrideHoursState,
+} from "@/components/availability";
 
 export default function CreateTransporterPageContent() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"weeklyHours" | "overrideHours">("weeklyHours");
+  const [activeTab, setActiveTab] = useState<"weeklyHours" | "overrideHours">(
+    "weeklyHours"
+  );
   const [formData, setFormData] = useState({
     companyName: "",
     contactPerson: "",
@@ -25,13 +34,34 @@ export default function CreateTransporterPageContent() {
     serviceAreas: [],
   });
   const [weeklyHours, setWeeklyHours] = useState<WeeklyHoursState>({
-    sunday: { enabled: false, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
-    monday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
-    tuesday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
-    wednesday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
-    thursday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
-    friday: { enabled: true, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
-    saturday: { enabled: false, timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }] },
+    sunday: {
+      enabled: false,
+      timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+    },
+    monday: {
+      enabled: true,
+      timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+    },
+    tuesday: {
+      enabled: true,
+      timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+    },
+    wednesday: {
+      enabled: true,
+      timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+    },
+    thursday: {
+      enabled: true,
+      timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+    },
+    friday: {
+      enabled: true,
+      timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+    },
+    saturday: {
+      enabled: false,
+      timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+    },
   });
   const [overrideHours, setOverrideHours] = useState<OverrideHoursState>([]);
 
@@ -59,7 +89,7 @@ export default function CreateTransporterPageContent() {
           weeklyHours,
           overrideHours,
         } as any);
-        
+
         toast.success("Transporter created successfully");
         router.push("/transporter");
       } else {
@@ -334,8 +364,7 @@ export default function CreateTransporterPageContent() {
                       activeTab === "weeklyHours"
                         ? "text-black font-bold"
                         : "text-gray-500 hover:text-gray-700"
-                    }`}
-                  >
+                    }`}>
                     Weekly Hours
                     {activeTab === "weeklyHours" && (
                       <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
@@ -348,8 +377,7 @@ export default function CreateTransporterPageContent() {
                       activeTab === "overrideHours"
                         ? "text-black font-bold"
                         : "text-gray-500 hover:text-gray-700"
-                    }`}
-                  >
+                    }`}>
                     Override Hours
                     {activeTab === "overrideHours" && (
                       <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
@@ -362,7 +390,10 @@ export default function CreateTransporterPageContent() {
                   <WeeklyHours value={weeklyHours} onChange={setWeeklyHours} />
                 )}
                 {activeTab === "overrideHours" && (
-                  <OverrideHours value={overrideHours} onChange={setOverrideHours} />
+                  <OverrideHours
+                    value={overrideHours}
+                    onChange={setOverrideHours}
+                  />
                 )}
               </div>
             </div>
@@ -370,14 +401,18 @@ export default function CreateTransporterPageContent() {
         </div>
 
         {/* Actions */}
-        <div className="col-span-full flex justify-end gap-4 pt-4 border-t">
-          <Button type="button" variant="outline" onClick={() => router.back()}>
+        <div className="col-span-full flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            className="w-full sm:w-auto px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base">
             Cancel
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white shadow-sm hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80">
+            className="w-full sm:w-auto px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white shadow-sm hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80">
             {isLoading ? "Creating..." : "Create Transporter"}
           </Button>
         </div>
