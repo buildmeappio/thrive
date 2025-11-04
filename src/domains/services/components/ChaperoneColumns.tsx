@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, ArrowUp, ArrowDown, Edit, ArrowRight } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, ArrowRight } from 'lucide-react';
 import { ChaperoneData } from '../types/Chaperone';
 import React, { useRef, useEffect, useState } from 'react';
 
@@ -43,10 +43,10 @@ const ActionButtons = ({ onView }: { onView: () => void }) => {
     <div className="flex items-center gap-2 justify-end">
       <button 
         onClick={onView} 
-        className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-[#E0E0FF] hover:bg-[#D0D0FF] transition-colors cursor-pointer"
+        className="flex items-center justify-center rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] p-1 w-[30px] h-[30px] hover:opacity-80 transition-opacity cursor-pointer"
         title="View details"
       >
-        <ArrowRight className="h-4 w-4 text-[#000093]" />
+        <ArrowRight className="w-4 h-4 text-white" />
       </button>
     </div>
   );
@@ -67,7 +67,7 @@ const Content = ({ children, className, title }: { children: React.ReactNode; cl
   return (
     <div 
       ref={textRef}
-      className={cn("text-[#4D4D4D] font-poppins text-[16px] leading-5 overflow-hidden text-ellipsis whitespace-nowrap", className)}
+      className={cn("text-[#4D4D4D] font-poppins text-[16px] leading-normal overflow-hidden text-ellipsis whitespace-nowrap", className)}
       title={showTooltip ? title : undefined}
     >
       {children}

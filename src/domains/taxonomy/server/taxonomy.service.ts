@@ -159,7 +159,7 @@ export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]>
       }, {}),
       createdAt: item.createdAt,
     }));
-  } catch (error) {
+  } catch {
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -214,7 +214,41 @@ export const getExaminationTypes = async () => {
       label: type.name,
       value: type.id,
     }));
+  } catch {
+    throw HttpError.internalServerError("Internal server error");
+  }
+};
+
+export const deleteTaxonomy = async (type: TaxonomyType, id: string) => {
+  try {
+    const model = getPrismaModel(type);
+
+    // Check if record exists
+    const existing = await model.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
+
+    if (!existing) {
+      throw HttpError.notFound(`${type} not found`);
+    }
+
+    // Soft delete - set deletedAt timestamp
+    const result = await model.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+
+    return result;
   } catch (error) {
+    if (error instanceof HttpError) {
+      throw error;
+    }
+    console.error(`Error deleting ${type}:`, error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -225,6 +259,7 @@ const taxonomyService = {
   getTaxonomies,
   getTaxonomyById,
   getExaminationTypes,
+  deleteTaxonomy,
 };
 
 export default taxonomyService;

@@ -8,8 +8,7 @@ import { filterUUIDLanguages } from "@/utils/languageUtils";
 import { Check, ChevronDown } from "lucide-react";
 import PhoneInput from "@/components/PhoneNumber";
 import {
-  WeeklyHours,
-  OverrideHours,
+  UnifiedAvailabilitySection,
   WeeklyHoursState,
   OverrideHoursState,
 } from "@/components/availability";
@@ -40,9 +39,6 @@ export default function InterpreterForm({
   isLoading = false,
 }: Props) {
   const [allLanguages, setAllLanguages] = useState<Language[]>([]);
-  const [activeTab, setActiveTab] = useState<"weeklyHours" | "overrideHours">(
-    "weeklyHours"
-  );
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>(
     initialData || {
@@ -429,59 +425,18 @@ export default function InterpreterForm({
       </div>
 
       {/* Availability Section */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Set Your Availability
-        </h2>
-        <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
-          <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={() => setActiveTab("weeklyHours")}
-              className={`pb-2 px-4 transition-colors cursor-pointer relative ${
-                activeTab === "weeklyHours"
-                  ? "text-black font-bold"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}>
-              Weekly Hours
-              {activeTab === "weeklyHours" && (
-                <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("overrideHours")}
-              className={`pb-2 px-4 transition-colors cursor-pointer relative ${
-                activeTab === "overrideHours"
-                  ? "text-black font-bold"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}>
-              Override Hours
-              {activeTab === "overrideHours" && (
-                <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
-              )}
-            </button>
-          </div>
-        </div>
-        <div className="mt-4">
-          {activeTab === "weeklyHours" && (
-            <WeeklyHours
-              value={formData.weeklyHours}
-              onChange={(weeklyHours) =>
-                setFormData((prev) => ({ ...prev, weeklyHours }))
-              }
-            />
-          )}
-          {activeTab === "overrideHours" && (
-            <OverrideHours
-              value={formData.overrideHours}
-              onChange={(overrideHours) =>
-                setFormData((prev) => ({ ...prev, overrideHours }))
-              }
-            />
-          )}
-        </div>
-      </div>
+      <UnifiedAvailabilitySection
+        weeklyHours={formData.weeklyHours}
+        overrideHours={formData.overrideHours}
+        onWeeklyHoursChange={(weeklyHours) =>
+          setFormData((prev) => ({ ...prev, weeklyHours: weeklyHours as WeeklyHoursState }))
+        }
+        onOverrideHoursChange={(overrideHours) =>
+          setFormData((prev) => ({ ...prev, overrideHours }))
+        }
+        dataFormat="transporter-interpreter"
+        disabled={isLoading}
+      />
 
       {/* Form Actions */}
       <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200">

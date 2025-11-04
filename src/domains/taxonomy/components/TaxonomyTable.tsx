@@ -29,6 +29,7 @@ type TaxonomyTableProps = {
   displayFields: string[];
   searchFields: string[];
   onEdit: (taxonomy: TaxonomyData) => void;
+  onDelete: (taxonomy: TaxonomyData) => void;
   onCreate: () => void;
   singularName: string;
 };
@@ -37,7 +38,8 @@ const TaxonomyTable = ({
   taxonomyList, 
   displayFields,
   searchFields,
-  onEdit, 
+  onEdit,
+  onDelete,
   onCreate,
   singularName,
 }: TaxonomyTableProps) => {
@@ -59,7 +61,7 @@ const TaxonomyTable = ({
     });
   }, [taxonomyList, query, searchFields]);
 
-  const columns = useMemo(() => createTaxonomyColumns(displayFields, onEdit), [displayFields, onEdit]);
+  const columns = useMemo(() => createTaxonomyColumns(displayFields, onEdit, onDelete), [displayFields, onEdit, onDelete]);
 
   const table = useReactTable({
     data: filtered,

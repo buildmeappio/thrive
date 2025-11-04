@@ -93,7 +93,7 @@ export const getDepartments = async (): Promise<DepartmentData[]> => {
       name: department.name,
       createdAt: department.createdAt.toISOString(),
     }));
-  } catch (error) {
+  } catch {
     throw HttpError.internalServerError("Internal server error");
   }
 };

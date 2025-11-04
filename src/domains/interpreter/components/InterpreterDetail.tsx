@@ -17,11 +17,12 @@ import DeleteInterpreterModal from "./DeleteInterpreterModal";
 import { filterUUIDLanguages } from "@/utils/languageUtils";
 import { capitalizeWords } from "@/utils/text";
 import {
-  WeeklyHours,
-  OverrideHours,
+  UnifiedAvailabilitySection,
   WeeklyHoursState,
   OverrideHoursState,
 } from "@/components/availability";
+import { WeeklyHours, OverrideHours } from "@/domains/services/types/Availability";
+import { format } from "date-fns";
 import { saveInterpreterAvailabilityAction } from "../actions";
 
 type Props = {
@@ -63,6 +64,45 @@ const getDefaultWeeklyHours = (): WeeklyHoursState => ({
   },
 });
 
+// Helper to convert WeeklyHoursState to WeeklyHours[]
+const convertStateToArray = (state: WeeklyHoursState): WeeklyHours[] => {
+  const dayMap: Record<string, 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY'> = {
+    sunday: 'SUNDAY',
+    monday: 'MONDAY',
+    tuesday: 'TUESDAY',
+    wednesday: 'WEDNESDAY',
+    thursday: 'THURSDAY',
+    friday: 'FRIDAY',
+    saturday: 'SATURDAY',
+  };
+
+  return Object.entries(state).map(([day, data]) => ({
+    dayOfWeek: dayMap[day] || day.toUpperCase() as 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY',
+    enabled: data.enabled,
+    timeSlots: data.timeSlots,
+  }));
+};
+
+// Helper to convert OverrideHoursState to OverrideHours[]
+const convertOverrideStateToArray = (state: OverrideHoursState): OverrideHours[] => {
+  return state.map((oh) => {
+    // Convert MM-DD-YYYY to YYYY-MM-DD
+    const dateParts = oh.date.split('-');
+    if (dateParts.length === 3) {
+      const formattedDate = `${dateParts[2]}-${dateParts[0]}-${dateParts[1]}`;
+      return {
+        date: formattedDate,
+        timeSlots: oh.timeSlots,
+      };
+    }
+    // Fallback if format is unexpected
+    return {
+      date: oh.date,
+      timeSlots: oh.timeSlots,
+    };
+  });
+};
+
 export default function InterpreterDetail({
   interpreter,
   initialAvailability,
@@ -73,9 +113,6 @@ export default function InterpreterDetail({
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [allLanguages, setAllLanguages] = useState<Language[]>([]);
-  const [activeTab, setActiveTab] = useState<"weeklyHours" | "overrideHours">(
-    "weeklyHours"
-  );
   const hasAvailability = initialAvailability !== null;
   const [weeklyHours, setWeeklyHours] = useState<WeeklyHoursState>(
     initialAvailability?.weeklyHours || getDefaultWeeklyHours()
@@ -361,8 +398,8 @@ export default function InterpreterDetail({
         </div>
       </div>
 
-      <div className="w-full flex flex-col items-center">
-        <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
+      <div className="space-y-6">
+        <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8">
           {isEditMode ? (
             <>
               {/* Edit Mode - Two Column Layout: Company Info | Languages */}
@@ -490,56 +527,44 @@ export default function InterpreterDetail({
               </div>
 
               {/* Availability - Full Width in Edit Mode */}
-              <Section title="Availability">
-                <div>
-                  <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
-                    <div className="flex gap-4">
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("weeklyHours")}
-                        className={`pb-2 px-4 transition-colors cursor-pointer relative ${
-                          activeTab === "weeklyHours"
-                            ? "text-black font-bold"
-                            : "text-gray-500 hover:text-gray-700"
-                        }`}>
-                        Weekly Hours
-                        {activeTab === "weeklyHours" && (
-                          <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("overrideHours")}
-                        className={`pb-2 px-4 transition-colors cursor-pointer relative ${
-                          activeTab === "overrideHours"
-                            ? "text-black font-bold"
-                            : "text-gray-500 hover:text-gray-700"
-                        }`}>
-                        Override Hours
-                        {activeTab === "overrideHours" && (
-                          <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    {activeTab === "weeklyHours" && (
-                      <WeeklyHours
-                        value={weeklyHours}
-                        onChange={setWeeklyHours}
-                        disabled={false}
-                      />
-                    )}
-                    {activeTab === "overrideHours" && (
-                      <OverrideHours
-                        value={overrideHours}
-                        onChange={setOverrideHours}
-                        disabled={false}
-                      />
-                    )}
-                  </div>
-                </div>
-              </Section>
+              <UnifiedAvailabilitySection
+                weeklyHours={weeklyHours}
+                overrideHours={overrideHours}
+                onWeeklyHoursChange={(wh) => {
+                  if (Array.isArray(wh)) {
+                    // Convert from array format to state format
+                    const state: WeeklyHoursState = {};
+                    wh.forEach((day) => {
+                      const dayKey = day.dayOfWeek.toLowerCase();
+                      state[dayKey] = {
+                        enabled: day.enabled,
+                        timeSlots: day.timeSlots,
+                      };
+                    });
+                    setWeeklyHours(state);
+                  } else {
+                    setWeeklyHours(wh);
+                  }
+                }}
+                onOverrideHoursChange={(oh) => {
+                  if (Array.isArray(oh)) {
+                    // Convert from array format to state format
+                    const state: OverrideHoursState = oh.map((item) => {
+                      const dateParts = item.date.split('-');
+                      const formattedDate = `${dateParts[1]}-${dateParts[2]}-${dateParts[0]}`;
+                      return {
+                        date: formattedDate,
+                        timeSlots: item.timeSlots,
+                      };
+                    });
+                    setOverrideHours(state);
+                  } else {
+                    setOverrideHours(oh);
+                  }
+                }}
+                dataFormat="transporter-interpreter"
+                disabled={false}
+              />
             </>
           ) : (
             <>
@@ -589,66 +614,175 @@ export default function InterpreterDetail({
                 </div>
               </div>
 
-              {/* Availability - Full Width in View Mode */}
-              <Section title="Availability">
-                {hasAvailability ? (
-                  <div>
-                    <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
-                      <div className="flex gap-4">
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab("weeklyHours")}
-                          className={`pb-2 px-4 transition-colors cursor-pointer relative ${
-                            activeTab === "weeklyHours"
-                              ? "text-black font-bold"
-                              : "text-gray-500 hover:text-gray-700"
-                          }`}>
-                          Weekly Hours
-                          {activeTab === "weeklyHours" && (
-                            <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
-                          )}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab("overrideHours")}
-                          className={`pb-2 px-4 transition-colors cursor-pointer relative ${
-                            activeTab === "overrideHours"
-                              ? "text-black font-bold"
-                              : "text-gray-500 hover:text-gray-700"
-                          }`}>
-                          Override Hours
-                          {activeTab === "overrideHours" && (
-                            <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      {activeTab === "weeklyHours" && (
-                        <WeeklyHours
-                          value={weeklyHours}
-                          onChange={() => {}}
-                          disabled={true}
-                        />
-                      )}
-                      {activeTab === "overrideHours" && (
-                        <OverrideHours
-                          value={overrideHours}
-                          onChange={() => {}}
-                          disabled={true}
-                        />
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-gray-500">
-                    Availability is not set.
-                  </div>
-                )}
-              </Section>
             </>
           )}
         </div>
+
+        {/* Availability - Separate Card in View Mode */}
+        {!isEditMode && hasAvailability && (
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-gray-100">
+              <h2 className="text-xl font-semibold text-black font-poppins">
+                Availability
+              </h2>
+            </div>
+            <div className="p-6">
+              {(() => {
+                const weeklyHoursArray = convertStateToArray(weeklyHours);
+                const overrideHoursArray = convertOverrideStateToArray(overrideHours);
+                const hasWeeklyHours = weeklyHoursArray.filter((wh) => wh.enabled).length > 0;
+                const hasOverrideHours = overrideHoursArray.length > 0;
+
+                return (
+                  <>
+                    {/* Weekly Hours */}
+                    {hasWeeklyHours && (
+                      <div className="mb-8">
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="w-1 h-6 bg-gradient-to-b from-[#00A8FF] to-[#01F4C8] rounded-full"></div>
+                          <h3 className="text-lg font-semibold text-gray-900 font-poppins">
+                            Weekly Schedule
+                          </h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {weeklyHoursArray
+                            .filter((wh) => wh.enabled)
+                            .map((wh) => (
+                              <div
+                                key={wh.id || wh.dayOfWeek}
+                                className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100 hover:shadow-md transition-shadow"
+                              >
+                                <div className="flex items-center gap-2 mb-3">
+                                  <div className="w-2 h-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full"></div>
+                                  <p className="font-poppins font-semibold text-gray-900 text-base">
+                                    {wh.dayOfWeek.charAt(0) +
+                                      wh.dayOfWeek.slice(1).toLowerCase()}
+                                  </p>
+                                </div>
+                                <div className="space-y-2">
+                                  {wh.timeSlots.map((slot, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="flex items-center gap-2 bg-white/70 rounded-lg px-3 py-2"
+                                    >
+                                      <svg
+                                        className="w-4 h-4 text-[#00A8FF]"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                      </svg>
+                                      <p className="text-sm text-gray-700 font-poppins font-medium">
+                                        {slot.startTime} - {slot.endTime}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Override Hours */}
+                    {hasOverrideHours && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="w-1 h-6 bg-gradient-to-b from-[#FF6B6B] to-[#FFA500] rounded-full"></div>
+                          <h3 className="text-lg font-semibold text-gray-900 font-poppins">
+                            Special Dates
+                          </h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {overrideHoursArray.map((oh) => (
+                            <div
+                              key={oh.id || oh.date}
+                              className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-orange-100 hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex items-center gap-2 mb-3">
+                                <svg
+                                  className="w-5 h-5 text-orange-500"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                  />
+                                </svg>
+                                <p className="font-poppins font-semibold text-gray-900 text-base">
+                                  {format(new Date(oh.date), "EEEE, MMM dd, yyyy")}
+                                </p>
+                              </div>
+                              <div className="space-y-2">
+                                {oh.timeSlots.map((slot, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex items-center gap-2 bg-white/70 rounded-lg px-3 py-2"
+                                  >
+                                    <svg
+                                      className="w-4 h-4 text-orange-500"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                      />
+                                    </svg>
+                                    <p className="text-sm text-gray-700 font-poppins font-medium">
+                                      {slot.startTime} - {slot.endTime}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {!hasWeeklyHours && !hasOverrideHours && (
+                      <div className="text-center py-12">
+                        <svg
+                          className="w-16 h-16 mx-auto text-gray-300 mb-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <p className="text-gray-500 font-poppins text-lg">
+                          No availability set
+                        </p>
+                        <p className="text-gray-400 font-poppins text-sm mt-1">
+                          Schedule has not been configured yet
+                        </p>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}

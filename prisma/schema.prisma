@@ -497,6 +497,7 @@ model ExaminationTypeBenefit {
   id                String    @id @unique @default(uuid()) @db.Uuid
   examinationTypeId String    @map("examination_type_id") @db.Uuid
   benefit           String    @map("benefit") @db.VarChar(500)
+  description       String?   @map("description") @db.Text
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()

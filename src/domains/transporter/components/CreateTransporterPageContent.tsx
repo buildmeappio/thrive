@@ -15,8 +15,7 @@ import { provinceOptions } from "@/constants/options";
 import { cn } from "@/lib/utils";
 import { TransporterFormHandler } from "../server";
 import {
-  WeeklyHours,
-  OverrideHours,
+  UnifiedAvailabilitySection,
   WeeklyHoursState,
   OverrideHoursState,
 } from "@/components/availability";
@@ -24,9 +23,6 @@ import {
 export default function CreateTransporterPageContent() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"weeklyHours" | "overrideHours">(
-    "weeklyHours"
-  );
   const [formData, setFormData] = useState({
     companyName: "",
     contactPerson: "",
@@ -349,51 +345,16 @@ export default function CreateTransporterPageContent() {
 
         {/* Availability Section - Full Width */}
         <div className="col-span-full">
-          <Section title="Set Your Availability">
-            <div>
-              <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("weeklyHours")}
-                    className={`pb-2 px-4 transition-colors cursor-pointer relative ${
-                      activeTab === "weeklyHours"
-                        ? "text-black font-bold"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}>
-                    Weekly Hours
-                    {activeTab === "weeklyHours" && (
-                      <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("overrideHours")}
-                    className={`pb-2 px-4 transition-colors cursor-pointer relative ${
-                      activeTab === "overrideHours"
-                        ? "text-black font-bold"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}>
-                    Override Hours
-                    {activeTab === "overrideHours" && (
-                      <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
-                    )}
-                  </button>
-                </div>
-              </div>
-              <div className="mt-4">
-                {activeTab === "weeklyHours" && (
-                  <WeeklyHours value={weeklyHours} onChange={setWeeklyHours} />
-                )}
-                {activeTab === "overrideHours" && (
-                  <OverrideHours
-                    value={overrideHours}
-                    onChange={setOverrideHours}
-                  />
-                )}
-              </div>
-            </div>
-          </Section>
+          <UnifiedAvailabilitySection
+            weeklyHours={weeklyHours}
+            overrideHours={overrideHours}
+            onWeeklyHoursChange={(weeklyHours) =>
+              setWeeklyHours(weeklyHours as WeeklyHoursState)
+            }
+            onOverrideHoursChange={setOverrideHours}
+            dataFormat="transporter-interpreter"
+            disabled={isLoading}
+          />
         </div>
 
         {/* Actions */}
