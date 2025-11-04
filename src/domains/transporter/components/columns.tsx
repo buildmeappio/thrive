@@ -4,38 +4,6 @@ import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
 import { capitalizeWords } from "@/utils/text";
 
-// Utility function to truncate text with ellipsis
-const truncateText = (
-  text: string | null | undefined,
-  maxLength: number = 28
-): string => {
-  if (!text) return "N/A";
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + "...";
-};
-
-// Tooltip component for truncated text
-const TooltipText = ({
-  text,
-  maxLength = 28,
-  className = "",
-}: {
-  text: string | null | undefined;
-  maxLength?: number;
-  className?: string;
-}) => {
-  const displayText = text || "N/A";
-  const isTruncated = displayText.length > maxLength;
-
-  return (
-    <div
-      className={`${className} ${isTruncated ? "cursor-help" : ""}`}
-      title={isTruncated ? displayText : undefined}>
-      {truncateText(displayText, maxLength)}
-    </div>
-  );
-};
-
 const SortableHeader = ({
   column,
   children,
@@ -94,11 +62,12 @@ const columns: ColumnDef<TransporterData>[] = [
       const companyName = row.getValue("companyName") as string;
       const capitalizedName = capitalizeWords(companyName);
       return (
-        <TooltipText
-          text={capitalizedName}
-          maxLength={25}
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal"
-        />
+        <div
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={capitalizedName}
+        >
+          {capitalizedName}
+        </div>
       );
     },
     minSize: 180,
@@ -115,11 +84,12 @@ const columns: ColumnDef<TransporterData>[] = [
       const contactPerson = row.getValue("contactPerson") as string;
       const capitalizedPerson = capitalizeWords(contactPerson);
       return (
-        <TooltipText
-          text={capitalizedPerson}
-          maxLength={25}
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal"
-        />
+        <div
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={capitalizedPerson}
+        >
+          {capitalizedPerson}
+        </div>
       );
     },
     minSize: 180,
@@ -135,11 +105,12 @@ const columns: ColumnDef<TransporterData>[] = [
     cell: ({ row }: { row: Row<TransporterData> }) => {
       const email = row.getValue("email") as string;
       return (
-        <TooltipText
-          text={email}
-          maxLength={30}
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal"
-        />
+        <div
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={email}
+        >
+          {email}
+        </div>
       );
     },
     minSize: 220,
@@ -161,11 +132,12 @@ const columns: ColumnDef<TransporterData>[] = [
           ? "Suspended"
           : "";
       return (
-        <TooltipText
-          text={statusText}
-          maxLength={15}
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal"
-        />
+        <div
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={statusText}
+        >
+          {statusText}
+        </div>
       );
     },
     minSize: 120,
@@ -183,11 +155,12 @@ const columns: ColumnDef<TransporterData>[] = [
       const provinces =
         serviceAreas?.map((area) => area.province).join(", ") || "N/A";
       return (
-        <TooltipText
-          text={provinces}
-          maxLength={35}
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal"
-        />
+        <div
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={provinces}
+        >
+          {provinces}
+        </div>
       );
     },
     minSize: 200,

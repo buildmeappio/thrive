@@ -37,12 +37,6 @@ const formatText = (str: string) => {
     .join(" ");
 };
 
-// Utility function to truncate text with ellipsis
-const truncateText = (text: string | null | undefined, maxLength: number = 28): string => {
-  if (!text) return "N/A";
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + "...";
-};
 
 interface FilterState {
   claimType: string;
@@ -121,10 +115,10 @@ const columnsDef = [
       const caseNumber = row.getValue("number") as string;
       return (
         <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={caseNumber}
         >
-          {truncateText(caseNumber, 20)}
+          {caseNumber}
         </div>
       );
     },
@@ -142,10 +136,10 @@ const columnsDef = [
       const capitalizedOrg = capitalizeWords(organization);
       return (
         <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={capitalizedOrg}
         >
-          {truncateText(capitalizedOrg, 28)}
+          {capitalizedOrg}
         </div>
       );
     },
@@ -162,10 +156,10 @@ const columnsDef = [
       const caseType = formatText(row.getValue("caseType") as string);
       return (
         <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={caseType}
         >
-          {truncateText(caseType, 25)}
+          {caseType}
         </div>
       );
     },
@@ -224,10 +218,10 @@ const columnsDef = [
       const status = formatText(row.getValue("status") as string);
       return (
         <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={status}
         >
-          {truncateText(status, 20)}
+          {status}
         </div>
       );
     },
@@ -244,10 +238,10 @@ const columnsDef = [
       const priority = formatText(row.getValue("urgencyLevel") as string);
       return (
         <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={priority}
         >
-          {truncateText(priority, 15)}
+          {priority}
         </div>
       );
     },

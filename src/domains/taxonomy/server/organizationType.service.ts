@@ -96,7 +96,7 @@ export const getOrganizationTypes = async (): Promise<OrganizationTypeData[]> =>
       description: organizationType.description,
       createdAt: organizationType.createdAt.toISOString(),
     }));
-  } catch (error) {
+  } catch {
     throw HttpError.internalServerError("Internal server error");
   }
 };

@@ -44,32 +44,47 @@ const columnsDef = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }: { row: Row<ExaminerData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-        {row.getValue("name")}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<ExaminerData> }) => {
+      const name = row.getValue("name") as string;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={name}
+        >
+          {name}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }: { row: Row<ExaminerData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-        {row.getValue("email")}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<ExaminerData> }) => {
+      const email = row.getValue("email") as string;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={email}
+        >
+          {email}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "specialties",
     header: "Specialties",
     cell: ({ row }: { row: Row<ExaminerData> }) => {
       const specialties = row.getValue("specialties") as string | string[];
+      const displayText = Array.isArray(specialties)
+        ? specialties.map((specialty: string) => capitalizeWords(specialty)).join(", ")
+        : capitalizeWords(specialties);
       return (
-        <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-          {Array.isArray(specialties)
-            ? specialties.map((specialty: string) => capitalizeWords(specialty)).join(", ")
-            : capitalizeWords(specialties)
-          }
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={displayText}
+        >
+          {displayText}
         </div>
       );
     },
@@ -77,20 +92,30 @@ const columnsDef = [
   {
     accessorKey: "province",
     header: "Province",
-    cell: ({ row }: { row: Row<ExaminerData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-        {row.getValue("province")}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<ExaminerData> }) => {
+      const province = row.getValue("province") as string;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={province}
+        >
+          {province}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }: { row: Row<ExaminerData> }) => {
       const status = row.getValue("status") as string;
+      const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
       return (
-        <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-          {status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={formattedStatus}
+        >
+          {formattedStatus}
         </div>
       );
     },

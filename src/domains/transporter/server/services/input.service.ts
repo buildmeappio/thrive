@@ -1,3 +1,5 @@
+import { getE164PhoneNumber } from "@/components/PhoneNumber";
+
 export class InputService {
   static sanitizeCompanyName(value: string): string {
     // Only allow alphabets and spaces, max 25 characters
@@ -21,27 +23,15 @@ export class InputService {
   }
 
   static sanitizePhone(value: string): string {
-    // Allow numbers and + (only at the start)
-    let filtered = value.replace(/[^0-9+]/g, "");
-
-    // If + exists, ensure it's only at the start
-    if (filtered.includes("+")) {
-      const plusCount = (filtered.match(/\+/g) || []).length;
-      // If there are multiple +, keep only the first one
-      if (plusCount > 1) {
-        filtered = "+" + filtered.replace(/\+/g, "");
-      } else if (!filtered.startsWith("+")) {
-        // Move + to the start if it's not there
-        filtered = "+" + filtered.replace(/\+/g, "");
-      }
+    // Convert to E.164 format for storage (e.g., +11234567890)
+    // This ensures consistent format in the database
+    const e164Format = getE164PhoneNumber(value);
+    if (e164Format) {
+      return e164Format;
     }
-
-    // Limit phone number length (max 15 digits including country code)
-    if (filtered.length > 16) {
-      filtered = filtered.slice(0, 16);
-    }
-
-    return filtered;
+    // If conversion fails, return the formatted value as-is
+    // The PhoneInput component handles the formatting
+    return value;
   }
 
   static trimTrailingSpaces(value: string): string {

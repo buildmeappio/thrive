@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, ArrowUp, ArrowDown, Edit } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, Edit, Trash2 } from 'lucide-react';
 import { TaxonomyData } from '../types/Taxonomy';
 import { formatDate, formatTaxonomyName } from '@/utils/date';
 import React, { useRef, useEffect, useState } from 'react';
@@ -49,6 +49,16 @@ const ActionButton = ({ onEdit }: { onEdit: () => void }) => {
   );
 };
 
+const DeleteButton = ({ onDelete }: { onDelete: () => void }) => {
+  return (
+    <button onClick={onDelete} className="cursor-pointer">
+      <div className="flex h-[30px] w-[40px] items-center justify-center rounded-full bg-red-50 p-0 hover:opacity-80">
+        <Trash2 className="h-4 w-4 text-red-600" />
+      </div>
+    </button>
+  );
+};
+
 const Content = ({ children, title }: { children: React.ReactNode; title?: string }) => {
   const textRef = useRef<HTMLDivElement>(null);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -82,7 +92,8 @@ const formatFieldName = (fieldName: string): string => {
 
 export const createTaxonomyColumns = (
   displayFields: string[],
-  onEdit: (taxonomy: TaxonomyData) => void
+  onEdit: (taxonomy: TaxonomyData) => void,
+  onDelete: (taxonomy: TaxonomyData) => void
 ): ColumnDef<TaxonomyData>[] => {
   const columns: ColumnDef<TaxonomyData>[] = displayFields.map((field, index) => ({
     header: ({ column }) => (
@@ -136,13 +147,14 @@ export const createTaxonomyColumns = (
     accessorKey: 'id',
     cell: ({ row }) => {
       return (
-        <div className="flex justify-end">
+        <div className="flex justify-end items-center gap-2">
           <ActionButton onEdit={() => onEdit(row.original)} />
+          <DeleteButton onDelete={() => onDelete(row.original)} />
         </div>
       );
     },
-    size: 60,
-    maxSize: 80,
+    size: 100,
+    maxSize: 120,
     enableSorting: false,
   });
 

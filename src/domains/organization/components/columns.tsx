@@ -11,11 +11,17 @@ const Header = ({ children, first }: { children: React.ReactNode; first?: boolea
   </p>
 );
 
-const Content = ({ children, first }: { children: React.ReactNode; first?: boolean }) => (
-  <p className={cn("text-left text-black font-poppins text-[#4D4D4D] font-regular text-[16px] leading-none py-2", first && "pl-4")}>
-    {children}
-  </p>
-);
+const Content = ({ children, first, title }: { children: React.ReactNode; first?: boolean; title?: string }) => {
+  const textContent = typeof children === 'string' ? children : String(children);
+  return (
+    <p 
+      className={cn("text-left text-black font-poppins text-[#4D4D4D] font-regular text-[16px] leading-normal py-2 whitespace-nowrap overflow-hidden text-ellipsis", first && "pl-4")}
+      title={title || textContent}
+    >
+      {children}
+    </p>
+  );
+};
 
 const StatusBadge = ({ status }: { status: OrganizationData["status"] }) => {
   const statusConfig = {
@@ -50,25 +56,28 @@ const columns: ColumnDef<OrganizationData>[] = [
     header: () => <Header first>Organization</Header>,
     accessorKey: "name",
     enableSorting: true,
-    cell: ({ row }) => <Content first>{row.original.name}</Content>,
+    cell: ({ row }) => <Content first title={row.original.name}>{row.original.name}</Content>,
   },
   {
     header: () => <Header>Type</Header>,
     accessorKey: "typeName",
     enableSorting: true,
-    cell: ({ row }) => <Content>{prettyType(row.original.typeName)}</Content>,
+    cell: ({ row }) => {
+      const typeText = prettyType(row.original.typeName);
+      return <Content title={typeText}>{typeText}</Content>;
+    },
   },
   {
     header: () => <Header>Representative</Header>,
     accessorKey: "managerName",
     enableSorting: true,
-    cell: ({ row }) => <Content>{row.original.managerName}</Content>,
+    cell: ({ row }) => <Content title={row.original.managerName}>{row.original.managerName}</Content>,
   },
   {
     header: () => <Header>Email</Header>,
     accessorKey: "managerEmail",
     enableSorting: true,
-    cell: ({ row }) => <Content>{row.original.managerEmail}</Content>,
+    cell: ({ row }) => <Content title={row.original.managerEmail}>{row.original.managerEmail}</Content>,
   },
   {
     header: () => <Header>Status</Header>,

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardShell } from "@/layouts/dashboard";
-import ChaperoneComponent from "@/domains/services/components/Chaperone";
+import ChaperoneTable from "@/domains/services/components/ChaperoneTable";
 import { ChaperoneData } from "@/domains/services/types/Chaperone";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -102,10 +102,8 @@ export default function ChaperonesPageContent({
           </Button>
         </div>
 
-        {/* Chaperone Component wrapped in card with padding */}
-        <ChaperoneComponent
-          chaperones={filteredChaperones}
-        />
+        {/* Chaperone Table */}
+        <ChaperoneTable chaperoneList={filteredChaperones} />
       </div>
     </DashboardShell>
   );

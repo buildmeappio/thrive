@@ -6,9 +6,9 @@ import { Language } from "@prisma/client";
 import { getLanguages } from "../actions";
 import { filterUUIDLanguages } from "@/utils/languageUtils";
 import { Check, ChevronDown } from "lucide-react";
+import PhoneInput from "@/components/PhoneNumber";
 import {
-  WeeklyHours,
-  OverrideHours,
+  UnifiedAvailabilitySection,
   WeeklyHoursState,
   OverrideHoursState,
 } from "@/components/availability";
@@ -39,9 +39,6 @@ export default function InterpreterForm({
   isLoading = false,
 }: Props) {
   const [allLanguages, setAllLanguages] = useState<Language[]>([]);
-  const [activeTab, setActiveTab] = useState<"weeklyHours" | "overrideHours">(
-    "weeklyHours"
-  );
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
   const [formData, setFormData] = useState<FormData>(
     initialData || {
@@ -185,21 +182,7 @@ export default function InterpreterForm({
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Allow numbers and + (only at the start)
-    let filtered = value.replace(/[^0-9+]/g, "");
-    // If + exists, ensure it's only at the start
-    if (filtered.includes("+")) {
-      const plusCount = (filtered.match(/\+/g) || []).length;
-      // If there are multiple +, keep only the first one
-      if (plusCount > 1) {
-        filtered = "+" + filtered.replace(/\+/g, "");
-      } else if (!filtered.startsWith("+")) {
-        // Move + to the start if it's not there
-        filtered = "+" + filtered.replace(/\+/g, "");
-      }
-    }
-    setFormData((prev) => ({ ...prev, phone: filtered }));
+    setFormData((prev) => ({ ...prev, phone: e.target.value }));
   };
 
   // Email validation - must have at least one letter before @
@@ -331,12 +314,11 @@ export default function InterpreterForm({
 
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">Phone</label>
-            <input
-              type="tel"
+            <PhoneInput
+              name="phone"
               value={formData.phone}
               onChange={handlePhoneChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent transition-all"
-              placeholder="Enter phone number (e.g., +1234567890)"
+              className="w-full"
             />
           </div>
         </div>
@@ -443,59 +425,18 @@ export default function InterpreterForm({
       </div>
 
       {/* Availability Section */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Set Your Availability
-        </h2>
-        <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
-          <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={() => setActiveTab("weeklyHours")}
-              className={`pb-2 px-4 transition-colors cursor-pointer relative ${
-                activeTab === "weeklyHours"
-                  ? "text-black font-bold"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}>
-              Weekly Hours
-              {activeTab === "weeklyHours" && (
-                <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("overrideHours")}
-              className={`pb-2 px-4 transition-colors cursor-pointer relative ${
-                activeTab === "overrideHours"
-                  ? "text-black font-bold"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}>
-              Override Hours
-              {activeTab === "overrideHours" && (
-                <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
-              )}
-            </button>
-          </div>
-        </div>
-        <div className="mt-4">
-          {activeTab === "weeklyHours" && (
-            <WeeklyHours
-              value={formData.weeklyHours}
-              onChange={(weeklyHours) =>
-                setFormData((prev) => ({ ...prev, weeklyHours }))
-              }
-            />
-          )}
-          {activeTab === "overrideHours" && (
-            <OverrideHours
-              value={formData.overrideHours}
-              onChange={(overrideHours) =>
-                setFormData((prev) => ({ ...prev, overrideHours }))
-              }
-            />
-          )}
-        </div>
-      </div>
+      <UnifiedAvailabilitySection
+        weeklyHours={formData.weeklyHours}
+        overrideHours={formData.overrideHours}
+        onWeeklyHoursChange={(weeklyHours) =>
+          setFormData((prev) => ({ ...prev, weeklyHours: weeklyHours as WeeklyHoursState }))
+        }
+        onOverrideHoursChange={(overrideHours) =>
+          setFormData((prev) => ({ ...prev, overrideHours }))
+        }
+        dataFormat="transporter-interpreter"
+        disabled={isLoading}
+      />
 
       {/* Form Actions */}
       <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200">
