@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 // import AppointmentOptions from './AppointmentOptions'; // Commented out - Step 1 is disabled
@@ -45,9 +45,71 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({ ca
 
   const form = useForm<ClaimantAvailabilityFormData>({
     resolver: zodResolver(claimantAvailabilitySchema),
-    defaultValues: claimantAvailabilityInitialValues,
-    mode: 'onChange',
+    defaultValues: {
+      ...claimantAvailabilityInitialValues,
+      agreement: true, // Pre-check agreement since we're not showing the checkbox in this flow
+    },
+    mode: 'onSubmit', // Only validate on submit
+    reValidateMode: 'onSubmit', // Only re-validate on submit after first validation
+    shouldFocusError: false, // Don't focus on error fields
   });
+
+  // Update form when appointment is selected
+  useEffect(() => {
+    if (selectedAppointment) {
+      // Transform the selected appointment to the form format
+      // Format: "DD-MonthName-YYYY" to match what transformFormDataToDbFormat expects
+      const dateObj = new Date(selectedAppointment.date);
+      const day = dateObj.getDate().toString().padStart(2, '0');
+      const monthNames = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
+      ];
+      const month = monthNames[dateObj.getMonth()];
+      const year = dateObj.getFullYear();
+      const formattedDate = `${day}-${month}-${year}`;
+      const formattedTime = `${new Date(selectedAppointment.slotStart).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+      })} - ${new Date(selectedAppointment.slotEnd).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+      })}`;
+
+      // Determine time band based on slot time
+      const hour = new Date(selectedAppointment.slotStart).getHours();
+      let timeBand = 'EITHER';
+      if (hour < 12) {
+        timeBand = 'MORNING';
+      } else if (hour < 17) {
+        timeBand = 'AFTERNOON';
+      } else {
+        timeBand = 'EVENING';
+      }
+
+      // Store the appointment with actual slot times for transformation
+      form.setValue('appointments', [
+        {
+          date: formattedDate,
+          time: timeBand,
+          timeLabel: formattedTime,
+          // Store actual slot times for the transform function (will be used if available)
+          slotStart: selectedAppointment.slotStart.toISOString(),
+          slotEnd: selectedAppointment.slotEnd.toISOString(),
+        } as any,
+      ]);
+    }
+  }, [selectedAppointment, form]);
 
   const handleSubmit = async (data: ClaimantAvailabilityFormData) => {
     try {
@@ -62,9 +124,13 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({ ca
   };
 
   const onError = (errors: any) => {
-    const firstError = Object.values(errors)[0] as any;
-    if (firstError?.message) {
-      toast.error(firstError.message);
+    // Only show errors if we're actually trying to submit (not just on page load)
+    // Check if we have an appointment selected - if not, we're probably still in selection phase
+    if (currentStep === 'confirmation' || form.getValues('appointments')?.length > 0) {
+      const firstError = Object.values(errors)[0] as any;
+      if (firstError?.message) {
+        toast.error(firstError.message);
+      }
     }
   };
 

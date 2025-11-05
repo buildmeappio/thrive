@@ -9,11 +9,36 @@ export type AvailabilitySettings = {
   slotDurationMinutes?: number; // Duration of each slot in minutes (default: 60)
 };
 
+export type AvailableInterpreter = {
+  interpreterId: string;
+  companyName: string;
+  contactPerson: string;
+  providerId: string;
+};
+
+export type AvailableChaperone = {
+  chaperoneId: string;
+  firstName: string;
+  lastName: string;
+  providerId: string;
+};
+
+export type AvailableTransporter = {
+  transporterId: string;
+  companyName: string;
+  contactPerson: string;
+  providerId: string;
+};
+
 export type ExaminerAvailabilityOption = {
   examinerId: string;
   examinerName: string;
   providerId: string;
   specialty?: string;
+  clinic?: string; // Clinic name or address
+  interpreters?: AvailableInterpreter[]; // Available interpreters for this slot
+  chaperones?: AvailableChaperone[]; // Available chaperones for this slot
+  transporters?: AvailableTransporter[]; // Available transporters for this slot
 };
 
 export type SlotAvailability = {

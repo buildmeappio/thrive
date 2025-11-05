@@ -12,11 +12,9 @@ export const appointmentSchema = z.object({
 // Main form schema
 export const claimantAvailabilitySchema = z
   .object({
-    // Appointment data
-    appointments: z
-      .array(appointmentSchema)
-      .min(2, 'Please select at least 2 appointment options')
-      .max(3, 'You can select up to 3 appointment options'),
+    // Appointment data - Updated for new flow: appointments default to empty array,
+    // validated via refine on submission
+    appointments: z.array(appointmentSchema),
 
     preference: z.nativeEnum(ClaimantPreference),
     accessibilityNotes: z.string().max(200, 'Notes cannot exceed 200 characters').optional(),
@@ -51,6 +49,10 @@ export const claimantAvailabilitySchema = z
     message: 'Please provide a pickup address for transportation',
     path: ['pickupAddress'],
   })
+  .refine(data => data.appointments && data.appointments.length >= 1, {
+    message: 'Please select at least 1 appointment option',
+    path: ['appointments'],
+  })
   .refine(data => data.agreement === true, {
     message: 'Please agree to the terms and conditions',
     path: ['agreement'],
@@ -60,8 +62,8 @@ export type ClaimantAvailabilityFormData = z.infer<typeof claimantAvailabilitySc
 export type Appointment = z.infer<typeof appointmentSchema>;
 
 export const claimantAvailabilityInitialValues: ClaimantAvailabilityFormData = {
-  // Appointment data
-  appointments: [],
+  // Appointment data - starts empty, will be populated when user selects a slot
+  appointments: [] as ClaimantAvailabilityFormData['appointments'],
   preference: ClaimantPreference.EITHER,
   accessibilityNotes: '',
 
