@@ -108,7 +108,7 @@ const TaxonomyTable = ({
 
         <Button
           onClick={onCreate}
-          className="h-[50px] min-w-[100px] rounded-full flex items-center gap-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] cursor-pointer"
+          className="hidden sm:flex h-[50px] min-w-[100px] rounded-full items-center gap-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] cursor-pointer"
         >
           <Plus size={20} />
           <span className='text-[16px]'>Add {singularName}</span>
@@ -188,7 +188,7 @@ const TaxonomyTable = ({
       </div>
 
       {filtered.length > 0 && (
-        <div className="px-6 mt-4">
+        <div className="px-3 sm:px-6 mt-4 overflow-x-hidden">
           <Pagination
             table={table}
           />
