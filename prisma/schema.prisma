@@ -620,6 +620,10 @@ model ExaminerProfile {
   acceptVirtualAssessments          Boolean?       @map("accept_virtual_assessments")
   bufferTime                        String?        @map("buffer_time") @db.VarChar(20)
   advanceBooking                    String?        @map("advance_booking") @db.VarChar(20)
+  appointmentTypes                  String[]       @map("appointment_types")
+  appointmentDuration               String?        @map("appointment_duration") @db.VarChar(20)
+  minimumNoticeValue                String?        @map("minimum_notice_value") @db.VarChar(20)
+  minimumNoticeUnit                 String?        @map("minimum_notice_unit") @db.VarChar(20)
   payoutMethod                      String?        @map("payout_method") @db.VarChar(20)
   transitNumber                     String?        @map("transit_number") @db.VarChar(5)
   institutionNumber                 String?        @map("institution_number") @db.VarChar(3)
@@ -639,15 +643,36 @@ model ExaminerProfile {
   updatedAt                         DateTime       @updatedAt @db.Timestamptz()
   deletedAt                         DateTime?
 
-  account                Account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  medicalLicenseDocument Documents          @relation(name: "ExaminerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
-  resumeDocument         Documents          @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
-  ndaDocument            Documents?         @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
-  insuranceDocument      Documents?         @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
+  account                Account                @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  medicalLicenseDocument Documents              @relation(name: "ExaminerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
+  resumeDocument         Documents              @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
+  ndaDocument            Documents?             @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
+  insuranceDocument      Documents?             @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
+  feeStructure           ExaminerFeeStructure[] @relation("ExaminerFeeStructure")
   examinerLanguages      ExaminerLanguage[]
   // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'EXAMINER' } })
 
   @@map("examiner_profiles")
+}
+
+model ExaminerFeeStructure {
+  id                   String    @id @default(uuid()) @db.Uuid
+  examinerProfileId    String    @map("examiner_profile_id") @db.Uuid
+  standardIMEFee       Decimal   @map("standard_ime_fee") @db.Decimal(10, 2)
+  virtualIMEFee        Decimal   @map("virtual_ime_fee") @db.Decimal(10, 2)
+  recordReviewFee      Decimal   @map("record_review_fee") @db.Decimal(10, 2)
+  hourlyRate           Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
+  reportTurnaroundDays Int?      @map("report_turnaround_days") @db.Integer
+  cancellationFee      Decimal   @map("cancellation_fee") @db.Decimal(10, 2)
+  paymentTerms         String    @map("payment_terms") @db.Text
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt            DateTime? @map("deleted_at") @db.Timestamptz()
+
+  examinerProfile ExaminerProfile @relation("ExaminerFeeStructure", fields: [examinerProfileId], references: [id], onDelete: Cascade)
+
+  @@index([examinerProfileId])
+  @@map("examiner_fee_structure")
 }
 
 enum ProviderType {

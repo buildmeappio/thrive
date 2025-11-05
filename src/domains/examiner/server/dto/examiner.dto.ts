@@ -1,4 +1,4 @@
-import { ExaminerProfile, Account, User, Documents, ExaminerLanguage, Language } from "@prisma/client";
+import { ExaminerProfile, Account, User, Documents, ExaminerLanguage, Language, ExaminerFeeStructure } from "@prisma/client";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 
 type ExaminerWithRelations = ExaminerProfile & {
@@ -10,10 +10,13 @@ type ExaminerWithRelations = ExaminerProfile & {
   ndaDocument: Documents;
   insuranceDocument: Documents;
   examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
+  feeStructure: ExaminerFeeStructure[];
 };
 
 export class ExaminerDto {
   static toExaminerData(examiner: ExaminerWithRelations): ExaminerData {
+    const feeStructure = examiner.feeStructure?.[0];
+    
     return {
       id: examiner.id,
       name: `${examiner.account.user.firstName} ${examiner.account.user.lastName}`.trim(),
@@ -36,6 +39,16 @@ export class ExaminerDto {
       status: examiner.status,
       createdAt: examiner.createdAt.toISOString(),
       updatedAt: examiner.updatedAt.toISOString(),
+      feeStructure: feeStructure ? {
+        id: feeStructure.id,
+        standardIMEFee: Number(feeStructure.standardIMEFee),
+        virtualIMEFee: Number(feeStructure.virtualIMEFee),
+        recordReviewFee: Number(feeStructure.recordReviewFee),
+        hourlyRate: feeStructure.hourlyRate ? Number(feeStructure.hourlyRate) : undefined,
+        reportTurnaroundDays: feeStructure.reportTurnaroundDays ?? undefined,
+        cancellationFee: Number(feeStructure.cancellationFee),
+        paymentTerms: feeStructure.paymentTerms,
+      } : undefined,
     };
   }
 
