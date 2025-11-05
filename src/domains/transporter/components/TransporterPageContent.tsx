@@ -80,26 +80,30 @@ export default function TransporterPageContent({
   }, [filtered.length, pagination.pageIndex, table]);
 
   return (
-    <div className="space-y-6">
-      <TransporterHeader />
+    <div className="space-y-6 transporter-page">
+      <div className="mb-4 sm:mb-6 dashboard-zoom-mobile">
+        <TransporterHeader />
+      </div>
 
-      <SearchAndFilters
-        query={query}
-        onQueryChange={setQuery}
-        statusFilter={statusFilter}
-        onStatusChange={handleFilterChange}
-        statuses={statuses}
-        activeDropdown={activeDropdown}
-        onDropdownToggle={setActiveDropdown}
-        hasActiveFilters={hasActiveFilters}
-        onClearFilters={clearFilters}
-      />
+      <div className="flex flex-col gap-3 sm:gap-6 mb-20 dashboard-zoom-mobile">
+        <SearchAndFilters
+          query={query}
+          onQueryChange={setQuery}
+          statusFilter={statusFilter}
+          onStatusChange={handleFilterChange}
+          statuses={statuses}
+          activeDropdown={activeDropdown}
+          onDropdownToggle={setActiveDropdown}
+          hasActiveFilters={hasActiveFilters}
+          onClearFilters={clearFilters}
+        />
 
-      <TransporterTable table={table} />
+        <TransporterTable table={table} />
 
-      {/* Pagination - Outside the table card */}
-      <div className="mt-4 px-6">
-        <Pagination table={table} />
+        {/* Pagination - Outside the table card */}
+        <div className="mt-4 px-3 sm:px-6 overflow-x-hidden">
+          <Pagination table={table} />
+        </div>
       </div>
     </div>
   );

@@ -113,7 +113,7 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
       )}
       <Image
         onClick={() => setDropdownOpen(prev => !prev)}
-        className="h-8 w-8 sm:h-10 sm:w-10 lg:h-[50px] lg:w-[50px] cursor-pointer rounded-full border border-[#DBDBFF] bg-white object-cover flex-shrink-0"
+        className="h-7 w-7 sm:h-10 sm:w-10 lg:h-[50px] lg:w-[50px] cursor-pointer rounded-full border border-[#DBDBFF] bg-white object-cover flex-shrink-0"
         src={getProfileImageUrl()}
         alt="User dropdown"
         height={48}
