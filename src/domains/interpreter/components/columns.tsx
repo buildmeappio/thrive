@@ -36,16 +36,20 @@ const ActionButton = ({ id }: { id: string }) => {
 const Content = ({
   children,
   first,
+  title,
 }: {
   children: React.ReactNode;
   first?: boolean;
+  title?: string;
 }) => {
+  const textContent = typeof children === 'string' ? children : String(children);
   return (
     <p
       className={cn(
-        "text-left text-black font-poppins text-[#4D4D4D] font-regular text-[16px] leading-none py-2",
+        "text-left text-black font-poppins text-[#4D4D4D] font-regular text-[16px] leading-normal py-2 whitespace-nowrap overflow-hidden text-ellipsis",
         first && "pl-4"
       )}
+      title={title || textContent}
     >
       {children}
     </p>
@@ -57,21 +61,21 @@ const columns: ColumnDef<InterpreterData>[] = [
     header: () => <Header first>Company</Header>,
     accessorKey: "companyName",
     cell: ({ row }) => {
-      return <Content first>{row.original.companyName}</Content>;
+      return <Content first title={row.original.companyName}>{row.original.companyName}</Content>;
     },
   },
   {
     header: () => <Header>Contact Person</Header>,
     accessorKey: "contactPerson",
     cell: ({ row }) => {
-      return <Content>{row.original.contactPerson}</Content>;
+      return <Content title={row.original.contactPerson}>{row.original.contactPerson}</Content>;
     },
   },
   {
     header: () => <Header>Email</Header>,
     accessorKey: "email",
     cell: ({ row }) => {
-      return <Content>{row.original.email}</Content>;
+      return <Content title={row.original.email}>{row.original.email}</Content>;
     },
   },
   {
@@ -82,14 +86,16 @@ const columns: ColumnDef<InterpreterData>[] = [
       const displayText = languages.length > 2
         ? `${languages.slice(0, 2).map(l => l.name).join(", ")} +${languages.length - 2}`
         : languages.map(l => l.name).join(", ");
-      return <Content>{displayText || "None"}</Content>;
+      const fullText = languages.map(l => l.name).join(", ") || "None";
+      return <Content title={fullText}>{displayText || "None"}</Content>;
     },
   },
   {
     header: () => <Header>Phone</Header>,
     accessorKey: "phone",
     cell: ({ row }) => {
-      return <Content>{row.original.phone || "N/A"}</Content>;
+      const phoneText = row.original.phone || "N/A";
+      return <Content title={phoneText}>{phoneText}</Content>;
     },
   },
   {

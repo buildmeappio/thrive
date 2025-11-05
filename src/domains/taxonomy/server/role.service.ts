@@ -93,7 +93,7 @@ export const getRoles = async (): Promise<RoleData[]> => {
       name: role.name,
       createdAt: role.createdAt.toISOString(),
     }));
-  } catch (error) {
+  } catch {
     throw HttpError.internalServerError("Internal server error");
   }
 };

@@ -43,12 +43,6 @@ const formatText = (text: string): string => {
     .join(' ');
 };
 
-// Utility function to truncate text with ellipsis
-const truncateText = (text: string | null | undefined, maxLength: number = 28): string => {
-  if (!text) return "N/A";
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + "...";
-};
 
 const SortableHeader = ({ column, children }: { column: Column<ExaminerData, unknown>; children: React.ReactNode }) => {
   const sortDirection = column.getIsSorted();
@@ -87,10 +81,10 @@ const columnsDef = [
       const capitalizedName = capitalizeWords(name);
       return (
         <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={capitalizedName}
         >
-          {truncateText(capitalizedName, 28)}
+          {capitalizedName}
         </div>
       );
     },
@@ -107,10 +101,10 @@ const columnsDef = [
       const email = row.getValue("email") as string;
       return (
         <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={email}
         >
-          {truncateText(email, 30)}
+          {email}
         </div>
       );
     },
@@ -131,10 +125,10 @@ const columnsDef = [
       
       return (
         <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={formattedText}
         >
-          {truncateText(formattedText, 25)}
+          {formattedText}
         </div>
       );
     },
@@ -151,10 +145,10 @@ const columnsDef = [
       const province = row.getValue("province") as string;
       return (
         <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={province}
         >
-          {truncateText(province, 15)}
+          {province}
         </div>
       );
     },
@@ -172,10 +166,10 @@ const columnsDef = [
       const formattedStatus = formatText(status);
       return (
         <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={formattedStatus}
         >
-          {truncateText(formattedStatus, 20)}
+          {formattedStatus}
         </div>
       );
     },

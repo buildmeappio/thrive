@@ -43,65 +43,107 @@ const columnsDef = [
   {
     accessorKey: "number",
     header: "Case ID",
-    cell: ({ row }: { row: Row<CaseData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("number")}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<CaseData> }) => {
+      const caseNumber = row.getValue("number") as string;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={caseNumber}
+        >
+          {caseNumber}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "organization",
     header: "Company",
-    cell: ({ row }: { row: Row<CaseData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("organization")}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<CaseData> }) => {
+      const organization = row.getValue("organization") as string;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={organization}
+        >
+          {organization}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "caseType",
     header: "Claim Type",
-    cell: ({ row }: { row: Row<CaseData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("caseType")}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<CaseData> }) => {
+      const caseType = row.getValue("caseType") as string;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={caseType}
+        >
+          {caseType}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "submittedAt",
     header: "Date Received",
-    cell: ({ row }: { row: Row<CaseData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-        {formatDateShort(row.getValue("submittedAt"))}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<CaseData> }) => {
+      const dateText = formatDateShort(row.getValue("submittedAt"));
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={dateText}
+        >
+          {dateText}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "dueDate",
     header: "Due Date",
-    cell: ({ row }: { row: Row<CaseData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-        {row.getValue("dueDate") ? formatDateShort(row.getValue("dueDate")) : "N/A"}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<CaseData> }) => {
+      const dueDateText = row.getValue("dueDate") ? formatDateShort(row.getValue("dueDate")) : "N/A";
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={dueDateText}
+        >
+          {dueDateText}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }: { row: Row<CaseData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("status")}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<CaseData> }) => {
+      const status = row.getValue("status") as string;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={status}
+        >
+          {status}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "urgencyLevel",
     header: "Priority",
-    cell: ({ row }: { row: Row<CaseData> }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none">
-        {row.getValue("urgencyLevel")}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<CaseData> }) => {
+      const urgencyLevel = row.getValue("urgencyLevel") as string;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={urgencyLevel}
+        >
+          {urgencyLevel}
+        </div>
+      );
+    },
   },
   {
     header: "",

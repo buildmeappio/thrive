@@ -2,9 +2,10 @@ import ExaminerDetail from "@/domains/examiner/components/ExaminerDetail";
 import { getExaminerById } from "@/domains/examiner/actions";
 import { notFound } from "next/navigation";
 
-const Page = async ({ params }: { params: { id: string } }) => {
+const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
   try {
-    const examiner = await getExaminerById(params.id);
+    const { id } = await params;
+    const examiner = await getExaminerById(id);
     return <ExaminerDetail examiner={examiner} />;
   } catch {
     return notFound();

@@ -82,6 +82,23 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
 }) => {
   const [errors, setErrors] = useState<TimeSlotError[]>([]);
 
+  // Helper function to get valid end time options based on start time
+  const getValidEndTimeOptions = (startTime: string, currentEndTime?: string): string[] => {
+    const startMinutes = timeToMinutes(startTime);
+    const validOptions = timeOptions.filter(time => {
+      const timeMinutes = timeToMinutes(time);
+      return timeMinutes > startMinutes;
+    });
+    
+    // If current end time is invalid but exists, include it in the list so it can be displayed
+    // This prevents the dropdown from showing empty when the time is invalid
+    if (currentEndTime && !validOptions.includes(currentEndTime)) {
+      return [currentEndTime, ...validOptions];
+    }
+    
+    return validOptions;
+  };
+
   // Validate time slots whenever overrideHours changes
   useEffect(() => {
     const newErrors: TimeSlotError[] = [];
@@ -101,9 +118,8 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
         }
 
         // Check for overlaps with other slots on the same date
-        dateHours.timeSlots.forEach((otherSlot, otherIndex) => {
-          if (slotIndex >= otherIndex) return; // Only check once per pair
-
+        for (let otherIndex = slotIndex + 1; otherIndex < dateHours.timeSlots.length; otherIndex++) {
+          const otherSlot = dateHours.timeSlots[otherIndex];
           const otherStartMinutes = timeToMinutes(otherSlot.startTime);
           const otherEndMinutes = timeToMinutes(otherSlot.endTime);
 
@@ -114,13 +130,19 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
             (startMinutes <= otherStartMinutes && endMinutes >= otherEndMinutes);
 
           if (hasOverlap) {
+            // Mark both slots as having overlap errors
             newErrors.push({
               date: dateHours.date,
               slotIndex,
               message: 'Time slots cannot overlap',
             });
+            newErrors.push({
+              date: dateHours.date,
+              slotIndex: otherIndex,
+              message: 'Time slots cannot overlap',
+            });
           }
-        });
+        }
       });
     });
 
@@ -329,7 +351,7 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {timeOptions.map((time) => (
+                          {getValidEndTimeOptions(slot.startTime, slot.endTime).map((time) => (
                             <SelectItem key={time} value={time}>{time}</SelectItem>
                           ))}
                         </SelectContent>

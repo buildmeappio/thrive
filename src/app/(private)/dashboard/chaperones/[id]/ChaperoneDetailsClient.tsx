@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, Edit, Trash2, ChevronLeft } from "lucide-react";
+import { Edit, Trash2, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChaperoneWithAvailability } from "@/domains/services/types/Chaperone";

@@ -99,7 +99,7 @@ export const getExaminationTypes = async (): Promise<ExaminationTypeData[]> => {
       description: examinationType.description,
       createdAt: examinationType.createdAt.toISOString(),
     }));
-  } catch (error) {
+  } catch {
     throw HttpError.internalServerError("Internal server error");
   }
 };
