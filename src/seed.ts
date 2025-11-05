@@ -8,7 +8,7 @@ import AdminSeeder from "./seeders/admin.seeder";
 import CaseTypeSeeder from "./seeders/caseType.seeder";
 import CaseStatusSeeder from "./seeders/caseStatus.seeder";
 import LanguageSeeder from "./seeders/language.seeder";
-import InterpreterSeeder from "./seeders/interpreter.seeder";
+// import InterpreterSeeder from "./seeders/interpreter.seeder";
 import ExaminationTypeSeeder from "./seeders/examinationType.seeder";
 import ExaminationTypeShortFormSeeder from "./seeders/examTypeShortForm.seeder";
 import ClaimTypeSeeder from "./seeders/claimType.seeder";
@@ -28,7 +28,7 @@ const seeds = [
   CaseStatusSeeder,
   AdditionalCaseStatusSeeder,
   LanguageSeeder,
-  InterpreterSeeder,
+  // InterpreterSeeder,
   ExaminationTypeSeeder,
   ExaminationTypeShortFormSeeder,
   ClaimTypeSeeder,
