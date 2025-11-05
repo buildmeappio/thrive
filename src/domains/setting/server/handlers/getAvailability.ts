@@ -51,9 +51,21 @@ type OverrideHoursWithTimeSlots = {
 
 const getAvailability = async (payload: GetAvailabilityInput) => {
   try {
-    const availability = await availabilityService.getCompleteAvailability(
-      payload.examinerProfileId
-    );
+    const prisma = (await import("@/lib/db")).default;
+    const [availability, examinerProfile] = await Promise.all([
+      availabilityService.getCompleteAvailability(payload.examinerProfileId),
+      prisma.examinerProfile.findUnique({
+        where: { id: payload.examinerProfileId },
+        select: {
+          bufferTime: true,
+          advanceBooking: true,
+          appointmentTypes: true,
+          appointmentDuration: true,
+          minimumNoticeValue: true,
+          minimumNoticeUnit: true,
+        },
+      }),
+    ]);
 
     // Initialize with default values for all days (using lowercase keys for form compatibility)
     const defaultTimeSlot = [{ startTime: "8:00 AM", endTime: "11:00 AM" }];
@@ -114,11 +126,34 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
       }
     );
 
+    // Build booking options from database
+    const bookingOptions = examinerProfile
+      ? {
+          appointmentTypes: (examinerProfile.appointmentTypes?.length
+            ? examinerProfile.appointmentTypes
+            : ["video"]) as ("phone" | "video")[],
+          appointmentDuration: examinerProfile.appointmentDuration || "15",
+          buffer: examinerProfile.bufferTime || "5",
+          bookingWindow: examinerProfile.advanceBooking
+            ? parseInt(examinerProfile.advanceBooking)
+            : 60,
+          minimumNotice: {
+            value: examinerProfile.minimumNoticeValue
+              ? parseInt(examinerProfile.minimumNoticeValue)
+              : 5,
+            unit: (examinerProfile.minimumNoticeUnit || "hours") as
+              | "hours"
+              | "days",
+          },
+        }
+      : undefined;
+
     return {
       success: true,
       data: {
         weeklyHours: weeklyHoursObject,
         overrideHours: overrideHoursArray,
+        bookingOptions,
       },
     };
   } catch (error) {

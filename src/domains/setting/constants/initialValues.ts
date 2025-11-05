@@ -29,4 +29,14 @@ export const availabilityInitialValues: AvailabilityPreferencesInput = {
     saturday: { enabled: false, timeSlots: [] },
   },
   overrideHours: [],
+  bookingOptions: {
+    appointmentTypes: ["video"],
+    appointmentDuration: "15",
+    buffer: "5",
+    bookingWindow: 60,
+    minimumNotice: {
+      value: 5,
+      unit: "hours",
+    },
+  },
 };

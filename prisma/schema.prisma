@@ -497,6 +497,7 @@ model ExaminationTypeBenefit {
   id                String    @id @unique @default(uuid()) @db.Uuid
   examinationTypeId String    @map("examination_type_id") @db.Uuid
   benefit           String    @map("benefit") @db.VarChar(500)
+  description       String?   @map("description") @db.Text
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()
@@ -619,6 +620,10 @@ model ExaminerProfile {
   acceptVirtualAssessments          Boolean?       @map("accept_virtual_assessments")
   bufferTime                        String?        @map("buffer_time") @db.VarChar(20)
   advanceBooking                    String?        @map("advance_booking") @db.VarChar(20)
+  appointmentTypes                  String[]       @map("appointment_types")
+  appointmentDuration               String?        @map("appointment_duration") @db.VarChar(20)
+  minimumNoticeValue                String?        @map("minimum_notice_value") @db.VarChar(20)
+  minimumNoticeUnit                 String?        @map("minimum_notice_unit") @db.VarChar(20)
   payoutMethod                      String?        @map("payout_method") @db.VarChar(20)
   transitNumber                     String?        @map("transit_number") @db.VarChar(5)
   institutionNumber                 String?        @map("institution_number") @db.VarChar(3)
