@@ -1,15 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import {
-  ArrowRight,
-  Star,
-  Calendar,
-  MapPin,
-  HelpCircle,
-  Car,
-  UserPlus,
-  Languages,
-} from 'lucide-react';
+import { ArrowRight, Star, MapPin, Car, UserPlus, Languages } from 'lucide-react';
 import { getAvailableExaminers } from '../actions';
 import { toast } from 'sonner';
 import type {
@@ -42,8 +33,10 @@ interface ExaminerOptionsProps {
 const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({ examId, onSelectAppointment }) => {
   const [loading, setLoading] = useState(true);
   const [availabilityData, setAvailabilityData] = useState<AvailableExaminersResult | null>(null);
-  const [selectedDateIndex, setSelectedDateIndex] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // State for selected date and time
+  const [selectedDateIndex, setSelectedDateIndex] = useState<number | null>(null);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ start: Date; end: Date } | null>(null);
 
   // Default settings - these could be made configurable
   const settings = {
@@ -142,7 +135,7 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({ examId, onSelectAppoi
   }, [examId]);
 
   const formatTime = (date: Date): string => {
-    return format(date, 'h:mm a');
+    return format(date, 'h a'); // Show just hour and AM/PM, e.g., "9 AM"
   };
 
   const formatSqlDate = (date: Date): string => {
@@ -213,8 +206,67 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({ examId, onSelectAppoi
     );
   }
 
-  const selectedDay = availabilityData.days[selectedDateIndex];
   const maxDaysToShow = Math.min(availabilityData.days.length, 7);
+  const daysToShow = availabilityData.days.slice(0, maxDaysToShow);
+
+  // Get all unique time slots across all days (for time column)
+  const allTimeSlots = new Map<string, { start: Date; end: Date }>();
+  daysToShow.forEach(day => {
+    day.slots.forEach(slot => {
+      const hour = slot.start.getHours();
+      const timeKey = hour.toString();
+      if (!allTimeSlots.has(timeKey)) {
+        allTimeSlots.set(timeKey, { start: slot.start, end: slot.end });
+      }
+    });
+  });
+  const timeSlotsArray = Array.from(allTimeSlots.entries())
+    .map(([key, value]) => ({
+      hour: parseInt(key),
+      label: key,
+      start: value.start,
+      end: value.end,
+    }))
+    .sort((a, b) => a.hour - b.hour);
+
+  // Helper function to check if a slot exists for a specific date-time combination
+  const getExaminerForSlot = (day: DayAvailability, hour: number) => {
+    const matchingSlot = day.slots.find(slot => slot.start.getHours() === hour);
+
+    if (matchingSlot && matchingSlot.examiners.length > 0) {
+      return { examiner: matchingSlot.examiners[0], slot: matchingSlot };
+    }
+    return null;
+  };
+
+  const handleDateClick = (dayIndex: number) => {
+    if (selectedDateIndex === dayIndex) {
+      // Toggle: if same date clicked, deselect
+      setSelectedDateIndex(null);
+      setSelectedTimeSlot(null);
+    } else {
+      setSelectedDateIndex(dayIndex);
+      setSelectedTimeSlot(null); // Reset time selection when date changes
+    }
+  };
+
+  const handleTimeClick = (timeSlot: { start: Date; end: Date }) => {
+    if (selectedTimeSlot && selectedTimeSlot.start.getHours() === timeSlot.start.getHours()) {
+      // Toggle: if same time clicked, deselect
+      setSelectedTimeSlot(null);
+    } else {
+      setSelectedTimeSlot(timeSlot);
+      // If no date selected, select first date with this time slot
+      if (selectedDateIndex === null) {
+        const dayWithSlot = daysToShow.findIndex(day =>
+          day.slots.some(slot => slot.start.getHours() === timeSlot.start.getHours())
+        );
+        if (dayWithSlot !== -1) {
+          setSelectedDateIndex(dayWithSlot);
+        }
+      }
+    }
+  };
 
   return (
     <div className="mx-auto mb-16 w-full max-w-7xl p-4 sm:px-6">
@@ -222,121 +274,148 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({ examId, onSelectAppoi
         Choose Your Appointment
       </div>
 
-      {/* Date Tabs */}
-      <div className="mb-8 flex flex-wrap justify-center gap-2">
-        {availabilityData.days.slice(0, maxDaysToShow).map((day, index) => (
-          <button
-            key={index}
-            onClick={() => {
-              setSelectedDateIndex(index);
-            }}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-              selectedDateIndex === index
-                ? 'bg-[#000093] text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <Calendar className="mr-2 inline h-4 w-4" />
-            {formatSqlDate(day.date)}
-          </button>
-        ))}
-      </div>
-
-      {/* Slots for Selected Date */}
-      {selectedDay && selectedDay.slots.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 gap-y-8 md:grid-cols-2">
-          {selectedDay.slots.flatMap((slot, slotIndex) =>
-            slot.examiners.map((examiner, examinerIndex) => (
-              <div
-                key={`${slotIndex}-${examinerIndex}`}
-                className="relative overflow-visible rounded-xl border-2 border-purple-100 bg-gradient-to-br from-purple-50 to-blue-50 p-6 pt-10 shadow-lg transition-all duration-200 hover:shadow-xl"
-              >
-                {/* Date/Time Header - Half inside, half outside from top center */}
-                <div className="absolute top-0 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 transform">
-                  <div className="rounded-full bg-purple-100 px-4 py-1.5 whitespace-nowrap shadow-sm">
-                    <span className="text-sm font-medium text-gray-900">
-                      {format(slot.start, 'MMMM d, yyyy')} - {formatTime(slot.start)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Two Column Layout */}
-                <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {/* Left Column - Appointment Details */}
-                  <div className="space-y-3">
-                    {/* Clinic Name */}
-                    {examiner.clinic && (
-                      <div className="flex items-start space-x-2">
-                        <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#000093]" />
-                        <p className="text-sm font-medium text-gray-900">{examiner.clinic}</p>
-                      </div>
-                    )}
-
-                    {/* Specialty */}
-                    {examiner.specialty && (
-                      <div className="flex items-start space-x-2">
-                        <Star className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#000093]" />
-                        <p className="text-sm font-medium text-gray-900">{examiner.specialty}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right Column - Additional Services */}
-                  <div className="space-y-3">
-                    {/* Interpreter */}
-                    <div className="flex items-start space-x-2">
-                      <Languages className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#000093]" />
-                      <p className="text-sm font-medium text-gray-900">
-                        Interpreter:{' '}
-                        {examiner.interpreters && examiner.interpreters.length > 0
-                          ? `${examiner.interpreters.length} Available`
-                          : 'Not Required'}
-                      </p>
-                    </div>
-
-                    {/* Transport */}
-                    <div className="flex items-start space-x-2">
-                      <Car className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#000093]" />
-                      <p className="text-sm font-medium text-gray-900">
-                        Transport:{' '}
-                        {examiner.transporters && examiner.transporters.length > 0
-                          ? examiner.transporters[0].companyName
-                          : 'Not Required'}
-                      </p>
-                    </div>
-
-                    {/* Chaperone */}
-                    <div className="flex items-start space-x-2">
-                      <UserPlus className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#000093]" />
-                      <p className="text-sm font-medium text-gray-900">
-                        Chaperone:{' '}
-                        {examiner.chaperones && examiner.chaperones.length > 0
-                          ? `${examiner.chaperones.length} Available`
-                          : 'Not Required'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Select Button */}
-                <div className="flex justify-center">
-                  <button
-                    onClick={() => handleSlotSelection(examiner, slot, selectedDay)}
-                    className="flex cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#000080] px-6 py-2 font-medium text-white transition-colors duration-200 hover:bg-[#000093]"
+      {/* Table Layout - Always visible like airline booking */}
+      {timeSlotsArray.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                <th className="sticky left-0 z-20 bg-white px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  Time
+                </th>
+                {daysToShow.map((day, dayIndex) => (
+                  <th
+                    key={dayIndex}
+                    onClick={() => handleDateClick(dayIndex)}
+                    className={`min-w-[300px] cursor-pointer px-4 py-3 text-center text-sm font-semibold transition-colors ${
+                      selectedDateIndex === dayIndex
+                        ? 'bg-[#000093] text-white'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
                   >
-                    <span>Select This Appointment</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
+                    {formatSqlDate(day.date)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {timeSlotsArray.map((timeSlot, timeIndex) => (
+                <tr key={timeIndex} className="border-b border-gray-200">
+                  {/* Time Column - Clickable */}
+                  <td
+                    onClick={() => handleTimeClick(timeSlot)}
+                    className={`sticky left-0 z-10 cursor-pointer px-4 py-3 text-sm font-medium transition-colors ${
+                      selectedTimeSlot && selectedTimeSlot.start.getHours() === timeSlot.hour
+                        ? 'bg-[#000093] text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {formatTime(timeSlot.start)}
+                  </td>
+                  {/* Date Columns */}
+                  {daysToShow.map((day, dayIndex) => {
+                    const result = getExaminerForSlot(day, timeSlot.hour);
+                    const examiner = result?.examiner;
+                    const matchingSlot = result?.slot;
+
+                    return (
+                      <td
+                        key={dayIndex}
+                        onClick={() => {
+                          handleDateClick(dayIndex);
+                          handleTimeClick(timeSlot);
+                        }}
+                        className={`cursor-pointer p-2 ${
+                          selectedDateIndex === dayIndex &&
+                          selectedTimeSlot &&
+                          selectedTimeSlot.start.getHours() === timeSlot.hour
+                            ? 'ring-2 ring-[#000093] ring-offset-2'
+                            : ''
+                        }`}
+                      >
+                        {examiner && matchingSlot ? (
+                          <div className="relative overflow-visible rounded-xl border-2 border-purple-100 bg-gradient-to-br from-purple-50 to-blue-50 p-4 shadow-lg transition-all duration-200 hover:shadow-xl">
+                            {/* Content */}
+                            <div className="mb-4 grid grid-cols-1 gap-3 text-xs">
+                              {/* Left Column */}
+                              <div className="space-y-2">
+                                {examiner.clinic && (
+                                  <div className="flex items-start space-x-1">
+                                    <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#000093]" />
+                                    <p className="line-clamp-1 text-xs font-medium text-gray-900">
+                                      {examiner.clinic}
+                                    </p>
+                                  </div>
+                                )}
+                                {examiner.specialty && (
+                                  <div className="flex items-start space-x-1">
+                                    <Star className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#000093]" />
+                                    <p className="text-xs font-medium text-gray-900">
+                                      {examiner.specialty}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Right Column - Services */}
+                              <div className="space-y-2">
+                                <div className="flex items-start space-x-1">
+                                  <Languages className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#000093]" />
+                                  <p className="text-xs font-medium text-gray-900">
+                                    Interpreter:{' '}
+                                    {examiner.interpreters && examiner.interpreters.length > 0
+                                      ? examiner.interpreters[0].companyName
+                                      : 'Not Required'}
+                                  </p>
+                                </div>
+                                <div className="flex items-start space-x-1">
+                                  <Car className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#000093]" />
+                                  <p className="text-xs font-medium text-gray-900">
+                                    Transport:{' '}
+                                    {examiner.transporters && examiner.transporters.length > 0
+                                      ? examiner.transporters[0].companyName
+                                      : 'Not Required'}
+                                  </p>
+                                </div>
+                                <div className="flex items-start space-x-1">
+                                  <UserPlus className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#000093]" />
+                                  <p className="text-xs font-medium text-gray-900">
+                                    Chaperone:{' '}
+                                    {examiner.chaperones && examiner.chaperones.length > 0
+                                      ? `${examiner.chaperones[0].firstName} ${examiner.chaperones[0].lastName}`
+                                      : 'Not Required'}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Select Button */}
+                            <div className="flex justify-center">
+                              <button
+                                onClick={() => handleSlotSelection(examiner, matchingSlot, day)}
+                                className="flex cursor-pointer items-center justify-center space-x-1 rounded-full bg-[#000080] px-4 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-[#000093]"
+                              >
+                                <span>Select</span>
+                                <ArrowRight className="h-3 w-3" />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center text-xs text-gray-400">
+                            Not Available
+                          </div>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
         <div className="flex items-center justify-center py-12">
-          <div className="text-lg text-gray-600">
-            No available slots for {formatSqlDate(selectedDay.date)}.
-          </div>
+          <div className="text-lg text-gray-600">No available time slots found.</div>
         </div>
       )}
     </div>

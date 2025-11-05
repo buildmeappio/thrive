@@ -830,34 +830,11 @@ export const getAvailableExaminersForExam = async (
         }
       }
 
-      // Debug: Log if we're generating slots for Thursday
-      if (dayCursor.toLocaleString('en-US', { weekday: 'long' }) === 'Thursday' && i === 0) {
-        console.log(
-          `[Examiner Availability] Checking Thursday ${dayCursor.toISOString().split('T')[0]}:`
-        );
-        console.log(`  First slot: ${slotStart.toISOString()} to ${slotEnd.toISOString()}`);
-        console.log(`  Qualified examiners: ${qualifiedExaminers.length}`);
-        qualifiedExaminers.forEach(ex => {
-          const provider = ex.availabilityProvider;
-          const dayKey = dayCursor.getDay();
-          const weekdayEnum: Record<number, string> = {
-            0: 'SUNDAY',
-            1: 'MONDAY',
-            2: 'TUESDAY',
-            3: 'WEDNESDAY',
-            4: 'THURSDAY',
-            5: 'FRIDAY',
-            6: 'SATURDAY',
-          };
-          const weekdayName = weekdayEnum[dayKey];
-          const weekly = provider.weeklyHours.find(
-            wh => wh.dayOfWeek === weekdayName && wh.enabled
-          );
-          console.log(
-            `  Examiner ${ex.examinerName}: has ${provider.weeklyHours.length} weekly hours, ${weekdayName} enabled=${!!weekly}, timeSlots=${weekly?.timeSlots.length || 0}`
-          );
-        });
-      }
+      // Debug: Log slot generation for all days
+      const slotTimeStr = `${slotStart.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - ${slotEnd.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+      console.log(
+        `[Slot Generation] Day ${dayCursor.toLocaleDateString('en-US', { weekday: 'long' })}: Slot ${i + 1}/${settings.numberOfWorkingHours} - ${slotTimeStr}: ${availableExaminersForSlot.length} examiner(s) available`
+      );
 
       // Only add slot if at least one examiner is available
       if (availableExaminersForSlot.length > 0) {
@@ -866,15 +843,31 @@ export const getAvailableExaminersForExam = async (
           end: slotEnd,
           examiners: availableExaminersForSlot,
         });
+      } else {
+        // Log why no examiners are available for this slot
+        console.log(
+          `[Slot Generation] No examiners available for ${slotTimeStr}. Checking examiner availability...`
+        );
+        qualifiedExaminers.forEach(ex => {
+          const isAvailable = isProviderAvailableForSlot({
+            provider: ex.availabilityProvider,
+            dayDate: dayCursor,
+            slotStart,
+            slotEnd,
+          });
+          console.log(`  - ${ex.examinerName}: ${isAvailable ? 'AVAILABLE' : 'NOT AVAILABLE'}`);
+        });
       }
     }
 
-    // Add day to result
-    days.push({
-      date: dayCursor,
-      weekday: dayCursor.toLocaleString('en-US', { weekday: 'long' }).toUpperCase(),
-      slots: daySlots,
-    });
+    // Only add day to result if it has at least one slot
+    if (daySlots.length > 0) {
+      days.push({
+        date: dayCursor,
+        weekday: dayCursor.toLocaleString('en-US', { weekday: 'long' }).toUpperCase(),
+        slots: daySlots,
+      });
+    }
   }
 
   return {

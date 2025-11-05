@@ -97,7 +97,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
 
     // Generate secure link for claimant
-    const secureLink = await createSecureLink(examinationId, 'claimant', 24);
+    const secureLink = await createSecureLink(examinationId, 'claimant', 168); // 7 days expiration
 
     // Prepare email data
     const claimantName = `${claimant.firstName} ${claimant.lastName}`;

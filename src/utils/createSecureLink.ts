@@ -6,7 +6,7 @@ import { signClaimantApprovalToken } from '@/lib/jwt';
 const createSecureLink = async (
   examinationId: string,
   _userType: 'claimant' | 'examiner' | 'organization' = 'claimant',
-  expiresInHours: number = 24
+  expiresInHours: number = 168 // Default: 7 days (168 hours) for claimant availability
 ): Promise<string> => {
   try {
     // Get examination data to create JWT token with required payload
