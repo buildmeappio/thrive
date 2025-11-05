@@ -7,6 +7,7 @@ import {
   ExperienceDetails,
   Availablity,
   Legal,
+  PaymentDetails,
   SubmitConfirmation,
   ThankYou,
 } from "./RegisterationSteps";
@@ -53,6 +54,7 @@ const RegisterForm: React.FC<{
     { component: IMEExperince },
     { component: ExperienceDetails },
     { component: Availablity },
+    { component: PaymentDetails },
     { component: Legal },
     { component: SubmitConfirmation },
     { component: ThankYou },
@@ -86,7 +88,7 @@ const RegisterForm: React.FC<{
     );
   };
 
-  const showTitle = currentStep <= 7;
+  const showTitle = currentStep <= 8;
   return (
     <div className="mx-auto max-w-[900px] p-4 md:py-7 py-10">
       <div className="mb-8 flex h-[60px] items-center justify-between ">

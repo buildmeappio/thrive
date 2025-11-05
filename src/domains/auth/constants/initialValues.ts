@@ -5,6 +5,7 @@ import {
   Step4ExperienceDetailsInput,
   Step5AvailabilityInput,
   Step6LegalInput,
+  Step7PaymentDetailsInput,
   Step9PasswordInput,
   LoginInput,
 } from "../schemas/auth.schemas";
@@ -61,6 +62,15 @@ export const step6InitialValues: Step6LegalInput = {
   // insuranceProof: null as File | null,
   consentBackgroundVerification: false,
   agreeTermsConditions: false,
+};
+
+export const step7InitialValues: Step7PaymentDetailsInput = {
+  standardIMEFee: "",
+  virtualIMEFee: "",
+  recordReviewFee: "",
+  hourlyRate: "",
+  reportTurnaroundDays: "",
+  cancellationFee: "",
 };
 
 export const step9InitialValues: Step9PasswordInput = {

@@ -35,10 +35,20 @@ export type CreateMedicalExaminerInput = {
   preferredRegions?: string[];
   maxTravelDistance?: string;
   acceptVirtualAssessments?: boolean;
+
+  // step 7
   // signedNDADocumentId: string;
   // insuranceProofDocumentId: string;
   agreeTermsConditions: boolean;
   consentBackgroundVerification: boolean;
+
+  // step 6 - Payment Details
+  standardIMEFee: string;
+  virtualIMEFee: string;
+  recordReviewFee: string;
+  hourlyRate?: string;
+  reportTurnaroundDays?: string;
+  cancellationFee: string;
 };
 
 const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
@@ -121,13 +131,32 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
       },
     });
 
-    // Create languages, availability provider, and send email in parallel
+    // Create languages, payment terms, availability provider, and send email in parallel
     await Promise.all([
       prisma.examinerLanguage.createMany({
         data: payload.languagesSpoken.map((language) => ({
           examinerProfileId: examinerProfile.id,
           languageId: language,
         })),
+      }),
+      prisma.examinerFeeStructure.create({
+        data: {
+          examinerProfileId: examinerProfile.id,
+          standardIMEFee: parseFloat(payload.standardIMEFee) || 0,
+          virtualIMEFee: parseFloat(payload.virtualIMEFee) || 0,
+          recordReviewFee: parseFloat(payload.recordReviewFee) || 0,
+          hourlyRate:
+            payload.hourlyRate && payload.hourlyRate.trim() !== ""
+              ? parseFloat(payload.hourlyRate)
+              : null,
+          reportTurnaroundDays:
+            payload.reportTurnaroundDays &&
+            payload.reportTurnaroundDays.trim() !== ""
+              ? parseInt(payload.reportTurnaroundDays)
+              : null,
+          cancellationFee: parseFloat(payload.cancellationFee) || 0,
+          paymentTerms: "",
+        },
       }),
       prisma.availabilityProvider.create({
         data: {

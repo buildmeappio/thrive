@@ -36,11 +36,19 @@ export type UpdateMedicalExaminerInput = {
   maxTravelDistance?: string;
   acceptVirtualAssessments?: boolean;
 
-  // step 6
+  // step 7
   signedNDADocumentId?: string;
   insuranceProofDocumentId?: string;
   agreeTermsConditions?: boolean;
   consentBackgroundVerification?: boolean;
+
+  // step 6 - Payment Details
+  standardIMEFee?: string;
+  virtualIMEFee?: string;
+  recordReviewFee?: string;
+  hourlyRate?: string;
+  reportTurnaroundDays?: string;
+  cancellationFee?: string;
 };
 
 const updateMedicalExaminer = async (payload: UpdateMedicalExaminerInput) => {
