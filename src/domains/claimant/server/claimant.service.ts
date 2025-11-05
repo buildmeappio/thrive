@@ -156,6 +156,18 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
         data: { statusId: readyToAppointmentStatus.id },
       });
 
+      // Mark all secure links for this examination as SUBMITTED
+      await tx.examinationSecureLink.updateMany({
+        where: {
+          examinationId: data.examinationId,
+          status: 'PENDING',
+        },
+        data: {
+          status: 'SUBMITTED',
+          submittedAt: new Date(),
+        },
+      });
+
       return booking;
     });
 
