@@ -74,6 +74,15 @@ export type Step6Legal = {
   agreeTermsConditions: boolean;
 };
 
+export type Step7PaymentDetails = {
+  standardIMEFee: string;
+  virtualIMEFee: string;
+  recordReviewFee: string;
+  hourlyRate: string;
+  reportTurnaroundDays: string;
+  cancellationFee: string;
+};
+
 export type Step9Password = {
   password: string;
   confirmPassword: string;
@@ -89,6 +98,7 @@ export type RegistrationData = Step1PersonalInfo &
   Step4ExperienceDetails &
   Step5Availability &
   Step6Legal &
+  Step7PaymentDetails &
   Step9Password;
 /**
  * Initial values matching your Yup schemas' initialValues
@@ -127,6 +137,13 @@ export const initialData: RegistrationData = {
   insuranceProof: null,
   consentBackgroundVerification: false,
   agreeTermsConditions: false,
+  // Step 7
+  standardIMEFee: "",
+  virtualIMEFee: "",
+  recordReviewFee: "",
+  hourlyRate: "",
+  reportTurnaroundDays: "",
+  cancellationFee: "",
   // Step 9
   password: "",
   confirmPassword: "",
@@ -293,6 +310,27 @@ export const useRegistrationStore = create<Store>()(
           consentBackgroundVerification:
             examinerData.isConsentToBackgroundVerification || false,
           agreeTermsConditions: examinerData.agreeToTerms || false,
+
+          // Step 7: Payment Details
+          standardIMEFee: examinerData.feeStructure?.[0]?.standardIMEFee
+            ? examinerData.feeStructure[0].standardIMEFee.toString()
+            : "",
+          virtualIMEFee: examinerData.feeStructure?.[0]?.virtualIMEFee
+            ? examinerData.feeStructure[0].virtualIMEFee.toString()
+            : "",
+          recordReviewFee: examinerData.feeStructure?.[0]?.recordReviewFee
+            ? examinerData.feeStructure[0].recordReviewFee.toString()
+            : "",
+          hourlyRate: examinerData.feeStructure?.[0]?.hourlyRate
+            ? examinerData.feeStructure[0].hourlyRate.toString()
+            : "",
+          reportTurnaroundDays: examinerData.feeStructure?.[0]
+            ?.reportTurnaroundDays
+            ? examinerData.feeStructure[0].reportTurnaroundDays.toString()
+            : "",
+          cancellationFee: examinerData.feeStructure?.[0]?.cancellationFee
+            ? examinerData.feeStructure[0].cancellationFee.toString()
+            : "",
         };
 
         set((state) => ({
@@ -355,6 +393,15 @@ export const selectStep6 = (d: RegistrationData): Step6Legal => ({
   insuranceProof: d.insuranceProof,
   consentBackgroundVerification: d.consentBackgroundVerification,
   agreeTermsConditions: d.agreeTermsConditions,
+});
+
+export const selectStep7 = (d: RegistrationData): Step7PaymentDetails => ({
+  standardIMEFee: d.standardIMEFee,
+  virtualIMEFee: d.virtualIMEFee,
+  recordReviewFee: d.recordReviewFee,
+  hourlyRate: d.hourlyRate,
+  reportTurnaroundDays: d.reportTurnaroundDays,
+  cancellationFee: d.cancellationFee,
 });
 
 export const selectStep9 = (d: RegistrationData): Step9Password => ({

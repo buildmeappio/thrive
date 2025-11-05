@@ -269,6 +269,75 @@ export const step6LegalSchema = z.object({
 
 export type Step6LegalInput = z.infer<typeof step6LegalSchema>;
 
+export const step7PaymentDetailsSchema = z.object({
+  standardIMEFee: z
+    .string()
+    .min(1, { message: "Standard IME fee is required" })
+    .refine(
+      (val) => {
+        const num = parseFloat(val);
+        return !isNaN(num) && num >= 0;
+      },
+      { message: "Please enter a valid fee amount" }
+    ),
+  virtualIMEFee: z
+    .string()
+    .min(1, { message: "Virtual IME fee is required" })
+    .refine(
+      (val) => {
+        const num = parseFloat(val);
+        return !isNaN(num) && num >= 0;
+      },
+      { message: "Please enter a valid fee amount" }
+    ),
+  recordReviewFee: z
+    .string()
+    .min(1, { message: "Record review fee is required" })
+    .refine(
+      (val) => {
+        const num = parseFloat(val);
+        return !isNaN(num) && num >= 0;
+      },
+      { message: "Please enter a valid fee amount" }
+    ),
+  hourlyRate: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val || val === "") return true;
+        const num = parseFloat(val);
+        return !isNaN(num) && num >= 0;
+      },
+      { message: "Please enter a valid hourly rate" }
+    ),
+  reportTurnaroundDays: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val || val === "") return true;
+        const num = parseInt(val);
+        return !isNaN(num) && num > 0 && num <= 365;
+      },
+      { message: "Please enter a valid number of days (1-365)" }
+    ),
+  cancellationFee: z
+    .string()
+    .min(1, { message: "Cancellation fee is required" })
+    .refine(
+      (val) => {
+        const num = parseFloat(val);
+        return !isNaN(num) && num >= 0;
+      },
+      { message: "Please enter a valid fee amount" }
+    ),
+});
+
+export type Step7PaymentDetailsInput = z.infer<
+  typeof step7PaymentDetailsSchema
+>;
+
 export const step9PasswordSchema = z
   .object({
     password: z

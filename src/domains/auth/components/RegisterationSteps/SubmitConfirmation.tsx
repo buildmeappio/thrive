@@ -96,10 +96,18 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         preferredRegions: data.preferredRegions,
         maxTravelDistance: data.maxTravelDistance,
         acceptVirtualAssessments: data.acceptVirtualAssessments === "yes",
-        // signedNDADocumentId: signedNDADocument.document.id,
-        // insuranceProofDocumentId: insuranceProofDocument.document.id,
+
+        // Step7
         agreeTermsConditions: data.agreeTermsConditions,
         consentBackgroundVerification: data.consentBackgroundVerification,
+
+        // Step6 - Payment Details
+        standardIMEFee: data.standardIMEFee,
+        virtualIMEFee: data.virtualIMEFee,
+        recordReviewFee: data.recordReviewFee,
+        hourlyRate: data.hourlyRate,
+        reportTurnaroundDays: data.reportTurnaroundDays,
+        cancellationFee: data.cancellationFee,
       };
 
       let result;
