@@ -65,6 +65,7 @@ enum OrganizationStatus {
   PENDING
   ACCEPTED
   REJECTED
+  INFO_REQUESTED
 }
 
 model Organization {
@@ -195,7 +196,7 @@ model Claimant {
   deletedAt                DateTime? @map("deleted_at") @db.Timestamptz()
 
   address              Address                @relation("ClaimantAddress", fields: [addressId], references: [id])
-  cases                Case[]                 @relation("ClaimantCases")
+  examinations         Examination[]          @relation("ExaminationClaimant")
   claimantAvailability ClaimantAvailability[] @relation("ClaimantAvailability")
   claimType            ClaimType              @relation("ClaimantClaimType", fields: [claimTypeId], references: [id])
 
@@ -211,7 +212,7 @@ model LegalRepresentative {
   addressId         String?  @map("address_id") @db.Uuid
   address           Address? @relation("LegalRepresentativeAddress", fields: [addressId], references: [id])
 
-  cases Case[] @relation("LegalRepresentativeCases")
+  examinations Examination[] @relation("ExaminationLegalRepresentative")
 
   @@map("legal_representatives")
 }
@@ -232,33 +233,27 @@ model Insurance {
   addressId              String?  @map("address_id") @db.Uuid
   address                Address? @relation("InsuranceAddress", fields: [addressId], references: [id])
 
-  cases Case[] @relation("InsuranceCases")
+  examinations Examination[] @relation("ExaminationInsurance")
 
   @@map("insurances")
 }
 
 model Case {
-  id                    String  @id @unique @default(uuid()) @db.Uuid
-  organizationId        String? @map("organization_id") @db.Uuid
-  claimantId            String  @map("claimant_id") @db.Uuid
-  insuranceId           String? @map("insurance_id") @db.Uuid
-  legalRepresentativeId String? @map("legal_representative_id") @db.Uuid
-  caseTypeId            String? @map("case_type_id") @db.Uuid
-  reason                String? @map("reason") @db.VarChar(255)
-  consentForSubmission  Boolean @default(false) @map("consent_for_submission")
-  isDraft               Boolean @default(false) @map("is_draft")
+  id                   String  @id @unique @default(uuid()) @db.Uuid
+  organizationId       String? @map("organization_id") @db.Uuid
+  caseTypeId           String? @map("case_type_id") @db.Uuid
+  reason               String? @map("reason") @db.VarChar(255)
+  consentForSubmission Boolean @default(false) @map("consent_for_submission")
+  isDraft              Boolean @default(false) @map("is_draft")
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  organization        Organization?        @relation("OrganizationCases", fields: [organizationId], references: [id])
-  claimant            Claimant             @relation("ClaimantCases", fields: [claimantId], references: [id])
-  insurance           Insurance?           @relation("InsuranceCases", fields: [insuranceId], references: [id])
-  legalRepresentative LegalRepresentative? @relation("LegalRepresentativeCases", fields: [legalRepresentativeId], references: [id])
-  caseType            CaseType?            @relation("CaseTypeCases", fields: [caseTypeId], references: [id])
-  examinations        Examination[]        @relation("ExaminationCases")
-  documents           CaseDocument[]       @relation("CaseDocuments")
+  organization Organization?  @relation("OrganizationCases", fields: [organizationId], references: [id])
+  caseType     CaseType?      @relation("CaseTypeCases", fields: [caseTypeId], references: [id])
+  examinations Examination[]  @relation("ExaminationCases")
+  documents    CaseDocument[] @relation("CaseDocuments")
 
   @@map("cases")
 }
@@ -286,6 +281,10 @@ model Examination {
   assignToId String?   @map("assign_to_id") @db.Uuid
   assignedAt DateTime? @map("assigned_at") @db.Timestamptz()
 
+  claimantId            String  @map("claimant_id") @db.Uuid
+  insuranceId           String? @map("insurance_id") @db.Uuid
+  legalRepresentativeId String? @map("legal_representative_id") @db.Uuid
+
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
@@ -299,6 +298,10 @@ model Examination {
   claimantAvailability ClaimantAvailability[]       @relation("ExaminationClaimantAvailability")
   services             ExaminationServices[]        @relation("ExaminationServices")
   selectedBenefits     ExaminationSelectedBenefit[] @relation("ExaminationSelectedBenefits")
+
+  claimant            Claimant             @relation("ExaminationClaimant", fields: [claimantId], references: [id])
+  insurance           Insurance?           @relation("ExaminationInsurance", fields: [insuranceId], references: [id])
+  legalRepresentative LegalRepresentative? @relation("ExaminationLegalRepresentative", fields: [legalRepresentativeId], references: [id])
 
   @@index([caseId])
   @@index([caseNumber])
@@ -420,6 +423,7 @@ model Language {
 
   examinationInterpreter ExaminationInterpreter[] @relation("ExaminationInterpreter")
   examinerLanguages      ExaminerLanguage[]
+  interpreterLanguages   InterpreterLanguage[]
 
   @@map("languages")
 }
@@ -467,10 +471,10 @@ model Documents {
   deletedAt         DateTime?         @map("deleted_at") @db.Timestamptz()
   users             User[]            @relation("ProfilePhoto")
   cases             CaseDocument[]    @relation("DocumentCases")
-  medicalLicenses   ExaminerProfile[] @relation(name: "ExmainerMedicalLicenseDocument")
-  examinerResume    ExaminerProfile[] @relation(name: "ExmainerResumeDocument")
-  examinerNDA       ExaminerProfile[] @relation(name: "ExmainerNDADocument")
-  examinerInsurance ExaminerProfile[] @relation(name: "ExmainerInsuranceDocument")
+  medicalLicenses   ExaminerProfile[] @relation(name: "ExaminerMedicalLicenseDocument")
+  examinerResume    ExaminerProfile[] @relation(name: "ExaminerResumeDocument")
+  examinerNDA       ExaminerProfile[] @relation(name: "ExaminerNDADocument")
+  examinerInsurance ExaminerProfile[] @relation(name: "ExaminerInsuranceDocument")
 
   @@map("documents")
 }
@@ -493,6 +497,7 @@ model ExaminationTypeBenefit {
   id                String    @id @unique @default(uuid()) @db.Uuid
   examinationTypeId String    @map("examination_type_id") @db.Uuid
   benefit           String    @map("benefit") @db.VarChar(500)
+  description       String?   @map("description") @db.Text
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()
@@ -599,6 +604,7 @@ model ExaminerProfile {
   mailingAddress                    String         @map("mailing_address") @db.Text
   specialties                       String[]       @map("specialties")
   licenseNumber                     String         @map("license_number") @db.VarChar(255)
+  landlineNumber                    String?        @map("landline_number") @db.VarChar(255)
   assessmentTypes                   String[]       @map("assessment_types")
   provinceOfLicensure               String         @map("province_of_licensure") @db.VarChar(255)
   licenseExpiryDate                 DateTime?      @map("license_expiry_date") @db.Date
@@ -614,6 +620,10 @@ model ExaminerProfile {
   acceptVirtualAssessments          Boolean?       @map("accept_virtual_assessments")
   bufferTime                        String?        @map("buffer_time") @db.VarChar(20)
   advanceBooking                    String?        @map("advance_booking") @db.VarChar(20)
+  appointmentTypes                  String[]       @map("appointment_types")
+  appointmentDuration               String?        @map("appointment_duration") @db.VarChar(20)
+  minimumNoticeValue                String?        @map("minimum_notice_value") @db.VarChar(20)
+  minimumNoticeUnit                 String?        @map("minimum_notice_unit") @db.VarChar(20)
   payoutMethod                      String?        @map("payout_method") @db.VarChar(20)
   transitNumber                     String?        @map("transit_number") @db.VarChar(5)
   institutionNumber                 String?        @map("institution_number") @db.VarChar(3)
@@ -633,78 +643,238 @@ model ExaminerProfile {
   updatedAt                         DateTime       @updatedAt @db.Timestamptz()
   deletedAt                         DateTime?
 
-  account                Account                 @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  medicalLicenseDocument Documents               @relation(name: "ExmainerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
-  resumeDocument         Documents               @relation(name: "ExmainerResumeDocument", references: [id], fields: [resumeDocumentId])
-  ndaDocument            Documents?              @relation(name: "ExmainerNDADocument", references: [id], fields: [NdaDocumentId])
-  insuranceDocument      Documents?              @relation(name: "ExmainerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
+  account                Account                @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  medicalLicenseDocument Documents              @relation(name: "ExaminerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
+  resumeDocument         Documents              @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
+  ndaDocument            Documents?             @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
+  insuranceDocument      Documents?             @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
+  feeStructure           ExaminerFeeStructure[] @relation("ExaminerFeeStructure")
   examinerLanguages      ExaminerLanguage[]
-  weeklyHours            ExaminerWeeklyHours[]
-  overrideHours          ExaminerOverrideHours[]
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'EXAMINER' } })
 
   @@map("examiner_profiles")
 }
 
-model ExaminerWeeklyHours {
-  id                String    @id @default(uuid()) @db.Uuid
-  examinerProfileId String    @map("examiner_profile_id") @db.Uuid
-  dayOfWeek         String    @map("day_of_week") @db.VarChar(20)
-  enabled           Boolean   @default(true) @map("enabled")
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()
+model ExaminerFeeStructure {
+  id                   String    @id @default(uuid()) @db.Uuid
+  examinerProfileId    String    @map("examiner_profile_id") @db.Uuid
+  standardIMEFee       Decimal   @map("standard_ime_fee") @db.Decimal(10, 2)
+  virtualIMEFee        Decimal   @map("virtual_ime_fee") @db.Decimal(10, 2)
+  recordReviewFee      Decimal   @map("record_review_fee") @db.Decimal(10, 2)
+  hourlyRate           Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
+  reportTurnaroundDays Int?      @map("report_turnaround_days") @db.Integer
+  cancellationFee      Decimal   @map("cancellation_fee") @db.Decimal(10, 2)
+  paymentTerms         String    @map("payment_terms") @db.Text
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt            DateTime? @map("deleted_at") @db.Timestamptz()
 
-  examinerProfile ExaminerProfile          @relation(fields: [examinerProfileId], references: [id], onDelete: Cascade)
-  timeSlots       ExaminerWeeklyTimeSlot[]
+  examinerProfile ExaminerProfile @relation("ExaminerFeeStructure", fields: [examinerProfileId], references: [id], onDelete: Cascade)
 
-  @@unique([examinerProfileId, dayOfWeek])
   @@index([examinerProfileId])
-  @@map("examiner_weekly_hours")
+  @@map("examiner_fee_structure")
 }
 
-model ExaminerWeeklyTimeSlot {
-  id           String    @id @default(uuid()) @db.Uuid
-  weeklyHourId String    @map("weekly_hour_id") @db.Uuid
-  startTime    String    @map("start_time") @db.VarChar(20)
-  endTime      String    @map("end_time") @db.VarChar(20)
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz()
+enum ProviderType {
+  EXAMINER
+  CHAPERONE
+  INTERPRETER
+  TRANSPORTER
+}
 
-  weeklyHour ExaminerWeeklyHours @relation(fields: [weeklyHourId], references: [id], onDelete: Cascade)
+model AvailabilityProvider {
+  id String @id @default(uuid()) @db.Uuid
+
+  /// What kind of resource this is (doctor, chaperone, interpreter, etc.)
+  providerType ProviderType @map("provider_type")
+
+  /// ID of the concrete row in its own table.
+  /// - If providerType = EXAMINER  -> refId = ExaminerProfile.id
+  /// - If providerType = CHAPERONE -> refId = Chaperone.id
+  /// - If providerType = INTERPRETER -> refId = Interpreter.id
+  /// - If providerType = TRANSPORTER -> refId = Transporter.id
+  refId String @map("ref_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  // Availability relations
+  weeklyHours   ProviderWeeklyHours[]   @relation("ProviderWeeklyHours")
+  overrideHours ProviderOverrideHours[] @relation("ProviderOverrideHours")
+
+  // Provider relations - polymorphic relationship
+  // No foreign key constraints since refId can point to different tables based on providerType
+  // Use application-level validation to ensure data integrity
+
+  /// Prevents the same entity from being registered twice,
+  /// even under a different type.
+  @@unique([refId])
+  @@map("availability_providers")
+}
+
+/// Day-of-week template availability lives here.
+/// Each provider has at most 1 row per weekday.
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+/// High-level "I work on Mondays, 09:00-12:00 and 14:00-17:00"
+/// The individual windows go in ProviderWeeklyTimeSlot.
+model ProviderWeeklyHours {
+  id                     String @id @default(uuid()) @db.Uuid
+  availabilityProviderId String @map("availability_provider_id") @db.Uuid
+
+  dayOfWeek Weekday @map("day_of_week")
+  enabled   Boolean @default(true) @map("enabled")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  provider  AvailabilityProvider     @relation("ProviderWeeklyHours", fields: [availabilityProviderId], references: [id], onDelete: Cascade)
+  timeSlots ProviderWeeklyTimeSlot[]
+
+  @@unique([availabilityProviderId, dayOfWeek])
+  @@index([availabilityProviderId])
+  @@map("provider_weekly_hours")
+}
+
+/// Multiple slots inside a weekday.
+/// Example: 09:00-12:00, 14:00-17:00 on MONDAY.
+model ProviderWeeklyTimeSlot {
+  id           String @id @default(uuid()) @db.Uuid
+  weeklyHourId String @map("weekly_hour_id") @db.Uuid
+
+  /// Store as string like "09:00" / "14:30"
+  /// We don't force timezone math here.
+  startTime String @map("start_time") @db.VarChar(20)
+  endTime   String @map("end_time") @db.VarChar(20)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  weeklyHour ProviderWeeklyHours @relation(fields: [weeklyHourId], references: [id], onDelete: Cascade)
 
   @@index([weeklyHourId])
-  @@map("examiner_weekly_time_slots")
+  @@map("provider_weekly_time_slots")
 }
 
-model ExaminerOverrideHours {
-  id                String    @id @default(uuid()) @db.Uuid
-  examinerProfileId String    @map("examiner_profile_id") @db.Uuid
-  date              DateTime  @map("date") @db.Date
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()
+/// Date-specific override. "On 2025-11-03, here's my special schedule".
+/// This replaces the weekday template for that date.
+model ProviderOverrideHours {
+  id                     String @id @default(uuid()) @db.Uuid
+  availabilityProviderId String @map("availability_provider_id") @db.Uuid
 
-  examinerProfile ExaminerProfile            @relation(fields: [examinerProfileId], references: [id], onDelete: Cascade)
-  timeSlots       ExaminerOverrideTimeSlot[]
+  /// Which calendar day is overridden
+  date DateTime @map("date") @db.Date
 
-  @@unique([examinerProfileId, date])
-  @@index([examinerProfileId])
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  provider  AvailabilityProvider       @relation("ProviderOverrideHours", fields: [availabilityProviderId], references: [id], onDelete: Cascade)
+  timeSlots ProviderOverrideTimeSlot[]
+
+  /// 1 override record per provider per date.
+  @@unique([availabilityProviderId, date])
+  @@index([availabilityProviderId])
   @@index([date])
-  @@map("examiner_override_hours")
+  @@map("provider_override_hours")
 }
 
-model ExaminerOverrideTimeSlot {
-  id             String    @id @default(uuid()) @db.Uuid
-  overrideHourId String    @map("override_hour_id") @db.Uuid
-  startTime      String    @map("start_time") @db.VarChar(20)
-  endTime        String    @map("end_time") @db.VarChar(20)
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz()
+/// Multiple windows inside that override date.
+model ProviderOverrideTimeSlot {
+  id             String @id @default(uuid()) @db.Uuid
+  overrideHourId String @map("override_hour_id") @db.Uuid
 
-  overrideHour ExaminerOverrideHours @relation(fields: [overrideHourId], references: [id], onDelete: Cascade)
+  /// Again "09:00", "13:30", etc.
+  startTime String @map("start_time") @db.VarChar(20)
+  endTime   String @map("end_time") @db.VarChar(20)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  overrideHour ProviderOverrideHours @relation(fields: [overrideHourId], references: [id], onDelete: Cascade)
 
   @@index([overrideHourId])
-  @@map("examiner_override_time_slots")
+  @@map("provider_override_time_slots")
+}
+
+model Chaperone {
+  id        String  @id @unique @default(uuid()) @db.Uuid
+  firstName String  @map("first_name") @db.VarChar(255)
+  lastName  String  @map("last_name") @db.VarChar(255)
+  email     String  @unique @map("email") @db.VarChar(255)
+  phone     String? @map("phone") @db.VarChar(255)
+  gender    String? @map("gender") @db.VarChar(255)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'CHAPERONE' } })
+
+  @@map("chaperones")
+}
+
+model Interpreter {
+  id            String    @id @unique @default(uuid()) @db.Uuid
+  companyName   String    @map("company_name") @db.VarChar(255)
+  contactPerson String    @map("contact_person") @db.VarChar(255)
+  email         String    @unique @map("email") @db.VarChar(255)
+  phone         String?   @map("phone") @db.VarChar(255)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz()
+
+  languages InterpreterLanguage[] @relation("InterpreterLanguages")
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'INTERPRETER' } })
+
+  @@map("interpreters")
+}
+
+model InterpreterLanguage {
+  id            String   @id @unique @default(uuid()) @db.Uuid
+  interpreterId String   @map("interpreter_id") @db.Uuid
+  languageId    String   @map("language_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  interpreter Interpreter @relation("InterpreterLanguages", fields: [interpreterId], references: [id], onDelete: Cascade)
+  language    Language    @relation(fields: [languageId], references: [id], onDelete: Restrict)
+
+  @@unique([interpreterId, languageId])
+  @@index([languageId])
+  @@map("interpreter_languages")
+}
+
+enum TransporterStatus {
+  SUSPENDED
+  ACTIVE
+}
+
+model Transporter {
+  id            String            @id @default(uuid()) @db.Uuid
+  companyName   String            @map("company_name") @db.VarChar(255)
+  contactPerson String            @map("contact_person") @db.VarChar(255)
+  phone         String            @map("phone") @db.VarChar(20)
+  email         String            @map("email") @db.VarChar(255)
+  serviceAreas  Json              @map("service_areas") // Array of {province: string}
+  status        TransporterStatus @default(ACTIVE) @map("status")
+  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt     DateTime?         @map("deleted_at") @db.Timestamptz()
+
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'TRANSPORTER' } })
+
+  @@map("transporters")
 }

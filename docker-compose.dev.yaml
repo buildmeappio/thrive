@@ -1,14 +1,16 @@
 services:
   db:
     image: postgres:16
+    container_name: thrivedb-local
     ports:
-      - 5441:5432
+      - ${PG_EXTERNAL_PORT:-5441}:5432
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: thrive_db
+      POSTGRES_USER: ${PG_USER:-postgres}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres}
+      POSTGRES_DB: ${PG_DB:-thrive_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    command: ["postgres", "-c", "max_connections=100"]
 
 volumes:
   postgres_data:

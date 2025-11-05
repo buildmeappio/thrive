@@ -8,12 +8,16 @@ import AdminSeeder from "./seeders/admin.seeder";
 import CaseTypeSeeder from "./seeders/caseType.seeder";
 import CaseStatusSeeder from "./seeders/caseStatus.seeder";
 import LanguageSeeder from "./seeders/language.seeder";
+import InterpreterSeeder from "./seeders/interpreter.seeder";
 import ExaminationTypeSeeder from "./seeders/examinationType.seeder";
 import ExaminationTypeShortFormSeeder from "./seeders/examTypeShortForm.seeder";
 import ClaimTypeSeeder from "./seeders/claimType.seeder";
 import ExaminationTypeBenefitSeeder from "./seeders/examinationTypeBenefits.seeder";
 import ExaminerProfileSeeder from "./seeders/examinerProfile.seeder";
 import CasesSeeder from "./seeders/cases.seeder";
+import AdditionalCaseStatusSeeder from "./seeders/additionalCaseStatus.seeder";
+import TransporterSeeder from "./seeders/transporter.seeder";
+import ChaperoneSeeder from "./seeders/chaperone.seeder";
 
 const seeds = [
   RoleSeeder,
@@ -22,13 +26,17 @@ const seeds = [
   AdminSeeder,
   CaseTypeSeeder,
   CaseStatusSeeder,
+  AdditionalCaseStatusSeeder,
   LanguageSeeder,
+  InterpreterSeeder,
   ExaminationTypeSeeder,
   ExaminationTypeShortFormSeeder,
   ClaimTypeSeeder,
   ExaminationTypeBenefitSeeder,
   ExaminerProfileSeeder,
   CasesSeeder,
+  TransporterSeeder,
+  ChaperoneSeeder,
 ];
 
 const prisma = new PrismaClient();
