@@ -339,6 +339,7 @@ enum ClaimantPreference {
 }
 
 enum ClaimantBookingStatus {
+  PENDING
   ACCEPT
   DECLINE
   REQUEST_MORE_INFO
