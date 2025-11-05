@@ -656,6 +656,76 @@ const getAllTransporters = async () => {
 };
 
 /**
+ * Check if an examiner is already booked at a specific time slot
+ * Returns true if there's an existing booking that overlaps with the slot
+ */
+const isExaminerAlreadyBooked = (
+  examinerProfileId: string,
+  slotStart: Date,
+  slotEnd: Date,
+  existingBookings: Map<string, Date[]>
+): boolean => {
+  const bookings = existingBookings.get(examinerProfileId);
+  if (!bookings || bookings.length === 0) {
+    return false;
+  }
+
+  // Check if any booking time falls within the slot range
+  // A booking overlaps if: bookingTime >= slotStart && bookingTime < slotEnd
+  // (using < slotEnd because if bookingTime equals slotEnd, it's a different slot)
+  for (const bookingTime of bookings) {
+    if (bookingTime >= slotStart && bookingTime < slotEnd) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+/**
+ * Fetch all existing bookings for qualified examiners in the date range
+ * Returns a Map: examinerProfileId -> array of booking times
+ */
+const fetchExistingBookings = async (
+  examinerProfileIds: string[],
+  startDate: Date,
+  endDate: Date
+): Promise<Map<string, Date[]>> => {
+  if (examinerProfileIds.length === 0) {
+    return new Map();
+  }
+
+  // Query all bookings for these examiners in the date range
+  // Note: Prisma client needs to be regenerated after schema changes
+  const bookings = await (prisma as any).claimantBooking.findMany({
+    where: {
+      examinerProfileId: { in: examinerProfileIds },
+      bookingTime: {
+        gte: startDate,
+        lte: endDate,
+      },
+      deletedAt: null,
+    },
+    select: {
+      examinerProfileId: true,
+      bookingTime: true,
+    },
+  });
+
+  // Group bookings by examinerProfileId
+  const bookingsMap = new Map<string, Date[]>();
+  for (const booking of bookings) {
+    const examinerId = booking.examinerProfileId;
+    if (!bookingsMap.has(examinerId)) {
+      bookingsMap.set(examinerId, []);
+    }
+    bookingsMap.get(examinerId)!.push(new Date(booking.bookingTime));
+  }
+
+  return bookingsMap;
+};
+
+/**
  * Main service function to get available examiners for an examination
  */
 export const getAvailableExaminersForExam = async (
@@ -718,15 +788,26 @@ export const getAvailableExaminersForExam = async (
   const rawEnd = addDays(adjustedStartDate, daysWindow);
   const endDate = dueDate ? minDate([rawEnd, dueDate]) : rawEnd;
 
+  // 3.5. Fetch all existing bookings for qualified examiners in the date range
+  const examinerProfileIds = qualifiedExaminers.map(ex => ex.examinerId);
+  const startDateOnly = new Date(adjustedStartDate);
+  startDateOnly.setHours(0, 0, 0, 0);
+  const endDateOnly = new Date(endDate);
+  endDateOnly.setHours(23, 59, 59, 999);
+  const existingBookings = await fetchExistingBookings(
+    examinerProfileIds,
+    startDateOnly,
+    endDateOnly
+  );
+  console.log(
+    `[Examiner Availability] Loaded existing bookings for ${existingBookings.size} examiners`
+  );
+
   // Build day-by-day availability
   const days: DayAvailability[] = [];
 
   // Loop through each day in the window - use adjustedStartDate instead of startDate
   // Normalize dates to avoid timezone issues - work with date-only values
-  const startDateOnly = new Date(adjustedStartDate);
-  startDateOnly.setHours(0, 0, 0, 0);
-  const endDateOnly = new Date(endDate);
-  endDateOnly.setHours(23, 59, 59, 999);
 
   for (
     let dayCursor = new Date(startDateOnly);
@@ -756,7 +837,16 @@ export const getAvailableExaminersForExam = async (
           slotEnd,
         });
 
-        if (isExaminerFree) {
+        // Check if examiner is already booked at this time slot
+        const isAlreadyBooked = isExaminerAlreadyBooked(
+          examiner.examinerId,
+          slotStart,
+          slotEnd,
+          existingBookings
+        );
+
+        // Only add examiner if they're available AND not already booked
+        if (isExaminerFree && !isAlreadyBooked) {
           // Check available interpreters for this slot (always check, regardless of requirements)
           const availableInterpreters: AvailableInterpreter[] = [];
           for (const interpreter of allInterpreters) {

@@ -66,3 +66,31 @@ export type GetAvailableExaminersParams = {
   startDate: Date;
   settings: AvailabilitySettings;
 };
+
+export type SelectedAppointment = {
+  examinerId: string;
+  examinerName: string;
+  date: Date;
+  slotStart: Date;
+  slotEnd: Date;
+  specialty?: string;
+  clinic?: string;
+  interpreterId?: string;
+  interpreter?: {
+    interpreterId: string;
+    companyName: string;
+    contactPerson: string;
+  };
+  chaperoneId?: string;
+  chaperone?: {
+    chaperoneId: string;
+    firstName: string;
+    lastName: string;
+  };
+  transporterId?: string;
+  transporter?: {
+    transporterId: string;
+    companyName: string;
+    contactPerson: string;
+  };
+};

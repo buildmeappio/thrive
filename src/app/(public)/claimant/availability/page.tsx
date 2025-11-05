@@ -21,8 +21,11 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ token: string }>
   const caseSummary = await getCaseSummaryByJWT(token);
 
   if (caseSummary.success === false || !caseSummary.result) {
+    const errorMessage =
+      (caseSummary as { message?: string }).message ||
+      'Invalid or expired token. Please check your link or contact support.';
     redirect(
-      '/claimant/availability/success?status=error&message=Invalid or expired token. Please check your link or contact support.'
+      `/claimant/availability/success?status=error&message=${encodeURIComponent(errorMessage)}`
     );
   }
 

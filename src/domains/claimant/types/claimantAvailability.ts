@@ -1,47 +1,48 @@
-import type { ClaimantPreference, TimeBand } from '@prisma/client';
+import type { ClaimantPreference } from '@prisma/client';
 
-export interface TimeSlot {
-  id: string;
-  label: string;
+// ClaimantBookingStatus will be available from @prisma/client after running: npx prisma generate
+export enum ClaimantBookingStatus {
+  PENDING = 'PENDING',
+  ACCEPT = 'ACCEPT',
+  DECLINE = 'DECLINE',
+  REQUEST_MORE_INFO = 'REQUEST_MORE_INFO',
 }
 
-export interface Appointment {
-  date: string;
-  time: string;
-  timeLabel: string;
-}
-
-export interface ClaimantAvailabilitySlot {
-  date: string;
-  startTime: string;
-  endTime: string;
-  start: Date;
-  end: Date;
-  timeBand: TimeBand;
-}
-
-export interface ClaimantAvailabilityService {
-  type: string;
-  enabled: boolean;
-  interpreter?: {
-    languageId: string;
-  };
-  transport?: {
-    pickupAddressId?: string;
-    rawLookup?: string;
-    notes?: string;
-  };
-}
-
-export interface CreateClaimantAvailabilityData {
-  caseId: string;
+export interface CreateClaimantBookingData {
+  examinationId: string;
   claimantId: string;
+  examinerProfileId: string;
+  bookingTime: Date;
   preference: ClaimantPreference;
   accessibilityNotes?: string;
-  additionalNotes?: string;
   consentAck: boolean;
-  slots: ClaimantAvailabilitySlot[];
-  services: ClaimantAvailabilityService[];
+  interpreterId?: string;
+  chaperoneId?: string;
+  transporterId?: string;
+  status?: ClaimantBookingStatus;
+}
+
+export interface UpdateClaimantBookingStatusData {
+  bookingId: string;
+  status: ClaimantBookingStatus;
+  notes?: string; // Optional notes when declining or requesting more info
+}
+
+export interface ClaimantBookingResponse {
+  id: string;
+  examinationId: string;
+  claimantId: string;
+  examinerProfileId: string;
+  bookingTime: Date;
+  preference: ClaimantPreference;
+  accessibilityNotes?: string;
+  consentAck: boolean;
+  interpreterId?: string;
+  chaperoneId?: string;
+  transporterId?: string;
+  status: ClaimantBookingStatus | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ServerActionResponse<T = any> {

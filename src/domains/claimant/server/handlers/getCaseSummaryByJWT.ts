@@ -20,6 +20,54 @@ const getCaseSummaryByJWT = async (token: string) => {
       examinationId: string;
     };
 
+    // First check if any secure link for this examination is already marked as SUBMITTED
+    // This is a quick check to see if booking was already submitted
+    const submittedLink = await prisma.examinationSecureLink.findFirst({
+      where: {
+        examinationId,
+        status: 'SUBMITTED',
+      },
+    });
+
+    if (submittedLink) {
+      return {
+        success: false,
+        message:
+          'You have already submitted your availability for this examination. Please contact support if you need to make changes.',
+        result: null,
+      };
+    }
+
+    // Also check if a booking already exists for this examination (as a fallback)
+    // Note: Prisma client needs to be regenerated after schema changes
+    const existingBooking = await (prisma as any).claimantBooking.findFirst({
+      where: {
+        examinationId,
+        deletedAt: null,
+      },
+    });
+
+    if (existingBooking) {
+      // Booking exists but link wasn't marked as SUBMITTED - mark it now
+      await prisma.examinationSecureLink.updateMany({
+        where: {
+          examinationId,
+          status: 'PENDING',
+        },
+        data: {
+          status: 'SUBMITTED',
+          submittedAt: new Date(),
+        },
+      });
+
+      return {
+        success: false,
+        message:
+          'You have already submitted your availability for this examination. Please contact support if you need to make changes.',
+        result: null,
+      };
+    }
+
     // Get the examination with case and claimant information
     const examination = (await prisma.examination.findUnique({
       where: { id: examinationId },
