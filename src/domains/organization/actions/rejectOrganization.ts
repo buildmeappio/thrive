@@ -6,33 +6,13 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
 import emailService from "@/services/email.service";
-import { ENV } from "@/constants/variables";
-
-type OrganizationView = {
-  id: string;
-  name: string;
-  website?: string | null;
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
-  type: any;
-  address: any;
-  manager: Array<{
-    account?: { 
-      user?: { 
-        email?: string | null;
-        firstName?: string | null;
-        lastName?: string | null;
-      } | null;
-    } | null;
-  }>;
-  createdAt: string | Date;
-  updatedAt: string | Date;
-};
+import { OrganizationData } from "../types/OrganizationData";
 
 const rejectOrganization = async (id: string, reason: string) => {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const organization = (await handlers.rejectOrganization(id, user.accountId, reason)) as OrganizationView;
+  const organization = await handlers.rejectOrganization(id, user.accountId, reason);
 
   // Send rejection email
   try {
@@ -45,15 +25,15 @@ const rejectOrganization = async (id: string, reason: string) => {
   // Revalidate dashboard and organization pages
   revalidatePath("/dashboard");
   revalidatePath("/organization");
+  revalidatePath(`/organization/${id}`);
   
   return organization;
 };
 
-async function sendRejectReasonToOrganization(org: OrganizationView, reason: string) {
-  const manager = org.manager?.[0];
-  const firstName = manager?.account?.user?.firstName || "";
-  const lastName = manager?.account?.user?.lastName || "";
-  const email = manager?.account?.user?.email;
+async function sendRejectReasonToOrganization(org: OrganizationData, reason: string) {
+  const email = org.managerEmail;
+  const firstName = org.managerName?.split(' ')[0] || "";
+  const lastName = org.managerName?.split(' ').slice(1).join(' ') || "";
 
   if (!email) {
     console.error("Organization manager email not found");
@@ -68,7 +48,7 @@ async function sendRejectReasonToOrganization(org: OrganizationView, reason: str
       lastName,
       organizationName: org.name,
       rejectionMessage: reason,
-      CDN_URL: ENV.NEXT_PUBLIC_CDN_URL,
+      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
     },
     email
   );

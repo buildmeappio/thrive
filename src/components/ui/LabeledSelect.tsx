@@ -18,11 +18,11 @@ export default function LabeledSelect({
   return (
     <label className={`flex flex-col ${className}`}>
       <span className="mb-1 ml-2 text-[12px] font-medium text-[#676767] font-poppins">{label}</span>
-      <div className="relative">
+      <div className="relative w-full">
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="h-10 rounded-full border border-[#E5E7EB] bg-white pl-4 pr-10 font-poppins text-sm appearance-none"
+          className="w-full h-10 rounded-full border border-[#E5E7EB] bg-white pl-4 pr-10 font-poppins text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
         >
           {options.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>

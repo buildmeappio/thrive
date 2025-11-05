@@ -13,9 +13,15 @@ interface OrganizationPageContentProps {
   statuses: string[];
 }
 
-// Utility function to capitalize first letter of every word
-const capitalizeFirstLetter = (str: string) => {
-  return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+// Utility function to format text from database: remove _, -, and capitalize each word
+const formatText = (str: string) => {
+  if (!str) return str;
+  return str
+    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0)  // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 };
 
 interface FilterState {
@@ -46,8 +52,7 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
     });
   };
 
-  const hasActiveFilters = filters.type !== "all" || 
-                          filters.status !== "all";
+  const hasActiveFilters = filters.type !== "all" || filters.status !== "all";
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -83,7 +88,7 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
   return (
     <DashboardShell>
       {/* Organizations Heading */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6 dashboard-zoom-mobile">
         <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
           Organizations
         </h1>
@@ -106,14 +111,14 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
           </linearGradient>
         </defs>
       </svg>
-      <div className="flex flex-col gap-6 mb-20">
-        {/* Search and Filters Section - All in one line for mobile */}
-        <div className="flex flex-row gap-4 items-center justify-between">
-          {/* Search Bar - Left side */}
-          <div className="flex-1 min-w-0">
+      <div className="flex flex-col gap-3 sm:gap-6 mb-20 dashboard-zoom-mobile">
+        {/* Search and Filters Section - Stack on mobile, row on desktop */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center sm:justify-between">
+          {/* Search Bar - Full width on mobile */}
+          <div className="flex-1 sm:max-w-md w-full">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5" fill="none" stroke="url(#searchGradient)" viewBox="0 0 24 24">
+                <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="url(#searchGradient)" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
@@ -122,38 +127,38 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
                 placeholder="Search by organizations"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-full bg-white text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
+                className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-full bg-white text-xs sm:text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
               />
             </div>
           </div>
 
-          {/* Filter Buttons - Right side */}
-          <div className="flex gap-3 flex-shrink-0">
+          {/* Filter Buttons - Wrap on mobile */}
+          <div className="flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
             {/* Type Filter */}
             <div className="relative filter-dropdown">
               <button 
                 onClick={() => setActiveDropdown(activeDropdown === "type" ? null : "type")}
-                className={`flex items-center gap-2 px-6 py-3 bg-white border rounded-full text-sm font-poppins transition-colors ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
                   filters.type !== "all" 
                     ? "border-[#00A8FF] text-[#00A8FF]" 
                     : "border-gray-200 text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                <Cross className="w-4 h-4" style={{ stroke: "url(#typeGradient)" }} />
-                <span>{filters.type !== "all" ? capitalizeFirstLetter(filters.type) : "Type"}</span>
-                <svg className={`w-4 h-4 transition-transform ${activeDropdown === "type" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <Cross className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ stroke: "url(#typeGradient)" }} />
+                <span>{filters.type !== "all" ? formatText(filters.type) : "Type"}</span>
+                <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "type" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               {activeDropdown === "type" && (
-                <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-2 max-h-64 overflow-y-auto">
+                <div className="absolute top-full left-0 mt-2 w-48 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                  <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleFilterChange("type", "all");
                       }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
+                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
                         filters.type === "all" ? "bg-gray-100 text-[#00A8FF]" : ""
                       }`}
                     >
@@ -166,11 +171,11 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
                           e.stopPropagation();
                           handleFilterChange("type", type);
                         }}
-                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
+                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
                           filters.type === type ? "bg-gray-100 text-[#00A8FF]" : ""
                         }`}
                       >
-                        {capitalizeFirstLetter(type)}
+                        {formatText(type)}
                       </button>
                     ))}
                   </div>
@@ -182,27 +187,27 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
             <div className="relative filter-dropdown">
               <button 
                 onClick={() => setActiveDropdown(activeDropdown === "status" ? null : "status")}
-                className={`flex items-center gap-2 px-6 py-3 bg-white border rounded-full text-sm font-poppins transition-colors ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
                   filters.status !== "all" 
                     ? "border-[#00A8FF] text-[#00A8FF]" 
                     : "border-gray-200 text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                <Funnel className="w-4 h-4" style={{ stroke: "url(#statusGradient)" }} />
-                <span>{filters.status !== "all" ? capitalizeFirstLetter(filters.status) : "Status"}</span>
-                <svg className={`w-4 h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <Funnel className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ stroke: "url(#statusGradient)" }} />
+                <span>{filters.status !== "all" ? formatText(filters.status) : "Status"}</span>
+                <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               {activeDropdown === "status" && (
-                <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-2 max-h-64 overflow-y-auto">
+                <div className="absolute top-full left-0 mt-2 w-48 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                  <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleFilterChange("status", "all");
                       }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
+                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
                         filters.status === "all" ? "bg-gray-100 text-[#00A8FF]" : ""
                       }`}
                     >
@@ -215,11 +220,11 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
                           e.stopPropagation();
                           handleFilterChange("status", status);
                         }}
-                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
+                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
                           filters.status === status ? "bg-gray-100 text-[#00A8FF]" : ""
                         }`}
                       >
-                        {capitalizeFirstLetter(status)}
+                        {formatText(status)}
                       </button>
                     ))}
                   </div>
@@ -231,9 +236,9 @@ export default function OrganizationPageContent({ data, types, statuses }: Organ
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-full text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors"
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
                 <span>Clear</span>

@@ -1,4 +1,4 @@
-import { ExaminerProfile, Account, User, Documents, ExaminerLanguage, Language } from "@prisma/client";
+import { ExaminerProfile, Account, User, Documents, ExaminerLanguage, Language, ExaminerFeeStructure } from "@prisma/client";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 
 type ExaminerWithRelations = ExaminerProfile & {
@@ -10,33 +10,45 @@ type ExaminerWithRelations = ExaminerProfile & {
   ndaDocument: Documents;
   insuranceDocument: Documents;
   examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
+  feeStructure: ExaminerFeeStructure[];
 };
 
 export class ExaminerDto {
   static toExaminerData(examiner: ExaminerWithRelations): ExaminerData {
-    const s3BaseUrl = "https://public-thrive-assets.s3.eu-north-1.amazonaws.com";
+    const feeStructure = examiner.feeStructure?.[0];
     
     return {
       id: examiner.id,
       name: `${examiner.account.user.firstName} ${examiner.account.user.lastName}`.trim(),
       specialties: examiner.specialties || [],
       phone: examiner.account.user.phone || "",
+      landlineNumber: examiner.landlineNumber || undefined,
       email: examiner.account.user.email,
       province: examiner.provinceOfResidence || "",
       mailingAddress: examiner.mailingAddress || "",
       licenseNumber: examiner.licenseNumber || "",
       provinceOfLicensure: examiner.provinceOfLicensure || "",
       licenseExpiryDate: examiner.licenseExpiryDate?.toISOString() || "",
-      cvUrl: examiner.resumeDocument ? `${s3BaseUrl}/documents/${examiner.resumeDocument.name}` : undefined,
-      medicalLicenseUrl: examiner.medicalLicenseDocument ? `${s3BaseUrl}/documents/${examiner.medicalLicenseDocument.name}` : undefined,
+      cvUrl: undefined, // Will be set by handler with presigned URL
+      medicalLicenseUrl: undefined, // Will be set by handler with presigned URL
       languagesSpoken: examiner.examinerLanguages?.map((el) => el.language.name) || [],
       yearsOfIMEExperience: String(examiner.yearsOfIMEExperience || "0"),
       experienceDetails: examiner.bio || "",
-      insuranceProofUrl: examiner.insuranceDocument ? `${s3BaseUrl}/documents/${examiner.insuranceDocument.name}` : undefined,
-      signedNdaUrl: examiner.ndaDocument ? `${s3BaseUrl}/documents/${examiner.ndaDocument.name}` : undefined,
+      insuranceProofUrl: undefined, // Will be set by handler with presigned URL
+      signedNdaUrl: undefined, // Will be set by handler with presigned URL
       status: examiner.status,
       createdAt: examiner.createdAt.toISOString(),
       updatedAt: examiner.updatedAt.toISOString(),
+      feeStructure: feeStructure ? {
+        id: feeStructure.id,
+        standardIMEFee: Number(feeStructure.standardIMEFee),
+        virtualIMEFee: Number(feeStructure.virtualIMEFee),
+        recordReviewFee: Number(feeStructure.recordReviewFee),
+        hourlyRate: feeStructure.hourlyRate ? Number(feeStructure.hourlyRate) : undefined,
+        reportTurnaroundDays: feeStructure.reportTurnaroundDays ?? undefined,
+        cancellationFee: Number(feeStructure.cancellationFee),
+        paymentTerms: feeStructure.paymentTerms,
+      } : undefined,
     };
   }
 

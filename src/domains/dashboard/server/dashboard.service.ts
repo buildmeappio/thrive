@@ -29,10 +29,22 @@ class DashboardService {
         });
     }
 
-    // Recent cases for the dashboard table
+    // Recent cases for the dashboard table - filtered by "Pending" status
     async getRecentCases(limit = 7): Promise<CaseDetailDtoType[]> {
+        // Get the "Pending" status
+        const pendingStatus = await prisma.caseStatus.findFirst({
+            where: {
+                name: "Pending",
+            },
+        });
+
+        if (!pendingStatus) {
+            return [];
+        }
+
         const rows = await prisma.examination.findMany({
             where: {
+                statusId: pendingStatus.id,
                 case: {
                     deletedAt: null,
                     isDraft: false,
@@ -42,6 +54,9 @@ class DashboardService {
                 examiner: { include: { user: true } },
                 examinationType: true,
                 status: true,
+                claimant: { include: { address: true } },
+                legalRepresentative: { include: { address: true } },
+                insurance: { include: { address: true } },
                 services: {
                     include: {
                         interpreter: { include: { language: true } },
@@ -52,10 +67,19 @@ class DashboardService {
                     include: {
                         caseType: true,
                         documents: { include: { document: true } },
-                        claimant: { include: { address: true } },
-                        organization: true,
-                        legalRepresentative: { include: { address: true } },
-                        insurance: { include: { address: true } },
+                        organization: {
+                            include: {
+                                manager: {
+                                    include: {
+                                        account: {
+                                            include: {
+                                                user: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
                     },
                 },
             },
@@ -67,28 +91,22 @@ class DashboardService {
 
     }
 
-    // Waiting to be scheduled cases for the dashboard table
+    // Waiting to be scheduled cases for the dashboard table - filtered by "Waiting to be Scheduled" status
     async getWaitingCases(limit = 3): Promise<CaseDetailDtoType[]> {
-        // Get the relevant statuses: Pending, Waiting to be Scheduled, Scheduled
-        const statuses = await prisma.caseStatus.findMany({
+        // Get the "Waiting to be Scheduled" status
+        const waitingStatus = await prisma.caseStatus.findFirst({
             where: {
-                name: {
-                    in: ["Pending", "Waiting to be Scheduled", "Scheduled"],
-                },
+                name: "Waiting to be Scheduled",
             },
         });
 
-        if (statuses.length === 0) {
+        if (!waitingStatus) {
             return [];
         }
 
-        const statusIds = statuses.map(s => s.id);
-
         const rows = await prisma.examination.findMany({
             where: {
-                statusId: {
-                    in: statusIds,
-                },
+                statusId: waitingStatus.id,
                 case: {
                     deletedAt: null,
                     isDraft: false,
@@ -98,6 +116,9 @@ class DashboardService {
                 examiner: { include: { user: true } },
                 examinationType: true,
                 status: true,
+                claimant: { include: { address: true } },
+                legalRepresentative: { include: { address: true } },
+                insurance: { include: { address: true } },
                 services: {
                     include: {
                         interpreter: { include: { language: true } },
@@ -108,10 +129,19 @@ class DashboardService {
                     include: {
                         caseType: true,
                         documents: { include: { document: true } },
-                        claimant: { include: { address: true } },
-                        organization: true,
-                        legalRepresentative: { include: { address: true } },
-                        insurance: { include: { address: true } },
+                        organization: {
+                            include: {
+                                manager: {
+                                    include: {
+                                        account: {
+                                            include: {
+                                                user: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
                     },
                 },
             },

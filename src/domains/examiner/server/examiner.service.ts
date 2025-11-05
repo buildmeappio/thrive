@@ -48,6 +48,15 @@ class ExaminerService {
               language: true,
             },
           },
+          feeStructure: {
+            where: {
+              deletedAt: null,
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+            take: 1,
+          },
         },
         orderBy: { createdAt: "desc" },
         take: limit,
@@ -80,6 +89,11 @@ class ExaminerService {
           examinerLanguages: {
             include: {
               language: true,
+            },
+          },
+          feeStructure: {
+            where: {
+              deletedAt: null,
             },
           },
         },

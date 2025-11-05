@@ -36,16 +36,20 @@ const ActionButton = ({ id }: { id: string }) => {
 const Content = ({
   children,
   first,
+  title,
 }: {
   children: React.ReactNode;
   first?: boolean;
+  title?: string;
 }) => {
+  const textContent = typeof children === 'string' ? children : String(children);
   return (
     <p
       className={cn(
-        "text-left text-black font-poppins text-[#4D4D4D] font-regular text-[16px] leading-none py-2",
+        "text-left text-black font-poppins text-[#4D4D4D] font-regular text-[16px] leading-normal py-2 whitespace-nowrap overflow-hidden text-ellipsis",
         first && "pl-4"
       )}
+      title={title || textContent}
     >
       {children}
     </p>
@@ -57,14 +61,14 @@ const columns: ColumnDef<ExaminerData>[] = [
     header: () => <Header first>Name</Header>,
     accessorKey: "name",
     cell: ({ row }) => {
-      return <Content first>{row.original.name}</Content>;
+      return <Content first title={row.original.name}>{row.original.name}</Content>;
     },
   },
   {
     header: () => <Header>Email</Header>,
     accessorKey: "email",
     cell: ({ row }) => {
-      return <Content>{row.original.email}</Content>;
+      return <Content title={row.original.email}>{row.original.email}</Content>;
     },
   },
   {
@@ -75,14 +79,14 @@ const columns: ColumnDef<ExaminerData>[] = [
       const displayText = Array.isArray(specialties) 
         ? specialties.join(", ") 
         : specialties;
-      return <Content>{displayText}</Content>;
+      return <Content title={displayText}>{displayText}</Content>;
     },
   },
   {
     header: () => <Header>Province</Header>,
     accessorKey: "province",
     cell: ({ row }) => {
-      return <Content>{row.original.province}</Content>;
+      return <Content title={row.original.province}>{row.original.province}</Content>;
     },
   },
   {
@@ -95,7 +99,7 @@ const columns: ColumnDef<ExaminerData>[] = [
         status === "ACCEPTED" ? "Approved" : 
         status === "INFO_REQUESTED" ? "Information Requested" : 
         "Rejected";
-      return <Content>{statusText}</Content>;
+      return <Content title={statusText}>{statusText}</Content>;
     },
   },
   {

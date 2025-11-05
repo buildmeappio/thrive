@@ -77,9 +77,9 @@ export async function sendMail(args: SendArgs) {
   let t = await getTransporter();
   try {
     return await t.sendMail(mail);
-  } catch (err: any) {
+  } catch (err: unknown) {
     // If token expired or transporter got invalidated, rebuild once and retry.
-    if (err?.code === "EAUTH" || err?.responseCode === 401 || err?.responseCode === 535) {
+    if ((err as any)?.code === "EAUTH" || (err as any)?.responseCode === 401 || (err as any)?.responseCode === 535) {
       transporterPromise = null;
       t = await getTransporter();
       return await t.sendMail(mail);

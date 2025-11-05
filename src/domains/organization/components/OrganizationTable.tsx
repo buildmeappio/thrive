@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { OrganizationData } from "../types/OrganizationData";
 import {
-  flexRender, getCoreRowModel, getPaginationRowModel,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import {
@@ -16,6 +20,8 @@ type Props = { data: OrganizationData[]; types?: string[] };
 
 
 export default function OrganizationTable({ data }: Props) {
+  const [sorting, setSorting] = useState<SortingState>([]);
+
   const filtered = useMemo(() => {
     return data;
   }, [data]);
@@ -23,7 +29,10 @@ export default function OrganizationTable({ data }: Props) {
   const table = useReactTable({
     data: filtered,
     columns: columnsDef,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
@@ -33,8 +42,8 @@ export default function OrganizationTable({ data }: Props) {
   }, [table]);
 
   return (
-    <div className="overflow-hidden rounded-md outline-none">
-      <Table className="border-0">
+    <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
+      <Table className="min-w-[1000px] border-0">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>

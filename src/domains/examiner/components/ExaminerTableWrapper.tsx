@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender } from "@tanstack/react-table";
+import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender, type Row, type Table as TanStackTable } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import Pagination from "@/components/Pagination";
@@ -44,55 +44,86 @@ const columnsDef = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }: { row: any }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-        {row.getValue("name")}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<ExaminerData> }) => {
+      const name = row.getValue("name") as string;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={name}
+        >
+          {name}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }: { row: any }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-        {row.getValue("email")}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<ExaminerData> }) => {
+      const email = row.getValue("email") as string;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={email}
+        >
+          {email}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "specialties",
     header: "Specialties",
-    cell: ({ row }: { row: any }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-        {Array.isArray(row.getValue("specialties")) 
-          ? row.getValue("specialties").map((specialty: string) => capitalizeWords(specialty)).join(", ")
-          : capitalizeWords(row.getValue("specialties"))
-        }
-      </div>
-    ),
+    cell: ({ row }: { row: Row<ExaminerData> }) => {
+      const specialties = row.getValue("specialties") as string | string[];
+      const displayText = Array.isArray(specialties)
+        ? specialties.map((specialty: string) => capitalizeWords(specialty)).join(", ")
+        : capitalizeWords(specialties);
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={displayText}
+        >
+          {displayText}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "province",
     header: "Province",
-    cell: ({ row }: { row: any }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-        {row.getValue("province")}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<ExaminerData> }) => {
+      const province = row.getValue("province") as string;
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={province}
+        >
+          {province}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }: { row: any }) => (
-      <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
-        {row.getValue("status").charAt(0).toUpperCase() + row.getValue("status").slice(1).toLowerCase()}
-      </div>
-    ),
+    cell: ({ row }: { row: Row<ExaminerData> }) => {
+      const status = row.getValue("status") as string;
+      const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+      return (
+        <div 
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={formattedStatus}
+        >
+          {formattedStatus}
+        </div>
+      );
+    },
   },
   {
     header: "",
     accessorKey: "id",
-    cell: ({ row }: { row: any }) => {
+    cell: ({ row }: { row: Row<ExaminerData> }) => {
       return <ActionButton id={row.original.id} />;
     },
     maxSize: 60,
@@ -154,8 +185,8 @@ export default function ExaminerTableWrapper({ data, searchQuery = "", filters }
   return (
     <>
       {/* Table */}
-      <div className="overflow-hidden rounded-md outline-none">
-        <Table className="border-0">
+      <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
+        <Table className="min-w-[900px] border-0">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
@@ -214,6 +245,6 @@ export default function ExaminerTableWrapper({ data, searchQuery = "", filters }
 }
 
 // Export pagination separately - now it receives the table instance
-export function ExaminerPagination({ table }: { table: any }) {
+export function ExaminerPagination({ table }: { table: TanStackTable<ExaminerData> }) {
   return <Pagination table={table} />;
 }

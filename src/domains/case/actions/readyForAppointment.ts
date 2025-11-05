@@ -33,7 +33,7 @@ const readyForAppointment = async (caseId: string) => {
 
     const link = await caseService.generateSecureLink(updatedItem.id);
 
-    sendLinkToClaimant(caseItem.case.claimant.emailAddress, link);
+    sendLinkToClaimant(caseItem.claimant.emailAddress, link);
   } catch (error) {
     throw HttpError.fromError(error, "Failed to ready for appointment");
   }

@@ -91,10 +91,10 @@ const LoginForm = () => {
 
       <Button
         type="submit"
-        variant="adminLogin"
-        size="adminLogin"
+        variant="default"
+        size="default"
         disabled={isSubmitting}
-        className="w-full h-11 md:h-12"
+        className="w-full h-11 md:h-12 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] hover:opacity-90 text-white"
       >
         {isSubmitting ? "Logging in..." : "Log In"}
       </Button>

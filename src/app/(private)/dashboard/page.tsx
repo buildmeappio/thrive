@@ -11,6 +11,7 @@ import {
   getWaitingToBeScheduledCount,
   getDueCasesCount,
 } from "@/domains/dashboard/actions/dashboard.actions";
+
 export const metadata: Metadata = {
   title: "Dashboard | Thrive Admin",
   description: "Dashboard",
@@ -20,11 +21,11 @@ export const dynamic = "force-dynamic";
 
 const Page = async () => {
   const [
-    orgCount, 
-    caseCount, 
-    examinerCount, 
-    cases, 
-    waitingCases, 
+    orgCount,
+    caseCount,
+    examinerCount,
+    cases,
+    waitingCases,
     examiners,
     waitingToBeScheduledCount,
     dueTodayCount,
@@ -41,13 +42,10 @@ const Page = async () => {
 
   return (
     <DashboardShell>
-      <div className="mb-6">
-        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-          Welcome To{" "}
-          <span className="text-[#00A8FF]">
-            Thrive
-          </span>{" "}
-          Admin Dashboard
+      <div className="mb-4 sm:mb-6 dashboard-zoom-mobile">
+        <h1 className="text-[#000000] text-[28px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+          Welcome To <span className="text-[#00A8FF]">Thrive</span> Admin
+          Dashboard
         </h1>
       </div>
       <Dashboard

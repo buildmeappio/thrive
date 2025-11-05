@@ -84,6 +84,7 @@ jobs:
           NEXT_PUBLIC_ENVIRONMENT=${{ needs.select.outputs.target_env }}
           NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
           NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
+          NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL=${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}
           AWS_REGION=${{ vars.AWS_REGION }}
           EOF
 

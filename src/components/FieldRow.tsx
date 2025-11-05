@@ -10,21 +10,35 @@ type FieldRowProps = {
   documentUrl?: string; // Add presigned URL support for documents
 };
 
-const FieldRow = ({ label, value, valueHref, type, documentUrl }: FieldRowProps) => {
+const FieldRow = ({
+  label,
+  value,
+  valueHref,
+  type,
+  documentUrl,
+}: FieldRowProps) => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const fileName = typeof value === "string" ? value : "";
   // Use presigned URL if provided, otherwise fall back to old URL format
-  const fileUrl = documentUrl || `https://public-thrive-assets.s3.eu-north-1.amazonaws.com/documents/${encodeURIComponent(
-    fileName
-  )}`;
-
+  const fileUrl =
+    documentUrl ||
+    `https://public-thrive-assets.s3.eu-north-1.amazonaws.com/documents/${encodeURIComponent(
+      fileName
+    )}`;
 
   return (
     <>
       <div className="flex flex-col sm:flex-row justify-between sm:items-center w-full rounded-lg bg-[#F6F6F6] px-3 sm:px-4 py-2 gap-1.5 sm:gap-2">
         <span className="shrink-0 font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E]">
-          {label}
+          {label.includes("*") ? (
+            <>
+              {label.replace("*", "")}
+              <span className="text-red-500">*</span>
+            </>
+          ) : (
+            label
+          )}
         </span>
 
         <div className="min-w-0 sm:max-w-[75%] text-left sm:text-right">
@@ -33,8 +47,7 @@ const FieldRow = ({ label, value, valueHref, type, documentUrl }: FieldRowProps)
               href={valueHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight tracking-[-0.03em] text-[#000080] underline break-words"
-            >
+              className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight tracking-[-0.03em] text-[#000080] underline break-words">
               {value as string}
             </a>
           ) : type === "document" ? (
@@ -42,8 +55,7 @@ const FieldRow = ({ label, value, valueHref, type, documentUrl }: FieldRowProps)
               <div className="flex items-center justify-start sm:justify-end gap-3">
                 <button
                   onClick={() => setIsPreviewOpen(true)}
-                  className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none text-[#4E4E4E] underline"
-                >
+                  className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight text-[#4E4E4E] underline">
                   Preview
                 </button>
                 <a
@@ -51,8 +63,7 @@ const FieldRow = ({ label, value, valueHref, type, documentUrl }: FieldRowProps)
                   download
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none text-[#000080] underline"
-                >
+                  className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight text-[#000080] underline">
                   Download
                 </a>
               </div>
@@ -71,14 +82,12 @@ const FieldRow = ({ label, value, valueHref, type, documentUrl }: FieldRowProps)
 
       {/* Modal */}
       {isPreviewOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setIsPreviewOpen(false)}
-        >
-          <div 
+          onClick={() => setIsPreviewOpen(false)}>
+          <div
             className="bg-white w-full max-w-6xl h-[90vh] rounded-lg shadow-lg relative flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
+            onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 truncate flex-1 pr-4">
@@ -90,20 +99,18 @@ const FieldRow = ({ label, value, valueHref, type, documentUrl }: FieldRowProps)
                   download
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-lg hover:opacity-90 transition-opacity"
-                >
+                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-lg hover:opacity-90 transition-opacity">
                   Download
                 </a>
                 <button
                   onClick={() => setIsPreviewOpen(false)}
                   className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
-                  aria-label="Close"
-                >
+                  aria-label="Close">
                   ✕
                 </button>
               </div>
             </div>
-            
+
             {/* Preview Content */}
             <div className="flex-1 overflow-hidden">
               <iframe

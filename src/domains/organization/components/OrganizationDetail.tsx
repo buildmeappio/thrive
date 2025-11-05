@@ -13,8 +13,26 @@ import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import organizationActions from "../actions";
 import { toast } from "sonner";
+import { formatPhoneNumber } from "@/utils/phone";
+import { capitalizeWords } from "@/utils/text";
 
-const mapStatus = { PENDING: "pending", ACCEPTED: "approved", REJECTED: "rejected" } as const;
+// Utility function to format text from database: remove _, -, and capitalize each word
+const formatText = (str: string): string => {
+  if (!str) return str;
+  return str
+    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
+    .split(' ')
+    .filter(word => word.length > 0)  // Remove empty strings
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+const mapStatus = { 
+  PENDING: "pending", 
+  ACCEPTED: "approved", 
+  REJECTED: "rejected",
+  INFO_REQUESTED: "info_requested"
+} as const;
 
 type OrganizationDetailProps = {
   organization: Awaited<ReturnType<typeof getOrganizationById>>;
@@ -24,14 +42,17 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
   const router = useRouter();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
-  const [status, setStatus] = useState(mapStatus[organization.status as keyof typeof mapStatus]);
+  
+  // Determine the current organization status from database
+  const getCurrentStatus = (): "pending" | "approved" | "rejected" | "info_requested" => {
+    const dbStatus = organization.status;
+    return mapStatus[dbStatus as keyof typeof mapStatus] || "pending";
+  };
+  
+  const [status, setStatus] = useState<"pending" | "approved" | "rejected" | "info_requested">(getCurrentStatus());
   const [loadingAction, setLoadingAction] = useState<"approve" | "reject" | "request" | null>(null);
 
-  const type =
-    organization.type?.name
-      ?.split("_")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ") || "-";
+  const type = organization.type?.name ? formatText(organization.type.name) : "-";
 
   const handleRequestSubmit = async (messageToOrganization: string) => {
     // Check if manager email exists before proceeding
@@ -45,7 +66,9 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
     try {
       await organizationActions.requestMoreInfo(organization.id, messageToOrganization);
       setIsRequestOpen(false);
+      setStatus("info_requested");
       toast.success("Request sent. An email has been sent to the organization.");
+      router.refresh();
     } catch (error) {
       console.error("Failed to request more info:", error);
       toast.error("Failed to send request. Please try again.");
@@ -104,7 +127,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
       {/* Organization Name Heading */}
       <div className="mb-6">
         <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-          {organization.name}
+          {capitalizeWords(organization.name)}
         </h1>
       </div>
 
@@ -115,7 +138,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
             {/* Left Column - Organization Details */}
             <div className="flex flex-col gap-6 lg:gap-10">
               <Section title="Organization Details">
-                <FieldRow label="Organization Name" value={organization.name} type="text" />
+                <FieldRow label="Organization Name" value={capitalizeWords(organization.name)} type="text" />
                 <FieldRow label="Organization Type" value={type} type="text" />
                 
                 {/* Custom Address Lookup Field */}
@@ -139,14 +162,14 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                   label="Full Name"
                   value={
                     organization.manager?.[0]?.account?.user
-                      ? `${organization.manager?.[0]?.account?.user.firstName ?? ""} ${organization.manager?.[0]?.account?.user.lastName ?? ""}`.trim() || "-"
+                      ? capitalizeWords(`${organization.manager?.[0]?.account?.user.firstName ?? ""} ${organization.manager?.[0]?.account?.user.lastName ?? ""}`.trim() || "-")
                       : "-"
                   }
                   type="text"
                 />
                 <FieldRow
                   label="Phone Number"
-                  value={organization.manager?.[0]?.account?.user?.phone || "-"}
+                  value={formatPhoneNumber(organization.manager?.[0]?.account?.user?.phone)}
                   type="text"
                 />
                 <FieldRow
@@ -190,6 +213,19 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                 disabled
               >
                 Rejected
+              </button>
+            ) : status === "info_requested" ? (
+              <button
+                className={cn(
+                  "px-4 py-3 rounded-full border border-blue-500 text-blue-700 bg-blue-50 flex items-center gap-2 cursor-default"
+                )}
+                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                disabled
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                More Information Required
               </button>
             ) : (
               <>

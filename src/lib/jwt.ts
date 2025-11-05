@@ -17,7 +17,7 @@ import jwt, { SignOptions } from "jsonwebtoken";
 //   throw new Error("JWT_EXAMINER_INFO_REQUEST_SECRET must be defined in environment variables");
 // }
 
-const getJwtSecret = (name: 'JWT_SET_PASSWORD_SECRET' | 'JWT_EXAMINER_INFO_REQUEST_SECRET' | 'JWT_ORGANIZATION_INFO_REQUEST_SECRET' | 'NEXTAUTH_SECRET') => {
+const getJwtSecret = (name: 'JWT_SET_PASSWORD_SECRET' | 'JWT_EXAMINER_INFO_REQUEST_SECRET' | 'JWT_ORGANIZATION_INFO_REQUEST_SECRET' | 'JWT_CLAIMANT_APPROVE_SECRET' | 'NEXTAUTH_SECRET') => {
   const secret = process.env[name];
   if (!secret) {
     throw new Error(`${name} secret must be defined in environment variables`);
@@ -45,7 +45,7 @@ export function signAccountToken(
  * @param token - The JWT token to verify
  * @returns Decoded token payload
  */
-export function verifyAccountToken(token: string): any {
+export function verifyAccountToken(token: string): string | jwt.JwtPayload {
   try {
     const JWT_SET_PASSWORD_SECRET = getJwtSecret('JWT_SET_PASSWORD_SECRET');
     return jwt.verify(token, JWT_SET_PASSWORD_SECRET);
@@ -74,7 +74,7 @@ export function signExaminerResubmitToken(
  * @param token - The JWT token to verify
  * @returns Decoded token payload
  */
-export function verifyExaminerResubmitToken(token: string): any {
+export function verifyExaminerResubmitToken(token: string): string | jwt.JwtPayload {
   try {
     const JWT_EXAMINER_INFO_REQUEST_SECRET = getJwtSecret('JWT_EXAMINER_INFO_REQUEST_SECRET');
     return jwt.verify(token, JWT_EXAMINER_INFO_REQUEST_SECRET);
@@ -103,11 +103,40 @@ export function signOrganizationResubmitToken(
  * @param token - The JWT token to verify
  * @returns Decoded token payload
  */
-export function verifyOrganizationResubmitToken(token: string): any {
+export function verifyOrganizationResubmitToken(token: string): string | jwt.JwtPayload {
   try {
     const JWT_ORGANIZATION_INFO_REQUEST_SECRET = getJwtSecret('JWT_ORGANIZATION_INFO_REQUEST_SECRET');
     return jwt.verify(token, JWT_ORGANIZATION_INFO_REQUEST_SECRET);
   } catch {
     throw new Error("Invalid or expired organization resubmission token");
+  }
+}
+
+/**
+ * Sign a token for claimant availability submission (uses JWT_CLAIMANT_APPROVE_SECRET)
+ * @param payload - The data to encode in the token
+ * @param expiresIn - Token expiration time (default: 30 days)
+ * @returns Signed JWT token
+ */
+export function signClaimantApproveToken(
+  payload: object,
+  expiresIn: SignOptions['expiresIn'] = '30d'
+): string {
+  const options: SignOptions = { expiresIn };
+  const JWT_CLAIMANT_APPROVE_SECRET = getJwtSecret('JWT_CLAIMANT_APPROVE_SECRET');
+  return jwt.sign(payload, JWT_CLAIMANT_APPROVE_SECRET, options);
+}
+
+/**
+ * Verify and decode a claimant approval token (uses JWT_CLAIMANT_APPROVE_SECRET)
+ * @param token - The JWT token to verify
+ * @returns Decoded token payload
+ */
+export function verifyClaimantApproveToken(token: string): string | jwt.JwtPayload {
+  try {
+    const JWT_CLAIMANT_APPROVE_SECRET = getJwtSecret('JWT_CLAIMANT_APPROVE_SECRET');
+    return jwt.verify(token, JWT_CLAIMANT_APPROVE_SECRET);
+  } catch {
+    throw new Error("Invalid or expired claimant approval token");
   }
 }

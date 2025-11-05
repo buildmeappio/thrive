@@ -143,6 +143,9 @@ class CaseService {
           examiner: { include: { user: true } },
           examinationType: true,
           status: true,
+          claimant: { include: { address: true } },
+          legalRepresentative: { include: { address: true } },
+          insurance: { include: { address: true } },
           services: {
             include: {
               interpreter: { include: { language: true } },
@@ -153,10 +156,19 @@ class CaseService {
             include: {
               caseType: true,
               documents: { include: { document: true } },
-              claimant: { include: { address: true } },
-              organization: true,
-              legalRepresentative: { include: { address: true } },
-              insurance: { include: { address: true } },
+              organization: {
+                include: {
+                  manager: {
+                    include: {
+                      account: {
+                        include: {
+                          user: true  // Include user to get email, firstName, lastName
+                        }
+                      }
+                    }
+                  }
+                }
+              },
             },
           },
         },
@@ -181,6 +193,9 @@ class CaseService {
           examiner: { include: { user: true } },  // Include examiner details
           examinationType: true,  // Include examination type
           status: true,
+          claimant: { include: { address: true } },  // Include claimant details
+          legalRepresentative: { include: { address: true } },  // Include legal representative
+          insurance: { include: { address: true } },  // Include insurance
           services: {
             include: {
               interpreter: { include: { language: true } },  // Include interpreter language
@@ -191,10 +206,19 @@ class CaseService {
             include: {
               caseType: true,  // Include case type
               documents: { include: { document: true } },  // Include documents
-              claimant: { include: { address: true } },  // Include claimant details
-              organization: true,  // Include organization
-              legalRepresentative: { include: { address: true } },  // Include legal representative
-              insurance: { include: { address: true } },
+              organization: {
+                include: {
+                  manager: {
+                    include: {
+                      account: {
+                        include: {
+                          user: true  // Include user to get email, firstName, lastName
+                        }
+                      }
+                    }
+                  }
+                }
+              },  // Include organization with manager details
             },
           },
         },

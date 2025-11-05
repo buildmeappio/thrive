@@ -4,6 +4,7 @@ import { type ReactNode } from "react";
 import { Sidebar } from "@/layouts/dashboard";
 import { useSidebar } from "@/providers/Sidebar";
 import { cn } from "@/lib/utils";
+import { Toaster } from "sonner";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -11,17 +12,19 @@ type DashboardLayoutProps = {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { isCollapsed } = useSidebar();
-  
+
   return (
     <div className="flex min-h-screen bg-gray-50">
+      <Toaster richColors position="top-right" closeButton />
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main Content Area */}
-      <div className={cn(
-        "flex flex-1 flex-col transition-all duration-300",
-        isCollapsed ? "md:ml-[90px]" : "md:ml-[280px]"
-      )}>
+      <div
+        className={cn(
+          "flex flex-1 flex-col transition-all duration-300",
+          isCollapsed ? "md:ml-[90px]" : "md:ml-[280px]"
+        )}>
         {children}
       </div>
     </div>

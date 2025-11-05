@@ -6,6 +6,8 @@ import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import {
@@ -38,6 +40,7 @@ export default function ExaminerTable({ data }: ExaminerTableProps) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [specialtyFilter, setSpecialtyFilter] = useState<string>("all");
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   // Get unique specialties from data
   const uniqueSpecialties = useMemo(() => {
@@ -86,7 +89,10 @@ export default function ExaminerTable({ data }: ExaminerTableProps) {
   const table = useReactTable({
     data: filtered,
     columns,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 

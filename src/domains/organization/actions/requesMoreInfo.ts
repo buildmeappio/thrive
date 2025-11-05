@@ -7,7 +7,6 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
 import { signOrganizationResubmitToken } from "@/lib/jwt";
 import emailService from "@/services/email.service";
-import { ENV } from "@/constants/variables";
 
 type OrganizationView = {
   id: string;
@@ -36,6 +35,15 @@ const requestMoreInfo = async (id: string, message: string) => {
   // Fetch organization to get recipients
   const org = (await handlers.getOrganizationById(id)) as OrganizationView;
 
+  // Update organization status to INFO_REQUESTED
+  try {
+    await handlers.requestMoreInfoOrganization(id);
+    console.log("✓ Organization status updated to INFO_REQUESTED");
+  } catch (dbError) {
+    console.error("⚠️ Failed to update organization status:", dbError);
+    throw new Error("Failed to update organization status in database");
+  }
+
   // Send request for more info email
   try {
     await sendRequestMoreInfoEmail(org, message);
@@ -48,6 +56,7 @@ const requestMoreInfo = async (id: string, message: string) => {
   // Revalidate dashboard and organization pages
   revalidatePath("/dashboard");
   revalidatePath("/organization");
+  revalidatePath(`/organization/${id}`);
 
   return org;
 };
@@ -83,7 +92,7 @@ async function sendRequestMoreInfoEmail(org: OrganizationView, requestMessage: s
       organizationName: org.name,
       requestMessage,
       resubmitLink,
-      CDN_URL: ENV.NEXT_PUBLIC_CDN_URL,
+      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
     },
     email
   );
