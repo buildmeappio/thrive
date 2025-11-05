@@ -195,10 +195,10 @@ model Claimant {
   updatedAt                DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt                DateTime? @map("deleted_at") @db.Timestamptz()
 
-  address              Address                @relation("ClaimantAddress", fields: [addressId], references: [id])
-  examinations         Examination[]          @relation("ExaminationClaimant")
-  claimantAvailability ClaimantAvailability[] @relation("ClaimantAvailability")
-  claimType            ClaimType              @relation("ClaimantClaimType", fields: [claimTypeId], references: [id])
+  address          Address           @relation("ClaimantAddress", fields: [addressId], references: [id])
+  examinations     Examination[]     @relation("ExaminationClaimant")
+  claimantBookings ClaimantBooking[] @relation("ClaimantBooking")
+  claimType        ClaimType         @relation("ClaimantClaimType", fields: [claimTypeId], references: [id])
 
   @@map("claimants")
 }
@@ -289,15 +289,15 @@ model Examination {
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  case                 Case                         @relation("ExaminationCases", fields: [caseId], references: [id])
-  examinationType      ExaminationType              @relation("ExaminationType", fields: [examinationTypeId], references: [id])
-  examiner             Account?                     @relation("ExaminerCases", fields: [examinerId], references: [id])
-  status               CaseStatus                   @relation("CaseStatus", fields: [statusId], references: [id])
-  assignTo             Account?                     @relation("AssignedCases", fields: [assignToId], references: [id])
-  secureLinks          ExaminationSecureLink[]      @relation("ExaminationSecureLink")
-  claimantAvailability ClaimantAvailability[]       @relation("ExaminationClaimantAvailability")
-  services             ExaminationServices[]        @relation("ExaminationServices")
-  selectedBenefits     ExaminationSelectedBenefit[] @relation("ExaminationSelectedBenefits")
+  case             Case                         @relation("ExaminationCases", fields: [caseId], references: [id])
+  examinationType  ExaminationType              @relation("ExaminationType", fields: [examinationTypeId], references: [id])
+  examiner         Account?                     @relation("ExaminerCases", fields: [examinerId], references: [id])
+  status           CaseStatus                   @relation("CaseStatus", fields: [statusId], references: [id])
+  assignTo         Account?                     @relation("AssignedCases", fields: [assignToId], references: [id])
+  secureLinks      ExaminationSecureLink[]      @relation("ExaminationSecureLink")
+  claimantBookings ClaimantBooking[]            @relation("ExaminationClaimantBooking")
+  services         ExaminationServices[]        @relation("ExaminationServices")
+  selectedBenefits ExaminationSelectedBenefit[] @relation("ExaminationSelectedBenefits")
 
   claimant            Claimant             @relation("ExaminationClaimant", fields: [claimantId], references: [id])
   insurance           Insurance?           @relation("ExaminationInsurance", fields: [insuranceId], references: [id])
@@ -338,48 +338,46 @@ enum ClaimantPreference {
   EITHER
 }
 
-model ClaimantAvailability {
-  id                 String             @id @unique @default(uuid()) @db.Uuid
-  examinationId      String             @map("examination_id") @db.Uuid
-  claimantId         String             @map("claimant_id") @db.Uuid
-  preference         ClaimantPreference @map("preference")
-  accessibilityNotes String?            @map("accessibility_notes") @db.Text
-  consentAck         Boolean            @default(false) @map("consent_ack")
+enum ClaimantBookingStatus {
+  PENDING
+  ACCEPT
+  DECLINE
+  REQUEST_MORE_INFO
+}
+
+model ClaimantBooking {
+  id                 String                 @id @unique @default(uuid()) @db.Uuid
+  examinationId      String                 @map("examination_id") @db.Uuid
+  claimantId         String                 @map("claimant_id") @db.Uuid
+  examinerProfileId  String                 @map("examiner_profile_id") @db.Uuid
+  bookingTime        DateTime               @map("booking_time") @db.Timestamptz()
+  preference         ClaimantPreference     @map("preference")
+  accessibilityNotes String?                @map("accessibility_notes") @db.Text
+  consentAck         Boolean                @default(false) @map("consent_ack")
+  status             ClaimantBookingStatus? @map("status")
+
+  // Optional service provider IDs
+  interpreterId String? @map("interpreter_id") @db.Uuid
+  chaperoneId   String? @map("chaperone_id") @db.Uuid
+  transporterId String? @map("transporter_id") @db.Uuid
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  examination Examination                 @relation("ExaminationClaimantAvailability", fields: [examinationId], references: [id])
-  claimant    Claimant                    @relation("ClaimantAvailability", fields: [claimantId], references: [id])
-  slots       ClaimantAvailabilitySlots[] @relation("ClaimantAvailabilitySlots")
+  examination Examination     @relation("ExaminationClaimantBooking", fields: [examinationId], references: [id])
+  claimant    Claimant        @relation("ClaimantBooking", fields: [claimantId], references: [id])
+  examiner    ExaminerProfile @relation("ClaimantBookingExaminer", fields: [examinerProfileId], references: [id])
+  interpreter Interpreter?    @relation("ClaimantBookingInterpreter", fields: [interpreterId], references: [id])
+  chaperone   Chaperone?      @relation("ClaimantBookingChaperone", fields: [chaperoneId], references: [id])
+  transporter Transporter?    @relation("ClaimantBookingTransporter", fields: [transporterId], references: [id])
 
-  @@map("claimant_availability")
-}
-
-enum TimeBand {
-  MORNING
-  AFTERNOON
-  EVENING
-  EITHER
-}
-
-model ClaimantAvailabilitySlots {
-  id             String    @id @unique @default(uuid()) @db.Uuid
-  availabilityId String    @map("availability_id") @db.Uuid
-  date           DateTime  @map("date") @db.Date
-  startTime      String    @map("start_time") @db.VarChar(255)
-  endTime        String    @map("end_time") @db.VarChar(255)
-  start          DateTime  @map("start") @db.Timestamptz()
-  end            DateTime  @map("end") @db.Timestamptz()
-  timeBand       TimeBand  @map("time_band")
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz()
-
-  availability ClaimantAvailability @relation("ClaimantAvailabilitySlots", fields: [availabilityId], references: [id])
-
-  @@map("claimant_availability_slots")
+  @@unique([examinationId, claimantId]) // One booking per examination per claimant
+  @@index([examinationId])
+  @@index([examinerProfileId])
+  @@index([bookingTime])
+  @@index([status])
+  @@map("claimant_bookings")
 }
 
 model ExaminationServices {
@@ -650,6 +648,7 @@ model ExaminerProfile {
   insuranceDocument      Documents?             @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
   feeStructure           ExaminerFeeStructure[] @relation("ExaminerFeeStructure")
   examinerLanguages      ExaminerLanguage[]
+  claimantBookings       ClaimantBooking[]      @relation("ClaimantBookingExaminer")
   // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'EXAMINER' } })
 
   @@map("examiner_profiles")
@@ -821,6 +820,7 @@ model Chaperone {
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
+  claimantBookings ClaimantBooking[] @relation("ClaimantBookingChaperone")
   // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'CHAPERONE' } })
 
   @@map("chaperones")
@@ -836,7 +836,8 @@ model Interpreter {
   updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt     DateTime? @map("deleted_at") @db.Timestamptz()
 
-  languages InterpreterLanguage[] @relation("InterpreterLanguages")
+  languages        InterpreterLanguage[] @relation("InterpreterLanguages")
+  claimantBookings ClaimantBooking[]     @relation("ClaimantBookingInterpreter")
   // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'INTERPRETER' } })
 
   @@map("interpreters")
@@ -874,6 +875,7 @@ model Transporter {
   updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt     DateTime?         @map("deleted_at") @db.Timestamptz()
 
+  claimantBookings ClaimantBooking[] @relation("ClaimantBookingTransporter")
   // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'TRANSPORTER' } })
 
   @@map("transporters")

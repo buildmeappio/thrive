@@ -161,6 +161,30 @@
       max-width: 98vw;
       margin-bottom: 0.75rem;
     }
+    
+    /* Transporter page size on mobile - 100% scale */
+    .transporter-page .dashboard-zoom-mobile {
+      transform: scale(1.0);
+      transform-origin: top left;
+      width: 98%;
+      max-width: 98vw;
+    }
+    
+    /* Benefits page table view size on mobile - 100% scale */
+    .benefits-page .dashboard-zoom-mobile {
+      transform: scale(1.0);
+      transform-origin: top left;
+      width: 98%;
+      max-width: 98vw;
+    }
+    
+    /* Taxonomy page size on mobile - 100% scale */
+    .taxonomy-page .dashboard-zoom-mobile {
+      transform: scale(1.0);
+      transform-origin: top left;
+      width: 98%;
+      max-width: 98vw;
+    }
   }
 }
 
