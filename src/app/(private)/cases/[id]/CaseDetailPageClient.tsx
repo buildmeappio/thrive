@@ -117,7 +117,7 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
             <span className="font-poppins text-lg sm:text-2xl lg:text-3xl font-bold text-black">{caseDetails.caseNumber}</span>
           </Link>
         </div>
-        <div className="bg-blue-100 text-blue-800 px-3 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-full text-sm sm:text-base lg:text-lg font-semibold flex-shrink-0">
+        <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold flex-shrink-0">
           {formatText(caseDetails.status.name)}
         </div>
       </div>
