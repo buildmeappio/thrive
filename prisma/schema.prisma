@@ -644,9 +644,29 @@ model ExaminerProfile {
   ndaDocument            Documents?         @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
   insuranceDocument      Documents?         @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
   examinerLanguages      ExaminerLanguage[]
+  paymentTerms           ExaminerPaymentTerms[]    @relation("ExaminerPaymentTerms")
   // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'EXAMINER' } })
 
   @@map("examiner_profiles")
+}
+
+model ExaminerPaymentTerms {
+  id                      String    @id @default(uuid()) @db.Uuid
+  examinerProfileId       String    @map("examiner_profile_id") @db.Uuid
+  standardIMEFee          Decimal   @map("standard_ime_fee") @db.Decimal(10, 2)
+  virtualIMEFee           Decimal   @map("virtual_ime_fee") @db.Decimal(10, 2)
+  recordReviewFee         Decimal   @map("record_review_fee") @db.Decimal(10, 2)
+  hourlyRate              Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
+  reportTurnaroundDays    Int?      @map("report_turnaround_days") @db.Integer
+  cancellationFee         Decimal   @map("cancellation_fee") @db.Decimal(10, 2)
+  createdAt               DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt               DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt               DateTime? @map("deleted_at") @db.Timestamptz()
+
+  examinerProfile ExaminerProfile @relation("ExaminerPaymentTerms", fields: [examinerProfileId], references: [id], onDelete: Cascade)
+
+  @@index([examinerProfileId])
+  @@map("examiner_payment_terms")
 }
 
 enum ProviderType {

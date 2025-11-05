@@ -25,6 +25,15 @@ const listAllExaminers = async () => {
             language: true,
           },
         },
+        feeStructure: {
+          where: {
+            deletedAt: null,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
       },
       orderBy: { createdAt: "desc" },
     });
