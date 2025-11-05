@@ -17,6 +17,16 @@ export type SaveAvailabilityInput = {
     date: string;
     timeSlots: { startTime: string; endTime: string }[];
   }[];
+  bookingOptions?: {
+    appointmentTypes: ("phone" | "video")[];
+    appointmentDuration: string;
+    buffer: string;
+    bookingWindow: number;
+    minimumNotice: {
+      value: number;
+      unit: "hours" | "days";
+    };
+  };
   activationStep?: string;
 };
 
@@ -49,6 +59,23 @@ const saveAvailability = async (payload: SaveAvailabilityInput) => {
         overrideHours: overrideHoursArray,
       }
     );
+
+    // Save booking options if provided
+    if (payload.bookingOptions) {
+      const prisma = (await import("@/lib/db")).default;
+      await prisma.examinerProfile.update({
+        where: { id: payload.examinerProfileId },
+        data: {
+          bufferTime: payload.bookingOptions.buffer,
+          advanceBooking: payload.bookingOptions.bookingWindow.toString(),
+          appointmentTypes: payload.bookingOptions.appointmentTypes,
+          appointmentDuration: payload.bookingOptions.appointmentDuration,
+          minimumNoticeValue:
+            payload.bookingOptions.minimumNotice.value.toString(),
+          minimumNoticeUnit: payload.bookingOptions.minimumNotice.unit,
+        },
+      });
+    }
 
     // Update activation step if provided
     if (payload.activationStep) {

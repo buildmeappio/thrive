@@ -142,9 +142,27 @@ export const overrideHoursSchema = z.array(
   })
 );
 
+export const bookingOptionsSchema = z.object({
+  appointmentTypes: z.array(z.enum(["phone", "video"])).min(1, {
+    message: "At least one appointment type is required",
+  }),
+  appointmentDuration: z
+    .string()
+    .min(1, { message: "Appointment duration is required" }),
+  buffer: z.string().min(1, { message: "Buffer time is required" }),
+  bookingWindow: z
+    .number()
+    .min(1, { message: "Booking window must be at least 1 day" }),
+  minimumNotice: z.object({
+    value: z.number().min(1, { message: "Minimum notice value is required" }),
+    unit: z.enum(["hours", "days"]),
+  }),
+});
+
 export const availabilityPreferencesSchema = z.object({
   weeklyHours: weeklyHoursSchema,
   overrideHours: overrideHoursSchema.optional(),
+  bookingOptions: bookingOptionsSchema.optional(),
 });
 
 export type TimeSlot = z.infer<typeof timeSlotSchema>;
