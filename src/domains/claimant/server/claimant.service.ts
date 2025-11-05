@@ -1,22 +1,43 @@
 import prisma from '@/lib/prisma';
 import { HttpError } from '@/utils/httpError';
 import { notFound } from 'next/navigation';
-import { type CreateClaimantAvailabilityData } from '../types/claimantAvailability';
-import { ClaimantPreference, TimeBand } from '@prisma/client';
+import {
+  type CreateClaimantBookingData,
+  type UpdateClaimantBookingStatusData,
+  ClaimantBookingStatus,
+} from '../types/claimantAvailability';
 import ErrorMessages from '@/constants/ErrorMessages';
+import emailService from '@/services/emailService';
+import log from '@/utils/log';
+import { format } from 'date-fns';
 
 const getClaimant = async (token: string) => {
   try {
-    const link = await prisma.examinationSecureLink.findFirst({
+    // Note: Prisma client needs to be regenerated after schema changes
+    // Using type assertion to bypass TypeScript errors until Prisma client is regenerated
+    const link = await (prisma.examinationSecureLink.findFirst as any)({
       where: { token },
       include: {
         examination: {
           include: {
-            claimantAvailability: {
+            claimantBookings: {
+              where: { deletedAt: null },
               include: {
                 claimant: true,
-                slots: true,
+                examiner: {
+                  include: {
+                    account: {
+                      include: {
+                        user: true,
+                      },
+                    },
+                  },
+                },
+                interpreter: true,
+                chaperone: true,
+                transporter: true,
               },
+              take: 1,
             },
           },
         },
@@ -33,7 +54,13 @@ const getClaimant = async (token: string) => {
       data: { lastOpenedAt: new Date() },
     });
 
-    return link.examination.claimantAvailability;
+    // Return booking if exists
+    if (link.examination?.claimantBookings && link.examination.claimantBookings.length > 0) {
+      return link.examination.claimantBookings[0];
+    }
+
+    // No booking found
+    return null;
   } catch (error) {
     throw HttpError.handleServiceError(error, 'Error fetching claimant');
   }
@@ -55,42 +82,47 @@ export const getCaseSummary = async (caseId: string) => {
   };
 };
 
-const createClaimantAvailability = async (data: CreateClaimantAvailabilityData) => {
-  if (!data.slots || data.slots.length === 0) {
-    throw new Error(ErrorMessages.AVAILABILITY_SLOT_REQUIRED);
+const createClaimantBooking = async (data: CreateClaimantBookingData) => {
+  if (!data.examinerProfileId || !data.bookingTime) {
+    throw new Error('Examiner and booking time are required');
   }
 
-  if (!Object.values(ClaimantPreference).includes(data.preference)) {
-    throw new Error(ErrorMessages.INVALID_CLAIMANT_PREFERENCE);
-  }
-
-  data.slots.forEach(slot => {
-    if (!Object.values(TimeBand).includes(slot.timeBand)) {
-      throw new Error(ErrorMessages.INVALID_TIME_BAND);
-    }
-  });
-
-  const caseData = await prisma.examination.findUnique({
-    where: { id: data.caseId },
-  });
-
-  if (!caseData) {
-    throw HttpError.notFound(ErrorMessages.CASE_NOT_FOUND);
-  }
-
-  const existingAvailability = await prisma.claimantAvailability.findFirst({
-    where: {
-      examinationId: data.caseId,
-      claimantId: data.claimantId,
+  // Fetch examination with related data for email
+  const examination = await prisma.examination.findUnique({
+    where: { id: data.examinationId },
+    include: {
+      case: {
+        include: {
+          organization: true,
+        },
+      },
+      examinationType: true,
+      claimant: true,
     },
   });
 
-  if (existingAvailability) {
-    throw new Error(ErrorMessages.AVAILABILITY_ALREADY_SUBMITTED);
+  if (!examination || !examination.claimant || !examination.case) {
+    throw HttpError.notFound(ErrorMessages.CASE_NOT_FOUND);
+  }
+
+  // Check if booking already exists for this examination and claimant
+  // Note: Prisma client needs to be regenerated after schema changes
+  const existingBooking = await (prisma as any).claimantBooking.findFirst({
+    where: {
+      examinationId: data.examinationId,
+      claimantId: data.claimantId,
+      deletedAt: null,
+    },
+  });
+
+  if (existingBooking) {
+    throw new Error(
+      'A booking already exists for this examination. Please contact support to modify.'
+    );
   }
 
   try {
-    // Get the "Ready to Appointment" status before the transaction
+    // Get the "Ready to Appointment" status
     const readyToAppointmentStatus = await prisma.caseStatus.findFirst({
       where: { name: 'Ready to Appointment' },
     });
@@ -100,47 +132,85 @@ const createClaimantAvailability = async (data: CreateClaimantAvailabilityData) 
     }
 
     const result = await prisma.$transaction(async tx => {
-      const availability = await tx.claimantAvailability.create({
+      // Create the booking with PENDING status (will be updated by examiner)
+      // Note: Prisma client needs to be regenerated after schema changes
+      const booking = await (tx as any).claimantBooking.create({
         data: {
-          examinationId: data.caseId,
+          examinationId: data.examinationId,
           claimantId: data.claimantId,
+          examinerProfileId: data.examinerProfileId,
+          bookingTime: data.bookingTime,
           preference: data.preference,
           accessibilityNotes: data.accessibilityNotes,
           consentAck: data.consentAck,
+          interpreterId: data.interpreterId || null,
+          chaperoneId: data.chaperoneId || null,
+          transporterId: data.transporterId || null,
+          status: 'PENDING', // Set default status to PENDING when claimant creates booking
         },
       });
 
-      const slots = await Promise.all(
-        data.slots.map(slot =>
-          tx.claimantAvailabilitySlots.create({
-            data: {
-              availabilityId: availability.id,
-              date: new Date(slot.date),
-              startTime: slot.startTime,
-              endTime: slot.endTime,
-              start: slot.start,
-              end: slot.end,
-              timeBand: slot.timeBand,
-            },
-          })
-        )
-      );
-
       // Update examination status from "Waiting to be Scheduled" to "Ready to Appointment"
       await tx.examination.update({
-        where: { id: data.caseId },
+        where: { id: data.examinationId },
         data: { statusId: readyToAppointmentStatus.id },
       });
 
-      return {
-        availability,
-        slots,
-      };
+      return booking;
     });
+
+    // Send confirmation email to claimant
+    if (examination.claimant.emailAddress) {
+      try {
+        const claimantName =
+          `${examination.claimant.firstName || ''} ${examination.claimant.lastName || ''}`.trim() ||
+          'Valued Client';
+        const organizationName = examination.case.organization?.name || 'Thrive Assessment Care';
+        const caseNumber = (examination as any).caseNumber || 'N/A';
+        const examinationTypeName = examination.examinationType?.name || 'Examination';
+
+        // Format booking date and time
+        const bookingDateTime = new Date(data.bookingTime);
+        const formattedDate = format(bookingDateTime, 'EEEE, MMMM d, yyyy');
+        const formattedTime = format(bookingDateTime, 'h:mm a');
+        const bookingDate = `${formattedDate} at ${formattedTime}`;
+
+        const preferenceLabel =
+          data.preference === 'IN_PERSON'
+            ? 'In Person'
+            : data.preference === 'VIRTUAL'
+              ? 'Virtual'
+              : 'Either';
+
+        const emailResult = await emailService.sendEmail(
+          `Booking Submitted - ${caseNumber}`,
+          'booking-submitted.html',
+          {
+            claimantName,
+            organizationName,
+            caseNumber,
+            examinationType: examinationTypeName,
+            bookingDate,
+            preference: preferenceLabel,
+          },
+          examination.claimant.emailAddress
+        );
+
+        if (!emailResult.success) {
+          log.error('Failed to send booking confirmation email:', emailResult.error);
+          // Don't fail the booking if email fails, just log the error
+        } else {
+          log.info(`Booking confirmation email sent to ${examination.claimant.emailAddress}`);
+        }
+      } catch (emailError) {
+        log.error('Error sending booking confirmation email:', emailError);
+        // Don't fail the booking if email fails, just log the error
+      }
+    }
 
     return {
       success: true,
-      data: result.availability,
+      data: result,
     };
   } catch (error) {
     console.error(error);
@@ -148,6 +218,54 @@ const createClaimantAvailability = async (data: CreateClaimantAvailabilityData) 
     return {
       success: false,
       error: ErrorMessages.FAILED_SUBMIT_AVAILABILITY,
+    };
+  }
+};
+
+const updateClaimantBookingStatus = async (data: UpdateClaimantBookingStatusData) => {
+  if (!data.bookingId || !data.status) {
+    throw new Error('Booking ID and status are required');
+  }
+
+  // Validate status
+  if (!Object.values(ClaimantBookingStatus).includes(data.status as ClaimantBookingStatus)) {
+    throw new Error('Invalid booking status');
+  }
+
+  try {
+    // Note: Prisma client needs to be regenerated after schema changes
+    const booking = await (prisma as any).claimantBooking.findUnique({
+      where: { id: data.bookingId },
+    });
+
+    if (!booking) {
+      throw HttpError.notFound('Booking not found');
+    }
+
+    if (booking.deletedAt) {
+      throw new Error('Cannot update a deleted booking');
+    }
+
+    // Update booking status
+    const updatedBooking = await (prisma as any).claimantBooking.update({
+      where: { id: data.bookingId },
+      data: {
+        status: data.status,
+        // If notes are provided, you might want to store them in a separate field
+        // For now, we'll just update the status
+      },
+    });
+
+    return {
+      success: true,
+      data: updatedBooking,
+    };
+  } catch (error) {
+    console.error(error);
+
+    return {
+      success: false,
+      error: 'Failed to update booking status',
     };
   }
 };
@@ -171,7 +289,8 @@ const getLanguages = async () => {
 const claimantService = {
   getClaimant,
   getCaseSummary,
-  createClaimantAvailability,
+  createClaimantBooking,
+  updateClaimantBookingStatus,
   getLanguages,
 };
 export default claimantService;

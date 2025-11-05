@@ -1,17 +1,11 @@
 'use client';
 import React from 'react';
-import { Check, User, Star } from 'lucide-react';
+import { Check, Star, MapPin, Languages, Car, UserPlus } from 'lucide-react';
 import { format } from 'date-fns';
+import type { SelectedAppointment } from '../types/examinerAvailability';
 
 interface AppointmentConfirmationProps {
-  appointment: {
-    examinerId: string;
-    examinerName: string;
-    date: Date;
-    slotStart: Date;
-    slotEnd: Date;
-    specialty?: string;
-  } | null;
+  appointment: SelectedAppointment | null;
   claimantName: string;
   onBack?: () => void;
 }
@@ -29,7 +23,8 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
   }
 
   const formattedDate = format(appointment.date, 'EEEE, MMMM d, yyyy');
-  const formattedTime = `${format(appointment.slotStart, 'h:mm a')} - ${format(appointment.slotEnd, 'h:mm a')}`;
+  // Show just the hour and AM/PM, e.g., "10 AM"
+  const formattedTime = format(appointment.slotStart, 'h a');
 
   return (
     <div>
@@ -60,17 +55,46 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
           </div>
 
           <div className="space-y-4 pt-4">
-            {/* Examiner Info */}
-            <div className="flex items-start space-x-3">
-              <User className="mt-0.5 h-5 w-5 text-[#000093]" />
-              <div>
-                <p className="font-medium text-gray-900">{appointment.examinerName}</p>
-                {appointment.specialty && (
-                  <div className="mt-2 flex items-center space-x-2">
-                    <Star className="h-4 w-4 text-[#000093]" />
-                    <p className="text-sm text-gray-600">{appointment.specialty}</p>
-                  </div>
-                )}
+            {/* Left Column - Clinic and Specialty */}
+            <div className="space-y-3">
+              {appointment.clinic && (
+                <div className="flex items-start space-x-2">
+                  <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#000093]" />
+                  <p className="text-sm font-medium text-gray-900">{appointment.clinic}</p>
+                </div>
+              )}
+              {appointment.specialty && (
+                <div className="flex items-start space-x-2">
+                  <Star className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#000093]" />
+                  <p className="text-sm font-medium text-gray-900">{appointment.specialty}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Right Column - Services */}
+            <div className="space-y-3 border-t border-purple-100 pt-4">
+              <div className="flex items-start space-x-2">
+                <Languages className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#000093]" />
+                <p className="text-sm font-medium text-gray-900">
+                  Interpreter:{' '}
+                  {appointment.interpreter ? appointment.interpreter.companyName : 'Not Required'}
+                </p>
+              </div>
+              <div className="flex items-start space-x-2">
+                <Car className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#000093]" />
+                <p className="text-sm font-medium text-gray-900">
+                  Transport:{' '}
+                  {appointment.transporter ? appointment.transporter.companyName : 'Not Required'}
+                </p>
+              </div>
+              <div className="flex items-start space-x-2">
+                <UserPlus className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#000093]" />
+                <p className="text-sm font-medium text-gray-900">
+                  Chaperone:{' '}
+                  {appointment.chaperone
+                    ? `${appointment.chaperone.firstName} ${appointment.chaperone.lastName}`
+                    : 'Not Required'}
+                </p>
               </div>
             </div>
           </div>

@@ -8,20 +8,12 @@ import type {
   DayAvailability,
   ExaminerAvailabilityOption,
   SlotAvailability,
+  SelectedAppointment,
 } from '../types/examinerAvailability';
 import { format } from 'date-fns';
 
 // Use the actual type from the types file
 type ExaminerOption = ExaminerAvailabilityOption;
-
-interface SelectedAppointment {
-  examinerId: string;
-  examinerName: string;
-  date: Date;
-  slotStart: Date;
-  slotEnd: Date;
-  specialty?: string;
-}
 
 interface ExaminerOptionsProps {
   examId: string;
@@ -154,6 +146,44 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({ examId, onSelectAppoi
       slotStart: slot.start,
       slotEnd: slot.end,
       specialty: examiner.specialty,
+      clinic: examiner.clinic,
+      // Include service provider IDs if available
+      interpreterId:
+        examiner.interpreters && examiner.interpreters.length > 0
+          ? examiner.interpreters[0].interpreterId
+          : undefined,
+      interpreter:
+        examiner.interpreters && examiner.interpreters.length > 0
+          ? {
+              interpreterId: examiner.interpreters[0].interpreterId,
+              companyName: examiner.interpreters[0].companyName,
+              contactPerson: examiner.interpreters[0].contactPerson,
+            }
+          : undefined,
+      chaperoneId:
+        examiner.chaperones && examiner.chaperones.length > 0
+          ? examiner.chaperones[0].chaperoneId
+          : undefined,
+      chaperone:
+        examiner.chaperones && examiner.chaperones.length > 0
+          ? {
+              chaperoneId: examiner.chaperones[0].chaperoneId,
+              firstName: examiner.chaperones[0].firstName,
+              lastName: examiner.chaperones[0].lastName,
+            }
+          : undefined,
+      transporterId:
+        examiner.transporters && examiner.transporters.length > 0
+          ? examiner.transporters[0].transporterId
+          : undefined,
+      transporter:
+        examiner.transporters && examiner.transporters.length > 0
+          ? {
+              transporterId: examiner.transporters[0].transporterId,
+              companyName: examiner.transporters[0].companyName,
+              contactPerson: examiner.transporters[0].contactPerson,
+            }
+          : undefined,
     };
 
     onSelectAppointment(appointment);

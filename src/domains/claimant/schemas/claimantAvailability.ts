@@ -3,11 +3,20 @@ import { ClaimantPreference } from '@prisma/client';
 import { z } from 'zod';
 
 // Appointment schema
-export const appointmentSchema = z.object({
-  date: z.string().min(1, 'Date is required'),
-  time: z.string().min(1, 'Time is required'),
-  timeLabel: z.string().min(1, 'Time label is required'),
-});
+export const appointmentSchema = z
+  .object({
+    date: z.string().min(1, 'Date is required'),
+    time: z.string().min(1, 'Time is required'),
+    timeLabel: z.string().min(1, 'Time label is required'),
+    // Additional fields for booking (optional, added when slot is selected)
+    slotStart: z.string().optional(),
+    slotEnd: z.string().optional(),
+    examinerId: z.string().optional(),
+    interpreterId: z.string().optional(),
+    chaperoneId: z.string().optional(),
+    transporterId: z.string().optional(),
+  })
+  .passthrough(); // Allow additional fields that might be added
 
 // Main form schema
 export const claimantAvailabilitySchema = z
