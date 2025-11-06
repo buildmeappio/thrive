@@ -90,7 +90,7 @@ async function sendApprovalEmailToClaimant(caseDetails: CaseDetailDtoType) {
     : "Unknown";
 
   const result = await emailService.sendEmail(
-    `Case ${caseDetails.caseNumber} - Approved! Set Your Availability`,
+    `Select Your Appointment - Thrive`,
     "case-approval.html",
     {
       firstName,
