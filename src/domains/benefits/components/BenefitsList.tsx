@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { BenefitData } from "../types/Benefit";
 import { deleteBenefitAction } from "../actions";
 import { toast } from "sonner";
-import { Plus, List, Grid, Table, ChevronDown, Edit, Trash2 } from "lucide-react";
+import { Plus, List, Grid, Table, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import BenefitCard from "./BenefitCard";
 import {
@@ -214,114 +215,160 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
   }, [selectedExamType, sortBy, table, viewMode]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 benefits-page">
       {/* Header */}
-      <div>
-        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight mb-6">
-          All Benefits Type
-        </h1>
-
-        {/* Control Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
-            {/* Sort Dropdown */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 font-normal whitespace-nowrap">Sort</span>
-              <div className="relative">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="appearance-none bg-white border border-gray-300 rounded-lg px-3 sm:px-4 py-2 pr-8 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent w-full sm:w-auto"
-                >
-                  <option value="name">Name</option>
-                  <option value="examType">Exam Type</option>
-                  <option value="date">Date</option>
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* View Mode Buttons */}
-            <div className="flex items-center gap-0 bg-white border border-gray-300 rounded-lg p-1 w-full sm:w-auto">
-              <button
-                onClick={() => setViewMode("list")}
-                className={cn(
-                  "flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded transition-all flex-1 sm:flex-initial",
-                  viewMode === "list"
-                    ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-semibold"
-                    : "text-gray-600 hover:text-gray-900"
-                )}
-                title="List View"
-              >
-                <List className="w-4 h-4" />
-                <span className="text-xs sm:text-sm">List</span>
-              </button>
-              <button
-                onClick={() => setViewMode("grid")}
-                className={cn(
-                  "flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded transition-all flex-1 sm:flex-initial",
-                  viewMode === "grid"
-                    ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-semibold"
-                    : "text-gray-600 hover:text-gray-900"
-                )}
-                title="Grid View"
-              >
-                <Grid className="w-4 h-4" />
-                <span className="text-xs sm:text-sm">Grid</span>
-              </button>
-              <button
-                onClick={() => setViewMode("table")}
-                className={cn(
-                  "flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded transition-all flex-1 sm:flex-initial",
-                  viewMode === "table"
-                    ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-semibold"
-                    : "text-gray-600 hover:text-gray-900"
-                )}
-                title="Table View"
-              >
-                <Table className="w-4 h-4" />
-                <span className="text-xs sm:text-sm">Table</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Add New Benefit Button */}
+      <div className="dashboard-zoom-mobile">
+        {/* Heading with Add Button on Mobile */}
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight">
+            All Benefits Type
+          </h1>
+          {/* Add New Benefit Button - Visible on Mobile, Hidden on Desktop (will show in control bar) */}
           <Button
             onClick={() => router.push("/dashboard/benefits/new")}
-            className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white rounded-full px-3 sm:px-4 py-2 hover:opacity-90 transition-opacity font-semibold w-full sm:w-auto text-sm sm:text-base"
+            className="flex sm:hidden items-center justify-center gap-1.5 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white rounded-full px-3 py-1.5 hover:opacity-90 transition-opacity font-semibold text-xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span className="whitespace-nowrap">Add</span>
+          </Button>
+        </div>
+
+        {/* Define SVG gradients */}
+        <svg width="0" height="0" className="absolute">
+          <defs>
+            <linearGradient id="examTypeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#01F4C8" />
+              <stop offset="100%" stopColor="#00A8FF" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        {/* Control Bar - View Mode and Add Button */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
+          {/* View Mode Buttons */}
+          <div className="flex items-center gap-0 bg-white border border-gray-300 rounded-lg p-1 w-full sm:w-auto">
+            <button
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded transition-all flex-1 sm:flex-initial",
+                viewMode === "list"
+                  ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-semibold"
+                  : "text-gray-600 hover:text-gray-900"
+              )}
+              title="List View"
+            >
+              <List className="w-4 h-4" />
+              <span className="text-xs sm:text-sm">List</span>
+            </button>
+            <button
+              onClick={() => setViewMode("grid")}
+              className={cn(
+                "flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded transition-all flex-1 sm:flex-initial",
+                viewMode === "grid"
+                  ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-semibold"
+                  : "text-gray-600 hover:text-gray-900"
+              )}
+              title="Grid View"
+            >
+              <Grid className="w-4 h-4" />
+              <span className="text-xs sm:text-sm">Grid</span>
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={cn(
+                "flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded transition-all flex-1 sm:flex-initial",
+                viewMode === "table"
+                  ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-semibold"
+                  : "text-gray-600 hover:text-gray-900"
+              )}
+              title="Table View"
+            >
+              <Table className="w-4 h-4" />
+              <span className="text-xs sm:text-sm">Table</span>
+            </button>
+          </div>
+
+          {/* Add New Benefit Button - Hidden on Mobile, Visible on Desktop */}
+          <Button
+            onClick={() => router.push("/dashboard/benefits/new")}
+            className="hidden sm:flex items-center justify-center gap-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white rounded-full px-3 sm:px-4 py-2 hover:opacity-90 transition-opacity font-semibold text-sm sm:text-base"
           >
             <Plus className="w-4 h-4" />
             <span className="whitespace-nowrap">Add New Benefits</span>
           </Button>
         </div>
 
-        {/* Filter Buttons */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
-          <button
-            onClick={() => setSelectedExamType(null)}
-            className={cn(
-              "px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
-              selectedExamType === null
-                ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
-                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-            )}
-          >
-            View All
-          </button>
-          {examTypesForFilter.map((examType) => (
-            <button
-              key={examType.value}
-              onClick={() => setSelectedExamType(examType.value)}
-              className={cn(
-                "px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
-                selectedExamType === examType.value
-                  ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
-                  : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-              )}
+        {/* Sort and Filter Row */}
+        <div className="flex flex-row items-center justify-between gap-2 sm:gap-4 mb-4 sm:mb-6">
+          {/* Sort Dropdown - Left */}
+          <div className="flex items-center gap-1 sm:gap-2 flex-1 sm:flex-initial min-w-0">
+            <span className="text-xs sm:text-sm text-gray-600 font-normal whitespace-nowrap">Sort</span>
+            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+              <SelectTrigger className="h-7 sm:h-9 w-[90px] sm:w-[120px] text-xs sm:text-sm px-2 sm:px-3 border-gray-300 rounded-lg bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="examType">Exam Type</SelectItem>
+                <SelectItem value="date">Date</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Filter Dropdown - Right */}
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 min-w-0">
+            <Select
+              value={selectedExamType || "all"}
+              onValueChange={(value) => setSelectedExamType(value === "all" ? null : value)}
             >
-              {examType.label}
-            </button>
-          ))}
+              <SelectTrigger
+                className={cn(
+                  "h-7 sm:h-9 w-[130px] sm:w-auto min-w-[130px] sm:min-w-[150px] text-xs sm:text-sm pl-2 pr-3 sm:px-6 border rounded-full font-poppins bg-white [&>svg]:hidden",
+                  selectedExamType !== null
+                    ? "border-[#00A8FF] text-[#00A8FF]"
+                    : "border-gray-200 text-gray-700"
+                )}
+              >
+                <div className="flex items-center gap-1.5 sm:gap-2 w-full min-w-0">
+                  <svg
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 self-center align-middle"
+                    fill="none"
+                    stroke="url(#examTypeGradient)"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 5v14M5 12h14"
+                    />
+                  </svg>
+                  <SelectValue placeholder="Exam Type" className="truncate" />
+                  <svg
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 ml-auto"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </SelectTrigger>
+              <SelectContent position="popper" side="bottom" sideOffset={4}>
+                <SelectItem value="all">View All</SelectItem>
+                {examTypesForFilter.map((examType) => (
+                  <SelectItem key={examType.value} value={examType.value}>
+                    {examType.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -350,7 +397,7 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
             ))}
           </div>
         ) : (
-          <>
+          <div className="dashboard-zoom-mobile">
             {/* Table Card */}
             <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
               {/* Table */}
@@ -439,10 +486,10 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
             </div>
 
             {/* Pagination - Outside the card */}
-            <div className="mt-4 px-6">
+            <div className="mt-4 px-3 sm:px-6 overflow-x-hidden">
               <Pagination table={table} />
             </div>
-          </>
+          </div>
         )
       ) : (
         <div className="text-center py-12 bg-white rounded-xl border border-gray-200">

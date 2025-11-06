@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -46,7 +46,7 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
   // Determine the current case status from database
   const getCurrentStatus = (): "pending" | "reviewed" | "info_needed" | "rejected" => {
     const statusName = caseDetails.status.name.toLowerCase();
-    if (statusName.includes("waiting") || statusName.includes("scheduled")) {
+    if (statusName.includes("ready") || statusName.includes("appointment")) {
       return "reviewed";
     } else if (statusName.includes("information") || statusName.includes("info")) {
       return "info_needed";
@@ -57,6 +57,20 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
   };
   
   const [caseStatus, setCaseStatus] = useState<"pending" | "reviewed" | "info_needed" | "rejected">(getCurrentStatus());
+
+  // Sync caseStatus with caseDetails when props change (e.g., after refresh)
+  useEffect(() => {
+    const statusName = caseDetails.status.name.toLowerCase();
+    let newStatus: "pending" | "reviewed" | "info_needed" | "rejected" = "pending";
+    if (statusName.includes("ready") || statusName.includes("appointment")) {
+      newStatus = "reviewed";
+    } else if (statusName.includes("information") || statusName.includes("info")) {
+      newStatus = "info_needed";
+    } else if (statusName.includes("reject")) {
+      newStatus = "rejected";
+    }
+    setCaseStatus(newStatus);
+  }, [caseDetails.status.name]);
 
   const handleCompleteReview = async () => {
     setLoadingAction("review");
