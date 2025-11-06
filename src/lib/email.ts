@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import nodemailer, { type Transporter } from "nodemailer";
+import { ENV } from "@/constants/variables";
 
 type SendArgs = {
   to: string | string[];
@@ -61,23 +62,34 @@ async function getTransporter(): Promise<Transporter> {
 
 export async function sendMail(args: SendArgs) {
   const emailUser = process.env.OAUTH_USERNAME || process.env.GMAIL_USER;
-  const from = `${args.fromName ?? "Thrive"} <${emailUser}>`;
+  const from = `${args.fromName ?? "Thrive Assessment & Care"} <${emailUser}>`;
+  
+  // Generate a unique Message-ID for better deliverability
+  const messageId = `<${Date.now()}-${Math.random().toString(36).substring(2, 15)}@${emailUser.split('@')[1] || 'thrivenetwork.ca'}>`;
+  
   const mail = {
     from,
     to: args.to,
     subject: args.subject,
     html: args.html,
-    text: args.text,
+    text: args.text || args.html?.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim(), // Auto-generate text from HTML if not provided
     cc: args.cc,
     bcc: args.bcc,
-    replyTo: args.replyTo,
+    replyTo: args.replyTo || ENV.EMAIL_REPLY_TO || `support@thrivenetwork.ca`,
     attachments: args.attachments,
+    headers: {
+      'Message-ID': messageId,
+      'X-Mailer': 'Thrive Assessment & Care',
+      'MIME-Version': '1.0',
+      ...(args.replyTo && { 'Reply-To': args.replyTo }),
+    },
   };
 
   let t = await getTransporter();
   try {
     return await t.sendMail(mail);
   } catch (err: unknown) {
+    console.error("Error sending email:", err);
     // If token expired or transporter got invalidated, rebuild once and retry.
     if ((err as any)?.code === "EAUTH" || (err as any)?.responseCode === 401 || (err as any)?.responseCode === 535) {
       transporterPromise = null;
