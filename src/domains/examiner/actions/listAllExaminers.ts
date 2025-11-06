@@ -2,6 +2,7 @@
 import prisma from "@/lib/db";
 import { ExaminerDto } from "../server/dto/examiner.dto";
 import { HttpError } from "@/utils/httpError";
+import { mapSpecialtyIdsToNames } from "../utils/mapSpecialtyIdsToNames";
 
 const listAllExaminers = async () => {
   try {
@@ -39,9 +40,14 @@ const listAllExaminers = async () => {
     });
 
     // Filter out examiners with missing user data
-    const validExaminers = examiners.filter(examiner => examiner.account?.user);
-    
-    return ExaminerDto.toExaminerDataList(validExaminers);
+    const validExaminers = examiners.filter(
+      (examiner) => examiner.account?.user
+    );
+
+    const examinersData = ExaminerDto.toExaminerDataList(validExaminers);
+
+    // Map specialty IDs to exam type names for all examiners
+    return await mapSpecialtyIdsToNames(examinersData);
   } catch (error) {
     console.error("Error fetching all examiners:", error);
     throw HttpError.fromError(error, "Failed to get examiners");
@@ -49,4 +55,3 @@ const listAllExaminers = async () => {
 };
 
 export default listAllExaminers;
-

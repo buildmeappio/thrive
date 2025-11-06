@@ -18,6 +18,7 @@ import {
   Languages,
   Truck,
   File,
+  ThumbsUp,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useSidebar } from "@/providers/Sidebar";
@@ -75,11 +76,17 @@ export const routes: Route[] = [
     index: 6,
   },
   {
+    icon: ThumbsUp,
+    label: "Benefits",
+    href: "/dashboard/benefits",
+    index: 7,
+  },
+  {
     icon: BookText,
     label: "Taxonomies",
-    index: 7,
+    index: 8,
     subRoutes: [
-      { label: "Roles", href: "/dashboard/taxonomy/role" },
+      // { label: "Roles", href: "/dashboard/taxonomy/role" },
       { label: "Case Types", href: "/dashboard/taxonomy/caseType" },
       { label: "Case Statuses", href: "/dashboard/taxonomy/caseStatus" },
       { label: "Claim Types", href: "/dashboard/taxonomy/claimType" },
@@ -88,10 +95,10 @@ export const routes: Route[] = [
         label: "Examination Types",
         href: "/dashboard/taxonomy/examinationType",
       },
-      {
-        label: "Benefits",
-        href: "/dashboard/taxonomy/examinationTypeBenefit",
-      },
+      // {
+      //   label: "Benefits",
+      //   href: "/dashboard/taxonomy/examinationTypeBenefit",
+      // },
       { label: "Languages", href: "/dashboard/taxonomy/language" },
       {
         label: "Organization Types",
@@ -99,7 +106,7 @@ export const routes: Route[] = [
       },
     ],
   },
-  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 8 },
+  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 9 },
 ];
 
 const Sidebar = () => {

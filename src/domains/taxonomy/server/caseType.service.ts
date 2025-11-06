@@ -96,7 +96,7 @@ export const getCaseTypes = async (): Promise<CaseTypeData[]> => {
       description: caseType.description,
       createdAt: caseType.createdAt.toISOString(),
     }));
-  } catch (error) {
+  } catch {
     throw HttpError.internalServerError("Internal server error");
   }
 };

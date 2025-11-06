@@ -30,7 +30,7 @@ type TaxonomyFormProps = {
 
 const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
   mode,
-  type,
+  type: _type,
   config,
   taxonomy,
   onSubmit,

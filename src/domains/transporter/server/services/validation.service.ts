@@ -1,3 +1,5 @@
+import { validateCanadianPhoneNumber } from "@/components/PhoneNumber";
+
 export class ValidationService {
   static validateEmail(email: string): { isValid: boolean; error?: string } {
     if (!email) {
@@ -30,9 +32,11 @@ export class ValidationService {
       return { isValid: false, error: "Phone is required" };
     }
 
-    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-    if (!phoneRegex.test(phone.trim())) {
-      return { isValid: false, error: "Please enter a valid phone number" };
+    if (!validateCanadianPhoneNumber(phone)) {
+      return {
+        isValid: false,
+        error: "Please enter a valid Canadian phone number",
+      };
     }
 
     return { isValid: true };

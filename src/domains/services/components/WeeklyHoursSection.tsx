@@ -86,6 +86,23 @@ const addHoursToTime = (timeStr: string, hoursToAdd: number): string => {
 const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, onChange, disabled = false }) => {
   const [errors, setErrors] = useState<TimeSlotError[]>([]);
 
+  // Helper function to get valid end time options based on start time
+  const getValidEndTimeOptions = (startTime: string, currentEndTime?: string): string[] => {
+    const startMinutes = timeToMinutes(startTime);
+    const validOptions = timeOptions.filter(time => {
+      const timeMinutes = timeToMinutes(time);
+      return timeMinutes > startMinutes;
+    });
+    
+    // If current end time is invalid but exists, include it in the list so it can be displayed
+    // This prevents the dropdown from showing empty when the time is invalid
+    if (currentEndTime && !validOptions.includes(currentEndTime)) {
+      return [currentEndTime, ...validOptions];
+    }
+    
+    return validOptions;
+  };
+
   // Validate time slots whenever weeklyHours changes
   useEffect(() => {
     const newErrors: TimeSlotError[] = [];
@@ -107,9 +124,8 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
         }
 
         // Check for overlaps with other slots on the same day
-        dayHours.timeSlots.forEach((otherSlot, otherIndex) => {
-          if (slotIndex >= otherIndex) return; // Only check once per pair
-
+        for (let otherIndex = slotIndex + 1; otherIndex < dayHours.timeSlots.length; otherIndex++) {
+          const otherSlot = dayHours.timeSlots[otherIndex];
           const otherStartMinutes = timeToMinutes(otherSlot.startTime);
           const otherEndMinutes = timeToMinutes(otherSlot.endTime);
 
@@ -120,13 +136,19 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
             (startMinutes <= otherStartMinutes && endMinutes >= otherEndMinutes);
 
           if (hasOverlap) {
+            // Mark both slots as having overlap errors
             newErrors.push({
               day: dayHours.dayOfWeek,
               slotIndex,
               message: 'Time slots cannot overlap',
             });
+            newErrors.push({
+              day: dayHours.dayOfWeek,
+              slotIndex: otherIndex,
+              message: 'Time slots cannot overlap',
+            });
           }
-        });
+        }
       });
     });
 
@@ -313,7 +335,7 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {timeOptions.map((time) => (
+                          {getValidEndTimeOptions(slot.startTime, slot.endTime).map((time) => (
                             <SelectItem key={time} value={time}>{time}</SelectItem>
                           ))}
                         </SelectContent>

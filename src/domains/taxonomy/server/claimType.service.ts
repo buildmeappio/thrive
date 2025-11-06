@@ -96,7 +96,7 @@ export const getClaimTypes = async (): Promise<ClaimTypeData[]> => {
       description: claimType.description,
       createdAt: claimType.createdAt.toISOString(),
     }));
-  } catch (error) {
+  } catch {
     throw HttpError.internalServerError("Internal server error");
   }
 };
