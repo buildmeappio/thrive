@@ -6,14 +6,11 @@ import { authOptions } from "./nextauth/options";
 import { NextRequest } from "next/server";
 import { HttpError } from "@/utils/httpError";
 import { getToken as getTokenNextAuth, JWT } from "next-auth/jwt";
-import { cookies } from "next/headers";
 
 export const getCurrentUser = async (): Promise<User | null> => {
   try {
-    // Ensure cookies are accessible (this helps in server actions)
-    await cookies();
-    
-    // Use getServerSession - it should work in server actions with Next.js 13+
+    // getServerSession automatically handles cookies in server components and server actions
+    // It should work reliably in Next.js 13+ App Router
     const session = await getServerSession(authOptions);
     
     if (!session?.user) {
@@ -22,11 +19,22 @@ export const getCurrentUser = async (): Promise<User | null> => {
     
     return session.user;
   } catch (error) {
-    // If there's an error accessing the session, log it and return null
-    // This prevents the app from crashing and allows graceful handling
-    // Don't log common session errors as they're expected when not authenticated
-    if (error instanceof Error && !error.message.includes('session')) {
-      console.error("Error getting current user:", error);
+    // Suppress expected errors during build/static generation
+    // "Dynamic server usage" errors are expected when getServerSession uses headers()
+    // This is normal behavior for authenticated routes that need to be dynamic
+    if (error instanceof Error) {
+      const errorMessage = error.message.toLowerCase();
+      const errorDigest = (error as any).digest;
+      const isExpectedError = 
+        errorMessage.includes('dynamic server usage') ||
+        errorMessage.includes('couldn\'t be rendered statically') ||
+        errorMessage.includes('headers') ||
+        errorDigest === 'DYNAMIC_SERVER_USAGE';
+      
+      // Only log unexpected errors (not during build/static generation)
+      if (!isExpectedError && process.env.NODE_ENV !== 'production') {
+        console.error("Error getting current user:", error);
+      }
     }
     return null;
   }
