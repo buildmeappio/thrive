@@ -38,7 +38,7 @@ export default function WaitingCases({
   items,
   listHref,
   buildDetailHref = (id) => `${listHref}/${id}`,
-  title = "Ready to be Appointment",
+  title = "Waiting to be Scheduled",
   subtitle = "Pending for verification",
 }: Props) {
   return (
