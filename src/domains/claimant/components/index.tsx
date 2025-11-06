@@ -20,6 +20,7 @@ import useRouter from '@/hooks/useRouter';
 type ClaimantAvailabilityProps = {
   caseSummary: {
     caseId: string;
+    caseNumber?: string | null;
     claimantId: string;
     claimantFirstName: string | null;
     claimantLastName: string | null;
@@ -197,7 +198,7 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
       {/* User Info - Only show for appointments and examiners steps */}
       {currentStep !== 'confirmation' && (
         <UserInfo
-          caseId={caseSummary.caseId}
+          caseNumber={caseSummary.caseNumber || caseSummary.caseId}
           claimantFirstName={caseSummary.claimantFirstName ?? ''}
           claimantLastName={caseSummary.claimantLastName ?? ''}
           organizationName={caseSummary.organizationName ?? ''}

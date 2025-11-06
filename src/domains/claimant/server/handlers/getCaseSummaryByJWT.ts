@@ -73,11 +73,12 @@ const getCaseSummaryByJWT = async (token: string) => {
       },
     });
 
-    // Get the examination with case and claimant information, including approvedAt
+    // Get the examination with case and claimant information, including approvedAt and caseNumber
     const examination = (await prisma.examination.findUnique({
       where: { id: examinationId },
       select: {
         approvedAt: true,
+        caseNumber: true,
         caseId: true,
         claimantId: true,
         case: {
@@ -98,6 +99,7 @@ const getCaseSummaryByJWT = async (token: string) => {
       success: true,
       result: {
         caseId: examination.caseId,
+        caseNumber: examination.caseNumber, // Include caseNumber for display
         claimantId: examination.claimantId,
         claimantFirstName: examination.claimant.firstName,
         claimantLastName: examination.claimant.lastName,

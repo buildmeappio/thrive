@@ -31,6 +31,7 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ token: string }>
 
   const {
     caseId,
+    caseNumber,
     claimantId,
     claimantFirstName,
     claimantLastName,
@@ -81,6 +82,7 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ token: string }>
     <ClaimantAvailability
       caseSummary={{
         caseId,
+        caseNumber: caseNumber || null,
         claimantId,
         claimantFirstName,
         claimantLastName,
