@@ -83,13 +83,13 @@ class DashboardService {
                     },
                 },
             },
-            orderBy: { createdAt: "desc" },
-            take: limit,
-        });
+        orderBy: { createdAt: "desc" },
+        take: limit,
+    });
 
-        return CaseDto.toCaseDto(rows);
+    return await CaseDto.toCaseDto(rows);
 
-    }
+}
 
     // Waiting to be Scheduled cases for the dashboard table - filtered by "Waiting to be Scheduled" status
     async getWaitingCases(limit = 3): Promise<CaseDetailDtoType[]> {
@@ -145,14 +145,14 @@ class DashboardService {
                     },
                 },
             },
-            orderBy: { createdAt: "desc" },
-            take: limit,
-        });
+        orderBy: { createdAt: "desc" },
+        take: limit,
+    });
 
-        return CaseDto.toCaseDto(rows);
-    }
+    return await CaseDto.toCaseDto(rows);
+}
 
-    // Get count of cases waiting to be scheduled
+// Get count of cases waiting to be scheduled
     async getWaitingToBeScheduledCount(): Promise<number> {
         const status = await prisma.caseStatus.findFirst({
             where: {
