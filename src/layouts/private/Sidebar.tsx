@@ -168,7 +168,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
                 }`}
               >
                 <Plus size={20} strokeWidth={2} className="h-5 w-5 text-white" />
-                <span className="text-sm">New IME Referral</span>
+                <span className="text-sm">New Request</span>
               </button>
             </div>
           )}
