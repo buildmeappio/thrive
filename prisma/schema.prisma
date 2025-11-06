@@ -957,9 +957,9 @@ model Contract {
   unsignedPdfSha256    String?        @map("unsigned_pdf_sha256") @db.VarChar(64)
   signedPdfS3Key       String?        @map("signed_pdf_s3_key") @db.VarChar(500)
   signedPdfSha256      String?        @map("signed_pdf_sha256") @db.VarChar(64)
-  googleDocId          String?        @map("google_doc_id") @db.VarChar(255)
-  googleDocUrl         String?        @map("google_doc_url") @db.VarChar(500)
-  drivePdfId           String?        @map("drive_pdf_id") @db.VarChar(255)
+  googleDocId          String?        @map("google_doc_id") @db.VarChar(500)
+  googleDocUrl         String?        @map("google_doc_url") @db.Text
+  drivePdfId           String?        @map("drive_pdf_id") @db.VarChar(500)
   docusignEnvelopeId   String?        @map("docusign_envelope_id") @db.VarChar(255)
   docusignStatus       String?        @map("docusign_status") @db.VarChar(100)
   sentAt               DateTime?      @map("sent_at") @db.Timestamptz()
