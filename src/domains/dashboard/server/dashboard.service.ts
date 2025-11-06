@@ -91,12 +91,12 @@ class DashboardService {
 
     }
 
-    // Ready to be Appointment cases for the dashboard table - filtered by "Ready to be Appointment" status
+    // Waiting to be Scheduled cases for the dashboard table - filtered by "Waiting to be Scheduled" status
     async getWaitingCases(limit = 3): Promise<CaseDetailDtoType[]> {
-        // Get the "Ready to be Appointment" status
+        // Get the "Waiting to be Scheduled" status
         const waitingStatus = await prisma.caseStatus.findFirst({
             where: {
-                name: "Ready to be Appointment",
+                name: "Waiting to be Scheduled",
             },
         });
 
@@ -152,11 +152,11 @@ class DashboardService {
         return CaseDto.toCaseDto(rows);
     }
 
-    // Get count of cases ready to be appointment
+    // Get count of cases waiting to be scheduled
     async getWaitingToBeScheduledCount(): Promise<number> {
         const status = await prisma.caseStatus.findFirst({
             where: {
-                name: "Ready to be Appointment",
+                name: "Waiting to be Scheduled",
             },
         });
 
