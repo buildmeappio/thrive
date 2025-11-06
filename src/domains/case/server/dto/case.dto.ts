@@ -28,6 +28,7 @@ export class CaseDto {
       caseNumber: examination.caseNumber,
       urgencyLevel: examination.urgencyLevel,
       assignedAt: examination.assignedAt,
+      approvedAt: examination.approvedAt,
       createdAt: examination.createdAt,
       status: {
         id: examination.status.id,

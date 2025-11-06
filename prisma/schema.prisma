@@ -280,6 +280,7 @@ model Examination {
 
   assignToId String?   @map("assign_to_id") @db.Uuid
   assignedAt DateTime? @map("assigned_at") @db.Timestamptz()
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz()
 
   claimantId            String  @map("claimant_id") @db.Uuid
   insuranceId           String? @map("insurance_id") @db.Uuid

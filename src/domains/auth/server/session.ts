@@ -8,11 +8,36 @@ import { HttpError } from "@/utils/httpError";
 import { getToken as getTokenNextAuth, JWT } from "next-auth/jwt";
 
 export const getCurrentUser = async (): Promise<User | null> => {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
+  try {
+    // getServerSession automatically handles cookies in server components and server actions
+    // It should work reliably in Next.js 13+ App Router
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user) {
+      return null;
+    }
+    
+    return session.user;
+  } catch (error) {
+    // Suppress expected errors during build/static generation
+    // "Dynamic server usage" errors are expected when getServerSession uses headers()
+    // This is normal behavior for authenticated routes that need to be dynamic
+    if (error instanceof Error) {
+      const errorMessage = error.message.toLowerCase();
+      const errorDigest = (error as any).digest;
+      const isExpectedError = 
+        errorMessage.includes('dynamic server usage') ||
+        errorMessage.includes('couldn\'t be rendered statically') ||
+        errorMessage.includes('headers') ||
+        errorDigest === 'DYNAMIC_SERVER_USAGE';
+      
+      // Only log unexpected errors (not during build/static generation)
+      if (!isExpectedError && process.env.NODE_ENV !== 'production') {
+        console.error("Error getting current user:", error);
+      }
+    }
     return null;
   }
-  return session.user;
 };
 
 export const getToken = async (req: NextRequest): Promise<JWT> => {
