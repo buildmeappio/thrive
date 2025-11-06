@@ -44,7 +44,11 @@ const getClaimant = async (token: string) => {
       },
     });
 
-    if (!link || link.expiresAt < new Date() || link.status === 'INVALID') {
+    // Commented out expiry logic - links no longer expire
+    // if (!link || link.expiresAt < new Date() || link.status === 'INVALID') {
+    //   notFound();
+    // }
+    if (!link || link.status === 'INVALID') {
       notFound();
     }
 
@@ -115,58 +119,65 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
     },
   });
 
-  if (existingBooking) {
-    throw new Error(
-      'A booking already exists for this examination. Please contact support to modify.'
-    );
-  }
-
   try {
-    // Get the "Ready to Appointment" status
-    const readyToAppointmentStatus = await prisma.caseStatus.findFirst({
-      where: { name: 'Ready to Appointment' },
+    // Get the "Waiting to be Scheduled" status
+    const waitingToBeScheduledStatus = await prisma.caseStatus.findFirst({
+      where: { name: 'Waiting to be Scheduled' },
     });
 
-    if (!readyToAppointmentStatus) {
-      throw new Error('Ready to Appointment status not found in system');
+    if (!waitingToBeScheduledStatus) {
+      throw new Error('Waiting to be Scheduled status not found in system');
     }
 
     const result = await prisma.$transaction(async tx => {
-      // Create the booking with PENDING status (will be updated by examiner)
-      // Note: Prisma client needs to be regenerated after schema changes
-      const booking = await (tx as any).claimantBooking.create({
-        data: {
-          examinationId: data.examinationId,
-          claimantId: data.claimantId,
-          examinerProfileId: data.examinerProfileId,
-          bookingTime: data.bookingTime,
-          preference: data.preference,
-          accessibilityNotes: data.accessibilityNotes,
-          consentAck: data.consentAck,
-          interpreterId: data.interpreterId || null,
-          chaperoneId: data.chaperoneId || null,
-          transporterId: data.transporterId || null,
-          status: 'PENDING', // Set default status to PENDING when claimant creates booking
-        },
-      });
+      let booking;
 
-      // Update examination status from "Waiting to be Scheduled" to "Ready to Appointment"
+      if (existingBooking) {
+        // Update existing booking instead of creating new one
+        // Note: Prisma client needs to be regenerated after schema changes
+        booking = await (tx as any).claimantBooking.update({
+          where: { id: existingBooking.id },
+          data: {
+            examinerProfileId: data.examinerProfileId,
+            bookingTime: data.bookingTime,
+            preference: data.preference,
+            accessibilityNotes: data.accessibilityNotes,
+            consentAck: data.consentAck,
+            interpreterId: data.interpreterId || null,
+            chaperoneId: data.chaperoneId || null,
+            transporterId: data.transporterId || null,
+            // Keep existing status, don't reset to PENDING
+          },
+        });
+      } else {
+        // Create new booking with PENDING status (will be updated by examiner)
+        // Note: Prisma client needs to be regenerated after schema changes
+        booking = await (tx as any).claimantBooking.create({
+          data: {
+            examinationId: data.examinationId,
+            claimantId: data.claimantId,
+            examinerProfileId: data.examinerProfileId,
+            bookingTime: data.bookingTime,
+            preference: data.preference,
+            accessibilityNotes: data.accessibilityNotes,
+            consentAck: data.consentAck,
+            interpreterId: data.interpreterId || null,
+            chaperoneId: data.chaperoneId || null,
+            transporterId: data.transporterId || null,
+            status: 'PENDING', // Set default status to PENDING when claimant creates booking
+          },
+        });
+      }
+
+      // Update examination status to "Waiting to be Scheduled" when claimant submits booking
       await tx.examination.update({
         where: { id: data.examinationId },
-        data: { statusId: readyToAppointmentStatus.id },
+        data: { statusId: waitingToBeScheduledStatus.id },
       });
 
-      // Mark all secure links for this examination as SUBMITTED
-      await tx.examinationSecureLink.updateMany({
-        where: {
-          examinationId: data.examinationId,
-          status: 'PENDING',
-        },
-        data: {
-          status: 'SUBMITTED',
-          submittedAt: new Date(),
-        },
-      });
+      // Note: Secure link status should remain PENDING so claimants can reopen to update appointments
+      // The status will be changed from the examiner side, not automatically
+      // Removed: Marking secure links as SUBMITTED - status should remain PENDING
 
       return booking;
     });

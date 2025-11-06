@@ -1,12 +1,12 @@
 type UserInfoProps = {
-  caseId: string;
+  caseNumber: string;
   claimantFirstName: string;
   claimantLastName: string;
   organizationName?: string;
 };
 
 const UserInfo: React.FC<UserInfoProps> = ({
-  caseId,
+  caseNumber,
   claimantFirstName,
   claimantLastName,
   organizationName,
@@ -18,8 +18,10 @@ const UserInfo: React.FC<UserInfoProps> = ({
         <div className="mb-6 flex flex-col gap-4 py-6 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p>
-              <span className="text-lg font-semibold text-black sm:text-[18.87px]">Case ID:</span>{' '}
-              {caseId}
+              <span className="text-lg font-semibold text-black sm:text-[18.87px]">
+                Case Number:
+              </span>{' '}
+              {caseNumber}
             </p>
           </div>
           <div>

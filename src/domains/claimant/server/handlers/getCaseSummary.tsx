@@ -9,8 +9,12 @@ const getCaseSummary = async (token: string) => {
     if (!secureLink) {
       return { success: false, message: 'Invalid token', result: null };
     }
-    if (secureLink.expiresAt < new Date() || secureLink.status === 'INVALID') {
-      throw new Error('Token expired or invalid');
+    // Commented out expiry logic - links no longer expire
+    // if (secureLink.expiresAt < new Date() || secureLink.status === 'INVALID') {
+    //   throw new Error('Token expired or invalid');
+    // }
+    if (secureLink.status === 'INVALID') {
+      throw new Error('Token invalid');
     }
     const examinationId = secureLink.examinationId;
     if (!examinationId) {

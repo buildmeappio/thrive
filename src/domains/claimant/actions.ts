@@ -45,6 +45,13 @@ export const getLanguages = async () => {
 export const getAvailableExaminers = async (params: GetAvailableExaminersParams) => {
   try {
     const result = await claimantHandlers.getAvailableExaminers(params);
+    if (result.success && result.result) {
+      // Process the data to convert string dates to Date objects
+      // Note: This is a client-side handler, so we import it dynamically
+      const { processAvailabilityData } = await import('./handlers/processAvailabilityData');
+      const processedResult = processAvailabilityData(result.result);
+      return { success: true, result: processedResult };
+    }
     return result;
   } catch (error) {
     console.error('Error fetching available examiners:', error);

@@ -377,7 +377,8 @@ const isProviderAvailableForSlot = (opts: {
 const getExaminationServices = async (examId: string) => {
   const exam = await prisma.examination.findUnique({
     where: { id: examId },
-    include: {
+    select: {
+      supportPerson: true, // Check support_person column for chaperone requirement
       services: {
         include: {
           interpreter: {
@@ -401,6 +402,7 @@ const getExaminationServices = async (examId: string) => {
       interpreterLanguageId: null,
       chaperoneRequired: false,
       transportRequired: false,
+      transportPickupProvince: null,
     };
   }
 
@@ -412,6 +414,7 @@ const getExaminationServices = async (examId: string) => {
   );
 
   console.log('[Examination Services] Found services:', {
+    supportPerson: exam.supportPerson,
     allServices: exam.services.map(s => ({ type: s.type, enabled: s.enabled })),
     interpreter: interpreterService
       ? { type: interpreterService.type, enabled: interpreterService.enabled }
@@ -424,13 +427,21 @@ const getExaminationServices = async (examId: string) => {
       : null,
   });
 
+  // Get transport pickup address province if transport is required
+  let transportPickupProvince: string | null = null;
+  if (transportService?.enabled && transportService.transport?.pickupAddress) {
+    transportPickupProvince = transportService.transport.pickupAddress.province || null;
+  }
+
   return {
     interpreterRequired: interpreterService?.enabled || false,
     interpreterLanguageId: interpreterService?.enabled
       ? interpreterService.interpreter?.languageId || null
       : null,
-    chaperoneRequired: chaperoneService?.enabled || false,
+    // Chaperone is required if support_person column is true (not from services table)
+    chaperoneRequired: exam.supportPerson || false,
     transportRequired: transportService?.enabled || false,
+    transportPickupProvince, // Add province for transport filtering
   };
 };
 
@@ -589,8 +600,9 @@ const getAllChaperones = async () => {
 
 /**
  * Get all transporters with their availability providers
+ * Filters by service areas (provinces) if requiredProvince is provided
  */
-const getAllTransporters = async () => {
+const getAllTransporters = async (requiredProvince?: string | null) => {
   // Find all availability providers for transporters
   const availabilityProviders = await prisma.availabilityProvider.findMany({
     where: {
@@ -634,10 +646,35 @@ const getAllTransporters = async () => {
     },
   });
 
+  // Filter transporters by service areas (provinces) if required
+  let filteredTransporters = transporters;
+  if (requiredProvince) {
+    filteredTransporters = transporters.filter(transporter => {
+      // serviceAreas is a JSON field: array of {province: string}
+      if (!transporter.serviceAreas || typeof transporter.serviceAreas !== 'object') {
+        return false;
+      }
+
+      // Handle both array format and object format
+      const serviceAreas = Array.isArray(transporter.serviceAreas)
+        ? transporter.serviceAreas
+        : [transporter.serviceAreas];
+
+      // Check if any service area matches the required province (case-insensitive)
+      return serviceAreas.some((area: any) => {
+        const areaProvince = area?.province || area;
+        return (
+          typeof areaProvince === 'string' &&
+          areaProvince.toLowerCase().trim() === requiredProvince.toLowerCase().trim()
+        );
+      });
+    });
+  }
+
   // Map transporters to their availability providers
   const providerMap = new Map(availabilityProviders.map(ap => [ap.refId, ap]));
 
-  return transporters
+  return filteredTransporters
     .map(transporter => {
       const provider = providerMap.get(transporter.id);
       if (!provider) {
@@ -689,13 +726,15 @@ const isExaminerAlreadyBooked = (
 const fetchExistingBookings = async (
   examinerProfileIds: string[],
   startDate: Date,
-  endDate: Date
+  endDate: Date,
+  excludeBookingId?: string
 ): Promise<Map<string, Date[]>> => {
   if (examinerProfileIds.length === 0) {
     return new Map();
   }
 
   // Query all bookings for these examiners in the date range
+  // Exclude the claimant's own booking so it can still be displayed
   // Note: Prisma client needs to be regenerated after schema changes
   const bookings = await (prisma as any).claimantBooking.findMany({
     where: {
@@ -705,6 +744,7 @@ const fetchExistingBookings = async (
         lte: endDate,
       },
       deletedAt: null,
+      ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}), // Exclude claimant's own booking
     },
     select: {
       examinerProfileId: true,
@@ -731,10 +771,11 @@ const fetchExistingBookings = async (
 export const getAvailableExaminersForExam = async (
   params: GetAvailableExaminersParams
 ): Promise<AvailableExaminersResult> => {
-  const { examId, startDate, settings } = params;
+  const { examId, startDate, settings, excludeBookingId } = params;
 
-  // Clamp noOfDaysForWindow to max 7
-  const daysWindow = Math.min(settings.noOfDaysForWindow, 7);
+  // Allow more days for navigation (frontend shows 7 at a time, but we need more days to navigate)
+  // Increased limit to 30 days to allow sufficient navigation
+  const daysWindow = Math.min(settings.noOfDaysForWindow, 30);
   const slotDurationMinutes = settings.slotDurationMinutes ?? 60;
 
   // 1. Get examination type and qualified examiners
@@ -746,15 +787,20 @@ export const getAvailableExaminersForExam = async (
   console.log(`[Examiner Availability] Found ${qualifiedExaminers.length} qualified examiners`);
 
   // 1.5. Get examination services requirements (interpreter, chaperone, transport)
-  // Note: We still fetch and show available service providers even if not required by the examination
   const serviceRequirements = await getExaminationServices(examId);
 
-  // 1.6. Get all available service providers (always fetch, regardless of requirements)
-  // If a specific language is required, filter interpreters by that language
+  // 1.6. Get all available service providers ONLY if required by examination
+  // - Interpreters: Only fetch if required, filter by language from examination_interpreter
+  // - Chaperones: Only fetch if support_person column is true
+  // - Transporters: Only fetch if required, filter by province from examination_transport pickup address
   const [allInterpreters, allChaperones, allTransporters] = await Promise.all([
-    getAllInterpreters(serviceRequirements.interpreterLanguageId || undefined),
-    getAllChaperones(),
-    getAllTransporters(),
+    serviceRequirements.interpreterRequired
+      ? getAllInterpreters(serviceRequirements.interpreterLanguageId || undefined)
+      : Promise.resolve([]),
+    serviceRequirements.chaperoneRequired ? getAllChaperones() : Promise.resolve([]),
+    serviceRequirements.transportRequired
+      ? getAllTransporters(serviceRequirements.transportPickupProvince || undefined)
+      : Promise.resolve([]),
   ]);
 
   console.log('[Service Providers] Loaded:', {
@@ -797,7 +843,8 @@ export const getAvailableExaminersForExam = async (
   const existingBookings = await fetchExistingBookings(
     examinerProfileIds,
     startDateOnly,
-    endDateOnly
+    endDateOnly,
+    excludeBookingId // Exclude claimant's own booking so it can be displayed
   );
   console.log(
     `[Examiner Availability] Loaded existing bookings for ${existingBookings.size} examiners`
@@ -847,60 +894,66 @@ export const getAvailableExaminersForExam = async (
 
         // Only add examiner if they're available AND not already booked
         if (isExaminerFree && !isAlreadyBooked) {
-          // Check available interpreters for this slot (always check, regardless of requirements)
+          // Check available interpreters for this slot (only if required)
           const availableInterpreters: AvailableInterpreter[] = [];
-          for (const interpreter of allInterpreters) {
-            const isInterpreterFree = isProviderAvailableForSlot({
-              provider: interpreter.availabilityProvider,
-              dayDate: dayCursor,
-              slotStart,
-              slotEnd,
-            });
-            if (isInterpreterFree) {
-              availableInterpreters.push({
-                interpreterId: interpreter.interpreterId,
-                companyName: interpreter.companyName,
-                contactPerson: interpreter.contactPerson,
-                providerId: interpreter.providerId,
+          if (serviceRequirements.interpreterRequired) {
+            for (const interpreter of allInterpreters) {
+              const isInterpreterFree = isProviderAvailableForSlot({
+                provider: interpreter.availabilityProvider,
+                dayDate: dayCursor,
+                slotStart,
+                slotEnd,
               });
+              if (isInterpreterFree) {
+                availableInterpreters.push({
+                  interpreterId: interpreter.interpreterId,
+                  companyName: interpreter.companyName,
+                  contactPerson: interpreter.contactPerson,
+                  providerId: interpreter.providerId,
+                });
+              }
             }
           }
 
-          // Check available chaperones for this slot (always check, regardless of requirements)
+          // Check available chaperones for this slot (only if support_person is true)
           const availableChaperones: AvailableChaperone[] = [];
-          for (const chaperone of allChaperones) {
-            const isChaperoneFree = isProviderAvailableForSlot({
-              provider: chaperone.availabilityProvider,
-              dayDate: dayCursor,
-              slotStart,
-              slotEnd,
-            });
-            if (isChaperoneFree) {
-              availableChaperones.push({
-                chaperoneId: chaperone.chaperoneId,
-                firstName: chaperone.firstName,
-                lastName: chaperone.lastName,
-                providerId: chaperone.providerId,
+          if (serviceRequirements.chaperoneRequired) {
+            for (const chaperone of allChaperones) {
+              const isChaperoneFree = isProviderAvailableForSlot({
+                provider: chaperone.availabilityProvider,
+                dayDate: dayCursor,
+                slotStart,
+                slotEnd,
               });
+              if (isChaperoneFree) {
+                availableChaperones.push({
+                  chaperoneId: chaperone.chaperoneId,
+                  firstName: chaperone.firstName,
+                  lastName: chaperone.lastName,
+                  providerId: chaperone.providerId,
+                });
+              }
             }
           }
 
-          // Check available transporters for this slot (always check, regardless of requirements)
+          // Check available transporters for this slot (only if required and province matches)
           const availableTransporters: AvailableTransporter[] = [];
-          for (const transporter of allTransporters) {
-            const isTransporterFree = isProviderAvailableForSlot({
-              provider: transporter.availabilityProvider,
-              dayDate: dayCursor,
-              slotStart,
-              slotEnd,
-            });
-            if (isTransporterFree) {
-              availableTransporters.push({
-                transporterId: transporter.transporterId,
-                companyName: transporter.companyName,
-                contactPerson: transporter.contactPerson,
-                providerId: transporter.providerId,
+          if (serviceRequirements.transportRequired) {
+            for (const transporter of allTransporters) {
+              const isTransporterFree = isProviderAvailableForSlot({
+                provider: transporter.availabilityProvider,
+                dayDate: dayCursor,
+                slotStart,
+                slotEnd,
               });
+              if (isTransporterFree) {
+                availableTransporters.push({
+                  transporterId: transporter.transporterId,
+                  companyName: transporter.companyName,
+                  contactPerson: transporter.contactPerson,
+                  providerId: transporter.providerId,
+                });
+              }
             }
           }
 
@@ -920,18 +973,21 @@ export const getAvailableExaminersForExam = async (
         }
       }
 
+      // Limit to max 3 examiners per slot
+      const limitedExaminers = availableExaminersForSlot.slice(0, 3);
+
       // Debug: Log slot generation for all days
       const slotTimeStr = `${slotStart.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - ${slotEnd.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
       console.log(
-        `[Slot Generation] Day ${dayCursor.toLocaleDateString('en-US', { weekday: 'long' })}: Slot ${i + 1}/${settings.numberOfWorkingHours} - ${slotTimeStr}: ${availableExaminersForSlot.length} examiner(s) available`
+        `[Slot Generation] Day ${dayCursor.toLocaleDateString('en-US', { weekday: 'long' })}: Slot ${i + 1}/${settings.numberOfWorkingHours} - ${slotTimeStr}: ${limitedExaminers.length} examiner(s) available (${availableExaminersForSlot.length} total)`
       );
 
       // Only add slot if at least one examiner is available
-      if (availableExaminersForSlot.length > 0) {
+      if (limitedExaminers.length > 0) {
         daySlots.push({
           start: slotStart,
           end: slotEnd,
-          examiners: availableExaminersForSlot,
+          examiners: limitedExaminers,
         });
       } else {
         // Log why no examiners are available for this slot
@@ -950,14 +1006,13 @@ export const getAvailableExaminersForExam = async (
       }
     }
 
-    // Only add day to result if it has at least one slot
-    if (daySlots.length > 0) {
-      days.push({
-        date: dayCursor,
-        weekday: dayCursor.toLocaleString('en-US', { weekday: 'long' }).toUpperCase(),
-        slots: daySlots,
-      });
-    }
+    // Always add day to result, even if it has no slots (frontend will show "Not Available")
+    // This ensures we always return exactly the requested number of days
+    days.push({
+      date: dayCursor,
+      weekday: dayCursor.toLocaleString('en-US', { weekday: 'long' }).toUpperCase(),
+      slots: daySlots, // Will be empty array if no examiners available
+    });
   }
 
   return {
@@ -966,5 +1021,10 @@ export const getAvailableExaminersForExam = async (
     endDate,
     dueDate,
     days,
+    serviceRequirements: {
+      interpreterRequired: serviceRequirements.interpreterRequired,
+      chaperoneRequired: serviceRequirements.chaperoneRequired,
+      transportRequired: serviceRequirements.transportRequired,
+    },
   };
 };

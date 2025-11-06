@@ -9,6 +9,17 @@ export type AvailabilitySettings = {
   slotDurationMinutes?: number; // Duration of each slot in minutes (default: 60)
 };
 
+// Default settings for availability
+export const DEFAULT_SETTINGS: AvailabilitySettings = {
+  noOfDaysForWindow: 21,
+  numberOfWorkingHours: 8,
+  startOfWorking: '09:00',
+  slotDurationMinutes: 60,
+};
+
+// Maximum number of days to show at once in the UI
+export const MAX_DAYS_TO_SHOW = 7;
+
 export type AvailableInterpreter = {
   interpreterId: string;
   companyName: string;
@@ -59,12 +70,18 @@ export type AvailableExaminersResult = {
   endDate: Date;
   dueDate: Date | null;
   days: DayAvailability[];
+  serviceRequirements?: {
+    interpreterRequired: boolean;
+    chaperoneRequired: boolean;
+    transportRequired: boolean;
+  };
 };
 
 export type GetAvailableExaminersParams = {
   examId: string;
   startDate: Date;
   settings: AvailabilitySettings;
+  excludeBookingId?: string; // Exclude this booking ID from availability checks (for showing claimant's own booking)
 };
 
 export type SelectedAppointment = {
