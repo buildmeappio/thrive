@@ -8,8 +8,8 @@
     "studio": "prisma generate && prisma studio",
     "reset": "prisma migrate reset",
     "seed": "prisma db seed",
-    "docker:up": "docker compose -f docker-compose.dev.yaml up -d",
-    "docker:down": "docker compose -f docker-compose.dev.yaml down",
+    "docker:up": "docker-compose --env-file .env -f docker-compose.dev.yaml up -d",
+    "docker:down": "docker-compose --env-file .env -f docker-compose.dev.yaml down -v",
     "db:sync": "chmod +x scripts/db-sync.sh && bash scripts/db-sync.sh"
   },
   "repository": {

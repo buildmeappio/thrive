@@ -1,5 +1,51 @@
 #!/bin/bash
 
+# =========================== WINDOWS COMPATIBILITY NOTICE/EXIT ===========================
+
+detect_windows() {
+    case "$OSTYPE" in
+        cygwin*|msys*|win32*) return 0 ;;
+    esac
+    # Also check environment for MSYSTEM (Git Bash), ComSpec, or windir
+    if grep -qi microsoft /proc/version 2>/dev/null; then
+        # WSL, not "Windows" per se
+        return 1
+    fi
+    if [[ "$COMSPEC" =~ [Ww][Ii][Nn][Dd][Oo][Ww][Ss] ]] || [[ -n "$WINDIR" ]]; then
+        return 0
+    fi
+    unameOut="$(uname -s 2>/dev/null)"
+    case "$unameOut" in
+        CYGWIN*|MINGW*|MSYS*) return 0 ;;
+    esac
+    return 1
+}
+
+if detect_windows; then
+    echo ""
+    echo "❌ This script does NOT run natively on Windows."
+    echo ""
+    echo "It is a bash script that depends on common Unix utilities and behaviors:"
+    echo " - bash, sed, grep, awk, lsof, mktemp, chmod, stat, sleep, etc."
+    echo " - native/CLI ssh, docker-compose or docker compose, and PostgreSQL client tools"
+    echo " - Unix-style signals and file permissions"
+    echo ""
+    echo "To use this script on Windows, you MUST run it under a compatible environment:"
+    echo " - Windows Subsystem for Linux (WSL): Recommended. Install WSL2 and Ubuntu from Microsoft Store."
+    echo " - Git Bash / MSYS2: Might work, but some commands or paths could cause issues."
+    echo " - Cygwin: Might work, but not officially supported."
+    echo ""
+    echo "Native Windows support (e.g. .bat/.ps1 script) is NOT provided."
+    echo ""
+    echo '👉 To use this script on Windows, run it via WSL/Ubuntu or Git Bash, e.g.:'
+    echo ""
+    echo "    wsl bash scripts/db-sync.sh"
+    echo ""
+    echo "Or, log in to a Linux/macOS machine or VM and run it there. Exiting now."
+    echo ""
+    exit 1
+fi
+
 # Function to create .env.db file interactively
 create_env_db_file() {
     echo "📝 .env.db file not found."
