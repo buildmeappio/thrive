@@ -1282,7 +1282,9 @@ const getNextCaseNumberForExamType = async (examTypeId: string) => {
     return getInitialCaseNumberForExamType(examTypeId);
   }
 
-  const [shortForm, year, seq] = lastCaseNumber.split('-');
+  // Use the actual shortForm from the database, not from the old case number
+  const shortForm = latestExams[0].examinationType.shortForm;
+  const [, year, seq] = lastCaseNumber.split('-');
   const currentYear = new Date().getFullYear().toString();
   const isSameYear = year === currentYear;
 
