@@ -43,12 +43,19 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
       return "-";
     }
     
+    // Helper function to check if a string is a UUID
+    const isUUID = (str: string): boolean => {
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(str);
+    };
+    
     return enabledServices.map(service => {
       const serviceType = formatText(service.type);
       
       let details = serviceType;
       
-      if (service.interpreter && service.interpreter.languageName) {
+      // Only show language name if it exists and is not a UUID
+      if (service.interpreter && service.interpreter.languageName && !isUUID(service.interpreter.languageName)) {
         details += ` (${service.interpreter.languageName})`;
       }
       

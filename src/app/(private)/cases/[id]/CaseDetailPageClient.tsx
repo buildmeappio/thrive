@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -57,6 +57,20 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
   };
   
   const [caseStatus, setCaseStatus] = useState<"pending" | "reviewed" | "info_needed" | "rejected">(getCurrentStatus());
+
+  // Sync caseStatus with caseDetails when props change (e.g., after refresh)
+  useEffect(() => {
+    const statusName = caseDetails.status.name.toLowerCase();
+    let newStatus: "pending" | "reviewed" | "info_needed" | "rejected" = "pending";
+    if (statusName.includes("waiting") || statusName.includes("scheduled")) {
+      newStatus = "reviewed";
+    } else if (statusName.includes("information") || statusName.includes("info")) {
+      newStatus = "info_needed";
+    } else if (statusName.includes("reject")) {
+      newStatus = "rejected";
+    }
+    setCaseStatus(newStatus);
+  }, [caseDetails.status.name]);
 
   const handleCompleteReview = async () => {
     setLoadingAction("review");
