@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 // import AppointmentOptions from './AppointmentOptions'; // Commented out - Step 1 is disabled
@@ -25,14 +25,30 @@ type ClaimantAvailabilityProps = {
     claimantLastName: string | null;
     organizationName?: string | null;
     examinationId: string;
+    approvedAt?: Date | string | null;
+    existingBooking?: {
+      id: string;
+      examinerProfileId: string;
+      examinerName: string | null;
+      bookingTime: Date | string;
+      interpreterId?: string | null;
+      chaperoneId?: string | null;
+      transporterId?: string | null;
+    } | null;
   };
+  initialAvailabilityData?: any | null;
+  availabilityError?: string | null;
 };
 
 type ClaimantAvailabilityComponentProps = ClaimantAvailabilityProps & {
   languages: Awaited<ReturnType<typeof getLanguages>>['result'];
 };
 
-const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({ caseSummary }) => {
+const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
+  caseSummary,
+  initialAvailabilityData,
+  availabilityError,
+}) => {
   const { isSubmitting: _isSubmitting, submitAvailability } = useClaimantAvailability(
     caseSummary.examinationId,
     caseSummary.claimantId
@@ -42,7 +58,6 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({ ca
     'examiners'
   );
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
-  const hasSubmittedRef = useRef(false);
 
   const form = useForm<ClaimantAvailabilityFormData>({
     resolver: zodResolver(claimantAvailabilitySchema),
@@ -65,14 +80,12 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({ ca
         } else {
           // If submission fails, go back to examiners step
           setCurrentStep('examiners');
-          hasSubmittedRef.current = false; // Reset so it can try again
         }
       } catch (error) {
         toast.error('Failed to submit availability. Please try again.');
         console.error(error);
         // Go back to examiners step on error
         setCurrentStep('examiners');
-        hasSubmittedRef.current = false; // Reset so it can try again
       }
     },
     [submitAvailability, router]
@@ -92,142 +105,85 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({ ca
     [currentStep, form]
   );
 
-  // Update form when appointment is selected and auto-submit
-  useEffect(() => {
-    // Only auto-submit if we have an appointment but haven't submitted yet
-    // Don't require currentStep to be 'confirmation' - we'll set that after success
-    if (selectedAppointment && !hasSubmittedRef.current && currentStep !== 'confirmation') {
-      // Validate that selectedAppointment has required fields
-      if (!selectedAppointment.examinerId || !selectedAppointment.slotStart) {
-        console.error('Selected appointment missing required fields:', {
-          examinerId: selectedAppointment.examinerId,
-          slotStart: selectedAppointment.slotStart,
-          fullAppointment: selectedAppointment,
-        });
-        toast.error('Invalid appointment selection. Please try again.');
-        return;
-      }
-
-      // Transform the selected appointment to the form format
-      // Format: "DD-MonthName-YYYY" to match what transformFormDataToDbFormat expects
-      const dateObj = new Date(selectedAppointment.date);
-      const day = dateObj.getDate().toString().padStart(2, '0');
-      const monthNames = [
-        'January',
-        'February',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'August',
-        'September',
-        'October',
-        'November',
-        'December',
-      ];
-      const month = monthNames[dateObj.getMonth()];
-      const year = dateObj.getFullYear();
-      const formattedDate = `${day}-${month}-${year}`;
-      const formattedTime = `${new Date(selectedAppointment.slotStart).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-      })} - ${new Date(selectedAppointment.slotEnd).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-      })}`;
-
-      // Determine time band based on slot time
-      const hour = new Date(selectedAppointment.slotStart).getHours();
-      let timeBand = 'EITHER';
-      if (hour < 12) {
-        timeBand = 'MORNING';
-      } else if (hour < 17) {
-        timeBand = 'AFTERNOON';
-      } else {
-        timeBand = 'EVENING';
-      }
-
-      // Store the appointment with actual slot times and service provider IDs for transformation
-      const appointmentData = {
-        date: formattedDate,
-        time: timeBand,
-        timeLabel: formattedTime,
-        // Store actual slot times for the transform function (will be used if available)
-        slotStart: selectedAppointment.slotStart.toISOString(),
-        slotEnd: selectedAppointment.slotEnd.toISOString(),
-        // Store service provider IDs
-        examinerId: selectedAppointment.examinerId,
-        interpreterId: selectedAppointment.interpreterId,
-        chaperoneId: selectedAppointment.chaperoneId,
-        transporterId: selectedAppointment.transporterId,
-      } as any;
-
-      // Set form values with shouldValidate: false to avoid immediate validation
-      form.setValue('appointments', [appointmentData], { shouldValidate: false });
-
-      // Auto-submit the form when moving to confirmation step
-      // Use setTimeout to ensure form values are set before submission
-      hasSubmittedRef.current = true;
-
-      // Wait for React Hook Form to update, then submit
-      // Use requestAnimationFrame to ensure DOM and form state are updated
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          // Get the current form values
-          const formValues = form.getValues();
-          const appointment = (formValues.appointments?.[0] as any) || {};
-
-          // Debug: log the appointment data
-          console.log('Attempting to submit with appointment:', {
-            examinerId: appointment.examinerId,
-            slotStart: appointment.slotStart,
-            hasExaminerId: !!appointment.examinerId,
-            hasSlotStart: !!appointment.slotStart,
-            appointmentKeys: Object.keys(appointment),
-            fullAppointment: appointment,
-          });
-
-          // Verify required fields are present
-          // slotStart might be a string (ISO format) or could be undefined
-          if (appointment.examinerId && appointment.slotStart) {
-            // Show loading state - change to confirmation step to show "submitting" state
-            setCurrentStep('confirmation');
-            // Use a small delay to ensure step change is rendered
-            setTimeout(() => {
-              form.handleSubmit(handleSubmit, onError)();
-            }, 50);
-          } else {
-            // If values aren't set yet, wait a bit more and try again
-            console.warn('Form values not ready, retrying...', {
-              appointment,
-              formState: form.formState,
-            });
-            setTimeout(() => {
-              const retryValues = form.getValues();
-              const retryAppointment = (retryValues.appointments?.[0] as any) || {};
-              console.log('Retry attempt - appointment:', retryAppointment);
-              if (retryAppointment.examinerId && retryAppointment.slotStart) {
-                setCurrentStep('confirmation');
-                setTimeout(() => {
-                  form.handleSubmit(handleSubmit, onError)();
-                }, 50);
-              } else {
-                console.error('Failed to set form values after retry:', {
-                  retryAppointment,
-                  allFormValues: retryValues,
-                });
-                toast.error('Failed to submit booking. Please try again.');
-                // Reset so user can try again
-                setSelectedAppointment(null);
-                hasSubmittedRef.current = false;
-              }
-            }, 300);
-          }
-        }, 100);
+  // Helper function to transform appointment to form format
+  const transformAppointmentToFormData = (appointment: any) => {
+    // Validate that selectedAppointment has required fields
+    if (!appointment.examinerId || !appointment.slotStart) {
+      console.error('Selected appointment missing required fields:', {
+        examinerId: appointment.examinerId,
+        slotStart: appointment.slotStart,
+        fullAppointment: appointment,
       });
+      toast.error('Invalid appointment selection. Please try again.');
+      return null;
     }
-  }, [selectedAppointment, currentStep, form, handleSubmit, onError]);
+
+    // Transform the selected appointment to the form format
+    // Format: "DD-MonthName-YYYY" to match what transformFormDataToDbFormat expects
+    const dateObj = new Date(appointment.date);
+    const day = dateObj.getDate().toString().padStart(2, '0');
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    const month = monthNames[dateObj.getMonth()];
+    const year = dateObj.getFullYear();
+    const formattedDate = `${day}-${month}-${year}`;
+    const formattedTime = `${new Date(appointment.slotStart).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    })} - ${new Date(appointment.slotEnd).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    })}`;
+
+    // Determine time band based on slot time
+    const hour = new Date(appointment.slotStart).getHours();
+    let timeBand = 'EITHER';
+    if (hour < 12) {
+      timeBand = 'MORNING';
+    } else if (hour < 17) {
+      timeBand = 'AFTERNOON';
+    } else {
+      timeBand = 'EVENING';
+    }
+
+    // Store the appointment with actual slot times and service provider IDs for transformation
+    return {
+      date: formattedDate,
+      time: timeBand,
+      timeLabel: formattedTime,
+      // Store actual slot times for the transform function (will be used if available)
+      slotStart: appointment.slotStart.toISOString(),
+      slotEnd: appointment.slotEnd.toISOString(),
+      // Store service provider IDs
+      examinerId: appointment.examinerId,
+      interpreterId: appointment.interpreterId,
+      chaperoneId: appointment.chaperoneId,
+      transporterId: appointment.transporterId,
+    } as any;
+  };
+
+  // Update form when appointment is selected (just set form values, don't submit)
+  useEffect(() => {
+    if (selectedAppointment && currentStep === 'confirmation') {
+      const appointmentData = transformAppointmentToFormData(selectedAppointment);
+      if (appointmentData) {
+        // Set form values with shouldValidate: false to avoid immediate validation
+        form.setValue('appointments', [appointmentData], { shouldValidate: false });
+      }
+    }
+  }, [selectedAppointment, currentStep, form]);
 
   return (
     <div>
@@ -259,16 +215,18 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({ ca
             <ExaminerOptions
               examId={caseSummary.examinationId}
               caseId={caseSummary.caseId}
+              existingBooking={caseSummary.existingBooking}
+              initialAvailabilityData={initialAvailabilityData}
+              initialError={availabilityError}
               onSelectAppointment={appointmentData => {
                 // Validate appointment data before proceeding
                 if (!appointmentData.examinerId || !appointmentData.slotStart) {
                   toast.error('Invalid appointment selection. Please try again.');
                   return;
                 }
-                // Set appointment and trigger form submission
-                // Don't change step yet - wait for successful submission
+                // Set appointment and navigate to confirmation step (Step 3)
                 setSelectedAppointment(appointmentData);
-                // The useEffect will handle form submission and step change
+                setCurrentStep('confirmation');
               }}
               onBack={() => setCurrentStep('appointments')}
             />
@@ -277,6 +235,24 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({ ca
               appointment={selectedAppointment}
               claimantName={caseSummary.claimantFirstName || 'Johnathan'}
               onBack={() => setCurrentStep('examiners')}
+              onSubmit={() => {
+                // Ensure form values are set before submission
+                if (selectedAppointment) {
+                  const appointmentData = transformAppointmentToFormData(selectedAppointment);
+                  if (appointmentData) {
+                    form.setValue('appointments', [appointmentData], { shouldValidate: false });
+                    // Submit the form when user clicks Confirm
+                    setTimeout(() => {
+                      form.handleSubmit(handleSubmit, onError)();
+                    }, 50);
+                  } else {
+                    toast.error('Invalid appointment data. Please go back and try again.');
+                  }
+                } else {
+                  toast.error('No appointment selected. Please go back and select an appointment.');
+                }
+              }}
+              isSubmitting={form.formState.isSubmitting}
             />
           )}
         </div>

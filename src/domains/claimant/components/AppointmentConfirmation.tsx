@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Check, Star, MapPin, Languages, Car, UserPlus } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Languages, Car, UserPlus, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { SelectedAppointment } from '../types/examinerAvailability';
 
@@ -8,11 +8,16 @@ interface AppointmentConfirmationProps {
   appointment: SelectedAppointment | null;
   claimantName: string;
   onBack?: () => void;
+  onSubmit?: () => void;
+  isSubmitting?: boolean;
 }
 
 const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
   appointment,
   claimantName,
+  onBack,
+  onSubmit,
+  isSubmitting = false,
 }) => {
   if (!appointment) {
     return (
@@ -28,21 +33,13 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
 
   return (
     <div>
-      {/* Success Icon */}
-      <div className="flex justify-center bg-[#FAFAFF] pt-4">
-        <div className="flex h-18 w-18 items-center justify-center rounded-full bg-[#000093]">
-          <Check className="h-16 w-16 text-white" />
-        </div>
-      </div>
-
-      {/* Confirmation Message */}
-      <div className="mb-8 bg-[#FAFAFF] pb-4 text-center">
+      {/* Review Message */}
+      <div className="mb-8 bg-[#FAFAFF] pt-8 pb-4 text-center">
         <h1 className="mb-4 text-2xl font-semibold text-gray-900 sm:text-3xl">
-          Thank you, {claimantName}.
+          Review Your Appointment
         </h1>
-        <p className="text-lg font-medium text-gray-900">Your appointment has been confirmed.</p>
         <p className="text-lg font-medium text-gray-900">
-          {formattedDate} – {formattedTime}
+          Please review your appointment details below and confirm to proceed.
         </p>
       </div>
 
@@ -107,6 +104,41 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
             Please bring your government-issued ID. You will receive a reminder 2 days before your
             appointment.
           </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+          {/* Back Button */}
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              disabled={isSubmitting}
+              className="flex items-center justify-center gap-2 rounded-lg border-2 border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              Back
+            </button>
+          )}
+
+          {/* Confirm Button */}
+          {onSubmit && (
+            <button
+              type="button"
+              onClick={onSubmit}
+              disabled={isSubmitting}
+              className="flex items-center justify-center gap-2 rounded-lg bg-[#000093] px-6 py-3 text-base font-medium text-white transition-colors hover:bg-[#000080] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                'Confirm Appointment'
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

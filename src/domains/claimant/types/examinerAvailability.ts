@@ -59,12 +59,18 @@ export type AvailableExaminersResult = {
   endDate: Date;
   dueDate: Date | null;
   days: DayAvailability[];
+  serviceRequirements?: {
+    interpreterRequired: boolean;
+    chaperoneRequired: boolean;
+    transportRequired: boolean;
+  };
 };
 
 export type GetAvailableExaminersParams = {
   examId: string;
   startDate: Date;
   settings: AvailabilitySettings;
+  excludeBookingId?: string; // Exclude this booking ID from availability checks (for showing claimant's own booking)
 };
 
 export type SelectedAppointment = {

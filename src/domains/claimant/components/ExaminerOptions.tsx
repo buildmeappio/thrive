@@ -1,208 +1,90 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { ArrowRight, Star, MapPin, Car, UserPlus, Languages } from 'lucide-react';
-import { getAvailableExaminers } from '../actions';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  ArrowRight,
+  Star,
+  MapPin,
+  Car,
+  UserPlus,
+  Languages,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import type {
   AvailableExaminersResult,
   DayAvailability,
   ExaminerAvailabilityOption,
   SlotAvailability,
-  SelectedAppointment,
+  AvailabilitySettings,
 } from '../types/examinerAvailability';
-import { format } from 'date-fns';
+import type { ExaminerOptionsProps } from '../types/examinerOptions';
+import {
+  filterDaysWithSlots,
+  getDaysToShow,
+  formatTime,
+  formatSqlDate,
+  isPastDate,
+} from '../services/dateTimeSlot.service';
+import {
+  isExistingBookingSlot,
+  getExaminersForSlot,
+  createSelectedAppointment,
+} from '../services/appointmentSelection.service';
+import { getTimeSlotsForAvailability, getAutoSelection } from '../handlers/processAvailabilityData';
 
-// Use the actual type from the types file
-type ExaminerOption = ExaminerAvailabilityOption;
+// Constants moved outside component to avoid dependency issues
+const DEFAULT_SETTINGS: AvailabilitySettings = {
+  noOfDaysForWindow: 21,
+  numberOfWorkingHours: 8,
+  startOfWorking: '09:00',
+  slotDurationMinutes: 60,
+};
 
-interface ExaminerOptionsProps {
-  examId: string;
-  caseId: string;
-  onSelectAppointment: (appointment: SelectedAppointment) => void;
-  onBack?: () => void;
-}
+const MAX_DAYS_TO_SHOW = 7;
 
-const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({ examId, onSelectAppointment }) => {
-  const [loading, setLoading] = useState(true);
-  const [availabilityData, setAvailabilityData] = useState<AvailableExaminersResult | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  // State for selected date and time
+const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
+  examId,
+  onSelectAppointment,
+  existingBooking,
+  initialAvailabilityData,
+  initialError,
+}) => {
+  const [availabilityData, setAvailabilityData] = useState<AvailableExaminersResult | null>(
+    initialAvailabilityData || null
+  );
+  const [errorMessage, setErrorMessage] = useState<string | null>(initialError || null);
   const [selectedDateIndex, setSelectedDateIndex] = useState<number | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ start: Date; end: Date } | null>(null);
+  const [dateOffset, setDateOffset] = useState<number>(0);
+  const [hasAutoSelected, setHasAutoSelected] = useState<boolean>(false);
 
-  // Default settings - these could be made configurable
-  const settings = {
-    noOfDaysForWindow: 7, // Max 7 days
-    numberOfWorkingHours: 8,
-    startOfWorking: '09:00',
-    slotDurationMinutes: 60,
-  };
-
+  // Show error toast if initial error is provided
   useEffect(() => {
-    const fetchAvailability = async () => {
-      try {
-        setLoading(true);
-        setErrorMessage(null);
-        // Start from today
-        const startDate = new Date();
-        startDate.setHours(0, 0, 0, 0);
+    if (initialError) {
+      toast.error(initialError);
+    }
+  }, [initialError]);
 
-        const result = await getAvailableExaminers({
-          examId,
-          startDate,
-          settings,
-        });
+  // Generate time slots - MUST be before early returns
+  const timeSlotsArray = useMemo(
+    () => getTimeSlotsForAvailability(availabilityData, DEFAULT_SETTINGS),
+    [availabilityData]
+  );
 
-        if (result.success && result.result) {
-          // Convert date strings back to Date objects (dates get serialized as strings over network)
-          const processedResult = {
-            ...result.result,
-            days: result.result.days.map(
-              (day: {
-                date: string | Date;
-                weekday: string;
-                slots: Array<{
-                  start: string | Date;
-                  end: string | Date;
-                  examiners: ExaminerAvailabilityOption[];
-                }>;
-              }) => ({
-                ...day,
-                date: new Date(day.date),
-                weekday: day.weekday, // Preserve weekday property
-                slots: day.slots.map(
-                  (slot: {
-                    start: string | Date;
-                    end: string | Date;
-                    examiners: ExaminerAvailabilityOption[];
-                  }) => ({
-                    ...slot,
-                    start: new Date(slot.start),
-                    end: new Date(slot.end),
-                    examiners: slot.examiners, // Preserve examiners array
-                  })
-                ),
-              })
-            ),
-            startDate: new Date(result.result.startDate),
-            endDate: new Date(result.result.endDate),
-            dueDate: result.result.dueDate ? new Date(result.result.dueDate) : null,
-          };
-          console.log('[ExaminerOptions] Processed availability data:', {
-            daysCount: processedResult.days.length,
-            totalSlots: processedResult.days.reduce((sum, day) => sum + day.slots.length, 0),
-            days: processedResult.days.map(day => ({
-              date: day.date,
-              weekday: day.weekday,
-              slotsCount: day.slots.length,
-              slots: day.slots.map(slot => ({
-                time: `${formatTime(slot.start)} - ${formatTime(slot.end)}`,
-                examinersCount: slot.examiners.length,
-              })),
-            })),
-          });
-          setAvailabilityData(processedResult);
-          setErrorMessage(null);
-        } else {
-          const errorMsg =
-            (result as { error?: string }).error ||
-            'Failed to load examiner availability. Please try again.';
-          setErrorMessage(errorMsg);
-          toast.error(errorMsg);
-          console.error('Failed to load availability:', result);
-        }
-      } catch (error) {
-        console.error('Error fetching examiner availability:', error);
-        const errorMsg =
-          error instanceof Error ? error.message : 'An error occurred while loading availability.';
-        setErrorMessage(errorMsg);
-        toast.error(errorMsg);
-      } finally {
-        setLoading(false);
+  // Auto-select middle date and first time slot - MUST be before early returns
+  useEffect(() => {
+    if (availabilityData && !hasAutoSelected && dateOffset === 0) {
+      const autoSelection = getAutoSelection(availabilityData, timeSlotsArray, MAX_DAYS_TO_SHOW);
+      if (autoSelection) {
+        setSelectedDateIndex(autoSelection.dateIndex);
+        setSelectedTimeSlot(autoSelection.timeSlot);
+        setHasAutoSelected(true);
       }
-    };
+    }
+  }, [availabilityData, hasAutoSelected, dateOffset, timeSlotsArray]);
 
-    fetchAvailability();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [examId]);
-
-  const formatTime = (date: Date): string => {
-    return format(date, 'h a'); // Show just hour and AM/PM, e.g., "9 AM"
-  };
-
-  const formatSqlDate = (date: Date): string => {
-    return format(date, 'EEEE, MMMM d');
-  };
-
-  const handleSlotSelection = (
-    examiner: ExaminerOption,
-    slot: SlotAvailability,
-    day: DayAvailability
-  ) => {
-    const appointment: SelectedAppointment = {
-      examinerId: examiner.examinerId,
-      examinerName: examiner.examinerName,
-      date: day.date,
-      slotStart: slot.start,
-      slotEnd: slot.end,
-      specialty: examiner.specialty,
-      clinic: examiner.clinic,
-      // Include service provider IDs if available
-      interpreterId:
-        examiner.interpreters && examiner.interpreters.length > 0
-          ? examiner.interpreters[0].interpreterId
-          : undefined,
-      interpreter:
-        examiner.interpreters && examiner.interpreters.length > 0
-          ? {
-              interpreterId: examiner.interpreters[0].interpreterId,
-              companyName: examiner.interpreters[0].companyName,
-              contactPerson: examiner.interpreters[0].contactPerson,
-            }
-          : undefined,
-      chaperoneId:
-        examiner.chaperones && examiner.chaperones.length > 0
-          ? examiner.chaperones[0].chaperoneId
-          : undefined,
-      chaperone:
-        examiner.chaperones && examiner.chaperones.length > 0
-          ? {
-              chaperoneId: examiner.chaperones[0].chaperoneId,
-              firstName: examiner.chaperones[0].firstName,
-              lastName: examiner.chaperones[0].lastName,
-            }
-          : undefined,
-      transporterId:
-        examiner.transporters && examiner.transporters.length > 0
-          ? examiner.transporters[0].transporterId
-          : undefined,
-      transporter:
-        examiner.transporters && examiner.transporters.length > 0
-          ? {
-              transporterId: examiner.transporters[0].transporterId,
-              companyName: examiner.transporters[0].companyName,
-              contactPerson: examiner.transporters[0].contactPerson,
-            }
-          : undefined,
-    };
-
-    onSelectAppointment(appointment);
-  };
-
-  if (loading) {
-    return (
-      <div className="mx-auto mb-16 w-full max-w-7xl p-4 sm:px-6">
-        <div className="py-8 text-center text-[28px] leading-[100%] font-semibold tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
-          Choose Your Appointment
-        </div>
-        <div className="flex items-center justify-center py-12">
-          <div className="text-lg text-gray-600">Loading available examiners...</div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show error message if there's an error
+  // Early returns for error and empty states
   if (errorMessage) {
     return (
       <div className="mx-auto mb-16 w-full max-w-7xl p-4 sm:px-6">
@@ -236,57 +118,54 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({ examId, onSelectAppoi
     );
   }
 
-  const maxDaysToShow = Math.min(availabilityData.days.length, 7);
-  const daysToShow = availabilityData.days.slice(0, maxDaysToShow);
+  // Compute derived data
+  const daysWithSlots = filterDaysWithSlots(availabilityData.days);
+  const totalDaysWithSlots = daysWithSlots.length;
+  const daysToShow = getDaysToShow(daysWithSlots, dateOffset, MAX_DAYS_TO_SHOW);
 
-  // Get all unique time slots across all days (for time column)
-  const allTimeSlots = new Map<string, { start: Date; end: Date }>();
-  daysToShow.forEach(day => {
-    day.slots.forEach(slot => {
-      const hour = slot.start.getHours();
-      const timeKey = hour.toString();
-      if (!allTimeSlots.has(timeKey)) {
-        allTimeSlots.set(timeKey, { start: slot.start, end: slot.end });
+  // Navigation handlers
+  const handlePrevious = () => {
+    if (dateOffset > 0) {
+      setDateOffset(prev => prev - 1);
+      if (selectedDateIndex !== null && selectedDateIndex >= daysToShow.length - 1) {
+        setSelectedDateIndex(null);
+        setSelectedTimeSlot(null);
       }
-    });
-  });
-  const timeSlotsArray = Array.from(allTimeSlots.entries())
-    .map(([key, value]) => ({
-      hour: parseInt(key),
-      label: key,
-      start: value.start,
-      end: value.end,
-    }))
-    .sort((a, b) => a.hour - b.hour);
-
-  // Helper function to check if a slot exists for a specific date-time combination
-  const getExaminerForSlot = (day: DayAvailability, hour: number) => {
-    const matchingSlot = day.slots.find(slot => slot.start.getHours() === hour);
-
-    if (matchingSlot && matchingSlot.examiners.length > 0) {
-      return { examiner: matchingSlot.examiners[0], slot: matchingSlot };
     }
-    return null;
   };
 
+  const handleNext = () => {
+    if (dateOffset + MAX_DAYS_TO_SHOW < totalDaysWithSlots) {
+      setDateOffset(prev => prev + 1);
+      if (selectedDateIndex !== null && selectedDateIndex === 0) {
+        setSelectedDateIndex(null);
+        setSelectedTimeSlot(null);
+      } else if (selectedDateIndex !== null) {
+        setSelectedDateIndex(Math.max(0, selectedDateIndex - 1));
+      }
+    }
+  };
+
+  const canGoPrevious = dateOffset > 0;
+  const canGoNext =
+    totalDaysWithSlots > MAX_DAYS_TO_SHOW && dateOffset + MAX_DAYS_TO_SHOW < totalDaysWithSlots;
+
+  // Selection handlers
   const handleDateClick = (dayIndex: number) => {
     if (selectedDateIndex === dayIndex) {
-      // Toggle: if same date clicked, deselect
       setSelectedDateIndex(null);
       setSelectedTimeSlot(null);
     } else {
       setSelectedDateIndex(dayIndex);
-      setSelectedTimeSlot(null); // Reset time selection when date changes
+      setSelectedTimeSlot(null);
     }
   };
 
   const handleTimeClick = (timeSlot: { start: Date; end: Date }) => {
     if (selectedTimeSlot && selectedTimeSlot.start.getHours() === timeSlot.start.getHours()) {
-      // Toggle: if same time clicked, deselect
       setSelectedTimeSlot(null);
     } else {
       setSelectedTimeSlot(timeSlot);
-      // If no date selected, select first date with this time slot
       if (selectedDateIndex === null) {
         const dayWithSlot = daysToShow.findIndex(day =>
           day.slots.some(slot => slot.start.getHours() === timeSlot.start.getHours())
@@ -298,150 +177,257 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({ examId, onSelectAppoi
     }
   };
 
+  const handleSlotSelection = (
+    examiner: ExaminerAvailabilityOption,
+    slot: SlotAvailability,
+    day: DayAvailability
+  ) => {
+    const appointment = createSelectedAppointment(examiner, slot, day);
+    onSelectAppointment(appointment);
+  };
+
   return (
-    <div className="mx-auto mb-16 w-full max-w-7xl p-4 sm:px-6">
+    <div className="mx-auto mb-16 w-full max-w-full p-4 sm:px-8">
       <div className="py-8 text-center text-[28px] leading-[100%] font-semibold tracking-normal sm:py-10 sm:text-[32px] md:py-12 md:text-[36px]">
         Choose Your Appointment
       </div>
 
-      {/* Table Layout - Always visible like airline booking */}
       {timeSlotsArray.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="sticky left-0 z-20 bg-white px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                  Time
-                </th>
-                {daysToShow.map((day, dayIndex) => (
-                  <th
-                    key={dayIndex}
-                    onClick={() => handleDateClick(dayIndex)}
-                    className={`min-w-[300px] cursor-pointer px-4 py-3 text-center text-sm font-semibold transition-colors ${
-                      selectedDateIndex === dayIndex
-                        ? 'bg-[#000093] text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    {formatSqlDate(day.date)}
-                  </th>
+        <div className="w-full overflow-hidden">
+          <div className="mx-auto w-full">
+            <table className="w-full border-collapse" style={{ tableLayout: 'auto' }}>
+              <colgroup>
+                <col style={{ width: '100px', minWidth: '100px' }} />
+                {daysToShow.map((_, index) => (
+                  <col key={index} style={{ minWidth: '180px', width: 'auto' }} />
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {timeSlotsArray.map((timeSlot, timeIndex) => (
-                <tr key={timeIndex} className="border-b border-gray-200">
-                  {/* Time Column - Clickable */}
-                  <td
-                    onClick={() => handleTimeClick(timeSlot)}
-                    className={`sticky left-0 z-10 cursor-pointer px-4 py-3 text-sm font-medium transition-colors ${
-                      selectedTimeSlot && selectedTimeSlot.start.getHours() === timeSlot.hour
-                        ? 'bg-[#000093] text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {formatTime(timeSlot.start)}
-                  </td>
-                  {/* Date Columns */}
-                  {daysToShow.map((day, dayIndex) => {
-                    const result = getExaminerForSlot(day, timeSlot.hour);
-                    const examiner = result?.examiner;
-                    const matchingSlot = result?.slot;
-
-                    return (
-                      <td
-                        key={dayIndex}
-                        onClick={() => {
-                          handleDateClick(dayIndex);
-                          handleTimeClick(timeSlot);
-                        }}
-                        className={`cursor-pointer p-2 ${
-                          selectedDateIndex === dayIndex &&
-                          selectedTimeSlot &&
-                          selectedTimeSlot.start.getHours() === timeSlot.hour
-                            ? 'ring-2 ring-[#000093] ring-offset-2'
-                            : ''
+              </colgroup>
+              <thead>
+                <tr>
+                  <th className="sticky left-0 z-20 bg-white px-2 py-2"></th>
+                  <th colSpan={daysToShow.length} className="px-2 py-2">
+                    <div className="flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={handlePrevious}
+                        disabled={!canGoPrevious}
+                        className={`flex items-center justify-center rounded-lg px-3 py-2 transition-all ${
+                          canGoPrevious
+                            ? 'bg-[#000093] text-white shadow-md hover:bg-[#000080] hover:shadow-lg'
+                            : 'cursor-not-allowed bg-gray-200 text-gray-400'
                         }`}
+                        aria-label="Previous dates"
                       >
-                        {examiner && matchingSlot ? (
-                          <div className="relative overflow-visible rounded-xl border-2 border-purple-100 bg-gradient-to-br from-purple-50 to-blue-50 p-4 shadow-lg transition-all duration-200 hover:shadow-xl">
-                            {/* Content */}
-                            <div className="mb-4 grid grid-cols-1 gap-3 text-xs">
-                              {/* Left Column */}
-                              <div className="space-y-2">
-                                {examiner.clinic && (
-                                  <div className="flex items-start space-x-1">
-                                    <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#000093]" />
-                                    <p className="line-clamp-1 text-xs font-medium text-gray-900">
-                                      {examiner.clinic}
-                                    </p>
-                                  </div>
-                                )}
-                                {examiner.specialty && (
-                                  <div className="flex items-start space-x-1">
-                                    <Star className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#000093]" />
-                                    <p className="text-xs font-medium text-gray-900">
-                                      {examiner.specialty}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Right Column - Services */}
-                              <div className="space-y-2">
-                                <div className="flex items-start space-x-1">
-                                  <Languages className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#000093]" />
-                                  <p className="text-xs font-medium text-gray-900">
-                                    Interpreter:{' '}
-                                    {examiner.interpreters && examiner.interpreters.length > 0
-                                      ? examiner.interpreters[0].companyName
-                                      : 'Not Required'}
-                                  </p>
-                                </div>
-                                <div className="flex items-start space-x-1">
-                                  <Car className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#000093]" />
-                                  <p className="text-xs font-medium text-gray-900">
-                                    Transport:{' '}
-                                    {examiner.transporters && examiner.transporters.length > 0
-                                      ? examiner.transporters[0].companyName
-                                      : 'Not Required'}
-                                  </p>
-                                </div>
-                                <div className="flex items-start space-x-1">
-                                  <UserPlus className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#000093]" />
-                                  <p className="text-xs font-medium text-gray-900">
-                                    Chaperone:{' '}
-                                    {examiner.chaperones && examiner.chaperones.length > 0
-                                      ? `${examiner.chaperones[0].firstName} ${examiner.chaperones[0].lastName}`
-                                      : 'Not Required'}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Select Button */}
-                            <div className="flex justify-center">
-                              <button
-                                onClick={() => handleSlotSelection(examiner, matchingSlot, day)}
-                                className="flex cursor-pointer items-center justify-center space-x-1 rounded-full bg-[#000080] px-4 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-[#000093]"
-                              >
-                                <span>Select</span>
-                                <ArrowRight className="h-3 w-3" />
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center text-xs text-gray-400">
-                            Not Available
-                          </div>
-                        )}
-                      </td>
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        disabled={!canGoNext}
+                        className={`flex items-center justify-center rounded-lg px-3 py-2 transition-all ${
+                          canGoNext
+                            ? 'bg-[#000093] text-white shadow-md hover:bg-[#000080] hover:shadow-lg'
+                            : 'cursor-not-allowed bg-gray-200 text-gray-400'
+                        }`}
+                        aria-label="Next dates"
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </th>
+                </tr>
+                <tr>
+                  <th className="sticky left-0 z-20 bg-white px-2 py-3 text-left text-sm font-semibold text-gray-700 shadow-sm">
+                    Time
+                  </th>
+                  {daysToShow.map((day, dayIndex) => {
+                    const isPast = isPastDate(day.date);
+                    return (
+                      <th
+                        key={dayIndex}
+                        onClick={() => !isPast && handleDateClick(dayIndex)}
+                        className={`px-2 py-3 text-center text-xs font-semibold transition-colors sm:text-sm ${
+                          isPast
+                            ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                            : selectedDateIndex === dayIndex
+                              ? 'cursor-pointer bg-[#000093] text-white'
+                              : 'cursor-pointer text-gray-700 hover:bg-gray-100'
+                        }`}
+                        title={isPast ? 'This date has passed' : undefined}
+                      >
+                        {formatSqlDate(day.date)}
+                        {isPast && <span className="ml-1 text-[10px]">(Past)</span>}
+                      </th>
                     );
                   })}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {timeSlotsArray.map((timeSlot, timeIndex) => (
+                  <tr key={timeIndex} className="border-b border-gray-200">
+                    <td
+                      onClick={() => handleTimeClick(timeSlot)}
+                      className={`sticky left-0 z-10 cursor-pointer px-2 py-3 text-sm font-medium shadow-sm transition-colors ${
+                        selectedTimeSlot && selectedTimeSlot.start.getHours() === timeSlot.hour
+                          ? 'bg-[#000093] text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {formatTime(timeSlot.start)}
+                    </td>
+                    {daysToShow.map((day, dayIndex) => {
+                      const result = getExaminersForSlot(day, timeSlot.hour);
+                      const examiners = result?.examiners;
+                      const matchingSlot = result?.slot;
+                      const isPast = isPastDate(day.date);
+
+                      return (
+                        <td
+                          key={dayIndex}
+                          onClick={() => {
+                            if (!isPast) {
+                              handleDateClick(dayIndex);
+                              handleTimeClick(timeSlot);
+                            }
+                          }}
+                          className={`p-2.5 ${
+                            isPast
+                              ? 'cursor-not-allowed bg-gray-50 opacity-60'
+                              : selectedDateIndex === dayIndex &&
+                                  selectedTimeSlot &&
+                                  selectedTimeSlot.start.getHours() === timeSlot.hour
+                                ? 'cursor-pointer ring-2 ring-[#000093] ring-offset-2'
+                                : 'cursor-pointer'
+                          }`}
+                        >
+                          {examiners && examiners.length > 0 && matchingSlot ? (
+                            <div className="space-y-2">
+                              {examiners.map(examiner => {
+                                const isPreviousBooking = isExistingBookingSlot(
+                                  day,
+                                  timeSlot,
+                                  examiner.examinerId,
+                                  existingBooking
+                                );
+                                return (
+                                  <div
+                                    key={examiner.examinerId}
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      if (!isPast) {
+                                        handleSlotSelection(examiner, matchingSlot, day);
+                                      }
+                                    }}
+                                    className={`relative overflow-visible rounded-lg border-2 p-3 shadow-md transition-all duration-200 ${
+                                      isPast
+                                        ? 'cursor-not-allowed opacity-60'
+                                        : 'cursor-pointer hover:shadow-lg'
+                                    } ${
+                                      isPreviousBooking
+                                        ? 'border-blue-400 bg-gradient-to-br from-blue-50 to-sky-50 ring-2 ring-blue-300 ring-offset-1'
+                                        : 'border-purple-100 bg-gradient-to-br from-purple-50 to-blue-50'
+                                    }`}
+                                  >
+                                    {isPreviousBooking && (
+                                      <div className="absolute -top-2 -right-2 z-10">
+                                        <span className="inline-flex items-center rounded-full bg-blue-500 px-2 py-0.5 text-[9px] font-semibold text-white shadow-md">
+                                          Previous
+                                        </span>
+                                      </div>
+                                    )}
+                                    <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
+                                      {examiner.clinic && (
+                                        <div className="flex max-w-[280px] min-w-0 items-center space-x-1">
+                                          <MapPin className="h-3 w-3 flex-shrink-0 text-[#000093]" />
+                                          <p className="text-[10px] font-medium break-words text-gray-900">
+                                            {examiner.clinic}
+                                          </p>
+                                        </div>
+                                      )}
+                                      {examiner.specialty && (
+                                        <div className="flex flex-shrink-0 items-center space-x-1">
+                                          <Star className="h-3 w-3 flex-shrink-0 text-[#000093]" />
+                                          <p className="text-[10px] font-medium whitespace-nowrap text-gray-900">
+                                            {examiner.specialty}
+                                          </p>
+                                        </div>
+                                      )}
+                                      {/* Only show interpreter if required by examination */}
+                                      {availabilityData?.serviceRequirements
+                                        ?.interpreterRequired && (
+                                        <div className="flex items-center space-x-1">
+                                          <Languages className="h-3 w-3 flex-shrink-0 text-[#000093]" />
+                                          <p className="text-[10px] font-medium text-gray-900">
+                                            Interpreter:{' '}
+                                            {examiner.interpreters &&
+                                            examiner.interpreters.length > 0
+                                              ? examiner.interpreters[0].companyName
+                                              : 'Not Available'}
+                                          </p>
+                                        </div>
+                                      )}
+                                      {/* Only show transport if required by examination */}
+                                      {availabilityData?.serviceRequirements?.transportRequired && (
+                                        <div className="flex items-center space-x-1">
+                                          <Car className="h-3 w-3 flex-shrink-0 text-[#000093]" />
+                                          <p className="text-[10px] font-medium text-gray-900">
+                                            Transport:{' '}
+                                            {examiner.transporters &&
+                                            examiner.transporters.length > 0
+                                              ? examiner.transporters[0].companyName
+                                              : 'Not Available'}
+                                          </p>
+                                        </div>
+                                      )}
+                                      {/* Only show chaperone if support_person is true */}
+                                      {availabilityData?.serviceRequirements?.chaperoneRequired && (
+                                        <div className="flex items-center space-x-1">
+                                          <UserPlus className="h-3 w-3 flex-shrink-0 text-[#000093]" />
+                                          <p className="text-[10px] font-medium text-gray-900">
+                                            Chaperone:{' '}
+                                            {examiner.chaperones && examiner.chaperones.length > 0
+                                              ? `${examiner.chaperones[0].firstName} ${examiner.chaperones[0].lastName}`
+                                              : 'Not Available'}
+                                          </p>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex justify-center">
+                                      <button
+                                        onClick={e => {
+                                          e.stopPropagation();
+                                          if (!isPast) {
+                                            handleSlotSelection(examiner, matchingSlot, day);
+                                          }
+                                        }}
+                                        disabled={isPast}
+                                        className={`flex items-center justify-center space-x-1 rounded-full px-3 py-1 text-[10px] font-medium transition-colors duration-200 ${
+                                          isPast
+                                            ? 'cursor-not-allowed bg-gray-400 text-gray-200'
+                                            : 'cursor-pointer bg-[#000080] text-white hover:bg-[#000093]'
+                                        }`}
+                                      >
+                                        <span>{isPast ? 'Past Date' : 'Select'}</span>
+                                        {!isPast && <ArrowRight className="h-2.5 w-2.5" />}
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div className="rounded-lg border border-gray-200 bg-gray-50 p-2 text-center text-[10px] text-gray-400">
+                              Not Available
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <div className="flex items-center justify-center py-12">
