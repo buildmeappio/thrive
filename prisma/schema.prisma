@@ -650,6 +650,7 @@ model ExaminerProfile {
   feeStructure           ExaminerFeeStructure[] @relation("ExaminerFeeStructure")
   examinerLanguages      ExaminerLanguage[]
   claimantBookings       ClaimantBooking[]      @relation("ClaimantBookingExaminer")
+  contracts              Contract[]             @relation("ExaminerContracts")
   // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'EXAMINER' } })
 
   @@map("examiner_profiles")
@@ -880,4 +881,140 @@ model Transporter {
   // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'TRANSPORTER' } })
 
   @@map("transporters")
+}
+
+model DocumentTemplate {
+  id               String   @id @default(uuid()) @db.Uuid
+  slug             String   @unique @map("slug") @db.VarChar(255)
+  displayName      String   @map("display_name") @db.VarChar(255)
+  category         String   @map("category") @db.VarChar(100)
+  currentVersionId String?  @unique @map("current_version_id") @db.Uuid
+  isActive         Boolean  @default(true) @map("is_active")
+  createdBy        String   @map("created_by") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  versions       TemplateVersion[] @relation("TemplateVersions")
+  currentVersion TemplateVersion?  @relation("CurrentTemplateVersion", fields: [currentVersionId], references: [id])
+  contracts      Contract[]        @relation("TemplateContracts")
+
+  @@map("document_templates")
+}
+
+// Template Versions - Immutable once published
+enum TemplateVersionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model TemplateVersion {
+  id              String                @id @default(uuid()) @db.Uuid
+  templateId      String                @map("template_id") @db.Uuid
+  version         Int                   @map("version")
+  status          TemplateVersionStatus @default(DRAFT) @map("status")
+  locale          String                @default("en-CA") @map("locale") @db.VarChar(10)
+  bodyHtml        String                @map("body_html") @db.Text
+  variablesSchema Json                  @map("variables_schema")
+  defaultData     Json                  @default("{}") @map("default_data")
+  changeNotes     String?               @map("change_notes") @db.Text
+  previewPdfS3Key String?               @map("preview_pdf_s3_key") @db.VarChar(500)
+  checksumSha256  String                @map("checksum_sha256") @db.VarChar(64)
+  createdBy       String                @map("created_by") @db.Uuid
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz()
+
+  template        DocumentTemplate  @relation("TemplateVersions", fields: [templateId], references: [id], onDelete: Cascade)
+  contracts       Contract[]        @relation("VersionContracts")
+  currentTemplate DocumentTemplate? @relation("CurrentTemplateVersion")
+
+  @@unique([templateId, version])
+  @@index([templateId])
+  @@map("template_versions")
+}
+
+// Contract Instances - Immutable after 'sent'
+enum ContractStatus {
+  DRAFT
+  SENT
+  VIEWED
+  SIGNED
+}
+
+model Contract {
+  id                   String         @id @default(uuid()) @db.Uuid
+  examinerProfileId    String         @map("examiner_profile_id") @db.Uuid
+  templateId           String         @map("template_id") @db.Uuid
+  templateVersionId    String         @map("template_version_id") @db.Uuid
+  status               ContractStatus @default(DRAFT) @map("status")
+  data                 Json           @map("data")
+  dataHash             String         @map("data_hash") @db.VarChar(64)
+  unsignedPdfS3Key     String?        @map("unsigned_pdf_s3_key") @db.VarChar(500)
+  unsignedPdfSha256    String?        @map("unsigned_pdf_sha256") @db.VarChar(64)
+  signedPdfS3Key       String?        @map("signed_pdf_s3_key") @db.VarChar(500)
+  signedPdfSha256      String?        @map("signed_pdf_sha256") @db.VarChar(64)
+  sentAt               DateTime?      @map("sent_at") @db.Timestamptz()
+  viewedAt             DateTime?      @map("viewed_at") @db.Timestamptz()
+  signedAt             DateTime?      @map("signed_at") @db.Timestamptz()
+  declinedAt           DateTime?      @map("declined_at") @db.Timestamptz()
+  voidReason           String?        @map("void_reason") @db.Text
+  accessToken          String?        @map("access_token") @db.VarChar(255)
+  accessTokenExpiresAt DateTime?      @map("access_token_expires_at") @db.Timestamptz()
+  createdBy            String         @map("created_by") @db.Uuid
+  createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt            DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
+
+  examinerProfile ExaminerProfile  @relation("ExaminerContracts", fields: [examinerProfileId], references: [id], onDelete: Cascade)
+  template        DocumentTemplate @relation("TemplateContracts", fields: [templateId], references: [id])
+  templateVersion TemplateVersion  @relation("VersionContracts", fields: [templateVersionId], references: [id])
+  signatures      Signature[]      @relation("ContractSignatures")
+  events          ContractEvent[]  @relation("ContractEvents")
+
+  @@index([examinerProfileId])
+  @@index([status])
+  @@index([templateId])
+  @@map("contracts")
+}
+
+// Signatures - Per signer with evidence
+enum SignatureMethod {
+  TYPED
+  DRAWN
+}
+
+model Signature {
+  id                String          @id @default(uuid()) @db.Uuid
+  contractId        String          @map("contract_id") @db.Uuid
+  signerRole        String          @map("signer_role") @db.VarChar(50)
+  signerId          String?         @map("signer_id") @db.Uuid
+  signerName        String          @map("signer_name") @db.VarChar(255)
+  signerEmail       String?         @map("signer_email") @db.VarChar(255)
+  method            SignatureMethod @map("method")
+  consent           Boolean         @default(true) @map("consent")
+  signaturePngS3Key String?         @map("signature_png_s3_key") @db.VarChar(500)
+  ipAddress         String?         @map("ip_address") @db.VarChar(45)
+  userAgent         String?         @map("user_agent") @db.Text
+  evidence          Json            @default("{}") @map("evidence")
+  signedAt          DateTime        @default(now()) @map("signed_at") @db.Timestamptz()
+
+  contract Contract @relation("ContractSignatures", fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@map("signatures")
+}
+
+// Contract Events - Full audit trail
+model ContractEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  contractId String   @map("contract_id") @db.Uuid
+  eventType  String   @map("event_type") @db.VarChar(50)
+  actorRole  String?  @map("actor_role") @db.VarChar(50)
+  actorId    String?  @map("actor_id") @db.Uuid
+  at         DateTime @default(now()) @map("at") @db.Timestamptz()
+  meta       Json     @default("{}") @map("meta")
+
+  contract Contract @relation("ContractEvents", fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@index([eventType])
+  @@map("contract_events")
 }
