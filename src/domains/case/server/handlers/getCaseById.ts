@@ -5,7 +5,7 @@ import { generatePresignedUrl } from "@/lib/s3";
 const getCaseById = async (id: string, userId: string) => {
   const casee = await caseService.getCaseById(id);
   await caseService.doesCaseBelongToUser(casee, userId);
-  const caseDetails = CaseDto.toCaseDetailDto(casee);
+  const caseDetails = await CaseDto.toCaseDetailDto(casee);
 
   // Generate presigned URLs for each document
   if (caseDetails.case.documents && caseDetails.case.documents.length > 0) {
