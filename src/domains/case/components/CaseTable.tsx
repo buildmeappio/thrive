@@ -171,7 +171,9 @@ export default function CaseTable({ data, statuses, types, urgencies = ["HIGH", 
           <TableFooter>
             <TableRow>
               <TableCell colSpan={columns.length} className="p-0">
-                <Pagination table={table} />
+                <div className="px-3 sm:px-6 overflow-x-hidden">
+                  <Pagination table={table} />
+                </div>
               </TableCell>
             </TableRow>
           </TableFooter>

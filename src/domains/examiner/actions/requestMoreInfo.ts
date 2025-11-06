@@ -1,12 +1,19 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import examinerService from "../server/examiner.service";
 import { signExaminerResubmitToken } from "@/lib/jwt";
 import emailService from "@/services/email.service";
-import { ExaminerProfile, Account, User, Documents, ExaminerLanguage, Language } from "@prisma/client";
+import {
+  ExaminerProfile,
+  Account,
+  User,
+  Documents,
+  ExaminerLanguage,
+  Language,
+} from "@prisma/client";
+import { HttpError } from "@/utils/httpError";
 
 interface ExaminerWithRelations extends ExaminerProfile {
   account: Account & {
@@ -19,16 +26,26 @@ interface ExaminerWithRelations extends ExaminerProfile {
   examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
 }
 
-const requestMoreInfo = async (examinerId: string, message: string, documentsRequired: boolean = false) => {
+const requestMoreInfo = async (
+  examinerId: string,
+  message: string,
+  documentsRequired: boolean = false
+) => {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    throw HttpError.unauthorized(
+      "You must be logged in to request more information from an examiner"
+    );
+  }
 
   if (!message?.trim()) {
     throw new Error("Request message is required");
   }
 
   // Update examiner status to INFO_REQUESTED
-  const examiner = await examinerService.requestMoreInfoFromExaminer(examinerId);
+  const examiner = await examinerService.requestMoreInfoFromExaminer(
+    examinerId
+  );
 
   // Send request for more info email
   try {
@@ -46,7 +63,11 @@ const requestMoreInfo = async (examinerId: string, message: string, documentsReq
   return examiner;
 };
 
-async function sendRequestMoreInfoEmail(examiner: ExaminerWithRelations, requestMessage: string, documentsRequired: boolean = false) {
+async function sendRequestMoreInfoEmail(
+  examiner: ExaminerWithRelations,
+  requestMessage: string,
+  documentsRequired: boolean = false
+) {
   const userEmail = examiner.account?.user?.email;
   const firstName = examiner.account?.user?.firstName;
   const lastName = examiner.account?.user?.lastName;
@@ -54,7 +75,14 @@ async function sendRequestMoreInfoEmail(examiner: ExaminerWithRelations, request
   const accountId = examiner.accountId;
   const examinerId = examiner.id;
 
-  if (!userEmail || !firstName || !lastName || !userId || !accountId || !examinerId) {
+  if (
+    !userEmail ||
+    !firstName ||
+    !lastName ||
+    !userId ||
+    !accountId ||
+    !examinerId
+  ) {
     console.error("Missing required user information for request email");
     throw new Error("Missing user information");
   }
@@ -68,7 +96,7 @@ async function sendRequestMoreInfoEmail(examiner: ExaminerWithRelations, request
   });
 
   const resubmitLink = `${process.env.NEXT_PUBLIC_APP_URL}/examiner/register?token=${token}`;
-  
+
   const result = await emailService.sendEmail(
     "Thrive Medical Examiner Application - Additional Information Required",
     "examiner-request-more-info.html",
@@ -78,7 +106,10 @@ async function sendRequestMoreInfoEmail(examiner: ExaminerWithRelations, request
       requestMessage,
       resubmitLink,
       documentsRequired,
-      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
+      CDN_URL:
+        process.env.NEXT_PUBLIC_CDN_URL ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        "",
     },
     userEmail
   );
@@ -89,4 +120,3 @@ async function sendRequestMoreInfoEmail(examiner: ExaminerWithRelations, request
 }
 
 export default requestMoreInfo;
-

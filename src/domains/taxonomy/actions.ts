@@ -60,3 +60,14 @@ export const getExaminationTypes = async () => {
   const result = await taxonomyHandlers.getExaminationTypes();
   return result;
 };
+
+export const deleteTaxonomy = async (type: TaxonomyType, id: string) => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+
+  const result = await taxonomyHandlers.deleteTaxonomy(type, id);
+  return result;
+};

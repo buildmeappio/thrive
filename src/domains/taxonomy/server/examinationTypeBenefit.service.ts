@@ -99,7 +99,7 @@ export const getExaminationTypeBenefits = async (): Promise<ExaminationTypeBenef
       benefit: benefit.benefit,
       createdAt: benefit.createdAt.toISOString(),
     }));
-  } catch (error) {
+  } catch {
     throw HttpError.internalServerError("Internal server error");
   }
 };

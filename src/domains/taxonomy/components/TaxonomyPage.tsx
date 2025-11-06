@@ -10,7 +10,17 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { createTaxonomy, updateTaxonomy } from "../actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { createTaxonomy, updateTaxonomy, deleteTaxonomy } from "../actions";
 import {
   TaxonomyData,
   CreateTaxonomyInput,
@@ -20,6 +30,8 @@ import {
 import { TaxonomyConfigs } from "../config/taxonomyConfig";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type TaxonomyPageProps = {
   type: TaxonomyType;
@@ -40,6 +52,11 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
     TaxonomyData | undefined
   >(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [taxonomyToDelete, setTaxonomyToDelete] = useState<
+    TaxonomyData | undefined
+  >(undefined);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleCreate = () => {
     setDialogMode("create");
@@ -100,24 +117,65 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
     }
   };
 
+  const handleDelete = (taxonomy: TaxonomyData) => {
+    setTaxonomyToDelete(taxonomy);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!taxonomyToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await deleteTaxonomy(type, taxonomyToDelete.id);
+      if (response.success) {
+        toast.success(`${config.singularName} deleted successfully`);
+        setDeleteDialogOpen(false);
+        setTaxonomyToDelete(undefined);
+        router.refresh();
+      } else {
+        toast.error(response.error || `Failed to delete ${config.singularName.toLowerCase()}`);
+      }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : `Failed to delete ${config.singularName.toLowerCase()}`;
+      toast.error(errorMessage);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 taxonomy-page">
+      <div className="flex items-center justify-between dashboard-zoom-mobile">
         <div>
           <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
             {config.name}
           </h1>
         </div>
+        {/* Add Button - Visible on Mobile, Hidden on Desktop (will show in table section) */}
+        <Button
+          onClick={handleCreate}
+          className="flex sm:hidden items-center justify-center gap-1.5 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white rounded-full px-3 py-1.5 hover:opacity-90 transition-opacity font-semibold text-xs"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span className="whitespace-nowrap">Add</span>
+        </Button>
       </div>
 
-      <TaxonomyTable
-        taxonomyList={initialData}
-        displayFields={config.displayFields}
-        searchFields={config.searchFields}
-        onEdit={handleEdit}
-        onCreate={handleCreate}
-        singularName={config.singularName}
-      />
+      <div className="dashboard-zoom-mobile">
+        <TaxonomyTable
+          taxonomyList={initialData}
+          displayFields={config.displayFields}
+          searchFields={config.searchFields}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onCreate={handleCreate}
+          singularName={config.singularName}
+        />
+      </div>
 
       <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
         <DialogContent className="max-w-2xl">
@@ -144,6 +202,27 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
           />
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {config.singularName}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this {config.singularName.toLowerCase()}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

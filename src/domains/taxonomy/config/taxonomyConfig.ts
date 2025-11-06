@@ -117,10 +117,17 @@ export const TaxonomyConfigs: Record<TaxonomyType, TaxonomyConfig> = {
     searchFields: ['name', 'shortForm', 'description'],
   },
   examinationTypeBenefit: {
-    name: 'Examination Type Benefits',
-    singularName: 'Examination Type Benefit',
+    name: 'Benefits',
+    singularName: 'Benefit',
     tableName: 'examinationTypeBenefit',
     fields: [
+      {
+        name: 'benefit',
+        label: 'Benefit Name',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter benefit name',
+      },
       {
         name: 'examinationTypeId',
         label: 'Examination Type',
@@ -129,15 +136,8 @@ export const TaxonomyConfigs: Record<TaxonomyType, TaxonomyConfig> = {
         placeholder: 'Select examination type',
         options: [], // Will be populated dynamically
       },
-      {
-        name: 'benefit',
-        label: 'Benefit',
-        type: 'textarea',
-        required: true,
-        placeholder: 'Enter benefit description',
-      },
     ],
-    displayFields: ['examinationTypeName', 'benefit'],
+    displayFields: ['benefit', 'examinationTypeName'],
     searchFields: ['benefit'],
   },
   language: {

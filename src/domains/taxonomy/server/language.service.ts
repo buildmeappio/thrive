@@ -93,7 +93,7 @@ export const getLanguages = async (): Promise<LanguageData[]> => {
       name: language.name,
       createdAt: language.createdAt.toISOString(),
     }));
-  } catch (error) {
+  } catch {
     throw HttpError.internalServerError("Internal server error");
   }
 };

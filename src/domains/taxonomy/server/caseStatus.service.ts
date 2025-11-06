@@ -96,7 +96,7 @@ export const getCaseStatuses = async (): Promise<CaseStatusData[]> => {
       description: caseStatus.description,
       createdAt: caseStatus.createdAt.toISOString(),
     }));
-  } catch (error) {
+  } catch {
     throw HttpError.internalServerError("Internal server error");
   }
 };

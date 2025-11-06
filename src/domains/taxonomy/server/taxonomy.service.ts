@@ -36,10 +36,17 @@ export const createTaxonomy = async (type: TaxonomyType, data: CreateTaxonomyInp
       }
     }
 
+    // Special handling for examinationTypeBenefit to only include valid fields
+    let createData: any = { ...data };
+    if (type === 'examinationTypeBenefit') {
+      createData = {
+        examinationTypeId: data.examinationTypeId,
+        benefit: data.benefit,
+      };
+    }
+
     const result = await model.create({
-      data: {
-        ...data,
-      },
+      data: createData,
     });
 
     return result;
@@ -47,7 +54,8 @@ export const createTaxonomy = async (type: TaxonomyType, data: CreateTaxonomyInp
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.internalServerError("Intwernal server error");
+    console.error(`Error creating ${type}:`, error);
+    throw HttpError.internalServerError("Internal server error");
   }
 };
 
@@ -82,9 +90,17 @@ export const updateTaxonomy = async (type: TaxonomyType, id: string, data: Updat
       }
     }
 
+    // Special handling for examinationTypeBenefit to only include valid fields
+    let updateData: any = { ...data };
+    if (type === 'examinationTypeBenefit') {
+      updateData = {};
+      if (data.examinationTypeId !== undefined) updateData.examinationTypeId = data.examinationTypeId;
+      if (data.benefit !== undefined) updateData.benefit = data.benefit;
+    }
+
     const result = await model.update({
       where: { id },
-      data,
+      data: updateData,
     });
 
     return result;
@@ -92,6 +108,7 @@ export const updateTaxonomy = async (type: TaxonomyType, id: string, data: Updat
     if (error instanceof HttpError) {
       throw error;
     }
+    console.error(`Error updating ${type}:`, error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -142,7 +159,7 @@ export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]>
       }, {}),
       createdAt: item.createdAt,
     }));
-  } catch (error) {
+  } catch {
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -197,7 +214,41 @@ export const getExaminationTypes = async () => {
       label: type.name,
       value: type.id,
     }));
+  } catch {
+    throw HttpError.internalServerError("Internal server error");
+  }
+};
+
+export const deleteTaxonomy = async (type: TaxonomyType, id: string) => {
+  try {
+    const model = getPrismaModel(type);
+
+    // Check if record exists
+    const existing = await model.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
+
+    if (!existing) {
+      throw HttpError.notFound(`${type} not found`);
+    }
+
+    // Soft delete - set deletedAt timestamp
+    const result = await model.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+
+    return result;
   } catch (error) {
+    if (error instanceof HttpError) {
+      throw error;
+    }
+    console.error(`Error deleting ${type}:`, error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -208,6 +259,7 @@ const taxonomyService = {
   getTaxonomies,
   getTaxonomyById,
   getExaminationTypes,
+  deleteTaxonomy,
 };
 
 export default taxonomyService;

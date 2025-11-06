@@ -11,6 +11,7 @@ export type CaseDetailDtoType = {
     additionalNotes: string,
     createdAt: Date,
     assignedAt: Date,
+    approvedAt: Date | null,
     status: {
         id: string,
         name: string,

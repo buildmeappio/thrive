@@ -192,7 +192,7 @@ export default function OrganizationTableWrapper({
       </div>
       
       {/* Pagination */}
-      <div className="px-6 mt-4">
+      <div className="px-3 sm:px-6 mt-4 overflow-x-hidden">
         <Pagination table={table} />
       </div>
     </>

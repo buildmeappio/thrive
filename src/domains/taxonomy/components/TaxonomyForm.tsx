@@ -6,9 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { CreateTaxonomyInput, UpdateTaxonomyInput, TaxonomyType, TaxonomyData } from '../types/Taxonomy';
 import { TaxonomyConfig, TaxonomyField } from '../types/Taxonomy';
-import LabeledSelect from '@/components/ui/LabeledSelect';
 
 type TaxonomyFormData = Record<string, string | null | undefined>;
 
@@ -24,7 +30,7 @@ type TaxonomyFormProps = {
 
 const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
   mode,
-  type,
+  type: _type,
   config,
   taxonomy,
   onSubmit,
@@ -94,13 +100,25 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
         const options = field.name === 'examinationTypeId' ? examinationTypeOptions : field.options || [];
         return (
           <div key={field.name} className="space-y-2">
-            <LabeledSelect
-              label={`${field.label}${field.required ? ' *' : ''}`}
-              options={options}
+            <Label htmlFor={field.name}>
+              {field.label} {field.required && <span className="text-red-500">*</span>}
+            </Label>
+            <Select
               value={String(watchedValue || '')}
-              onChange={value => setValue(field.name, value)}
-              className={isSubmitting ? 'opacity-50 pointer-events-none' : ''}
-            />
+              onValueChange={value => setValue(field.name, value)}
+              disabled={isSubmitting}
+            >
+              <SelectTrigger className="h-10 rounded-full border-[#E5E7EB] focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent">
+                <SelectValue placeholder={field.placeholder} />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px] select-scrollbar">
+                {options.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {error && <p className="text-sm text-red-500">{error.message as string}</p>}
           </div>
         );

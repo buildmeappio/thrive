@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
+import { capitalizeWords } from "@/utils/text";
 import {
   Table,
   TableBody,
@@ -97,7 +98,7 @@ export default function NewExaminers({
                   className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
                 >
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#1A1A1A] font-poppins py-5 sm:py-3 min-w-[140px] sm:min-w-0">
-                    <span className="block">{r.name}</span>
+                    <span className="block">{capitalizeWords(r.name)}</span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[180px] sm:min-w-0">
                     <span className="block">{r.email}</span>

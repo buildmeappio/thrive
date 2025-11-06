@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { convertTo12HourFormat, formatDate } from "@/utils/date";
 import CaseDetailContent from "@/app/(private)/cases/[id]/CaseDetailContent";
+import { capitalizeWords } from "@/utils/text";
 import RequestMoreInfoModal from "@/domains/case/components/RequestMoreInfoModal";
 import RejectModal from "@/domains/case/components/RejectModal";
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
@@ -45,7 +46,7 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
   // Determine the current case status from database
   const getCurrentStatus = (): "pending" | "reviewed" | "info_needed" | "rejected" => {
     const statusName = caseDetails.status.name.toLowerCase();
-    if (statusName.includes("waiting") || statusName.includes("scheduled")) {
+    if (statusName.includes("ready") || statusName.includes("appointment")) {
       return "reviewed";
     } else if (statusName.includes("information") || statusName.includes("info")) {
       return "info_needed";
@@ -56,6 +57,20 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
   };
   
   const [caseStatus, setCaseStatus] = useState<"pending" | "reviewed" | "info_needed" | "rejected">(getCurrentStatus());
+
+  // Sync caseStatus with caseDetails when props change (e.g., after refresh)
+  useEffect(() => {
+    const statusName = caseDetails.status.name.toLowerCase();
+    let newStatus: "pending" | "reviewed" | "info_needed" | "rejected" = "pending";
+    if (statusName.includes("ready") || statusName.includes("appointment")) {
+      newStatus = "reviewed";
+    } else if (statusName.includes("information") || statusName.includes("info")) {
+      newStatus = "info_needed";
+    } else if (statusName.includes("reject")) {
+      newStatus = "rejected";
+    }
+    setCaseStatus(newStatus);
+  }, [caseDetails.status.name]);
 
   const handleCompleteReview = async () => {
     setLoadingAction("review");
@@ -116,7 +131,7 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
             <span className="font-poppins text-lg sm:text-2xl lg:text-3xl font-bold text-black">{caseDetails.caseNumber}</span>
           </Link>
         </div>
-        <div className="bg-blue-100 text-blue-800 px-3 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-full text-sm sm:text-base lg:text-lg font-semibold flex-shrink-0">
+        <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold flex-shrink-0">
           {formatText(caseDetails.status.name)}
         </div>
       </div>
@@ -127,7 +142,7 @@ export default function CaseDetailPageClient({ caseDetails }: CaseDetailPageClie
           {/* Created by section */}
           <div className="flex items-center gap-2 sm:gap-1">
             <span>Created by</span>
-            <span className="font-medium text-gray-900">{safeValue(caseDetails.case.organization?.name || "Unknown")}</span>
+            <span className="font-medium text-gray-900">{capitalizeWords(safeValue(caseDetails.case.organization?.name || "Unknown"))}</span>
           </div>
           
           {/* Created at section */}

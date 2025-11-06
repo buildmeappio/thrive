@@ -2,6 +2,12 @@ import { DashboardShell } from '@/layouts/dashboard';
 import EditChaperoneClient from './EditChaperoneClient';
 import { getChaperoneById } from '@/domains/services/actions';
 import { notFound } from 'next/navigation';
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: 'Edit Chaperone | Dashboard',
+  description: 'Edit chaperone details in your dashboard.',
+};
 
 type PageProps = {
   params: { id: string };

@@ -14,9 +14,11 @@ import {
   Menu,
   X,
   ChevronDown,
-  Settings,
   BookText,
+  Languages,
+  Truck,
   File,
+  ThumbsUp,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useSidebar } from "@/providers/Sidebar";
@@ -56,28 +58,55 @@ export const routes: Route[] = [
     index: 3,
   },
   {
+    icon: Languages,
+    label: "Interpreters",
+    href: "/interpreter",
+    index: 4,
+  },
+  {
+    icon: Truck,
+    label: "Transporters",
+    href: "/transporter",
+    index: 5,
+  },
+  {
     icon: File,
     label: "Chaperone",
     href: "/dashboard/chaperones",
-    index: 4,
+    index: 6,
+  },
+  {
+    icon: ThumbsUp,
+    label: "Benefits",
+    href: "/dashboard/benefits",
+    index: 7,
   },
   {
     icon: BookText,
     label: "Taxonomies",
-    index: 5,
+    index: 8,
     subRoutes: [
-      { label: "Roles", href: "/dashboard/taxonomy/role" },
+      // { label: "Roles", href: "/dashboard/taxonomy/role" },
       { label: "Case Types", href: "/dashboard/taxonomy/caseType" },
       { label: "Case Statuses", href: "/dashboard/taxonomy/caseStatus" },
       { label: "Claim Types", href: "/dashboard/taxonomy/claimType" },
       { label: "Departments", href: "/dashboard/taxonomy/department" },
-      { label: "Examination Types", href: "/dashboard/taxonomy/examinationType" },
-      { label: "Examination Type Benefits", href: "/dashboard/taxonomy/examinationTypeBenefit" },
+      {
+        label: "Examination Types",
+        href: "/dashboard/taxonomy/examinationType",
+      },
+      // {
+      //   label: "Benefits",
+      //   href: "/dashboard/taxonomy/examinationTypeBenefit",
+      // },
       { label: "Languages", href: "/dashboard/taxonomy/language" },
-      { label: "Organization Types", href: "/dashboard/taxonomy/organizationType" },
+      {
+        label: "Organization Types",
+        href: "/dashboard/taxonomy/organizationType",
+      },
     ],
   },
-  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 6 },
+  { icon: LifeBuoy, label: "Support", href: "/support", index: 9 },
 ];
 
 const Sidebar = () => {
@@ -243,10 +272,10 @@ const Sidebar = () => {
                   : false;
                 const isSubActive =
                   hasSubRoutes &&
-                  item.subRoutes!.some(
-                    (sub) =>
-                      pathname === sub.href || pathname.startsWith(sub.href)
-                  );
+                  item.subRoutes!.some((sub) => {
+                    // Exact match or starts with the href followed by a slash
+                    return pathname === sub.href || pathname.startsWith(sub.href + '/');
+                  });
                 const active = isSelected || isActive || isSubActive;
                 const Icon = item.icon;
 
@@ -320,12 +349,12 @@ const Sidebar = () => {
                           {!isCollapsed && <span>{item.label}</span>}
                         </div>
                         {!isCollapsed && (
-                          <ChevronDown 
-                            size={16} 
+                          <ChevronDown
+                            size={16}
                             className={cn(
                               "mr-2 transition-transform duration-200",
                               isExpanded && "rotate-180"
-                            )} 
+                            )}
                           />
                         )}
                       </button>
@@ -335,7 +364,9 @@ const Sidebar = () => {
                     {hasSubRoutes && isExpanded && !isCollapsed && (
                       <div className="ml-10 space-y-1 mb-2 animate-in">
                         {item.subRoutes!.map((sub) => {
-                          const isSubActive = pathname === sub.href || pathname.startsWith(sub.href);
+                          const isSubActive =
+                            pathname === sub.href ||
+                            pathname.startsWith(sub.href + '/');
                           return (
                             <Link
                               key={sub.href}
@@ -354,16 +385,20 @@ const Sidebar = () => {
                               {isSubActive && (
                                 <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-[#00A8FF] to-[#01F4C8] rounded-r-full" />
                               )}
-                              <span className={cn(
-                                "flex items-center gap-2",
-                                isSubActive && "ml-3"
-                              )}>
-                                <span className={cn(
-                                  "w-1.5 h-1.5 rounded-full transition-colors",
-                                  isSubActive 
-                                    ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]" 
-                                    : "bg-[#D1D5DB] group-hover:bg-[#000093]"
-                                )} />
+                              <span
+                                className={cn(
+                                  "flex items-center gap-2",
+                                  isSubActive && "ml-3"
+                                )}
+                              >
+                                <span
+                                  className={cn(
+                                    "w-1.5 h-1.5 rounded-full transition-colors",
+                                    isSubActive
+                                      ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]"
+                                      : "bg-[#D1D5DB] group-hover:bg-[#000093]"
+                                  )}
+                                />
                                 {sub.label}
                               </span>
                             </Link>
