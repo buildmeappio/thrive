@@ -197,22 +197,41 @@ const getExaminersQualifiedForExamType = async (examTypeId: string) => {
  * Supports both formats:
  * - "09:00" (24-hour format)
  * - "9:00 AM" or "5:00 PM" (12-hour format)
+ *
+ * IMPORTANT: Time strings from the database (like "08:00") represent "wall clock time"
+ * without timezone information. To ensure they display correctly in the user's browser,
+ * we create Date objects using local timezone methods, which will be serialized as UTC
+ * when sent over the network, and then correctly displayed in the user's local timezone.
+ *
+ * The key insight: We use getFullYear/getMonth/getDate (local) and setHours (local)
+ * so that when the Date is serialized to ISO string and sent to frontend, the frontend
+ * will correctly interpret it in the user's timezone.
  */
 const parseHHMMToDate = (baseDay: Date, timeStr: string): Date => {
-  const d = new Date(baseDay);
+  // Get the date components using local timezone methods
+  // This ensures the date represents the correct calendar day in local time
+  const year = baseDay.getFullYear();
+  const month = baseDay.getMonth();
+  const date = baseDay.getDate();
 
   // Check if it's 12-hour format (contains AM/PM)
   const is12Hour = /AM|PM/i.test(timeStr);
 
+  let hours: number;
+  let minutes: number;
+
   if (is12Hour) {
-    // Parse 12-hour format like "8:00 AM" or "5:00 PM"
-    const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    // Parse 12-hour format like "08:00 AM", "8:00 AM", or "5:00 PM"
+    // Handles formats: "08:00 AM", "8:00AM", "08:00AM", etc.
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
     if (!match) {
-      throw new Error(`Invalid time format: ${timeStr}`);
+      throw new Error(
+        `Invalid 12-hour time format: ${timeStr}. Expected format: "08:00 AM" or "8:00 PM"`
+      );
     }
 
-    let hours = parseInt(match[1], 10);
-    const minutes = parseInt(match[2], 10);
+    hours = parseInt(match[1], 10);
+    minutes = parseInt(match[2], 10);
     const period = match[3].toUpperCase();
 
     // Convert to 24-hour format
@@ -221,13 +240,18 @@ const parseHHMMToDate = (baseDay: Date, timeStr: string): Date => {
     } else if (period === 'AM' && hours === 12) {
       hours = 0;
     }
-
-    d.setHours(hours, minutes, 0, 0);
   } else {
     // Parse 24-hour format like "09:00"
     const [hh, mm] = timeStr.split(':').map(Number);
-    d.setHours(hh ?? 0, mm ?? 0, 0, 0);
+    hours = hh ?? 0;
+    minutes = mm ?? 0;
   }
+
+  // Create date using local timezone methods
+  // This creates a Date object that represents the time in the server's local timezone
+  // When serialized to JSON (ISO string), it will be in UTC, but the frontend will
+  // correctly convert it back to the user's local timezone for display
+  const d = new Date(year, month, date, hours, minutes, 0, 0);
 
   return d;
 };
@@ -245,21 +269,36 @@ const isWithinAnyTimeSlot = (
     return false;
   }
 
-  // Create a clean date object for the base day at midnight in local timezone
-  const dayDate = new Date(baseDay);
-  dayDate.setHours(0, 0, 0, 0);
+  // Get date components using local timezone for consistent comparison
+  const dayYear = baseDay.getFullYear();
+  const dayMonth = baseDay.getMonth();
+  const dayDate = baseDay.getDate();
 
   for (const ts of timeSlots) {
-    const tsStart = parseHHMMToDate(dayDate, ts.startTime);
-    const tsEnd = parseHHMMToDate(dayDate, ts.endTime);
+    // Parse time slots (parseHHMMToDate creates dates in local timezone)
+    const tsStart = parseHHMMToDate(baseDay, ts.startTime);
+    const tsEnd = parseHHMMToDate(baseDay, ts.endTime);
 
-    // Normalize slot times to same day/date for comparison
-    // Both slotStart/slotEnd and tsStart/tsEnd should be on the same day
-    const slotStartNormalized = new Date(slotStart);
-    slotStartNormalized.setFullYear(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
+    // Normalize slot times to same day/date using local timezone for comparison
+    const slotStartNormalized = new Date(
+      dayYear,
+      dayMonth,
+      dayDate,
+      slotStart.getHours(),
+      slotStart.getMinutes(),
+      slotStart.getSeconds(),
+      slotStart.getMilliseconds()
+    );
 
-    const slotEndNormalized = new Date(slotEnd);
-    slotEndNormalized.setFullYear(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
+    const slotEndNormalized = new Date(
+      dayYear,
+      dayMonth,
+      dayDate,
+      slotEnd.getHours(),
+      slotEnd.getMinutes(),
+      slotEnd.getSeconds(),
+      slotEnd.getMilliseconds()
+    );
 
     // Check if slot is fully contained within this time window
     // Slot must start on or after window start, and end on or before window end
@@ -334,6 +373,7 @@ const isProviderAvailableForSlot = (opts: {
   }
 
   // Check for override hours for this specific date
+  // Compare dates using local timezone methods for consistency
   const overrideForDay = provider.overrideHours.find(oh => {
     const ohDate = new Date(oh.date);
     return (
@@ -864,10 +904,9 @@ export const getAvailableExaminersForExam = async (
     const daySlots: SlotAvailability[] = [];
 
     // Generate slots for this day
-    // Create a new date object for the day at midnight in local timezone
-    const dayDate = new Date(dayCursor);
-    dayDate.setHours(0, 0, 0, 0);
-    const firstSlotStart = parseHHMMToDate(dayDate, settings.startOfWorking);
+    // Use UTC to avoid timezone conversion issues
+    // parseHHMMToDate now creates UTC dates, so we pass dayCursor directly
+    const firstSlotStart = parseHHMMToDate(dayCursor, settings.startOfWorking);
 
     for (let i = 0; i < settings.numberOfWorkingHours; i++) {
       const slotStart = addMinutes(firstSlotStart, i * slotDurationMinutes);
