@@ -134,6 +134,7 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
 
       if (existingBooking) {
         // Update existing booking instead of creating new one
+        // If status is DECLINE, change it to PENDING when user resubmits
         // Note: Prisma client needs to be regenerated after schema changes
         booking = await (tx as any).claimantBooking.update({
           where: { id: existingBooking.id },
@@ -146,7 +147,8 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
             interpreterId: data.interpreterId || null,
             chaperoneId: data.chaperoneId || null,
             transporterId: data.transporterId || null,
-            // Keep existing status, don't reset to PENDING
+            // If status is DECLINE, change to PENDING when user resubmits
+            status: existingBooking.status === 'DECLINE' ? 'PENDING' : existingBooking.status,
           },
         });
       } else {
