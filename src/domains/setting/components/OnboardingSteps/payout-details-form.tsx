@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { FormProvider } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
   onComplete,
   onCancel: _onCancel,
 }) => {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string>(
     initialData?.payoutMethod || "direct_deposit"
@@ -75,6 +77,9 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       if (result.success) {
         toast.success("Payout details saved successfully");
         onComplete();
+        // Refresh server components to update activation status, then navigate
+        router.refresh();
+        router.push("/dashboard");
       } else {
         toast.error(result.message || "Failed to update payout details");
       }
@@ -90,7 +95,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm ">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 className="text-2xl font-medium">Set Up Payout Details</h2>
+        <h2 className="text-2xl font-medium">Set Up Payment Details</h2>
         <Button
           type="submit"
           form="payout-form"

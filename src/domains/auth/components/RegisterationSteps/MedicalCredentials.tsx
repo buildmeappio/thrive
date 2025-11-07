@@ -156,7 +156,9 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
               options={examTypes}
               required
               placeholder={
-                loadingExamTypes ? "Loading exam types..." : "Select Exam Type"
+                loadingExamTypes
+                  ? "Loading medical specialties..."
+                  : "Select Medical Specialties"
               }
               multiSelect={true}
               icon={null}

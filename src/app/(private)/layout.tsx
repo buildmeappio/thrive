@@ -3,7 +3,6 @@ import { SidebarProvider } from "@/providers/Sidebar";
 import { SearchProvider } from "@/providers/Search";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import { getExaminerProfileAction } from "@/domains/setting/server";
-import { Header } from "@/domains/setting";
 import { redirect } from "next/navigation";
 import { Layout } from "@/layouts/dashboard";
 
@@ -45,7 +44,6 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
               </div>
             }>
-            <Header userName={user.name || "User"} />
             {children}
           </Suspense>
         </Layout>
