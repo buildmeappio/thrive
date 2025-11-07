@@ -193,41 +193,21 @@ const getExaminersQualifiedForExamType = async (examTypeId: string) => {
 };
 
 /**
- * Parse time string to Date on a given day
+ * Convert time string to minutes since midnight for easy comparison
  * Supports both formats:
  * - "09:00" (24-hour format)
  * - "9:00 AM" or "5:00 PM" (12-hour format)
- *
- * IMPORTANT: Time strings from the database (like "08:00") represent "wall clock time"
- * without timezone information. To ensure they display correctly in the user's browser,
- * we create Date objects using local timezone methods, which will be serialized as UTC
- * when sent over the network, and then correctly displayed in the user's local timezone.
- *
- * The key insight: We use getFullYear/getMonth/getDate (local) and setHours (local)
- * so that when the Date is serialized to ISO string and sent to frontend, the frontend
- * will correctly interpret it in the user's timezone.
  */
-const parseHHMMToDate = (baseDay: Date, timeStr: string): Date => {
-  // Get the date components using local timezone methods
-  // This ensures the date represents the correct calendar day in local time
-  const year = baseDay.getFullYear();
-  const month = baseDay.getMonth();
-  const date = baseDay.getDate();
-
-  // Check if it's 12-hour format (contains AM/PM)
+const timeStringToMinutes = (timeStr: string): number => {
   const is12Hour = /AM|PM/i.test(timeStr);
 
   let hours: number;
   let minutes: number;
 
   if (is12Hour) {
-    // Parse 12-hour format like "08:00 AM", "8:00 AM", or "5:00 PM"
-    // Handles formats: "08:00 AM", "8:00AM", "08:00AM", etc.
     const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
     if (!match) {
-      throw new Error(
-        `Invalid 12-hour time format: ${timeStr}. Expected format: "08:00 AM" or "8:00 PM"`
-      );
+      throw new Error(`Invalid 12-hour time format: ${timeStr}`);
     }
 
     hours = parseInt(match[1], 10);
@@ -241,83 +221,53 @@ const parseHHMMToDate = (baseDay: Date, timeStr: string): Date => {
       hours = 0;
     }
   } else {
-    // Parse 24-hour format like "09:00"
     const [hh, mm] = timeStr.split(':').map(Number);
     hours = hh ?? 0;
     minutes = mm ?? 0;
   }
 
-  // Create date using local timezone methods
-  // This creates a Date object that represents the time in the server's local timezone
-  // When serialized to JSON (ISO string), it will be in UTC, but the frontend will
-  // correctly convert it back to the user's local timezone for display
-  const d = new Date(year, month, date, hours, minutes, 0, 0);
-
-  return d;
+  return hours * 60 + minutes;
 };
 
 /**
- * Check if a slot fits within any of the provider's time windows
+ * Extract time string from a Date object in HH:MM format (24-hour)
+ */
+const dateToTimeString = (date: Date): string => {
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
+/**
+ * Check if a time slot fits within any of the provider's time windows
+ * Pure time comparison - no timezone conversions
  */
 const isWithinAnyTimeSlot = (
   slotStart: Date,
   slotEnd: Date,
-  timeSlots: Array<{ startTime: string; endTime: string }>,
-  baseDay: Date
+  timeSlots: Array<{ startTime: string; endTime: string }>
 ): boolean => {
   if (timeSlots.length === 0) {
     return false;
   }
 
-  // Get date components using local timezone for consistent comparison
-  const dayYear = baseDay.getFullYear();
-  const dayMonth = baseDay.getMonth();
-  const dayDate = baseDay.getDate();
+  // Extract time-only strings from the Date objects
+  const slotStartTime = dateToTimeString(slotStart);
+  const slotEndTime = dateToTimeString(slotEnd);
+
+  // Convert to minutes for easy comparison
+  const slotStartMinutes = timeStringToMinutes(slotStartTime);
+  const slotEndMinutes = timeStringToMinutes(slotEndTime);
 
   for (const ts of timeSlots) {
-    // Parse time slots (parseHHMMToDate creates dates in local timezone)
-    const tsStart = parseHHMMToDate(baseDay, ts.startTime);
-    const tsEnd = parseHHMMToDate(baseDay, ts.endTime);
-
-    // Normalize slot times to same day/date using local timezone for comparison
-    const slotStartNormalized = new Date(
-      dayYear,
-      dayMonth,
-      dayDate,
-      slotStart.getHours(),
-      slotStart.getMinutes(),
-      slotStart.getSeconds(),
-      slotStart.getMilliseconds()
-    );
-
-    const slotEndNormalized = new Date(
-      dayYear,
-      dayMonth,
-      dayDate,
-      slotEnd.getHours(),
-      slotEnd.getMinutes(),
-      slotEnd.getSeconds(),
-      slotEnd.getMilliseconds()
-    );
+    const windowStartMinutes = timeStringToMinutes(ts.startTime);
+    const windowEndMinutes = timeStringToMinutes(ts.endTime);
 
     // Check if slot is fully contained within this time window
-    // Slot must start on or after window start, and end on or before window end
-    const startsAfterWindowStart =
-      isAfter(slotStartNormalized, tsStart) || isEqual(slotStartNormalized, tsStart);
-    const endsBeforeWindowEnd =
-      isBefore(slotEndNormalized, tsEnd) || isEqual(slotEndNormalized, tsEnd);
+    const startsAfterOrAtWindowStart = slotStartMinutes >= windowStartMinutes;
+    const endsBeforeOrAtWindowEnd = slotEndMinutes <= windowEndMinutes;
 
-    if (startsAfterWindowStart && endsBeforeWindowEnd) {
-      // Debug logging for Thursday to see what's matching
-      if (baseDay.toLocaleString('en-US', { weekday: 'long' }) === 'Thursday') {
-        console.log(
-          `    ✓ Slot matches window: ${slotStartNormalized.toLocaleTimeString()} - ${slotEndNormalized.toLocaleTimeString()} within ${ts.startTime} - ${ts.endTime}`
-        );
-        console.log(
-          `      Slot (normalized): ${slotStartNormalized.toISOString()} - ${slotEndNormalized.toISOString()}`
-        );
-        console.log(`      Window: ${tsStart.toISOString()} - ${tsEnd.toISOString()}`);
-      }
+    if (startsAfterOrAtWindowStart && endsBeforeOrAtWindowEnd) {
       return true;
     }
   }
@@ -327,6 +277,7 @@ const isWithinAnyTimeSlot = (
 
 /**
  * Check if a provider is available for a specific slot
+ * Uses time-only comparison without timezone conversions
  */
 const isProviderAvailableForSlot = (opts: {
   provider: {
@@ -365,7 +316,7 @@ const isProviderAvailableForSlot = (opts: {
     console.log(
       `[isProviderAvailableForSlot] Checking ${weekdayName} ${dayDate.toISOString().split('T')[0]}`
     );
-    console.log(`  Slot: ${slotStart.toISOString()} to ${slotEnd.toISOString()}`);
+    console.log(`  Slot: ${dateToTimeString(slotStart)} to ${dateToTimeString(slotEnd)}`);
     console.log(
       `  Weekly hours for ${weekdayName}:`,
       provider.weeklyHours.filter(wh => wh.dayOfWeek === weekdayName)
@@ -373,7 +324,7 @@ const isProviderAvailableForSlot = (opts: {
   }
 
   // Check for override hours for this specific date
-  // Compare dates using local timezone methods for consistency
+  // Compare only the date part (year, month, day)
   const overrideForDay = provider.overrideHours.find(oh => {
     const ohDate = new Date(oh.date);
     return (
@@ -384,13 +335,11 @@ const isProviderAvailableForSlot = (opts: {
   });
 
   if (overrideForDay) {
-    return isWithinAnyTimeSlot(slotStart, slotEnd, overrideForDay.timeSlots, dayDate);
+    return isWithinAnyTimeSlot(slotStart, slotEnd, overrideForDay.timeSlots);
   }
 
   // Fall back to weekly hours
-  // Note: dayOfWeek from Prisma is the Weekday enum (uppercase string like "THURSDAY")
   const weekly = provider.weeklyHours.find(wh => {
-    // Ensure both sides are strings and compare case-insensitively to be safe
     const whDay = String(wh.dayOfWeek).toUpperCase();
     const targetDay = weekdayName.toUpperCase();
     return whDay === targetDay && wh.enabled;
@@ -403,7 +352,7 @@ const isProviderAvailableForSlot = (opts: {
     return false;
   }
 
-  const isWithin = isWithinAnyTimeSlot(slotStart, slotEnd, weekly.timeSlots, dayDate);
+  const isWithin = isWithinAnyTimeSlot(slotStart, slotEnd, weekly.timeSlots);
   if (weekdayName === 'THURSDAY') {
     console.log(`  Found weekly hours for ${weekdayName}, timeSlots:`, weekly.timeSlots);
     console.log(`  Slot fits within timeSlots: ${isWithin}`);
@@ -806,6 +755,25 @@ const fetchExistingBookings = async (
 };
 
 /**
+ * Parse time string and create Date object for slot generation
+ * This is used to create Date objects for the API response
+ * The time will be in local server time
+ */
+const createSlotTime = (baseDay: Date, timeStr: string): Date => {
+  const year = baseDay.getFullYear();
+  const month = baseDay.getMonth();
+  const date = baseDay.getDate();
+
+  // Parse the time string to get hours and minutes
+  const minutes = timeStringToMinutes(timeStr);
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  // Create date with the parsed time
+  return new Date(year, month, date, hours, mins, 0, 0);
+};
+
+/**
  * Main service function to get available examiners for an examination
  */
 export const getAvailableExaminersForExam = async (
@@ -904,9 +872,7 @@ export const getAvailableExaminersForExam = async (
     const daySlots: SlotAvailability[] = [];
 
     // Generate slots for this day
-    // Use UTC to avoid timezone conversion issues
-    // parseHHMMToDate now creates UTC dates, so we pass dayCursor directly
-    const firstSlotStart = parseHHMMToDate(dayCursor, settings.startOfWorking);
+    const firstSlotStart = createSlotTime(dayCursor, settings.startOfWorking);
 
     for (let i = 0; i < settings.numberOfWorkingHours; i++) {
       const slotStart = addMinutes(firstSlotStart, i * slotDurationMinutes);
@@ -1016,7 +982,7 @@ export const getAvailableExaminersForExam = async (
       const limitedExaminers = availableExaminersForSlot.slice(0, 3);
 
       // Debug: Log slot generation for all days
-      const slotTimeStr = `${slotStart.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - ${slotEnd.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+      const slotTimeStr = `${dateToTimeString(slotStart)} - ${dateToTimeString(slotEnd)}`;
       console.log(
         `[Slot Generation] Day ${dayCursor.toLocaleDateString('en-US', { weekday: 'long' })}: Slot ${i + 1}/${settings.numberOfWorkingHours} - ${slotTimeStr}: ${limitedExaminers.length} examiner(s) available (${availableExaminersForSlot.length} total)`
       );
