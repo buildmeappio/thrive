@@ -1,0 +1,118 @@
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { updateBookingStatusAction } from "../../server/actions/updateBookingStatus";
+import { getDocumentPresignedUrlAction } from "../../server/actions/getDocumentPresignedUrl";
+import { CaseDetailsData } from "../../types";
+
+type UseCaseDetailsHandlersProps = {
+  data: CaseDetailsData;
+  examinerProfileId: string;
+};
+
+export function useCaseDetailsHandlers({
+  data,
+  examinerProfileId,
+}: UseCaseDetailsHandlersProps) {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRequestMoreInfoModalOpen, setIsRequestMoreInfoModalOpen] =
+    useState(false);
+  const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewFileName, setPreviewFileName] = useState<string>("");
+
+  const handleAction = async (
+    status: "ACCEPT" | "DECLINE" | "REQUEST_MORE_INFO",
+    message?: string
+  ) => {
+    setIsLoading(true);
+    try {
+      const result = await updateBookingStatusAction({
+        bookingId: data.bookingId,
+        examinerProfileId,
+        status,
+        message,
+      });
+
+      if (result.success) {
+        toast.success(result.message || "Action completed successfully");
+        router.refresh();
+        if (status === "ACCEPT") {
+          router.push("/dashboard");
+        }
+        // Close modals
+        setIsRequestMoreInfoModalOpen(false);
+        setIsDeclineModalOpen(false);
+      } else {
+        toast.error(result.message || "Failed to complete action");
+      }
+    } catch {
+      toast.error("An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRequestMoreInfo = (message: string) => {
+    handleAction("REQUEST_MORE_INFO", message);
+  };
+
+  const handleDecline = (reason: string) => {
+    handleAction("DECLINE", reason);
+  };
+
+  const handlePreview = async (documentName: string, displayName?: string) => {
+    try {
+      const result = await getDocumentPresignedUrlAction(documentName);
+      if (result.success && result.url) {
+        setPreviewFileName(displayName || documentName);
+        setPreviewUrl(result.url);
+      } else {
+        toast.error(result.error || "Failed to generate preview URL");
+      }
+    } catch {
+      toast.error("An error occurred while generating preview URL");
+    }
+  };
+
+  const closePreview = () => {
+    setPreviewUrl(null);
+    setPreviewFileName("");
+  };
+
+  const handleDownload = async (documentName: string, displayName: string) => {
+    try {
+      const result = await getDocumentPresignedUrlAction(documentName);
+      if (result.success && result.url) {
+        const link = document.createElement("a");
+        link.href = result.url;
+        link.download = displayName || documentName;
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        toast.error(result.error || "Failed to generate download URL");
+      }
+    } catch {
+      toast.error("An error occurred while generating download URL");
+    }
+  };
+
+  return {
+    isLoading,
+    isRequestMoreInfoModalOpen,
+    isDeclineModalOpen,
+    previewUrl,
+    previewFileName,
+    setIsRequestMoreInfoModalOpen,
+    setIsDeclineModalOpen,
+    handleAction,
+    handleRequestMoreInfo,
+    handleDecline,
+    handlePreview,
+    closePreview,
+    handleDownload,
+  };
+}

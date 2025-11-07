@@ -1,10 +1,15 @@
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 import NewCaseOffers from "@/domains/dashboard/components/casesTable";
 import AppointmentsTable from "@/domains/dashboard/components/appointmentsTable";
 import ReportsTable from "@/domains/dashboard/components/reportsTable";
 import UpdatesPanel from "@/domains/dashboard/components/updatesPanel";
 import SummaryPanel from "@/domains/dashboard/components/summaryPanel";
-import { CaseRow, AppointmentRow, ReportRow } from "@/domains/dashboard/types";
+import { ReportRow } from "@/domains/dashboard/types";
+import { getCurrentUser } from "@/domains/auth/server/session";
+import { getExaminerProfileAction } from "@/domains/setting/server/actions/getExaminerProfile";
+import { getDashboardBookingsAction } from "@/domains/dashboard/server/actions/getDashboardBookings";
+import { Header } from "@/domains/setting";
 
 export const metadata: Metadata = {
   title: "Dashboard | Thrive - Examiner",
@@ -15,98 +20,62 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const DashboardPage = async () => {
-  // Dummy data for New Case Offers
-  const newCaseOffers: CaseRow[] = [
-    {
-      id: "1",
-      caseNumber: "TRV-2045",
-      createdAt: new Date("2025-04-18"),
-      case: {
-        organization: { name: "Desjardin" },
-      },
-      claimant: {
-        firstName: "Jane",
-        lastName: "D.",
-      },
-    },
-    {
-      id: "2",
-      caseNumber: "TRV-2046",
-      createdAt: new Date("2025-04-18"),
-      case: {
-        organization: { name: "Canada Life" },
-      },
-      claimant: {
-        firstName: "John",
-        lastName: "S.",
-      },
-    },
-    {
-      id: "3",
-      caseNumber: "TRV-2047",
-      createdAt: new Date("2025-04-18"),
-      case: {
-        organization: { name: "Manulife" },
-      },
-      claimant: {
-        firstName: "Emily",
-        lastName: "T.",
-      },
-    },
-  ];
+  // Get current user
+  const user = await getCurrentUser();
 
-  // Dummy data for Upcoming Appointments
-  const appointments: AppointmentRow[] = [
-    {
-      id: "1",
-      caseNumber: "TRV-2045",
-      claimant: "Jane D.",
-      date: new Date("2025-04-18"),
-      time: "2:00 PM",
-      location: "In-Person",
-    },
-    {
-      id: "2",
-      caseNumber: "TRV-2046",
-      claimant: "John S.",
-      date: new Date("2025-04-19"),
-      time: "2:00 PM",
-      location: "Virtual",
-    },
-    {
-      id: "3",
-      caseNumber: "TRV-2047",
-      claimant: "Emily T.",
-      date: new Date("2025-04-20"),
-      time: "2:00 PM",
-      location: "Virtual",
-    },
-  ];
+  if (!user) {
+    redirect("/login");
+  }
 
-  // Dummy data for Reports to Submit
+  // Get examiner profile
+  const profileResult = await getExaminerProfileAction(user.accountId);
+
+  if (!profileResult.success || !profileResult.data) {
+    redirect("/login");
+  }
+
+  const examinerProfileId = profileResult.data.id;
+
+  // Fetch dashboard bookings
+  const bookingsResult = await getDashboardBookingsAction({
+    examinerProfileId,
+  });
+
+  // Extract data or use empty arrays as fallback
+  const newCaseOffers =
+    bookingsResult.success && bookingsResult.data?.pendingReview
+      ? bookingsResult.data.pendingReview
+      : [];
+
+  const appointments =
+    bookingsResult.success && bookingsResult.data?.upcomingAppointments
+      ? bookingsResult.data.upcomingAppointments
+      : [];
+
+  // Dummy data for Waiting to be Submitted
   const reports: ReportRow[] = [
     {
       id: "1",
-      caseNumber: "TRV-2045",
-      claimant: "Jane D.",
+      claimant: "John Doe",
+      company: "Desjardin",
       dueDate: new Date("2025-04-18"),
-      assessmentDate: new Date("2025-04-14"),
+      reason: "Modification",
       status: "Pending",
     },
     {
       id: "2",
-      caseNumber: "TRV-2046",
-      claimant: "John S.",
+      claimant: "Jonathan",
+      company: "Canada Life",
       dueDate: new Date("2025-04-19"),
-      assessmentDate: new Date("2025-04-14"),
+      reason: "Edits Requested",
       status: "Pending",
     },
     {
       id: "3",
-      caseNumber: "TRV-2047",
-      claimant: "Emily T.",
+      claimant: "TRV-2047",
+      company: "Manulife",
       dueDate: new Date("2025-04-20"),
-      assessmentDate: new Date("2025-04-14"),
+      reason: "IME Edits",
       status: "Overdue",
     },
   ];
@@ -124,6 +93,7 @@ const DashboardPage = async () => {
 
   return (
     <div className="min-h-screen bg-[#F0F8FF]">
+      <Header userName={user.name || "User"} />
       <div className="max-w-[1800px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Three Tables */}
@@ -131,7 +101,7 @@ const DashboardPage = async () => {
             <NewCaseOffers
               items={newCaseOffers}
               listHref="/cases"
-              title="New Case Offers"
+              title="Case Offers Pending Review"
             />
             <AppointmentsTable
               items={appointments}
@@ -141,7 +111,7 @@ const DashboardPage = async () => {
             <ReportsTable
               items={reports}
               listHref="/reports"
-              title="Reports to Submit"
+              title="Waiting to be Submitted"
             />
           </div>
 

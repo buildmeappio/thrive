@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 const SupportPage = () => {
-  return <div className="space-y-4"></div>;
+  return <div> In Development... </div>;
 };
 
 export default SupportPage;
