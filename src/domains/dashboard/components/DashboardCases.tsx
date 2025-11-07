@@ -46,7 +46,7 @@ const DashboardCases = ({ dashboardCases, title }: CaseProps) => {
       <div className="mt-3 block md:hidden">
         <div className="-mx-6 divide-y divide-gray-100">
           {dashboardCases?.map(caseItem => {
-            const href = `/cases/${caseItem.id}`;
+            const href = `/dashboard/cases/${caseItem.id}`;
 
             return (
               <div key={caseItem.id} className="px-6 py-4 hover:bg-[#FAFAFF]">
