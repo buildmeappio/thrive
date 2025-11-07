@@ -72,10 +72,10 @@ export const formatTime = (date: Date): string => {
 };
 
 /**
- * Format date for display
+ * Format date for display with day name
  */
 export const formatSqlDate = (date: Date): string => {
-  return format(date, 'MMM d, yyyy');
+  return format(date, 'EEE, MMM d, yyyy'); // Shows "Mon, Jan 15, 2025"
 };
 
 /**
