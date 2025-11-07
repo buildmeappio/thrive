@@ -184,28 +184,48 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
       return booking;
     });
 
+    // Fetch examiner information for email
+    const examiner = await prisma.examinerProfile.findUnique({
+      where: { id: data.examinerProfileId },
+      include: {
+        account: {
+          include: {
+            user: {
+              select: {
+                email: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Prepare common email data
+    const organizationName = examination.case.organization?.name || 'Thrive Assessment Care';
+    const caseNumber = (examination as any).caseNumber || 'N/A';
+    const examinationTypeName = examination.examinationType?.name || 'Examination';
+
+    // Format booking date and time
+    const bookingDateTime = new Date(data.bookingTime);
+    const formattedDate = format(bookingDateTime, 'EEEE, MMMM d, yyyy');
+    const formattedTime = format(bookingDateTime, 'h:mm a');
+    const bookingDate = `${formattedDate} at ${formattedTime}`;
+
+    const preferenceLabel =
+      data.preference === 'IN_PERSON'
+        ? 'In Person'
+        : data.preference === 'VIRTUAL'
+          ? 'Virtual'
+          : 'Either';
+
     // Send confirmation email to claimant
     if (examination.claimant.emailAddress) {
       try {
         const claimantName =
           `${examination.claimant.firstName || ''} ${examination.claimant.lastName || ''}`.trim() ||
           'Valued Client';
-        const organizationName = examination.case.organization?.name || 'Thrive Assessment Care';
-        const caseNumber = (examination as any).caseNumber || 'N/A';
-        const examinationTypeName = examination.examinationType?.name || 'Examination';
-
-        // Format booking date and time
-        const bookingDateTime = new Date(data.bookingTime);
-        const formattedDate = format(bookingDateTime, 'EEEE, MMMM d, yyyy');
-        const formattedTime = format(bookingDateTime, 'h:mm a');
-        const bookingDate = `${formattedDate} at ${formattedTime}`;
-
-        const preferenceLabel =
-          data.preference === 'IN_PERSON'
-            ? 'In Person'
-            : data.preference === 'VIRTUAL'
-              ? 'Virtual'
-              : 'Either';
 
         const emailResult = await emailService.sendEmail(
           `Booking Submitted - ${caseNumber}`,
@@ -222,13 +242,51 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
         );
 
         if (!emailResult.success) {
-          log.error('Failed to send booking confirmation email:', emailResult.error);
+          log.error('Failed to send booking confirmation email to claimant:', emailResult.error);
           // Don't fail the booking if email fails, just log the error
         } else {
-          log.info(`Booking confirmation email sent to ${examination.claimant.emailAddress}`);
+          log.info(
+            `Booking confirmation email sent to claimant: ${examination.claimant.emailAddress}`
+          );
         }
       } catch (emailError) {
-        log.error('Error sending booking confirmation email:', emailError);
+        log.error('Error sending booking confirmation email to claimant:', emailError);
+        // Don't fail the booking if email fails, just log the error
+      }
+    }
+
+    // Send notification email to examiner
+    if (examiner?.account?.user?.email) {
+      try {
+        const examinerName =
+          `${examiner.account.user.firstName || ''} ${examiner.account.user.lastName || ''}`.trim() ||
+          'Examiner';
+
+        const examinerEmailResult = await emailService.sendEmail(
+          `New Booking Request - ${caseNumber}`,
+          'booking-submitted.html',
+          {
+            claimantName: examinerName, // Use examiner name for greeting in template
+            organizationName,
+            caseNumber,
+            examinationType: examinationTypeName,
+            bookingDate,
+            preference: preferenceLabel,
+          },
+          examiner.account.user.email
+        );
+
+        if (!examinerEmailResult.success) {
+          log.error(
+            'Failed to send booking notification email to examiner:',
+            examinerEmailResult.error
+          );
+          // Don't fail the booking if email fails, just log the error
+        } else {
+          log.info(`Booking notification email sent to examiner: ${examiner.account.user.email}`);
+        }
+      } catch (emailError) {
+        log.error('Error sending booking notification email to examiner:', emailError);
         // Don't fail the booking if email fails, just log the error
       }
     }
