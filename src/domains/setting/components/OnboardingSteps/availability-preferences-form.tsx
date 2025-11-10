@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { useForm } from "@/hooks/use-form-hook";
 import { FormProvider } from "@/components/form";
@@ -11,6 +11,10 @@ import {
 import { availabilityInitialValues } from "../../constants";
 import { WeeklyHours, OverrideHours, BookingOptions } from "./AvailabilityTabs";
 import { toast } from "sonner";
+import {
+  convertAvailabilityToUTC,
+  convertAvailabilityToLocal,
+} from "@/utils/timeConversion";
 
 interface AvailabilityPreferencesFormProps {
   examinerProfileId: string | null;
@@ -27,9 +31,19 @@ const AvailabilityPreferencesForm: React.FC<
     "weeklyHours" | "overrideHours" | "bookingOptions"
   >("weeklyHours");
 
+  // Convert initial data from UTC to local time for display
+  const localInitialData = useMemo(() => {
+    if (!initialData) {
+      return availabilityInitialValues;
+    }
+
+    // Convert UTC times to local times for form display
+    return convertAvailabilityToLocal(initialData);
+  }, [initialData]);
+
   const form = useForm<AvailabilityPreferencesInput>({
     schema: availabilityPreferencesSchema,
-    defaultValues: initialData || availabilityInitialValues,
+    defaultValues: localInitialData,
     mode: "onSubmit",
   });
 
@@ -41,12 +55,15 @@ const AvailabilityPreferencesForm: React.FC<
 
     setLoading(true);
     try {
+      // Convert local times to UTC before saving to database
+      const utcValues = convertAvailabilityToUTC(values);
+
       const { saveAvailabilityAction } = await import("../../server/actions");
       const result = await saveAvailabilityAction({
         examinerProfileId,
-        weeklyHours: values.weeklyHours,
-        overrideHours: values.overrideHours,
-        bookingOptions: values.bookingOptions,
+        weeklyHours: utcValues.weeklyHours,
+        overrideHours: utcValues.overrideHours,
+        bookingOptions: utcValues.bookingOptions,
         activationStep: "availability",
       });
 

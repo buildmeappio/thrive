@@ -32,6 +32,11 @@ class CaseDetailsService {
             claimant: {
               include: {
                 address: true,
+                claimType: {
+                  select: {
+                    name: true,
+                  },
+                },
               },
             },
             insurance: {
@@ -84,6 +89,7 @@ class CaseDetailsService {
       claimant: {
         firstName: claimant.firstName,
         lastName: claimant.lastName,
+        claimType: claimant.claimType?.name || null,
         dateOfBirth: claimant.dateOfBirth,
         gender: claimant.gender,
         phoneNumber: claimant.phoneNumber,

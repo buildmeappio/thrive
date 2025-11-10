@@ -23,7 +23,7 @@ export const ACTIVATION_STEPS: Omit<ActivationStep, "completed">[] = [
   },
   {
     id: "payout",
-    title: "Set Up Payout Details",
+    title: "Set Up Payment Details",
     order: 4,
   },
 ];

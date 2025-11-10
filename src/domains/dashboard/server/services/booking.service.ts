@@ -40,6 +40,11 @@ class BookingService {
           select: {
             firstName: true,
             lastName: true,
+            claimType: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
       },
@@ -54,14 +59,10 @@ class BookingService {
 
     for (const booking of bookings) {
       const claimantName = `${booking.claimant.firstName} ${booking.claimant.lastName}`;
-      const company = booking.examination.case.organization?.name || "N/A";
+      const caseNumber = booking.examination.caseNumber;
 
-      // Get benefits - join all selected benefits
-      const benefitsList = booking.examination.selectedBenefits.map(
-        (sb) => sb.benefit.benefit
-      );
-      const benefits =
-        benefitsList.length > 0 ? benefitsList.join(", ") : "N/A";
+      // Get claim type
+      const claimType = booking.claimant.claimType?.name || "N/A";
 
       const appointment = booking.bookingTime;
       const dueDate =
@@ -69,9 +70,9 @@ class BookingService {
 
       const bookingData: DashboardBookingData = {
         id: booking.id,
+        caseNumber,
         claimant: claimantName,
-        company,
-        benefits,
+        claimType,
         appointment,
         dueDate,
       };

@@ -27,7 +27,9 @@ export default function ClaimantDetailsSection({
       </AccordionTrigger>
       <AccordionContent className="pt-0 pb-0">
         <div className="space-y-2">
-          <DetailRow label="Type of Claim" value={claimant.emailAddress} />
+          {claimant.claimType && (
+            <DetailRow label="Type of Claim" value={claimant.claimType} />
+          )}
           <DetailRow label="First Name" value={claimant.firstName} />
           <DetailRow label="Last Name" value={claimant.lastName} />
           {claimant.dateOfBirth && (

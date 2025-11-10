@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { formatDateShort, formatDateTime } from "@/utils/date";
-import { capitalizeWords, truncateText } from "@/utils/text";
+import { truncateText } from "@/utils/text";
 import {
   Table,
   TableBody,
@@ -42,32 +42,22 @@ export default function NewCaseOffers({
 
       {/* Table */}
       <div className="mt-4 overflow-x-auto rounded-2xl overflow-hidden -mx-2 px-2 sm:mx-0 sm:px-0">
-        <Table className="w-full border-0 table-fixed">
+        <Table className="w-full border-0">
           <TableHeader>
             <TableRow className="bg-transparent border-none hover:bg-transparent">
-              <TableHead
-                style={{ width: "180px", minWidth: "150px", maxWidth: "220px" }}
-                className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 rounded-tl-2xl rounded-bl-2xl whitespace-nowrap overflow-hidden bg-[#F3F3F3]">
+              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 rounded-tl-2xl rounded-bl-2xl whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[18%]">
+                Case Number
+              </TableHead>
+              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[18%]">
                 Claimant
               </TableHead>
-              <TableHead
-                style={{ width: "180px", minWidth: "150px", maxWidth: "220px" }}
-                className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3]">
-                Company
+              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[18%]">
+                Type of Claim
               </TableHead>
-              <TableHead
-                style={{ width: "280px", minWidth: "200px", maxWidth: "350px" }}
-                className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3]">
-                Benefits
-              </TableHead>
-              <TableHead
-                style={{ width: "220px", minWidth: "180px", maxWidth: "250px" }}
-                className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3]">
+              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[25%]">
                 Appointment
               </TableHead>
-              <TableHead
-                style={{ width: "150px", minWidth: "120px", maxWidth: "180px" }}
-                className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 rounded-tr-2xl rounded-br-2xl whitespace-nowrap overflow-hidden bg-[#F3F3F3]">
+              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 rounded-tr-2xl rounded-br-2xl whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[21%]">
                 Due date
               </TableHead>
             </TableRow>
@@ -81,65 +71,35 @@ export default function NewCaseOffers({
                   <TableRow
                     key={r.id}
                     className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]">
-                    <TableCell
-                      style={{
-                        width: "180px",
-                        minWidth: "150px",
-                        maxWidth: "220px",
-                      }}
-                      className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
+                    <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">
+                      <div
+                        className="text-[16px] leading-normal truncate"
+                        title={r.caseNumber}>
+                        {truncateText(r.caseNumber, 25)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">
                       <div
                         className="text-[16px] leading-normal truncate"
                         title={r.claimant}>
                         {truncateText(r.claimant, 25)}
                       </div>
                     </TableCell>
-                    <TableCell
-                      style={{
-                        width: "180px",
-                        minWidth: "150px",
-                        maxWidth: "220px",
-                      }}
-                      className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
+                    <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">
                       <div
                         className="text-[16px] leading-normal truncate"
-                        title={capitalizeWords(r.company)}>
-                        {truncateText(capitalizeWords(r.company), 25)}
+                        title={r.claimType}>
+                        {truncateText(r.claimType, 25)}
                       </div>
                     </TableCell>
-                    <TableCell
-                      style={{
-                        width: "280px",
-                        minWidth: "200px",
-                        maxWidth: "350px",
-                      }}
-                      className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
-                      <div
-                        className="text-[16px] leading-normal truncate"
-                        title={r.benefits}>
-                        {truncateText(r.benefits, 40)}
-                      </div>
-                    </TableCell>
-                    <TableCell
-                      style={{
-                        width: "220px",
-                        minWidth: "180px",
-                        maxWidth: "250px",
-                      }}
-                      className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
+                    <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[25%]">
                       <div
                         className="text-[16px] leading-normal truncate"
                         title={formatDateTime(r.appointment)}>
                         {truncateText(formatDateTime(r.appointment), 25)}
                       </div>
                     </TableCell>
-                    <TableCell
-                      style={{
-                        width: "150px",
-                        minWidth: "120px",
-                        maxWidth: "180px",
-                      }}
-                      className="py-5 sm:py-3 overflow-hidden align-middle">
+                    <TableCell className="py-5 sm:py-3 overflow-hidden align-middle w-[21%]">
                       <div className="flex items-center justify-between gap-3">
                         <span className="text-[16px] tracking-[-0.01em] text-[#4D4D4D] font-poppins min-w-0 flex-1">
                           {formatDateShort(r.dueDate)}
