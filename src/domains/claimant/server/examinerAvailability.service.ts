@@ -1,6 +1,7 @@
-import { addDays, addMinutes, isAfter, isBefore, isEqual, min as minDate } from 'date-fns';
+import { addDays, addMinutes, isAfter, min as minDate } from 'date-fns';
 import prisma from '@/lib/prisma';
 import { HttpError } from '@/utils/httpError';
+import { convertUTCToLocal } from '@/utils/timeConversion';
 import type {
   AvailableChaperone,
   AvailableExaminersResult,
@@ -240,18 +241,23 @@ const dateToTimeString = (date: Date): string => {
 
 /**
  * Check if a time slot fits within any of the provider's time windows
- * Pure time comparison - no timezone conversions
+ * Time slots from DB are in UTC format and need to be converted to claimant's local time
+ * @param slotStart - Start time of the slot in claimant's local time
+ * @param slotEnd - End time of the slot in claimant's local time
+ * @param timeSlots - Provider's time slots in UTC format from database
+ * @param referenceDate - Reference date for timezone conversion (the day being checked)
  */
 const isWithinAnyTimeSlot = (
   slotStart: Date,
   slotEnd: Date,
-  timeSlots: Array<{ startTime: string; endTime: string }>
+  timeSlots: Array<{ startTime: string; endTime: string }>,
+  referenceDate: Date
 ): boolean => {
   if (timeSlots.length === 0) {
     return false;
   }
 
-  // Extract time-only strings from the Date objects
+  // Extract time-only strings from the Date objects (claimant's local time)
   const slotStartTime = dateToTimeString(slotStart);
   const slotEndTime = dateToTimeString(slotEnd);
 
@@ -260,8 +266,12 @@ const isWithinAnyTimeSlot = (
   const slotEndMinutes = timeStringToMinutes(slotEndTime);
 
   for (const ts of timeSlots) {
-    const windowStartMinutes = timeStringToMinutes(ts.startTime);
-    const windowEndMinutes = timeStringToMinutes(ts.endTime);
+    // Convert UTC time slots from DB to claimant's local time
+    const localStartTime = convertUTCToLocal(ts.startTime, referenceDate);
+    const localEndTime = convertUTCToLocal(ts.endTime, referenceDate);
+
+    const windowStartMinutes = timeStringToMinutes(localStartTime);
+    const windowEndMinutes = timeStringToMinutes(localEndTime);
 
     // Check if slot is fully contained within this time window
     const startsAfterOrAtWindowStart = slotStartMinutes >= windowStartMinutes;
@@ -277,7 +287,7 @@ const isWithinAnyTimeSlot = (
 
 /**
  * Check if a provider is available for a specific slot
- * Uses time-only comparison without timezone conversions
+ * Converts UTC time slots from DB to claimant's local time for comparison
  */
 const isProviderAvailableForSlot = (opts: {
   provider: {
@@ -335,7 +345,8 @@ const isProviderAvailableForSlot = (opts: {
   });
 
   if (overrideForDay) {
-    return isWithinAnyTimeSlot(slotStart, slotEnd, overrideForDay.timeSlots);
+    // Pass dayDate as reference for UTC to local conversion
+    return isWithinAnyTimeSlot(slotStart, slotEnd, overrideForDay.timeSlots, dayDate);
   }
 
   // Fall back to weekly hours
@@ -352,9 +363,10 @@ const isProviderAvailableForSlot = (opts: {
     return false;
   }
 
-  const isWithin = isWithinAnyTimeSlot(slotStart, slotEnd, weekly.timeSlots);
+  // Pass dayDate as reference for UTC to local conversion
+  const isWithin = isWithinAnyTimeSlot(slotStart, slotEnd, weekly.timeSlots, dayDate);
   if (weekdayName === 'THURSDAY') {
-    console.log(`  Found weekly hours for ${weekdayName}, timeSlots:`, weekly.timeSlots);
+    console.log(`  Found weekly hours for ${weekdayName}, timeSlots (UTC):`, weekly.timeSlots);
     console.log(`  Slot fits within timeSlots: ${isWithin}`);
   }
   return isWithin;

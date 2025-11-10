@@ -12,8 +12,8 @@ export type AvailabilitySettings = {
 // Default settings for availability
 export const DEFAULT_SETTINGS: AvailabilitySettings = {
   noOfDaysForWindow: 21,
-  numberOfWorkingHours: 8,
-  startOfWorking: '09:00',
+  numberOfWorkingHours: 10,
+  startOfWorking: '08:00',
   slotDurationMinutes: 60,
 };
 

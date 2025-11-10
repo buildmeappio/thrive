@@ -1,4 +1,5 @@
 import { getCaseSummaryByJWT, getAvailableExaminers } from '@/domains/claimant/actions';
+import { DEFAULT_SETTINGS } from '@/domains/claimant/types/examinerAvailability';
 import { type Metadata } from 'next';
 import ClaimantAvailability from '@/domains/claimant/components';
 import getLanguages from '@/domains/claimant/server/handlers/getLanguages';
@@ -69,12 +70,7 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ token: string }>
   const availabilityResult = await getAvailableExaminers({
     examId: examinationId,
     startDate,
-    settings: {
-      noOfDaysForWindow: 21,
-      numberOfWorkingHours: 8,
-      startOfWorking: '09:00',
-      slotDurationMinutes: 60,
-    },
+    settings: DEFAULT_SETTINGS,
     excludeBookingId: existingBooking?.id, // Exclude claimant's own booking so it can be displayed
   });
 

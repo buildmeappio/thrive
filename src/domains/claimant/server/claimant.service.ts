@@ -229,7 +229,7 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
 
         const emailResult = await emailService.sendEmail(
           `Booking Submitted - ${caseNumber}`,
-          'booking-submitted.html',
+          'claimant-booking-submitted.html',
           {
             claimantName,
             organizationName,
@@ -264,9 +264,9 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
 
         const examinerEmailResult = await emailService.sendEmail(
           `New Booking Request - ${caseNumber}`,
-          'booking-submitted.html',
+          'examiner-booking-notification.html',
           {
-            claimantName: examinerName, // Use examiner name for greeting in template
+            examinerName, // Use examiner name for greeting in template
             organizationName,
             caseNumber,
             examinationType: examinationTypeName,
