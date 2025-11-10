@@ -31,31 +31,6 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
       .join(' ');
   };
 
-  // Format services for display
-  const formatServices = (): string => {
-    if (!caseDetails.services || caseDetails.services.length === 0) {
-      return "-";
-    }
-    
-    const enabledServices = caseDetails.services.filter(service => service.enabled);
-    
-    if (enabledServices.length === 0) {
-      return "-";
-    }
-    
-    return enabledServices.map(service => {
-      const serviceType = formatText(service.type);
-      
-      let details = serviceType;
-      
-      if (service.interpreter && service.interpreter.languageName) {
-        details += ` (${service.interpreter.languageName})`;
-      }
-      
-      return details;
-    }).join(", ");
-  };
-
   return (
     <div>
       {/* Claimant Details */}
@@ -164,7 +139,6 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
       <CollapsibleSection title="Examination Information">
         <FieldRow label="Examination Type" value={safeValue(caseDetails.examinationType?.name)} type="text" />
         <FieldRow label="Short Form" value={safeValue(caseDetails.examinationType?.shortForm)} type="text" />
-        <FieldRow label="Services" value={formatServices()} type="text" />
         <FieldRow
           label="Due Date"
           value={caseDetails.dueDate ? formatDate(caseDetails.dueDate.toISOString()) : "-"}
@@ -173,6 +147,83 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
         <FieldRow label="Urgency Level" value={caseDetails.urgencyLevel ? formatText(caseDetails.urgencyLevel) : "-"} type="text" />
         <FieldRow label="Notes" value={safeValue(caseDetails.notes)} type="text" />
         <FieldRow label="Additional Notes" value={safeValue(caseDetails.additionalNotes)} type="text" />
+      </CollapsibleSection>
+
+      {/* Services */}
+      <CollapsibleSection title="Services">
+        {(() => {
+          const interpreterService = caseDetails.services?.find(s => s.type?.toUpperCase() === 'INTERPRETER' && s.enabled);
+          const transportService = caseDetails.services?.find(s => s.type?.toUpperCase() === 'TRANSPORTATION' && s.enabled);
+          const hasServices = interpreterService || transportService || caseDetails.supportPerson;
+
+          if (!hasServices) {
+            return <FieldRow label="Services" value="No services requested" type="text" />;
+          }
+
+          return (
+            <>
+              {/* Interpreter */}
+              {interpreterService && (
+                <>
+                  <div className="mb-3 font-poppins text-[16px] font-semibold text-[#1A1A1A]">
+                    Interpreter
+                  </div>
+                  <FieldRow 
+                    label="Language" 
+                    value={interpreterService.interpreter?.languageName || "-"} 
+                    type="text" 
+                  />
+                </>
+              )}
+
+              {/* Transportation */}
+              {transportService && (
+                <>
+                  <div className="mb-3 mt-4 font-poppins text-[16px] font-semibold text-[#1A1A1A]">
+                    Transportation
+                  </div>
+                  <FieldRow 
+                    label="Pick-Up Address" 
+                    value={
+                      transportService.transport?.address
+                        ? [
+                            safeValue(transportService.transport.address),
+                            safeValue(transportService.transport.street),
+                            safeValue(transportService.transport.city),
+                            safeValue(transportService.transport.province),
+                          ]
+                            .filter((part) => part !== "-")
+                            .join(", ") || "-"
+                        : "-"
+                    }
+                    type="text" 
+                  />
+                  {transportService.transport?.notes && (
+                    <FieldRow 
+                      label="Notes" 
+                      value={safeValue(transportService.transport.notes)} 
+                      type="text" 
+                    />
+                  )}
+                </>
+              )}
+
+              {/* Support Person */}
+              {caseDetails.supportPerson && (
+                <>
+                  <div className="mb-3 mt-4 font-poppins text-[16px] font-semibold text-[#1A1A1A]">
+                    Support Person
+                  </div>
+                  <FieldRow 
+                    label="Support Person Required" 
+                    value="Yes" 
+                    type="text" 
+                  />
+                </>
+              )}
+            </>
+          );
+        })()}
       </CollapsibleSection>
 
       {/* Documents */}

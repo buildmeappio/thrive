@@ -155,7 +155,7 @@ const ChaperoneTable = ({
       </div>
 
       {/* Pagination - Outside the card */}
-      <div className="mt-4 px-6">
+      <div className="mt-4 px-3 sm:px-6 overflow-x-hidden">
         <Pagination table={table} />
       </div>
     </>

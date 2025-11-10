@@ -289,7 +289,7 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
       </div>
       
       {/* Pagination */}
-      <div className="px-6 mt-4">
+      <div className="px-3 sm:px-6 mt-4 overflow-x-hidden">
         <Pagination table={table} />
       </div>
     </>

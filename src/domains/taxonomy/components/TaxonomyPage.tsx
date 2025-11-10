@@ -30,6 +30,8 @@ import {
 import { TaxonomyConfigs } from "../config/taxonomyConfig";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type TaxonomyPageProps = {
   type: TaxonomyType;
@@ -146,24 +148,34 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 taxonomy-page">
+      <div className="flex items-center justify-between dashboard-zoom-mobile">
         <div>
           <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
             {config.name}
           </h1>
         </div>
+        {/* Add Button - Visible on Mobile, Hidden on Desktop (will show in table section) */}
+        <Button
+          onClick={handleCreate}
+          className="flex sm:hidden items-center justify-center gap-1.5 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white rounded-full px-3 py-1.5 hover:opacity-90 transition-opacity font-semibold text-xs"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span className="whitespace-nowrap">Add</span>
+        </Button>
       </div>
 
-      <TaxonomyTable
-        taxonomyList={initialData}
-        displayFields={config.displayFields}
-        searchFields={config.searchFields}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onCreate={handleCreate}
-        singularName={config.singularName}
-      />
+      <div className="dashboard-zoom-mobile">
+        <TaxonomyTable
+          taxonomyList={initialData}
+          displayFields={config.displayFields}
+          searchFields={config.searchFields}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onCreate={handleCreate}
+          singularName={config.singularName}
+        />
+      </div>
 
       <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
         <DialogContent className="max-w-2xl">

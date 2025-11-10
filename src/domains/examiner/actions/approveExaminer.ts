@@ -2,6 +2,7 @@
 
 import { getCurrentUser } from "@/domains/auth/server/session";
 import examinerService from "../server/examiner.service";
+import contractService from "../server/contract.service";
 import { sendMail } from "@/lib/email";
 import { signAccountToken } from "@/lib/jwt";
 import {
@@ -43,6 +44,23 @@ const approveExaminer = async (examinerId: string) => {
     examinerId,
     user.accountId
   );
+
+  // Generate and upload contract to S3 (don't fail approval if this fails)
+  try {
+    console.log("📄 Generating contract for examiner...");
+    const contractResult = await contractService.createAndSendContract(
+      examinerId,
+      user.accountId
+    );
+
+    if (contractResult.success) {
+      console.log("✅ Contract generated and uploaded successfully:", contractResult.contractId);
+    } else {
+      console.error("⚠️ Failed to generate contract (but approval succeeded):", contractResult.error);
+    }
+  } catch (contractError) {
+    console.error("⚠️ Failed to generate contract (but approval succeeded):", contractError);
+  }
 
   // Send approval email with token (don't fail approval if email fails)
   try {

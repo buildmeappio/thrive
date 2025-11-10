@@ -106,7 +106,7 @@ export const routes: Route[] = [
       },
     ],
   },
-  { icon: LifeBuoy, label: "Support", href: "/dashboard/support", index: 9 },
+  { icon: LifeBuoy, label: "Support", href: "/support", index: 9 },
 ];
 
 const Sidebar = () => {

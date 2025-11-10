@@ -20,26 +20,29 @@ const completeReview = async (caseId: string): Promise<void> => {
     throw new Error("Case not found");
   }
 
-  // Update case status to "Waiting to be Scheduled" in database
+  // Update case status to "Ready to be Appointment" in database
   try {
-    // Find the "Waiting to be Scheduled" status
+    // Find the "Ready to be Appointment" status
     const waitingStatus = await prisma.caseStatus.findFirst({
       where: {
-        name: "Waiting to be Scheduled",
+        name: "Ready to be Appointment",
       },
     });
 
     if (!waitingStatus) {
-      throw new Error("Waiting to be Scheduled status not found in database");
+      throw new Error("Ready to be Appointment status not found in database");
     }
 
-    // Update the examination status
+    // Update the examination status and set approval timestamp
     await prisma.examination.update({
       where: { id: caseId },
-      data: { statusId: waitingStatus.id },
+      data: { 
+        statusId: waitingStatus.id,
+        approvedAt: new Date(),
+      },
     });
 
-    console.log("✓ Case status updated to Waiting to be Scheduled");
+    console.log("✓ Case status updated to Ready to be Appointment with approval timestamp");
   } catch (dbError) {
     console.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");
@@ -87,7 +90,7 @@ async function sendApprovalEmailToClaimant(caseDetails: CaseDetailDtoType) {
     : "Unknown";
 
   const result = await emailService.sendEmail(
-    `Case ${caseDetails.caseNumber} - Approved! Set Your Availability`,
+    `Select Your Appointment - Thrive`,
     "case-approval.html",
     {
       firstName,
