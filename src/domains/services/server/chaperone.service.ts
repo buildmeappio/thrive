@@ -1,5 +1,6 @@
 import { HttpError } from '@/utils/httpError';
 import { CreateChaperoneInput, UpdateChaperoneInput, ChaperoneData, ChaperoneWithAvailability } from '../types/Chaperone';
+import { convertTimeToUTC } from '@/utils/timezone';
 import prisma from '@/lib/db';
 
 export const createChaperone = async (data: CreateChaperoneInput) => {
@@ -54,13 +55,13 @@ export const createChaperone = async (data: CreateChaperoneInput) => {
                 },
               });
 
-              // Create time slots for this day
+              // Create time slots for this day (convert to UTC)
               for (const slot of weeklyHour.timeSlots) {
                 await tx.providerWeeklyTimeSlot.create({
                   data: {
                     weeklyHourId: weeklyHourRecord.id,
-                    startTime: slot.startTime,
-                    endTime: slot.endTime,
+                    startTime: convertTimeToUTC(slot.startTime, undefined, new Date()),
+                    endTime: convertTimeToUTC(slot.endTime, undefined, new Date()),
                   },
                 });
               }
@@ -79,13 +80,14 @@ export const createChaperone = async (data: CreateChaperoneInput) => {
                 },
               });
 
-              // Create time slots for this override date
+              // Create time slots for this override date (convert to UTC using override date)
+              const overrideDate = new Date(overrideHour.date);
               for (const slot of overrideHour.timeSlots) {
                 await tx.providerOverrideTimeSlot.create({
                   data: {
                     overrideHourId: overrideHourRecord.id,
-                    startTime: slot.startTime,
-                    endTime: slot.endTime,
+                    startTime: convertTimeToUTC(slot.startTime, undefined, overrideDate),
+                    endTime: convertTimeToUTC(slot.endTime, undefined, overrideDate),
                   },
                 });
               }
@@ -214,12 +216,13 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
                 },
               });
 
+              // Convert times to UTC before saving
               for (const slot of weeklyHour.timeSlots) {
                 await tx.providerWeeklyTimeSlot.create({
                   data: {
                     weeklyHourId: weeklyHourRecord.id,
-                    startTime: slot.startTime,
-                    endTime: slot.endTime,
+                    startTime: convertTimeToUTC(slot.startTime, undefined, new Date()),
+                    endTime: convertTimeToUTC(slot.endTime, undefined, new Date()),
                   },
                 });
               }
@@ -238,12 +241,14 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
                 },
               });
 
+              // Convert times to UTC using override date as reference
+              const overrideDate = new Date(overrideHour.date);
               for (const slot of overrideHour.timeSlots) {
                 await tx.providerOverrideTimeSlot.create({
                   data: {
                     overrideHourId: overrideHourRecord.id,
-                    startTime: slot.startTime,
-                    endTime: slot.endTime,
+                    startTime: convertTimeToUTC(slot.startTime, undefined, overrideDate),
+                    endTime: convertTimeToUTC(slot.endTime, undefined, overrideDate),
                   },
                 });
               }
