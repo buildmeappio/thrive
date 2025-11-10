@@ -5,6 +5,15 @@ import { UseFormReturn } from "react-hook-form";
 import { AvailabilityPreferencesInput } from "../../../schemas/onboardingSteps.schema";
 import { timeOptions } from "@/constants/options";
 
+/**
+ * OverrideHours Component
+ *
+ * Note: This component works with LOCAL TIME (12-hour format with AM/PM).
+ * Time conversion to/from UTC happens in the parent form component:
+ * - When loading: UTC → Local (for display)
+ * - When saving: Local → UTC (for database storage)
+ */
+
 interface OverrideHoursProps {
   form: UseFormReturn<AvailabilityPreferencesInput>;
 }
@@ -13,6 +22,12 @@ const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
   const overrideHours = form.watch("overrideHours") || [];
+
+  // Sync selectedDates with overrideHours when component mounts or overrideHours changes
+  React.useEffect(() => {
+    const dates = new Set(overrideHours.map((oh) => oh.date));
+    setSelectedDates(dates);
+  }, [overrideHours.length]); // Only re-run when the number of override hours changes
 
   // Calendar functions
   const getDaysInMonth = (date: Date) => {

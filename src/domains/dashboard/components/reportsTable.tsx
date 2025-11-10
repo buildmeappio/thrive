@@ -41,32 +41,22 @@ export default function ReportsTable({
 
       {/* Table */}
       <div className="mt-4 overflow-x-auto rounded-2xl overflow-hidden -mx-2 px-2 sm:mx-0 sm:px-0">
-        <Table className="w-full border-0 table-fixed">
+        <Table className="w-full border-0">
           <TableHeader>
             <TableRow className="bg-transparent border-none hover:bg-transparent">
-              <TableHead
-                style={{ width: "180px", minWidth: "150px", maxWidth: "220px" }}
-                className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 rounded-tl-2xl rounded-bl-2xl whitespace-nowrap overflow-hidden bg-[#F3F3F3]">
+              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 rounded-tl-2xl rounded-bl-2xl whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[18%]">
                 Claimant
               </TableHead>
-              <TableHead
-                style={{ width: "180px", minWidth: "150px", maxWidth: "220px" }}
-                className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3]">
+              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[18%]">
                 Company
               </TableHead>
-              <TableHead
-                style={{ width: "150px", minWidth: "120px", maxWidth: "180px" }}
-                className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3]">
+              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[18%]">
                 Due Date
               </TableHead>
-              <TableHead
-                style={{ width: "200px", minWidth: "150px", maxWidth: "250px" }}
-                className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3]">
+              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[25%]">
                 Reason
               </TableHead>
-              <TableHead
-                style={{ width: "150px", minWidth: "120px", maxWidth: "180px" }}
-                className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 rounded-tr-2xl rounded-br-2xl whitespace-nowrap overflow-hidden bg-[#F3F3F3]">
+              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 rounded-tr-2xl rounded-br-2xl whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[21%]">
                 Status
               </TableHead>
             </TableRow>
@@ -80,45 +70,35 @@ export default function ReportsTable({
                   <TableRow
                     key={r.id}
                     className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]">
-                    <TableCell
-                      style={{ width: "180px", minWidth: "150px", maxWidth: "220px" }}
-                      className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
+                    <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">
                       <div
                         className="text-[16px] leading-normal truncate"
                         title={r.claimant}>
                         {truncateText(r.claimant, 25)}
                       </div>
                     </TableCell>
-                    <TableCell
-                      style={{ width: "180px", minWidth: "150px", maxWidth: "220px" }}
-                      className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
+                    <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">
                       <div
                         className="text-[16px] leading-normal truncate"
                         title={capitalizeWords(r.company)}>
                         {truncateText(capitalizeWords(r.company), 25)}
                       </div>
                     </TableCell>
-                    <TableCell
-                      style={{ width: "150px", minWidth: "120px", maxWidth: "180px" }}
-                      className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
+                    <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">
                       <div
-                        className="text-[16px] leading-normal"
+                        className="text-[16px] leading-normal truncate"
                         title={formatDateShort(r.dueDate)}>
                         {formatDateShort(r.dueDate)}
                       </div>
                     </TableCell>
-                    <TableCell
-                      style={{ width: "200px", minWidth: "150px", maxWidth: "250px" }}
-                      className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
+                    <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[25%]">
                       <div
                         className="text-[16px] leading-normal truncate"
                         title={r.reason}>
-                        {truncateText(r.reason, 30)}
+                        {truncateText(r.reason, 25)}
                       </div>
                     </TableCell>
-                    <TableCell
-                      style={{ width: "150px", minWidth: "120px", maxWidth: "180px" }}
-                      className="py-5 sm:py-3 overflow-hidden align-middle">
+                    <TableCell className="py-5 sm:py-3 overflow-hidden align-middle w-[21%]">
                       <div className="flex items-center justify-between gap-3">
                         <span
                           className={`text-[16px] tracking-[-0.01em] font-poppins min-w-0 flex-1 ${

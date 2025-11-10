@@ -52,33 +52,8 @@ const DashboardPage = async () => {
       ? bookingsResult.data.upcomingAppointments
       : [];
 
-  // Dummy data for Waiting to be Submitted
-  const reports: ReportRow[] = [
-    {
-      id: "1",
-      claimant: "John Doe",
-      company: "Desjardin",
-      dueDate: new Date("2025-04-18"),
-      reason: "Modification",
-      status: "Pending",
-    },
-    {
-      id: "2",
-      claimant: "Jonathan",
-      company: "Canada Life",
-      dueDate: new Date("2025-04-19"),
-      reason: "Edits Requested",
-      status: "Pending",
-    },
-    {
-      id: "3",
-      claimant: "TRV-2047",
-      company: "Manulife",
-      dueDate: new Date("2025-04-20"),
-      reason: "IME Edits",
-      status: "Overdue",
-    },
-  ];
+  // Empty data for Waiting to be Submitted (to be implemented later)
+  const reports: ReportRow[] = [];
 
   // Dummy data for Recent Updates
   const updates = [

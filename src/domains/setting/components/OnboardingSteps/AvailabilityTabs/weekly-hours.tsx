@@ -5,6 +5,15 @@ import { UseFormReturn } from "react-hook-form";
 import { AvailabilityPreferencesInput } from "../../../schemas/onboardingSteps.schema";
 import { DayOfWeek, daysOptions, timeOptions } from "@/constants/options";
 
+/**
+ * WeeklyHours Component
+ *
+ * Note: This component works with LOCAL TIME (12-hour format with AM/PM).
+ * Time conversion to/from UTC happens in the parent form component:
+ * - When loading: UTC → Local (for display)
+ * - When saving: Local → UTC (for database storage)
+ */
+
 interface WeeklyHoursProps {
   form: UseFormReturn<AvailabilityPreferencesInput>;
 }

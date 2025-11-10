@@ -14,9 +14,9 @@ export default function UpdatesPanel({
       aria-labelledby="updates-heading"
       style={{ fontFamily: "Poppins, system-ui" }}>
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 pb-3 w-full">
-        <div className="flex items-center gap-3">
-          <span className="grid h-[40px] sm:h-[30.5px] w-[40px] sm:w-[30.5px] place-items-center rounded-full bg-[#EEEFFF]">
+      <div className="flex items-center justify-between gap-3 pb-3 w-full min-w-0">
+        <div className="flex items-center gap-3 min-w-0 flex-shrink">
+          <span className="grid h-[40px] sm:h-[30.5px] w-[40px] sm:w-[30.5px] place-items-center rounded-full bg-[#EEEFFF] flex-shrink-0">
             {/* gradient bell */}
             <Bell
               className="h-[20px] sm:h-[16px] w-[20px] sm:w-[16px]"
@@ -25,14 +25,14 @@ export default function UpdatesPanel({
           </span>
           <h3
             id="updates-heading"
-            className="text-[22px] sm:text-[18.64px] font-medium tracking-[-0.02em] text-black whitespace-nowrap">
+            className="text-[22px] sm:text-[18.64px] font-medium tracking-[-0.02em] text-black whitespace-nowrap overflow-hidden text-ellipsis">
             Recent Updates
           </h3>
         </div>
 
         <Link
           href={listHref}
-          className="h-[40px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 sm:px-4 text-white text-[15px] sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0">
+          className="h-[40px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 sm:px-4 text-white text-[15px] sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap flex-shrink-0">
           View All
         </Link>
       </div>

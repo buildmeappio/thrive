@@ -243,7 +243,7 @@ export default function CasesPageContent({
         </div>
 
         {/* Cases Table Card */}
-        <div className="bg-white rounded-[29px] shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6 w-full">
+        <div className="bg-white rounded-[29px] shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-4 w-full">
           {tableElement}
         </div>
 

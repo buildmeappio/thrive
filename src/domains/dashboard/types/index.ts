@@ -1,9 +1,9 @@
 // Cases Table Types (Case Offers Pending Review)
 export type CaseRow = {
   id: string;
+  caseNumber: string;
   claimant: string;
-  company: string;
-  benefits: string;
+  claimType: string;
   appointment: Date | string;
   dueDate: Date | string;
 };
@@ -18,9 +18,9 @@ export type CasesTableProps = {
 // Appointments Table Types (Upcoming Appointments)
 export type AppointmentRow = {
   id: string;
+  caseNumber: string;
   claimant: string;
-  company: string;
-  benefits: string;
+  claimType: string;
   appointment: Date | string;
   dueDate: Date | string;
 };
@@ -79,9 +79,9 @@ export type GetDashboardBookingsInput = {
 
 export type DashboardBookingData = {
   id: string;
+  caseNumber: string;
   claimant: string;
-  company: string;
-  benefits: string;
+  claimType: string;
   appointment: Date;
   dueDate: Date;
 };
@@ -108,6 +108,7 @@ export type CaseDetailsData = {
   claimant: {
     firstName: string;
     lastName: string;
+    claimType: string | null;
     dateOfBirth: Date | null;
     gender: string | null;
     phoneNumber: string | null;

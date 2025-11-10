@@ -79,7 +79,7 @@ const BookingOptions: React.FC<BookingOptionsProps> = ({ form }) => {
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-6">
-                    <label className="flex items-center gap-2 cursor-pointer">
+                    <div className="flex items-center gap-2">
                       <Checkbox
                         checked={appointmentTypes.includes("phone")}
                         onCheckedChange={(checked) =>
@@ -89,9 +89,18 @@ const BookingOptions: React.FC<BookingOptionsProps> = ({ form }) => {
                           )
                         }
                       />
-                      <span className="text-sm text-gray-800">Phone Call</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
+                      <span
+                        className="text-sm text-gray-800 cursor-pointer select-none"
+                        onClick={() =>
+                          handleAppointmentTypeChange(
+                            "phone",
+                            !appointmentTypes.includes("phone")
+                          )
+                        }>
+                        Phone Call
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <Checkbox
                         checked={appointmentTypes.includes("video")}
                         onCheckedChange={(checked) =>
@@ -101,8 +110,17 @@ const BookingOptions: React.FC<BookingOptionsProps> = ({ form }) => {
                           )
                         }
                       />
-                      <span className="text-sm text-gray-800">Video</span>
-                    </label>
+                      <span
+                        className="text-sm text-gray-800 cursor-pointer select-none"
+                        onClick={() =>
+                          handleAppointmentTypeChange(
+                            "video",
+                            !appointmentTypes.includes("video")
+                          )
+                        }>
+                        Video
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
