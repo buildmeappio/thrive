@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import InterpreterTableWithPagination from "@/domains/interpreter/components/InterpreterTableWithPagination";
 import Pagination from "@/components/Pagination";
 import { InterpreterData } from "@/domains/interpreter/types/InterpreterData";
@@ -8,6 +8,7 @@ import { DashboardShell } from "@/layouts/dashboard";
 import { Funnel } from "lucide-react";
 import { Language } from "@prisma/client";
 import Link from "next/link";
+import { filterUUIDLanguages } from "@/utils/languageUtils";
 
 interface InterpreterPageContentProps {
   data: InterpreterData[];
@@ -24,6 +25,18 @@ export default function InterpreterPageContent({ data, languages }: InterpreterP
     languageId: "all",
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+
+  // Filter out UUID languages - only show languages with valid names
+  const validLanguages = useMemo(() => {
+    return filterUUIDLanguages(languages).filter(lang => lang.name && lang.name.trim() !== "");
+  }, [languages]);
+
+  // Reset filter if selected language is not in valid languages
+  useEffect(() => {
+    if (filters.languageId !== "all" && !validLanguages.find(l => l.id === filters.languageId)) {
+      setFilters(prev => ({ ...prev, languageId: "all" }));
+    }
+  }, [validLanguages, filters.languageId]);
 
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
     setFilters(prev => ({
@@ -137,7 +150,7 @@ export default function InterpreterPageContent({ data, languages }: InterpreterP
                 <Funnel className="w-3.5 h-3.5 sm:w-4 sm:h-4" stroke="url(#languageGradient)" />
                 <span>
                   {filters.languageId !== "all"
-                    ? languages.find(l => l.id === filters.languageId)?.name || "Language"
+                    ? validLanguages.find(l => l.id === filters.languageId)?.name || "Language"
                     : "Language"}
                 </span>
                 <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "language" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,7 +171,7 @@ export default function InterpreterPageContent({ data, languages }: InterpreterP
                     >
                       All Languages
                     </button>
-                    {languages.map((language) => (
+                    {validLanguages.map((language) => (
                       <button
                         key={language.id}
                         onClick={(e) => {
