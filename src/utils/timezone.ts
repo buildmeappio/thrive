@@ -78,9 +78,27 @@ export function convertUTCToLocal(
   referenceDate?: Date
 ): string {
   try {
-    const [hours, minutes] = utcTimeString.split(':').map(Number);
-    if (isNaN(hours) || isNaN(minutes)) {
-      return utcTimeString;
+    const trimmedTime = utcTimeString.trim();
+    
+    // Check if already in 12-hour format (has AM/PM), return as-is
+    if (/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.test(trimmedTime)) {
+      return trimmedTime;
+    }
+    
+    // Parse UTC time string (HH:mm format)
+    const timeMatch = trimmedTime.match(/^(\d{1,2}):(\d{2})$/);
+    if (!timeMatch) {
+      console.warn(`Failed to parse UTC time string: ${utcTimeString}, returning as-is`);
+      return trimmedTime;
+    }
+    
+    const hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+    
+    // Validate hours and minutes
+    if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours >= 24 || minutes < 0 || minutes >= 60) {
+      console.warn(`Invalid UTC time values: ${hours}:${minutes}, returning as-is`);
+      return trimmedTime;
     }
     
     const refDate = referenceDate || new Date();
