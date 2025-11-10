@@ -1,4 +1,5 @@
 import prisma from "@/lib/db";
+import { convertTimeToUTC } from "@/utils/timezone";
 
 export type WeeklyHoursData = {
   dayOfWeek:
@@ -58,8 +59,8 @@ class InterpreterAvailabilityService {
         await prisma.providerWeeklyTimeSlot.createMany({
           data: dayData.timeSlots.map((slot) => ({
             weeklyHourId: weeklyHour.id,
-            startTime: slot.startTime,
-            endTime: slot.endTime,
+            startTime: convertTimeToUTC(slot.startTime, undefined, new Date()),
+            endTime: convertTimeToUTC(slot.endTime, undefined, new Date()),
           })),
         });
       }
@@ -105,11 +106,12 @@ class InterpreterAvailabilityService {
       });
 
       if (overrideData.timeSlots.length > 0) {
+        // Convert times to UTC using override date as reference
         await prisma.providerOverrideTimeSlot.createMany({
           data: overrideData.timeSlots.map((slot) => ({
             overrideHourId: overrideHour.id,
-            startTime: slot.startTime,
-            endTime: slot.endTime,
+            startTime: convertTimeToUTC(slot.startTime, undefined, dateObj),
+            endTime: convertTimeToUTC(slot.endTime, undefined, dateObj),
           })),
         });
       }
