@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Booking Submitted</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+        text-align: center;
+      }
+
+      .header img {
+        width: 120px;
+      }
+
+      .body {
+        margin-top: 20px;
+        font-size: 16px;
+        color: #333333;
+      }
+
+      .body p {
+        margin-bottom: 20px;
+      }
+
+      .footer {
+        margin-top: 30px;
+        font-size: 14px;
+        color: #777777;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <img
+          src="https://assets.thriveassessmentcare.com/images/thriveLogo.png"
+          alt="Thrive Logo"
+        />
+      </div>
+
+      <div class="body">
+        <p>Hi {{claimantName}},</p>
+        <p>
+          We have successfully received your booking request.
+        </p>
+        <p>
+          <strong>Booking Details:</strong>
+        </p>
+        <ul>
+          <li><strong>Case Number:</strong> {{caseNumber}}</li>
+          <li><strong>Examination Type:</strong> {{examinationType}}</li>
+          <li><strong>Requested Date & Time:</strong> {{bookingDate}}</li>
+          <li><strong>Preference:</strong> {{preference}}</li>
+        </ul>
+        <p><strong>What Happens Next:</strong></p>
+        <ul>
+          <li>The examiner will review your booking request and update the status</li>
+          <li>You will receive an email notification once the examiner updates the status</li>
+          <li>The examiner may accept, decline, or request more information</li>
+          <li>If accepted, your appointment will be confirmed</li>
+        </ul>
+        <p>We appreciate your patience as we process your booking request.</p>
+      </div>
+
+      <div class="footer">
+        <p>
+          If you have any questions or need assistance, feel free to contact us at
+          <a href="mailto:support@thrivenetwork.ca">support@thrivenetwork.ca</a>.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
