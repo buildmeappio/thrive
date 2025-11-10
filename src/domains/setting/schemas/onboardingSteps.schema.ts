@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validateNameField, validateAddressField } from "@/utils/inputValidation";
 
 // Schema for profile info
 export const profileInfoSchema = z.object({
@@ -16,6 +17,12 @@ export const profileInfoSchema = z.object({
     })
     .refine((val) => !/^\s+$/.test(val), {
       message: "First name cannot contain only spaces",
+    })
+    .refine((val) => {
+      const error = validateNameField(val);
+      return error === null;
+    }, {
+      message: "Please enter a valid first name",
     }),
   lastName: z
     .string()
@@ -31,6 +38,12 @@ export const profileInfoSchema = z.object({
     })
     .refine((val) => !/^\s+$/.test(val), {
       message: "Last name cannot contain only spaces",
+    })
+    .refine((val) => {
+      const error = validateNameField(val);
+      return error === null;
+    }, {
+      message: "Please enter a valid last name",
     }),
   phoneNumber: z
     .string()
@@ -65,6 +78,12 @@ export const profileInfoSchema = z.object({
     })
     .refine((val) => val.length >= 10, {
       message: "Mailing address must be at least 10 characters",
+    })
+    .refine((val) => {
+      const error = validateAddressField(val);
+      return error === null;
+    }, {
+      message: "Please enter a valid mailing address",
     }),
   profilePhoto: z.string().optional(),
   bio: z
@@ -195,7 +214,14 @@ export const payoutDetailsSchema = z
     chequeMailingAddress: z
       .string()
       .optional()
-      .transform((val) => val?.trim() || ""), // Trim whitespace
+      .transform((val) => val?.trim() || "") // Trim whitespace
+      .refine((val) => {
+        if (!val) return true; // Optional field
+        const error = validateAddressField(val);
+        return error === null;
+      }, {
+        message: "Please enter a valid cheque mailing address",
+      }),
     // Interac E-Transfer fields
     interacEmail: z
       .string()

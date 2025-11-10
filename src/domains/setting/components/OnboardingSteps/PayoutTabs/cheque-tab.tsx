@@ -17,6 +17,7 @@ const ChequeTab: React.FC = () => {
               {...field}
               placeholder="Enter mailing address for cheque delivery"
               className="bg-[#F9F9F9] flex-1 h-[40px]"
+              validationType="address"
             />
           )}
         </FormField>

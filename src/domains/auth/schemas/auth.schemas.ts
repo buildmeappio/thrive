@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { parsePhoneNumberWithError } from "libphonenumber-js";
+import { validateNameField, validateLicenseField, validateAddressField } from "@/utils/inputValidation";
 
 export const loginSchema = z.object({
   email: z.string().email({ message: "Enter a valid email address" }),
@@ -25,6 +26,12 @@ export const step1PersonalInfoSchema = z.object({
     })
     .refine((val) => !/^\s+$/.test(val), {
       message: "First name cannot contain only spaces",
+    })
+    .refine((val) => {
+      const error = validateNameField(val);
+      return error === null;
+    }, {
+      message: "Please enter a valid first name",
     }),
   lastName: z
     .string()
@@ -40,6 +47,12 @@ export const step1PersonalInfoSchema = z.object({
     })
     .refine((val) => !/^\s+$/.test(val), {
       message: "Last name cannot contain only spaces",
+    })
+    .refine((val) => {
+      const error = validateNameField(val);
+      return error === null;
+    }, {
+      message: "Please enter a valid last name",
     }),
   phoneNumber: z
     .string()
@@ -120,6 +133,12 @@ export const step2MedicalCredentialsSchema = z.object({
     })
     .refine((val) => !/^\s+$/.test(val), {
       message: "License number cannot contain only spaces",
+    })
+    .refine((val) => {
+      const error = validateLicenseField(val);
+      return error === null;
+    }, {
+      message: "Please enter a valid license number",
     }),
   provinceOfLicensure: z
     .string({ error: "Province of licensure is required" })

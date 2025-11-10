@@ -171,6 +171,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
                   {...field}
                   id="licenseNumber"
                   placeholder="CPSO #09234"
+                  validationType="license"
                 />
               )}
             </FormField>

@@ -1,13 +1,33 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
+import { sanitizeOnBlur } from '@/utils/inputValidation';
 
 interface TextareaProps extends React.ComponentProps<'textarea'> {
   icon?: LucideIcon;
   iconPosition?: 'left' | 'right';
 }
 
-function Textarea({ className, icon: Icon, iconPosition = 'left', ...props }: TextareaProps) {
+function Textarea({ className, icon: Icon, iconPosition = 'left', onChange, onBlur, ...props }: TextareaProps) {
+  const handleBlurEvent = React.useCallback(
+    (e: React.FocusEvent<HTMLTextAreaElement>) => {
+      const sanitizedValue = sanitizeOnBlur(e.target.value, 'text');
+      if (sanitizedValue !== e.target.value) {
+        e.target.value = sanitizedValue;
+        // Trigger onChange with sanitized value
+        const syntheticEvent = {
+          ...e,
+          target: {
+            ...e.target,
+            value: sanitizedValue,
+          },
+        };
+        onChange?.(syntheticEvent as React.ChangeEvent<HTMLTextAreaElement>);
+      }
+      onBlur?.(e);
+    },
+    [onChange, onBlur]
+  );
   return (
     <div className="relative">
       {Icon && iconPosition === 'left' && (
@@ -25,6 +45,8 @@ function Textarea({ className, icon: Icon, iconPosition = 'left', ...props }: Te
           Icon && iconPosition === 'right' && 'pr-11',
           className
         )}
+        onChange={onChange}
+        onBlur={handleBlurEvent}
         {...props}
       />
       {Icon && iconPosition === 'right' && (

@@ -7,7 +7,7 @@ import {
   ExperienceDetails,
   Availablity,
   Legal,
-  PaymentDetails,
+  // PaymentDetails,
   SubmitConfirmation,
   ThankYou,
 } from "./RegisterationSteps";
@@ -54,7 +54,7 @@ const RegisterForm: React.FC<{
     { component: IMEExperince },
     { component: ExperienceDetails },
     { component: Availablity },
-    { component: PaymentDetails },
+    // { component: PaymentDetails },
     { component: Legal },
     { component: SubmitConfirmation },
     { component: ThankYou },
