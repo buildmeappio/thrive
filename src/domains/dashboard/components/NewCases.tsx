@@ -19,11 +19,11 @@ import {
 const formatText = (str: string): string => {
   if (!str) return str;
   return str
-    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
-    .split(' ')
-    .filter(word => word.length > 0)  // Remove empty strings
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+    .replace(/[-_]/g, " ") // Replace - and _ with spaces
+    .split(" ")
+    .filter((word) => word.length > 0) // Remove empty strings
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 };
 
 export type CaseRow = {
@@ -36,11 +36,11 @@ export type CaseRow = {
 };
 
 type Props = {
-  items: CaseDetailDtoType[];                 // rows to show
-  listHref: string;                 // e.g. "/cases"
+  items: CaseDetailDtoType[]; // rows to show
+  listHref: string; // e.g. "/cases"
   buildDetailHref?: (id: string) => string; // defaults to `${listHref}/${id}`
-  title?: string;                   // override title if needed
-  subtitle?: string;                // override subtitle
+  title?: string; // override title if needed
+  subtitle?: string; // override subtitle
 };
 
 export default function NewCases({
@@ -53,21 +53,18 @@ export default function NewCases({
   return (
     <section
       className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
-      aria-labelledby="new-cases-heading"
-    >
+      aria-labelledby="new-cases-heading">
       {/* Title + CTA */}
       <div className="flex items-center justify-between gap-2 sm:gap-3">
         <h3
           id="new-cases-heading"
-          className="font-degular font-[600] text-[26px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black"
-        >
+          className="font-degular font-[600] text-[26px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black">
           {title}
         </h3>
 
         <Link
           href={listHref}
-          className="h-[40px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 sm:px-4 text-white text-[15px] sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0"
-        >
+          className="h-[40px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 sm:px-4 text-white text-[15px] sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0">
           View All
         </Link>
       </div>
@@ -105,39 +102,50 @@ export default function NewCases({
           <TableBody>
             {items?.map((r) => {
               const href = buildDetailHref(r.id);
-              const priorityText = r.urgencyLevel === "HIGH" ? "Urgent" : "Normal";
-              const priorityColor = r.urgencyLevel === "HIGH" ? "text-[#FF0000]" : "text-[#FFB800]";
-              
+              const priorityText =
+                r.urgencyLevel === "HIGH" ? "Urgent" : "Normal";
+              const priorityColor =
+                r.urgencyLevel === "HIGH" ? "text-[#FF0000]" : "text-[#FFB800]";
+
               return (
-                <TableRow 
+                <TableRow
                   key={r.id}
-                  className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
-                >
+                  className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]">
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#1A1A1A] font-mono tabular-nums font-poppins py-5 sm:py-3 min-w-[140px] sm:min-w-0">
                     <span className="block">{r.caseNumber}</span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[160px] sm:min-w-0">
-                    <span className="block">{capitalizeWords(r.case.organization?.name || "N/A")}</span>
+                    <span className="block">
+                      {capitalizeWords(r.case.organization?.name || "N/A")}
+                    </span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[160px] sm:min-w-0">
-                    <span className="block">{r.case.caseType?.name ? formatText(r.case.caseType.name) : "N/A"}</span>
+                    <span className="block">
+                      {r.case.caseType?.name
+                        ? formatText(r.case.caseType.name)
+                        : "N/A"}
+                    </span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[140px] sm:min-w-0">
-                    <span className="block">{formatDateShort(r.createdAt)}</span>
+                    <span className="block">
+                      {formatDateShort(r.createdAt)}
+                    </span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[130px] sm:min-w-0">
-                    <span className="block">{r.dueDate ? formatDateShort(r.dueDate) : "N/A"}</span>
+                    <span className="block">
+                      {r.dueDate ? formatDateShort(r.dueDate) : "N/A"}
+                    </span>
                   </TableCell>
                   <TableCell className="py-5 sm:py-3 min-w-[140px] sm:min-w-0">
                     <div className="flex items-center justify-between gap-3">
-                      <span className={`text-[17px] sm:text-[14px] tracking-[-0.01em] font-medium ${priorityColor} font-poppins min-w-0 flex-1`}>
+                      <span
+                        className={`text-[17px] sm:text-[14px] tracking-[-0.01em] font-medium ${priorityColor} font-poppins min-w-0 flex-1`}>
                         {priorityText}
                       </span>
                       <Link
                         href={href}
                         aria-label={`Open ${r.caseNumber}`}
-                        className="flex-shrink-0 grid h-7 w-7 sm:h-5 sm:w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
-                      >
+                        className="flex-shrink-0 grid h-7 w-7 sm:h-5 sm:w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]">
                         <ChevronRight className="h-5 w-5 sm:h-3.5 sm:w-3.5 text-[#00A8FF]" />
                       </Link>
                     </div>
