@@ -31,46 +31,115 @@ export const formatDateLong = (d: string | number | Date) =>
 export const formatTaxonomyName = (name: string): string => {
   if (!name) return name;
   
-  // First, protect numeric ranges (e.g., "2-3", "10-20") by temporarily replacing them
-  // This pattern matches digits-hyphen-digits (numeric ranges)
+  // Pattern to match numeric ranges (digits-hyphen-digits)
   const numericRangePattern = /(\d+)-(\d+)/g;
-  const protectedRanges: string[] = [];
-  const protectedName = name.replace(numericRangePattern, (match) => {
-    protectedRanges.push(match);
-    return `__PROTECTED_RANGE_${protectedRanges.length - 1}__`;
-  });
   
-  // Replace underscores and remaining hyphens with spaces
-  const withSpaces = protectedName.replace(/[_-]/g, ' ');
+  // Find all numeric ranges and their positions
+  const ranges: Array<{ start: number; end: number; value: string }> = [];
+  let match;
+  const nameCopy = name;
   
-  // Words that should remain lowercase in title case
-  const lowercaseWords = ['or', 'and', 'of', 'the', 'in', 'on', 'at', 'to', 'for', 'a', 'an'];
+  // Reset regex lastIndex to ensure we find all matches
+  numericRangePattern.lastIndex = 0;
+  while ((match = numericRangePattern.exec(nameCopy)) !== null) {
+    ranges.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      value: match[0],
+    });
+  }
   
-  // Split into words and capitalize appropriately
-  const words = withSpaces.split(/\s+/).filter(word => word.length > 0);
-  const formatted = words.map((word, index) => {
-    // Restore protected numeric ranges
-    const rangeMatch = word.match(/^__PROTECTED_RANGE_(\d+)__$/);
-    if (rangeMatch) {
-      const rangeIndex = parseInt(rangeMatch[1], 10);
-      if (rangeIndex >= 0 && rangeIndex < protectedRanges.length) {
-        return protectedRanges[rangeIndex];
+  // If no numeric ranges found, use the original formatting logic
+  if (ranges.length === 0) {
+    // Replace underscores and hyphens with spaces
+    const withSpaces = name.replace(/[_-]/g, ' ');
+    
+    // Words that should remain lowercase in title case
+    const lowercaseWords = ['or', 'and', 'of', 'the', 'in', 'on', 'at', 'to', 'for', 'a', 'an'];
+    
+    // Split into words and capitalize appropriately
+    const words = withSpaces.split(/\s+/).filter(word => word.length > 0);
+    const formatted = words.map((word, index) => {
+      // Always capitalize the first word
+      if (index === 0) {
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      }
+      
+      // Keep connecting words lowercase
+      if (lowercaseWords.includes(word.toLowerCase())) {
+        return word.toLowerCase();
+      }
+      
+      // Capitalize other words
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    });
+    
+    return formatted.join(' ');
+  }
+  
+  // Process the string while preserving numeric ranges
+  let result = '';
+  let lastIndex = 0;
+  
+  ranges.forEach((range) => {
+    // Add formatted text before this range
+    if (range.start > lastIndex) {
+      const textBefore = name.substring(lastIndex, range.start);
+      // Replace underscores and hyphens (but not in numeric ranges) with spaces
+      const withSpaces = textBefore.replace(/[_-]/g, ' ');
+      const lowercaseWords = ['or', 'and', 'of', 'the', 'in', 'on', 'at', 'to', 'for', 'a', 'an'];
+      const words = withSpaces.split(/\s+/).filter(word => word.length > 0);
+      if (words.length > 0) {
+        const formatted = words.map((word, index) => {
+          const isFirstWord = result === '' && index === 0;
+          if (isFirstWord || index === 0) {
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+          }
+          if (lowercaseWords.includes(word.toLowerCase())) {
+            return word.toLowerCase();
+          }
+          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        });
+        result += formatted.join(' ');
+        // Add a space before the range if there's text before it
+        if (result.length > 0 && !result.endsWith(' ')) {
+          result += ' ';
+        }
       }
     }
     
-    // Always capitalize the first word
-    if (index === 0) {
-      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-    }
+    // Add the numeric range as-is (preserve the hyphen)
+    result += range.value;
+    lastIndex = range.end;
     
-    // Keep connecting words lowercase
-    if (lowercaseWords.includes(word.toLowerCase())) {
-      return word.toLowerCase();
+    // Check if there's a space after the range in the original string
+    // and add it to maintain spacing
+    if (lastIndex < name.length && name[lastIndex] === ' ') {
+      result += ' ';
+      lastIndex++; // Skip the space we just added
     }
-    
-    // Capitalize other words
-    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
   });
   
-  return formatted.join(' ');
+  // Add formatted text after the last range
+  if (lastIndex < name.length) {
+    const textAfter = name.substring(lastIndex);
+    const withSpaces = textAfter.replace(/[_-]/g, ' ');
+    const lowercaseWords = ['or', 'and', 'of', 'the', 'in', 'on', 'at', 'to', 'for', 'a', 'an'];
+    const words = withSpaces.split(/\s+/).filter(word => word.length > 0);
+    if (words.length > 0) {
+      // Ensure there's a space between the range and the following text
+      if (result.length > 0 && !result.endsWith(' ')) {
+        result += ' ';
+      }
+      const formatted = words.map((word) => {
+        if (lowercaseWords.includes(word.toLowerCase())) {
+          return word.toLowerCase();
+        }
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      });
+      result += formatted.join(' ');
+    }
+  }
+  
+  return result.trim();
 };
