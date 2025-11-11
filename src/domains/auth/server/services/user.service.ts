@@ -149,6 +149,14 @@ class UserService {
           password: hashedPassword,
         },
       });
+      const status = await prisma.examinerProfile.updateMany({
+        where: {
+          account: { userId: user.id },
+        },
+        data: {
+          status: "ACTIVE",
+        },
+      });
 
       return user;
     } catch (error) {
