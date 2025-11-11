@@ -11,7 +11,7 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
     console.log("Verifying token:", payload.token);
 
     // Verify token and extract user data
-    const { userId } = tokenService.extractUserFromToken(payload.token);
+    const { userId, accountId } = tokenService.extractUserFromToken(payload.token);
     console.log("Extracted userId:", userId);
 
     // Check if user exists
@@ -44,7 +44,10 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
     return {
       success: true,
       data: {
-        user,
+        user: {
+          ...user,
+          accountId,
+        },
         isValid: true,
       },
     };
