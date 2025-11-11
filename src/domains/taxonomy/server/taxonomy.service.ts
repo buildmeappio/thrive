@@ -343,6 +343,12 @@ const getFrequencyCounts = async (type: TaxonomyType, items: Array<{ id: string;
   return frequencyMap;
 };
 
+// Helper function to check if a string is a UUID
+const isUUID = (str: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+};
+
 export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]> => {
   try {
     const model = getPrismaModel(type);
@@ -374,6 +380,86 @@ export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]>
           examinationTypeId: item.examinationTypeId,
           examinationTypeName: item.examinationType?.name || 'Unknown',
           benefit: item.benefit,
+          frequency,
+          createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
+        };
+      });
+    }
+
+    // Special handling for language to filter out UUIDs and resolve names from IDs
+    if (type === 'language') {
+      const results = await model.findMany({
+        where: {
+          deletedAt: null,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      // Separate languages with UUID names from those with normal names
+      const languagesWithUUIDNames: typeof results = [];
+      const languagesWithNormalNames: typeof results = [];
+      
+      results.forEach(item => {
+        if (isUUID(item.name)) {
+          languagesWithUUIDNames.push(item);
+        } else {
+          languagesWithNormalNames.push(item);
+        }
+      });
+
+      // Batch lookup all languages referenced by UUID names
+      const uuidNames = languagesWithUUIDNames.map(item => item.name);
+      const referencedLanguages = uuidNames.length > 0 
+        ? await prisma.language.findMany({
+            where: {
+              id: { in: uuidNames },
+              deletedAt: null,
+            },
+          })
+        : [];
+
+      // Create a map of UUID -> language name for quick lookup
+      const uuidToNameMap = new Map<string, string>();
+      referencedLanguages.forEach(lang => {
+        uuidToNameMap.set(lang.id, lang.name);
+      });
+
+      // Process languages with UUID names: resolve to actual names or filter out
+      const resolvedLanguages = languagesWithUUIDNames
+        .map(item => {
+          const resolvedName = uuidToNameMap.get(item.name);
+          if (resolvedName) {
+            return {
+              ...item,
+              name: resolvedName,
+            };
+          }
+          // If no language found with that ID, return null to filter it out
+          return null;
+        })
+        .filter((lang): lang is NonNullable<typeof lang> => lang !== null);
+
+      // Combine normal languages with resolved languages
+      const validLanguages = [...languagesWithNormalNames, ...resolvedLanguages];
+
+      // Get frequency counts in batch
+      const frequencyMap = await getFrequencyCounts(
+        type,
+        validLanguages.map(item => ({ id: item.id, name: item.name }))
+      );
+
+      return validLanguages.map((item) => {
+        const frequency = frequencyMap.get(item.id) ?? 0;
+        return {
+          id: item.id,
+          ...Object.keys(item).reduce((acc: Record<string, unknown>, key: string) => {
+            if (!['id', 'createdAt', 'updatedAt', 'deletedAt'].includes(key)) {
+              acc[key] = item[key as keyof typeof item];
+            }
+            return acc;
+          }, {}),
           frequency,
           createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
         };
