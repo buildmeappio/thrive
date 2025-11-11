@@ -112,6 +112,7 @@ export type TaxonomyData = {
   id: string;
   [key: string]: any;
   createdAt: string;
+  frequency?: number;
 };
 
 // Input types

@@ -115,6 +115,234 @@ export const updateTaxonomy = async (type: TaxonomyType, id: string, data: Updat
   }
 };
 
+// Helper function to get frequency counts for all taxonomy items of a type (batch query for better performance)
+const getFrequencyCounts = async (type: TaxonomyType, items: Array<{ id: string; name: string }>): Promise<Map<string, number>> => {
+  const frequencyMap = new Map<string, number>();
+  
+  if (items.length === 0) return frequencyMap;
+
+  try {
+    switch (type) {
+      case 'caseType': {
+        const caseCounts = await prisma.case.groupBy({
+          by: ['caseTypeId'],
+          where: {
+            caseTypeId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        caseCounts.forEach(count => {
+          frequencyMap.set(count.caseTypeId, count._count);
+        });
+        break;
+      }
+
+      case 'caseStatus': {
+        const statusCounts = await prisma.examination.groupBy({
+          by: ['statusId'],
+          where: {
+            statusId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        statusCounts.forEach(count => {
+          frequencyMap.set(count.statusId, count._count);
+        });
+        break;
+      }
+
+      case 'claimType': {
+        const claimCounts = await prisma.claimant.groupBy({
+          by: ['claimTypeId'],
+          where: {
+            claimTypeId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        claimCounts.forEach(count => {
+          frequencyMap.set(count.claimTypeId, count._count);
+        });
+        break;
+      }
+
+      case 'department': {
+        const departmentCounts = await prisma.organizationManager.groupBy({
+          by: ['departmentId'],
+          where: {
+            departmentId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        departmentCounts.forEach(count => {
+          if (count.departmentId) {
+            frequencyMap.set(count.departmentId, count._count);
+          }
+        });
+        break;
+      }
+
+      case 'examinationType': {
+        const examTypeCounts = await prisma.examination.groupBy({
+          by: ['examinationTypeId'],
+          where: {
+            examinationTypeId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        examTypeCounts.forEach(count => {
+          frequencyMap.set(count.examinationTypeId, count._count);
+        });
+        break;
+      }
+
+      case 'examinationTypeBenefit': {
+        const benefitCounts = await prisma.examinationSelectedBenefit.groupBy({
+          by: ['benefitId'],
+          where: {
+            benefitId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        benefitCounts.forEach(count => {
+          frequencyMap.set(count.benefitId, count._count);
+        });
+        break;
+      }
+
+      case 'language': {
+        // Count usage in examinerLanguages, interpreterLanguages, and examinationInterpreter
+        const [examinerCounts, interpreterCounts, examinationCounts] = await Promise.all([
+          prisma.examinerLanguage.groupBy({
+            by: ['languageId'],
+            where: {
+              languageId: { in: items.map(item => item.id) },
+            },
+            _count: true,
+          }),
+          prisma.interpreterLanguage.groupBy({
+            by: ['languageId'],
+            where: {
+              languageId: { in: items.map(item => item.id) },
+            },
+            _count: true,
+          }),
+          prisma.examinationInterpreter.groupBy({
+            by: ['languageId'],
+            where: {
+              languageId: { in: items.map(item => item.id) },
+              deletedAt: null,
+            },
+            _count: true,
+          }),
+        ]);
+
+        // Combine counts for each language
+        items.forEach(item => {
+          const examinerCount = examinerCounts.find(c => c.languageId === item.id)?._count || 0;
+          const interpreterCount = interpreterCounts.find(c => c.languageId === item.id)?._count || 0;
+          const examinationCount = examinationCounts.find(c => c.languageId === item.id)?._count || 0;
+          frequencyMap.set(item.id, examinerCount + interpreterCount + examinationCount);
+        });
+        break;
+      }
+
+      case 'organizationType': {
+        const orgTypeCounts = await prisma.organization.groupBy({
+          by: ['typeId'],
+          where: {
+            typeId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        orgTypeCounts.forEach(count => {
+          frequencyMap.set(count.typeId, count._count);
+        });
+        break;
+      }
+
+      case 'role': {
+        const roleCounts = await prisma.account.groupBy({
+          by: ['roleId'],
+          where: {
+            roleId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        roleCounts.forEach(count => {
+          frequencyMap.set(count.roleId, count._count);
+        });
+        break;
+      }
+
+      case 'maximumDistanceTravel': {
+        // Count examiner profiles where maxTravelDistance matches the name
+        const names = items.map(item => item.name);
+        const distanceCounts = await prisma.examinerProfile.groupBy({
+          by: ['maxTravelDistance'],
+          where: {
+            maxTravelDistance: { in: names },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        distanceCounts.forEach(count => {
+          if (count.maxTravelDistance) {
+            // Find the item with matching name
+            const matchingItem = items.find(item => item.name === count.maxTravelDistance);
+            if (matchingItem) {
+              frequencyMap.set(matchingItem.id, count._count);
+            }
+          }
+        });
+        break;
+      }
+
+      case 'yearsOfExperience': {
+        // Count examiner profiles where yearsOfIMEExperience matches the name
+        const names = items.map(item => item.name);
+        const experienceCounts = await prisma.examinerProfile.groupBy({
+          by: ['yearsOfIMEExperience'],
+          where: {
+            yearsOfIMEExperience: { in: names },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        experienceCounts.forEach(count => {
+          // Find the item with matching name
+          const matchingItem = items.find(item => item.name === count.yearsOfIMEExperience);
+          if (matchingItem) {
+            frequencyMap.set(matchingItem.id, count._count);
+          }
+        });
+        break;
+      }
+
+      default:
+        break;
+    }
+  } catch (error) {
+    console.error(`Error getting frequency counts for ${type}:`, error);
+  }
+
+  // Ensure all items have a frequency (default to 0 if not found)
+  items.forEach(item => {
+    if (!frequencyMap.has(item.id)) {
+      frequencyMap.set(item.id, 0);
+    }
+  });
+
+  return frequencyMap;
+};
+
 export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]> => {
   try {
     const model = getPrismaModel(type);
@@ -133,13 +361,23 @@ export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]>
         },
       });
 
-      return results.map((item) => ({
-        id: item.id,
-        examinationTypeId: item.examinationTypeId,
-        examinationTypeName: item.examinationType?.name || 'Unknown',
-        benefit: item.benefit,
-        createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
-      }));
+      // Get frequency counts in batch
+      const frequencyMap = await getFrequencyCounts(
+        type,
+        results.map(item => ({ id: item.id, name: item.benefit }))
+      );
+
+      return results.map((item) => {
+        const frequency = frequencyMap.get(item.id) ?? 0;
+        return {
+          id: item.id,
+          examinationTypeId: item.examinationTypeId,
+          examinationTypeName: item.examinationType?.name || 'Unknown',
+          benefit: item.benefit,
+          frequency,
+          createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
+        };
+      });
     }
 
     const results = await model.findMany({
@@ -151,17 +389,28 @@ export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]>
       },
     });
 
-    return results.map((item) => ({
-      id: item.id,
-      ...Object.keys(item).reduce((acc: Record<string, unknown>, key: string) => {
-        if (!['id', 'createdAt', 'updatedAt', 'deletedAt'].includes(key)) {
-          acc[key] = item[key as keyof typeof item];
-        }
-        return acc;
-      }, {}),
-      createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
-    }));
-  } catch {
+    // Get frequency counts in batch
+    const frequencyMap = await getFrequencyCounts(
+      type,
+      results.map(item => ({ id: item.id, name: item.name }))
+    );
+
+    return results.map((item) => {
+      const frequency = frequencyMap.get(item.id) ?? 0;
+      return {
+        id: item.id,
+        ...Object.keys(item).reduce((acc: Record<string, unknown>, key: string) => {
+          if (!['id', 'createdAt', 'updatedAt', 'deletedAt'].includes(key)) {
+            acc[key] = item[key as keyof typeof item];
+          }
+          return acc;
+        }, {}),
+        frequency,
+        createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
+      };
+    });
+  } catch (error) {
+    console.error(`Error getting taxonomies for ${type}:`, error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
