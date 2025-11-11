@@ -35,7 +35,7 @@ export const formatTaxonomyName = (name: string): string => {
   // This pattern matches digits-hyphen-digits (numeric ranges)
   const numericRangePattern = /(\d+)-(\d+)/g;
   const protectedRanges: string[] = [];
-  let protectedName = name.replace(numericRangePattern, (match) => {
+  const protectedName = name.replace(numericRangePattern, (match) => {
     protectedRanges.push(match);
     return `__PROTECTED_RANGE_${protectedRanges.length - 1}__`;
   });
