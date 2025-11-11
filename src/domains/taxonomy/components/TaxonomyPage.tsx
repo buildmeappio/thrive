@@ -118,6 +118,12 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
   };
 
   const handleDelete = (taxonomy: TaxonomyData) => {
+    // Prevent deletion if frequency is greater than 0
+    const frequency = taxonomy.frequency ?? 0;
+    if (frequency > 0) {
+      toast.error(`Cannot delete ${config.singularName.toLowerCase()}. It is assigned to ${frequency} ${frequency === 1 ? 'person' : 'people'}.`);
+      return;
+    }
     setTaxonomyToDelete(taxonomy);
     setDeleteDialogOpen(true);
   };

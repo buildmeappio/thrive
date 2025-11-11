@@ -49,13 +49,44 @@ const ActionButton = ({ onEdit }: { onEdit: () => void }) => {
   );
 };
 
-const DeleteButton = ({ onDelete }: { onDelete: () => void }) => {
+const DeleteButton = ({ 
+  onDelete, 
+  disabled = false, 
+  tooltip 
+}: { 
+  onDelete: () => void;
+  disabled?: boolean;
+  tooltip?: string;
+}) => {
   return (
-    <button onClick={onDelete} className="cursor-pointer">
-      <div className="flex h-[30px] w-[40px] items-center justify-center rounded-full bg-red-50 p-0 hover:opacity-80">
-        <Trash2 className="h-4 w-4 text-red-600" />
-      </div>
-    </button>
+    <div className="relative group">
+      <button 
+        onClick={disabled ? undefined : onDelete} 
+        disabled={disabled}
+        className={cn(
+          "cursor-pointer",
+          disabled && "cursor-not-allowed"
+        )}
+      >
+        <div className={cn(
+          "flex h-[30px] w-[40px] items-center justify-center rounded-full p-0 transition-opacity",
+          disabled 
+            ? "bg-gray-100 opacity-50" 
+            : "bg-red-50 hover:opacity-80"
+        )}>
+          <Trash2 className={cn(
+            "h-4 w-4",
+            disabled ? "text-gray-400" : "text-red-600"
+          )} />
+        </div>
+      </button>
+      {disabled && tooltip && (
+        <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg">
+          {tooltip}
+          <div className="absolute top-full right-4 -mt-1 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -120,6 +151,31 @@ export const createTaxonomyColumns = (
     maxSize: field === 'description' ? 300 : 250,
   }));
 
+  // Add Frequency column (appears in all taxonomy tables)
+  columns.push({
+    header: ({ column }) => (
+      <Header
+        sortable
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        sortDirection={column.getIsSorted()}
+      >
+        Frequency
+      </Header>
+    ),
+    accessorKey: 'frequency',
+    cell: ({ row }) => {
+      const frequency = row.original.frequency ?? 0;
+      return <Content title={frequency.toString()}>{frequency}</Content>;
+    },
+    sortingFn: (rowA, rowB) => {
+      const freqA = rowA.original.frequency ?? 0;
+      const freqB = rowB.original.frequency ?? 0;
+      return freqA - freqB;
+    },
+    size: 120,
+    maxSize: 150,
+  });
+
   // Add Date Added column
   columns.push({
     header: ({ column }) => (
@@ -146,10 +202,20 @@ export const createTaxonomyColumns = (
     header: '',
     accessorKey: 'id',
     cell: ({ row }) => {
+      const frequency = row.original.frequency ?? 0;
+      const isDisabled = frequency > 0;
+      const tooltip = isDisabled 
+        ? `This item has been assigned to ${frequency} ${frequency === 1 ? 'person' : 'people'}, so it cannot be deleted.`
+        : undefined;
+
       return (
         <div className="flex justify-end items-center gap-2">
           <ActionButton onEdit={() => onEdit(row.original)} />
-          <DeleteButton onDelete={() => onDelete(row.original)} />
+          <DeleteButton 
+            onDelete={() => onDelete(row.original)} 
+            disabled={isDisabled}
+            tooltip={tooltip}
+          />
         </div>
       );
     },
