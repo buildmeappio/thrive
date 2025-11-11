@@ -1,11 +1,18 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
+import {
+  InputValidationType,
+  handleKeyPress,
+  handleInputChange,
+  sanitizeOnBlur,
+} from "@/utils/inputValidation";
 
 interface InputProps extends React.ComponentProps<"input"> {
   icon?: LucideIcon;
   iconPosition?: "left" | "right";
   error?: boolean;
+  validationType?: InputValidationType;
 }
 
 function Input({
@@ -14,8 +21,61 @@ function Input({
   icon: Icon,
   iconPosition = "left",
   error,
+  validationType = "none",
+  onChange,
+  onKeyPress,
+  onBlur,
   ...props
 }: InputProps) {
+  const handleKeyPressEvent = React.useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      handleKeyPress(e, validationType);
+      onKeyPress?.(e);
+    },
+    [validationType, onKeyPress]
+  );
+
+  const handleChangeEvent = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (validationType !== "none" && validationType !== "email" && validationType !== "phone") {
+        const filteredValue = handleInputChange(e, validationType);
+        const syntheticEvent = {
+          ...e,
+          target: {
+            ...e.target,
+            value: filteredValue,
+          },
+        };
+        onChange?.(syntheticEvent as React.ChangeEvent<HTMLInputElement>);
+      } else {
+        onChange?.(e);
+      }
+    },
+    [validationType, onChange]
+  );
+
+  const handleBlurEvent = React.useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      if (validationType === "text") {
+        const sanitizedValue = sanitizeOnBlur(e.target.value, validationType);
+        if (sanitizedValue !== e.target.value) {
+          e.target.value = sanitizedValue;
+          // Trigger onChange with sanitized value
+          const syntheticEvent = {
+            ...e,
+            target: {
+              ...e.target,
+              value: sanitizedValue,
+            },
+          };
+          onChange?.(syntheticEvent as React.ChangeEvent<HTMLInputElement>);
+        }
+      }
+      onBlur?.(e);
+    },
+    [validationType, onChange, onBlur]
+  );
+
   return (
     <div className="relative">
       {Icon && iconPosition === "left" && (
@@ -37,6 +97,9 @@ function Input({
           error && "ring-2 ring-red-500/30",
           className
         )}
+        onChange={handleChangeEvent}
+        onKeyPress={handleKeyPressEvent}
+        onBlur={handleBlurEvent}
         {...props}
       />
       {Icon && iconPosition === "right" && (

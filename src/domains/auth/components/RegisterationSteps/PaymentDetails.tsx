@@ -103,6 +103,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                       type="number"
                       step="0.01"
                       min="0"
+                      validationType="numeric"
                     />
                   )}
                 </FormField>
@@ -120,6 +121,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                       type="number"
                       step="0.01"
                       min="0"
+                      validationType="numeric"
                     />
                   )}
                 </FormField>
@@ -137,6 +139,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                       type="number"
                       step="0.01"
                       min="0"
+                      validationType="numeric"
                     />
                   )}
                 </FormField>
@@ -151,6 +154,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                       type="number"
                       step="0.01"
                       min="0"
+                      validationType="numeric"
                     />
                   )}
                 </FormField>
@@ -168,6 +172,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                       type="number"
                       step="0.01"
                       min="0"
+                      validationType="numeric"
                     />
                   )}
                 </FormField>
@@ -184,6 +189,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                       type="number"
                       min="1"
                       max="365"
+                      validationType="integer"
                     />
                   )}
                 </FormField>

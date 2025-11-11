@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { useForm } from "@/hooks/use-form-hook";
 import { FormProvider } from "@/components/form";
@@ -9,8 +9,12 @@ import {
   AvailabilityPreferencesInput,
 } from "../../schemas/onboardingSteps.schema";
 import { availabilityInitialValues } from "../../constants";
-import { WeeklyHours, OverrideHours } from "./AvailabilityTabs";
+import { WeeklyHours, OverrideHours, BookingOptions } from "./AvailabilityTabs";
 import { toast } from "sonner";
+import {
+  convertAvailabilityToUTC,
+  convertAvailabilityToLocal,
+} from "@/utils/timeConversion";
 
 interface AvailabilityPreferencesFormProps {
   examinerProfileId: string | null;
@@ -23,13 +27,23 @@ const AvailabilityPreferencesForm: React.FC<
   AvailabilityPreferencesFormProps
 > = ({ examinerProfileId, initialData, onComplete, onCancel: _onCancel }) => {
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"weeklyHours" | "overrideHours">(
-    "weeklyHours"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "weeklyHours" | "overrideHours" | "bookingOptions"
+  >("weeklyHours");
+
+  // Convert initial data from UTC to local time for display
+  const localInitialData = useMemo(() => {
+    if (!initialData) {
+      return availabilityInitialValues;
+    }
+
+    // Convert UTC times to local times for form display
+    return convertAvailabilityToLocal(initialData);
+  }, [initialData]);
 
   const form = useForm<AvailabilityPreferencesInput>({
     schema: availabilityPreferencesSchema,
-    defaultValues: initialData || availabilityInitialValues,
+    defaultValues: localInitialData,
     mode: "onSubmit",
   });
 
@@ -41,11 +55,15 @@ const AvailabilityPreferencesForm: React.FC<
 
     setLoading(true);
     try {
+      // Convert local times to UTC before saving to database
+      const utcValues = convertAvailabilityToUTC(values);
+
       const { saveAvailabilityAction } = await import("../../server/actions");
       const result = await saveAvailabilityAction({
         examinerProfileId,
-        weeklyHours: values.weeklyHours,
-        overrideHours: values.overrideHours,
+        weeklyHours: utcValues.weeklyHours,
+        overrideHours: utcValues.overrideHours,
+        bookingOptions: utcValues.bookingOptions,
         activationStep: "availability",
       });
 
@@ -108,6 +126,19 @@ const AvailabilityPreferencesForm: React.FC<
               <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
             )}
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("bookingOptions")}
+            className={`pb-2 px-4 transition-colors cursor-pointer relative ${
+              activeTab === "bookingOptions"
+                ? "text-black font-bold"
+                : "text-gray-500 hover:text-gray-700"
+            }`}>
+            Booking Options
+            {activeTab === "bookingOptions" && (
+              <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+            )}
+          </button>
         </div>
       </div>
 
@@ -117,6 +148,9 @@ const AvailabilityPreferencesForm: React.FC<
 
         {/* Override Hours Tab */}
         {activeTab === "overrideHours" && <OverrideHours form={form} />}
+
+        {/* Booking Options Tab */}
+        {activeTab === "bookingOptions" && <BookingOptions form={form} />}
       </FormProvider>
     </div>
   );

@@ -1,7 +1,9 @@
 import type { NextAuthOptions } from "next-auth";
+import prisma from "@/lib/db";
 
 export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
   async jwt({ token, user }) {
+    // Initial login - set token from user object
     if (user) {
       const u = user;
       token.id = u.id;
@@ -11,6 +13,30 @@ export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
       token.roleName = u.roleName;
       token.accountId = u.accountId;
       token.activationStep = u.activationStep;
+    } else if (token.accountId) {
+      // On subsequent requests, refresh activationStep from database
+      // to ensure we always have the latest value
+      try {
+        const examinerProfile = await prisma.examinerProfile.findFirst({
+          where: {
+            accountId: token.accountId as string,
+            deletedAt: null,
+          },
+          select: {
+            activationStep: true,
+          },
+        });
+
+        if (examinerProfile) {
+          token.activationStep = examinerProfile.activationStep;
+        }
+      } catch (error) {
+        console.error(
+          "Error refreshing activationStep in JWT callback:",
+          error
+        );
+        // If there's an error, keep the existing token value
+      }
     }
     return token;
   },

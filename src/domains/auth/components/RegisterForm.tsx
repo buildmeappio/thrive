@@ -7,7 +7,7 @@ import {
   ExperienceDetails,
   Availablity,
   Legal,
-  PaymentDetails,
+  // PaymentDetails,
   SubmitConfirmation,
   ThankYou,
 } from "./RegisterationSteps";
@@ -22,17 +22,43 @@ type Language = {
   deletedAt: Date | null;
 };
 
+type YearsOfExperience = {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+};
+
+type MaximumDistanceTravel = {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+};
+
 interface Step {
   component: React.ComponentType<RegStepProps>;
 }
 
 const RegisterForm: React.FC<{
   languages: Language[];
+  yearsOfExperience: YearsOfExperience[];
+  maxTravelDistances: MaximumDistanceTravel[];
   examinerData?: any;
-}> = ({ languages, examinerData }) => {
+}> = ({ languages, yearsOfExperience, maxTravelDistances, examinerData }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const { setLanguages, data, loadExaminerData, isEditMode } =
-    useRegistrationStore();
+  const {
+    setLanguages,
+    setYearsOfExperience,
+    setMaxTravelDistances,
+    data,
+    loadExaminerData,
+    isEditMode,
+  } = useRegistrationStore();
 
   useEffect(() => {
     if (languages.length > 0) {
@@ -40,6 +66,20 @@ const RegisterForm: React.FC<{
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languages]);
+
+  useEffect(() => {
+    if (yearsOfExperience.length > 0) {
+      setYearsOfExperience(yearsOfExperience);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [yearsOfExperience]);
+
+  useEffect(() => {
+    if (maxTravelDistances.length > 0) {
+      setMaxTravelDistances(maxTravelDistances);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [maxTravelDistances]);
 
   // Load examiner data if in edit mode
   useEffect(() => {
@@ -54,7 +94,7 @@ const RegisterForm: React.FC<{
     { component: IMEExperince },
     { component: ExperienceDetails },
     { component: Availablity },
-    { component: PaymentDetails },
+    // { component: PaymentDetails },
     { component: Legal },
     { component: SubmitConfirmation },
     { component: ThankYou },

@@ -18,6 +18,7 @@ const DirectDepositTab: React.FC = () => {
               placeholder="88888"
               maxLength={5}
               className="bg-[#F9F9F9] text-center tracking-widest flex-1 h-[40px]"
+              validationType="banking"
             />
           )}
         </FormField>
@@ -34,6 +35,7 @@ const DirectDepositTab: React.FC = () => {
               placeholder="004"
               maxLength={3}
               className="bg-[#F9F9F9] text-center tracking-widest flex-1 h-[40px]"
+              validationType="banking"
             />
           )}
         </FormField>
@@ -50,6 +52,7 @@ const DirectDepositTab: React.FC = () => {
               placeholder="0 800 333"
               maxLength={12}
               className="bg-[#F9F9F9] text-center tracking-widest flex-1 h-[40px]"
+              validationType="banking"
             />
           )}
         </FormField>

@@ -123,6 +123,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                     id="firstName"
                     icon={User}
                     placeholder="Dr. Sarah"
+                    validationType="name"
                   />
                 )}
               </FormField>
@@ -134,6 +135,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                     id="lastName"
                     icon={User}
                     placeholder="Ahmed"
+                    validationType="name"
                   />
                 )}
               </FormField>

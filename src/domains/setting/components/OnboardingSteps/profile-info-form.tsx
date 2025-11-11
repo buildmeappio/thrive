@@ -120,6 +120,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
                   placeholder="Dr. Sarah"
                   icon={User}
                   className="bg-[#F9F9F9]"
+                  validationType="name"
                 />
               )}
             </FormField>
@@ -131,6 +132,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
                   placeholder="Ahmed"
                   icon={User}
                   className="bg-[#F9F9F9]"
+                  validationType="name"
                 />
               )}
             </FormField>

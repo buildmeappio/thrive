@@ -9,6 +9,7 @@ import {
 } from "@/domains/setting/server/actions";
 import { redirect } from "next/navigation";
 import getLanguages from "@/domains/auth/actions/getLanguages";
+import { Header } from "@/domains/setting";
 
 export const metadata: Metadata = {
   title: "Settings | Thrive - Examiner",
@@ -64,6 +65,7 @@ const SettingsPage = async () => {
 
   return (
     <div className="space-y-4">
+      <Header userName={user.name || "User"} />
       <ActivationSteps
         initialActivationStep={examinerProfile.activationStep || null}
         examinerProfileId={examinerProfile.id}

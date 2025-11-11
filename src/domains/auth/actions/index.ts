@@ -8,6 +8,8 @@ import verifyAccountToken from "./verifyAccountToken";
 import setPassword from "./setPassword";
 import getExaminerProfileDetails from "./getExaminerProfileDetails";
 import updateMedicalExaminer from "./updateMedicalExaminer";
+import getYearsOfExperience from "./getYearsOfExperience";
+import getMaxTravelDistances from "./getMaxTravelDistances";
 
 const authActions = {
   checkUserExists,
@@ -20,6 +22,8 @@ const authActions = {
   setPassword,
   getExaminerProfileDetails,
   updateMedicalExaminer,
+  getYearsOfExperience,
+  getMaxTravelDistances,
 };
 
 export default authActions;

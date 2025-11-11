@@ -5,6 +5,8 @@ import roleService from "./role.service";
 import authService from "./auth.service";
 import accountService from "./account.service";
 import languageService from "./language.service";
+import yearsOfExperienceService from "./yearsOfExperience.service";
+import maximumDistanceTravelService from "./maximumDistanceTravel.service";
 
 export {
   userService,
@@ -14,4 +16,6 @@ export {
   authService,
   accountService,
   languageService,
+  yearsOfExperienceService,
+  maximumDistanceTravelService,
 };

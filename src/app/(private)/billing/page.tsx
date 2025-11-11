@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 const BillingPage = () => {
-  return <div></div>;
+  return <div> In Development... </div>;
 };
 
 export default BillingPage;

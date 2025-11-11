@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FormProvider, FormDropdown } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import {
   specialtyPreferencesSchema,
   SpecialtyPreferencesInput,
 } from "../../schemas/onboardingSteps.schema";
-import { medicalSpecialtyOptions, provinces } from "@/constants/options";
+import { provinces } from "@/constants/options";
 import {
   assessmentTypeOptions,
   formatOptions,
@@ -15,6 +15,8 @@ import {
 import { CircleCheck } from "lucide-react";
 import { updateSpecialtyPreferencesAction } from "../../server/actions";
 import { toast } from "sonner";
+import getExamTypesAction from "@/server/actions/getExamTypes";
+import { ExamTypesResponse, ExamType } from "@/server/types/examTypes";
 
 interface SpecialtyPreferencesFormProps {
   examinerProfileId: string | null;
@@ -32,10 +34,43 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
   onCancel: _onCancel,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [examTypes, setExamTypes] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [loadingExamTypes, setLoadingExamTypes] = useState(true);
+
   const languageOptions = languages.map((lang: any) => ({
     value: lang.id,
     label: lang.name,
   }));
+
+  // Fetch exam types from database
+  useEffect(() => {
+    const fetchExamTypes = async () => {
+      try {
+        setLoadingExamTypes(true);
+        const result: ExamTypesResponse = await getExamTypesAction();
+
+        if (result.success && "data" in result) {
+          const formattedExamTypes = result.data.map((examType: ExamType) => ({
+            value: examType.id,
+            label: examType.name,
+          }));
+          setExamTypes(formattedExamTypes);
+        } else {
+          console.error("Failed to fetch exam types:", result.message);
+          setExamTypes([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch exam types:", error);
+        setExamTypes([]);
+      } finally {
+        setLoadingExamTypes(false);
+      }
+    };
+
+    fetchExamTypes();
+  }, []);
 
   const form = useForm<SpecialtyPreferencesInput>({
     schema: specialtyPreferencesSchema,
@@ -101,12 +136,15 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormDropdown
               name="specialty"
-              label="Specialty"
+              label="Medical Specialties"
               required
-              options={medicalSpecialtyOptions}
-              placeholder="Orthopedic Surgery"
+              options={examTypes}
+              placeholder={
+                loadingExamTypes ? "Loading..." : "Select specialties"
+              }
               className=""
               multiSelect
+              disabled={loadingExamTypes}
             />
 
             <FormDropdown
