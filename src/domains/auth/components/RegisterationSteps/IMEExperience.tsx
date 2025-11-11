@@ -8,7 +8,6 @@ import {
   Step3IMEExperienceInput,
 } from "@/domains/auth/schemas/auth.schemas";
 import { step3InitialValues } from "@/domains/auth/constants/initialValues";
-import { yearsOfExperienceOptions } from "@/domains/auth/constants/options";
 import {
   useRegistrationStore,
   RegistrationData,
@@ -30,7 +29,8 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { data, merge, languages } = useRegistrationStore();
+  const { data, merge, languages, yearsOfExperience } =
+    useRegistrationStore();
 
   const form = useForm<Step3IMEExperienceInput>({
     schema: step3IMEExperienceSchema,
@@ -88,7 +88,10 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
               <FormDropdown
                 name="yearsOfIMEExperience"
                 label="Years of IME Experience"
-                options={yearsOfExperienceOptions}
+                options={yearsOfExperience.map((year) => ({
+                  value: year.id,
+                  label: year.name,
+                }))}
                 required
                 placeholder="Select Years"
                 icon={null}

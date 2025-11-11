@@ -9,10 +9,6 @@ import {
   Step5AvailabilityInput,
 } from "@/domains/auth/schemas/auth.schemas";
 import { RegStepProps } from "@/domains/auth/types/index";
-import {
-  // daysOptions,
-  travelDistanceOptions,
-} from "@/domains/auth/constants/options";
 import { step5InitialValues } from "@/domains/auth/constants/initialValues";
 import { FormProvider, FormDropdown } from "@/components/form";
 import { Controller } from "@/lib/form";
@@ -29,7 +25,7 @@ const Availablity: React.FC<RegStepProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { data, merge } = useRegistrationStore();
+  const { data, merge, maxTravelDistances } = useRegistrationStore();
 
   const form = useForm<Step5AvailabilityInput>({
     schema: step5AvailabilitySchema,
@@ -101,7 +97,10 @@ const Availablity: React.FC<RegStepProps> = ({
               <FormDropdown
                 name="maxTravelDistance"
                 label="Max Travel Distance"
-                options={travelDistanceOptions}
+                options={maxTravelDistances.map((distance) => ({
+                  value: distance.id,
+                  label: distance.name,
+                }))}
                 required
                 placeholder="Up to 25 km"
                 icon={null}

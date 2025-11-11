@@ -17,7 +17,9 @@ const Page = async ({
 }) => {
   const { token } = await searchParams;
   const languages = await authActions.getLanguages();
-    
+  const yearsOfExperience = await authActions.getYearsOfExperience();
+  const maxTravelDistances = await authActions.getMaxTravelDistances();
+
   // If token exists, fetch examiner data and pass to RegisterForm
   let examinerData = null;
   if (token) {
@@ -31,7 +33,14 @@ const Page = async ({
     }
   }
 
-  return <RegisterForm languages={languages} examinerData={examinerData} />;
+  return (
+    <RegisterForm
+      languages={languages}
+      yearsOfExperience={yearsOfExperience}
+      maxTravelDistances={maxTravelDistances}
+      examinerData={examinerData}
+    />
+  );
 };
 
 export default Page;

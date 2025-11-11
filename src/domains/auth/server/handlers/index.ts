@@ -9,6 +9,8 @@ import login from "./login";
 import getLanguages from "./getLanguages";
 import getExaminerProfileDetails from "./getExaminerProfileDetails";
 import updateMedicalExaminer from "./updateMedicalExaminer";
+import getYearsOfExperience from "./getYearsOfExperience";
+import getMaxTravelDistances from "./getMaxTravelDistances";
 
 const handlers = {
   checkUserExists,
@@ -22,6 +24,8 @@ const handlers = {
   getLanguages,
   getExaminerProfileDetails,
   updateMedicalExaminer,
+  getYearsOfExperience,
+  getMaxTravelDistances,
 };
 
 export default handlers;

@@ -172,7 +172,7 @@ class CaseDetailsService {
   async updateBookingStatus(
     bookingId: string,
     examinerProfileId: string,
-    status: "ACCEPT" | "DECLINE" | "REQUEST_MORE_INFO",
+    status: "ACCEPT" | "DECLINE" | "REQUEST_MORE_INFO" | "DISCARDED",
     message?: string
   ): Promise<void> {
     const booking = await prisma.claimantBooking.findFirst({
@@ -197,7 +197,9 @@ class CaseDetailsService {
     // Update ClaimantBooking status
     await prisma.claimantBooking.update({
       where: { id: bookingId },
-      data: { status: status as "ACCEPT" | "DECLINE" | "REQUEST_MORE_INFO" },
+      data: {
+        status: status as "ACCEPT" | "DECLINE" | "REQUEST_MORE_INFO" | "DISCARDED",
+      },
     });
 
     // If ACCEPT, update ExaminationSecureLink status to SUBMITTED

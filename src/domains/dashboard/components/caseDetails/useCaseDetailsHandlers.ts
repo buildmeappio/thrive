@@ -16,14 +16,12 @@ export function useCaseDetailsHandlers({
 }: UseCaseDetailsHandlersProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [isRequestMoreInfoModalOpen, setIsRequestMoreInfoModalOpen] =
-    useState(false);
   const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewFileName, setPreviewFileName] = useState<string>("");
 
   const handleAction = async (
-    status: "ACCEPT" | "DECLINE" | "REQUEST_MORE_INFO",
+    status: "ACCEPT" | "DECLINE",
     message?: string
   ) => {
     setIsLoading(true);
@@ -42,7 +40,6 @@ export function useCaseDetailsHandlers({
           router.push("/dashboard");
         }
         // Close modals
-        setIsRequestMoreInfoModalOpen(false);
         setIsDeclineModalOpen(false);
       } else {
         toast.error(result.message || "Failed to complete action");
@@ -52,10 +49,6 @@ export function useCaseDetailsHandlers({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleRequestMoreInfo = (message: string) => {
-    handleAction("REQUEST_MORE_INFO", message);
   };
 
   const handleDecline = (reason: string) => {
@@ -102,14 +95,11 @@ export function useCaseDetailsHandlers({
 
   return {
     isLoading,
-    isRequestMoreInfoModalOpen,
     isDeclineModalOpen,
     previewUrl,
     previewFileName,
-    setIsRequestMoreInfoModalOpen,
     setIsDeclineModalOpen,
     handleAction,
-    handleRequestMoreInfo,
     handleDecline,
     handlePreview,
     closePreview,

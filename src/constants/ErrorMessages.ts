@@ -108,6 +108,8 @@ export default Object.freeze({
   AVAILABILITY_ALREADY_SUBMITTED:
     "Availability already submitted for this case",
   LANGUAGES_NOT_FOUND: "No languages found",
+  YEARS_OF_EXPERIENCE_NOT_FOUND: "No years of experience found",
+  MAX_TRAVEL_DISTANCES_NOT_FOUND: "No maximum travel distances found",
   COMPANY_NAME_REQUIRED: "Company name is required",
   COMPANY_NAME_INVALID:
     "Company name should only contain alphabets, spaces, hyphens, or apostrophes",
