@@ -104,7 +104,13 @@ export type GetCaseDetailsInput = {
 export type CaseDetailsData = {
   bookingId: string;
   caseNumber: string;
-  status: "PENDING" | "ACCEPT" | "DECLINE" | "REQUEST_MORE_INFO" | null;
+  status:
+    | "PENDING"
+    | "ACCEPT"
+    | "DECLINE"
+    | "REQUEST_MORE_INFO"
+    | "DISCARDED"
+    | null;
   claimant: {
     firstName: string;
     lastName: string;
@@ -188,7 +194,7 @@ export type GetCaseDetailsResponse = {
 export type UpdateBookingStatusInput = {
   bookingId: string;
   examinerProfileId: string;
-  status: "ACCEPT" | "DECLINE" | "REQUEST_MORE_INFO";
+  status: "ACCEPT" | "DECLINE" | "REQUEST_MORE_INFO" | "DISCARDED";
   message?: string;
 };
 
@@ -210,7 +216,13 @@ export type CaseRowData = {
   benefits: string;
   appointment: Date | null;
   dueDate: Date | null;
-  status: "PENDING" | "ACCEPT" | "DECLINE" | "REQUEST_MORE_INFO" | null;
+  status:
+    | "PENDING"
+    | "ACCEPT"
+    | "DECLINE"
+    | "REQUEST_MORE_INFO"
+    | "DISCARDED"
+    | null;
 };
 
 export type GetAllCasesResponse = {

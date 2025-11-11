@@ -11,7 +11,6 @@ import LegalRepresentativeSection from "./caseDetails/LegalRepresentativeSection
 import ExaminationInfoSection from "./caseDetails/ExaminationInfoSection";
 import DocumentsSection from "./caseDetails/DocumentsSection";
 import DocumentPreviewModal from "./caseDetails/DocumentPreviewModal";
-import RequestMoreInfoModal from "./RequestMoreInfoModal";
 import DeclineModal from "./DeclineModal";
 
 export default function CaseDetails({
@@ -20,14 +19,11 @@ export default function CaseDetails({
 }: CaseDetailsProps) {
   const {
     isLoading,
-    isRequestMoreInfoModalOpen,
     isDeclineModalOpen,
     previewUrl,
     previewFileName,
-    setIsRequestMoreInfoModalOpen,
     setIsDeclineModalOpen,
     handleAction,
-    handleRequestMoreInfo,
     handleDecline,
     handlePreview,
     closePreview,
@@ -82,12 +78,6 @@ export default function CaseDetails({
         {data.status !== "ACCEPT" && (
           <div className="flex flex-col sm:flex-row gap-4 justify-end mt-6">
             <Button
-              onClick={() => setIsRequestMoreInfoModalOpen(true)}
-              disabled={isLoading || data.status === "REQUEST_MORE_INFO"}
-              className="h-[48px] px-6 rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-medium hover:shadow-lg transition-shadow">
-              Request More Info
-            </Button>
-            <Button
               onClick={() => handleAction("ACCEPT")}
               disabled={isLoading}
               variant="outline"
@@ -105,12 +95,6 @@ export default function CaseDetails({
       </div>
 
       {/* Modals */}
-      <RequestMoreInfoModal
-        isOpen={isRequestMoreInfoModalOpen}
-        onClose={() => setIsRequestMoreInfoModalOpen(false)}
-        onSubmit={handleRequestMoreInfo}
-        isLoading={isLoading}
-      />
       <DeclineModal
         isOpen={isDeclineModalOpen}
         onClose={() => setIsDeclineModalOpen(false)}

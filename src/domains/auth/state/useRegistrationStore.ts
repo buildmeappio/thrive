@@ -12,6 +12,24 @@ type Language = {
   deletedAt: Date | null;
 };
 
+type YearsOfExperience = {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+};
+
+type MaximumDistanceTravel = {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+};
+
 // Document types for handling both new uploads and existing documents
 export type ExistingDocument = {
   id: string;
@@ -164,6 +182,12 @@ type Store = {
   languages: Language[];
   setLanguages: (languages: Language[]) => void;
 
+  yearsOfExperience: YearsOfExperience[];
+  setYearsOfExperience: (years: YearsOfExperience[]) => void;
+
+  maxTravelDistances: MaximumDistanceTravel[];
+  setMaxTravelDistances: (distances: MaximumDistanceTravel[]) => void;
+
   // Edit mode state
   isEditMode: boolean;
   examinerProfileId: string | null;
@@ -234,6 +258,14 @@ export const useRegistrationStore = create<Store>()(
       reset: () => set({ data: initialData }),
       languages: [],
       setLanguages: (languages: Language[]) => set({ languages }),
+
+      yearsOfExperience: [],
+      setYearsOfExperience: (years: YearsOfExperience[]) =>
+        set({ yearsOfExperience: years }),
+
+      maxTravelDistances: [],
+      setMaxTravelDistances: (distances: MaximumDistanceTravel[]) =>
+        set({ maxTravelDistances: distances }),
 
       // Edit mode state
       isEditMode: false,

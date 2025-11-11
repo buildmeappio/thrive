@@ -88,7 +88,8 @@ export default function CasesTableWithPagination({
 
   // Filter data based on search query and status filter
   const filteredData = useMemo(() => {
-    let result = [...data];
+    // Only show PENDING cases - exclude DECLINE, ACCEPT, REQUEST_MORE_INFO, DISCARDED
+    let result = data.filter((row) => row.status === "PENDING");
 
     // Apply search filter
     if (searchQuery) {
@@ -101,7 +102,7 @@ export default function CasesTableWithPagination({
       );
     }
 
-    // Apply status filter
+    // Apply status filter (currently only "pending" is relevant since we filter to PENDING only)
     if (filters.status && filters.status !== "all") {
       result = result.filter((row) => {
         if (filters.status === "pending") {

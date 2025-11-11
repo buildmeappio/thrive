@@ -3,12 +3,13 @@ import { CaseRowData } from "../../types";
 
 class CasesService {
   /**
-   * Get all cases for an examiner (all statuses)
+   * Get all pending cases for an examiner (only PENDING status)
    */
   async getAllCases(examinerProfileId: string): Promise<CaseRowData[]> {
     const bookings = await prisma.claimantBooking.findMany({
       where: {
         examinerProfileId,
+        status: "PENDING",
         deletedAt: null,
       },
       include: {
