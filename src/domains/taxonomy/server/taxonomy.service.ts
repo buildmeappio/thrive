@@ -343,10 +343,43 @@ const getFrequencyCounts = async (type: TaxonomyType, items: Array<{ id: string;
   return frequencyMap;
 };
 
-// Helper function to check if a string is a UUID
+// Helper function to check if a string is a UUID (handles spaces and variations)
 const isUUID = (str: string): boolean => {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(str);
+  if (!str || typeof str !== 'string') return false;
+  
+  const trimmed = str.trim();
+  if (!trimmed) return false;
+  
+  // Remove all spaces, hyphens, and convert to lowercase
+  const cleaned = trimmed.replace(/[\s-]/g, '').toLowerCase();
+  
+  // UUIDs are exactly 32 hexadecimal characters
+  // Check if it's exactly 32 hex characters (most reliable check)
+  if (cleaned.length === 32 && /^[0-9a-f]{32}$/i.test(cleaned)) {
+    return true;
+  }
+  
+  // Also check for standard UUID format with hyphens
+  const standardUUIDRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (standardUUIDRegex.test(cleaned)) {
+    return true;
+  }
+  
+  // Check if the string contains mostly hex characters and looks like a UUID
+  // Count hex characters - UUIDs have exactly 32 hex chars
+  const hexChars = trimmed.match(/[0-9a-f]/gi);
+  const hexCharCount = hexChars ? hexChars.length : 0;
+  
+  // If it has exactly 32 hex characters (allowing for spaces/hyphens), it's a UUID
+  if (hexCharCount === 32) {
+    // Double check it's not a valid language name by checking if it's all hex
+    const nonHexChars = trimmed.match(/[^0-9a-f\s-]/gi);
+    if (!nonHexChars || nonHexChars.length === 0) {
+      return true;
+    }
+  }
+  
+  return false;
 };
 
 export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]> => {
@@ -386,7 +419,7 @@ export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]>
       });
     }
 
-    // Special handling for language to filter out UUIDs and resolve names from IDs
+    // Special handling for language to filter out UUIDs and remove duplicates
     if (type === 'language') {
       const results = await model.findMany({
         where: {
@@ -397,71 +430,52 @@ export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]>
         },
       });
 
-      // Separate languages with UUID names from those with normal names
-      const languagesWithUUIDNames: typeof results = [];
-      const languagesWithNormalNames: typeof results = [];
+      // Step 1: Filter out languages with UUID names completely (don't show them at all)
+      const languagesWithNormalNames = results.filter(item => {
+        const name = item.name?.trim();
+        if (!name) return false;
+        return !isUUID(name);
+      });
+
+      // Step 2: Get frequency counts for ALL languages (including duplicates) before deduplication
+      const allFrequencyMap = await getFrequencyCounts(
+        type,
+        languagesWithNormalNames.map(item => ({ id: item.id, name: item.name }))
+      );
+
+      // Step 3: Aggregate frequencies by normalized name and keep the most recent language
+      const nameToLanguageMap = new Map<string, { language: typeof results[0]; totalFrequency: number }>();
       
-      results.forEach(item => {
-        if (isUUID(item.name)) {
-          languagesWithUUIDNames.push(item);
+      languagesWithNormalNames.forEach(item => {
+        const normalizedName = item.name.trim().toLowerCase();
+        const frequency = allFrequencyMap.get(item.id) ?? 0;
+        
+        const existing = nameToLanguageMap.get(normalizedName);
+        if (existing) {
+          // Duplicate found - aggregate frequency and keep the most recent (already sorted)
+          existing.totalFrequency += frequency;
+          // Don't update the language object since we want to keep the first (most recent) one
         } else {
-          languagesWithNormalNames.push(item);
+          // First occurrence of this name - keep it
+          nameToLanguageMap.set(normalizedName, {
+            language: item,
+            totalFrequency: frequency,
+          });
         }
       });
 
-      // Batch lookup all languages referenced by UUID names
-      const uuidNames = languagesWithUUIDNames.map(item => item.name);
-      const referencedLanguages = uuidNames.length > 0 
-        ? await prisma.language.findMany({
-            where: {
-              id: { in: uuidNames },
-              deletedAt: null,
-            },
-          })
-        : [];
-
-      // Create a map of UUID -> language name for quick lookup
-      const uuidToNameMap = new Map<string, string>();
-      referencedLanguages.forEach(lang => {
-        uuidToNameMap.set(lang.id, lang.name);
-      });
-
-      // Process languages with UUID names: resolve to actual names or filter out
-      const resolvedLanguages = languagesWithUUIDNames
-        .map(item => {
-          const resolvedName = uuidToNameMap.get(item.name);
-          if (resolvedName) {
-            return {
-              ...item,
-              name: resolvedName,
-            };
-          }
-          // If no language found with that ID, return null to filter it out
-          return null;
-        })
-        .filter((lang): lang is NonNullable<typeof lang> => lang !== null);
-
-      // Combine normal languages with resolved languages
-      const validLanguages = [...languagesWithNormalNames, ...resolvedLanguages];
-
-      // Get frequency counts in batch
-      const frequencyMap = await getFrequencyCounts(
-        type,
-        validLanguages.map(item => ({ id: item.id, name: item.name }))
-      );
-
-      return validLanguages.map((item) => {
-        const frequency = frequencyMap.get(item.id) ?? 0;
+      // Step 4: Convert map to array and return unique languages with aggregated frequencies
+      return Array.from(nameToLanguageMap.values()).map(({ language, totalFrequency }) => {
         return {
-          id: item.id,
-          ...Object.keys(item).reduce((acc: Record<string, unknown>, key: string) => {
+          id: language.id,
+          ...Object.keys(language).reduce((acc: Record<string, unknown>, key: string) => {
             if (!['id', 'createdAt', 'updatedAt', 'deletedAt'].includes(key)) {
-              acc[key] = item[key as keyof typeof item];
+              acc[key] = language[key as keyof typeof language];
             }
             return acc;
           }, {}),
-          frequency,
-          createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
+          frequency: totalFrequency,
+          createdAt: language.createdAt instanceof Date ? language.createdAt.toISOString() : language.createdAt,
         };
       });
     }
