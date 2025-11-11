@@ -344,6 +344,7 @@ enum ClaimantBookingStatus {
   ACCEPT
   DECLINE
   REQUEST_MORE_INFO
+  DISCARDED
 }
 
 model ClaimantBooking {
