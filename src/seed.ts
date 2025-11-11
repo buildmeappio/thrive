@@ -18,6 +18,8 @@ import CasesSeeder from "./seeders/cases.seeder";
 import AdditionalCaseStatusSeeder from "./seeders/additionalCaseStatus.seeder";
 import TransporterSeeder from "./seeders/transporter.seeder";
 import ChaperoneSeeder from "./seeders/chaperone.seeder";
+import MaximumDistanceTravelSeeder from "./seeders/maximumDistanceTravel.seeder";
+import YearsOfExperienceSeeder from "./seeders/yearsOfExperience.seeder";
 
 const seeds = [
   RoleSeeder,
@@ -37,6 +39,8 @@ const seeds = [
   CasesSeeder,
   TransporterSeeder,
   ChaperoneSeeder,
+  MaximumDistanceTravelSeeder,
+  YearsOfExperienceSeeder,
 ];
 
 const prisma = new PrismaClient();
