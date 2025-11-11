@@ -11,7 +11,7 @@ export class CaseDto {
   }
 
   // Helper to get language name, checking if it's a UUID and fetching from DB if needed
-  private static async getLanguageName(languageName: string, languageId: string): Promise<string> {
+  private static async getLanguageName(languageName: string, _languageId: string): Promise<string> {
     // If the name is a UUID, it means bad data - try to fetch using the name as an ID
     if (this.isUUID(languageName)) {
       try {
