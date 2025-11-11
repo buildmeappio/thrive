@@ -45,6 +45,27 @@
         color: #777777;
         text-align: center;
       }
+
+      .button {
+        display: inline-block;
+        padding: 12px 30px;
+        margin: 20px 0;
+        background-color: #00A8FF;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .button:hover {
+        background-color: #0090E0;
+      }
+
+      .button-container {
+        text-align: center;
+        margin: 30px 0;
+      }
     </style>
   </head>
 
@@ -59,9 +80,19 @@
       <div class="body">
         <p>Hi {{firstName}} {{lastName}},</p>
         <p>The medical examiner has declined this case.</p>
-        <p>Reason: {{reason}}</p>
+        <p><strong>Reason:</strong> {{reason}}</p>
         <p>
-          Please again visit the availability page and set your booking slot.
+          Please select your appointment availability by clicking the button below:
+        </p>
+      </div>
+
+      <div class="button-container">
+        <a href="{{appointmentLink}}" class="button">Select Your Appointment</a>
+      </div>
+
+      <div class="body">
+        <p>
+          This link will allow you to choose new appointment slots that work best for your schedule.
         </p>
       </div>
 

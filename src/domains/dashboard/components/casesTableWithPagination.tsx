@@ -382,7 +382,7 @@ export default function CasesTableWithPagination({
                     }}
                     className="py-5 sm:py-3 overflow-hidden align-middle">
                     <Link
-                      href={`/cases/${row.id}`}
+                      href={`/appointments/${row.id}`}
                       aria-label={`Open ${row.claimant}`}
                       className="flex-shrink-0 grid h-7 w-7 sm:h-5 sm:w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF] transition-colors">
                       <ChevronRight className="h-5 w-5 sm:h-3.5 sm:w-3.5 text-[#00A8FF]" />

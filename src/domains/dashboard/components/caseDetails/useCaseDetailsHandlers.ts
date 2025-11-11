@@ -38,6 +38,8 @@ export function useCaseDetailsHandlers({
         router.refresh();
         if (status === "ACCEPT") {
           router.push("/dashboard");
+        } else if (status === "DECLINE") {
+          router.push("/appointments");
         }
         // Close modals
         setIsDeclineModalOpen(false);

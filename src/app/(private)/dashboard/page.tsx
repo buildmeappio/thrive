@@ -75,8 +75,8 @@ const DashboardPage = async () => {
           <div className="lg:col-span-2 space-y-6">
             <NewCaseOffers
               items={newCaseOffers}
-              listHref="/cases"
-              title="Case Offers Pending Review"
+              listHref="/appointments"
+              title="Appointment Offers Pending Review"
             />
             <AppointmentsTable
               items={appointments}
@@ -85,7 +85,7 @@ const DashboardPage = async () => {
             />
             <ReportsTable
               items={reports}
-              listHref="/reports"
+              listHref="/appointments"
               title="Waiting to be Submitted"
             />
           </div>

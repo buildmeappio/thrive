@@ -71,7 +71,7 @@ export default function CasesPageContent({
       {/* Cases Heading */}
       <div className="mb-4 sm:mb-6 dashboard-zoom-mobile flex justify-between items-center">
         <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-          Cases
+          Appointments
         </h1>
       </div>
 

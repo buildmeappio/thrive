@@ -1,6 +1,8 @@
 import prisma from "@/lib/db";
 import { CaseDetailsData } from "../../types";
 import emailService from "@/server/services/email.service";
+import { ENV } from "@/constants/variables";
+import { signClaimantApproveToken } from "@/lib/jwt";
 
 class CaseDetailsService {
   /**
@@ -198,7 +200,11 @@ class CaseDetailsService {
     await prisma.claimantBooking.update({
       where: { id: bookingId },
       data: {
-        status: status as "ACCEPT" | "DECLINE" | "REQUEST_MORE_INFO" | "DISCARDED",
+        status: status as
+          | "ACCEPT"
+          | "DECLINE"
+          | "REQUEST_MORE_INFO"
+          | "DISCARDED",
       },
     });
 
@@ -251,6 +257,24 @@ class CaseDetailsService {
         // Add message/reason for DECLINE and REQUEST_MORE_INFO
         if (status === "DECLINE") {
           emailData.reason = message || "";
+
+          // Generate JWT token for appointment selection
+          const examination = booking.examination;
+          const claimantEmail = examination.claimant.emailAddress;
+
+          if (claimantEmail) {
+            // Generate JWT token with claimant data
+            const jwtToken = signClaimantApproveToken(
+              {
+                email: claimantEmail,
+                caseId: examination.caseId,
+                examinationId: examination.id,
+              },
+              "30d"
+            );
+
+            emailData.appointmentLink = `${ENV.NEXT_PUBLIC_APP_URL}${ENV.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL}?token=${jwtToken}`;
+          }
         } else if (status === "REQUEST_MORE_INFO") {
           emailData.message = message || "";
         }
