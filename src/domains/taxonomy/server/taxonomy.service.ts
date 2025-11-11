@@ -14,6 +14,8 @@ const getPrismaModel = (type: TaxonomyType) => {
     language: prisma.language,
     organizationType: prisma.organizationType,
     role: prisma.role,
+    maximumDistanceTravel: prisma.maximumDistanceTravel,
+    yearsOfExperience: prisma.yearsOfExperience,
   };
   return modelMap[type];
 };
@@ -136,7 +138,7 @@ export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]>
         examinationTypeId: item.examinationTypeId,
         examinationTypeName: item.examinationType?.name || 'Unknown',
         benefit: item.benefit,
-        createdAt: item.createdAt,
+        createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
       }));
     }
 
@@ -157,7 +159,7 @@ export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]>
         }
         return acc;
       }, {}),
-      createdAt: item.createdAt,
+      createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
     }));
   } catch {
     throw HttpError.internalServerError("Internal server error");
