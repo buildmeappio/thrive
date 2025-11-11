@@ -602,6 +602,7 @@ enum ExaminerStatus {
   ACCEPTED
   REJECTED
   INFO_REQUESTED
+  ACTIVE
 }
 
 model ExaminerLanguage {
@@ -983,8 +984,6 @@ model Contract {
   googleDocId          String?        @map("google_doc_id") @db.VarChar(500)
   googleDocUrl         String?        @map("google_doc_url") @db.Text
   drivePdfId           String?        @map("drive_pdf_id") @db.VarChar(500)
-  docusignEnvelopeId   String?        @map("docusign_envelope_id") @db.VarChar(255)
-  docusignStatus       String?        @map("docusign_status") @db.VarChar(100)
   sentAt               DateTime?      @map("sent_at") @db.Timestamptz()
   viewedAt             DateTime?      @map("viewed_at") @db.Timestamptz()
   signedAt             DateTime?      @map("signed_at") @db.Timestamptz()
@@ -999,46 +998,13 @@ model Contract {
   examinerProfile ExaminerProfile  @relation("ExaminerContracts", fields: [examinerProfileId], references: [id], onDelete: Cascade)
   template        DocumentTemplate @relation("TemplateContracts", fields: [templateId], references: [id])
   templateVersion TemplateVersion  @relation("VersionContracts", fields: [templateVersionId], references: [id])
-  signatures      Signature[]      @relation("ContractSignatures")
   events          ContractEvent[]  @relation("ContractEvents")
 
   @@index([examinerProfileId])
   @@index([status])
   @@index([templateId])
   @@index([googleDocId])
-  @@index([docusignEnvelopeId])
   @@map("contracts")
-}
-
-// Signatures - Per signer with evidence
-enum SignatureMethod {
-  TYPED
-  DRAWN
-  DOCUSIGN
-}
-
-model Signature {
-  id                  String          @id @default(uuid()) @db.Uuid
-  contractId          String          @map("contract_id") @db.Uuid
-  signerRole          String          @map("signer_role") @db.VarChar(50)
-  signerId            String?         @map("signer_id") @db.Uuid
-  signerName          String          @map("signer_name") @db.VarChar(255)
-  signerEmail         String?         @map("signer_email") @db.VarChar(255)
-  method              SignatureMethod @map("method")
-  consent             Boolean         @default(true) @map("consent")
-  signaturePngS3Key   String?         @map("signature_png_s3_key") @db.VarChar(500)
-  ipAddress           String?         @map("ip_address") @db.VarChar(45)
-  userAgent           String?         @map("user_agent") @db.Text
-  evidence            Json            @default("{}") @map("evidence")
-  docusignRecipientId String?         @map("docusign_recipient_id") @db.VarChar(255)
-  docusignSignatureId String?         @map("docusign_signature_id") @db.VarChar(255)
-  docusignSignedAt    DateTime?       @map("docusign_signed_at") @db.Timestamptz()
-  signedAt            DateTime        @default(now()) @map("signed_at") @db.Timestamptz()
-
-  contract Contract @relation("ContractSignatures", fields: [contractId], references: [id], onDelete: Cascade)
-
-  @@index([contractId])
-  @@map("signatures")
 }
 
 // Contract Events - Full audit trail
