@@ -10,20 +10,13 @@ export const signContract = async (
   ipAddress?: string,
   userAgent?: string
 ) => {
-  try {
-    const result = await signContractHandler({
-      contractId,
-      signerName,
-      htmlContent,
-      pdfBase64,
-      ipAddress,
-      userAgent,
-    });
-    return result;
-  } catch (error: any) {
-    return {
-      success: false,
-      error: error.message || "Failed to sign contract",
-    };
-  }
+  const result = await signContractHandler({
+    contractId,
+    signerName,
+    htmlContent,
+    pdfBase64,
+    ipAddress,
+    userAgent,
+  });
+  return result;
 };

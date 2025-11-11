@@ -8,6 +8,22 @@ interface PageProps {
   searchParams: Promise<{ token?: string }>;
 }
 
+export interface ContractType {
+  province: string;
+  examinerName: string;
+  examinerEmail: string;
+  effectiveDate: string;
+  feeStructure: {
+    standardIMEFee: number;
+    virtualIMEFee: number;
+    recordReviewFee: number;
+    hourlyRate: number;
+    reportTurnaroundDays: number;
+    cancellationFee: number;
+    paymentTerms: string;
+  };
+}
+
 const ContractSigningPage = async ({ params, searchParams }: PageProps) => {
   const { id } = await params;
   const { token } = await searchParams;
@@ -31,18 +47,21 @@ const ContractSigningPage = async ({ params, searchParams }: PageProps) => {
   if (!contract || !contract.data) {
     notFound();
   }
+  console.log("Contract:", contract);
 
   // Check if we have a pre-signed URL
   if (!contract.presignedPdfUrl) {
     throw new Error("Failed to generate PDF URL");
   }
 
+  const contractData = contract.data as unknown as ContractType;
+
   return (
     <ContractSigningView
       token={token}
       contractId={id}
-      examinerName={contract.data.examinerName}
-      feeStructure={contract.data.feeStructure}
+      examinerName={contractData.examinerName}
+      feeStructure={contractData.feeStructure}
     />
   );
 };

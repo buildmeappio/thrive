@@ -31,6 +31,7 @@ const Page = async ({
   // Step 2: Verify token and extract account data
   try {
     const tokenData = await authActions.verifyAccountToken({ token });
+    console.log("Token data:", tokenData);
     accountId = tokenData.data.user.accountId;
     // userId = tokenData.data.user.id;
   } catch (error) {
