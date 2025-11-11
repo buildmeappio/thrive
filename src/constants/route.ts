@@ -10,7 +10,7 @@ const URLS = Object.freeze({
   SUPPORT: "/support",
   SETTINGS: "/settings",
   BILLING: "/billing",
-  CASES: "/cases",
+  APPOINTMENTS: "/appointments",
 });
 
 const PUBLIC_ROUTES = Object.freeze([
@@ -30,7 +30,7 @@ const PRIVATE_ROUTES = Object.freeze([
   URLS.SUPPORT,
   URLS.SETTINGS,
   URLS.BILLING,
-  URLS.CASES,
+  URLS.APPOINTMENTS,
   URLS.DASHBOARD,
 ]);
 

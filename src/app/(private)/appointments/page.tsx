@@ -6,8 +6,8 @@ import { getExaminerProfileAction } from "@/domains/setting/server/actions/getEx
 import { getAllCasesAction } from "@/domains/dashboard/server/actions/getAllCases";
 
 export const metadata: Metadata = {
-  title: "Cases | Thrive - Examiner",
-  description: "Access your cases to manage your case examinations",
+  title: "Appointments | Thrive - Examiner",
+  description: "Access your appointments to manage your case examinations",
 };
 
 export const dynamic = "force-dynamic";

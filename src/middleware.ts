@@ -3,7 +3,7 @@ import { getToken } from "next-auth/jwt";
 
 const protectedRoutes = [
   "/dashboard",
-  "/cases",
+  "/appointments",
   "/billing",
   "/support",
   "/settings",
@@ -52,8 +52,8 @@ export const config = {
      */
     "/dashboard",
     "/dashboard/:path*",
-    "/cases",
-    "/cases/:path*",
+    "/appointments",
+    "/appointments/:path*",
     "/billing",
     "/billing/:path*",
     "/settings",

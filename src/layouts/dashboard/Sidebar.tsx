@@ -19,8 +19,8 @@ export const medicalExaminerSidebarRoutes = [
   { icon: Home, label: "Dashboard", href: URLS.DASHBOARD, index: 0 },
   {
     icon: PcCase,
-    label: "All Cases",
-    href: URLS.CASES,
+    label: "All Appointments",
+    href: URLS.APPOINTMENTS,
     index: 1,
   },
   {

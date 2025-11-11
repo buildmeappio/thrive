@@ -36,7 +36,7 @@ export default function CaseDetails({
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-            <span className="text-black">Case Offer: </span>
+            <span className="text-black">Appointment Offer: </span>
             <span className="text-[#00A8FF]">{data.caseNumber}</span>
           </h1>
           {data.status === "ACCEPT" && (
