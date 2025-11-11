@@ -79,7 +79,8 @@ async function sendApprovalEmailToClaimant(caseDetails: CaseDetailDtoType) {
   // This will generate JWT token with correct payload (email, caseId, examinationId)
   // and store reference token in ExaminationSecureLink table
   // caseDetails.id is the examination ID
-  const availabilityLink = await createSecureLink(caseDetails.id, 24);
+  // Link expires in 7 days (168 hours)
+  const availabilityLink = await createSecureLink(caseDetails.id, 168);
 
   const submittedDate = caseDetails.createdAt
     ? new Date(caseDetails.createdAt).toLocaleDateString("en-US", {

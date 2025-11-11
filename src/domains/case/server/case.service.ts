@@ -269,7 +269,8 @@ class CaseService {
       }
 
       const token = v4();
-      const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+      // Link expires in 7 days (168 hours)
+      const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
 
       await prisma.examinationSecureLink.create({
         data: {
