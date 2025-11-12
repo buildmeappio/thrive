@@ -282,14 +282,22 @@ const isWithinAnyTimeSlot = (
   const slotEndMinutes = timeStringToMinutes(slotEndTime);
 
   for (const ts of timeSlots) {
-    // Time slots from DB are already in UTC, so we compare directly
-    // No timezone conversion - all comparisons happen in UTC
+    // Time slots from DB - handle both legacy (12-hour) and new (24-hour UTC) formats
     const windowStartMinutes = timeStringToMinutes(ts.startTime);
     const windowEndMinutes = timeStringToMinutes(ts.endTime);
+
+    // Debug: Log the actual minute values being compared
+    console.log(
+      `    [Time Comparison] Slot: ${slotStartMinutes}-${slotEndMinutes} mins, Window: ${windowStartMinutes}-${windowEndMinutes} mins`
+    );
 
     // Check if slot is fully contained within this time window
     const startsAfterOrAtWindowStart = slotStartMinutes >= windowStartMinutes;
     const endsBeforeOrAtWindowEnd = slotEndMinutes <= windowEndMinutes;
+
+    console.log(
+      `    [Time Comparison] Starts OK: ${startsAfterOrAtWindowStart}, Ends OK: ${endsBeforeOrAtWindowEnd}`
+    );
 
     if (startsAfterOrAtWindowStart && endsBeforeOrAtWindowEnd) {
       return true;
@@ -1148,6 +1156,7 @@ export const getAvailableExaminersForExam = async (
     endDate,
     dueDate,
     days,
+    settings, // Include the configuration settings so frontend can generate matching time slots
     serviceRequirements: {
       interpreterRequired: serviceRequirements.interpreterRequired,
       chaperoneRequired: serviceRequirements.chaperoneRequired,

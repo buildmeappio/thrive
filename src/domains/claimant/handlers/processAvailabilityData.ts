@@ -49,11 +49,15 @@ export const processAvailabilityData = (
 
 /**
  * Get time slots array for the availability data
+ * Uses settings from availabilityData if available, otherwise falls back to provided settings
  */
 export const getTimeSlotsForAvailability = (
   availabilityData: AvailableExaminersResult | null,
-  settings: AvailabilitySettings
+  fallbackSettings: AvailabilitySettings
 ) => {
+  // Use settings from availability data if available, otherwise use fallback
+  const settings = availabilityData?.settings || fallbackSettings;
+
   if (!availabilityData) {
     const referenceDate = new Date();
     return generateTimeSlots(referenceDate, settings);
