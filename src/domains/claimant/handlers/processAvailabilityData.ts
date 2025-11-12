@@ -1,6 +1,5 @@
 import type {
   AvailableExaminersResult,
-  DayAvailability,
   ExaminerAvailabilityOption,
   AvailabilitySettings,
 } from '../types/examinerAvailability';

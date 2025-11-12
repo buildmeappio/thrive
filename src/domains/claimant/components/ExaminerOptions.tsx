@@ -328,8 +328,8 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
                                             : 'cursor-pointer hover:shadow-lg'
                                         } ${
                                           isPreviousBooking
-                                            ? 'border-blue-400 bg-gradient-to-br from-blue-50 to-sky-50 ring-2 ring-blue-300 ring-offset-1'
-                                            : 'border-purple-100 bg-gradient-to-br from-purple-50 to-blue-50'
+                                            ? 'border-blue-400 from-blue-50 to-sky-50 ring-2 ring-blue-300 ring-offset-1'
+                                            : 'border-purple-100 from-purple-50 to-blue-50'
                                         }`}
                                       >
                                         {isPreviousBooking && (
@@ -342,15 +342,15 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
                                         <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
                                           {examiner.clinic && (
                                             <div className="flex max-w-[280px] min-w-0 items-center space-x-1">
-                                              <MapPin className="h-3 w-3 flex-shrink-0 text-[#000093]" />
-                                              <p className="text-[10px] font-medium break-words text-gray-900">
+                                              <MapPin className="h-3 w-3 text-[#000093]" />
+                                              <p className="text-[10px] font-medium text-gray-900">
                                                 {examiner.clinic}
                                               </p>
                                             </div>
                                           )}
                                           {examiner.specialty && (
-                                            <div className="flex flex-shrink-0 items-center space-x-1">
-                                              <Star className="h-3 w-3 flex-shrink-0 text-[#000093]" />
+                                            <div className="flex items-center space-x-1">
+                                              <Star className="h-3 w-3 text-[#000093]" />
                                               <p className="text-[10px] font-medium whitespace-nowrap text-gray-900">
                                                 {examiner.specialty}
                                               </p>
@@ -360,7 +360,7 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
                                           {availabilityData?.serviceRequirements
                                             ?.interpreterRequired && (
                                             <div className="flex items-center space-x-1">
-                                              <Languages className="h-3 w-3 flex-shrink-0 text-[#000093]" />
+                                              <Languages className="h-3 w-3 text-[#000093]" />
                                               <p className="text-[10px] font-medium text-gray-900">
                                                 Interpreter:{' '}
                                                 {examiner.interpreters &&
@@ -374,7 +374,7 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
                                           {availabilityData?.serviceRequirements
                                             ?.transportRequired && (
                                             <div className="flex items-center space-x-1">
-                                              <Car className="h-3 w-3 flex-shrink-0 text-[#000093]" />
+                                              <Car className="h-3 w-3 text-[#000093]" />
                                               <p className="text-[10px] font-medium text-gray-900">
                                                 Transport:{' '}
                                                 {examiner.transporters &&
@@ -388,7 +388,7 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
                                           {availabilityData?.serviceRequirements
                                             ?.chaperoneRequired && (
                                             <div className="flex items-center space-x-1">
-                                              <UserPlus className="h-3 w-3 flex-shrink-0 text-[#000093]" />
+                                              <UserPlus className="h-3 w-3 text-[#000093]" />
                                               <p className="text-[10px] font-medium text-gray-900">
                                                 Chaperone:{' '}
                                                 {examiner.chaperones &&
