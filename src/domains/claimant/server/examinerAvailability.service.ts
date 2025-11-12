@@ -1098,13 +1098,11 @@ export const getAvailableExaminersForExam = async (
           examiners: limitedExaminers,
         });
         console.log(
-          `[Slot Generation] ✓ Slot added with ${limitedExaminers.length} examiner(s) (from ${availableExaminersForSlot.length} available, min required: ${MIN_EXAMINERS_FOR_SLOT})`
+          `[Slot Generation] ✓ Slot added with ${limitedExaminers.length} examiner(s) (from ${availableExaminersForSlot.length} available)`
         );
       } else {
         // Log why slot is hidden
-        console.log(
-          `[Slot Generation] ✗ Slot hidden - only ${availableExaminersForSlot.length} examiner(s) available (minimum ${MIN_EXAMINERS_FOR_SLOT} required for this case)`
-        );
+        console.log(`[Slot Generation] ✗ Slot hidden - no examiners available for this slot`);
         console.log(
           `  Total available examiners: ${availableExaminersCount}, Declined: ${declinedExaminerIds.size}`
         );
@@ -1130,21 +1128,12 @@ export const getAvailableExaminersForExam = async (
     );
 
     // Provide specific error message based on the situation
-    let errorMessage =
-      'No examiner availability found for the requested time period. This may be because:\n';
-
-    if (availableExaminersCount >= 3) {
-      errorMessage +=
-        '1. Examiners do not have availability slots configured for this time period\n' +
-        '2. All available time slots have fewer than 3 examiners (limited choice)\n' +
-        '3. Examiners are fully booked during this period\n\n';
-    } else {
-      errorMessage +=
-        '1. Examiner(s) do not have availability slots configured for this time period\n' +
-        '2. Examiner(s) are fully booked during this period\n\n';
-    }
-
-    errorMessage += 'Please contact support for assistance in scheduling your examination.';
+    const errorMessage =
+      'No examiner availability found for the requested time period. This may be because:\n' +
+      '1. Examiner(s) do not have availability slots configured for this time period\n' +
+      '2. Examiner(s) are fully booked during this period\n' +
+      '3. The configured time slots do not match examiner availability windows\n\n' +
+      'Please contact support for assistance in scheduling your examination.';
 
     throw HttpError.notFound(errorMessage);
   }
