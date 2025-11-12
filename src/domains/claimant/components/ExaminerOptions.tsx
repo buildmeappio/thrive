@@ -85,7 +85,7 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
             <div className="mb-2 text-lg font-semibold text-red-800">
               Unable to Load Availability
             </div>
-            <div className="text-base text-red-700">{errorMessage}</div>
+            <div className="text-base whitespace-pre-line text-red-700">{errorMessage}</div>
           </div>
         </div>
       </div>
