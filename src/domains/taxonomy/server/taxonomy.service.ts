@@ -16,6 +16,7 @@ const getPrismaModel = (type: TaxonomyType) => {
     role: prisma.role,
     maximumDistanceTravel: prisma.maximumDistanceTravel,
     yearsOfExperience: prisma.yearsOfExperience,
+    configuration: prisma.configuration,
   };
   return modelMap[type];
 };
@@ -45,6 +46,15 @@ export const createTaxonomy = async (type: TaxonomyType, data: CreateTaxonomyInp
         examinationTypeId: data.examinationTypeId,
         benefit: data.benefit,
       };
+    } else if (type === 'configuration') {
+      // Convert value from string to number for configuration
+      createData = {
+        name: data.name,
+        value: typeof data.value === 'string' ? parseInt(data.value, 10) : data.value,
+      };
+      if (isNaN(createData.value)) {
+        throw HttpError.badRequest('Value must be a valid number');
+      }
     }
 
     const result = await model.create({
@@ -98,6 +108,17 @@ export const updateTaxonomy = async (type: TaxonomyType, id: string, data: Updat
       updateData = {};
       if (data.examinationTypeId !== undefined) updateData.examinationTypeId = data.examinationTypeId;
       if (data.benefit !== undefined) updateData.benefit = data.benefit;
+    } else if (type === 'configuration') {
+      // Convert value from string to number for configuration
+      updateData = {};
+      if (data.name !== undefined) updateData.name = data.name;
+      if (data.value !== undefined) {
+        const numValue = typeof data.value === 'string' ? parseInt(data.value, 10) : data.value;
+        if (isNaN(numValue) || typeof numValue !== 'number') {
+          throw HttpError.badRequest('Value must be a valid number');
+        }
+        updateData.value = numValue;
+      }
     }
 
     const result = await model.update({
@@ -323,6 +344,12 @@ const getFrequencyCounts = async (type: TaxonomyType, items: Array<{ id: string;
             frequencyMap.set(matchingItem.id, count._count);
           }
         });
+        break;
+      }
+
+      case 'configuration': {
+        // Configuration has no relations, so frequency is always 0
+        // No need to query anything
         break;
       }
 

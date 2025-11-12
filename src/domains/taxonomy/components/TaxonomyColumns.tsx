@@ -1,8 +1,8 @@
 import { cn } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, ArrowUp, ArrowDown, Edit, Trash2 } from 'lucide-react';
-import { TaxonomyData } from '../types/Taxonomy';
-import { formatDate, formatTaxonomyName } from '@/utils/date';
+import { TaxonomyData, TaxonomyType } from '../types/Taxonomy';
+import { formatDate, formatTaxonomyName, minutesToTime } from '@/utils/date';
 import React, { useRef, useEffect, useState } from 'react';
 
 const Header = ({
@@ -124,7 +124,8 @@ const formatFieldName = (fieldName: string): string => {
 export const createTaxonomyColumns = (
   displayFields: string[],
   onEdit: (taxonomy: TaxonomyData) => void,
-  onDelete: (taxonomy: TaxonomyData) => void
+  onDelete: (taxonomy: TaxonomyData) => void,
+  type: TaxonomyType
 ): ColumnDef<TaxonomyData>[] => {
   const columns: ColumnDef<TaxonomyData>[] = displayFields.map((field, index) => ({
     header: ({ column }) => (
@@ -141,10 +142,65 @@ export const createTaxonomyColumns = (
     cell: ({ row }) => {
       const value = row.original[field];
       const displayValue = value !== null && value !== undefined ? String(value) : 'N/A';
+      
+      let formattedValue = displayValue;
+      
       // Format name fields (like 'name', 'benefit', 'examinationTypeName')
-      const formattedValue = (field === 'name' || field === 'benefit' || field.toLowerCase().includes('name')) 
-        ? formatTaxonomyName(displayValue) 
-        : displayValue;
+      if (field === 'name' || field === 'benefit' || field.toLowerCase().includes('name')) {
+        formattedValue = formatTaxonomyName(displayValue);
+      } 
+      // Format value field for configuration as time if it's a time-related config
+      else if (type === 'configuration' && field === 'value') {
+        // Try to parse as number
+        const numValue = typeof value === 'number' ? value : (typeof value === 'string' ? parseInt(value, 10) : Number(value));
+        
+        // Check if it's a valid numeric value
+        if (!isNaN(numValue) && typeof numValue === 'number') {
+          const configName = String(row.original.name || '').toLowerCase();
+          
+          // Check if it's slot duration - if so, show as number (not time)
+          const isSlotDuration = configName.includes('slot') && configName.includes('duration');
+          
+          // Check if it's "start working hour time" - format as time
+          const isStartWorkingHourTime = (configName.includes('start') && configName.includes('working') && 
+                                          configName.includes('hour') && configName.includes('time'));
+          
+          // Check if it's total working hours or similar duration/total configs - show as number (not time)
+          // But exclude "start working hour time" from this check
+          const isTotalOrDuration = !isStartWorkingHourTime && (
+            configName.includes('total') || 
+            (configName.includes('working') && configName.includes('hour') && !configName.includes('start'))
+          );
+          
+          if (isStartWorkingHourTime) {
+            // Format "start working hour time" as time (e.g., 480 -> "8:00 AM")
+            if (numValue >= 0 && numValue < 1440 && Number.isInteger(numValue)) {
+              formattedValue = minutesToTime(numValue);
+            } else {
+              formattedValue = String(numValue);
+            }
+          } else if (!isSlotDuration && !isTotalOrDuration) {
+            // For other time-related configs (time, hour, start, end), format as time
+            const timeKeywords = ['time', 'hour', 'start', 'end'];
+            const isTimeConfig = timeKeywords.some(keyword => configName.includes(keyword));
+            
+            // Format as time if it's a time config and value is within valid time range (0-1439 minutes)
+            if (isTimeConfig && numValue >= 0 && numValue < 1440 && Number.isInteger(numValue)) {
+              formattedValue = minutesToTime(numValue);
+            } else {
+              // Show numeric value as-is
+              formattedValue = String(numValue);
+            }
+          } else {
+            // Slot duration, total working hours, or other durations: show as number
+            formattedValue = String(numValue);
+          }
+        } else {
+          // Not a valid number, show as-is
+          formattedValue = String(value);
+        }
+      }
+      
       return <Content title={formattedValue}>{formattedValue}</Content>;
     },
     size: field === 'description' ? 250 : 200,
@@ -198,6 +254,12 @@ export const createTaxonomyColumns = (
   });
 
   // Add Actions column
+  // For configuration: show only edit button (no delete)
+  // For all other taxonomies: show only delete button (no edit)
+  const isConfiguration = type === 'configuration';
+  const showEditButton = isConfiguration;
+  const showDeleteButton = !isConfiguration;
+
   columns.push({
     header: '',
     accessorKey: 'id',
@@ -210,12 +272,14 @@ export const createTaxonomyColumns = (
 
       return (
         <div className="flex justify-end items-center gap-2">
-          <ActionButton onEdit={() => onEdit(row.original)} />
-          <DeleteButton 
-            onDelete={() => onDelete(row.original)} 
-            disabled={isDisabled}
-            tooltip={tooltip}
-          />
+          {showEditButton && <ActionButton onEdit={() => onEdit(row.original)} />}
+          {showDeleteButton && (
+            <DeleteButton 
+              onDelete={() => onDelete(row.original)} 
+              disabled={isDisabled}
+              tooltip={tooltip}
+            />
+          )}
         </div>
       );
     },
