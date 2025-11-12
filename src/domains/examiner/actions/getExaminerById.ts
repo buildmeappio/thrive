@@ -3,6 +3,26 @@ import examinerService from "../server/examiner.service";
 import { ExaminerDto } from "../server/dto/examiner.dto";
 import { generatePresignedUrl } from "@/lib/s3";
 import { mapSpecialtyIdsToNames } from "../utils/mapSpecialtyIdsToNames";
+import { Decimal } from '@prisma/client/runtime/library';
+
+// Helper function to serialize Decimals and other non-plain objects
+const serializeValue = (value: any): any => {
+  if (value instanceof Decimal) {
+    return Number(value);
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (Array.isArray(value)) {
+    return value.map(serializeValue);
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, val]) => [key, serializeValue(val)])
+    );
+  }
+  return value;
+};
 
 const getExaminerById = async (id: string) => {
   const examiner = await examinerService.getExaminerById(id);
@@ -12,8 +32,6 @@ const getExaminerById = async (id: string) => {
   const mappedData = await mapSpecialtyIdsToNames([examinerData]);
   examinerData = mappedData[0];
 
-  // Generate presigned URLs for documents
-  // Examiner documents are stored in S3 under documents/examiner/ folder
   if (examiner.resumeDocument) {
     try {
       examinerData.cvUrl = await generatePresignedUrl(
@@ -64,7 +82,8 @@ const getExaminerById = async (id: string) => {
     }
   }
 
-  return examinerData;
+  // Serialize all Decimal fields and other non-plain objects before returning
+  return serializeValue(examinerData);
 };
 
 export default getExaminerById;

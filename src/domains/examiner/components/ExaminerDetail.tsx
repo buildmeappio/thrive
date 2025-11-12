@@ -56,11 +56,13 @@ const mapStatus = {
   ACCEPTED: "approved",
   REJECTED: "rejected",
   INFO_REQUESTED: "info_requested",
+  ACTIVE: "active",
 } as const;
 
 type Props = { examiner: ExaminerData };
 
 export default function ExaminerDetail({ examiner }: Props) {
+  console.log(examiner.feeStructure)
   const router = useRouter();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
@@ -340,57 +342,31 @@ export default function ExaminerDetail({ examiner }: Props) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
               {/* Left column - Fee Structure */}
               <div className="relative">
+                
                 <Section title="Fee Structure">
                   {examiner.feeStructure ? (
                     <>
+                      
                       <FieldRow
-                        label="Standard IME Fee"
-                        value={`$${examiner.feeStructure.standardIMEFee.toFixed(
-                          2
-                        )}`}
-                        type="text"
-                      />
-                      <FieldRow
-                        label="Virtual IME Fee"
-                        value={`$${examiner.feeStructure.virtualIMEFee.toFixed(
-                          2
-                        )}`}
+                        label="IME Fee"
+                        value={`$${examiner.feeStructure.IMEFee}`}
                         type="text"
                       />
                       <FieldRow
                         label="Record Review Fee"
-                        value={`$${examiner.feeStructure.recordReviewFee.toFixed(
-                          2
-                        )}`}
+                        value={`$${examiner.feeStructure.recordReviewFee}`}
                         type="text"
                       />
                       {examiner.feeStructure.hourlyRate && (
                         <FieldRow
                           label="Hourly Rate"
-                          value={`$${examiner.feeStructure.hourlyRate.toFixed(
-                            2
-                          )}`}
-                          type="text"
-                        />
-                      )}
-                      {examiner.feeStructure.reportTurnaroundDays && (
-                        <FieldRow
-                          label="Report Turnaround Days"
-                          value={`${
-                            examiner.feeStructure.reportTurnaroundDays
-                          } ${
-                            examiner.feeStructure.reportTurnaroundDays === 1
-                              ? "day"
-                              : "days"
-                          }`}
+                          value={`$${examiner.feeStructure.hourlyRate}`}
                           type="text"
                         />
                       )}
                       <FieldRow
                         label="Cancellation Fee"
-                        value={`$${examiner.feeStructure.cancellationFee.toFixed(
-                          2
-                        )}`}
+                        value={`$${examiner.feeStructure.cancellationFee}`}
                         type="text"
                       />
                     </>

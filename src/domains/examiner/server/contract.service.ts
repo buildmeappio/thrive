@@ -10,11 +10,9 @@ type ContractData = {
   examinerEmail: string;
   province: string;
   feeStructure: {
-    standardIMEFee: number;
-    virtualIMEFee: number;
+    IMEFee: number;
     recordReviewFee: number;
     hourlyRate?: number;
-    reportTurnaroundDays?: number;
     cancellationFee: number;
     paymentTerms: string;
   };
@@ -174,11 +172,9 @@ class ContractService {
         province: examiner.provinceOfResidence,
         effectiveDate: new Date(),
         feeStructure: {
-          standardIMEFee: Number(feeStructure.standardIMEFee),
-          virtualIMEFee: Number(feeStructure.virtualIMEFee),
+          IMEFee: Number(feeStructure.IMEFee),
           recordReviewFee: Number(feeStructure.recordReviewFee),
           hourlyRate: feeStructure.hourlyRate ? Number(feeStructure.hourlyRate) : undefined,
-          reportTurnaroundDays: feeStructure.reportTurnaroundDays ?? undefined,
           cancellationFee: Number(feeStructure.cancellationFee),
           paymentTerms: feeStructure.paymentTerms,
         },
@@ -199,11 +195,9 @@ class ContractService {
         examinerEmail,
         province: examiner.provinceOfResidence,
         feeStructure: {
-          standardIMEFee: Number(feeStructure.standardIMEFee),
-          virtualIMEFee: Number(feeStructure.virtualIMEFee),
+          IMEFee: Number(feeStructure.IMEFee),
           recordReviewFee: Number(feeStructure.recordReviewFee),
           hourlyRate: feeStructure.hourlyRate ? Number(feeStructure.hourlyRate) : undefined,
-          reportTurnaroundDays: feeStructure.reportTurnaroundDays ?? undefined,
           cancellationFee: Number(feeStructure.cancellationFee),
           paymentTerms: feeStructure.paymentTerms,
         },
@@ -396,7 +390,6 @@ class ContractService {
         },
         template: true,
         templateVersion: true,
-        signatures: true,
         events: {
           orderBy: {
             at: "desc",
@@ -415,7 +408,6 @@ class ContractService {
       include: {
         template: true,
         templateVersion: true,
-        signatures: true,
       },
       orderBy: {
         createdAt: "desc",
