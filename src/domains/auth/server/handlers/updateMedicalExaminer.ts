@@ -43,11 +43,8 @@ export type UpdateMedicalExaminerInput = {
   consentBackgroundVerification?: boolean;
 
   // step 6 - Payment Details
-  standardIMEFee?: string;
-  virtualIMEFee?: string;
-  recordReviewFee?: string;
+  IMEFee?: string;
   hourlyRate?: string;
-  reportTurnaroundDays?: string;
   cancellationFee?: string;
 };
 

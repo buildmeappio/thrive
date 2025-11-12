@@ -14,11 +14,9 @@ export interface ContractType {
   examinerEmail: string;
   effectiveDate: string;
   feeStructure: {
-    standardIMEFee: number;
-    virtualIMEFee: number;
+    IMEFee: number;
     recordReviewFee: number;
     hourlyRate: number;
-    reportTurnaroundDays: number;
     cancellationFee: number;
     paymentTerms: string;
   };

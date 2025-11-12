@@ -43,11 +43,9 @@ export type CreateMedicalExaminerInput = {
   consentBackgroundVerification: boolean;
 
   // step 6 - Payment Details
-  standardIMEFee: string;
-  virtualIMEFee: string;
+  IMEFee: string;
   recordReviewFee: string;
   hourlyRate?: string;
-  reportTurnaroundDays?: string;
   cancellationFee: string;
 };
 
@@ -142,17 +140,11 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
       prisma.examinerFeeStructure.create({
         data: {
           examinerProfileId: examinerProfile.id,
-          standardIMEFee: parseFloat(payload.standardIMEFee) || 0,
-          virtualIMEFee: parseFloat(payload.virtualIMEFee) || 0,
+          IMEFee: parseFloat(payload.IMEFee) || 0,
           recordReviewFee: parseFloat(payload.recordReviewFee) || 0,
           hourlyRate:
             payload.hourlyRate && payload.hourlyRate.trim() !== ""
               ? parseFloat(payload.hourlyRate)
-              : null,
-          reportTurnaroundDays:
-            payload.reportTurnaroundDays &&
-            payload.reportTurnaroundDays.trim() !== ""
-              ? parseInt(payload.reportTurnaroundDays)
               : null,
           cancellationFee: parseFloat(payload.cancellationFee) || 0,
           paymentTerms: "",

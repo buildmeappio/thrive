@@ -8,6 +8,7 @@ import { getExaminerProfileByAccountId } from "@/domains/contract/server/actions
 import { getContractByExaminerProfileId } from "@/domains/contract/server/actions/getContractByExaminerProfileId.actions";
 import { getAccountById } from "@/domains/contract/server/actions/getAccountById.actions";
 import { markContractAsViewed } from "@/domains/contract/server/actions/markContractAsViewed.actions";
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: "Create Account | Thrive Examiner",
@@ -31,9 +32,7 @@ const Page = async ({
   // Step 2: Verify token and extract account data
   try {
     const tokenData = await authActions.verifyAccountToken({ token });
-    console.log("Token data:", tokenData);
     accountId = tokenData.data.user.accountId;
-    // userId = tokenData.data.user.id;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "unknown";
 
@@ -56,6 +55,10 @@ const Page = async ({
   if (examinerProfile) {
     latestContract = await getContractByExaminerProfileId(examinerProfile.id);
   }
+
+  if(!latestContract){
+    redirect("/create-account/success?error=no_contract_found");
+  } 
 
   // Step 5: Handle case when examiner profile doesn't exist
   if (!examinerProfile) {
