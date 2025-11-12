@@ -72,6 +72,7 @@ export type AvailableExaminersResult = {
   endDate: Date;
   dueDate: Date | null;
   days: DayAvailability[];
+  settings: AvailabilitySettings; // Configuration settings used to generate the slots
   serviceRequirements?: {
     interpreterRequired: boolean;
     chaperoneRequired: boolean;
