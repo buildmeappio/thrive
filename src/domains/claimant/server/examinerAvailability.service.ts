@@ -214,13 +214,23 @@ const getExaminersQualifiedForExamType = async (examTypeId: string) => {
  * - "09:00" (24-hour format)
  * - "9:00 AM" or "5:00 PM" (12-hour format)
  */
-const timeStringToMinutes = (timeStr: string): number => {
+/**
+ * HYBRID TIME PARSING APPROACH:
+ * - Times with AM/PM: Treated as local/absolute time (no conversion needed)
+ * - Times without AM/PM (24-hour): Treated as UTC, converted to server's local time for comparison
+ *
+ * This allows mixed data formats to coexist:
+ * - Legacy "8:00 AM" data remains as local time
+ * - New "03:00" data is UTC and gets converted to local
+ */
+const timeStringToMinutes = (timeStr: string, treatAsUTC: boolean = false): number => {
   const is12Hour = /AM|PM/i.test(timeStr);
 
   let hours: number;
   let minutes: number;
 
   if (is12Hour) {
+    // 12-hour format with AM/PM: Treat as local/absolute time
     const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
     if (!match) {
       throw new Error(`Invalid 12-hour time format: ${timeStr}`);
@@ -230,16 +240,28 @@ const timeStringToMinutes = (timeStr: string): number => {
     minutes = parseInt(match[2], 10);
     const period = match[3].toUpperCase();
 
-    // Convert to 24-hour format
+    // Convert to 24-hour format (but still local time)
     if (period === 'PM' && hours !== 12) {
       hours += 12;
     } else if (period === 'AM' && hours === 12) {
       hours = 0;
     }
   } else {
+    // 24-hour format without AM/PM
     const [hh, mm] = timeStr.split(':').map(Number);
     hours = hh ?? 0;
     minutes = mm ?? 0;
+
+    // If this is UTC time and we need to convert to local for comparison
+    if (treatAsUTC) {
+      // Convert UTC to local time by creating a Date object
+      const utcDate = new Date();
+      utcDate.setUTCHours(hours, minutes, 0, 0);
+
+      // Get local hours and minutes
+      hours = utcDate.getHours();
+      minutes = utcDate.getMinutes();
+    }
   }
 
   return hours * 60 + minutes;
@@ -282,9 +304,11 @@ const isWithinAnyTimeSlot = (
   const slotEndMinutes = timeStringToMinutes(slotEndTime);
 
   for (const ts of timeSlots) {
-    // Time slots from DB - handle both legacy (12-hour) and new (24-hour UTC) formats
-    const windowStartMinutes = timeStringToMinutes(ts.startTime);
-    const windowEndMinutes = timeStringToMinutes(ts.endTime);
+    // HYBRID PARSING: Time slots from DB can be in two formats:
+    // 1. Legacy format with AM/PM (e.g., "8:00 AM") - treat as local time
+    // 2. UTC format without AM/PM (e.g., "03:00") - convert to local time
+    const windowStartMinutes = timeStringToMinutes(ts.startTime, true); // treatAsUTC = true for 24-hour format
+    const windowEndMinutes = timeStringToMinutes(ts.endTime, true); // treatAsUTC = true for 24-hour format
 
     // Debug: Log the actual minute values being compared
     console.log(
