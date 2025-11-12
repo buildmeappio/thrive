@@ -189,6 +189,22 @@ const getExaminersQualifiedForExamType = async (examTypeId: string) => {
     .filter((e): e is NonNullable<typeof e> => e !== null);
 
   console.log(`[Examiner Availability] Returning ${qualifiedExaminers.length} qualified examiners`);
+
+  // Debug: Log actual time slots from database for the first examiner
+  if (qualifiedExaminers.length > 0) {
+    const firstExaminer = qualifiedExaminers[0];
+    console.log('[DEBUG] First examiner availability data from DB:');
+    console.log('  Examiner:', firstExaminer.examinerName);
+    console.log(
+      '  Weekly Hours:',
+      JSON.stringify(firstExaminer.availabilityProvider.weeklyHours, null, 2)
+    );
+    console.log(
+      '  Override Hours:',
+      JSON.stringify(firstExaminer.availabilityProvider.overrideHours, null, 2)
+    );
+  }
+
   return qualifiedExaminers;
 };
 
@@ -319,16 +335,15 @@ const isProviderAvailableForSlot = (opts: {
 
   const weekdayName = weekdayEnum[dayKey];
 
-  // Debug logging for Thursday
-  if (weekdayName === 'THURSDAY') {
+  // Debug logging for all slots (temporarily enabled for debugging)
+  const DEBUG_SLOT_MATCHING = true;
+  if (DEBUG_SLOT_MATCHING) {
     console.log(
       `[isProviderAvailableForSlot] Checking ${weekdayName} ${dayDate.toISOString().split('T')[0]}`
     );
     console.log(`  Slot: ${dateToTimeString(slotStart)} to ${dateToTimeString(slotEnd)}`);
-    console.log(
-      `  Weekly hours for ${weekdayName}:`,
-      provider.weeklyHours.filter(wh => wh.dayOfWeek === weekdayName)
-    );
+    const weeklyForDay = provider.weeklyHours.filter(wh => wh.dayOfWeek === weekdayName);
+    console.log(`  Weekly hours for ${weekdayName}:`, JSON.stringify(weeklyForDay, null, 2));
   }
 
   // Check for override hours for this specific date
@@ -355,7 +370,7 @@ const isProviderAvailableForSlot = (opts: {
   });
 
   if (!weekly) {
-    if (weekdayName === 'THURSDAY') {
+    if (DEBUG_SLOT_MATCHING) {
       console.log(`  No weekly hours found for ${weekdayName} or not enabled`);
     }
     return false;
@@ -363,8 +378,11 @@ const isProviderAvailableForSlot = (opts: {
 
   // Check if slot fits within weekly time slots (all in UTC)
   const isWithin = isWithinAnyTimeSlot(slotStart, slotEnd, weekly.timeSlots, dayDate);
-  if (weekdayName === 'THURSDAY') {
-    console.log(`  Found weekly hours for ${weekdayName}, timeSlots (UTC):`, weekly.timeSlots);
+  if (DEBUG_SLOT_MATCHING) {
+    console.log(
+      `  Found weekly hours for ${weekdayName}, timeSlots (UTC):`,
+      JSON.stringify(weekly.timeSlots, null, 2)
+    );
     console.log(`  Slot fits within timeSlots: ${isWithin}`);
   }
   return isWithin;
@@ -1059,10 +1077,9 @@ export const getAvailableExaminersForExam = async (
 
       // Smart Slot Filtering Logic:
       // - Show at most 3 examiners per slot (MAX_EXAMINERS_PER_SLOT = 3)
-      // - Show at least 1 examiner if available
-      // - Only apply minimum filtering when there are many examiners in the system but most have declined
+      // - Show slots with ANY number of available examiners (1, 2, or 3)
+      // - No minimum requirement - if 1 examiner is available, show the slot
       const MAX_EXAMINERS_PER_SLOT = 3;
-      const MIN_EXAMINERS_FOR_SLOT = availableExaminersCount >= 3 ? 3 : 1;
 
       // Debug: Log slot generation for all days
       const slotTimeStr = `${dateToTimeString(slotStart)} - ${dateToTimeString(slotEnd)}`;
@@ -1070,8 +1087,8 @@ export const getAvailableExaminersForExam = async (
         `[Slot Generation] Day ${dayCursor.toLocaleDateString('en-US', { weekday: 'long' })}: Slot ${i + 1}/${settings.numberOfWorkingHours} - ${slotTimeStr}: ${availableExaminersForSlot.length} examiner(s) available after filtering`
       );
 
-      // Only add slot if we have at least MIN_EXAMINERS_FOR_SLOT available examiners
-      if (availableExaminersForSlot.length >= MIN_EXAMINERS_FOR_SLOT) {
+      // Add slot if we have any available examiners (no minimum requirement)
+      if (availableExaminersForSlot.length > 0) {
         // Limit to max 3 examiners per slot
         const limitedExaminers = availableExaminersForSlot.slice(0, MAX_EXAMINERS_PER_SLOT);
 
