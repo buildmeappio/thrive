@@ -9,7 +9,9 @@ export type AvailabilitySettings = {
   slotDurationMinutes?: number; // Duration of each slot in minutes (default: 60)
 };
 
-// Default settings for availability
+// Default fallback settings for availability (used when database configuration is unavailable)
+// NOTE: These are fallback values only. Production settings come from the database Configuration table.
+// See: src/services/configuration.service.ts
 export const DEFAULT_SETTINGS: AvailabilitySettings = {
   noOfDaysForWindow: 21,
   numberOfWorkingHours: 10,
@@ -79,6 +81,7 @@ export type AvailableExaminersResult = {
 
 export type GetAvailableExaminersParams = {
   examId: string;
+  claimantId: string; // Claimant ID to filter out declined examiners
   startDate: Date;
   settings: AvailabilitySettings;
   excludeBookingId?: string; // Exclude this booking ID from availability checks (for showing claimant's own booking)

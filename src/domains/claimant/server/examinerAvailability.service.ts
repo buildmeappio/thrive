@@ -1,7 +1,6 @@
 import { addDays, addMinutes, isAfter, min as minDate } from 'date-fns';
 import prisma from '@/lib/prisma';
 import { HttpError } from '@/utils/httpError';
-import { convertUTCToLocal } from '@/utils/timeConversion';
 import type {
   AvailableChaperone,
   AvailableExaminersResult,
@@ -232,32 +231,33 @@ const timeStringToMinutes = (timeStr: string): number => {
 
 /**
  * Extract time string from a Date object in HH:MM format (24-hour)
+ * Uses UTC time to ensure consistent behavior regardless of server timezone
  */
 const dateToTimeString = (date: Date): string => {
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const hours = date.getUTCHours().toString().padStart(2, '0');
+  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
   return `${hours}:${minutes}`;
 };
 
 /**
  * Check if a time slot fits within any of the provider's time windows
- * Time slots from DB are in UTC format and need to be converted to claimant's local time
- * @param slotStart - Start time of the slot in claimant's local time
- * @param slotEnd - End time of the slot in claimant's local time
+ * All times are in UTC - no timezone conversion happens on the server
+ * @param slotStart - Start time of the slot (UTC)
+ * @param slotEnd - End time of the slot (UTC)
  * @param timeSlots - Provider's time slots in UTC format from database
- * @param referenceDate - Reference date for timezone conversion (the day being checked)
+ * @param _referenceDate - Unused parameter kept for backward compatibility
  */
 const isWithinAnyTimeSlot = (
   slotStart: Date,
   slotEnd: Date,
   timeSlots: Array<{ startTime: string; endTime: string }>,
-  referenceDate: Date
+  _referenceDate: Date
 ): boolean => {
   if (timeSlots.length === 0) {
     return false;
   }
 
-  // Extract time-only strings from the Date objects (claimant's local time)
+  // Extract time-only strings from the Date objects (in UTC)
   const slotStartTime = dateToTimeString(slotStart);
   const slotEndTime = dateToTimeString(slotEnd);
 
@@ -266,12 +266,10 @@ const isWithinAnyTimeSlot = (
   const slotEndMinutes = timeStringToMinutes(slotEndTime);
 
   for (const ts of timeSlots) {
-    // Convert UTC time slots from DB to claimant's local time
-    const localStartTime = convertUTCToLocal(ts.startTime, referenceDate);
-    const localEndTime = convertUTCToLocal(ts.endTime, referenceDate);
-
-    const windowStartMinutes = timeStringToMinutes(localStartTime);
-    const windowEndMinutes = timeStringToMinutes(localEndTime);
+    // Time slots from DB are already in UTC, so we compare directly
+    // No timezone conversion - all comparisons happen in UTC
+    const windowStartMinutes = timeStringToMinutes(ts.startTime);
+    const windowEndMinutes = timeStringToMinutes(ts.endTime);
 
     // Check if slot is fully contained within this time window
     const startsAfterOrAtWindowStart = slotStartMinutes >= windowStartMinutes;
@@ -287,7 +285,7 @@ const isWithinAnyTimeSlot = (
 
 /**
  * Check if a provider is available for a specific slot
- * Converts UTC time slots from DB to claimant's local time for comparison
+ * All operations performed in UTC - no timezone conversion on server
  */
 const isProviderAvailableForSlot = (opts: {
   provider: {
@@ -307,8 +305,8 @@ const isProviderAvailableForSlot = (opts: {
 }): boolean => {
   const { provider, dayDate, slotStart, slotEnd } = opts;
 
-  // Map day index to weekday enum
-  const dayKey = dayDate.getDay(); // 0=Sunday, 1=Monday, etc.
+  // Map day index to weekday enum (using UTC to avoid timezone issues)
+  const dayKey = dayDate.getUTCDay(); // 0=Sunday, 1=Monday, etc.
   const weekdayEnum: Record<number, string> = {
     0: 'SUNDAY',
     1: 'MONDAY',
@@ -334,18 +332,18 @@ const isProviderAvailableForSlot = (opts: {
   }
 
   // Check for override hours for this specific date
-  // Compare only the date part (year, month, day)
+  // Compare only the date part (year, month, day) using UTC to avoid timezone issues
   const overrideForDay = provider.overrideHours.find(oh => {
     const ohDate = new Date(oh.date);
     return (
-      ohDate.getFullYear() === dayDate.getFullYear() &&
-      ohDate.getMonth() === dayDate.getMonth() &&
-      ohDate.getDate() === dayDate.getDate()
+      ohDate.getUTCFullYear() === dayDate.getUTCFullYear() &&
+      ohDate.getUTCMonth() === dayDate.getUTCMonth() &&
+      ohDate.getUTCDate() === dayDate.getUTCDate()
     );
   });
 
   if (overrideForDay) {
-    // Pass dayDate as reference for UTC to local conversion
+    // Check if slot fits within override time slots (all in UTC)
     return isWithinAnyTimeSlot(slotStart, slotEnd, overrideForDay.timeSlots, dayDate);
   }
 
@@ -363,7 +361,7 @@ const isProviderAvailableForSlot = (opts: {
     return false;
   }
 
-  // Pass dayDate as reference for UTC to local conversion
+  // Check if slot fits within weekly time slots (all in UTC)
   const isWithin = isWithinAnyTimeSlot(slotStart, slotEnd, weekly.timeSlots, dayDate);
   if (weekdayName === 'THURSDAY') {
     console.log(`  Found weekly hours for ${weekdayName}, timeSlots (UTC):`, weekly.timeSlots);
@@ -767,22 +765,48 @@ const fetchExistingBookings = async (
 };
 
 /**
- * Parse time string and create Date object for slot generation
+ * Fetch all declined examiner IDs for a specific claimant and examination
+ * Returns a Set of examiner profile IDs who have declined this claimant's bookings
+ */
+const fetchDeclinedExaminerIds = async (
+  examinationId: string,
+  claimantId: string
+): Promise<Set<string>> => {
+  // Query all bookings with DECLINE status for this claimant and examination
+  // Note: Prisma client needs to be regenerated after schema changes
+  const declinedBookings = await (prisma as any).claimantBooking.findMany({
+    where: {
+      examinationId,
+      claimantId,
+      status: 'DECLINE',
+      deletedAt: null,
+    },
+    select: {
+      examinerProfileId: true,
+    },
+  });
+
+  // Return a Set of declined examiner IDs for fast lookup
+  return new Set(declinedBookings.map((b: any) => b.examinerProfileId));
+};
+
+/**
+ * Parse time string and create Date object for slot generation in UTC
  * This is used to create Date objects for the API response
- * The time will be in local server time
+ * All operations are in UTC to avoid server timezone issues
  */
 const createSlotTime = (baseDay: Date, timeStr: string): Date => {
-  const year = baseDay.getFullYear();
-  const month = baseDay.getMonth();
-  const date = baseDay.getDate();
+  const year = baseDay.getUTCFullYear();
+  const month = baseDay.getUTCMonth();
+  const date = baseDay.getUTCDate();
 
   // Parse the time string to get hours and minutes
   const minutes = timeStringToMinutes(timeStr);
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
 
-  // Create date with the parsed time
-  return new Date(year, month, date, hours, mins, 0, 0);
+  // Create date with the parsed time using UTC
+  return new Date(Date.UTC(year, month, date, hours, mins, 0, 0));
 };
 
 /**
@@ -791,7 +815,7 @@ const createSlotTime = (baseDay: Date, timeStr: string): Date => {
 export const getAvailableExaminersForExam = async (
   params: GetAvailableExaminersParams
 ): Promise<AvailableExaminersResult> => {
-  const { examId, startDate, settings, excludeBookingId } = params;
+  const { examId, claimantId, startDate, settings, excludeBookingId } = params;
 
   // Allow more days for navigation (frontend shows 7 at a time, but we need more days to navigate)
   // Increased limit to 30 days to allow sufficient navigation
@@ -805,6 +829,34 @@ export const getAvailableExaminersForExam = async (
   );
   const qualifiedExaminers = await getExaminersQualifiedForExamType(examTypeId);
   console.log(`[Examiner Availability] Found ${qualifiedExaminers.length} qualified examiners`);
+
+  // Check if there are any qualified examiners at all
+  if (qualifiedExaminers.length === 0) {
+    throw HttpError.notFound(
+      'No qualified examiners available for this examination type. Please contact support.'
+    );
+  }
+
+  // 1.1. Fetch declined examiners for this claimant
+  const declinedExaminerIds = await fetchDeclinedExaminerIds(examId, claimantId);
+  console.log(
+    `[Examiner Availability] Found ${declinedExaminerIds.size} declined examiners for this claimant`
+  );
+
+  // Check if all qualified examiners have declined this claimant
+  const availableExaminersCount = qualifiedExaminers.length - declinedExaminerIds.size;
+  if (availableExaminersCount === 0) {
+    throw HttpError.badRequest(
+      'No examiners available. All qualified examiners have declined your booking. Please contact support for assistance.'
+    );
+  }
+
+  // Warn if we have very few examiners available
+  if (availableExaminersCount < 3) {
+    console.warn(
+      `[Examiner Availability] Only ${availableExaminersCount} examiner(s) available after filtering declined ones. This may result in limited availability.`
+    );
+  }
 
   // 1.5. Get examination services requirements (interpreter, chaperone, transport)
   const serviceRequirements = await getExaminationServices(examId);
@@ -894,6 +946,11 @@ export const getAvailableExaminersForExam = async (
       const availableExaminersForSlot: ExaminerAvailabilityOption[] = [];
 
       for (const examiner of qualifiedExaminers) {
+        // Skip if this examiner has declined this claimant's booking
+        if (declinedExaminerIds.has(examiner.examinerId)) {
+          continue;
+        }
+
         const isExaminerFree = isProviderAvailableForSlot({
           provider: examiner.availabilityProvider,
           dayDate: dayCursor,
@@ -990,36 +1047,40 @@ export const getAvailableExaminersForExam = async (
         }
       }
 
-      // Limit to max 3 examiners per slot
-      const limitedExaminers = availableExaminersForSlot.slice(0, 3);
+      // Smart Slot Filtering Logic:
+      // - Show at most 3 examiners per slot (MAX_EXAMINERS_PER_SLOT = 3)
+      // - Show at least 1 examiner if available
+      // - Only apply minimum filtering when there are many examiners in the system but most have declined
+      const MAX_EXAMINERS_PER_SLOT = 3;
+      const MIN_EXAMINERS_FOR_SLOT = availableExaminersCount >= 3 ? 3 : 1;
 
       // Debug: Log slot generation for all days
       const slotTimeStr = `${dateToTimeString(slotStart)} - ${dateToTimeString(slotEnd)}`;
       console.log(
-        `[Slot Generation] Day ${dayCursor.toLocaleDateString('en-US', { weekday: 'long' })}: Slot ${i + 1}/${settings.numberOfWorkingHours} - ${slotTimeStr}: ${limitedExaminers.length} examiner(s) available (${availableExaminersForSlot.length} total)`
+        `[Slot Generation] Day ${dayCursor.toLocaleDateString('en-US', { weekday: 'long' })}: Slot ${i + 1}/${settings.numberOfWorkingHours} - ${slotTimeStr}: ${availableExaminersForSlot.length} examiner(s) available after filtering`
       );
 
-      // Only add slot if at least one examiner is available
-      if (limitedExaminers.length > 0) {
+      // Only add slot if we have at least MIN_EXAMINERS_FOR_SLOT available examiners
+      if (availableExaminersForSlot.length >= MIN_EXAMINERS_FOR_SLOT) {
+        // Limit to max 3 examiners per slot
+        const limitedExaminers = availableExaminersForSlot.slice(0, MAX_EXAMINERS_PER_SLOT);
+
         daySlots.push({
           start: slotStart,
           end: slotEnd,
           examiners: limitedExaminers,
         });
-      } else {
-        // Log why no examiners are available for this slot
         console.log(
-          `[Slot Generation] No examiners available for ${slotTimeStr}. Checking examiner availability...`
+          `[Slot Generation] ✓ Slot added with ${limitedExaminers.length} examiner(s) (from ${availableExaminersForSlot.length} available, min required: ${MIN_EXAMINERS_FOR_SLOT})`
         );
-        qualifiedExaminers.forEach(ex => {
-          const isAvailable = isProviderAvailableForSlot({
-            provider: ex.availabilityProvider,
-            dayDate: dayCursor,
-            slotStart,
-            slotEnd,
-          });
-          console.log(`  - ${ex.examinerName}: ${isAvailable ? 'AVAILABLE' : 'NOT AVAILABLE'}`);
-        });
+      } else {
+        // Log why slot is hidden
+        console.log(
+          `[Slot Generation] ✗ Slot hidden - only ${availableExaminersForSlot.length} examiner(s) available (minimum ${MIN_EXAMINERS_FOR_SLOT} required for this case)`
+        );
+        console.log(
+          `  Total available examiners: ${availableExaminersCount}, Declined: ${declinedExaminerIds.size}`
+        );
       }
     }
 
@@ -1031,6 +1092,39 @@ export const getAvailableExaminersForExam = async (
       slots: daySlots, // Will be empty array if no examiners available
     });
   }
+
+  // Check if we generated any slots at all across all days
+  const totalSlotsGenerated = days.reduce((sum, day) => sum + day.slots.length, 0);
+
+  if (totalSlotsGenerated === 0) {
+    console.error(
+      `[Examiner Availability] No slots generated for examination ${examId}. ` +
+        `Available examiners: ${availableExaminersCount}, Date range: ${adjustedStartDate.toISOString()} to ${endDate.toISOString()}`
+    );
+
+    // Provide specific error message based on the situation
+    let errorMessage =
+      'No examiner availability found for the requested time period. This may be because:\n';
+
+    if (availableExaminersCount >= 3) {
+      errorMessage +=
+        '1. Examiners do not have availability slots configured for this time period\n' +
+        '2. All available time slots have fewer than 3 examiners (limited choice)\n' +
+        '3. Examiners are fully booked during this period\n\n';
+    } else {
+      errorMessage +=
+        '1. Examiner(s) do not have availability slots configured for this time period\n' +
+        '2. Examiner(s) are fully booked during this period\n\n';
+    }
+
+    errorMessage += 'Please contact support for assistance in scheduling your examination.';
+
+    throw HttpError.notFound(errorMessage);
+  }
+
+  console.log(
+    `[Examiner Availability] Successfully generated ${totalSlotsGenerated} slots across ${days.length} days`
+  );
 
   return {
     examId,

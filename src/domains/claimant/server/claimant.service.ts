@@ -130,46 +130,33 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
     }
 
     const result = await prisma.$transaction(async tx => {
-      let booking;
-
-      if (existingBooking) {
-        // Update existing booking instead of creating new one
-        // If status is DECLINE, change it to PENDING when user resubmits
-        // Note: Prisma client needs to be regenerated after schema changes
-        booking = await (tx as any).claimantBooking.update({
+      // If there's an existing booking with PENDING status, mark it as DISCARDED
+      if (existingBooking && existingBooking.status === 'PENDING') {
+        await (tx as any).claimantBooking.update({
           where: { id: existingBooking.id },
           data: {
-            examinerProfileId: data.examinerProfileId,
-            bookingTime: data.bookingTime,
-            preference: data.preference,
-            accessibilityNotes: data.accessibilityNotes,
-            consentAck: data.consentAck,
-            interpreterId: data.interpreterId || null,
-            chaperoneId: data.chaperoneId || null,
-            transporterId: data.transporterId || null,
-            // If status is DECLINE, change to PENDING when user resubmits
-            status: existingBooking.status === 'DECLINE' ? 'PENDING' : existingBooking.status,
-          },
-        });
-      } else {
-        // Create new booking with PENDING status (will be updated by examiner)
-        // Note: Prisma client needs to be regenerated after schema changes
-        booking = await (tx as any).claimantBooking.create({
-          data: {
-            examinationId: data.examinationId,
-            claimantId: data.claimantId,
-            examinerProfileId: data.examinerProfileId,
-            bookingTime: data.bookingTime,
-            preference: data.preference,
-            accessibilityNotes: data.accessibilityNotes,
-            consentAck: data.consentAck,
-            interpreterId: data.interpreterId || null,
-            chaperoneId: data.chaperoneId || null,
-            transporterId: data.transporterId || null,
-            status: 'PENDING', // Set default status to PENDING when claimant creates booking
+            status: 'DISCARDED',
           },
         });
       }
+
+      // Always create a new booking entry (never update existing ones)
+      // Note: Prisma client needs to be regenerated after schema changes
+      const booking = await (tx as any).claimantBooking.create({
+        data: {
+          examinationId: data.examinationId,
+          claimantId: data.claimantId,
+          examinerProfileId: data.examinerProfileId,
+          bookingTime: data.bookingTime,
+          preference: data.preference,
+          accessibilityNotes: data.accessibilityNotes,
+          consentAck: data.consentAck,
+          interpreterId: data.interpreterId || null,
+          chaperoneId: data.chaperoneId || null,
+          transporterId: data.transporterId || null,
+          status: 'PENDING', // Set default status to PENDING when claimant creates booking
+        },
+      });
 
       // Update examination status to "Waiting to be Scheduled" when claimant submits booking
       await tx.examination.update({
