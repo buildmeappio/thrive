@@ -148,6 +148,14 @@ export const createTaxonomyColumns = (
       // Format name fields (like 'name', 'benefit', 'examinationTypeName')
       if (field === 'name' || field === 'benefit' || field.toLowerCase().includes('name')) {
         formattedValue = formatTaxonomyName(displayValue);
+        
+        // For configuration, if name is "slot duration", append "(in minutes)"
+        if (type === 'configuration' && field === 'name') {
+          const configName = formattedValue.toLowerCase();
+          if (configName.includes('slot') && configName.includes('duration')) {
+            formattedValue = `${formattedValue} (in minutes)`;
+          }
+        }
       } 
       // Format value field for configuration as time if it's a time-related config
       else if (type === 'configuration' && field === 'value') {
@@ -207,30 +215,32 @@ export const createTaxonomyColumns = (
     maxSize: field === 'description' ? 300 : 250,
   }));
 
-  // Add Frequency column (appears in all taxonomy tables)
-  columns.push({
-    header: ({ column }) => (
-      <Header
-        sortable
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        sortDirection={column.getIsSorted()}
-      >
-        Frequency
-      </Header>
-    ),
-    accessorKey: 'frequency',
-    cell: ({ row }) => {
-      const frequency = row.original.frequency ?? 0;
-      return <Content title={frequency.toString()}>{frequency}</Content>;
-    },
-    sortingFn: (rowA, rowB) => {
-      const freqA = rowA.original.frequency ?? 0;
-      const freqB = rowB.original.frequency ?? 0;
-      return freqA - freqB;
-    },
-    size: 120,
-    maxSize: 150,
-  });
+  // Add Frequency column (appears in all taxonomy tables except configuration)
+  if (type !== 'configuration') {
+    columns.push({
+      header: ({ column }) => (
+        <Header
+          sortable
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          sortDirection={column.getIsSorted()}
+        >
+          Frequency
+        </Header>
+      ),
+      accessorKey: 'frequency',
+      cell: ({ row }) => {
+        const frequency = row.original.frequency ?? 0;
+        return <Content title={frequency.toString()}>{frequency}</Content>;
+      },
+      sortingFn: (rowA, rowB) => {
+        const freqA = rowA.original.frequency ?? 0;
+        const freqB = rowB.original.frequency ?? 0;
+        return freqA - freqB;
+      },
+      size: 120,
+      maxSize: 150,
+    });
+  }
 
   // Add Date Added column
   columns.push({
