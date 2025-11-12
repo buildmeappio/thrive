@@ -20,6 +20,7 @@ import TransporterSeeder from "./seeders/transporter.seeder";
 import ChaperoneSeeder from "./seeders/chaperone.seeder";
 import MaximumDistanceTravelSeeder from "./seeders/maximumDistanceTravel.seeder";
 import YearsOfExperienceSeeder from "./seeders/yearsOfExperience.seeder";
+import ConfigurationSeeder from "./seeders/configuration.seeder";
 
 const seeds = [
   RoleSeeder,
@@ -41,6 +42,7 @@ const seeds = [
   ChaperoneSeeder,
   MaximumDistanceTravelSeeder,
   YearsOfExperienceSeeder,
+  ConfigurationSeeder,
 ];
 
 const prisma = new PrismaClient();
