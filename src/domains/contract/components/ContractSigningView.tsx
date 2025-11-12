@@ -1,6 +1,9 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { signContract } from "../server/actions/signContract.actions";
 
 interface ContractSigningViewProps {
   token: string;
@@ -28,6 +31,7 @@ const ContractSigningView = ({
   const [signed, setSigned] = useState(false);
   const [signatureImage, setSignatureImage] = useState<string | null>(null);
   const [isSigning, setIsSigning] = useState(false);
+  const router = useRouter();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -45,12 +49,45 @@ const ContractSigningView = ({
     if (isSigning) return;
     setIsSigning(true);
 
-    // Simulate signing process
-    setTimeout(() => {
-      alert("Contract signed successfully!");
+    try {
+      // Get the contract HTML content
+      const contractElement = document.getElementById('contract');
+      if (!contractElement) {
+        throw new Error('Contract element not found');
+      }
+
+      const htmlContent = contractElement.innerHTML;
+
+      const pdfBase64 = signatureImage?.split(',')[1] || '';
+
+      const userAgent = navigator.userAgent;
+      
+      // Call the sign contract action      
+      const result = await signContract(
+        contractId,
+        sigName,
+        htmlContent,
+        pdfBase64,
+        undefined,
+        userAgent
+      );
+
+      if (!result.success) {
+        throw new Error('Failed to sign contract');
+      }
+
+      toast.success("Contract signed successfully!");
       setSigned(true);
+      
+      // Redirect after successful signing
+      router.push(`/create-account?token=${token}`);
+    } catch (error) {
+      console.error('Error signing contract:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to sign contract';
+      toast.error(errorMessage);
+    } finally {
       setIsSigning(false);
-    }, 1000);
+    }
   };
 
   useEffect(() => {
