@@ -344,6 +344,7 @@ enum ClaimantBookingStatus {
   ACCEPT
   DECLINE
   REQUEST_MORE_INFO
+  DISCARDED
 }
 
 model ClaimantBooking {
@@ -601,6 +602,7 @@ enum ExaminerStatus {
   ACCEPTED
   REJECTED
   INFO_REQUESTED
+  ACTIVE
 }
 
 model ExaminerLanguage {
@@ -679,18 +681,16 @@ model ExaminerProfile {
 }
 
 model ExaminerFeeStructure {
-  id                   String    @id @default(uuid()) @db.Uuid
-  examinerProfileId    String    @map("examiner_profile_id") @db.Uuid
-  standardIMEFee       Decimal   @map("standard_ime_fee") @db.Decimal(10, 2)
-  virtualIMEFee        Decimal   @map("virtual_ime_fee") @db.Decimal(10, 2)
-  recordReviewFee      Decimal   @map("record_review_fee") @db.Decimal(10, 2)
-  hourlyRate           Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
-  reportTurnaroundDays Int?      @map("report_turnaround_days") @db.Integer
-  cancellationFee      Decimal   @map("cancellation_fee") @db.Decimal(10, 2)
-  paymentTerms         String    @map("payment_terms") @db.Text
-  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt            DateTime? @map("deleted_at") @db.Timestamptz()
+  id                String    @id @default(uuid()) @db.Uuid
+  examinerProfileId String    @map("examiner_profile_id") @db.Uuid
+  IMEFee            Decimal?  @map("ime_fee") @db.Decimal(10, 2)
+  recordReviewFee   Decimal   @map("record_review_fee") @db.Decimal(10, 2)
+  hourlyRate        Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
+  cancellationFee   Decimal   @map("cancellation_fee") @db.Decimal(10, 2)
+  paymentTerms      String    @map("payment_terms") @db.Text
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()
 
   examinerProfile ExaminerProfile @relation("ExaminerFeeStructure", fields: [examinerProfileId], references: [id], onDelete: Cascade)
 
@@ -982,8 +982,6 @@ model Contract {
   googleDocId          String?        @map("google_doc_id") @db.VarChar(500)
   googleDocUrl         String?        @map("google_doc_url") @db.Text
   drivePdfId           String?        @map("drive_pdf_id") @db.VarChar(500)
-  docusignEnvelopeId   String?        @map("docusign_envelope_id") @db.VarChar(255)
-  docusignStatus       String?        @map("docusign_status") @db.VarChar(100)
   sentAt               DateTime?      @map("sent_at") @db.Timestamptz()
   viewedAt             DateTime?      @map("viewed_at") @db.Timestamptz()
   signedAt             DateTime?      @map("signed_at") @db.Timestamptz()
@@ -991,6 +989,7 @@ model Contract {
   voidReason           String?        @map("void_reason") @db.Text
   accessToken          String?        @map("access_token") @db.Text
   accessTokenExpiresAt DateTime?      @map("access_token_expires_at") @db.Timestamptz()
+  signedByExaminer     Boolean        @default(false) @map("signed_by_examiner")
   createdBy            String         @map("created_by") @db.Uuid
   createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt            DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
@@ -998,46 +997,13 @@ model Contract {
   examinerProfile ExaminerProfile  @relation("ExaminerContracts", fields: [examinerProfileId], references: [id], onDelete: Cascade)
   template        DocumentTemplate @relation("TemplateContracts", fields: [templateId], references: [id])
   templateVersion TemplateVersion  @relation("VersionContracts", fields: [templateVersionId], references: [id])
-  signatures      Signature[]      @relation("ContractSignatures")
   events          ContractEvent[]  @relation("ContractEvents")
 
   @@index([examinerProfileId])
   @@index([status])
   @@index([templateId])
   @@index([googleDocId])
-  @@index([docusignEnvelopeId])
   @@map("contracts")
-}
-
-// Signatures - Per signer with evidence
-enum SignatureMethod {
-  TYPED
-  DRAWN
-  DOCUSIGN
-}
-
-model Signature {
-  id                  String          @id @default(uuid()) @db.Uuid
-  contractId          String          @map("contract_id") @db.Uuid
-  signerRole          String          @map("signer_role") @db.VarChar(50)
-  signerId            String?         @map("signer_id") @db.Uuid
-  signerName          String          @map("signer_name") @db.VarChar(255)
-  signerEmail         String?         @map("signer_email") @db.VarChar(255)
-  method              SignatureMethod @map("method")
-  consent             Boolean         @default(true) @map("consent")
-  signaturePngS3Key   String?         @map("signature_png_s3_key") @db.VarChar(500)
-  ipAddress           String?         @map("ip_address") @db.VarChar(45)
-  userAgent           String?         @map("user_agent") @db.Text
-  evidence            Json            @default("{}") @map("evidence")
-  docusignRecipientId String?         @map("docusign_recipient_id") @db.VarChar(255)
-  docusignSignatureId String?         @map("docusign_signature_id") @db.VarChar(255)
-  docusignSignedAt    DateTime?       @map("docusign_signed_at") @db.Timestamptz()
-  signedAt            DateTime        @default(now()) @map("signed_at") @db.Timestamptz()
-
-  contract Contract @relation("ContractSignatures", fields: [contractId], references: [id], onDelete: Cascade)
-
-  @@index([contractId])
-  @@map("signatures")
 }
 
 // Contract Events - Full audit trail
