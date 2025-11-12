@@ -681,16 +681,16 @@ model ExaminerProfile {
 }
 
 model ExaminerFeeStructure {
-  id                   String    @id @default(uuid()) @db.Uuid
-  examinerProfileId    String    @map("examiner_profile_id") @db.Uuid
-  IMEFee               Decimal   @map("ime_fee") @db.Decimal(10, 2)
-  recordReviewFee      Decimal   @map("record_review_fee") @db.Decimal(10, 2)
-  hourlyRate           Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
-  cancellationFee      Decimal   @map("cancellation_fee") @db.Decimal(10, 2)
-  paymentTerms         String    @map("payment_terms") @db.Text
-  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt            DateTime? @map("deleted_at") @db.Timestamptz()
+  id                String    @id @default(uuid()) @db.Uuid
+  examinerProfileId String    @map("examiner_profile_id") @db.Uuid
+  IMEFee            Decimal?  @map("ime_fee") @db.Decimal(10, 2)
+  recordReviewFee   Decimal   @map("record_review_fee") @db.Decimal(10, 2)
+  hourlyRate        Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
+  cancellationFee   Decimal   @map("cancellation_fee") @db.Decimal(10, 2)
+  paymentTerms      String    @map("payment_terms") @db.Text
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz()
 
   examinerProfile ExaminerProfile @relation("ExaminerFeeStructure", fields: [examinerProfileId], references: [id], onDelete: Cascade)
 
@@ -987,9 +987,9 @@ model Contract {
   signedAt             DateTime?      @map("signed_at") @db.Timestamptz()
   declinedAt           DateTime?      @map("declined_at") @db.Timestamptz()
   voidReason           String?        @map("void_reason") @db.Text
-  signedByExaminer     Boolean        @default(false) @map("signed_by_examiner")
   accessToken          String?        @map("access_token") @db.Text
   accessTokenExpiresAt DateTime?      @map("access_token_expires_at") @db.Timestamptz()
+  signedByExaminer     Boolean        @default(false) @map("signed_by_examiner")
   createdBy            String         @map("created_by") @db.Uuid
   createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt            DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
