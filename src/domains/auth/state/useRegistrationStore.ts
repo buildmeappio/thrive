@@ -93,11 +93,9 @@ export type Step6Legal = {
 };
 
 export type Step7PaymentDetails = {
-  standardIMEFee: string;
-  virtualIMEFee: string;
+  IMEFee: string;
   recordReviewFee: string;
   hourlyRate: string;
-  reportTurnaroundDays: string;
   cancellationFee: string;
 };
 
@@ -156,11 +154,9 @@ export const initialData: RegistrationData = {
   consentBackgroundVerification: false,
   agreeTermsConditions: false,
   // Step 7
-  standardIMEFee: "",
-  virtualIMEFee: "",
+  IMEFee: "",
   recordReviewFee: "",
   hourlyRate: "",
-  reportTurnaroundDays: "",
   cancellationFee: "",
   // Step 9
   password: "",
@@ -344,22 +340,17 @@ export const useRegistrationStore = create<Store>()(
           agreeTermsConditions: examinerData.agreeToTerms || false,
 
           // Step 7: Payment Details
-          standardIMEFee: examinerData.feeStructure?.[0]?.standardIMEFee
-            ? examinerData.feeStructure[0].standardIMEFee.toString()
+          IMEFee: examinerData.feeStructure?.[0]?.IMEFee
+            ? examinerData.feeStructure[0].IMEFee.toString()
             : "",
-          virtualIMEFee: examinerData.feeStructure?.[0]?.virtualIMEFee
-            ? examinerData.feeStructure[0].virtualIMEFee.toString()
-            : "",
+          
           recordReviewFee: examinerData.feeStructure?.[0]?.recordReviewFee
             ? examinerData.feeStructure[0].recordReviewFee.toString()
             : "",
           hourlyRate: examinerData.feeStructure?.[0]?.hourlyRate
             ? examinerData.feeStructure[0].hourlyRate.toString()
             : "",
-          reportTurnaroundDays: examinerData.feeStructure?.[0]
-            ?.reportTurnaroundDays
-            ? examinerData.feeStructure[0].reportTurnaroundDays.toString()
-            : "",
+          
           cancellationFee: examinerData.feeStructure?.[0]?.cancellationFee
             ? examinerData.feeStructure[0].cancellationFee.toString()
             : "",
@@ -428,11 +419,9 @@ export const selectStep6 = (d: RegistrationData): Step6Legal => ({
 });
 
 export const selectStep7 = (d: RegistrationData): Step7PaymentDetails => ({
-  standardIMEFee: d.standardIMEFee,
-  virtualIMEFee: d.virtualIMEFee,
+  IMEFee: d.IMEFee,
   recordReviewFee: d.recordReviewFee,
   hourlyRate: d.hourlyRate,
-  reportTurnaroundDays: d.reportTurnaroundDays,
   cancellationFee: d.cancellationFee,
 });
 

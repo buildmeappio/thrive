@@ -170,11 +170,9 @@ class ExaminerService {
       consentBackgroundVerification?: boolean;
 
       // Step 7: Payment Details
-      standardIMEFee?: string;
-      virtualIMEFee?: string;
+      IMEFee?: string;
       recordReviewFee?: string;
       hourlyRate?: string;
-      reportTurnaroundDays?: string;
       cancellationFee?: string;
     }
   ) {
@@ -281,12 +279,7 @@ class ExaminerService {
       }
 
       // Update fee structure if provided
-      if (
-        data.standardIMEFee ||
-        data.virtualIMEFee ||
-        data.recordReviewFee ||
-        data.cancellationFee
-      ) {
+      if (data.IMEFee || data.recordReviewFee || data.cancellationFee) {
         // Check if fee structure exists
         const existingFeeStructure =
           await prisma.examinerFeeStructure.findFirst({
@@ -298,12 +291,10 @@ class ExaminerService {
           await prisma.examinerFeeStructure.update({
             where: { id: existingFeeStructure.id },
             data: {
-              ...(data.standardIMEFee && {
-                standardIMEFee: parseFloat(data.standardIMEFee) || 0,
+              ...(data.IMEFee && {
+                IMEFee: parseFloat(data.IMEFee) || 0,
               }),
-              ...(data.virtualIMEFee && {
-                virtualIMEFee: parseFloat(data.virtualIMEFee) || 0,
-              }),
+
               ...(data.recordReviewFee && {
                 recordReviewFee: parseFloat(data.recordReviewFee) || 0,
               }),
@@ -313,13 +304,7 @@ class ExaminerService {
                     ? parseFloat(data.hourlyRate)
                     : null,
               }),
-              ...(data.reportTurnaroundDays !== undefined && {
-                reportTurnaroundDays:
-                  data.reportTurnaroundDays &&
-                  data.reportTurnaroundDays.trim() !== ""
-                    ? parseInt(data.reportTurnaroundDays)
-                    : null,
-              }),
+
               ...(data.cancellationFee && {
                 cancellationFee: parseFloat(data.cancellationFee) || 0,
               }),
@@ -331,12 +316,7 @@ class ExaminerService {
           await prisma.examinerFeeStructure.create({
             data: {
               examinerProfileId,
-              standardIMEFee: data.standardIMEFee
-                ? parseFloat(data.standardIMEFee) || 0
-                : 0,
-              virtualIMEFee: data.virtualIMEFee
-                ? parseFloat(data.virtualIMEFee) || 0
-                : 0,
+              IMEFee: data.IMEFee ? parseFloat(data.IMEFee) || 0 : 0,
               recordReviewFee: data.recordReviewFee
                 ? parseFloat(data.recordReviewFee) || 0
                 : 0,
@@ -344,11 +324,7 @@ class ExaminerService {
                 data.hourlyRate && data.hourlyRate.trim() !== ""
                   ? parseFloat(data.hourlyRate)
                   : null,
-              reportTurnaroundDays:
-                data.reportTurnaroundDays &&
-                data.reportTurnaroundDays.trim() !== ""
-                  ? parseInt(data.reportTurnaroundDays)
-                  : null,
+
               cancellationFee: data.cancellationFee
                 ? parseFloat(data.cancellationFee) || 0
                 : 0,

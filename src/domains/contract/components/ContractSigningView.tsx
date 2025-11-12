@@ -1,22 +1,15 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { signContract } from "../server/actions/signContract.actions";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 interface ContractSigningViewProps {
   token: string;
   contractId: string;
   examinerName: string;
   feeStructure: {
-    standardIMEFee: number;
-    virtualIMEFee: number;
+    IMEFee: number;
     recordReviewFee: number;
     hourlyRate: number;
-    reportTurnaroundDays: number;
     cancellationFee: number;
     effectiveDate?: string;
   };
@@ -35,7 +28,6 @@ const ContractSigningView = ({
   const [signed, setSigned] = useState(false);
   const [signatureImage, setSignatureImage] = useState<string | null>(null);
   const [isSigning, setIsSigning] = useState(false);
-  const router = useRouter();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -53,48 +45,12 @@ const ContractSigningView = ({
     if (isSigning) return;
     setIsSigning(true);
 
-    try {
-      const contractElement = document.getElementById("contract");
-      if (!contractElement) {
-        toast.error("Contract not found!");
-        return;
-      }
-
-      // Convert contract HTML to canvas
-      const canvas = await html2canvas(contractElement);
-      const imgData = canvas.toDataURL("image/png");
-
-      // Create PDF
-      const pdf = new jsPDF("p", "pt", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-
-      // Convert PDF to base64
-      const pdfBase64 = pdf.output("dataurlstring").split(",")[1];
-
-      // Call server action with PDF and HTML
-      const res = await signContract(
-        contractId,
-        sigName,
-        contractElement.outerHTML,
-        pdfBase64,
-        window.location.hostname,
-        navigator.userAgent
-      );
-
-      if (res.success) {
-        toast.success("Contract signed and uploaded to S3!");
-        setSigned(true);
-        router.push(`/create-account?token=${token}`);
-      } else {
-        toast.error("Error: " + res.error);
-      }
-    } catch (error: any) {
-      toast.error("Error signing contract: " + error.message);
-    } finally {
+    // Simulate signing process
+    setTimeout(() => {
+      alert("Contract signed successfully!");
+      setSigned(true);
       setIsSigning(false);
-    }
+    }, 1000);
   };
 
   useEffect(() => {
@@ -162,436 +118,426 @@ const ContractSigningView = ({
   }, []);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        fontFamily: '"Inter", sans-serif',
-        background: "#f0f2f5",
-      }}
-    >
+    <div className="flex justify-center h-screen bg-gray-100">
       {/* LEFT: Contract */}
       <div
         id="contract"
+        className="flex-1 overflow-y-auto bg-white shadow-lg"
         style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "40px 32px",
-          background: "#fff",
-          boxShadow: "0 0 20px rgba(0,0,0,0.05)",
-          borderRadius: "8px 0 0 8px",
+          fontFamily: "Arial, sans-serif",
+          padding: "40px 50px",
+          maxWidth: "210mm",
+          lineHeight: "1.4",
         }}
       >
-        <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 12 }}>
-          EXAMINER AGREEMENT
-        </h1>
-        <p style={{ fontSize: 14, color: "#4b5563" }}>
-          <strong>Effective Date:</strong>{" "}
-          {new Date(sigDate).toLocaleDateString("en-US", {
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-          })}
-        </p>
-        <p style={{ fontSize: 14, color: "#374151", marginBottom: 20 }}>
-          This Agreement is made between <strong>Thrive IME Platform</strong>{" "}
-          (&quot;Platform&quot;) and Dr. <strong>{sigName}</strong>{" "}
-          (&quot;Examiner&quot;) located in British Columbia, Canada.
-        </p>
-
-        <hr style={{ margin: "16px 0", borderColor: "#e5e7eb" }} />
-
-        {/* Contract Sections */}
-        {[
-          {
-            title: "1. PURPOSE",
-            content:
-              "This Agreement outlines the terms under which the Examiner will provide Independent Medical Examination (IME) services through the Platform to claimants referred by insurance companies, legal firms, and other authorized organizations.",
-          },
-          { title: "2. FEE STRUCTURE", content: null },
-          {
-            title: "3. SERVICES TO BE PROVIDED",
-            content: (
-              <ul>
-                <li>
-                  Conduct thorough and impartial medical examinations of
-                  claimants
-                </li>
-                <li>
-                  Prepare detailed, objective medical reports within the agreed
-                  turnaround time
-                </li>
-                <li>
-                  Maintain professional standards in accordance with medical
-                  licensing requirements
-                </li>
-                <li>Be available for testimony or clarification if required</li>
-                <li>Respond to case assignments in a timely manner</li>
-              </ul>
-            ),
-          },
-          {
-            title: "4. PROFESSIONAL OBLIGATIONS",
-            content: (
-              <ul>
-                <li>
-                  Maintain current medical licensure and malpractice insurance
-                </li>
-                <li>
-                  Comply with all applicable laws, regulations, and ethical
-                  guidelines
-                </li>
-                <li>
-                  Provide services in a professional, objective, and unbiased
-                  manner
-                </li>
-                <li>
-                  Keep the Platform informed of any changes to availability or
-                  credentials
-                </li>
-                <li>
-                  Maintain patient confidentiality in accordance with applicable
-                  privacy laws
-                </li>
-              </ul>
-            ),
-          },
-          {
-            title: "5. CONFIDENTIALITY",
-            content: (
-              <ul>
-                <li>
-                  Not disclose any patient information except as required by law
-                  or authorized by the patient
-                </li>
-                <li>
-                  Maintain secure storage of all patient records and examination
-                  materials
-                </li>
-                <li>
-                  Comply with all applicable privacy legislation including but
-                  not limited to PIPEDA
-                </li>
-                <li>
-                  Return or destroy all confidential materials upon completion
-                  of services
-                </li>
-              </ul>
-            ),
-          },
-          {
-            title: "6. INDEPENDENT CONTRACTOR STATUS",
-            content: (
-              <ul>
-                <li>All applicable taxes and business registrations</li>
-                <li>Professional liability insurance</li>
-                <li>
-                  Business expenses including office space, equipment, and
-                  supplies
-                </li>
-                <li>Compliance with all professional licensing requirements</li>
-              </ul>
-            ),
-          },
-          {
-            title: "7. TERM AND TERMINATION",
-            content:
-              "This Agreement shall remain in effect until terminated by either party with 30 days written notice. The Platform may terminate immediately if the Examiner breaches any material term, loses licensure or insurance, engages in misconduct, or fails to maintain quality standards.",
-          },
-          {
-            title: "8. LIABILITY AND INDEMNIFICATION",
-            content:
-              "The Examiner agrees to maintain professional liability insurance with minimum coverage of $2,000,000 and shall indemnify the Platform against any claims arising from professional services or negligence.",
-          },
-          {
-            title: "9. DISPUTE RESOLUTION",
-            content:
-              "Disputes shall be resolved through mediation, and if necessary, arbitration under the laws of British Columbia.",
-          },
-          {
-            title: "10. GENERAL PROVISIONS",
-            content: (
-              <ul>
-                <li>
-                  This Agreement constitutes the entire agreement between the
-                  parties
-                </li>
-                <li>
-                  Any amendments must be in writing and signed by both parties
-                </li>
-                <li>
-                  This Agreement shall be governed by the laws of British
-                  Columbia
-                </li>
-                <li>
-                  If any provision is invalid, the remaining provisions shall
-                  continue in effect
-                </li>
-              </ul>
-            ),
-          },
-          {
-            title: "ACKNOWLEDGMENT",
-            content:
-              "By accepting cases through the Thrive IME Platform, the Examiner acknowledges that they have read, understood, and agree to be bound by the terms and conditions of this Agreement.",
-          },
-        ].map((section, idx) => (
-          <div key={idx} style={{ marginBottom: 24 }}>
-            <h2
-              style={{
-                fontSize: 18,
-                fontWeight: 600,
-                marginBottom: 8,
-                color: "#1f2937",
-              }}
-            >
-              {section.title}
-            </h2>
-            {section.content && (
-              <div style={{ fontSize: 14, color: "#374151", lineHeight: 1.6 }}>
-                {section.content}
-              </div>
-            )}
-            {section.title === "2. FEE STRUCTURE" && (
-              <table
-                style={{
-                  borderCollapse: "collapse",
-                  width: "100%",
-                  marginTop: 12,
-                }}
-              >
-                <thead>
-                  <tr>
-                    <th
-                      style={{
-                        border: "1px solid #d1d5db",
-                        padding: 8,
-                        textAlign: "left",
-                        background: "#f9fafb",
-                      }}
-                    >
-                      Service Type
-                    </th>
-                    <th
-                      style={{
-                        border: "1px solid #d1d5db",
-                        padding: 8,
-                        textAlign: "left",
-                        background: "#f9fafb",
-                      }}
-                    >
-                      Fee
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style={{ border: "1px solid #d1d5db", padding: 8 }}>
-                      Standard IME (in-clinic)
-                    </td>
-                    <td style={{ border: "1px solid #d1d5db", padding: 8 }}>
-                      ${feeStructure.standardIMEFee.toFixed(2)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ border: "1px solid #d1d5db", padding: 8 }}>
-                      Virtual / Tele-IME
-                    </td>
-                    <td style={{ border: "1px solid #d1d5db", padding: 8 }}>
-                      ${feeStructure.virtualIMEFee.toFixed(2)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ border: "1px solid #d1d5db", padding: 8 }}>
-                      Record Review Only
-                    </td>
-                    <td style={{ border: "1px solid #d1d5db", padding: 8 }}>
-                      ${feeStructure.recordReviewFee.toFixed(2)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ border: "1px solid #d1d5db", padding: 8 }}>
-                      Hourly Rate (if applicable)
-                    </td>
-                    <td style={{ border: "1px solid #d1d5db", padding: 8 }}>
-                      ${feeStructure.hourlyRate.toFixed(2)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ border: "1px solid #d1d5db", padding: 8 }}>
-                      Report Turnaround
-                    </td>
-                    <td style={{ border: "1px solid #d1d5db", padding: 8 }}>
-                      {feeStructure.reportTurnaroundDays} business days
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ border: "1px solid #d1d5db", padding: 8 }}>
-                      Cancellation / No-show Fee
-                    </td>
-                    <td style={{ border: "1px solid #d1d5db", padding: 8 }}>
-                      ${feeStructure.cancellationFee.toFixed(2)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            )}
-          </div>
-        ))}
-
-        <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>
-          Examiner Signature:
-        </h2>
-        <div
-          style={{
-            height: 80,
-            borderBottom: "1px solid #000",
-            marginBottom: 4,
-          }}
-        >
-          {signatureImage && (
-            <img
-              src={signatureImage}
-              alt="Signature"
-              style={{ height: "100%" }}
-            />
-          )}
+        {/* Header with Blue Border */}
+        <div className="border-b-4 border-b-[#00A8FF] p-2 mb-6">
+          <h1
+            className="text-center text-xl font-bold mb-1"
+            style={{ color: "#000" }}
+          >
+            INDEPENDENT MEDICAL EXAMINER
+          </h1>
+          <h1
+            className="text-center text-xl font-bold mb-3"
+            style={{ color: "#000" }}
+          >
+            AGREEMENT
+          </h1>
         </div>
-        <p style={{ fontSize: 14, color: "#374151" }}>Date: {sigDate}</p>
 
-        <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>
-          For Platform:
-        </h2>
-        <p style={{ fontSize: 14, color: "#374151" }}>Authorized Signatory</p>
-        <p style={{ fontSize: 14, color: "#374151" }}>Date: ________________</p>
+        <div className="bg-[#E8F0F2] rounded-md mb-4 px-6 py-4">
+          <p className="text-sm font-semibold mb-2" style={{ color: "#000" }}>
+            Effective Date: {new Date(sigDate).toLocaleDateString("en-CA")}
+          </p>
 
-        <p style={{ marginTop: 32, fontSize: 12, color: "#6b7280" }}>
-          © 2025 Thrive Assessment & Care. All rights reserved.
-        </p>
+          <p className="text-sm" style={{ textAlign: "justify" }}>
+            This Agreement is made between <strong>Thrive IME Platform</strong>{" "}
+            (&quot;Platform&quot;) and Dr. <strong>{sigName}</strong> (&quot;Examiner&quot;) located
+            in Manitoba.
+          </p>
+        </div>
+
+        {/* Section 1 */}
+        <div className="mb-4">
+          <h2 className="text-sm font-bold mb-2" >
+            1. PURPOSE
+          </h2>
+          <p className="text-sm" style={{ textAlign: "justify" }}>
+            This Agreement outlines the terms under which the Examiner will
+            provide Independent Medical Examination (IME) services through the
+            Platform to claimants referred by insurance companies, legal firms,
+            and other authorized organizations.
+          </p>
+        </div>
+
+        {/* Section 2 - Fee Structure */}
+        <div className="mb-4">
+          <h2 className="text-sm font-bold mb-2" >
+            2. FEE STRUCTURE
+          </h2>
+          <p className="text-sm mb-2">
+            The Examiner agrees to provide services at the following rates:
+          </p>
+
+          <table
+            className="w-full mb-3"
+            style={{ fontSize: "12px", borderCollapse: "collapse" }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: "#2C3E50", color: "white" }}>
+                <th className="border-2 border-[#2C3E50] px-3 py-2 text-left font-bold">
+                  Service Type
+                </th>
+                <th className="border-2 border-[#2C3E50] px-3 py-2 text-left font-bold">
+                  Fee
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border-1 border-gray-300 px-3 py-2">IME Fee</td>
+                <td className="border-1 border-gray-300 px-3 py-2">
+                  ${feeStructure.IMEFee.toFixed(2)}
+                </td>
+              </tr>
+              <tr style={{ backgroundColor: "#f9fafb" }}>
+                <td className="border-1 border-gray-300 px-3 py-2">
+                  Record Review Fee
+                </td>
+                <td className="border-1 border-gray-300 px-3 py-2">
+                  ${feeStructure.recordReviewFee.toFixed(2)}
+                </td>
+              </tr>
+              <tr>
+                <td className="border-1 border-gray-300 px-3 py-2">
+                  Hourly Rate
+                </td>
+                <td className="border-1 border-gray-300 px-3 py-2">
+                  ${feeStructure.hourlyRate.toFixed(2)}/hour
+                </td>
+              </tr>
+              <tr style={{ backgroundColor: "#f9fafb" }}>
+                <td className="border-1 border-gray-300 px-3 py-2">
+                  Cancellation Fee
+                </td>
+                <td className="border-1 border-gray-300 px-3 py-2">
+                  ${feeStructure.cancellationFee.toFixed(2)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Section 3 */}
+        <div className="mb-4">
+          <h2 className="text-sm font-bold mb-2" >
+            3. SERVICES TO BE PROVIDED
+          </h2>
+          <p className="text-sm mb-2">The Examiner agrees to:</p>
+          <ul
+            className="text-sm ml-5 space-y-0"
+            style={{ listStyleType: "disc" }}
+          >
+            <li>
+              Conduct thorough and impartial medical examinations of claimants
+            </li>
+            <li>
+              Maintain professional standards in accordance with medical
+              licensing requirements
+            </li>
+            <li>Be available for testimony or clarification if required</li>
+            <li>Respond to case assignments in a timely manner</li>
+          </ul>
+        </div>
+
+        {/* Section 4 */}
+        <div className="mb-4">
+          <h2 className="text-sm font-bold mb-2" >
+            4. PROFESSIONAL OBLIGATIONS
+          </h2>
+          <p className="text-sm mb-2">The Examiner shall:</p>
+          <ul
+            className="text-sm ml-5 space-y-0"
+            style={{ listStyleType: "disc" }}
+          >
+            <li>
+              Maintain current medical licensure and malpractice insurance
+            </li>
+            <li>
+              Comply with all applicable laws, regulations, and ethical
+              guidelines
+            </li>
+            <li>
+              Provide services in a professional, objective, and unbiased manner
+            </li>
+            <li>
+              Keep the Platform informed of any changes to availability or
+              credentials
+            </li>
+            <li>
+              Maintain patient confidentiality in accordance with applicable
+              privacy laws
+            </li>
+          </ul>
+        </div>
+
+        {/* Section 5 */}
+        <div className="mb-4">
+          <h2 className="text-sm font-bold mb-2" >
+            5. CONFIDENTIALITY
+          </h2>
+          <p className="text-sm mb-2">
+            The Examiner acknowledges that all information obtained during
+            examinations is confidential and shall:
+          </p>
+          <ul
+            className="text-sm ml-5 space-y-0"
+            style={{ listStyleType: "disc" }}
+          >
+            <li>
+              Not disclose any patient information except as required by law or
+              authorized by the patient
+            </li>
+            <li>
+              Maintain secure storage of all patient records and examination
+              materials
+            </li>
+            <li>
+              Comply with all applicable privacy legislation including but not
+              limited to PIPEDA
+            </li>
+            <li>
+              Return or destroy all confidential materials upon completion of
+              services
+            </li>
+          </ul>
+        </div>
+
+        {/* Section 6 */}
+        <div className="mb-4">
+          <h2 className="text-sm font-bold mb-2" >
+            6. INDEPENDENT CONTRACTOR STATUS
+          </h2>
+          <p className="text-sm mb-2">
+            The Examiner is an independent contractor and not an employee of the
+            Platform. The Examiner is responsible for:
+          </p>
+          <ul
+            className="text-sm ml-5 space-y-0"
+            style={{ listStyleType: "disc" }}
+          >
+            <li>All applicable taxes and business registrations</li>
+            <li>Professional liability insurance</li>
+            <li>
+              Business expenses including office space, equipment, and supplies
+            </li>
+            <li>Compliance with all professional licensing requirements</li>
+          </ul>
+        </div>
+
+        {/* Section 7 */}
+        <div className="mb-4">
+          <h2 className="text-sm font-bold mb-2" >
+            7. TERM AND TERMINATION
+          </h2>
+          <p className="text-sm mb-2">
+            This Agreement shall remain in effect until terminated by either
+            party with 30 days written notice. The Platform may terminate this
+            Agreement immediately if the Examiner:
+          </p>
+          <ul
+            className="text-sm ml-5 space-y-0"
+            style={{ listStyleType: "disc" }}
+          >
+            <li>Breaches any material term of this Agreement</li>
+            <li>Loses professional licensure or malpractice insurance</li>
+            <li>Engages in professional misconduct</li>
+            <li>Fails to maintain acceptable quality standards</li>
+          </ul>
+        </div>
+
+        {/* Section 8 */}
+        <div className="mb-4">
+          <h2 className="text-sm font-bold mb-2" >
+            8. LIABILITY AND INDEMNIFICATION
+          </h2>
+          <p className="text-sm" style={{ textAlign: "justify" }}>
+            The Examiner agrees to maintain professional liability insurance
+            with minimum coverage of $2,000,000 and shall indemnify the Platform
+            against any claims arising from the Examiner&apos;s professional services
+            or negligence.
+          </p>
+        </div>
+
+        {/* Section 9 */}
+        <div className="mb-4">
+          <h2 className="text-sm font-bold mb-2" >
+            9. DISPUTE RESOLUTION
+          </h2>
+          <p className="text-sm" style={{ textAlign: "justify" }}>
+            Any disputes arising from this Agreement shall be resolved through
+            mediation, and if necessary, arbitration in accordance with the laws
+            of the Province of Manitoba.
+          </p>
+        </div>
+
+        {/* Section 10 */}
+        <div className="mb-4">
+          <h2 className="text-sm font-bold mb-2" >
+            10. GENERAL PROVISIONS
+          </h2>
+          <ul
+            className="text-sm ml-5 space-y-0"
+            style={{ listStyleType: "disc" }}
+          >
+            <li>
+              This Agreement constitutes the entire agreement between the
+              parties
+            </li>
+            <li>
+              Any amendments must be made in writing and signed by both parties
+            </li>
+            <li>This Agreement shall be governed by the laws of Manitoba</li>
+            <li>
+              If any provision is found invalid, the remaining provisions shall
+              continue in effect
+            </li>
+          </ul>
+        </div>
+
+        {/* Acknowledgment */}
+        <div className="mb-6">
+          <h2 className="text-sm font-bold mb-2" >
+            ACKNOWLEDGMENT
+          </h2>
+          <p className="text-sm" style={{ textAlign: "justify" }}>
+            By accepting cases through the Thrive IME Platform, the Examiner
+            acknowledges that they have read, understood, and agree to be bound
+            by the terms and conditions of this Agreement.
+          </p>
+        </div>
+
+        {/* Signature Area - No border or box */}
+        <div className="mt-12 mb-12 space-y-4">
+          <div>
+            {signatureImage && (
+            <div className="mb-1">
+              <img src={signatureImage} alt="Signature" className="h-12" />
+            </div>
+          )}
+          <div className="border-b-2 border-black w-80 mb-1"></div>
+          Examiner&apos;s Signature
+          </div>
+        
+        <div>
+          <span className="font-semibold">Name:</span> {sigName}
+        </div>
+        <div>
+          <span className="font-semibold">Date:</span> {sigDate}
+        </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 pt-4">
+          <p className="text-xs text-center" style={{ color: "#666" }}>
+            © 2025 Thrive Assessment & Care. All rights reserved.
+          </p>
+        </div>
       </div>
 
       {/* RIGHT: Signature Panel */}
-      <div
-        style={{
-          width: 400,
-          padding: 32,
-          display: "flex",
-          flexDirection: "column",
-          gap: 20,
-          background: "#f9fafb",
-          borderLeft: "1px solid #e5e7eb",
-        }}
-      >
-        <h2 style={{ fontSize: 20, fontWeight: 600, color: "#1f2937" }}>
-          Signature Panel
-        </h2>
-
-        <label style={{ fontWeight: 500, color: "#374151" }}>Full Name</label>
-        <input
-          value={sigName}
-          onChange={(e) => setSigName(e.target.value)}
-          placeholder="e.g., Dr. Jane Doe"
-          style={{
-            padding: "10px 12px",
-            borderRadius: 6,
-            border: "1px solid #d1d5db",
-            width: "100%",
-          }}
-        />
-
-        <label style={{ fontWeight: 500, color: "#374151" }}>Date</label>
-        <input
-          type="date"
-          value={sigDate}
-          onChange={(e) => setSigDate(e.target.value)}
-          style={{
-            padding: "10px 12px",
-            borderRadius: 6,
-            border: "1px solid #d1d5db",
-            width: "100%",
-          }}
-        />
-
-        <label style={{ fontWeight: 500, color: "#374151" }}>
-          Draw Signature
-        </label>
-        <canvas
-          ref={canvasRef}
-          width={360}
-          height={160}
-          style={{
-            border: "1px solid #d1d5db",
-            borderRadius: 6,
-            touchAction: "none",
-          }}
-        />
-
-        <div style={{ display: "flex", gap: 12 }}>
-          <button
-            onClick={clearSignature}
-            style={{
-              flex: 1,
-              padding: "10px",
-              borderRadius: 6,
-              border: "1px solid #9ca3af",
-              background: "#fff",
-              cursor: "pointer",
-              fontWeight: 500,
-            }}
-          >
-            Clear
-          </button>
-          <button
-            onClick={handleSign}
-            disabled={!agree || !sigName || !sigDate || isSigning}
-            style={{
-              flex: 1,
-              padding: "10px",
-              borderRadius: 6,
-              background:
-                agree && sigName && sigDate && !isSigning
-                  ? "#2563eb"
-                  : "#9ca3af",
-              color: "#fff",
-              border: "none",
-              cursor:
-                agree && sigName && sigDate && !isSigning
-                  ? "pointer"
-                  : "not-allowed",
-              fontWeight: 500,
-            }}
-          >
-            {isSigning ? "Signing..." : "Adopt & Sign"}
-          </button>
+      <div className="w-96 bg-white border-l-2 border-blue-600 p-8 overflow-y-auto shadow-lg">
+        <div className="border-b-2 border-blue-600 pb-3 mb-6">
+          <h2 className="text-xl font-bold text-blue-900">Sign Agreement</h2>
         </div>
 
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            fontSize: 14,
-            color: "#374151",
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={agree}
-            onChange={(e) => setAgree(e.target.checked)}
-          />
-          I agree this electronic signature is the legal equivalent of my
-          handwritten signature.
-        </label>
+        <div className="space-y-5">
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Full Name
+            </label>
+            <input
+              type="text"
+              value={sigName}
+              onChange={(e) => setSigName(e.target.value)}
+              placeholder="Dr. Jane Doe"
+              className="w-full px-3 py-2 border-2 border-gray-300 rounded focus:outline-none focus:border-blue-600 text-sm"
+            />
+          </div>
 
-        <span
-          style={{
-            fontWeight: 600,
-            color: signed ? "#166534" : "#6b7280",
-            fontSize: 14,
-          }}
-        >
-          {signed ? "Signed" : "Awaiting signature"}
-        </span>
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Effective Date
+            </label>
+            <input
+              type="date"
+              value={sigDate}
+              disabled
+              onChange={(e) => setSigDate(e.target.value)}
+              className="w-full px-3 py-2 border-2 border-gray-300 rounded focus:outline-none focus:border-blue-600 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Draw Your Signature
+            </label>
+            <div className="border-2 border-blue-600 rounded p-1 bg-white">
+              <canvas
+                ref={canvasRef}
+                width={320}
+                height={140}
+                className="w-full cursor-crosshair bg-gray-50"
+                style={{ touchAction: "none" }}
+              />
+            </div>
+            <button
+              onClick={clearSignature}
+              className="mt-2 text-sm text-blue-700 hover:text-blue-900 font-semibold underline"
+            >
+              Clear Signature
+            </button>
+          </div>
+
+          <div className="border-2 border-gray-300 rounded p-3 bg-blue-50">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agree}
+                onChange={(e) => setAgree(e.target.checked)}
+                className="mt-0.5 w-5 h-5 text-blue-600 border-2 border-gray-400 rounded focus:ring-2 focus:ring-blue-500"
+              />
+              <span className="text-xs text-gray-800 leading-relaxed font-medium">
+                I agree that this electronic signature is the legal equivalent
+                of my handwritten signature and I accept all terms and
+                conditions of this agreement.
+              </span>
+            </label>
+          </div>
+
+          <button
+            onClick={handleSign}
+            disabled={
+              !agree || !sigName || !sigDate || !signatureImage || isSigning
+            }
+            className={`w-full py-3 px-4 rounded-lg font-bold text-white text-base transition-all border-2 ${
+              agree && sigName && sigDate && signatureImage && !isSigning
+                ? "bg-blue-600 hover:bg-blue-700 border-blue-700 cursor-pointer shadow-md hover:shadow-lg"
+                : "bg-gray-400 border-gray-400 cursor-not-allowed"
+            }`}
+          >
+            {isSigning ? "Processing..." : "Sign Agreement"}
+          </button>
+
+          {signed && (
+            <div className="p-4 bg-green-100 border-2 border-green-600 rounded-lg">
+              <p className="text-sm text-green-900 font-bold text-center">
+                ✓ Agreement Signed Successfully
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

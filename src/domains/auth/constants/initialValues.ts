@@ -65,11 +65,9 @@ export const step6InitialValues: Step6LegalInput = {
 };
 
 export const step7InitialValues: Step7PaymentDetailsInput = {
-  standardIMEFee: "",
-  virtualIMEFee: "",
+  IMEFee: "",
   recordReviewFee: "",
   hourlyRate: "",
-  reportTurnaroundDays: "",
   cancellationFee: "",
 };
 

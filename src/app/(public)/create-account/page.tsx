@@ -56,6 +56,10 @@ const Page = async ({
     latestContract = await getContractByExaminerProfileId(examinerProfile.id);
   }
 
+  if(!latestContract){
+    redirect("/create-account/success?error=no_contract_found");
+  } 
+
   // Step 5: Handle case when examiner profile doesn't exist
   if (!examinerProfile) {
     const account = await getAccountById(accountId);

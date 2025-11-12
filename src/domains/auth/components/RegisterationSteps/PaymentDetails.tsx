@@ -33,11 +33,9 @@ const PaymentDetails: React.FC<RegStepProps> = ({
     schema: step7PaymentDetailsSchema,
     defaultValues: {
       ...step7InitialValues,
-      standardIMEFee: data.standardIMEFee,
-      virtualIMEFee: data.virtualIMEFee,
+      IMEFee: data.IMEFee,
       recordReviewFee: data.recordReviewFee,
       hourlyRate: data.hourlyRate,
-      reportTurnaroundDays: data.reportTurnaroundDays,
       cancellationFee: data.cancellationFee,
     },
     mode: "onSubmit",
@@ -47,19 +45,15 @@ const PaymentDetails: React.FC<RegStepProps> = ({
   useEffect(() => {
     form.reset({
       ...step7InitialValues,
-      standardIMEFee: data.standardIMEFee,
-      virtualIMEFee: data.virtualIMEFee,
+      IMEFee: data.IMEFee,
       recordReviewFee: data.recordReviewFee,
       hourlyRate: data.hourlyRate,
-      reportTurnaroundDays: data.reportTurnaroundDays,
       cancellationFee: data.cancellationFee,
     });
   }, [
-    data.standardIMEFee,
-    data.virtualIMEFee,
+    data.IMEFee,
     data.recordReviewFee,
     data.hourlyRate,
-    data.reportTurnaroundDays,
     data.cancellationFee,
     form,
   ]);
@@ -91,33 +85,15 @@ const PaymentDetails: React.FC<RegStepProps> = ({
             <div className="mt-8 md:px-0 px-8">
               <div className="grid grid-cols-1 gap-x-14 gap-y-5 md:grid-cols-2">
                 <FormField
-                  name="standardIMEFee"
+                  name="IMEFee"
                   label="Standard IME Fee (CAD)"
                   required>
                   {(field: UseFormRegisterReturn & { error?: boolean }) => (
                     <Input
                       {...field}
-                      id="standardIMEFee"
+                      id="IMEFee"
                       icon={CircleDollarSign}
                       placeholder="1500.00"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      validationType="numeric"
-                    />
-                  )}
-                </FormField>
-
-                <FormField
-                  name="virtualIMEFee"
-                  label="Virtual IME Fee (CAD)"
-                  required>
-                  {(field: UseFormRegisterReturn & { error?: boolean }) => (
-                    <Input
-                      {...field}
-                      id="virtualIMEFee"
-                      icon={CircleDollarSign}
-                      placeholder="1200.00"
                       type="number"
                       step="0.01"
                       min="0"
@@ -173,23 +149,6 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                       step="0.01"
                       min="0"
                       validationType="numeric"
-                    />
-                  )}
-                </FormField>
-
-                <FormField
-                  name="reportTurnaroundDays"
-                  label="Report Turnaround Days">
-                  {(field: UseFormRegisterReturn & { error?: boolean }) => (
-                    <Input
-                      {...field}
-                      id="reportTurnaroundDays"
-                      icon={Clock}
-                      placeholder="14"
-                      type="number"
-                      min="1"
-                      max="365"
-                      validationType="integer"
                     />
                   )}
                 </FormField>
