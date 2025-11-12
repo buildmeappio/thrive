@@ -78,7 +78,7 @@ export default function Dashboard({
           intent="indigo" 
         />
         <StatCard 
-          title="Ready to be appointment" 
+          title="Waiting to be scheduled" 
           value={waitingToBeScheduledCount} 
           href="/cases" 
           icon={<ClipboardClock size={16} />}

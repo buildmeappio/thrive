@@ -1,9 +1,32 @@
 // src/dto/case.dto.ts
 import { Examination, Case, CaseType, Documents, Claimant, Organization, LegalRepresentative, Insurance, ExaminationServices, ExaminationInterpreter, ExaminationTransport, Address, Language, ExaminationType, CaseDocument, CaseStatus, OrganizationManager, Account, User } from "@prisma/client";
 import { CaseDetailDtoType } from "../../types/CaseDetailDtoType";
+import prisma from "@/lib/db";
 
 export class CaseDto {
-  static toCaseDetailDto(examination: Examination & {
+  // Helper to check if a string is a UUID
+  private static isUUID(str: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  }
+
+  // Helper to get language name, checking if it's a UUID and fetching from DB if needed
+  private static async getLanguageName(languageName: string, _languageId: string): Promise<string> {
+    // If the name is a UUID, it means bad data - try to fetch using the name as an ID
+    if (this.isUUID(languageName)) {
+      try {
+        const language = await prisma.language.findUnique({
+          where: { id: languageName },
+        });
+        return language?.name || "Unknown Language";
+      } catch (error) {
+        console.error("Error fetching language:", error);
+        return "Unknown Language";
+      }
+    }
+    return languageName;
+  }
+  static async toCaseDetailDto(examination: Examination & {
     examinationType: ExaminationType;
     status: CaseStatus,
     examiner: { user: { id: string; firstName: string; lastName: string; email: string } };
@@ -22,7 +45,7 @@ export class CaseDto {
     };
     legalRepresentative: LegalRepresentative & { address: Address };
     insurance: Insurance & { address: Address };
-  }): CaseDetailDtoType {
+  }): Promise<CaseDetailDtoType> {
     return {
       id: examination.id,
       caseNumber: examination.caseNumber,
@@ -52,13 +75,16 @@ export class CaseDto {
         }
         : null,
 
-      services: examination.services.map(service => ({
+      services: await Promise.all(examination.services.map(async service => ({
         type: service.type,
         enabled: service.enabled,
         interpreter: service.interpreter
           ? {
             languageId: service.interpreter.language.id,
-            languageName: service.interpreter.language.name,
+            languageName: await this.getLanguageName(
+              service.interpreter.language.name,
+              service.interpreter.language.id
+            ),
           }
           : null,
         transport: service.transport
@@ -72,7 +98,7 @@ export class CaseDto {
             }
             : null
           : null,
-      })),
+      }))),
 
       claimant: {
         id: examination.claimant.id,
@@ -155,7 +181,7 @@ export class CaseDto {
     };
   }
 
-  static toCaseDto(examinations: Examination & {
+  static async toCaseDto(examinations: Examination & {
     examinationType: ExaminationType;
     status: CaseStatus,
     examiner: { user: { id: string; firstName: string; lastName: string; email: string } };
@@ -193,11 +219,11 @@ export class CaseDto {
     };
     legalRepresentative: LegalRepresentative & { address: Address };
     insurance: Insurance & { address: Address };
-  }>): CaseDetailDtoType[] {
+  }>): Promise<CaseDetailDtoType[]> {
     if (Array.isArray(examinations)) {
-      return examinations.map(examination => this.toCaseDetailDto(examination));
+      return Promise.all(examinations.map(examination => this.toCaseDetailDto(examination)));
     } else {
-      return [this.toCaseDetailDto(examinations)];
+      return [await this.toCaseDetailDto(examinations)];
     }
   }
 }

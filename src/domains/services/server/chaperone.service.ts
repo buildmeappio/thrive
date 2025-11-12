@@ -1,6 +1,6 @@
 import { HttpError } from '@/utils/httpError';
 import { CreateChaperoneInput, UpdateChaperoneInput, ChaperoneData, ChaperoneWithAvailability } from '../types/Chaperone';
-import { convertTimeToUTC } from '@/utils/timezone';
+import { convertTimeToUTC, convertUTCToLocal } from '@/utils/timezone';
 import prisma from '@/lib/db';
 
 export const createChaperone = async (data: CreateChaperoneInput) => {
@@ -348,8 +348,8 @@ export const getChaperoneById = async (id: string): Promise<ChaperoneWithAvailab
               enabled: wh.enabled,
               timeSlots: wh.timeSlots.map((ts) => ({
                 id: ts.id,
-                startTime: ts.startTime,
-                endTime: ts.endTime,
+                startTime: convertUTCToLocal(ts.startTime, undefined, new Date()),
+                endTime: convertUTCToLocal(ts.endTime, undefined, new Date()),
               })),
             })),
             overrideHours: availabilityProvider.overrideHours.map((oh) => ({
@@ -357,8 +357,8 @@ export const getChaperoneById = async (id: string): Promise<ChaperoneWithAvailab
               date: oh.date.toISOString().split('T')[0],
               timeSlots: oh.timeSlots.map((ts) => ({
                 id: ts.id,
-                startTime: ts.startTime,
-                endTime: ts.endTime,
+                startTime: convertUTCToLocal(ts.startTime, undefined, oh.date),
+                endTime: convertUTCToLocal(ts.endTime, undefined, oh.date),
               })),
             })),
           }

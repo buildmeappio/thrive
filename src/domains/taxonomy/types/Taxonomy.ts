@@ -7,7 +7,9 @@ export type TaxonomyType =
   | 'examinationTypeBenefit'
   | 'language'
   | 'organizationType'
-  | 'role';
+  | 'role'
+  | 'maximumDistanceTravel'
+  | 'yearsOfExperience';
 
 export type TaxonomyFieldType = 'text' | 'textarea' | 'select';
 
@@ -81,6 +83,16 @@ export type Role = BaseTaxonomy & {
   name: string;
 };
 
+export type MaximumDistanceTravel = BaseTaxonomy & {
+  name: string;
+  description: string | null;
+};
+
+export type YearsOfExperience = BaseTaxonomy & {
+  name: string;
+  description: string | null;
+};
+
 // Union type for all taxonomies
 export type Taxonomy = 
   | CaseStatus 
@@ -91,13 +103,16 @@ export type Taxonomy =
   | ExaminationTypeBenefit 
   | Language 
   | OrganizationType 
-  | Role;
+  | Role
+  | MaximumDistanceTravel
+  | YearsOfExperience;
 
 // For table display
 export type TaxonomyData = {
   id: string;
   [key: string]: any;
   createdAt: string;
+  frequency?: number;
 };
 
 // Input types
