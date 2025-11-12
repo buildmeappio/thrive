@@ -20,12 +20,11 @@ RUN npm ci --ignore-scripts
 # Copy Prisma schema and migration files
 COPY prisma ./prisma
 COPY src ./src
-COPY scripts ./scripts
 COPY prisma.config.ts ./
 
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Default command: run migrations, then run timeslot migration
-CMD npx prisma migrate deploy && npm run migrate:timeslots
+# Default command: run migrations
+CMD ["npx", "prisma", "migrate", "deploy"]
 
