@@ -8,6 +8,7 @@ import { getExaminerProfileByAccountId } from "@/domains/contract/server/actions
 import { getContractByExaminerProfileId } from "@/domains/contract/server/actions/getContractByExaminerProfileId.actions";
 import { getAccountById } from "@/domains/contract/server/actions/getAccountById.actions";
 import { markContractAsViewed } from "@/domains/contract/server/actions/markContractAsViewed.actions";
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: "Create Account | Thrive Examiner",
