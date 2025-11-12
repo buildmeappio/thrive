@@ -18,6 +18,7 @@ const validTypes: TaxonomyType[] = [
   "organizationType",
   "maximumDistanceTravel",
   "yearsOfExperience",
+  "configuration",
 ];
 
 type PageProps = {

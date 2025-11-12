@@ -30,7 +30,7 @@ type TaxonomyFormProps = {
 
 const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
   mode,
-  type: _type,
+  type,
   config,
   taxonomy,
   onSubmit,
@@ -45,15 +45,22 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
     watch,
   } = useForm<TaxonomyFormData>({
     defaultValues: config.fields.reduce((acc, field) => {
-      acc[field.name] = taxonomy?.[field.name] || '';
+      const value = taxonomy?.[field.name];
+      // Convert number to string for form input (especially for configuration value field)
+      acc[field.name] = value !== null && value !== undefined ? String(value) : '';
       return acc;
     }, {} as TaxonomyFormData),
   });
 
+  // Watch the name field for configuration to show/hide "(in minutes)" helper text
+  const watchedName = type === 'configuration' ? watch('name') : null;
+
   useEffect(() => {
     if (taxonomy) {
       config.fields.forEach(field => {
-        setValue(field.name, taxonomy[field.name] || '');
+        const value = taxonomy[field.name];
+        // Convert number to string for form input (especially for configuration value field)
+        setValue(field.name, value !== null && value !== undefined ? String(value) : '');
       });
     }
   }, [taxonomy, config.fields, setValue]);
@@ -61,7 +68,15 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
   const handleFormSubmit = (data: TaxonomyFormData) => {
     const submitData: CreateTaxonomyInput | UpdateTaxonomyInput = {};
     
+    // For configuration in edit mode, exclude name field (only allow value to be updated)
+    const isConfigurationEdit = type === 'configuration' && mode === 'edit';
+    
     config.fields.forEach(field => {
+      // Skip name field when editing configuration
+      if (isConfigurationEdit && field.name === 'name') {
+        return;
+      }
+      
       if (data[field.name] !== undefined && data[field.name] !== '') {
         submitData[field.name] = data[field.name];
       } else if (!field.required) {
@@ -75,6 +90,15 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
   const renderField = (field: TaxonomyField) => {
     const watchedValue = watch(field.name);
     const error = errors[field.name];
+    
+    // For configuration, check if it's slot duration to show "(in minutes)" helper text
+    const isConfiguration = type === 'configuration';
+    const isValueField = field.name === 'value' && isConfiguration;
+    // Use watchedName (from component level watch) or taxonomy name (for edit mode)
+    const configurationName = isConfiguration 
+      ? (taxonomy?.name || watchedName || '').toLowerCase()
+      : '';
+    const isSlotDuration = isConfiguration && configurationName.includes('slot') && configurationName.includes('duration');
 
     switch (field.type) {
       case 'textarea':
@@ -125,6 +149,8 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
 
       case 'text':
       default:
+        // Disable name field when editing configuration
+        const isConfigurationEdit = type === 'configuration' && mode === 'edit' && field.name === 'name';
         return (
           <div key={field.name} className="space-y-2">
             <Label htmlFor={field.name}>
@@ -132,12 +158,26 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
             </Label>
             <Input
               id={field.name}
+              type={isValueField ? 'number' : 'text'}
               {...register(field.name, {
                 required: field.required ? `${field.label} is required` : false,
+                validate: isValueField
+                  ? (value) => {
+                      if (!value && field.required) return `${field.label} is required`;
+                      if (value && isNaN(Number(value))) return `${field.label} must be a valid number`;
+                      return true;
+                    }
+                  : undefined,
               })}
               placeholder={field.placeholder}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isConfigurationEdit}
+              readOnly={isConfigurationEdit}
+              className={isConfigurationEdit ? 'bg-gray-100 cursor-not-allowed' : ''}
             />
+            {/* Show "(in Minutes)" helper text only for slot duration configuration */}
+            {isSlotDuration && isValueField && (
+              <p className="text-sm text-gray-500">(in Minutes)</p>
+            )}
             {error && <p className="text-sm text-red-500">{error.message as string}</p>}
           </div>
         );

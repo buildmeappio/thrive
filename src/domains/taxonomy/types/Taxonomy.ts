@@ -9,7 +9,8 @@ export type TaxonomyType =
   | 'organizationType'
   | 'role'
   | 'maximumDistanceTravel'
-  | 'yearsOfExperience';
+  | 'yearsOfExperience'
+  | 'configuration';
 
 export type TaxonomyFieldType = 'text' | 'textarea' | 'select';
 
@@ -93,6 +94,11 @@ export type YearsOfExperience = BaseTaxonomy & {
   description: string | null;
 };
 
+export type Configuration = BaseTaxonomy & {
+  name: string;
+  value: number;
+};
+
 // Union type for all taxonomies
 export type Taxonomy = 
   | CaseStatus 
@@ -105,7 +111,8 @@ export type Taxonomy =
   | OrganizationType 
   | Role
   | MaximumDistanceTravel
-  | YearsOfExperience;
+  | YearsOfExperience
+  | Configuration;
 
 // For table display
 export type TaxonomyData = {
