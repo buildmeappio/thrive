@@ -18,11 +18,9 @@ export default function EditFeeStructureModal({
   title = "Edit Fee Structure",
   isLoading = false,
 }: Props) {
-  const [standardIMEFee, setStandardIMEFee] = useState(initialData?.standardIMEFee?.toString() || "");
-  const [virtualIMEFee, setVirtualIMEFee] = useState(initialData?.virtualIMEFee?.toString() || "");
+  const [IMEFee, setIMEFee] = useState(initialData?.IMEFee?.toString() || "");
   const [recordReviewFee, setRecordReviewFee] = useState(initialData?.recordReviewFee?.toString() || "");
   const [hourlyRate, setHourlyRate] = useState(initialData?.hourlyRate?.toString() || "");
-  const [reportTurnaroundDays, setReportTurnaroundDays] = useState(initialData?.reportTurnaroundDays?.toString() || "");
   const [cancellationFee, setCancellationFee] = useState(initialData?.cancellationFee?.toString() || "");
   
   const titleId = useId();
@@ -31,11 +29,9 @@ export default function EditFeeStructureModal({
 
   useEffect(() => {
     if (initialData) {
-      setStandardIMEFee(initialData.standardIMEFee?.toString() || "");
-      setVirtualIMEFee(initialData.virtualIMEFee?.toString() || "");
+      setIMEFee(initialData.IMEFee?.toString() || "");
       setRecordReviewFee(initialData.recordReviewFee?.toString() || "");
       setHourlyRate(initialData.hourlyRate?.toString() || "");
-      setReportTurnaroundDays(initialData.reportTurnaroundDays?.toString() || "");
       setCancellationFee(initialData.cancellationFee?.toString() || "");
     }
   }, [initialData]);
@@ -61,19 +57,16 @@ export default function EditFeeStructureModal({
   if (!open) return null;
 
   const canSubmit = 
-    standardIMEFee.trim().length > 0 &&
-    virtualIMEFee.trim().length > 0 &&
+    IMEFee.trim().length > 0 &&
     recordReviewFee.trim().length > 0 &&
     cancellationFee.trim().length > 0;
 
   const handleSubmit = () => {
     if (canSubmit) {
       onSubmit({
-        standardIMEFee: parseFloat(standardIMEFee),
-        virtualIMEFee: parseFloat(virtualIMEFee),
+        IMEFee: parseFloat(IMEFee),
         recordReviewFee: parseFloat(recordReviewFee),
         hourlyRate: hourlyRate ? parseFloat(hourlyRate) : undefined,
-        reportTurnaroundDays: reportTurnaroundDays ? parseInt(reportTurnaroundDays) : undefined,
         cancellationFee: parseFloat(cancellationFee),
         paymentTerms: initialData?.paymentTerms || "N/A",
       } as Omit<ExaminerFeeStructure, "id">);
@@ -125,49 +118,21 @@ export default function EditFeeStructureModal({
 
         {/* Form Fields */}
         <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Standard IME Fee */}
+          {/* IME Fee */}
           <div>
             <label
-              htmlFor="standard-ime-fee"
+              htmlFor="ime-fee"
               className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
             >
-              Standard IME Fee ($) <span className="text-red-500">*</span>
+              IME Fee ($) <span className="text-red-500">*</span>
             </label>
             <input
-              id="standard-ime-fee"
+              id="ime-fee"
               ref={firstInputRef}
               type="number"
               step="0.01"
-              value={standardIMEFee}
-              onChange={(e) => setStandardIMEFee(e.target.value)}
-              className="
-                h-12 w-full
-                rounded-xl sm:rounded-[15px]
-                border border-[#E5E5E5] bg-[#F6F6F6]
-                px-3 sm:px-4 outline-none
-                placeholder:font-[400] placeholder:text-[14px]
-                placeholder:text-[#A4A4A4]
-                font-poppins text-[14px] sm:text-[15px]
-                focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
-              "
-              placeholder="Enter amount"
-            />
-          </div>
-
-          {/* Virtual IME Fee */}
-          <div>
-            <label
-              htmlFor="virtual-ime-fee"
-              className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
-            >
-              Virtual IME Fee ($) <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="virtual-ime-fee"
-              type="number"
-              step="0.01"
-              value={virtualIMEFee}
-              onChange={(e) => setVirtualIMEFee(e.target.value)}
+              value={IMEFee}
+              onChange={(e) => setIMEFee(e.target.value)}
               className="
                 h-12 w-full
                 rounded-xl sm:rounded-[15px]
@@ -235,33 +200,6 @@ export default function EditFeeStructureModal({
                 focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
               "
               placeholder="Enter amount (optional)"
-            />
-          </div>
-
-          {/* Report Turnaround Days (Optional) */}
-          <div>
-            <label
-              htmlFor="report-turnaround-days"
-              className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
-            >
-              Report Turnaround Days
-            </label>
-            <input
-              id="report-turnaround-days"
-              type="number"
-              value={reportTurnaroundDays}
-              onChange={(e) => setReportTurnaroundDays(e.target.value)}
-              className="
-                h-12 w-full
-                rounded-xl sm:rounded-[15px]
-                border border-[#E5E5E5] bg-[#F6F6F6]
-                px-3 sm:px-4 outline-none
-                placeholder:font-[400] placeholder:text-[14px]
-                placeholder:text-[#A4A4A4]
-                font-poppins text-[14px] sm:text-[15px]
-                focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
-              "
-              placeholder="Enter number of days (optional)"
             />
           </div>
 

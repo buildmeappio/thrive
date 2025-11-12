@@ -96,6 +96,15 @@ class ExaminerService {
               deletedAt: null,
             },
           },
+          contracts: {
+        where: {
+          status: 'SIGNED',
+        },
+        orderBy: {
+          signedAt: 'desc',
+        },
+        take: 1,
+      },
         },
       });
 
