@@ -102,10 +102,10 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         consentBackgroundVerification: data.consentBackgroundVerification,
 
         // Step6 - Payment Details
-        IMEFee: data.IMEFee,
-        recordReviewFee: data.recordReviewFee,
-        hourlyRate: data.hourlyRate,
-        cancellationFee: data.cancellationFee,
+        // IMEFee: data.IMEFee,
+        // recordReviewFee: data.recordReviewFee,
+        // hourlyRate: data.hourlyRate,
+        // cancellationFee: data.cancellationFee,
       };
 
       let result;

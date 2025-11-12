@@ -170,10 +170,10 @@ class ExaminerService {
       consentBackgroundVerification?: boolean;
 
       // Step 7: Payment Details
-      IMEFee?: string;
-      recordReviewFee?: string;
-      hourlyRate?: string;
-      cancellationFee?: string;
+      // IMEFee?: string;
+      // recordReviewFee?: string;
+      // hourlyRate?: string;
+      // cancellationFee?: string;
     }
   ) {
     try {
@@ -279,60 +279,60 @@ class ExaminerService {
       }
 
       // Update fee structure if provided
-      if (data.IMEFee || data.recordReviewFee || data.cancellationFee) {
-        // Check if fee structure exists
-        const existingFeeStructure =
-          await prisma.examinerFeeStructure.findFirst({
-            where: { examinerProfileId },
-          });
+      // if (data.IMEFee || data.recordReviewFee || data.cancellationFee) {
+      //   // Check if fee structure exists
+      //   const existingFeeStructure =
+      //     await prisma.examinerFeeStructure.findFirst({
+      //       where: { examinerProfileId },
+      //     });
 
-        if (existingFeeStructure) {
-          // Update existing fee structure
-          await prisma.examinerFeeStructure.update({
-            where: { id: existingFeeStructure.id },
-            data: {
-              ...(data.IMEFee && {
-                IMEFee: parseFloat(data.IMEFee) || 0,
-              }),
+      //   if (existingFeeStructure) {
+      //     // Update existing fee structure
+      //     await prisma.examinerFeeStructure.update({
+      //       where: { id: existingFeeStructure.id },
+      //       data: {
+      //         ...(data.IMEFee && {
+      //           IMEFee: parseFloat(data.IMEFee) || 0,
+      //         }),
 
-              ...(data.recordReviewFee && {
-                recordReviewFee: parseFloat(data.recordReviewFee) || 0,
-              }),
-              ...(data.hourlyRate !== undefined && {
-                hourlyRate:
-                  data.hourlyRate && data.hourlyRate.trim() !== ""
-                    ? parseFloat(data.hourlyRate)
-                    : null,
-              }),
+      //         ...(data.recordReviewFee && {
+      //           recordReviewFee: parseFloat(data.recordReviewFee) || 0,
+      //         }),
+      //         ...(data.hourlyRate !== undefined && {
+      //           hourlyRate:
+      //             data.hourlyRate && data.hourlyRate.trim() !== ""
+      //               ? parseFloat(data.hourlyRate)
+      //               : null,
+      //         }),
 
-              ...(data.cancellationFee && {
-                cancellationFee: parseFloat(data.cancellationFee) || 0,
-              }),
-              paymentTerms: "",
-            },
-          });
-        } else {
-          // Create new fee structure
-          await prisma.examinerFeeStructure.create({
-            data: {
-              examinerProfileId,
-              IMEFee: data.IMEFee ? parseFloat(data.IMEFee) || 0 : 0,
-              recordReviewFee: data.recordReviewFee
-                ? parseFloat(data.recordReviewFee) || 0
-                : 0,
-              hourlyRate:
-                data.hourlyRate && data.hourlyRate.trim() !== ""
-                  ? parseFloat(data.hourlyRate)
-                  : null,
+      //         ...(data.cancellationFee && {
+      //           cancellationFee: parseFloat(data.cancellationFee) || 0,
+      //         }),
+      //         paymentTerms: "",
+      //       },
+      //     });
+      //   } else {
+      //     // Create new fee structure
+      //     await prisma.examinerFeeStructure.create({
+      //       data: {
+      //         examinerProfileId,
+      //         // IMEFee: data.IMEFee ? parseFloat(data.IMEFee) || 0 : 0,
+      //         recordReviewFee: data.recordReviewFee
+      //           ? parseFloat(data.recordReviewFee) || 0
+      //           : 0,
+      //         hourlyRate:
+      //           data.hourlyRate && data.hourlyRate.trim() !== ""
+      //             ? parseFloat(data.hourlyRate)
+      //             : null,
 
-              cancellationFee: data.cancellationFee
-                ? parseFloat(data.cancellationFee) || 0
-                : 0,
-              paymentTerms: "",
-            },
-          });
-        }
-      }
+      //         cancellationFee: data.cancellationFee
+      //           ? parseFloat(data.cancellationFee) || 0
+      //           : 0,
+      //         paymentTerms: "",
+      //       },
+      //     });
+      //   }
+      // }
 
       return updatedProfile;
     } catch (error) {

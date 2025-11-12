@@ -43,10 +43,10 @@ export type CreateMedicalExaminerInput = {
   consentBackgroundVerification: boolean;
 
   // step 6 - Payment Details
-  IMEFee: string;
-  recordReviewFee: string;
-  hourlyRate?: string;
-  cancellationFee: string;
+  // IMEFee: string;
+  // recordReviewFee: string;
+  // hourlyRate?: string;
+  // cancellationFee: string;
 };
 
 const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
@@ -137,19 +137,19 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
           languageId: language,
         })),
       }),
-      prisma.examinerFeeStructure.create({
-        data: {
-          examinerProfileId: examinerProfile.id,
-          IMEFee: parseFloat(payload.IMEFee) || 0,
-          recordReviewFee: parseFloat(payload.recordReviewFee) || 0,
-          hourlyRate:
-            payload.hourlyRate && payload.hourlyRate.trim() !== ""
-              ? parseFloat(payload.hourlyRate)
-              : null,
-          cancellationFee: parseFloat(payload.cancellationFee) || 0,
-          paymentTerms: "",
-        },
-      }),
+      // prisma.examinerFeeStructure.create({
+      //   data: {
+      //     examinerProfileId: examinerProfile.id,
+      //     IMEFee: parseFloat(payload.IMEFee) || 0,
+      //     recordReviewFee: parseFloat(payload.recordReviewFee) || 0,
+      //     hourlyRate:
+      //       payload.hourlyRate && payload.hourlyRate.trim() !== ""
+      //         ? parseFloat(payload.hourlyRate)
+      //         : null,
+      //     cancellationFee: parseFloat(payload.cancellationFee) || 0,
+      //     paymentTerms: "",
+      //   },
+      // }),
       prisma.availabilityProvider.create({
         data: {
           providerType: "EXAMINER",
