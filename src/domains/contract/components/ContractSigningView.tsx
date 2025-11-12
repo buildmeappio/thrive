@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface ContractSigningViewProps {
   token: string;
@@ -28,6 +30,7 @@ const ContractSigningView = ({
   const [signed, setSigned] = useState(false);
   const [signatureImage, setSignatureImage] = useState<string | null>(null);
   const [isSigning, setIsSigning] = useState(false);
+  const router = useRouter();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -47,10 +50,11 @@ const ContractSigningView = ({
 
     // Simulate signing process
     setTimeout(() => {
-      alert("Contract signed successfully!");
+      toast.success("Contract signed successfully!");
       setSigned(true);
       setIsSigning(false);
     }, 1000);
+    router.push(`/create-account?token=${token}`);
   };
 
   useEffect(() => {
