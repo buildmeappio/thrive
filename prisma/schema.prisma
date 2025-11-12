@@ -683,7 +683,7 @@ model ExaminerProfile {
 model ExaminerFeeStructure {
   id                String    @id @default(uuid()) @db.Uuid
   examinerProfileId String    @map("examiner_profile_id") @db.Uuid
-  IMEFee            Decimal   @map("virtual_ime_fee") @db.Decimal(10, 2)
+  IMEFee            Decimal?  @map("ime_fee") @db.Decimal(10, 2)
   recordReviewFee   Decimal   @map("record_review_fee") @db.Decimal(10, 2)
   hourlyRate        Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
   cancellationFee   Decimal   @map("cancellation_fee") @db.Decimal(10, 2)
