@@ -98,10 +98,10 @@ const ProfileDropdown = ({
           <li>
             {isActivationComplete ? (
               <a
-                href={createRoute(URLS.CASES)}
+                href={createRoute(URLS.APPOINTMENTS)}
                 className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
                 <UserPlus size={16} />
-                <span>All Cases</span>
+                <span>All Appointments</span>
               </a>
             ) : (
               <div
