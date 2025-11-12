@@ -24,16 +24,14 @@ The Examiner agrees to provide services at the following rates:
 
 | Service Type | Fee |
 |--------------|-----|
-| Standard IME (in-clinic) | {{standard_ime_fee}} |
-| Virtual / Tele-IME | {{virtual_ime_fee}} |
+| IME Fee | {{virtual_ime_fee}} |
 | Record Review Only | {{record_review_fee}} |
 | Hourly Rate (if applicable) | {{hourly_rate}} |
-| Report Turnaround | {{report_turnaround_days}} business days |
 | Cancellation / No-show Fee | {{cancellation_fee}} |
 
 **Payment Terms:** {{payment_terms}}
 
-**Note:** If hourly rate or report turnaround days are not applicable, those fields will appear empty in the generated contract.
+**Note:** If hourly rate is not applicable, those fields will appear empty in the generated contract.
 
 ---
 

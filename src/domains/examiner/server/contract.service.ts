@@ -172,11 +172,9 @@ class ContractService {
         province: examiner.provinceOfResidence,
         effectiveDate: new Date(),
         feeStructure: {
-          standardIMEFee: Number(feeStructure.standardIMEFee),
-          virtualIMEFee: Number(feeStructure.virtualIMEFee),
+          IMEFee: Number(feeStructure.IMEFee),
           recordReviewFee: Number(feeStructure.recordReviewFee),
           hourlyRate: feeStructure.hourlyRate ? Number(feeStructure.hourlyRate) : undefined,
-          reportTurnaroundDays: feeStructure.reportTurnaroundDays ?? undefined,
           cancellationFee: Number(feeStructure.cancellationFee),
           paymentTerms: feeStructure.paymentTerms,
         },
