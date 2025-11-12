@@ -925,6 +925,13 @@ export const getAvailableExaminersForExam = async (
   // Build day-by-day availability
   const days: DayAvailability[] = [];
 
+  // Log configuration settings for debugging
+  console.log('[Slot Generation] Using configuration:', {
+    startOfWorking: settings.startOfWorking,
+    numberOfWorkingHours: settings.numberOfWorkingHours,
+    slotDurationMinutes: settings.slotDurationMinutes,
+  });
+
   // Loop through each day in the window - use adjustedStartDate instead of startDate
   // Normalize dates to avoid timezone issues - work with date-only values
 
@@ -937,6 +944,9 @@ export const getAvailableExaminersForExam = async (
 
     // Generate slots for this day
     const firstSlotStart = createSlotTime(dayCursor, settings.startOfWorking);
+    console.log(
+      `[Slot Generation] Day ${dayCursor.toISOString().split('T')[0]}: First slot starts at ${dateToTimeString(firstSlotStart)} UTC`
+    );
 
     for (let i = 0; i < settings.numberOfWorkingHours; i++) {
       const slotStart = addMinutes(firstSlotStart, i * slotDurationMinutes);
