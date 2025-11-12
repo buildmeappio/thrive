@@ -4,11 +4,9 @@ import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 export type UpdateFeeStructureData = {
-  standardIMEFee: number;
-  virtualIMEFee: number;
+  IMEFee: number;
   recordReviewFee: number;
   hourlyRate?: number;
-  reportTurnaroundDays?: number;
   cancellationFee: number;
   paymentTerms: string;
 };
@@ -38,11 +36,9 @@ export async function updateFeeStructure(
           id: existingFeeStructure.id,
         },
         data: {
-          standardIMEFee: data.standardIMEFee,
-          virtualIMEFee: data.virtualIMEFee,
+          IMEFee: data.IMEFee,
           recordReviewFee: data.recordReviewFee,
           hourlyRate: data.hourlyRate ?? null,
-          reportTurnaroundDays: data.reportTurnaroundDays ?? null,
           cancellationFee: data.cancellationFee,
           paymentTerms: data.paymentTerms,
         },
@@ -52,11 +48,9 @@ export async function updateFeeStructure(
       feeStructure = await prisma.examinerFeeStructure.create({
         data: {
           examinerProfileId,
-          standardIMEFee: data.standardIMEFee,
-          virtualIMEFee: data.virtualIMEFee,
+          IMEFee: data.IMEFee,
           recordReviewFee: data.recordReviewFee,
           hourlyRate: data.hourlyRate ?? null,
-          reportTurnaroundDays: data.reportTurnaroundDays ?? null,
           cancellationFee: data.cancellationFee,
           paymentTerms: data.paymentTerms,
         },

@@ -25,14 +25,12 @@ export type ExaminerData = {
 
 export type ExaminerFeeStructure = {
   id: string;
-  standardIMEFee: number;
-  virtualIMEFee: number;
+  IMEFee: number;
   recordReviewFee: number;
   hourlyRate?: number;
-  reportTurnaroundDays?: number;
   cancellationFee: number;
   paymentTerms: string;
 };
 
-type ServerStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "INFO_REQUESTED";
+type ServerStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "INFO_REQUESTED" | "ACTIVE";
   

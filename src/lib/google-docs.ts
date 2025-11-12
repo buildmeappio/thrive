@@ -225,11 +225,9 @@ export type ContractData = {
   province: string;
   effectiveDate: Date | string;
   feeStructure: {
-    standardIMEFee: number;
-    virtualIMEFee: number;
+    IMEFee: number;
     recordReviewFee: number;
     hourlyRate?: number;
-    reportTurnaroundDays?: number;
     cancellationFee: number;
     paymentTerms: string;
   };
@@ -249,14 +247,10 @@ export function mapContractDataToPlaceholders(
     rate: data.feeStructure.hourlyRate
       ? formatCurrency(data.feeStructure.hourlyRate)
       : "",
-    standard_ime_fee: formatCurrency(data.feeStructure.standardIMEFee),
-    virtual_ime_fee: formatCurrency(data.feeStructure.virtualIMEFee),
+    ime_fee: formatCurrency(data.feeStructure.IMEFee),
     record_review_fee: formatCurrency(data.feeStructure.recordReviewFee),
     hourly_rate: data.feeStructure.hourlyRate
       ? formatCurrency(data.feeStructure.hourlyRate)
-      : "",
-    report_turnaround_days: data.feeStructure.reportTurnaroundDays
-      ? String(data.feeStructure.reportTurnaroundDays)
       : "",
     cancellation_fee: formatCurrency(data.feeStructure.cancellationFee),
     payment_terms: data.feeStructure.paymentTerms || "",

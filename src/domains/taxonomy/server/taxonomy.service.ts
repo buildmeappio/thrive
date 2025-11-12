@@ -115,6 +115,273 @@ export const updateTaxonomy = async (type: TaxonomyType, id: string, data: Updat
   }
 };
 
+// Helper function to get frequency counts for all taxonomy items of a type (batch query for better performance)
+const getFrequencyCounts = async (type: TaxonomyType, items: Array<{ id: string; name: string }>): Promise<Map<string, number>> => {
+  const frequencyMap = new Map<string, number>();
+  
+  if (items.length === 0) return frequencyMap;
+
+  try {
+    switch (type) {
+      case 'caseType': {
+        const caseCounts = await prisma.case.groupBy({
+          by: ['caseTypeId'],
+          where: {
+            caseTypeId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        caseCounts.forEach(count => {
+          frequencyMap.set(count.caseTypeId, count._count);
+        });
+        break;
+      }
+
+      case 'caseStatus': {
+        const statusCounts = await prisma.examination.groupBy({
+          by: ['statusId'],
+          where: {
+            statusId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        statusCounts.forEach(count => {
+          frequencyMap.set(count.statusId, count._count);
+        });
+        break;
+      }
+
+      case 'claimType': {
+        const claimCounts = await prisma.claimant.groupBy({
+          by: ['claimTypeId'],
+          where: {
+            claimTypeId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        claimCounts.forEach(count => {
+          frequencyMap.set(count.claimTypeId, count._count);
+        });
+        break;
+      }
+
+      case 'department': {
+        const departmentCounts = await prisma.organizationManager.groupBy({
+          by: ['departmentId'],
+          where: {
+            departmentId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        departmentCounts.forEach(count => {
+          if (count.departmentId) {
+            frequencyMap.set(count.departmentId, count._count);
+          }
+        });
+        break;
+      }
+
+      case 'examinationType': {
+        const examTypeCounts = await prisma.examination.groupBy({
+          by: ['examinationTypeId'],
+          where: {
+            examinationTypeId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        examTypeCounts.forEach(count => {
+          frequencyMap.set(count.examinationTypeId, count._count);
+        });
+        break;
+      }
+
+      case 'examinationTypeBenefit': {
+        const benefitCounts = await prisma.examinationSelectedBenefit.groupBy({
+          by: ['benefitId'],
+          where: {
+            benefitId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        benefitCounts.forEach(count => {
+          frequencyMap.set(count.benefitId, count._count);
+        });
+        break;
+      }
+
+      case 'language': {
+        // Count usage in examinerLanguages, interpreterLanguages, and examinationInterpreter
+        const [examinerCounts, interpreterCounts, examinationCounts] = await Promise.all([
+          prisma.examinerLanguage.groupBy({
+            by: ['languageId'],
+            where: {
+              languageId: { in: items.map(item => item.id) },
+            },
+            _count: true,
+          }),
+          prisma.interpreterLanguage.groupBy({
+            by: ['languageId'],
+            where: {
+              languageId: { in: items.map(item => item.id) },
+            },
+            _count: true,
+          }),
+          prisma.examinationInterpreter.groupBy({
+            by: ['languageId'],
+            where: {
+              languageId: { in: items.map(item => item.id) },
+              deletedAt: null,
+            },
+            _count: true,
+          }),
+        ]);
+
+        // Combine counts for each language
+        items.forEach(item => {
+          const examinerCount = examinerCounts.find(c => c.languageId === item.id)?._count || 0;
+          const interpreterCount = interpreterCounts.find(c => c.languageId === item.id)?._count || 0;
+          const examinationCount = examinationCounts.find(c => c.languageId === item.id)?._count || 0;
+          frequencyMap.set(item.id, examinerCount + interpreterCount + examinationCount);
+        });
+        break;
+      }
+
+      case 'organizationType': {
+        const orgTypeCounts = await prisma.organization.groupBy({
+          by: ['typeId'],
+          where: {
+            typeId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        orgTypeCounts.forEach(count => {
+          frequencyMap.set(count.typeId, count._count);
+        });
+        break;
+      }
+
+      case 'role': {
+        const roleCounts = await prisma.account.groupBy({
+          by: ['roleId'],
+          where: {
+            roleId: { in: items.map(item => item.id) },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        roleCounts.forEach(count => {
+          frequencyMap.set(count.roleId, count._count);
+        });
+        break;
+      }
+
+      case 'maximumDistanceTravel': {
+        // Count examiner profiles where maxTravelDistance matches the name
+        const names = items.map(item => item.name);
+        const distanceCounts = await prisma.examinerProfile.groupBy({
+          by: ['maxTravelDistance'],
+          where: {
+            maxTravelDistance: { in: names },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        distanceCounts.forEach(count => {
+          if (count.maxTravelDistance) {
+            // Find the item with matching name
+            const matchingItem = items.find(item => item.name === count.maxTravelDistance);
+            if (matchingItem) {
+              frequencyMap.set(matchingItem.id, count._count);
+            }
+          }
+        });
+        break;
+      }
+
+      case 'yearsOfExperience': {
+        // Count examiner profiles where yearsOfIMEExperience matches the name
+        const names = items.map(item => item.name);
+        const experienceCounts = await prisma.examinerProfile.groupBy({
+          by: ['yearsOfIMEExperience'],
+          where: {
+            yearsOfIMEExperience: { in: names },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        experienceCounts.forEach(count => {
+          // Find the item with matching name
+          const matchingItem = items.find(item => item.name === count.yearsOfIMEExperience);
+          if (matchingItem) {
+            frequencyMap.set(matchingItem.id, count._count);
+          }
+        });
+        break;
+      }
+
+      default:
+        break;
+    }
+  } catch (error) {
+    console.error(`Error getting frequency counts for ${type}:`, error);
+  }
+
+  // Ensure all items have a frequency (default to 0 if not found)
+  items.forEach(item => {
+    if (!frequencyMap.has(item.id)) {
+      frequencyMap.set(item.id, 0);
+    }
+  });
+
+  return frequencyMap;
+};
+
+// Helper function to check if a string is a UUID (handles spaces and variations)
+const isUUID = (str: string): boolean => {
+  if (!str || typeof str !== 'string') return false;
+  
+  const trimmed = str.trim();
+  if (!trimmed) return false;
+  
+  // Remove all spaces, hyphens, and convert to lowercase
+  const cleaned = trimmed.replace(/[\s-]/g, '').toLowerCase();
+  
+  // UUIDs are exactly 32 hexadecimal characters
+  // Check if it's exactly 32 hex characters (most reliable check)
+  if (cleaned.length === 32 && /^[0-9a-f]{32}$/i.test(cleaned)) {
+    return true;
+  }
+  
+  // Also check for standard UUID format with hyphens
+  const standardUUIDRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (standardUUIDRegex.test(cleaned)) {
+    return true;
+  }
+  
+  // Check if the string contains mostly hex characters and looks like a UUID
+  // Count hex characters - UUIDs have exactly 32 hex chars
+  const hexChars = trimmed.match(/[0-9a-f]/gi);
+  const hexCharCount = hexChars ? hexChars.length : 0;
+  
+  // If it has exactly 32 hex characters (allowing for spaces/hyphens), it's a UUID
+  if (hexCharCount === 32) {
+    // Double check it's not a valid language name by checking if it's all hex
+    const nonHexChars = trimmed.match(/[^0-9a-f\s-]/gi);
+    if (!nonHexChars || nonHexChars.length === 0) {
+      return true;
+    }
+  }
+  
+  return false;
+};
+
 export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]> => {
   try {
     const model = getPrismaModel(type);
@@ -133,13 +400,84 @@ export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]>
         },
       });
 
-      return results.map((item) => ({
-        id: item.id,
-        examinationTypeId: item.examinationTypeId,
-        examinationTypeName: item.examinationType?.name || 'Unknown',
-        benefit: item.benefit,
-        createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
-      }));
+      // Get frequency counts in batch
+      const frequencyMap = await getFrequencyCounts(
+        type,
+        results.map(item => ({ id: item.id, name: item.benefit }))
+      );
+
+      return results.map((item) => {
+        const frequency = frequencyMap.get(item.id) ?? 0;
+        return {
+          id: item.id,
+          examinationTypeId: item.examinationTypeId,
+          examinationTypeName: item.examinationType?.name || 'Unknown',
+          benefit: item.benefit,
+          frequency,
+          createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
+        };
+      });
+    }
+
+    // Special handling for language to filter out UUIDs and remove duplicates
+    if (type === 'language') {
+      const results = await model.findMany({
+        where: {
+          deletedAt: null,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      // Step 1: Filter out languages with UUID names completely (don't show them at all)
+      const languagesWithNormalNames = results.filter(item => {
+        const name = item.name?.trim();
+        if (!name) return false;
+        return !isUUID(name);
+      });
+
+      // Step 2: Get frequency counts for ALL languages (including duplicates) before deduplication
+      const allFrequencyMap = await getFrequencyCounts(
+        type,
+        languagesWithNormalNames.map(item => ({ id: item.id, name: item.name }))
+      );
+
+      // Step 3: Aggregate frequencies by normalized name and keep the most recent language
+      const nameToLanguageMap = new Map<string, { language: typeof results[0]; totalFrequency: number }>();
+      
+      languagesWithNormalNames.forEach(item => {
+        const normalizedName = item.name.trim().toLowerCase();
+        const frequency = allFrequencyMap.get(item.id) ?? 0;
+        
+        const existing = nameToLanguageMap.get(normalizedName);
+        if (existing) {
+          // Duplicate found - aggregate frequency and keep the most recent (already sorted)
+          existing.totalFrequency += frequency;
+          // Don't update the language object since we want to keep the first (most recent) one
+        } else {
+          // First occurrence of this name - keep it
+          nameToLanguageMap.set(normalizedName, {
+            language: item,
+            totalFrequency: frequency,
+          });
+        }
+      });
+
+      // Step 4: Convert map to array and return unique languages with aggregated frequencies
+      return Array.from(nameToLanguageMap.values()).map(({ language, totalFrequency }) => {
+        return {
+          id: language.id,
+          ...Object.keys(language).reduce((acc: Record<string, unknown>, key: string) => {
+            if (!['id', 'createdAt', 'updatedAt', 'deletedAt'].includes(key)) {
+              acc[key] = language[key as keyof typeof language];
+            }
+            return acc;
+          }, {}),
+          frequency: totalFrequency,
+          createdAt: language.createdAt instanceof Date ? language.createdAt.toISOString() : language.createdAt,
+        };
+      });
     }
 
     const results = await model.findMany({
@@ -151,17 +489,28 @@ export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]>
       },
     });
 
-    return results.map((item) => ({
-      id: item.id,
-      ...Object.keys(item).reduce((acc: Record<string, unknown>, key: string) => {
-        if (!['id', 'createdAt', 'updatedAt', 'deletedAt'].includes(key)) {
-          acc[key] = item[key as keyof typeof item];
-        }
-        return acc;
-      }, {}),
-      createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
-    }));
-  } catch {
+    // Get frequency counts in batch
+    const frequencyMap = await getFrequencyCounts(
+      type,
+      results.map(item => ({ id: item.id, name: item.name }))
+    );
+
+    return results.map((item) => {
+      const frequency = frequencyMap.get(item.id) ?? 0;
+      return {
+        id: item.id,
+        ...Object.keys(item).reduce((acc: Record<string, unknown>, key: string) => {
+          if (!['id', 'createdAt', 'updatedAt', 'deletedAt'].includes(key)) {
+            acc[key] = item[key as keyof typeof item];
+          }
+          return acc;
+        }, {}),
+        frequency,
+        createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
+      };
+    });
+  } catch (error) {
+    console.error(`Error getting taxonomies for ${type}:`, error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
