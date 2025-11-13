@@ -108,7 +108,10 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
   }
 
   // Compute derived data
-  const daysWithSlots = filterDaysWithSlots(availabilityData.days);
+  const daysWithSlots = filterDaysWithSlots(availabilityData.days, {
+    existingBooking,
+    excludePastDates: true,
+  });
   const totalDaysWithSlots = daysWithSlots.length;
   const daysToShow = getDaysToShow(daysWithSlots, dateOffset, MAX_DAYS_TO_SHOW);
 
