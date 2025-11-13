@@ -1,7 +1,6 @@
 import { HttpError } from '@/utils/httpError';
 import { CreateTaxonomyInput, UpdateTaxonomyInput, TaxonomyData, TaxonomyType } from '../types/Taxonomy';
 import prisma from '@/lib/db';
-import { convertTimeToUTC } from '@/utils/timezone';
 
 // Map taxonomy type to Prisma model
 const getPrismaModel = (type: TaxonomyType) => {
@@ -22,32 +21,26 @@ const getPrismaModel = (type: TaxonomyType) => {
   return modelMap[type];
 };
 
-// Helper function to convert time string to UTC minutes
-const convertTimeStringToUTCMinutes = (value: string | number): number => {
+// Helper function to parse value as number (NO timezone conversion)
+// The client already converted to UTC minutes before sending
+const parseValueAsNumber = (value: string | number): number => {
   try {
-    // If it's already a number, assume it's already in the correct format (minutes)
+    // If it's already a number, return it as-is
     if (typeof value === 'number') {
       return value;
     }
 
     const stringValue = String(value).trim();
 
-    // If it's a numeric string (e.g., "480"), parse and return it
+    // Parse numeric string (e.g., "480", "780")
     if (/^\d+$/.test(stringValue)) {
       return parseInt(stringValue, 10);
     }
 
-    // Otherwise, treat it as a time string (e.g., "8:00 AM") and convert to UTC
-    const utcTime = convertTimeToUTC(stringValue);
-
-    // Parse UTC time to extract hours and minutes
-    const [hours, minutes] = utcTime.split(':').map(Number);
-
-    // Convert to total minutes
-    return hours * 60 + minutes;
+    throw new Error(`Invalid numeric value: ${stringValue}`);
   } catch (error) {
-    console.error(`Error converting time string to UTC minutes: ${error}`);
-    throw new Error('Failed to convert time to UTC minutes');
+    console.error(`Error parsing value as number: ${error}`);
+    throw new Error('Failed to parse value as number');
   }
 };
 
@@ -80,15 +73,15 @@ export const createTaxonomy = async (type: TaxonomyType, data: CreateTaxonomyInp
       // Convert value from string to number for configuration
       // Special handling for time-related configurations
       if (data.name === 'start_working_hour_time') {
-        // Convert time string to UTC minutes
+        // Client already converted to UTC minutes, just parse as number
         try {
           createData = {
             name: data.name,
-            value: convertTimeStringToUTCMinutes(data.value),
+            value: parseValueAsNumber(data.value),
           };
         } catch (error) {
-          console.error('Error converting time to UTC minutes:', error);
-          throw HttpError.badRequest('Invalid time format. Please provide a valid time string (e.g., "8:00 AM") or minutes.');
+          console.error('Error parsing value:', error);
+          throw HttpError.badRequest('Invalid value. Please provide a valid number.');
         }
       } else {
         createData = {
@@ -160,12 +153,12 @@ export const updateTaxonomy = async (type: TaxonomyType, id: string, data: Updat
         // Special handling for time-related configurations
         const configName = data.name !== undefined ? data.name : existing.name;
         if (configName === 'start_working_hour_time') {
-          // Convert time string to UTC minutes
+          // Client already converted to UTC minutes, just parse as number
           try {
-            updateData.value = convertTimeStringToUTCMinutes(data.value);
+            updateData.value = parseValueAsNumber(data.value);
           } catch (error) {
-            console.error('Error converting time to UTC minutes:', error);
-            throw HttpError.badRequest('Invalid time format. Please provide a valid time string (e.g., "8:00 AM") or minutes.');
+            console.error('Error parsing value:', error);
+            throw HttpError.badRequest('Invalid value. Please provide a valid number.');
           }
         } else {
           const numValue = typeof data.value === 'string' ? parseInt(data.value, 10) : data.value;

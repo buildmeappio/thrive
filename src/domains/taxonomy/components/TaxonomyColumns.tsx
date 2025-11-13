@@ -183,7 +183,7 @@ export const createTaxonomyColumns = (
           
           if (isStartWorkingHourTime) {
             // Format "start working hour time" as time (e.g., 480 UTC -> "3:00 AM" local)
-            // Use UTC to local conversion since the value is stored in UTC
+            // Convert UTC minutes to local time
             if (numValue >= 0 && numValue < 1440 && Number.isInteger(numValue)) {
               formattedValue = convertUTCMinutesToLocal(numValue);
             } else {
