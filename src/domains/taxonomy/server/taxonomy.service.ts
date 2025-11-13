@@ -1,6 +1,7 @@
 import { HttpError } from '@/utils/httpError';
 import { CreateTaxonomyInput, UpdateTaxonomyInput, TaxonomyData, TaxonomyType } from '../types/Taxonomy';
 import prisma from '@/lib/db';
+import { convertTimeToUTC } from '@/utils/timezone';
 
 // Map taxonomy type to Prisma model
 const getPrismaModel = (type: TaxonomyType) => {
@@ -19,6 +20,35 @@ const getPrismaModel = (type: TaxonomyType) => {
     configuration: prisma.configuration,
   };
   return modelMap[type];
+};
+
+// Helper function to convert time string to UTC minutes
+const convertTimeStringToUTCMinutes = (value: string | number): number => {
+  try {
+    // If it's already a number, assume it's already in the correct format (minutes)
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    const stringValue = String(value).trim();
+
+    // If it's a numeric string (e.g., "480"), parse and return it
+    if (/^\d+$/.test(stringValue)) {
+      return parseInt(stringValue, 10);
+    }
+
+    // Otherwise, treat it as a time string (e.g., "8:00 AM") and convert to UTC
+    const utcTime = convertTimeToUTC(stringValue);
+
+    // Parse UTC time to extract hours and minutes
+    const [hours, minutes] = utcTime.split(':').map(Number);
+
+    // Convert to total minutes
+    return hours * 60 + minutes;
+  } catch (error) {
+    console.error(`Error converting time string to UTC minutes: ${error}`);
+    throw new Error('Failed to convert time to UTC minutes');
+  }
 };
 
 export const createTaxonomy = async (type: TaxonomyType, data: CreateTaxonomyInput) => {
@@ -48,12 +78,26 @@ export const createTaxonomy = async (type: TaxonomyType, data: CreateTaxonomyInp
       };
     } else if (type === 'configuration') {
       // Convert value from string to number for configuration
-      createData = {
-        name: data.name,
-        value: typeof data.value === 'string' ? parseInt(data.value, 10) : data.value,
-      };
-      if (isNaN(createData.value)) {
-        throw HttpError.badRequest('Value must be a valid number');
+      // Special handling for time-related configurations
+      if (data.name === 'start_working_hour_time') {
+        // Convert time string to UTC minutes
+        try {
+          createData = {
+            name: data.name,
+            value: convertTimeStringToUTCMinutes(data.value),
+          };
+        } catch (error) {
+          console.error('Error converting time to UTC minutes:', error);
+          throw HttpError.badRequest('Invalid time format. Please provide a valid time string (e.g., "8:00 AM") or minutes.');
+        }
+      } else {
+        createData = {
+          name: data.name,
+          value: typeof data.value === 'string' ? parseInt(data.value, 10) : data.value,
+        };
+        if (isNaN(createData.value)) {
+          throw HttpError.badRequest('Value must be a valid number');
+        }
       }
     }
 
@@ -113,11 +157,23 @@ export const updateTaxonomy = async (type: TaxonomyType, id: string, data: Updat
       updateData = {};
       if (data.name !== undefined) updateData.name = data.name;
       if (data.value !== undefined) {
-        const numValue = typeof data.value === 'string' ? parseInt(data.value, 10) : data.value;
-        if (isNaN(numValue) || typeof numValue !== 'number') {
-          throw HttpError.badRequest('Value must be a valid number');
+        // Special handling for time-related configurations
+        const configName = data.name !== undefined ? data.name : existing.name;
+        if (configName === 'start_working_hour_time') {
+          // Convert time string to UTC minutes
+          try {
+            updateData.value = convertTimeStringToUTCMinutes(data.value);
+          } catch (error) {
+            console.error('Error converting time to UTC minutes:', error);
+            throw HttpError.badRequest('Invalid time format. Please provide a valid time string (e.g., "8:00 AM") or minutes.');
+          }
+        } else {
+          const numValue = typeof data.value === 'string' ? parseInt(data.value, 10) : data.value;
+          if (isNaN(numValue) || typeof numValue !== 'number') {
+            throw HttpError.badRequest('Value must be a valid number');
+          }
+          updateData.value = numValue;
         }
-        updateData.value = numValue;
       }
     }
 

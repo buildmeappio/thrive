@@ -3,6 +3,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, ArrowUp, ArrowDown, Edit, Trash2 } from 'lucide-react';
 import { TaxonomyData, TaxonomyType } from '../types/Taxonomy';
 import { formatDate, formatTaxonomyName, minutesToTime } from '@/utils/date';
+import { convertUTCMinutesToLocal } from '@/utils/timezone';
 import React, { useRef, useEffect, useState } from 'react';
 
 const Header = ({
@@ -181,9 +182,10 @@ export const createTaxonomyColumns = (
           );
           
           if (isStartWorkingHourTime) {
-            // Format "start working hour time" as time (e.g., 480 -> "8:00 AM")
+            // Format "start working hour time" as time (e.g., 480 UTC -> "3:00 AM" local)
+            // Use UTC to local conversion since the value is stored in UTC
             if (numValue >= 0 && numValue < 1440 && Number.isInteger(numValue)) {
-              formattedValue = minutesToTime(numValue);
+              formattedValue = convertUTCMinutesToLocal(numValue);
             } else {
               formattedValue = String(numValue);
             }
