@@ -3,8 +3,7 @@
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { sendMail } from "@/lib/email";
-import { generateContractFromTemplate } from "@/lib/google-docs";
-import { ENV } from "@/constants/variables";
+import { generateContractPDF } from "@/lib/pdf-generator";
 
 export async function sendContract(examinerProfileId: string) {
   try {
@@ -21,10 +20,6 @@ export async function sendContract(examinerProfileId: string) {
           where: {
             deletedAt: null,
           },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 1,
         },
       },
     });
@@ -33,7 +28,7 @@ export async function sendContract(examinerProfileId: string) {
       throw new Error("Examiner not found");
     }
 
-    if (!examiner.feeStructure || examiner.feeStructure.length === 0) {
+    if (!examiner.feeStructure) {
       throw new Error("Fee structure not found. Please add fee structure before sending contract.");
     }
 
@@ -41,28 +36,24 @@ export async function sendContract(examinerProfileId: string) {
     const examinerName = `${examiner.account.user.firstName} ${examiner.account.user.lastName}`;
     const examinerEmail = examiner.account.user.email;
 
-    // Generate HTML from Google Docs template
-    console.log("📄 Generating contract HTML from Google Docs...");
-    const htmlContent = await generateContractFromTemplate(
-      ENV.GOOGLE_CONTRACT_TEMPLATE_ID!,
+    // Generate PDF
+    console.log("📄 Generating contract PDF...");
+    const pdfBuffer = await generateContractPDF(
+      examinerName,
+      examiner.provinceOfResidence,
       {
-        examinerName,
-        province: examiner.provinceOfResidence,
-        effectiveDate: new Date(),
-        feeStructure: {
-          IMEFee: Number(feeStructure.IMEFee),
-          recordReviewFee: Number(feeStructure.recordReviewFee),
-          hourlyRate: feeStructure.hourlyRate ? Number(feeStructure.hourlyRate) : undefined,
-          cancellationFee: Number(feeStructure.cancellationFee),
-          paymentTerms: feeStructure.paymentTerms,
-        },
+        IMEFee: Number(feeStructure.IMEFee),
+        recordReviewFee: Number(feeStructure.recordReviewFee),
+        hourlyRate: feeStructure.hourlyRate ? Number(feeStructure.hourlyRate) : undefined,
+        cancellationFee: Number(feeStructure.cancellationFee),
+        paymentTerms: feeStructure.paymentTerms,
       }
     );
 
-    const fileName = `IME_Agreement_${examinerName.replace(/\s+/g, "_")}.html`;
+    const fileName = `IME_Agreement_${examinerName.replace(/\s+/g, "_")}.pdf`;
 
-    // Send email with HTML attachment
-    console.log("📧 Sending contract email with HTML attachment...");
+    // Send email with PDF attachment
+    console.log("📧 Sending contract email with PDF attachment...");
 
     await sendMail({
       to: examinerEmail,
@@ -84,11 +75,11 @@ export async function sendContract(examinerProfileId: string) {
             <div style="margin-top: 20px; font-size: 16px; color: #333333;">
               <p>Hi Dr. ${examinerName},</p>
               
-              <p>Your Independent Medical Examiner Agreement is ready for your review. Please find the contract attached to this email as an HTML document.</p>
+              <p>Your Independent Medical Examiner Agreement is ready for your review. Please find the contract attached to this email as a PDF document.</p>
               
               <div style="background-color: #E8F8F5; border-left: 4px solid #01F4C8; padding: 15px; margin: 20px 0;">
                 <p style="margin: 0; color: #00695C; font-weight: 600;">📎 Contract Attached</p>
-                <p style="margin: 5px 0 0 0; color: #00695C;">Your personalized contract is attached to this email.</p>
+                <p style="margin: 5px 0 0 0; color: #00695C;">Your personalized contract PDF is attached to this email.</p>
               </div>
               
               <p><strong>What's included in your contract:</strong></p>
@@ -100,7 +91,7 @@ export async function sendContract(examinerProfileId: string) {
               </ul>
               
               <p style="font-size: 14px; color: #666666;">
-                <strong>Note:</strong> Please review the attached document carefully. You can save it for your records and open it in any web browser.
+                <strong>Note:</strong> Please review the attached PDF carefully. You can save and print the contract for your records. The PDF can be viewed using any standard PDF reader.
               </p>
               
               <p>If you have any questions or concerns about the contract, please don't hesitate to contact us.</p>
@@ -121,8 +112,8 @@ export async function sendContract(examinerProfileId: string) {
       attachments: [
         {
           filename: fileName,
-          content: Buffer.from(htmlContent, 'utf-8'),
-          contentType: "text/html",
+          content: pdfBuffer,
+          contentType: "application/pdf",
         },
       ],
     });
