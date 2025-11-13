@@ -41,9 +41,50 @@ export const generateTimeSlots = (
 
 /**
  * Filter days that have available slots
+ * Optionally filter out past dates unless they contain a PENDING booking
  */
-export const filterDaysWithSlots = (days: DayAvailability[]): DayAvailability[] => {
-  return days.filter(day => day.slots.length > 0);
+export const filterDaysWithSlots = (
+  days: DayAvailability[],
+  options?: {
+    existingBooking?: {
+      examinerProfileId: string;
+      bookingTime: Date | string;
+      status?: string;
+    } | null;
+    excludePastDates?: boolean;
+  }
+): DayAvailability[] => {
+  const { existingBooking, excludePastDates = false } = options || {};
+
+  return days.filter(day => {
+    // Must have slots
+    if (day.slots.length === 0) return false;
+
+    // If not excluding past dates, keep all days with slots
+    if (!excludePastDates) return true;
+
+    // Check if this day is in the past
+    const isPast = isPastDate(day.date);
+
+    // If not past, keep it
+    if (!isPast) return true;
+
+    // If past but has no existing booking, exclude it
+    if (!existingBooking) return false;
+
+    // If past and has existing booking but it's not PENDING, exclude it
+    if (existingBooking.status && existingBooking.status !== 'PENDING') return false;
+
+    // If past and has PENDING booking, check if this day contains the booking
+    const bookingTime = new Date(existingBooking.bookingTime);
+    const dayDate = new Date(day.date);
+    dayDate.setHours(0, 0, 0, 0);
+    const bookingDate = new Date(bookingTime);
+    bookingDate.setHours(0, 0, 0, 0);
+
+    // Keep past date only if it contains the PENDING booking
+    return dayDate.getTime() === bookingDate.getTime();
+  });
 };
 
 /**
