@@ -116,7 +116,7 @@ class ContractService {
     contractId?: string;
     documentId?: string;
     s3?: { bucket: string; key: string };
-    drivePdfId?: string;
+    driveHtmlId?: string;
     error?: string;
   }> {
     try {
@@ -180,13 +180,13 @@ class ContractService {
         },
       };
 
-      // 4. Create Google Doc, merge placeholders, and export PDF
+      // 4. Create Google Doc, merge placeholders, and export HTML
       console.log("📄 Creating contract from Google Doc template...");
-      const { documentId, pdfBuffer, drivePdfId } = await createContractDocument(
+      const { documentId, htmlContent, driveHtmlId } = await createContractDocument(
         template.currentVersion.googleDocTemplateId,
         template.currentVersion.googleDocFolderId,
         googleDocsContractData,
-        false // Don't save PDF to Drive for now
+        false // Don't save HTML to Drive for now
       );
 
       // 5. Prepare contract data for database (contract content data only, no metadata)
@@ -204,15 +204,16 @@ class ContractService {
         effectiveDate: new Date().toISOString().split("T")[0],
       };
 
-      // 6. Calculate hashes
-      const pdfHash = sha256Buffer(pdfBuffer);
+      // 6. Calculate hashes - convert HTML string to Buffer for hashing
+      const htmlBuffer = Buffer.from(htmlContent, 'utf-8');
+      const htmlHash = sha256Buffer(htmlBuffer);
       const dataHash = hashContractData("", contractData);
 
-      // 7. Upload unsigned PDF to S3
-      const fileName = `${examinerProfileId}/unsigned_${Date.now()}.pdf`;
-      const s3Key = await uploadToS3(pdfBuffer, fileName, "application/pdf", "contracts");
+      // 7. Upload unsigned HTML to S3
+      const fileName = `${examinerProfileId}/unsigned_${Date.now()}.html`;
+      const s3Key = await uploadToS3(htmlBuffer, fileName, "text/html", "contracts");
 
-      // 7. Create contract record to get ID for JWT token
+      // 8. Create contract record to get ID for JWT token
       const tempContract = await prisma.contract.create({
         data: {
           examinerProfileId,
@@ -225,7 +226,7 @@ class ContractService {
         },
       });
 
-      // 8. Generate JWT token with contract ID and examiner profile ID (expires in 90 days)
+      // 9. Generate JWT token with contract ID and examiner profile ID (expires in 90 days)
       const accessToken = signContractToken({
         contractId: tempContract.id,
         examinerProfileId,
@@ -234,14 +235,14 @@ class ContractService {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 90);
 
-      // 9. Update contract with S3 details, Google Doc fields, token, and mark as SENT
+      // 10. Update contract with S3 details, Google Doc fields, token, and mark as SENT
       console.log("💾 Updating contract status to SENT...");
       const googleDocUrl = `https://docs.google.com/document/d/${documentId}`;
       console.log("googleDocUrl", googleDocUrl);
       console.log("documentId", documentId);
-      console.log("drivePdfId", drivePdfId);
+      console.log("driveHtmlId", driveHtmlId);
       console.log("s3Key", s3Key);
-      console.log("pdfHash", pdfHash);
+      console.log("htmlHash", htmlHash);
       console.log("accessToken", accessToken);
       console.log("expiresAt", expiresAt);
       console.log("tempContract", tempContract);
@@ -249,18 +250,18 @@ class ContractService {
         where: { id: tempContract.id },
         data: {
           status: "SENT",
-          unsignedPdfS3Key: s3Key,
-          unsignedPdfSha256: pdfHash,
+          unsignedHtmlS3Key: s3Key, // Storage for HTML contract
+          unsignedHtmlSha256: htmlHash, // SHA for HTML contract
           googleDocId: documentId,
           googleDocUrl: googleDocUrl,
-          drivePdfId: drivePdfId || null,
+          driveHtmlId: driveHtmlId || null, // Storage for Drive HTML export (optional)
           sentAt: new Date(),
           accessToken,
           accessTokenExpiresAt: expiresAt,
         },
       });
 
-      // 10. Create audit events
+      // 11. Create audit events
       await prisma.contractEvent.create({
         data: {
           contractId: contract.id,
@@ -269,9 +270,9 @@ class ContractService {
           actorId: createdBy,
           meta: {
             s3Key,
-            pdfHash,
+            htmlHash,
             googleDocId: documentId,
-            drivePdfId: drivePdfId,
+            driveHtmlId: driveHtmlId,
           },
         },
       });
@@ -302,7 +303,7 @@ class ContractService {
           bucket: ENV.AWS_S3_BUCKET || "",
           key: s3Key,
         },
-        drivePdfId: drivePdfId,
+        driveHtmlId: driveHtmlId,
       };
     } catch (error) {
       console.error("❌ Error creating contract:", error);

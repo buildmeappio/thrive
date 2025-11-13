@@ -3,7 +3,7 @@ import { ENV } from "@/constants/variables";
 
 /**
  * Google Docs API service for contract generation
- * Handles OAuth authentication, template copying, placeholder replacement, and PDF export
+ * Handles OAuth authentication, template copying, placeholder replacement, and HTML export
  */
 
 /**
@@ -146,11 +146,11 @@ export async function replacePlaceholders(
 }
 
 /**
- * Export a Google Doc as PDF
+ * Export a Google Doc as HTML
  * @param documentId - The ID of the Google Doc to export
- * @returns Buffer containing the PDF data
+ * @returns String containing the HTML data
  */
-export async function exportAsPDF(documentId: string): Promise<Buffer> {
+export async function exportAsHTML(documentId: string): Promise<string> {
   try {
     const auth = getGoogleDocsAuth();
     const drive = google.drive({ version: "v3", auth });
@@ -158,18 +158,18 @@ export async function exportAsPDF(documentId: string): Promise<Buffer> {
     const response = await drive.files.export(
       {
         fileId: documentId,
-        mimeType: "application/pdf",
+        mimeType: "text/html",
       },
-      { responseType: "arraybuffer" }
+      { responseType: "text" }
     );
 
     if (!response.data) {
-      throw new Error("Failed to export PDF: No data returned");
+      throw new Error("Failed to export HTML: No data returned");
     }
 
-    return Buffer.from(response.data as ArrayBuffer);
+    return response.data as string;
   } catch (error) {
-    console.error("Error exporting PDF:", error);
+    console.error("Error exporting HTML:", error);
     if (error instanceof Error) {
       if (error.message.includes("File not found") || (error as any).code === 404) {
         throw new Error(
@@ -186,7 +186,7 @@ export async function exportAsPDF(documentId: string): Promise<Buffer> {
       }
     }
     throw new Error(
-      `Failed to export PDF: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to export HTML: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }
@@ -258,16 +258,16 @@ export function mapContractDataToPlaceholders(
 }
 
 /**
- * High-level function: Copy template, merge placeholders, and export as PDF
+ * High-level function: Copy template, merge placeholders, and export as HTML
  * This function does NOT save the document to Drive (for sendContract use case)
  * @param templateId - Google Doc template ID
  * @param data - Contract data to merge
- * @returns PDF buffer
+ * @returns HTML string
  */
 export async function generateContractFromTemplate(
   templateId: string,
   data: ContractData
-): Promise<Buffer> {
+): Promise<string> {
   if (!ENV.GOOGLE_CONTRACT_TEMPLATE_ID) {
     throw new Error(
       "GOOGLE_CONTRACT_TEMPLATE_ID environment variable is not set"
@@ -288,13 +288,13 @@ export async function generateContractFromTemplate(
     // Replace placeholders
     await replacePlaceholders(documentId, placeholders);
 
-    // Export as PDF
-    const pdfBuffer = await exportAsPDF(documentId);
+    // Export as HTML
+    const htmlContent = await exportAsHTML(documentId);
 
     // Optionally delete the temporary document (or leave it for audit)
     // For now, we'll leave it - can be cleaned up later if needed
 
-    return pdfBuffer;
+    return htmlContent;
   } catch (error) {
     // If something fails, try to clean up the document
     try {
@@ -309,23 +309,23 @@ export async function generateContractFromTemplate(
 }
 
 /**
- * Copy template to Drive folder, merge placeholders, export PDF, and optionally save PDF to Drive
+ * Copy template to Drive folder, merge placeholders, export HTML, and optionally save HTML to Drive
  * This is for the acceptExaminer use case where we want to persist the document
  * @param templateId - Google Doc template ID
  * @param folderId - Drive folder ID to save the document
  * @param data - Contract data to merge
- * @param savePdfToDrive - Whether to also save the PDF to Drive (default: false)
- * @returns Object with documentId, PDF buffer, and optional Drive PDF ID
+ * @param saveHtmlToDrive - Whether to also save the HTML to Drive (default: false)
+ * @returns Object with documentId, HTML content, and optional Drive HTML ID
  */
 export async function createContractDocument(
   templateId: string,
   folderId: string,
   data: ContractData,
-  savePdfToDrive: boolean = false
+  saveHtmlToDrive: boolean = false
 ): Promise<{
   documentId: string;
-  pdfBuffer: Buffer;
-  drivePdfId?: string;
+  htmlContent: string;
+  driveHtmlId?: string;
 }> {
   if (!ENV.GOOGLE_CONTRACTS_FOLDER_ID) {
     throw new Error(
@@ -347,35 +347,35 @@ export async function createContractDocument(
     // Replace placeholders
     await replacePlaceholders(documentId, placeholders);
 
-    // Export as PDF
-    const pdfBuffer = await exportAsPDF(documentId);
+    // Export as HTML
+    const htmlContent = await exportAsHTML(documentId);
 
-    let drivePdfId: string | undefined;
+    let driveHtmlId: string | undefined;
 
-    // Optionally save PDF to Drive
-    if (savePdfToDrive) {
+    // Optionally save HTML to Drive
+    if (saveHtmlToDrive) {
       const auth = getGoogleDocsAuth();
       const drive = google.drive({ version: "v3", auth });
 
-      const pdfFile = await drive.files.create({
+      const htmlFile = await drive.files.create({
         requestBody: {
-          name: `Contract_${data.examinerName.replace(/\s+/g, "_")}_${Date.now()}.pdf`,
+          name: `Contract_${data.examinerName.replace(/\s+/g, "_")}_${Date.now()}.html`,
           parents: [folderId],
-          mimeType: "application/pdf",
+          mimeType: "text/html",
         },
         media: {
-          mimeType: "application/pdf",
-          body: pdfBuffer,
+          mimeType: "text/html",
+          body: htmlContent,
         },
       });
 
-      drivePdfId = pdfFile.data.id || undefined;
+      driveHtmlId = htmlFile.data.id || undefined;
     }
 
     return {
       documentId,
-      pdfBuffer,
-      drivePdfId,
+      htmlContent,
+      driveHtmlId,
     };
   } catch (error) {
     // If something fails, try to clean up the document
@@ -389,4 +389,3 @@ export async function createContractDocument(
     throw error;
   }
 }
-
