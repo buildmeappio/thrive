@@ -221,3 +221,35 @@ export function convertAvailabilityToLocal(data: any): any {
     overrideHours: data.overrideHours ? convertOverrideHoursToLocal(data.overrideHours) : undefined,
   };
 }
+
+export function convertUTCMinutesToLocal(utcMinutes: number, referenceDate?: Date): string {
+  try {
+    // Validate input
+    if (isNaN(utcMinutes) || utcMinutes < 0 || utcMinutes >= 1440) {
+      console.warn(`Invalid UTC minutes: ${utcMinutes}, returning as-is`);
+      return String(utcMinutes);
+    }
+
+    // Convert minutes to hours and minutes
+    const hours = Math.floor(utcMinutes / 60);
+    const minutes = utcMinutes % 60;
+
+    // Create a date object with UTC time
+    const refDate = referenceDate || new Date();
+    const utcDate = new Date(refDate);
+    utcDate.setUTCHours(hours, minutes, 0, 0);
+
+    // Convert to local time
+    const localHours = utcDate.getHours();
+    const localMinutes = utcDate.getMinutes();
+
+    // Format as 12-hour with AM/PM
+    const period = localHours >= 12 ? 'PM' : 'AM';
+    const displayHours = localHours === 0 ? 12 : localHours > 12 ? localHours - 12 : localHours;
+
+    return `${displayHours}:${localMinutes.toString().padStart(2, '0')} ${period}`;
+  } catch (error) {
+    console.error(`Error converting UTC minutes to local: ${error}`);
+    return String(utcMinutes);
+  }
+}

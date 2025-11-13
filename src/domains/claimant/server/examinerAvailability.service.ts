@@ -189,22 +189,6 @@ const getExaminersQualifiedForExamType = async (examTypeId: string) => {
     .filter((e): e is NonNullable<typeof e> => e !== null);
 
   console.log(`[Examiner Availability] Returning ${qualifiedExaminers.length} qualified examiners`);
-
-  // Debug: Log actual time slots from database for the first examiner
-  if (qualifiedExaminers.length > 0) {
-    const firstExaminer = qualifiedExaminers[0];
-    console.log('[DEBUG] First examiner availability data from DB:');
-    console.log('  Examiner:', firstExaminer.examinerName);
-    console.log(
-      '  Weekly Hours:',
-      JSON.stringify(firstExaminer.availabilityProvider.weeklyHours, null, 2)
-    );
-    console.log(
-      '  Override Hours:',
-      JSON.stringify(firstExaminer.availabilityProvider.overrideHours, null, 2)
-    );
-  }
-
   return qualifiedExaminers;
 };
 
@@ -214,30 +198,13 @@ const getExaminersQualifiedForExamType = async (examTypeId: string) => {
  * - "09:00" (24-hour format)
  * - "9:00 AM" or "5:00 PM" (12-hour format)
  */
-/**
- * Check if a time string is in 12-hour format with AM/PM
- */
-const is12HourFormat = (timeStr: string): boolean => {
-  return /AM|PM/i.test(timeStr);
-};
-
-/**
- * HYBRID TIME PARSING APPROACH:
- * - Times with AM/PM: Treated as local/absolute time (no conversion needed)
- * - Times without AM/PM (24-hour): Treated as UTC, converted to server's local time for comparison
- *
- * This allows mixed data formats to coexist:
- * - Legacy "8:00 AM" data remains as local time
- * - New "03:00" data is UTC and gets converted to local
- */
-const timeStringToMinutes = (timeStr: string, treatAsUTC: boolean = false): number => {
+const timeStringToMinutes = (timeStr: string): number => {
   const is12Hour = /AM|PM/i.test(timeStr);
 
   let hours: number;
   let minutes: number;
 
   if (is12Hour) {
-    // 12-hour format with AM/PM: Treat as local/absolute time
     const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
     if (!match) {
       throw new Error(`Invalid 12-hour time format: ${timeStr}`);
@@ -247,28 +214,16 @@ const timeStringToMinutes = (timeStr: string, treatAsUTC: boolean = false): numb
     minutes = parseInt(match[2], 10);
     const period = match[3].toUpperCase();
 
-    // Convert to 24-hour format (but still local time)
+    // Convert to 24-hour format
     if (period === 'PM' && hours !== 12) {
       hours += 12;
     } else if (period === 'AM' && hours === 12) {
       hours = 0;
     }
   } else {
-    // 24-hour format without AM/PM
     const [hh, mm] = timeStr.split(':').map(Number);
     hours = hh ?? 0;
     minutes = mm ?? 0;
-
-    // If this is UTC time and we need to convert to local for comparison
-    if (treatAsUTC) {
-      // Convert UTC to local time by creating a Date object
-      const utcDate = new Date();
-      utcDate.setUTCHours(hours, minutes, 0, 0);
-
-      // Get local hours and minutes
-      hours = utcDate.getHours();
-      minutes = utcDate.getMinutes();
-    }
   }
 
   return hours * 60 + minutes;
@@ -311,27 +266,14 @@ const isWithinAnyTimeSlot = (
   const slotEndMinutes = timeStringToMinutes(slotEndTime);
 
   for (const ts of timeSlots) {
-    // HYBRID PARSING: Time slots from DB can be in two formats:
-    // 1. Legacy format with AM/PM (e.g., "8:00 AM") - treat as local time (treatAsUTC = false)
-    // 2. UTC format without AM/PM (e.g., "03:00") - convert to local time (treatAsUTC = true)
-    const isStartTime12Hour = is12HourFormat(ts.startTime);
-    const isEndTime12Hour = is12HourFormat(ts.endTime);
-
-    const windowStartMinutes = timeStringToMinutes(ts.startTime, !isStartTime12Hour);
-    const windowEndMinutes = timeStringToMinutes(ts.endTime, !isEndTime12Hour);
-
-    // Debug: Log the actual minute values being compared
-    console.log(
-      `    [Time Comparison] Slot: ${slotStartMinutes}-${slotEndMinutes} mins, Window: ${windowStartMinutes}-${windowEndMinutes} mins (${ts.startTime} [12hr: ${isStartTime12Hour}] - ${ts.endTime} [12hr: ${isEndTime12Hour}])`
-    );
+    // Time slots from DB are already in UTC, so we compare directly
+    // No timezone conversion - all comparisons happen in UTC
+    const windowStartMinutes = timeStringToMinutes(ts.startTime);
+    const windowEndMinutes = timeStringToMinutes(ts.endTime);
 
     // Check if slot is fully contained within this time window
     const startsAfterOrAtWindowStart = slotStartMinutes >= windowStartMinutes;
     const endsBeforeOrAtWindowEnd = slotEndMinutes <= windowEndMinutes;
-
-    console.log(
-      `    [Time Comparison] Starts OK: ${startsAfterOrAtWindowStart}, Ends OK: ${endsBeforeOrAtWindowEnd}`
-    );
 
     if (startsAfterOrAtWindowStart && endsBeforeOrAtWindowEnd) {
       return true;
@@ -377,15 +319,16 @@ const isProviderAvailableForSlot = (opts: {
 
   const weekdayName = weekdayEnum[dayKey];
 
-  // Debug logging for all slots (temporarily enabled for debugging)
-  const DEBUG_SLOT_MATCHING = true;
-  if (DEBUG_SLOT_MATCHING) {
+  // Debug logging for Thursday
+  if (weekdayName === 'THURSDAY') {
     console.log(
       `[isProviderAvailableForSlot] Checking ${weekdayName} ${dayDate.toISOString().split('T')[0]}`
     );
     console.log(`  Slot: ${dateToTimeString(slotStart)} to ${dateToTimeString(slotEnd)}`);
-    const weeklyForDay = provider.weeklyHours.filter(wh => wh.dayOfWeek === weekdayName);
-    console.log(`  Weekly hours for ${weekdayName}:`, JSON.stringify(weeklyForDay, null, 2));
+    console.log(
+      `  Weekly hours for ${weekdayName}:`,
+      provider.weeklyHours.filter(wh => wh.dayOfWeek === weekdayName)
+    );
   }
 
   // Check for override hours for this specific date
@@ -412,7 +355,7 @@ const isProviderAvailableForSlot = (opts: {
   });
 
   if (!weekly) {
-    if (DEBUG_SLOT_MATCHING) {
+    if (weekdayName === 'THURSDAY') {
       console.log(`  No weekly hours found for ${weekdayName} or not enabled`);
     }
     return false;
@@ -420,11 +363,8 @@ const isProviderAvailableForSlot = (opts: {
 
   // Check if slot fits within weekly time slots (all in UTC)
   const isWithin = isWithinAnyTimeSlot(slotStart, slotEnd, weekly.timeSlots, dayDate);
-  if (DEBUG_SLOT_MATCHING) {
-    console.log(
-      `  Found weekly hours for ${weekdayName}, timeSlots (UTC):`,
-      JSON.stringify(weekly.timeSlots, null, 2)
-    );
+  if (weekdayName === 'THURSDAY') {
+    console.log(`  Found weekly hours for ${weekdayName}, timeSlots (UTC):`, weekly.timeSlots);
     console.log(`  Slot fits within timeSlots: ${isWithin}`);
   }
   return isWithin;
@@ -851,6 +791,39 @@ const fetchDeclinedExaminerIds = async (
 };
 
 /**
+ * Get pending booking date for this examination and claimant
+ * Returns the booking date if there's a pending booking, null otherwise
+ */
+const getPendingBookingDate = async (
+  examinationId: string,
+  claimantId: string
+): Promise<Date | null> => {
+  // Query for any pending booking for this claimant and examination
+  // Note: Prisma client needs to be regenerated after schema changes
+  const pendingBooking = await (prisma as any).claimantBooking.findFirst({
+    where: {
+      examinationId,
+      claimantId,
+      status: 'PENDING',
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      bookingTime: true,
+    },
+  });
+
+  if (!pendingBooking) {
+    return null;
+  }
+
+  // Return the booking date (normalized to date-only)
+  const bookingDate = new Date(pendingBooking.bookingTime);
+  bookingDate.setHours(0, 0, 0, 0);
+  return bookingDate;
+};
+
+/**
  * Parse time string and create Date object for slot generation in UTC
  * This is used to create Date objects for the API response
  * All operations are in UTC to avoid server timezone issues
@@ -941,17 +914,43 @@ export const getAvailableExaminersForExam = async (
     transporters: allTransporters.length,
   });
 
-  // 2. Get due date
+  // 2. Get due date and check for pending booking date
   const dueDate = await getDueDateOfExaminationForClaimant(examId);
+  const pendingBookingDate = await getPendingBookingDate(examId, claimantId);
 
-  // Adjust start date if it's after the due date
+  // Get today's date (normalized to start of day)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Adjust start date based on business rules:
+  // 1. If start date is in the past and there's NO pending booking, use today instead
+  // 2. If start date is in the past but there IS a pending booking, allow it (so they can see their booking)
+  // 3. If start date is after due date, use due date as start
   let adjustedStartDate = startDate;
-  if (dueDate && isAfter(startDate, dueDate)) {
-    // If start date is after due date, use due date as start
-    // But also check if due date is in the past - if so, we can't generate availability
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
+  // Check if start date is in the past
+  const startDateOnly = new Date(startDate);
+  startDateOnly.setHours(0, 0, 0, 0);
+
+  if (isAfter(today, startDateOnly)) {
+    if (!pendingBookingDate) {
+      // No pending booking, so don't show past dates - use today instead
+      console.log(
+        `[Examiner Availability] Start date is in the past and no pending booking exists. Using today instead.`
+      );
+      adjustedStartDate = today;
+    } else {
+      // There's a pending booking, so allow past dates to be shown
+      console.log(
+        `[Examiner Availability] Start date is in the past but pending booking exists on ${pendingBookingDate.toISOString().split('T')[0]}. Allowing past dates for that booking.`
+      );
+      adjustedStartDate = startDate;
+    }
+  }
+
+  // If start date is after the due date, adjust to due date
+  if (dueDate && isAfter(adjustedStartDate, dueDate)) {
+    // But also check if due date is in the past - if so, we can't generate availability
     if (isAfter(today, dueDate)) {
       throw HttpError.badRequest(
         'The examination due date has passed. Please contact support to reschedule.'
@@ -968,7 +967,8 @@ export const getAvailableExaminersForExam = async (
 
   // 3.5. Fetch all existing bookings for qualified examiners in the date range
   const examinerProfileIds = qualifiedExaminers.map(ex => ex.examinerId);
-  const startDateOnly = new Date(adjustedStartDate);
+  // Reuse startDateOnly from above, but update it to use adjustedStartDate
+  startDateOnly.setTime(adjustedStartDate.getTime());
   startDateOnly.setHours(0, 0, 0, 0);
   const endDateOnly = new Date(endDate);
   endDateOnly.setHours(23, 59, 59, 999);
@@ -985,13 +985,6 @@ export const getAvailableExaminersForExam = async (
   // Build day-by-day availability
   const days: DayAvailability[] = [];
 
-  // Log configuration settings for debugging
-  console.log('[Slot Generation] Using configuration:', {
-    startOfWorking: settings.startOfWorking,
-    numberOfWorkingHours: settings.numberOfWorkingHours,
-    slotDurationMinutes: settings.slotDurationMinutes,
-  });
-
   // Loop through each day in the window - use adjustedStartDate instead of startDate
   // Normalize dates to avoid timezone issues - work with date-only values
 
@@ -1000,13 +993,39 @@ export const getAvailableExaminersForExam = async (
     !isAfter(dayCursor, endDateOnly);
     dayCursor = addDays(dayCursor, 1)
   ) {
+    // Skip past dates unless it's the specific date with the pending booking
+    // Normalize dayCursor to date-only for comparison
+    const dayCursorDateOnly = new Date(dayCursor);
+    dayCursorDateOnly.setHours(0, 0, 0, 0);
+
+    // Check if this is a past date
+    if (isAfter(today, dayCursorDateOnly)) {
+      // If there's no pending booking, skip all past dates
+      if (!pendingBookingDate) {
+        console.log(
+          `[Slot Generation] Skipping past date ${dayCursor.toISOString().split('T')[0]} - no pending booking exists`
+        );
+        continue; // Skip this day entirely
+      }
+
+      // If there's a pending booking, only show the date that matches the booking
+      const isPendingBookingDate = dayCursorDateOnly.getTime() === pendingBookingDate.getTime();
+      if (!isPendingBookingDate) {
+        console.log(
+          `[Slot Generation] Skipping past date ${dayCursor.toISOString().split('T')[0]} - not the pending booking date (${pendingBookingDate.toISOString().split('T')[0]})`
+        );
+        continue; // Skip this past date (it's not the booking date)
+      }
+
+      console.log(
+        `[Slot Generation] Including past date ${dayCursor.toISOString().split('T')[0]} - matches pending booking date`
+      );
+    }
+
     const daySlots: SlotAvailability[] = [];
 
     // Generate slots for this day
     const firstSlotStart = createSlotTime(dayCursor, settings.startOfWorking);
-    console.log(
-      `[Slot Generation] Day ${dayCursor.toISOString().split('T')[0]}: First slot starts at ${dateToTimeString(firstSlotStart)} UTC`
-    );
 
     for (let i = 0; i < settings.numberOfWorkingHours; i++) {
       const slotStart = addMinutes(firstSlotStart, i * slotDurationMinutes);
@@ -1119,9 +1138,10 @@ export const getAvailableExaminersForExam = async (
 
       // Smart Slot Filtering Logic:
       // - Show at most 3 examiners per slot (MAX_EXAMINERS_PER_SLOT = 3)
-      // - Show slots with ANY number of available examiners (1, 2, or 3)
-      // - No minimum requirement - if 1 examiner is available, show the slot
+      // - Show at least 1 examiner if available
+      // - Only apply minimum filtering when there are many examiners in the system but most have declined
       const MAX_EXAMINERS_PER_SLOT = 3;
+      const MIN_EXAMINERS_FOR_SLOT = availableExaminersCount >= 3 ? 3 : 1;
 
       // Debug: Log slot generation for all days
       const slotTimeStr = `${dateToTimeString(slotStart)} - ${dateToTimeString(slotEnd)}`;
@@ -1129,8 +1149,8 @@ export const getAvailableExaminersForExam = async (
         `[Slot Generation] Day ${dayCursor.toLocaleDateString('en-US', { weekday: 'long' })}: Slot ${i + 1}/${settings.numberOfWorkingHours} - ${slotTimeStr}: ${availableExaminersForSlot.length} examiner(s) available after filtering`
       );
 
-      // Add slot if we have any available examiners (no minimum requirement)
-      if (availableExaminersForSlot.length > 0) {
+      // Only add slot if we have at least MIN_EXAMINERS_FOR_SLOT available examiners
+      if (availableExaminersForSlot.length >= MIN_EXAMINERS_FOR_SLOT) {
         // Limit to max 3 examiners per slot
         const limitedExaminers = availableExaminersForSlot.slice(0, MAX_EXAMINERS_PER_SLOT);
 
@@ -1140,11 +1160,13 @@ export const getAvailableExaminersForExam = async (
           examiners: limitedExaminers,
         });
         console.log(
-          `[Slot Generation] ✓ Slot added with ${limitedExaminers.length} examiner(s) (from ${availableExaminersForSlot.length} available)`
+          `[Slot Generation] ✓ Slot added with ${limitedExaminers.length} examiner(s) (from ${availableExaminersForSlot.length} available, min required: ${MIN_EXAMINERS_FOR_SLOT})`
         );
       } else {
         // Log why slot is hidden
-        console.log(`[Slot Generation] ✗ Slot hidden - no examiners available for this slot`);
+        console.log(
+          `[Slot Generation] ✗ Slot hidden - only ${availableExaminersForSlot.length} examiner(s) available (minimum ${MIN_EXAMINERS_FOR_SLOT} required for this case)`
+        );
         console.log(
           `  Total available examiners: ${availableExaminersCount}, Declined: ${declinedExaminerIds.size}`
         );
@@ -1170,12 +1192,21 @@ export const getAvailableExaminersForExam = async (
     );
 
     // Provide specific error message based on the situation
-    const errorMessage =
-      'No examiner availability found for the requested time period. This may be because:\n' +
-      '1. Examiner(s) do not have availability slots configured for this time period\n' +
-      '2. Examiner(s) are fully booked during this period\n' +
-      '3. The configured time slots do not match examiner availability windows\n\n' +
-      'Please contact support for assistance in scheduling your examination.';
+    let errorMessage =
+      'No examiner availability found for the requested time period. This may be because:\n';
+
+    if (availableExaminersCount >= 3) {
+      errorMessage +=
+        '1. Examiners do not have availability slots configured for this time period\n' +
+        '2. All available time slots have fewer than 3 examiners (limited choice)\n' +
+        '3. Examiners are fully booked during this period\n\n';
+    } else {
+      errorMessage +=
+        '1. Examiner(s) do not have availability slots configured for this time period\n' +
+        '2. Examiner(s) are fully booked during this period\n\n';
+    }
+
+    errorMessage += 'Please contact support for assistance in scheduling your examination.';
 
     throw HttpError.notFound(errorMessage);
   }
@@ -1190,7 +1221,7 @@ export const getAvailableExaminersForExam = async (
     endDate,
     dueDate,
     days,
-    settings, // Include the configuration settings so frontend can generate matching time slots
+    settings, // Include the admin configuration settings used to generate availability
     serviceRequirements: {
       interpreterRequired: serviceRequirements.interpreterRequired,
       chaperoneRequired: serviceRequirements.chaperoneRequired,

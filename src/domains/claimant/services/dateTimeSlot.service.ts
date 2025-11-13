@@ -9,17 +9,44 @@ export type TimeSlot = {
 
 /**
  * Generate all time slots for a day based on settings
+ * Converts UTC minutes to local timezone if available
  */
 export const generateTimeSlots = (
   referenceDate: Date,
   settings: AvailabilitySettings
 ): TimeSlot[] => {
   const timeSlots: TimeSlot[] = [];
-  const [startHour, startMinute] = settings.startOfWorking.split(':').map(Number);
   const slotDurationMinutes = settings.slotDurationMinutes ?? 60;
 
   const baseDate = new Date(referenceDate);
   baseDate.setHours(0, 0, 0, 0);
+
+  let startHour: number;
+  let startMinute: number;
+
+  // If we have UTC minutes, convert them to local time
+  if (settings.startOfWorkingMinutes !== undefined) {
+    // UTC minutes from database
+    const utcMinutes = settings.startOfWorkingMinutes;
+    const utcHours = Math.floor(utcMinutes / 60);
+    const utcMins = utcMinutes % 60;
+
+    // Create a UTC date and convert to local
+    const utcDate = new Date(baseDate);
+    utcDate.setUTCHours(utcHours, utcMins, 0, 0);
+
+    // Get local time
+    startHour = utcDate.getHours();
+    startMinute = utcDate.getMinutes();
+
+    console.log(
+      `[generateTimeSlots] UTC minutes: ${utcMinutes} (${utcHours}:${utcMins} UTC) → Local: ${startHour}:${startMinute}`
+    );
+  } else {
+    // Fallback to string format (backward compatibility)
+    [startHour, startMinute] = settings.startOfWorking.split(':').map(Number);
+    console.log(`[generateTimeSlots] Using string format: ${settings.startOfWorking}`);
+  }
 
   for (let i = 0; i < settings.numberOfWorkingHours; i++) {
     const slotStart = addMinutes(

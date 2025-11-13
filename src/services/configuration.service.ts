@@ -53,6 +53,9 @@ export async function getAvailabilitySettings(): Promise<AvailabilitySettings> {
     // Create a map for easy lookup
     const configMap = new Map(configs.map(c => [c.name, c.value]));
 
+    // Get UTC minutes from database
+    const startOfWorkingMinutesUTC = configMap.get(CONFIG_KEYS.START_WORKING_HOUR);
+
     // Build settings object with database values or fallback to defaults
     const settings: AvailabilitySettings = {
       noOfDaysForWindow:
@@ -61,12 +64,17 @@ export async function getAvailabilitySettings(): Promise<AvailabilitySettings> {
         configMap.get(CONFIG_KEYS.TOTAL_WORKING_HOURS) ?? DEFAULT_SETTINGS.numberOfWorkingHours,
       slotDurationMinutes:
         configMap.get(CONFIG_KEYS.SLOT_DURATION) ?? DEFAULT_SETTINGS.slotDurationMinutes,
-      startOfWorking: configMap.has(CONFIG_KEYS.START_WORKING_HOUR)
-        ? minutesToTimeString(configMap.get(CONFIG_KEYS.START_WORKING_HOUR)!)
-        : DEFAULT_SETTINGS.startOfWorking,
+      // Keep string format for backward compatibility (server-side usage)
+      startOfWorking:
+        startOfWorkingMinutesUTC !== undefined
+          ? minutesToTimeString(startOfWorkingMinutesUTC)
+          : DEFAULT_SETTINGS.startOfWorking,
+      // Add UTC minutes for client-side timezone conversion
+      startOfWorkingMinutes: startOfWorkingMinutesUTC,
     };
 
     console.log('[Configuration Service] Loaded availability settings:', settings);
+    console.log('[Configuration Service] UTC minutes:', startOfWorkingMinutesUTC);
 
     return settings;
   } catch (error) {

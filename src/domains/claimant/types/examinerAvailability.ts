@@ -5,7 +5,8 @@
 export type AvailabilitySettings = {
   noOfDaysForWindow: number; // Number of days to show in the window (max 7)
   numberOfWorkingHours: number; // Number of working hours per day
-  startOfWorking: string; // Start time in HH:mm format (e.g., "09:00")
+  startOfWorking: string; // Start time in HH:mm format (e.g., "09:00") - DEPRECATED: Use startOfWorkingMinutes instead
+  startOfWorkingMinutes?: number; // Start time as UTC minutes since midnight (e.g., 480 = 08:00 UTC)
   slotDurationMinutes?: number; // Duration of each slot in minutes (default: 60)
 };
 
@@ -16,6 +17,7 @@ export const DEFAULT_SETTINGS: AvailabilitySettings = {
   noOfDaysForWindow: 21,
   numberOfWorkingHours: 10,
   startOfWorking: '08:00',
+  startOfWorkingMinutes: 480, // 8:00 AM UTC = 480 minutes
   slotDurationMinutes: 60,
 };
 
@@ -72,7 +74,7 @@ export type AvailableExaminersResult = {
   endDate: Date;
   dueDate: Date | null;
   days: DayAvailability[];
-  settings: AvailabilitySettings; // Configuration settings used to generate the slots
+  settings: AvailabilitySettings; // Admin configuration settings used to generate availability
   serviceRequirements?: {
     interpreterRequired: boolean;
     chaperoneRequired: boolean;

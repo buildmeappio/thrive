@@ -16,12 +16,14 @@ import type {
   DayAvailability,
   ExaminerAvailabilityOption,
   SlotAvailability,
+  AvailabilitySettings,
 } from '../types/examinerAvailability';
 import type { ExaminerOptionsProps } from '../types/examinerOptions';
 import {
   filterDaysWithSlots,
   getDaysToShow,
   formatTime,
+  formatSqlDate,
   isPastDate,
 } from '../services/dateTimeSlot.service';
 import {
@@ -33,15 +35,16 @@ import { getTimeSlotsForAvailability, getAutoSelection } from '../handlers/proce
 import { DEFAULT_SETTINGS, MAX_DAYS_TO_SHOW } from '../types/examinerAvailability';
 
 const ExaminerOptionsMobile: React.FC<ExaminerOptionsProps> = ({
+  examId,
   onSelectAppointment,
   existingBooking,
   initialAvailabilityData,
   initialError,
 }) => {
-  const [availabilityData] = useState<AvailableExaminersResult | null>(
+  const [availabilityData, setAvailabilityData] = useState<AvailableExaminersResult | null>(
     initialAvailabilityData || null
   );
-  const [errorMessage] = useState<string | null>(initialError || null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(initialError || null);
   const [selectedDateIndex, setSelectedDateIndex] = useState<number | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ start: Date; end: Date } | null>(null);
   const [dateOffset, setDateOffset] = useState<number>(0);
@@ -54,10 +57,13 @@ const ExaminerOptionsMobile: React.FC<ExaminerOptionsProps> = ({
     }
   }, [initialError]);
 
+  // Get settings from availabilityData (from admin config) or fallback to DEFAULT_SETTINGS
+  const settings = availabilityData?.settings || DEFAULT_SETTINGS;
+
   // Generate time slots - MUST be before early returns
   const timeSlotsArray = useMemo(
-    () => getTimeSlotsForAvailability(availabilityData, DEFAULT_SETTINGS),
-    [availabilityData]
+    () => getTimeSlotsForAvailability(availabilityData, settings),
+    [availabilityData, settings]
   );
 
   // Auto-select middle date and first time slot - MUST be before early returns
@@ -103,10 +109,7 @@ const ExaminerOptionsMobile: React.FC<ExaminerOptionsProps> = ({
   }
 
   // Compute derived data
-  const daysWithSlots = filterDaysWithSlots(availabilityData.days, {
-    existingBooking,
-    excludePastDates: true,
-  });
+  const daysWithSlots = filterDaysWithSlots(availabilityData.days);
   const totalDaysWithSlots = daysWithSlots.length;
   const daysToShow = getDaysToShow(daysWithSlots, dateOffset, MAX_DAYS_TO_SHOW);
 
@@ -219,7 +222,7 @@ const ExaminerOptionsMobile: React.FC<ExaminerOptionsProps> = ({
                     key={dayIndex}
                     onClick={() => !isPast && handleDateClick(dayIndex)}
                     disabled={isPast}
-                    className={`min-w-[100px] rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
+                    className={`min-w-[100px] flex-shrink-0 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
                       isPast
                         ? 'cursor-not-allowed bg-gray-100 text-gray-400'
                         : selectedDateIndex === dayIndex
@@ -305,29 +308,29 @@ const ExaminerOptionsMobile: React.FC<ExaminerOptionsProps> = ({
                                     : 'cursor-pointer active:shadow-md'
                                 } ${
                                   isPreviousBooking
-                                    ? 'border-blue-400 from-blue-50 to-sky-50 ring-2 ring-blue-300 ring-offset-1'
-                                    : 'border-purple-100 from-purple-50 to-blue-50'
+                                    ? 'border-blue-400 bg-gradient-to-br from-blue-50 to-sky-50 ring-2 ring-blue-300 ring-offset-1'
+                                    : 'border-purple-100 bg-gradient-to-br from-purple-50 to-blue-50'
                                 }`}
                               >
                                 {isPreviousBooking && (
                                   <div className="absolute -top-2 -right-2 z-10">
                                     <span className="inline-flex items-center rounded-full bg-blue-500 px-2 py-0.5 text-[9px] font-semibold text-white shadow-md">
-                                      Booking
+                                      Previous
                                     </span>
                                   </div>
                                 )}
                                 <div className="mb-2 space-y-1.5 text-xs">
                                   {examiner.clinic && (
                                     <div className="flex items-start space-x-1">
-                                      <MapPin className="mt-0.5 h-3 w-3 text-[#000093]" />
-                                      <p className="text-[10px] font-medium text-gray-900">
+                                      <MapPin className="mt-0.5 h-3 w-3 flex-shrink-0 text-[#000093]" />
+                                      <p className="text-[10px] font-medium break-words text-gray-900">
                                         {examiner.clinic}
                                       </p>
                                     </div>
                                   )}
                                   {examiner.specialty && (
                                     <div className="flex items-center space-x-1">
-                                      <Star className="h-3 w-3 text-[#000093]" />
+                                      <Star className="h-3 w-3 flex-shrink-0 text-[#000093]" />
                                       <p className="text-[10px] font-medium text-gray-900">
                                         {examiner.specialty}
                                       </p>
@@ -335,7 +338,7 @@ const ExaminerOptionsMobile: React.FC<ExaminerOptionsProps> = ({
                                   )}
                                   {availabilityData?.serviceRequirements?.interpreterRequired && (
                                     <div className="flex items-center space-x-1">
-                                      <Languages className="h-3 w-3 text-[#000093]" />
+                                      <Languages className="h-3 w-3 flex-shrink-0 text-[#000093]" />
                                       <p className="text-[10px] font-medium text-gray-900">
                                         Interpreter:{' '}
                                         {examiner.interpreters && examiner.interpreters.length > 0
@@ -346,7 +349,7 @@ const ExaminerOptionsMobile: React.FC<ExaminerOptionsProps> = ({
                                   )}
                                   {availabilityData?.serviceRequirements?.transportRequired && (
                                     <div className="flex items-center space-x-1">
-                                      <Car className="h-3 w-3 text-[#000093]" />
+                                      <Car className="h-3 w-3 flex-shrink-0 text-[#000093]" />
                                       <p className="text-[10px] font-medium text-gray-900">
                                         Transport:{' '}
                                         {examiner.transporters && examiner.transporters.length > 0
@@ -357,7 +360,7 @@ const ExaminerOptionsMobile: React.FC<ExaminerOptionsProps> = ({
                                   )}
                                   {availabilityData?.serviceRequirements?.chaperoneRequired && (
                                     <div className="flex items-center space-x-1">
-                                      <UserPlus className="h-3 w-3 text-[#000093]" />
+                                      <UserPlus className="h-3 w-3 flex-shrink-0 text-[#000093]" />
                                       <p className="text-[10px] font-medium text-gray-900">
                                         Chaperone:{' '}
                                         {examiner.chaperones && examiner.chaperones.length > 0
