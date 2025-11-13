@@ -63,8 +63,8 @@ export async function updateContractStatus(
       // .update(options.signedPdfBuffer)
       .digest("hex");
 
-    data.signedPdfS3Key = pdfKey;
-    data.signedPdfSha256 = pdfSha256;
+    data.signedHtmlS3Key = pdfKey;
+    data.signedHtmlSha256 = pdfSha256;
   }
 
   if (options?.signedHtmlKey) {
