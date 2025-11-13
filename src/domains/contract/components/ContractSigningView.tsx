@@ -16,6 +16,7 @@ interface ContractSigningViewProps {
     cancellationFee: number;
     effectiveDate?: string;
   };
+  contractHtml: string;
 }
 
 const ContractSigningView = ({
@@ -23,6 +24,7 @@ const ContractSigningView = ({
   contractId,
   examinerName,
   feeStructure,
+  contractHtml,
 }: ContractSigningViewProps) => {
   const today = new Date().toISOString().split("T")[0];
   const [sigName, setSigName] = useState(examinerName);
@@ -50,19 +52,11 @@ const ContractSigningView = ({
     setIsSigning(true);
 
     try {
-      // Get the contract HTML content
-      const contractElement = document.getElementById('contract');
-      if (!contractElement) {
-        throw new Error('Contract element not found');
-      }
-
-      const htmlContent = contractElement.innerHTML;
-
+      const contractElement = document.getElementById("contract");
+      const htmlContent = contractElement?.innerHTML || contractHtml;
       const pdfBase64 = signatureImage?.split(',')[1] || '';
-
       const userAgent = navigator.userAgent;
-      
-      // Call the sign contract action      
+
       const result = await signContract(
         contractId,
         sigName,
@@ -78,8 +72,6 @@ const ContractSigningView = ({
 
       toast.success("Contract signed successfully!");
       setSigned(true);
-      
-      // Redirect after successful signing
       router.push(`/create-account?token=${token}`);
     } catch (error) {
       console.error('Error signing contract:', error);
@@ -154,6 +146,283 @@ const ContractSigningView = ({
     };
   }, []);
 
+  useEffect(() => {
+    const contractEl = document.getElementById("contract");
+    if (!contractEl) return;
+
+    const updateTargets = (
+      selectors: string[],
+      updater: (el: HTMLElement) => void
+    ): boolean => {
+      let matched = false;
+      selectors.forEach((selector) => {
+        contractEl
+          .querySelectorAll<HTMLElement>(selector)
+          .forEach((el) => {
+            matched = true;
+            updater(el);
+          });
+      });
+      return matched;
+    };
+
+    const normalized = (value: string | null | undefined) =>
+      value?.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim() ?? "";
+
+    const blockTags = new Set([
+      "P",
+      "DIV",
+      "SECTION",
+      "ARTICLE",
+      "TABLE",
+      "TBODY",
+      "TR",
+      "TD",
+      "LI",
+      "UL",
+      "OL",
+      "H1",
+      "H2",
+      "H3",
+      "H4",
+      "H5",
+      "H6",
+    ]);
+
+    const findSignatureBlock = () => {
+      const walker = document.createTreeWalker(
+        contractEl,
+        NodeFilter.SHOW_TEXT
+      );
+
+      while (walker.nextNode()) {
+        const textNode = walker.currentNode as Text;
+        if (normalized(textNode.textContent).includes("examiner signature")) {
+          let el = textNode.parentElement;
+          while (el && !blockTags.has(el.tagName)) {
+            el = el.parentElement;
+          }
+          return el ?? textNode.parentElement ?? null;
+        }
+      }
+
+      return null;
+    };
+
+    const findDateFieldAfterSignature = () => {
+      const examinerLabel = findSignatureBlock();
+      if (!examinerLabel) return null;
+
+      let current: Element | null = examinerLabel;
+      let checkedCount = 0;
+      const maxChecks = 10;
+
+      while (current && checkedCount < maxChecks) {
+        const nextElement: Element | null = current.nextElementSibling;
+        if (nextElement) {
+          const nextSibling = nextElement as HTMLElement | null;
+          const text = normalized(nextSibling?.textContent || "");
+          if (text.includes("date") && !text.includes("effective date") && !text.includes("for platform")) {
+            return nextSibling;
+          }
+          current = nextElement;
+        } else {
+          const parent = current.parentElement;
+          if (parent && parent !== contractEl) {
+            const parentNext = parent.nextElementSibling;
+            if (parentNext) {
+              const text = normalized(parentNext.textContent || "");
+              if (text.includes("date") && !text.includes("effective date") && !text.includes("for platform")) {
+                return parentNext as HTMLElement;
+              }
+            }
+          }
+          break;
+        }
+        checkedCount++;
+      }
+
+      const walker = document.createTreeWalker(
+        contractEl,
+        NodeFilter.SHOW_TEXT
+      );
+
+      let foundExaminerSignature = false;
+      while (walker.nextNode()) {
+        const textNode = walker.currentNode as Text;
+        const text = normalized(textNode.textContent);
+
+        if (text.includes("examiner signature")) {
+          foundExaminerSignature = true;
+          continue;
+        }
+
+        if (foundExaminerSignature) {
+          if (text.includes("date") && !text.includes("effective date") && !text.includes("for platform")) {
+            let el = textNode.parentElement;
+            while (el && !blockTags.has(el.tagName)) {
+              el = el.parentElement;
+            }
+            return el ?? textNode.parentElement ?? null;
+          }
+
+          if (blockTags.has(textNode.parentElement?.tagName || "")) {
+            break;
+          }
+        }
+      }
+
+      return null;
+    };
+
+    const ensureDynamicContainer = () => {
+      let dynamicContainer = contractEl.querySelector<HTMLElement>(
+        "#contract-dynamic-examiner-signature"
+      );
+
+      if (!dynamicContainer) {
+        const examinerLabel = findSignatureBlock();
+        if (examinerLabel) {
+          dynamicContainer = document.createElement("div");
+          dynamicContainer.id = "contract-dynamic-examiner-signature";
+          dynamicContainer.style.marginTop = "8px";
+          dynamicContainer.style.minHeight = "60px";
+          dynamicContainer.style.display = "flex";
+          dynamicContainer.style.alignItems = "flex-start";
+          dynamicContainer.style.gap = "12px";
+          examinerLabel.insertAdjacentElement("afterend", dynamicContainer);
+        }
+      }
+
+      return dynamicContainer;
+    };
+
+    // Update signature image targets
+    const hasImageTarget = updateTargets(
+      [
+        '[data-contract-signature="image"]',
+        '[data-signature="examiner"]',
+        '#examiner-signature',
+        '.examiner-signature',
+      ],
+      (el) => {
+        if (signatureImage) {
+          el.innerHTML = `<img src="${signatureImage}" alt="Examiner Signature" style="max-width: 240px; height: auto;" />`;
+        } else {
+          el.innerHTML = "";
+        }
+      }
+    );
+
+    const dynamicContainer = hasImageTarget ? null : ensureDynamicContainer();
+
+    if (dynamicContainer) {
+      if (signatureImage) {
+        dynamicContainer.innerHTML = `<img src="${signatureImage}" alt="Examiner Signature" style="max-width: 240px; height: auto;" />`;
+      } else {
+        dynamicContainer.innerHTML = "";
+      }
+    } else if (!hasImageTarget && signatureImage) {
+      // Final fallback: append to contract root once (should rarely happen)
+      let fallback = contractEl.querySelector<HTMLElement>(
+        "#contract-dynamic-examiner-signature"
+      );
+      if (!fallback) {
+        fallback = document.createElement("div");
+        fallback.id = "contract-dynamic-examiner-signature";
+        fallback.style.marginTop = "12px";
+        fallback.style.minHeight = "60px";
+        fallback.style.display = "flex";
+        fallback.style.alignItems = "flex-start";
+        fallback.style.gap = "12px";
+        contractEl.appendChild(fallback);
+      }
+      fallback.innerHTML = `<img src="${signatureImage}" alt="Examiner Signature" style="max-width: 240px; height: auto;" />`;
+    } else if (!signatureImage) {
+      const fallback = contractEl.querySelector<HTMLElement>(
+        "#contract-dynamic-examiner-signature"
+      );
+      fallback?.remove();
+    }
+
+    const formattedDate = sigDate
+      ? new Date(sigDate).toLocaleDateString("en-CA")
+      : "";
+
+    const dateField = findDateFieldAfterSignature();
+    if (dateField && formattedDate) {
+      const currentText = dateField.textContent || "";
+      const normalizedCurrent = normalized(currentText);
+      
+      if (normalizedCurrent.includes("date") && !currentText.includes(formattedDate)) {
+        const dateInput = dateField.querySelector<HTMLElement>("input, span, div, p");
+        if (dateInput) {
+          const inputText = dateInput.textContent || "";
+          if (!inputText.includes(formattedDate)) {
+            if (normalized(inputText).includes("date")) {
+              dateInput.textContent = inputText.trim().endsWith(":") 
+                ? `${inputText.trim()} ${formattedDate}` 
+                : `${inputText.trim()}: ${formattedDate}`;
+            } else {
+              dateInput.textContent = inputText.trim() 
+                ? `${inputText.trim()} ${formattedDate}` 
+                : formattedDate;
+            }
+          }
+        } else {
+          const textNodes = Array.from(dateField.childNodes).filter(
+            (node) => node.nodeType === Node.TEXT_NODE
+          );
+          if (textNodes.length > 0) {
+            const textNode = textNodes[0] as Text;
+            const nodeText = textNode.textContent || "";
+            if (!nodeText.includes(formattedDate)) {
+              if (normalized(nodeText).includes("date")) {
+                textNode.textContent = nodeText.trim().endsWith(":") 
+                  ? `${nodeText.trim()} ${formattedDate}` 
+                  : `${nodeText.trim()}: ${formattedDate}`;
+              } else {
+                textNode.textContent = nodeText.trim() 
+                  ? `${nodeText.trim()} ${formattedDate}` 
+                  : formattedDate;
+              }
+            }
+          } else {
+            if (!currentText.includes(formattedDate)) {
+              dateField.textContent = currentText.trim().endsWith(":") 
+                ? `${currentText.trim()} ${formattedDate}` 
+                : currentText.trim() 
+                  ? `${currentText.trim()}: ${formattedDate}` 
+                  : `Date: ${formattedDate}`;
+            }
+          }
+        }
+      }
+    }
+
+    updateTargets(
+      [
+        '[data-contract-signature="name"]',
+        '#examiner-signature-name',
+        '.examiner-signature-name',
+      ],
+      (el) => {
+        el.textContent = sigName || "";
+      }
+    );
+
+    updateTargets(
+      [
+        '[data-contract-signature="date"]',
+        '#examiner-signature-date',
+        '.examiner-signature-date',
+      ],
+      (el) => {
+        el.textContent = formattedDate;
+      }
+    );
+  }, [contractHtml, signatureImage, sigName, sigDate, agree, isSigning, signed]);
+
   return (
     <div className="flex justify-center h-screen bg-gray-100">
       {/* LEFT: Contract */}
@@ -167,320 +436,7 @@ const ContractSigningView = ({
           lineHeight: "1.4",
         }}
       >
-        {/* Header with Blue Border */}
-        <div className="border-b-4 border-b-[#00A8FF] p-2 mb-6">
-          <h1
-            className="text-center text-xl font-bold mb-1"
-            style={{ color: "#000" }}
-          >
-            INDEPENDENT MEDICAL EXAMINER
-          </h1>
-          <h1
-            className="text-center text-xl font-bold mb-3"
-            style={{ color: "#000" }}
-          >
-            AGREEMENT
-          </h1>
-        </div>
-
-        <div className="bg-[#E8F0F2] rounded-md mb-4 px-6 py-4">
-          <p className="text-sm font-semibold mb-2" style={{ color: "#000" }}>
-            Effective Date: {new Date(sigDate).toLocaleDateString("en-CA")}
-          </p>
-
-          <p className="text-sm" style={{ textAlign: "justify" }}>
-            This Agreement is made between <strong>Thrive IME Platform</strong>{" "}
-            (&quot;Platform&quot;) and Dr. <strong>{sigName}</strong> (&quot;Examiner&quot;) located
-            in Manitoba.
-          </p>
-        </div>
-
-        {/* Section 1 */}
-        <div className="mb-4">
-          <h2 className="text-sm font-bold mb-2" >
-            1. PURPOSE
-          </h2>
-          <p className="text-sm" style={{ textAlign: "justify" }}>
-            This Agreement outlines the terms under which the Examiner will
-            provide Independent Medical Examination (IME) services through the
-            Platform to claimants referred by insurance companies, legal firms,
-            and other authorized organizations.
-          </p>
-        </div>
-
-        {/* Section 2 - Fee Structure */}
-        <div className="mb-4">
-          <h2 className="text-sm font-bold mb-2" >
-            2. FEE STRUCTURE
-          </h2>
-          <p className="text-sm mb-2">
-            The Examiner agrees to provide services at the following rates:
-          </p>
-
-          <table
-            className="w-full mb-3"
-            style={{ fontSize: "12px", borderCollapse: "collapse" }}
-          >
-            <thead>
-              <tr style={{ backgroundColor: "#2C3E50", color: "white" }}>
-                <th className="border-2 border-[#2C3E50] px-3 py-2 text-left font-bold">
-                  Service Type
-                </th>
-                <th className="border-2 border-[#2C3E50] px-3 py-2 text-left font-bold">
-                  Fee
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="border-1 border-gray-300 px-3 py-2">IME Fee</td>
-                <td className="border-1 border-gray-300 px-3 py-2">
-                  ${feeStructure.IMEFee.toFixed(2)}
-                </td>
-              </tr>
-              <tr style={{ backgroundColor: "#f9fafb" }}>
-                <td className="border-1 border-gray-300 px-3 py-2">
-                  Record Review Fee
-                </td>
-                <td className="border-1 border-gray-300 px-3 py-2">
-                  ${feeStructure.recordReviewFee.toFixed(2)}
-                </td>
-              </tr>
-              <tr>
-                <td className="border-1 border-gray-300 px-3 py-2">
-                  Hourly Rate
-                </td>
-                <td className="border-1 border-gray-300 px-3 py-2">
-                  ${feeStructure.hourlyRate.toFixed(2)}/hour
-                </td>
-              </tr>
-              <tr style={{ backgroundColor: "#f9fafb" }}>
-                <td className="border-1 border-gray-300 px-3 py-2">
-                  Cancellation Fee
-                </td>
-                <td className="border-1 border-gray-300 px-3 py-2">
-                  ${feeStructure.cancellationFee.toFixed(2)}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Section 3 */}
-        <div className="mb-4">
-          <h2 className="text-sm font-bold mb-2" >
-            3. SERVICES TO BE PROVIDED
-          </h2>
-          <p className="text-sm mb-2">The Examiner agrees to:</p>
-          <ul
-            className="text-sm ml-5 space-y-0"
-            style={{ listStyleType: "disc" }}
-          >
-            <li>
-              Conduct thorough and impartial medical examinations of claimants
-            </li>
-            <li>
-              Maintain professional standards in accordance with medical
-              licensing requirements
-            </li>
-            <li>Be available for testimony or clarification if required</li>
-            <li>Respond to case assignments in a timely manner</li>
-          </ul>
-        </div>
-
-        {/* Section 4 */}
-        <div className="mb-4">
-          <h2 className="text-sm font-bold mb-2" >
-            4. PROFESSIONAL OBLIGATIONS
-          </h2>
-          <p className="text-sm mb-2">The Examiner shall:</p>
-          <ul
-            className="text-sm ml-5 space-y-0"
-            style={{ listStyleType: "disc" }}
-          >
-            <li>
-              Maintain current medical licensure and malpractice insurance
-            </li>
-            <li>
-              Comply with all applicable laws, regulations, and ethical
-              guidelines
-            </li>
-            <li>
-              Provide services in a professional, objective, and unbiased manner
-            </li>
-            <li>
-              Keep the Platform informed of any changes to availability or
-              credentials
-            </li>
-            <li>
-              Maintain patient confidentiality in accordance with applicable
-              privacy laws
-            </li>
-          </ul>
-        </div>
-
-        {/* Section 5 */}
-        <div className="mb-4">
-          <h2 className="text-sm font-bold mb-2" >
-            5. CONFIDENTIALITY
-          </h2>
-          <p className="text-sm mb-2">
-            The Examiner acknowledges that all information obtained during
-            examinations is confidential and shall:
-          </p>
-          <ul
-            className="text-sm ml-5 space-y-0"
-            style={{ listStyleType: "disc" }}
-          >
-            <li>
-              Not disclose any patient information except as required by law or
-              authorized by the patient
-            </li>
-            <li>
-              Maintain secure storage of all patient records and examination
-              materials
-            </li>
-            <li>
-              Comply with all applicable privacy legislation including but not
-              limited to PIPEDA
-            </li>
-            <li>
-              Return or destroy all confidential materials upon completion of
-              services
-            </li>
-          </ul>
-        </div>
-
-        {/* Section 6 */}
-        <div className="mb-4">
-          <h2 className="text-sm font-bold mb-2" >
-            6. INDEPENDENT CONTRACTOR STATUS
-          </h2>
-          <p className="text-sm mb-2">
-            The Examiner is an independent contractor and not an employee of the
-            Platform. The Examiner is responsible for:
-          </p>
-          <ul
-            className="text-sm ml-5 space-y-0"
-            style={{ listStyleType: "disc" }}
-          >
-            <li>All applicable taxes and business registrations</li>
-            <li>Professional liability insurance</li>
-            <li>
-              Business expenses including office space, equipment, and supplies
-            </li>
-            <li>Compliance with all professional licensing requirements</li>
-          </ul>
-        </div>
-
-        {/* Section 7 */}
-        <div className="mb-4">
-          <h2 className="text-sm font-bold mb-2" >
-            7. TERM AND TERMINATION
-          </h2>
-          <p className="text-sm mb-2">
-            This Agreement shall remain in effect until terminated by either
-            party with 30 days written notice. The Platform may terminate this
-            Agreement immediately if the Examiner:
-          </p>
-          <ul
-            className="text-sm ml-5 space-y-0"
-            style={{ listStyleType: "disc" }}
-          >
-            <li>Breaches any material term of this Agreement</li>
-            <li>Loses professional licensure or malpractice insurance</li>
-            <li>Engages in professional misconduct</li>
-            <li>Fails to maintain acceptable quality standards</li>
-          </ul>
-        </div>
-
-        {/* Section 8 */}
-        <div className="mb-4">
-          <h2 className="text-sm font-bold mb-2" >
-            8. LIABILITY AND INDEMNIFICATION
-          </h2>
-          <p className="text-sm" style={{ textAlign: "justify" }}>
-            The Examiner agrees to maintain professional liability insurance
-            with minimum coverage of $2,000,000 and shall indemnify the Platform
-            against any claims arising from the Examiner&apos;s professional services
-            or negligence.
-          </p>
-        </div>
-
-        {/* Section 9 */}
-        <div className="mb-4">
-          <h2 className="text-sm font-bold mb-2" >
-            9. DISPUTE RESOLUTION
-          </h2>
-          <p className="text-sm" style={{ textAlign: "justify" }}>
-            Any disputes arising from this Agreement shall be resolved through
-            mediation, and if necessary, arbitration in accordance with the laws
-            of the Province of Manitoba.
-          </p>
-        </div>
-
-        {/* Section 10 */}
-        <div className="mb-4">
-          <h2 className="text-sm font-bold mb-2" >
-            10. GENERAL PROVISIONS
-          </h2>
-          <ul
-            className="text-sm ml-5 space-y-0"
-            style={{ listStyleType: "disc" }}
-          >
-            <li>
-              This Agreement constitutes the entire agreement between the
-              parties
-            </li>
-            <li>
-              Any amendments must be made in writing and signed by both parties
-            </li>
-            <li>This Agreement shall be governed by the laws of Manitoba</li>
-            <li>
-              If any provision is found invalid, the remaining provisions shall
-              continue in effect
-            </li>
-          </ul>
-        </div>
-
-        {/* Acknowledgment */}
-        <div className="mb-6">
-          <h2 className="text-sm font-bold mb-2" >
-            ACKNOWLEDGMENT
-          </h2>
-          <p className="text-sm" style={{ textAlign: "justify" }}>
-            By accepting cases through the Thrive IME Platform, the Examiner
-            acknowledges that they have read, understood, and agree to be bound
-            by the terms and conditions of this Agreement.
-          </p>
-        </div>
-
-        {/* Signature Area - No border or box */}
-        <div className="mt-12 mb-12 space-y-4">
-          <div>
-            {signatureImage && (
-            <div className="mb-1">
-              <img src={signatureImage} alt="Signature" className="h-12" />
-            </div>
-          )}
-          <div className="border-b-2 border-black w-80 mb-1"></div>
-          Examiner&apos;s Signature
-          </div>
-        
-        <div>
-          <span className="font-semibold">Name:</span> {sigName}
-        </div>
-        <div>
-          <span className="font-semibold">Date:</span> {sigDate}
-        </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-8 pt-4">
-          <p className="text-xs text-center" style={{ color: "#666" }}>
-            © 2025 Thrive Assessment & Care. All rights reserved.
-          </p>
-        </div>
+        <div dangerouslySetInnerHTML={{ __html: contractHtml || "<div>Empty contract HTML</div>" }} />
       </div>
 
       {/* RIGHT: Signature Panel */}
@@ -495,6 +451,7 @@ const ContractSigningView = ({
               Full Name
             </label>
             <input
+              disabled
               type="text"
               value={sigName}
               onChange={(e) => setSigName(e.target.value)}

@@ -45,11 +45,9 @@ const ContractSigningPage = async ({ params, searchParams }: PageProps) => {
   if (!contract || !contract.data) {
     notFound();
   }
-  console.log("Contract:", contract);
 
-  // Check if we have a pre-signed URL
-  if (!contract.presignedPdfUrl) {
-    throw new Error("Failed to generate PDF URL");
+  if (!contract.contractHtml) {
+    throw new Error("Failed to load contract HTML content");
   }
 
   const contractData = contract.data as unknown as ContractType;
@@ -60,6 +58,7 @@ const ContractSigningPage = async ({ params, searchParams }: PageProps) => {
       contractId={id}
       examinerName={contractData.examinerName}
       feeStructure={contractData.feeStructure}
+      contractHtml={contract.contractHtml}
     />
   );
 };
