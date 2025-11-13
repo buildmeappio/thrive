@@ -112,6 +112,10 @@ export const routes: Route[] = [
         label: "Maximum Travel Distance",
         href: "/dashboard/taxonomy/maximumDistanceTravel",
       },
+      {
+        label: "Configuration",
+        href: "/dashboard/taxonomy/configuration",
+      },
     ],
   },
   { icon: LifeBuoy, label: "Support", href: "/support", index: 9 },

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { CreateTaxonomyInput, UpdateTaxonomyInput, TaxonomyType, TaxonomyData } from '../types/Taxonomy';
 import { TaxonomyConfig, TaxonomyField } from '../types/Taxonomy';
+import { convertUTCMinutesToLocal, convertLocalTimeToUTCMinutes } from '@/utils/timezone';
 
 type TaxonomyFormData = Record<string, string | null | undefined>;
 
@@ -30,7 +31,7 @@ type TaxonomyFormProps = {
 
 const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
   mode,
-  type: _type,
+  type,
   config,
   taxonomy,
   onSubmit,
@@ -45,36 +46,97 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
     watch,
   } = useForm<TaxonomyFormData>({
     defaultValues: config.fields.reduce((acc, field) => {
-      acc[field.name] = taxonomy?.[field.name] || '';
+      const value = taxonomy?.[field.name];
+
+      // Special handling for start_working_hour_time configuration
+      if (type === 'configuration' &&
+          field.name === 'value' &&
+          taxonomy?.name === 'start_working_hour_time' &&
+          typeof value === 'number') {
+        // Convert UTC minutes to local time format for display
+        acc[field.name] = convertUTCMinutesToLocal(value);
+      } else {
+        // Convert number to string for form input (especially for configuration value field)
+        acc[field.name] = value !== null && value !== undefined ? String(value) : '';
+      }
       return acc;
     }, {} as TaxonomyFormData),
   });
 
+  // Watch the name field for configuration to show/hide "(in minutes)" helper text
+  const watchedName = type === 'configuration' ? watch('name') : null;
+
   useEffect(() => {
     if (taxonomy) {
       config.fields.forEach(field => {
-        setValue(field.name, taxonomy[field.name] || '');
+        const value = taxonomy[field.name];
+
+        // Special handling for start_working_hour_time configuration
+        if (type === 'configuration' &&
+            field.name === 'value' &&
+            taxonomy.name === 'start_working_hour_time' &&
+            typeof value === 'number') {
+          // Convert UTC minutes to local time format for display
+          setValue(field.name, convertUTCMinutesToLocal(value));
+        } else {
+          // Convert number to string for form input (especially for configuration value field)
+          setValue(field.name, value !== null && value !== undefined ? String(value) : '');
+        }
       });
     }
-  }, [taxonomy, config.fields, setValue]);
+  }, [taxonomy, config.fields, setValue, type]);
 
   const handleFormSubmit = (data: TaxonomyFormData) => {
     const submitData: CreateTaxonomyInput | UpdateTaxonomyInput = {};
-    
+
+    // For configuration in edit mode, exclude name field (only allow value to be updated)
+    const isConfigurationEdit = type === 'configuration' && mode === 'edit';
+
     config.fields.forEach(field => {
+      // Skip name field when editing configuration
+      if (isConfigurationEdit && field.name === 'name') {
+        return;
+      }
+
       if (data[field.name] !== undefined && data[field.name] !== '') {
-        submitData[field.name] = data[field.name];
+        let value = data[field.name];
+
+        // Special handling: Convert local time to UTC minutes on CLIENT before sending to backend
+        if (type === 'configuration' &&
+            field.name === 'value' &&
+            (taxonomy?.name === 'start_working_hour_time' || data['name'] === 'start_working_hour_time') &&
+            typeof value === 'string') {
+          try {
+            // Convert "8:00 AM" (browser timezone) → UTC minutes
+            value = String(convertLocalTimeToUTCMinutes(value));
+          } catch (error) {
+            console.error('Error converting time to UTC:', error);
+            // If conversion fails, send as-is and let backend validation handle it
+          }
+        }
+
+        submitData[field.name] = value;
       } else if (!field.required) {
         submitData[field.name] = null;
       }
     });
-    
+
     onSubmit(submitData);
   };
 
   const renderField = (field: TaxonomyField) => {
     const watchedValue = watch(field.name);
     const error = errors[field.name];
+
+    // For configuration, check if it's slot duration to show "(in minutes)" helper text
+    const isConfiguration = type === 'configuration';
+    const isValueField = field.name === 'value' && isConfiguration;
+    // Use watchedName (from component level watch) or taxonomy name (for edit mode)
+    const configurationName = isConfiguration
+      ? (taxonomy?.name || watchedName || '').toLowerCase()
+      : '';
+    const isSlotDuration = isConfiguration && configurationName.includes('slot') && configurationName.includes('duration');
+    const isTimeField = isConfiguration && isValueField && configurationName === 'start_working_hour_time';
 
     switch (field.type) {
       case 'textarea':
@@ -125,6 +187,8 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
 
       case 'text':
       default:
+        // Disable name field when editing configuration
+        const isConfigurationEdit = type === 'configuration' && mode === 'edit' && field.name === 'name';
         return (
           <div key={field.name} className="space-y-2">
             <Label htmlFor={field.name}>
@@ -132,12 +196,39 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
             </Label>
             <Input
               id={field.name}
+              type={isValueField && !isTimeField ? 'number' : 'text'}
               {...register(field.name, {
                 required: field.required ? `${field.label} is required` : false,
+                validate: isValueField
+                  ? (value) => {
+                      if (!value && field.required) return `${field.label} is required`;
+                      // For time fields, allow time format (e.g., "8:00 AM") or numeric minutes
+                      if (isTimeField) {
+                        // Allow format like "8:00 AM", "08:00", or numeric values like "480"
+                        const timePattern = /^(\d{1,2}:\d{2}\s*(AM|PM|am|pm)?|\d+)$/;
+                        if (!timePattern.test(String(value).trim())) {
+                          return 'Please enter time in format "8:00 AM" or as minutes';
+                        }
+                      } else if (value && isNaN(Number(value))) {
+                        return `${field.label} must be a valid number`;
+                      }
+                      return true;
+                    }
+                  : undefined,
               })}
-              placeholder={field.placeholder}
-              disabled={isSubmitting}
+              placeholder={isTimeField ? 'e.g., 8:00 AM' : field.placeholder}
+              disabled={isSubmitting || isConfigurationEdit}
+              readOnly={isConfigurationEdit}
+              className={isConfigurationEdit ? 'bg-gray-100 cursor-not-allowed' : ''}
             />
+            {/* Show helper text for time field */}
+            {isTimeField && isValueField && (
+              <p className="text-sm text-gray-500">Enter time in 12-hour format (e.g., &quot;8:00 AM&quot;)</p>
+            )}
+            {/* Show "(in Minutes)" helper text only for slot duration configuration */}
+            {isSlotDuration && isValueField && (
+              <p className="text-sm text-gray-500">(in Minutes)</p>
+            )}
             {error && <p className="text-sm text-red-500">{error.message as string}</p>}
           </div>
         );
