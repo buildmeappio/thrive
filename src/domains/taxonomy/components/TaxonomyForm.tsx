@@ -207,7 +207,7 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
             />
             {/* Show helper text for time field */}
             {isTimeField && isValueField && (
-              <p className="text-sm text-gray-500">Enter time in 12-hour format (e.g., "8:00 AM")</p>
+              <p className="text-sm text-gray-500">Enter time in 12-hour format (e.g., &quot;8:00 AM&quot;)</p>
             )}
             {/* Show "(in Minutes)" helper text only for slot duration configuration */}
             {isSlotDuration && isValueField && (
