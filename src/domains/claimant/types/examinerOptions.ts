@@ -25,7 +25,6 @@ export type ExaminerOptionsProps = {
     examinerProfileId: string;
     examinerName: string | null;
     bookingTime: Date | string;
-    status?: string;
     interpreterId?: string | null;
     chaperoneId?: string | null;
     transporterId?: string | null;
