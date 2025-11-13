@@ -241,4 +241,27 @@ export const TaxonomyConfigs: Record<TaxonomyType, TaxonomyConfig> = {
     displayFields: ['name', 'description'],
     searchFields: ['name', 'description'],
   },
+  configuration: {
+    name: 'Configurations',
+    singularName: 'Configuration',
+    tableName: 'configuration',
+    fields: [
+      {
+        name: 'name',
+        label: 'Name',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter configuration name',
+      },
+      {
+        name: 'value',
+        label: 'Value',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter value (number)',
+      },
+    ],
+    displayFields: ['name', 'value'],
+    searchFields: ['name'],
+  },
 };
