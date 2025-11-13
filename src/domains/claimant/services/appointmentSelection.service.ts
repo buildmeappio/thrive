@@ -46,7 +46,25 @@ export const getExaminersForSlot = (
   day: DayAvailability,
   hour: number
 ): { examiners: ExaminerAvailabilityOption[]; slot: SlotAvailability } | null => {
+  console.log(`[getExaminersForSlot] Looking for hour: ${hour}`);
+  console.log(
+    `[getExaminersForSlot] Available slots on this day:`,
+    day.slots.map(s => ({
+      hour: s.start.getHours(),
+      time: s.start.toString().split(' ')[4], // Just the time part
+      examiners: s.examiners.length,
+    }))
+  );
+
   const matchingSlot = day.slots.find(slot => slot.start.getHours() === hour);
+
+  if (matchingSlot) {
+    console.log(
+      `[getExaminersForSlot] ✓ Found slot for hour ${hour}: ${matchingSlot.examiners.length} examiner(s)`
+    );
+  } else {
+    console.log(`[getExaminersForSlot] ✗ No slot found for hour ${hour}`);
+  }
 
   if (matchingSlot && matchingSlot.examiners.length > 0) {
     return { examiners: matchingSlot.examiners, slot: matchingSlot };
