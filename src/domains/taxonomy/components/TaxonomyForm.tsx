@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { CreateTaxonomyInput, UpdateTaxonomyInput, TaxonomyType, TaxonomyData } from '../types/Taxonomy';
 import { TaxonomyConfig, TaxonomyField } from '../types/Taxonomy';
-import { convertUTCMinutesToLocal } from '@/utils/timezone';
+import { convertUTCMinutesToLocal, convertLocalTimeToUTCMinutes } from '@/utils/timezone';
 
 type TaxonomyFormData = Record<string, string | null | undefined>;
 
@@ -88,23 +88,39 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
 
   const handleFormSubmit = (data: TaxonomyFormData) => {
     const submitData: CreateTaxonomyInput | UpdateTaxonomyInput = {};
-    
+
     // For configuration in edit mode, exclude name field (only allow value to be updated)
     const isConfigurationEdit = type === 'configuration' && mode === 'edit';
-    
+
     config.fields.forEach(field => {
       // Skip name field when editing configuration
       if (isConfigurationEdit && field.name === 'name') {
         return;
       }
-      
+
       if (data[field.name] !== undefined && data[field.name] !== '') {
-        submitData[field.name] = data[field.name];
+        let value = data[field.name];
+
+        // Special handling: Convert local time to UTC minutes on CLIENT before sending to backend
+        if (type === 'configuration' &&
+            field.name === 'value' &&
+            (taxonomy?.name === 'start_working_hour_time' || data['name'] === 'start_working_hour_time') &&
+            typeof value === 'string') {
+          try {
+            // Convert "8:00 AM" (browser timezone) → UTC minutes
+            value = String(convertLocalTimeToUTCMinutes(value));
+          } catch (error) {
+            console.error('Error converting time to UTC:', error);
+            // If conversion fails, send as-is and let backend validation handle it
+          }
+        }
+
+        submitData[field.name] = value;
       } else if (!field.required) {
         submitData[field.name] = null;
       }
     });
-    
+
     onSubmit(submitData);
   };
 
