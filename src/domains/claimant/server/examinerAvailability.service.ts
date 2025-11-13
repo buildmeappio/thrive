@@ -215,6 +215,13 @@ const getExaminersQualifiedForExamType = async (examTypeId: string) => {
  * - "9:00 AM" or "5:00 PM" (12-hour format)
  */
 /**
+ * Check if a time string is in 12-hour format with AM/PM
+ */
+const is12HourFormat = (timeStr: string): boolean => {
+  return /AM|PM/i.test(timeStr);
+};
+
+/**
  * HYBRID TIME PARSING APPROACH:
  * - Times with AM/PM: Treated as local/absolute time (no conversion needed)
  * - Times without AM/PM (24-hour): Treated as UTC, converted to server's local time for comparison
@@ -305,14 +312,17 @@ const isWithinAnyTimeSlot = (
 
   for (const ts of timeSlots) {
     // HYBRID PARSING: Time slots from DB can be in two formats:
-    // 1. Legacy format with AM/PM (e.g., "8:00 AM") - treat as local time
-    // 2. UTC format without AM/PM (e.g., "03:00") - convert to local time
-    const windowStartMinutes = timeStringToMinutes(ts.startTime, true); // treatAsUTC = true for 24-hour format
-    const windowEndMinutes = timeStringToMinutes(ts.endTime, true); // treatAsUTC = true for 24-hour format
+    // 1. Legacy format with AM/PM (e.g., "8:00 AM") - treat as local time (treatAsUTC = false)
+    // 2. UTC format without AM/PM (e.g., "03:00") - convert to local time (treatAsUTC = true)
+    const isStartTime12Hour = is12HourFormat(ts.startTime);
+    const isEndTime12Hour = is12HourFormat(ts.endTime);
+
+    const windowStartMinutes = timeStringToMinutes(ts.startTime, !isStartTime12Hour);
+    const windowEndMinutes = timeStringToMinutes(ts.endTime, !isEndTime12Hour);
 
     // Debug: Log the actual minute values being compared
     console.log(
-      `    [Time Comparison] Slot: ${slotStartMinutes}-${slotEndMinutes} mins, Window: ${windowStartMinutes}-${windowEndMinutes} mins`
+      `    [Time Comparison] Slot: ${slotStartMinutes}-${slotEndMinutes} mins, Window: ${windowStartMinutes}-${windowEndMinutes} mins (${ts.startTime} [12hr: ${isStartTime12Hour}] - ${ts.endTime} [12hr: ${isEndTime12Hour}])`
     );
 
     // Check if slot is fully contained within this time window
