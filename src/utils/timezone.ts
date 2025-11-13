@@ -79,44 +79,85 @@ export function convertUTCToLocal(
 ): string {
   try {
     const trimmedTime = utcTimeString.trim();
-    
+
     // Check if already in 12-hour format (has AM/PM), return as-is
     if (/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.test(trimmedTime)) {
       return trimmedTime;
     }
-    
+
     // Parse UTC time string (HH:mm format)
     const timeMatch = trimmedTime.match(/^(\d{1,2}):(\d{2})$/);
     if (!timeMatch) {
       console.warn(`Failed to parse UTC time string: ${utcTimeString}, returning as-is`);
       return trimmedTime;
     }
-    
+
     const hours = parseInt(timeMatch[1], 10);
     const minutes = parseInt(timeMatch[2], 10);
-    
+
     // Validate hours and minutes
     if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours >= 24 || minutes < 0 || minutes >= 60) {
       console.warn(`Invalid UTC time values: ${hours}:${minutes}, returning as-is`);
       return trimmedTime;
     }
-    
+
     const refDate = referenceDate || new Date();
     const utcDate = new Date(refDate);
     utcDate.setUTCHours(hours, minutes, 0, 0);
-    
+
     // Convert to local time
     const localHours = utcDate.getHours();
     const localMinutes = utcDate.getMinutes();
-    
+
     // Format as 12-hour with AM/PM
     const period = localHours >= 12 ? 'PM' : 'AM';
     const displayHours = localHours === 0 ? 12 : localHours > 12 ? localHours - 12 : localHours;
-    
+
     return `${displayHours}:${localMinutes.toString().padStart(2, '0')} ${period}`;
   } catch (error) {
     console.error(`Error converting UTC to local: ${error}`);
     return utcTimeString;
+  }
+}
+
+/**
+ * Convert UTC minutes to local time string in 12-hour format
+ * @param utcMinutes - Total minutes from midnight in UTC (e.g., 480 = 8:00 AM UTC)
+ * @param referenceDate - Reference date for conversion (defaults to today)
+ * @returns Time string in local 12-hour format (e.g., "3:00 AM")
+ */
+export function convertUTCMinutesToLocal(
+  utcMinutes: number,
+  referenceDate?: Date
+): string {
+  try {
+    // Validate input
+    if (isNaN(utcMinutes) || utcMinutes < 0 || utcMinutes >= 1440) {
+      console.warn(`Invalid UTC minutes: ${utcMinutes}, returning as-is`);
+      return String(utcMinutes);
+    }
+
+    // Convert minutes to hours and minutes
+    const hours = Math.floor(utcMinutes / 60);
+    const minutes = utcMinutes % 60;
+
+    // Create a date object with UTC time
+    const refDate = referenceDate || new Date();
+    const utcDate = new Date(refDate);
+    utcDate.setUTCHours(hours, minutes, 0, 0);
+
+    // Convert to local time
+    const localHours = utcDate.getHours();
+    const localMinutes = utcDate.getMinutes();
+
+    // Format as 12-hour with AM/PM
+    const period = localHours >= 12 ? 'PM' : 'AM';
+    const displayHours = localHours === 0 ? 12 : localHours > 12 ? localHours - 12 : localHours;
+
+    return `${displayHours}:${localMinutes.toString().padStart(2, '0')} ${period}`;
+  } catch (error) {
+    console.error(`Error converting UTC minutes to local: ${error}`);
+    return String(utcMinutes);
   }
 }
 
