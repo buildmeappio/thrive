@@ -1,11 +1,23 @@
 import prisma from "@/lib/db";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 // S3 client – AWS SDK will auto-resolve credentials from env vars or IAM role
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
 });
+
+async function streamToString(body: any): Promise<string> {
+  if (!body) return "";
+  if (typeof body.transformToString === "function") {
+    return body.transformToString();
+  }
+  return await new Promise<string>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    body.on("data", (chunk: Buffer) => chunks.push(chunk));
+    body.on("error", reject);
+    body.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
+  });
+}
 
 export async function getLatestContract(id: string) {
   try {
@@ -29,21 +41,21 @@ export async function getLatestContract(id: string) {
       return null;
     }
 
-    // Generate pre-signed URL for the PDF if key exists
-    let presignedUrl: string | null = null;
-    if (contract.unsignedPdfS3Key) {
-      const command = new GetObjectCommand({
+    // Fetch HTML content for the contract
+    let contractHtml: string | null = null;
+    const htmlKey = contract.signedHtmlS3Key || contract.unsignedHtmlS3Key;
+    if (htmlKey) {
+      const htmlCommand = new GetObjectCommand({
         Bucket: process.env.AWS_S3_BUCKET_NAME,
-        Key: contract.unsignedPdfS3Key,
+        Key: htmlKey,
       });
-
-      // URL expires in 1 hour (3600 seconds)
-      presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+      const htmlResponse = await s3Client.send(htmlCommand);
+      contractHtml = await streamToString(htmlResponse.Body);
     }
 
     return {
       ...contract,
-      presignedPdfUrl: presignedUrl,
+      contractHtml,
     };
   } catch (error) {
     console.error("Error fetching contract:", error);

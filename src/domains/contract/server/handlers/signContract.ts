@@ -39,9 +39,9 @@ export async function signContractHandler(input: SignContractInput) {
     // Convert base64 PDF to buffer
     const pdfBuffer = Buffer.from(input.pdfBase64, "base64");
 
-    let htmlFileKey: string;
+    let htmlUpload: { key: string; sha256: string };
     try {
-      htmlFileKey = await uploadHtmlToS3(input.contractId, input.htmlContent);
+      htmlUpload = await uploadHtmlToS3(input.contractId, input.htmlContent);
     } catch (s3Error: any) {
       return {
         success: false,
@@ -50,7 +50,11 @@ export async function signContractHandler(input: SignContractInput) {
     }
 
     try {
-      await updateContractStatus(contract.id, "SIGNED", pdfBuffer);
+      await updateContractStatus(contract.id, "SIGNED", {
+        signedPdfBuffer: pdfBuffer,
+        signedHtmlKey: htmlUpload.key,
+        signedHtmlSha256: htmlUpload.sha256,
+      });
     } catch (updateError: any) {
       return {
         success: false,
@@ -65,7 +69,7 @@ export async function signContractHandler(input: SignContractInput) {
       console.warn("Revalidation failed", revalidateError);
     }
 
-    return { success: true, htmlFileKey };
+    return { success: true, htmlFileKey: htmlUpload.key };
   } catch (error: any) {
     console.error("Error in signContractHandler:", error);
     return {
