@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Booking Modified</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+        text-align: center;
+      }
+
+      .header img {
+        width: 120px;
+      }
+
+      .body {
+        margin-top: 20px;
+        font-size: 16px;
+        color: #333333;
+      }
+
+      .body p {
+        margin-bottom: 20px;
+      }
+
+      .alert-box {
+        background-color: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+      }
+
+      .alert-box p {
+        margin: 0;
+        color: #92400e;
+      }
+
+      .footer {
+        margin-top: 30px;
+        font-size: 14px;
+        color: #777777;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <img
+          src="https://assets.thriveassessmentcare.com/images/thriveLogo.png"
+          alt="Thrive Logo"
+        />
+      </div>
+
+      <div class="body">
+        <p>Hi {{examinerName}},</p>
+
+        <div class="alert-box">
+          <p><strong>A previously accepted booking has been modified by the claimant.</strong></p>
+        </div>
+
+        <p>
+          The claimant <strong>{{claimantName}}</strong> has modified their booking and selected a different time slot. Your previously accepted booking is no longer active.
+        </p>
+
+        <p>
+          <strong>Original Booking Details:</strong>
+        </p>
+        <ul>
+          <li><strong>Case Number:</strong> {{caseNumber}}</li>
+          <li><strong>Examination Type:</strong> {{examinationType}}</li>
+          <li><strong>Original Date & Time:</strong> {{previousBookingDate}}</li>
+          <li><strong>Status:</strong> Discarded (due to modification)</li>
+        </ul>
+
+        <p>
+          The claimant has submitted a new booking request. You will receive a separate notification for the new booking request, which you can review and respond to accordingly.
+        </p>
+
+        <p>
+          <strong>Next Steps:</strong>
+        </p>
+        <ul>
+          <li>Review the new booking request when you receive the notification</li>
+          <li>Accept or decline the new booking based on your availability</li>
+          <li>The original time slot is now available in your calendar</li>
+        </ul>
+      </div>
+
+      <div class="footer">
+        <p>
+          If you have any questions or need assistance, feel free to contact us at
+          <a href="mailto:support@thrivenetwork.ca">support@thrivenetwork.ca</a>.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

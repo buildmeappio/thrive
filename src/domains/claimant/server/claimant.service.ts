@@ -10,6 +10,8 @@ import ErrorMessages from '@/constants/ErrorMessages';
 import emailService from '@/services/emailService';
 import log from '@/utils/log';
 import { format } from 'date-fns';
+import { signClaimantApprovalToken } from '@/lib/jwt';
+import { getBookingCancellationTime } from '@/services/configuration.service';
 
 const getClaimant = async (token: string) => {
   try {
@@ -129,15 +131,41 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
       throw new Error('Waiting to be Scheduled status not found in system');
     }
 
+    // Check if existing booking is within the cancellation time window
+    if (
+      existingBooking &&
+      (existingBooking.status === 'PENDING' || existingBooking.status === 'ACCEPTED')
+    ) {
+      const cancellationTimeHours = await getBookingCancellationTime();
+      const bookingTime = new Date(existingBooking.bookingTime);
+      const currentTime = new Date();
+      const timeUntilBooking = bookingTime.getTime() - currentTime.getTime();
+      const hoursUntilBooking = timeUntilBooking / (1000 * 60 * 60);
+
+      if (hoursUntilBooking < cancellationTimeHours && hoursUntilBooking > 0) {
+        throw new Error(
+          `Cannot modify booking within ${cancellationTimeHours} hours of the appointment time. Your booking is scheduled for ${bookingTime.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}. Please contact support for assistance.`
+        );
+      }
+    }
+
     const result = await prisma.$transaction(async tx => {
-      // If there's an existing booking with PENDING status, mark it as DISCARDED
-      if (existingBooking && existingBooking.status === 'PENDING') {
+      // If there's an existing booking with PENDING or ACCEPTED status, mark it as DISCARDED
+      // This allows claimants to modify their booking even after examiner has accepted it
+      if (
+        existingBooking &&
+        (existingBooking.status === 'PENDING' || existingBooking.status === 'ACCEPTED')
+      ) {
         await (tx as any).claimantBooking.update({
           where: { id: existingBooking.id },
           data: {
             status: 'DISCARDED',
+            updatedAt: new Date(),
           },
         });
+        log.info(
+          `Marked existing booking ${existingBooking.id} as DISCARDED (was ${existingBooking.status})`
+        );
       }
 
       // Always create a new booking entry (never update existing ones)
@@ -170,6 +198,59 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
 
       return booking;
     });
+
+    // If an ACCEPTED booking was discarded, notify the previous examiner
+    if (existingBooking && existingBooking.status === 'ACCEPTED') {
+      try {
+        const previousExaminer = await prisma.examinerProfile.findUnique({
+          where: { id: existingBooking.examinerProfileId },
+          include: {
+            account: {
+              include: {
+                user: {
+                  select: {
+                    email: true,
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        if (previousExaminer?.account?.user?.email) {
+          const previousExaminerName =
+            `${previousExaminer.account.user.firstName || ''} ${previousExaminer.account.user.lastName || ''}`.trim() ||
+            'Examiner';
+          const claimantName =
+            `${examination.claimant.firstName || ''} ${examination.claimant.lastName || ''}`.trim() ||
+            'Claimant';
+          const caseNumber = (examination as any).caseNumber || 'N/A';
+          const previousBookingDateTime = new Date(existingBooking.bookingTime);
+          const previousBookingDate = `${format(previousBookingDateTime, 'EEEE, MMMM d, yyyy')} at ${format(previousBookingDateTime, 'h:mm a')}`;
+
+          await emailService.sendEmail(
+            `Booking Modified - ${caseNumber}`,
+            'examiner-booking-modified.html',
+            {
+              examinerName: previousExaminerName,
+              claimantName,
+              caseNumber,
+              examinationType: examination.examinationType?.name || 'Examination',
+              previousBookingDate,
+            },
+            previousExaminer.account.user.email
+          );
+          log.info(
+            `Sent booking modification notification to previous examiner: ${previousExaminer.account.user.email}`
+          );
+        }
+      } catch (emailError) {
+        log.error('Error sending modification notification to previous examiner:', emailError);
+        // Don't fail the booking if email fails
+      }
+    }
 
     // Fetch examiner information for email
     const examiner = await prisma.examinerProfile.findUnique({
@@ -214,6 +295,22 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
           `${examination.claimant.firstName || ''} ${examination.claimant.lastName || ''}`.trim() ||
           'Valued Client';
 
+        // Generate JWT token for cancel and modify links (7 days expiry)
+        const jwtToken = signClaimantApprovalToken(
+          {
+            email: examination.claimant.emailAddress,
+            caseId: examination.caseId,
+            examinationId: examination.id,
+          },
+          '7d'
+        );
+
+        // Generate cancel and modify URLs
+        const baseUrl = process.env.FRONTEND_URL || 'https://portal-dev.thriveassessmentcare.com';
+        const claimantBasePath = process.env.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL || '/claimant/';
+        const cancelUrl = `${baseUrl}${claimantBasePath}booking/cancel?token=${jwtToken}&bookingId=${result.id}`;
+        const modifyUrl = `${baseUrl}${claimantBasePath}availability?token=${jwtToken}`;
+
         const emailResult = await emailService.sendEmail(
           `Booking Submitted - ${caseNumber}`,
           'claimant-booking-submitted.html',
@@ -224,6 +321,8 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
             examinationType: examinationTypeName,
             bookingDate,
             preference: preferenceLabel,
+            cancelUrl,
+            modifyUrl,
           },
           examination.claimant.emailAddress
         );
