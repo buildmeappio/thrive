@@ -54,7 +54,7 @@ const ContractSigningView = ({
     try {
       const contractElement = document.getElementById("contract");
       const htmlContent = contractElement?.innerHTML || contractHtml;
-      const pdfBase64 = signatureImage?.split(',')[1] || '';
+      const pdfBase64 = signatureImage?.split(",")[1] || "";
       const userAgent = navigator.userAgent;
 
       const result = await signContract(
@@ -67,15 +67,16 @@ const ContractSigningView = ({
       );
 
       if (!result.success) {
-        throw new Error('Failed to sign contract');
+        throw new Error("Failed to sign contract");
       }
 
       toast.success("Contract signed successfully!");
       setSigned(true);
       router.push(`/create-account?token=${token}`);
     } catch (error) {
-      console.error('Error signing contract:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to sign contract';
+      console.error("Error signing contract:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to sign contract";
       toast.error(errorMessage);
     } finally {
       setIsSigning(false);
@@ -156,18 +157,19 @@ const ContractSigningView = ({
     ): boolean => {
       let matched = false;
       selectors.forEach((selector) => {
-        contractEl
-          .querySelectorAll<HTMLElement>(selector)
-          .forEach((el) => {
-            matched = true;
-            updater(el);
-          });
+        contractEl.querySelectorAll<HTMLElement>(selector).forEach((el) => {
+          matched = true;
+          updater(el);
+        });
       });
       return matched;
     };
 
     const normalized = (value: string | null | undefined) =>
-      value?.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim() ?? "";
+      value
+        ?.toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim() ?? "";
 
     const blockTags = new Set([
       "P",
@@ -222,7 +224,11 @@ const ContractSigningView = ({
         if (nextElement) {
           const nextSibling = nextElement as HTMLElement | null;
           const text = normalized(nextSibling?.textContent || "");
-          if (text.includes("date") && !text.includes("effective date") && !text.includes("for platform")) {
+          if (
+            text.includes("date") &&
+            !text.includes("effective date") &&
+            !text.includes("for platform")
+          ) {
             return nextSibling;
           }
           current = nextElement;
@@ -232,7 +238,11 @@ const ContractSigningView = ({
             const parentNext = parent.nextElementSibling;
             if (parentNext) {
               const text = normalized(parentNext.textContent || "");
-              if (text.includes("date") && !text.includes("effective date") && !text.includes("for platform")) {
+              if (
+                text.includes("date") &&
+                !text.includes("effective date") &&
+                !text.includes("for platform")
+              ) {
                 return parentNext as HTMLElement;
               }
             }
@@ -258,7 +268,11 @@ const ContractSigningView = ({
         }
 
         if (foundExaminerSignature) {
-          if (text.includes("date") && !text.includes("effective date") && !text.includes("for platform")) {
+          if (
+            text.includes("date") &&
+            !text.includes("effective date") &&
+            !text.includes("for platform")
+          ) {
             let el = textNode.parentElement;
             while (el && !blockTags.has(el.tagName)) {
               el = el.parentElement;
@@ -302,8 +316,8 @@ const ContractSigningView = ({
       [
         '[data-contract-signature="image"]',
         '[data-signature="examiner"]',
-        '#examiner-signature',
-        '.examiner-signature',
+        "#examiner-signature",
+        ".examiner-signature",
       ],
       (el) => {
         if (signatureImage) {
@@ -353,19 +367,24 @@ const ContractSigningView = ({
     if (dateField && formattedDate) {
       const currentText = dateField.textContent || "";
       const normalizedCurrent = normalized(currentText);
-      
-      if (normalizedCurrent.includes("date") && !currentText.includes(formattedDate)) {
-        const dateInput = dateField.querySelector<HTMLElement>("input, span, div, p");
+
+      if (
+        normalizedCurrent.includes("date") &&
+        !currentText.includes(formattedDate)
+      ) {
+        const dateInput = dateField.querySelector<HTMLElement>(
+          "input, span, div, p"
+        );
         if (dateInput) {
           const inputText = dateInput.textContent || "";
           if (!inputText.includes(formattedDate)) {
             if (normalized(inputText).includes("date")) {
-              dateInput.textContent = inputText.trim().endsWith(":") 
-                ? `${inputText.trim()} ${formattedDate}` 
+              dateInput.textContent = inputText.trim().endsWith(":")
+                ? `${inputText.trim()} ${formattedDate}`
                 : `${inputText.trim()}: ${formattedDate}`;
             } else {
-              dateInput.textContent = inputText.trim() 
-                ? `${inputText.trim()} ${formattedDate}` 
+              dateInput.textContent = inputText.trim()
+                ? `${inputText.trim()} ${formattedDate}`
                 : formattedDate;
             }
           }
@@ -378,22 +397,22 @@ const ContractSigningView = ({
             const nodeText = textNode.textContent || "";
             if (!nodeText.includes(formattedDate)) {
               if (normalized(nodeText).includes("date")) {
-                textNode.textContent = nodeText.trim().endsWith(":") 
-                  ? `${nodeText.trim()} ${formattedDate}` 
+                textNode.textContent = nodeText.trim().endsWith(":")
+                  ? `${nodeText.trim()} ${formattedDate}`
                   : `${nodeText.trim()}: ${formattedDate}`;
               } else {
-                textNode.textContent = nodeText.trim() 
-                  ? `${nodeText.trim()} ${formattedDate}` 
+                textNode.textContent = nodeText.trim()
+                  ? `${nodeText.trim()} ${formattedDate}`
                   : formattedDate;
               }
             }
           } else {
             if (!currentText.includes(formattedDate)) {
-              dateField.textContent = currentText.trim().endsWith(":") 
-                ? `${currentText.trim()} ${formattedDate}` 
-                : currentText.trim() 
-                  ? `${currentText.trim()}: ${formattedDate}` 
-                  : `Date: ${formattedDate}`;
+              dateField.textContent = currentText.trim().endsWith(":")
+                ? `${currentText.trim()} ${formattedDate}`
+                : currentText.trim()
+                ? `${currentText.trim()}: ${formattedDate}`
+                : `Date: ${formattedDate}`;
             }
           }
         }
@@ -403,8 +422,8 @@ const ContractSigningView = ({
     updateTargets(
       [
         '[data-contract-signature="name"]',
-        '#examiner-signature-name',
-        '.examiner-signature-name',
+        "#examiner-signature-name",
+        ".examiner-signature-name",
       ],
       (el) => {
         el.textContent = sigName || "";
@@ -414,17 +433,25 @@ const ContractSigningView = ({
     updateTargets(
       [
         '[data-contract-signature="date"]',
-        '#examiner-signature-date',
-        '.examiner-signature-date',
+        "#examiner-signature-date",
+        ".examiner-signature-date",
       ],
       (el) => {
         el.textContent = formattedDate;
       }
     );
-  }, [contractHtml, signatureImage, sigName, sigDate, agree, isSigning, signed]);
+  }, [
+    contractHtml,
+    signatureImage,
+    sigName,
+    sigDate,
+    agree,
+    isSigning,
+    signed,
+  ]);
 
   return (
-    <div className="flex justify-center h-screen bg-gray-100">
+    <div className="flex justify-center h-screen bg-gray-100 space-x-8">
       {/* LEFT: Contract */}
       <div
         id="contract"
@@ -436,13 +463,17 @@ const ContractSigningView = ({
           lineHeight: "1.4",
         }}
       >
-        <div dangerouslySetInnerHTML={{ __html: contractHtml || "<div>Empty contract HTML</div>" }} />
+        <div
+          dangerouslySetInnerHTML={{
+            __html: contractHtml || "<div>Empty contract HTML</div>",
+          }}
+        />
       </div>
 
       {/* RIGHT: Signature Panel */}
-      <div className="w-96 bg-white border-l-2 border-blue-600 p-8 overflow-y-auto shadow-lg">
-        <div className="border-b-2 border-blue-600 pb-3 mb-6">
-          <h2 className="text-xl font-bold text-blue-900">Sign Agreement</h2>
+      <div className="w-96 bg-white p-8 rounded-3xl mt-4">
+        <div className="border-b-2 border-[#00A8FF] pb-3 mb-6">
+          <div className="space-y-3 md:space-y-2 text-[24px]">Sign Agreement</div>
         </div>
 
         <div className="space-y-5">
@@ -494,7 +525,7 @@ const ContractSigningView = ({
             </button>
           </div>
 
-          <div className="border-2 border-gray-300 rounded p-3 bg-blue-50">
+          <div className="border-2 border-gray-300 rounded p-3">
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -517,7 +548,7 @@ const ContractSigningView = ({
             }
             className={`w-full py-3 px-4 rounded-lg font-bold text-white text-base transition-all border-2 ${
               agree && sigName && sigDate && signatureImage && !isSigning
-                ? "bg-blue-600 hover:bg-blue-700 border-blue-700 cursor-pointer shadow-md hover:shadow-lg"
+                ? "bg-blue-600 hover:bg-[#00A8FF] border-blue-700 cursor-pointer shadow-md hover:shadow-lg"
                 : "bg-gray-400 border-gray-400 cursor-not-allowed"
             }`}
           >

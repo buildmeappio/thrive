@@ -30,14 +30,14 @@ const ContractSigningPage = async ({ params, searchParams }: PageProps) => {
     notFound();
   }
 
-  if (token) {
-    try {
-      await authActions.verifyAccountToken({ token });
-    } catch (error) {
-      console.error("Error verifying token:", error);
-      notFound();
-    }
-  }
+  // if (token) {
+  //   try {
+  //     await authActions.verifyAccountToken({ token });
+  //   } catch (error) {
+  //     console.error("Error verifying token:", error);
+  //     notFound();
+  //   }
+  // }
 
   // Fetch contract by ID
   const contract = await getLatestContract(id);
