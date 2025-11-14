@@ -68,7 +68,7 @@ export async function cancelBooking(
     }
 
     // Verify the booking belongs to the claimant in the token
-    if (booking.examination.examinationId !== decoded.examinationId) {
+    if (booking.examination.id !== decoded.examinationId) {
       return {
         success: false,
         message: 'Unauthorized: Booking does not belong to this examination',
@@ -226,7 +226,7 @@ export async function getBookingDetails(
     }
 
     // Verify the booking belongs to the claimant in the token
-    if (booking.examination.examinationId !== decoded.examinationId) {
+    if (booking.examination.id !== decoded.examinationId) {
       return {
         success: false,
         message: 'Unauthorized: Booking does not belong to this examination',
