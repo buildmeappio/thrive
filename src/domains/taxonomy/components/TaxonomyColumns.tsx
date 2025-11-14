@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, ArrowUp, ArrowDown, Edit, Trash2 } from 'lucide-react';
 import { TaxonomyData, TaxonomyType } from '../types/Taxonomy';
-import { formatDate, formatTaxonomyName, minutesToTime } from '@/utils/date';
+import { formatDate, formatTaxonomyName } from '@/utils/date';
 import { convertUTCMinutesToLocal } from '@/utils/timezone';
 import React, { useRef, useEffect, useState } from 'react';
 
