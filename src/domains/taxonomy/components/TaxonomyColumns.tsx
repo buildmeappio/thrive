@@ -170,17 +170,22 @@ export const createTaxonomyColumns = (
           // Check if it's slot duration - if so, show as number (not time)
           const isSlotDuration = configName.includes('slot') && configName.includes('duration');
           
-          // Check if it's "start working hour time" - format as time
-          const isStartWorkingHourTime = (configName.includes('start') && configName.includes('working') && 
+          // Check if it's "start working hour time" - format as time with UTC conversion
+          const isStartWorkingHourTime = (configName.includes('start') && configName.includes('working') &&
                                           configName.includes('hour') && configName.includes('time'));
-          
+
+          // Check if it's "booking cancellation time" - show as-is without any conversion
+          const isBookingCancellationTime = (configName.includes('booking') &&
+                                             configName.includes('cancellation') &&
+                                             configName.includes('time'));
+
           // Check if it's total working hours or similar duration/total configs - show as number (not time)
           // But exclude "start working hour time" from this check
           const isTotalOrDuration = !isStartWorkingHourTime && (
-            configName.includes('total') || 
+            configName.includes('total') ||
             (configName.includes('working') && configName.includes('hour') && !configName.includes('start'))
           );
-          
+
           if (isStartWorkingHourTime) {
             // Format "start working hour time" as time (e.g., 480 UTC -> "3:00 AM" local)
             // Convert UTC minutes to local time
@@ -189,11 +194,19 @@ export const createTaxonomyColumns = (
             } else {
               formattedValue = String(numValue);
             }
+          } else if (isBookingCancellationTime) {
+            // For booking cancellation time, show as-is from DB without any conversion
+            // Just format as time (e.g., 744 -> "12:24 AM") but without timezone conversion
+            if (numValue >= 0 && numValue < 1440 && Number.isInteger(numValue)) {
+              formattedValue = minutesToTime(numValue);
+            } else {
+              formattedValue = String(numValue);
+            }
           } else if (!isSlotDuration && !isTotalOrDuration) {
             // For other time-related configs (time, hour, start, end), format as time
             const timeKeywords = ['time', 'hour', 'start', 'end'];
             const isTimeConfig = timeKeywords.some(keyword => configName.includes(keyword));
-            
+
             // Format as time if it's a time config and value is within valid time range (0-1439 minutes)
             if (isTimeConfig && numValue >= 0 && numValue < 1440 && Number.isInteger(numValue)) {
               formattedValue = minutesToTime(numValue);

@@ -102,9 +102,17 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
         let value = data[field.name];
 
         // Special handling: Convert local time to UTC minutes on CLIENT before sending to backend
+        // ONLY for start_working_hour_time, NOT for booking_cancellation_time
+        const configName = (taxonomy?.name || data['name'] || '').toLowerCase();
+        const isStartWorkingHourTime = configName === 'start_working_hour_time';
+        const isBookingCancellationTime = configName.includes('booking') &&
+                                          configName.includes('cancellation') &&
+                                          configName.includes('time');
+
         if (type === 'configuration' &&
             field.name === 'value' &&
-            (taxonomy?.name === 'start_working_hour_time' || data['name'] === 'start_working_hour_time') &&
+            isStartWorkingHourTime &&
+            !isBookingCancellationTime &&
             typeof value === 'string') {
           try {
             // Convert "8:00 AM" (browser timezone) → UTC minutes

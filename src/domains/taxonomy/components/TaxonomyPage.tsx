@@ -161,16 +161,14 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
             {config.name}
           </h1>
         </div>
-        {/* Add Button - Visible on Mobile, Hidden on Desktop (will show in table section) - Hidden for configuration */}
-        {type !== 'configuration' && (
-          <Button
-            onClick={handleCreate}
-            className="flex sm:hidden items-center justify-center gap-1.5 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white rounded-full px-3 py-1.5 hover:opacity-90 transition-opacity font-semibold text-xs"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span className="whitespace-nowrap">Add</span>
-          </Button>
-        )}
+        {/* Add Button - Visible on Mobile, Hidden on Desktop (will show in table section) */}
+        <Button
+          onClick={handleCreate}
+          className="flex sm:hidden items-center justify-center gap-1.5 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white rounded-full px-3 py-1.5 hover:opacity-90 transition-opacity font-semibold text-xs"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span className="whitespace-nowrap">Add</span>
+        </Button>
       </div>
 
       <div className="dashboard-zoom-mobile">
