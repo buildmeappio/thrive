@@ -108,16 +108,14 @@ const TaxonomyTable = ({
           </div>
         </div>
 
-        {/* Add Button - Hidden for configuration */}
-        {type !== 'configuration' && (
-          <Button
-            onClick={onCreate}
-            className="hidden sm:flex h-[50px] min-w-[100px] rounded-full items-center gap-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] cursor-pointer"
-          >
-            <Plus size={20} />
-            <span className='text-[16px]'>Add {singularName}</span>
-          </Button>
-        )}
+        {/* Add Button */}
+        <Button
+          onClick={onCreate}
+          className="hidden sm:flex h-[50px] min-w-[100px] rounded-full items-center gap-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] cursor-pointer"
+        >
+          <Plus size={20} />
+          <span className='text-[16px]'>Add {singularName}</span>
+        </Button>
       </div>
 
       <div className="mt-6 bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
