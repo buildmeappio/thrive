@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Booking Cancelled</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+        text-align: center;
+      }
+
+      .header img {
+        width: 120px;
+      }
+
+      .body {
+        margin-top: 20px;
+        font-size: 16px;
+        color: #333333;
+      }
+
+      .body p {
+        margin-bottom: 20px;
+      }
+
+      .alert-box {
+        background-color: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+      }
+
+      .alert-box p {
+        margin: 0;
+        color: #92400e;
+      }
+
+      .footer {
+        margin-top: 30px;
+        font-size: 14px;
+        color: #777777;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <img
+          src="https://assets.thriveassessmentcare.com/images/thriveLogo.png"
+          alt="Thrive Logo"
+        />
+      </div>
+
+      <div class="body">
+        <p>Hi {{examinerName}},</p>
+
+        <div class="alert-box">
+          <p><strong>A booking request has been cancelled by the claimant.</strong></p>
+        </div>
+
+        <p>
+          The claimant <strong>{{claimantName}}</strong> has cancelled their booking request for the following appointment:
+        </p>
+
+        <p>
+          <strong>Booking Details:</strong>
+        </p>
+        <ul>
+          <li><strong>Case Number:</strong> {{caseNumber}}</li>
+          <li><strong>Examination Type:</strong> {{examinationType}}</li>
+          <li><strong>Cancelled Date & Time:</strong> {{bookingDate}}</li>
+        </ul>
+
+        <p>
+          This booking request is no longer active and does not require any action from you.
+        </p>
+
+        <p>
+          If the claimant reschedules, you will receive a new booking notification.
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>
+          If you have any questions or need assistance, feel free to contact us at
+          <a href="mailto:support@thrivenetwork.ca">support@thrivenetwork.ca</a>.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

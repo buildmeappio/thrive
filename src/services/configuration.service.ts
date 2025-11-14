@@ -13,6 +13,7 @@ const CONFIG_KEYS = {
   TOTAL_WORKING_HOURS: 'total_working_hours',
   START_WORKING_HOUR: 'start_working_hour_time',
   ORGANIZATION_DUE_DATE: 'organization_due_date_after',
+  BOOKING_CANCELLATION_TIME: 'booking_cancellation_time',
 } as const;
 
 /**
@@ -113,10 +114,20 @@ export async function getOrganizationDueDateOffset(): Promise<number> {
   return value ?? 30; // Default to 30 days
 }
 
+/**
+ * Get booking cancellation time in hours
+ * Bookings within this time window cannot be cancelled or modified
+ */
+export async function getBookingCancellationTime(): Promise<number> {
+  const value = await getConfigValue(CONFIG_KEYS.BOOKING_CANCELLATION_TIME);
+  return value ?? 24; // Default to 24 hours
+}
+
 const configurationService = {
   getAvailabilitySettings,
   getConfigValue,
   getOrganizationDueDateOffset,
+  getBookingCancellationTime,
 };
 
 export default configurationService;

@@ -45,6 +45,40 @@
         color: #777777;
         text-align: center;
       }
+
+      .button-container {
+        margin-top: 30px;
+        text-align: center;
+      }
+
+      .button {
+        display: inline-block;
+        padding: 12px 30px;
+        margin: 10px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        transition: background-color 0.3s;
+      }
+
+      .button-modify {
+        background-color: #2563eb;
+        color: #ffffff;
+      }
+
+      .button-modify:hover {
+        background-color: #1d4ed8;
+      }
+
+      .button-cancel {
+        background-color: #dc2626;
+        color: #ffffff;
+      }
+
+      .button-cancel:hover {
+        background-color: #b91c1c;
+      }
     </style>
   </head>
 
@@ -79,6 +113,11 @@
           <li>If accepted, your appointment will be confirmed</li>
         </ul>
         <p>We appreciate your patience as we process your booking request.</p>
+
+        <div class="button-container">
+          <a href="{{modifyUrl}}" class="button button-modify">Modify Booking</a>
+          <a href="{{cancelUrl}}" class="button button-cancel">Cancel Booking</a>
+        </div>
       </div>
 
       <div class="footer">

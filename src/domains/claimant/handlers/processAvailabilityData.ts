@@ -11,7 +11,10 @@ import { generateTimeSlots, filterDaysWithSlots } from '../services/dateTimeSlot
 export const processAvailabilityData = (
   result: AvailableExaminersResult
 ): AvailableExaminersResult => {
-  return {
+  console.log('[processAvailabilityData] Raw result from server:', result);
+  console.log('[processAvailabilityData] First day first slot (raw):', result.days[0]?.slots[0]);
+
+  const processed = {
     ...result,
     days: result.days.map(
       (day: {
@@ -31,12 +34,15 @@ export const processAvailabilityData = (
             start: string | Date;
             end: string | Date;
             examiners: ExaminerAvailabilityOption[];
-          }) => ({
-            ...slot,
-            start: new Date(slot.start),
-            end: new Date(slot.end),
-            examiners: slot.examiners,
-          })
+          }) => {
+            const processedSlot = {
+              ...slot,
+              start: new Date(slot.start),
+              end: new Date(slot.end),
+              examiners: slot.examiners,
+            };
+            return processedSlot;
+          }
         ),
       })
     ),
@@ -44,6 +50,22 @@ export const processAvailabilityData = (
     endDate: new Date(result.endDate),
     dueDate: result.dueDate ? new Date(result.dueDate) : null,
   };
+
+  console.log('[processAvailabilityData] Processed first slot:', processed.days[0]?.slots[0]);
+  console.log(
+    '[processAvailabilityData] Slot start getHours():',
+    processed.days[0]?.slots[0]?.start.getHours()
+  );
+  console.log(
+    '[processAvailabilityData] Slot start toString():',
+    processed.days[0]?.slots[0]?.start.toString()
+  );
+  console.log(
+    '[processAvailabilityData] Slot has examiners:',
+    processed.days[0]?.slots[0]?.examiners.length
+  );
+
+  return processed;
 };
 
 /**
