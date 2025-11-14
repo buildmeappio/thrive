@@ -1,3 +1,4 @@
+
 "use server";
 
 import { jsPDF } from "jspdf";
@@ -125,7 +126,7 @@ export async function generateContractPDF(
     // Fee Structure Table
     const feeTableData: any[][] = [
       ["IME Fee", `$${feeStructure.IMEFee.toFixed(2)}`],
-      ["Record Review Fee", `$${feeStructure.recordReviewFee.toFixed(2)}`],
+      ["Report Review Fee", `$${feeStructure.recordReviewFee.toFixed(2)}`],
     ];
 
     if (feeStructure.hourlyRate) {

@@ -147,13 +147,13 @@ export default function EditFeeStructureModal({
             />
           </div>
 
-          {/* Record Review Fee */}
+          {/* Report Review Fee */}
           <div>
             <label
               htmlFor="record-review-fee"
               className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
             >
-              Record Review Fee ($) <span className="text-red-500">*</span>
+              Report Review Fee ($) <span className="text-red-500">*</span>
             </label>
             <input
               id="record-review-fee"

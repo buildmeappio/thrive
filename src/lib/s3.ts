@@ -69,8 +69,8 @@ export async function generatePresignedUrls(
 export async function uploadToS3(
   buffer: Buffer,
   fileName: string,
-  contentType: string = "application/pdf",
-  folder: string = "contracts"
+  contentType: string = "text/html",
+  folder: string = "contractS"
 ): Promise<string> {
   try {
     if (!ENV.AWS_S3_BUCKET) {

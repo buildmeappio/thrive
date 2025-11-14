@@ -25,7 +25,7 @@ The Examiner agrees to provide services at the following rates:
 | Service Type | Fee |
 |--------------|-----|
 | IME Fee | {{ime_fee}} |
-| Record Review Only | {{record_review_fee}} |
+| Report Review Only | {{record_review_fee}} |
 | Hourly Rate (if applicable) | {{hourly_rate}} |
 | Cancellation / No-show Fee | {{cancellation_fee}} |
 
