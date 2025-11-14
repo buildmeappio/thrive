@@ -75,6 +75,12 @@ export default function ExaminerDetail({ examiner }: Props) {
   >(null);
 
   const handleApprove = async () => {
+    // Check if fee structure exists before approving
+    if (!examiner.feeStructure) {
+      toast.error("Please add the fee structure before approving the examiner.");
+      return;
+    }
+
     setLoadingAction("approve");
     try {
       await approveExaminer(examiner.id);

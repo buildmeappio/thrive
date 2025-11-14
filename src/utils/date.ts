@@ -143,3 +143,24 @@ export const formatTaxonomyName = (name: string): string => {
   
   return result.trim();
 };
+
+// Convert minutes since midnight to time format (HH:MM AM/PM)
+// Example: 480 -> "8:00 AM", 900 -> "3:00 PM", 1439 -> "11:59 PM"
+export const minutesToTime = (minutes: number): string => {
+  if (typeof minutes !== 'number' || isNaN(minutes) || minutes < 0 || minutes >= 1440) {
+    return String(minutes);
+  }
+  
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  
+  // Convert to 12-hour format
+  const period = hours >= 12 ? 'PM' : 'AM';
+  let hour12 = hours % 12;
+  if (hour12 === 0) hour12 = 12; // 0 or 12 should display as 12
+  
+  // Format with leading zeros for minutes
+  const formattedMinutes = mins.toString().padStart(2, '0');
+  
+  return `${hour12}:${formattedMinutes} ${period}`;
+};
