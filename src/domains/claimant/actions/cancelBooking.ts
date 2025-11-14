@@ -48,9 +48,13 @@ export async function cancelBooking(
             examinationType: true,
           },
         },
-        examinerProfile: {
+        examiner: {
           include: {
-            user: true,
+            account: {
+              include: {
+                user: true,
+              },
+            },
           },
         },
       },
@@ -124,8 +128,8 @@ export async function cancelBooking(
     log.info(`Claimant cancelled booking ${bookingId} for examination ${decoded.examinationId}`);
 
     // Send notification email to examiner
-    const examinerEmail = booking.examinerProfile.user.email;
-    const examinerName = `${booking.examinerProfile.user.firstName} ${booking.examinerProfile.user.lastName}`;
+    const examinerEmail = booking.examiner.account.user.email;
+    const examinerName = `${booking.examiner.account.user.firstName} ${booking.examiner.account.user.lastName}`;
     const claimantName = `${booking.examination.claimant.firstName} ${booking.examination.claimant.lastName}`;
     const caseNumber = booking.examination.case.caseNumber;
     const bookingDate = new Date(booking.bookingTime).toLocaleString('en-US', {
@@ -202,9 +206,13 @@ export async function getBookingDetails(
             examinationType: true,
           },
         },
-        examinerProfile: {
+        examiner: {
           include: {
-            user: true,
+            account: {
+              include: {
+                user: true,
+              },
+            },
           },
         },
       },
@@ -232,7 +240,7 @@ export async function getBookingDetails(
       };
     }
 
-    const examinerName = `${booking.examinerProfile.user.firstName} ${booking.examinerProfile.user.lastName}`;
+    const examinerName = `${booking.examiner.account.user.firstName} ${booking.examiner.account.user.lastName}`;
     const bookingDate = new Date(booking.bookingTime).toLocaleString('en-US', {
       dateStyle: 'full',
       timeStyle: 'short',
