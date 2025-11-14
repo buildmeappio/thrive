@@ -151,10 +151,13 @@ export const createTaxonomyColumns = (
         formattedValue = formatTaxonomyName(displayValue);
         
         // For configuration, if name is "slot duration", append "(in minutes)"
+        // If name is "booking cancellation time", append "(in hours)"
         if (type === 'configuration' && field === 'name') {
           const configName = formattedValue.toLowerCase();
           if (configName.includes('slot') && configName.includes('duration')) {
             formattedValue = `${formattedValue} (in minutes)`;
+          } else if (configName.includes('booking') && configName.includes('cancellation') && configName.includes('time')) {
+            formattedValue = `${formattedValue} (in hours)`;
           }
         }
       } 
@@ -167,24 +170,10 @@ export const createTaxonomyColumns = (
         if (!isNaN(numValue) && typeof numValue === 'number') {
           const configName = String(row.original.name || '').toLowerCase();
           
-          // Check if it's slot duration - if so, show as number (not time)
-          const isSlotDuration = configName.includes('slot') && configName.includes('duration');
-          
           // Check if it's "start working hour time" - format as time with UTC conversion
+          // All other configurations (including new ones) will display as raw numbers
           const isStartWorkingHourTime = (configName.includes('start') && configName.includes('working') &&
                                           configName.includes('hour') && configName.includes('time'));
-
-          // Check if it's "booking cancellation time" - show as-is without any conversion
-          const isBookingCancellationTime = (configName.includes('booking') &&
-                                             configName.includes('cancellation') &&
-                                             configName.includes('time'));
-
-          // Check if it's total working hours or similar duration/total configs - show as number (not time)
-          // But exclude "start working hour time" from this check
-          const isTotalOrDuration = !isStartWorkingHourTime && (
-            configName.includes('total') ||
-            (configName.includes('working') && configName.includes('hour') && !configName.includes('start'))
-          );
 
           if (isStartWorkingHourTime) {
             // Format "start working hour time" as time (e.g., 480 UTC -> "3:00 AM" local)
@@ -194,28 +183,9 @@ export const createTaxonomyColumns = (
             } else {
               formattedValue = String(numValue);
             }
-          } else if (isBookingCancellationTime) {
-            // For booking cancellation time, show as-is from DB without any conversion
-            // Just format as time (e.g., 744 -> "12:24 AM") but without timezone conversion
-            if (numValue >= 0 && numValue < 1440 && Number.isInteger(numValue)) {
-              formattedValue = minutesToTime(numValue);
-            } else {
-              formattedValue = String(numValue);
-            }
-          } else if (!isSlotDuration && !isTotalOrDuration) {
-            // For other time-related configs (time, hour, start, end), format as time
-            const timeKeywords = ['time', 'hour', 'start', 'end'];
-            const isTimeConfig = timeKeywords.some(keyword => configName.includes(keyword));
-
-            // Format as time if it's a time config and value is within valid time range (0-1439 minutes)
-            if (isTimeConfig && numValue >= 0 && numValue < 1440 && Number.isInteger(numValue)) {
-              formattedValue = minutesToTime(numValue);
-            } else {
-              // Show numeric value as-is
-              formattedValue = String(numValue);
-            }
           } else {
-            // Slot duration, total working hours, or other durations: show as number
+            // For all other configurations (slot duration, booking cancellation time, total working hours, and new configs),
+            // show as raw number without any time formatting
             formattedValue = String(numValue);
           }
         } else {
