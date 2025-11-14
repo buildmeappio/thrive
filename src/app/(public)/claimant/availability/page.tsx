@@ -42,6 +42,31 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ token: string }>
     existingBooking,
   } = caseSummary.result;
 
+  // Check if existing booking is within cancellation time window
+  if (existingBooking?.bookingTime) {
+    const bookingTime = new Date(existingBooking.bookingTime);
+    const currentTime = new Date();
+    const timeUntilBooking = bookingTime.getTime() - currentTime.getTime();
+    const hoursUntilBooking = timeUntilBooking / (1000 * 60 * 60);
+
+    // Only check if booking is in the future
+    if (hoursUntilBooking > 0) {
+      const cancellationTimeHours = await configurationService.getBookingCancellationTime();
+
+      if (hoursUntilBooking < cancellationTimeHours) {
+        const formattedBookingTime = bookingTime.toLocaleString('en-US', {
+          dateStyle: 'full',
+          timeStyle: 'short',
+        });
+        redirect(
+          `/claimant/availability/success?status=error&message=${encodeURIComponent(
+            `You cannot modify your booking within ${cancellationTimeHours} hours of the appointment time. Your booking is scheduled for ${formattedBookingTime}. Please contact support for assistance.`
+          )}`
+        );
+      }
+    }
+  }
+
   // Fetch availability data on the server
   // Use approvedAt as start date, or today if approvedAt is not set
   // Also ensure existingBooking date is included if it's after approvedAt but before today

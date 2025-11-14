@@ -112,7 +112,7 @@ export async function cancelBooking(
     if (hoursUntilBooking < cancellationTimeHours && hoursUntilBooking > 0) {
       return {
         success: false,
-        message: `Cannot cancel booking within ${cancellationTimeHours} hours of the appointment time. Your booking is scheduled for ${bookingTime.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}. Please contact support for assistance.`,
+        message: `You cannot cancel your booking within ${cancellationTimeHours} hours of the appointment time. Your booking is scheduled for ${bookingTime.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}. Please contact support for assistance.`,
       };
     }
 

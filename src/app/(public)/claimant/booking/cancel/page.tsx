@@ -200,13 +200,6 @@ function CancelBookingContent() {
           >
             {cancelling ? 'Cancelling...' : 'Yes, Cancel Booking'}
           </button>
-          <button
-            onClick={() => router.back()}
-            disabled={cancelling}
-            className="w-full rounded-md bg-gray-200 px-4 py-3 text-gray-800 transition-colors hover:bg-gray-300 disabled:cursor-not-allowed disabled:bg-gray-100"
-          >
-            No, Go Back
-          </button>
         </div>
 
         {error && (

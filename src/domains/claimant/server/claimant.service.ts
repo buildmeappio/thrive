@@ -144,7 +144,7 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
 
       if (hoursUntilBooking < cancellationTimeHours && hoursUntilBooking > 0) {
         throw new Error(
-          `Cannot modify booking within ${cancellationTimeHours} hours of the appointment time. Your booking is scheduled for ${bookingTime.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}. Please contact support for assistance.`
+          `You cannot modify your booking within ${cancellationTimeHours} hours of the appointment time. Your booking is scheduled for ${bookingTime.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}. Please contact support for assistance.`
         );
       }
     }
