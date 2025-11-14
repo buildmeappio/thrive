@@ -353,7 +353,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                         type="text"
                       />
                       <FieldRow
-                        label="Record Review Fee"
+                        label="Report Review Fee"
                         value={`$${examiner.feeStructure.recordReviewFee}`}
                         type="text"
                       />
