@@ -374,8 +374,8 @@ model ClaimantBooking {
   chaperone   Chaperone?      @relation("ClaimantBookingChaperone", fields: [chaperoneId], references: [id])
   transporter Transporter?    @relation("ClaimantBookingTransporter", fields: [transporterId], references: [id])
 
-  @@unique([examinationId, claimantId]) // One booking per examination per claimant
   @@index([examinationId])
+  @@index([claimantId])
   @@index([examinerProfileId])
   @@index([bookingTime])
   @@index([status])
