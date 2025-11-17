@@ -87,7 +87,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
       // Add bias towards the selected province
       if (province && autoCompleteRef.current) {
         // Create a search query that includes the province
-        autoCompleteRef.current.setBounds(null);
+        autoCompleteRef.current.setBounds(undefined);
         autoCompleteRef.current.setOptions({
           ...autocompleteOptions,
           componentRestrictions: {

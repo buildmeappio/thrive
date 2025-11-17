@@ -10,7 +10,7 @@ import { Mail, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import forgotPassword from "../actions/forgotPassword";
 import Link from "next/link";
-import { createRoute, URLS } from "@/constants/route";
+import { URLS } from "@/constants/route";
 
 const forgotPasswordSchema = Yup.object().shape({
   email: Yup.string()
@@ -33,7 +33,7 @@ const ForgotPasswordForm: React.FC = () => {
       } else {
         toast.error(result.message || "Failed to send reset email");
       }
-    } catch (error) {
+    } catch {
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);

@@ -8,6 +8,7 @@ export const updateExaminerProfileAction = async (data: {
   firstName: string;
   lastName: string;
   phoneNumber: string;
+  landlineNumber?: string;
   emailAddress: string;
   provinceOfResidence: string;
   mailingAddress: string;
