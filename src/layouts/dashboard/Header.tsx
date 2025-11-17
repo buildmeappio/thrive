@@ -10,9 +10,17 @@ import { ENV } from "@/constants/variables";
 
 interface HeaderProps {
   currentPath?: string;
+  userName?: string;
+  userEmail?: string;
+  isActivationComplete?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ currentPath: _currentPath = "" }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  currentPath: _currentPath = "",
+  userName,
+  userEmail,
+  isActivationComplete = false,
+}) => {
   const { data: session } = useSession();
   const { toggleSidebar } = useSidebar();
 
@@ -53,7 +61,15 @@ const Header: React.FC<HeaderProps> = ({ currentPath: _currentPath = "" }) => {
           </Button>
 
           {/* Profile Dropdown */}
-          {session && <ProfileDropdown isMobile={false} session={session} />}
+          {session && (
+            <ProfileDropdown 
+              isMobile={false} 
+              session={session}
+              userName={userName}
+              userEmail={userEmail}
+              isActivationComplete={isActivationComplete}
+            />
+          )}
         </div>
       </div>
     </header>

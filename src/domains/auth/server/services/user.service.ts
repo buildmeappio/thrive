@@ -149,7 +149,7 @@ class UserService {
           password: hashedPassword,
         },
       });
-      const status = await prisma.examinerProfile.updateMany({
+      await prisma.examinerProfile.updateMany({
         where: {
           account: { userId: user.id },
         },

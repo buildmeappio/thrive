@@ -25,6 +25,7 @@ interface GoogleMapsInputProps {
     raw: any;
   }) => void;
   from?: string;
+  province?: string; // Filter addresses by province
 }
 
 /**
@@ -43,6 +44,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
   error,
   onPlaceSelect,
   from,
+  province,
 }) => {
   const autoCompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -57,19 +59,43 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
       return;
     }
 
-    // Skip if already initialized
-    if (autoCompleteRef.current) return;
+    // Clean up existing instance if province changed
+    if (autoCompleteRef.current) {
+      window.google?.maps?.event?.clearInstanceListeners(autoCompleteRef.current);
+      autoCompleteRef.current = null;
+    }
 
     try {
-      // Initialize Google Maps Autocomplete
+      // Initialize Google Maps Autocomplete with province-based bounds
+      const autocompleteOptions: any = {
+        fields: ["address_components", "formatted_address", "geometry"],
+        types: ["address"],
+        componentRestrictions: { country: "ca" }, // Restrict to Canada
+      };
+
+      // If a province is selected, add it to the search query bias
+      if (province) {
+        autocompleteOptions.bounds = null; // Clear any existing bounds
+        autocompleteOptions.strictBounds = false;
+      }
+
       autoCompleteRef.current = new window.google.maps.places.Autocomplete(
         inputRef.current,
-        {
-          fields: ["address_components", "formatted_address", "geometry"],
-          types: ["address"],
-          componentRestrictions: { country: "ca" }, // Restrict to Canada
-        }
+        autocompleteOptions
       );
+
+      // Add bias towards the selected province
+      if (province && autoCompleteRef.current) {
+        // Create a search query that includes the province
+        autoCompleteRef.current.setBounds(null);
+        autoCompleteRef.current.setOptions({
+          ...autocompleteOptions,
+          componentRestrictions: {
+            country: "ca",
+            administrativeArea: province, // Filter by province
+          },
+        });
+      }
 
       // Add place changed listener
       const placeChangedListener = autoCompleteRef.current?.addListener(
@@ -92,7 +118,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
       console.error("Error initializing Google Maps Autocomplete:", error);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded]);
+  }, [isLoaded, province]);
 
   const handlePlaceSelect = () => {
     if (!autoCompleteRef.current) return;

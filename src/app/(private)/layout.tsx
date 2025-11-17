@@ -34,10 +34,19 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
     isActivationComplete = false;
   }
 
+  // Get user's full name from database
+  const userName = examinerProfile
+    ? `${examinerProfile.firstName} ${examinerProfile.lastName}`
+    : user.name || "User";
+
   return (
     <SidebarProvider>
       <SearchProvider>
-        <Layout isActivationComplete={isActivationComplete}>
+        <Layout 
+          isActivationComplete={isActivationComplete}
+          userName={userName}
+          userEmail={examinerProfile?.emailAddress || user.email || ""}
+        >
           <Suspense
             fallback={
               <div className="flex h-full w-full flex-1 items-center justify-center">

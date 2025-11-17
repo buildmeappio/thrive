@@ -24,17 +24,23 @@ export default async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  // Check if user is trying to access settings
-  const isSettingsRoute = pathname.startsWith("/settings");
+  // Check if user is trying to access onboarding
+  const isOnboardingRoute = pathname.startsWith("/onboarding");
 
   console.log("isActivationComplete:", isActivationComplete);
   console.log("isProtectedRoute:", isProtectedRoute);
-  console.log("isSettingsRoute:", isSettingsRoute);
+  console.log("isOnboardingRoute:", isOnboardingRoute);
 
-  // If activation is not complete and user tries to access protected routes (except settings)
-  if (!isActivationComplete && isProtectedRoute && !isSettingsRoute) {
-    console.log("Redirecting to /settings");
-    return NextResponse.redirect(new URL("settings", request.url));
+  // If activation is complete and user tries to access onboarding, redirect to dashboard
+  if (isActivationComplete && isOnboardingRoute) {
+    console.log("Activation complete, redirecting to /examiner/dashboard");
+    return NextResponse.redirect(new URL("/examiner/dashboard", request.url));
+  }
+
+  // If activation is not complete and user tries to access protected routes (except onboarding)
+  if (!isActivationComplete && isProtectedRoute && !isOnboardingRoute) {
+    console.log("Redirecting to /examiner/onboarding");
+    return NextResponse.redirect(new URL("/examiner/onboarding", request.url));
   }
 
   return NextResponse.next();
@@ -48,6 +54,7 @@ export const config = {
      * - cases
      * - billing
      * - settings
+     * - onboarding
      * - support
      */
     "/dashboard",
@@ -58,6 +65,8 @@ export const config = {
     "/billing/:path*",
     "/settings",
     "/settings/:path*",
+    "/onboarding",
+    "/onboarding/:path*",
     "/support",
     "/support/:path*",
   ],

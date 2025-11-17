@@ -17,6 +17,7 @@ interface FormGoogleMapsInputProps {
     raw: any;
   }) => void;
   from?: string;
+  province?: string; // Filter addresses by province
 }
 
 /**
@@ -33,6 +34,7 @@ const FormGoogleMapsInput: React.FC<FormGoogleMapsInputProps> = ({
   className = "",
   onPlaceSelect,
   from = "",
+  province,
 }) => {
   const {
     control,
@@ -63,6 +65,7 @@ const FormGoogleMapsInput: React.FC<FormGoogleMapsInputProps> = ({
             }
           }}
           from={from}
+          province={province}
         />
       )}
     />

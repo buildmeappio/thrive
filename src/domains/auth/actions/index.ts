@@ -6,6 +6,8 @@ import getLanguages from "./getLanguages";
 import approveMedicalExaminer from "./approveMedicalExaminer";
 import verifyAccountToken from "./verifyAccountToken";
 import setPassword from "./setPassword";
+import changePassword from "./changePassword";
+import forgotPassword from "./forgotPassword";
 import getExaminerProfileDetails from "./getExaminerProfileDetails";
 import updateMedicalExaminer from "./updateMedicalExaminer";
 import getYearsOfExperience from "./getYearsOfExperience";
@@ -20,6 +22,8 @@ const authActions = {
   approveMedicalExaminer,
   verifyAccountToken,
   setPassword,
+  changePassword,
+  forgotPassword,
   getExaminerProfileDetails,
   updateMedicalExaminer,
   getYearsOfExperience,

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { parsePhoneNumberWithError } from "libphonenumber-js";
-import { validateNameField, validateLicenseField, validateAddressField } from "@/utils/inputValidation";
+import { validateNameField, validateLicenseField } from "@/utils/inputValidation";
 
 export const loginSchema = z.object({
   email: z.string().email({ message: "Enter a valid email address" }),

@@ -5,6 +5,8 @@ import createMedicalExaminer from "./createMedicalExaminer";
 import approveMedicalExaminer from "./approveMedicalExaminer";
 import verifyAccountToken from "./verifyAccountToken";
 import setPassword from "./setPassword";
+import changePassword from "./changePassword";
+import forgotPassword from "./forgotPassword";
 import login from "./login";
 import getLanguages from "./getLanguages";
 import getExaminerProfileDetails from "./getExaminerProfileDetails";
@@ -20,6 +22,8 @@ const handlers = {
   approveMedicalExaminer,
   verifyAccountToken,
   setPassword,
+  changePassword,
+  forgotPassword,
   login,
   getLanguages,
   getExaminerProfileDetails,
