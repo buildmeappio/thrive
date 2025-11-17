@@ -136,19 +136,34 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
     }
 
     // Check if existing booking is within the cancellation time window
+    // Note: We check WHEN the existing booking was created, not when it's scheduled for
+    // This prevents modifications if the booking was created within the cancellation window
     if (
       existingBooking &&
       (existingBooking.status === 'PENDING' || existingBooking.status === 'ACCEPT')
     ) {
       const cancellationTimeHours = await getBookingCancellationTime();
-      const bookingTime = new Date(existingBooking.bookingTime);
+      const existingBookingCreatedAt = new Date(existingBooking.createdAt);
       const currentTime = new Date();
-      const timeUntilBooking = bookingTime.getTime() - currentTime.getTime();
-      const hoursUntilBooking = timeUntilBooking / (1000 * 60 * 60);
+      const timeSinceBookingCreated = currentTime.getTime() - existingBookingCreatedAt.getTime();
+      const hoursSinceBookingCreated = timeSinceBookingCreated / (1000 * 60 * 60);
 
-      if (hoursUntilBooking < cancellationTimeHours && hoursUntilBooking > 0) {
+      log.info('[Create Booking] Checking modification window:', {
+        existingBookingCreatedAt: existingBookingCreatedAt.toISOString(),
+        currentTime: currentTime.toISOString(),
+        hoursSinceBookingCreated,
+        cancellationTimeHours,
+        shouldBlock: hoursSinceBookingCreated < cancellationTimeHours,
+      });
+
+      if (hoursSinceBookingCreated < cancellationTimeHours) {
+        const formattedCreatedTime = existingBookingCreatedAt.toLocaleString('en-US', {
+          dateStyle: 'full',
+          timeStyle: 'short',
+        });
+        log.info('[Create Booking] BLOCKING: Booking created within modification window');
         throw new Error(
-          `You cannot modify your booking within ${cancellationTimeHours} hours of the appointment time. Your booking is scheduled for ${bookingTime.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}. Please contact support for assistance.`
+          `You cannot modify your booking within ${cancellationTimeHours} hours of creating it. Your booking was created on ${formattedCreatedTime}. Please contact support for assistance.`
         );
       }
     }

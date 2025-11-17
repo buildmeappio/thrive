@@ -119,6 +119,8 @@ const getCaseSummaryByJWT = async (token: string) => {
                 ? `${existingBooking.examiner.account.user.firstName} ${existingBooking.examiner.account.user.lastName}`
                 : null,
               bookingTime: existingBooking.bookingTime,
+              createdAt: existingBooking.createdAt, // Add createdAt for modification window check
+              status: existingBooking.status, // Add status for reference
               interpreterId: existingBooking.interpreterId,
               chaperoneId: existingBooking.chaperoneId,
               transporterId: existingBooking.transporterId,
