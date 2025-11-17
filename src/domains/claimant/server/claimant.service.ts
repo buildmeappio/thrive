@@ -134,7 +134,7 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
     // Check if existing booking is within the cancellation time window
     if (
       existingBooking &&
-      (existingBooking.status === 'PENDING' || existingBooking.status === 'ACCEPTED')
+      (existingBooking.status === 'PENDING' || existingBooking.status === 'ACCEPT')
     ) {
       const cancellationTimeHours = await getBookingCancellationTime();
       const bookingTime = new Date(existingBooking.bookingTime);
@@ -150,11 +150,11 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
     }
 
     const result = await prisma.$transaction(async tx => {
-      // If there's an existing booking with PENDING or ACCEPTED status, mark it as DISCARDED
+      // If there's an existing booking with PENDING or ACCEPT status, mark it as DISCARDED
       // This allows claimants to modify their booking even after examiner has accepted it
       if (
         existingBooking &&
-        (existingBooking.status === 'PENDING' || existingBooking.status === 'ACCEPTED')
+        (existingBooking.status === 'PENDING' || existingBooking.status === 'ACCEPT')
       ) {
         await (tx as any).claimantBooking.update({
           where: { id: existingBooking.id },
@@ -199,8 +199,8 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
       return booking;
     });
 
-    // If an ACCEPTED booking was discarded, notify the previous examiner
-    if (existingBooking && existingBooking.status === 'ACCEPTED') {
+    // If an ACCEPT booking was discarded, notify the previous examiner
+    if (existingBooking && existingBooking.status === 'ACCEPT') {
       try {
         const previousExaminer = await prisma.examinerProfile.findUnique({
           where: { id: existingBooking.examinerProfileId },

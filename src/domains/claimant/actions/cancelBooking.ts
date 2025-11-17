@@ -82,15 +82,15 @@ export async function cancelBooking(
       };
     }
 
-    // Check if booking can be cancelled (allow PENDING and ACCEPTED)
+    // Check if booking can be cancelled (allow PENDING and ACCEPT)
     if (
       booking.status !== 'PENDING' &&
-      booking.status !== 'ACCEPTED' &&
-      booking.status !== 'DECLINED'
+      booking.status !== 'ACCEPT' &&
+      booking.status !== 'DECLINE'
     ) {
       return {
         success: false,
-        message: `Cannot cancel booking with status: ${booking.status}. Only PENDING and ACCEPTED bookings can be cancelled.`,
+        message: `Cannot cancel booking with status: ${booking.status}. Only PENDING and ACCEPT bookings can be cancelled.`,
       };
     }
 
@@ -116,11 +116,11 @@ export async function cancelBooking(
       };
     }
 
-    // Update booking status to DECLINED
+    // Update booking status to DECLINE
     await (prisma as any).claimantBooking.update({
       where: { id: bookingId },
       data: {
-        status: 'DECLINED',
+        status: 'DECLINE',
         updatedAt: new Date(),
       },
     });
