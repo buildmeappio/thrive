@@ -48,8 +48,18 @@ export const config = {
      * Match all private routes:
      * - dashboard (and its sub-paths)
      * - cases (and its sub-paths)
+     * - examiner (and its sub-paths)
+     * - interpreter (and its sub-paths)
+     * - organization (and its sub-paths)
+     * - transporter (and its sub-paths)
+     * - support (and its sub-paths)
      */
     "/dashboard/:path*",
     "/cases/:path*",
+    "/examiner/:path*",
+    "/interpreter/:path*",
+    "/organization/:path*",
+    "/transporter/:path*",
+    "/support/:path*",
   ],
 };

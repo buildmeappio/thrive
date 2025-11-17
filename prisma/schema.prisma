@@ -374,8 +374,8 @@ model ClaimantBooking {
   chaperone   Chaperone?      @relation("ClaimantBookingChaperone", fields: [chaperoneId], references: [id])
   transporter Transporter?    @relation("ClaimantBookingTransporter", fields: [transporterId], references: [id])
 
-  @@unique([examinationId, claimantId]) // One booking per examination per claimant
   @@index([examinationId])
+  @@index([claimantId])
   @@index([examinerProfileId])
   @@index([bookingTime])
   @@index([status])
@@ -975,13 +975,13 @@ model Contract {
   status               ContractStatus @default(DRAFT) @map("status")
   data                 Json           @map("data")
   dataHash             String         @map("data_hash") @db.VarChar(64)
-  unsignedHtmlS3Key     String?        @map("unsigned_html_s3_key") @db.VarChar(500)
-  unsignedHtmlSha256    String?        @map("unsigned_html_sha256") @db.VarChar(64)
-  signedHtmlS3Key       String?        @map("signed_html_s3_key") @db.VarChar(500)
-  signedHtmlSha256      String?        @map("signed_html_sha256") @db.VarChar(64)
+  unsignedHtmlS3Key    String?        @map("unsigned_html_s3_key") @db.VarChar(500)
+  unsignedHtmlSha256   String?        @map("unsigned_html_sha256") @db.VarChar(64)
+  signedHtmlS3Key      String?        @map("signed_html_s3_key") @db.VarChar(500)
+  signedHtmlSha256     String?        @map("signed_html_sha256") @db.VarChar(64)
   googleDocId          String?        @map("google_doc_id") @db.VarChar(500)
   googleDocUrl         String?        @map("google_doc_url") @db.Text
-  driveHtmlId           String?        @map("drive_html_id") @db.VarChar(500)
+  driveHtmlId          String?        @map("drive_html_id") @db.VarChar(500)
   sentAt               DateTime?      @map("sent_at") @db.Timestamptz()
   viewedAt             DateTime?      @map("viewed_at") @db.Timestamptz()
   signedAt             DateTime?      @map("signed_at") @db.Timestamptz()
