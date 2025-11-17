@@ -338,7 +338,7 @@ const ExaminerOptions: React.FC<ExaminerOptionsProps> = ({
                                         {isPreviousBooking && (
                                           <div className="absolute -top-2 -right-2 z-10">
                                             <span className="inline-flex items-center rounded-full bg-blue-500 px-2 py-0.5 text-[9px] font-semibold text-white shadow-md">
-                                              Previous
+                                              Booking
                                             </span>
                                           </div>
                                         )}

@@ -49,15 +49,28 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ token: string }>
     const timeUntilBooking = bookingTime.getTime() - currentTime.getTime();
     const hoursUntilBooking = timeUntilBooking / (1000 * 60 * 60);
 
+    console.log('[Availability Page] Cancellation check:', {
+      bookingTime: bookingTime.toISOString(),
+      currentTime: currentTime.toISOString(),
+      hoursUntilBooking,
+    });
+
     // Only check if booking is in the future
     if (hoursUntilBooking > 0) {
       const cancellationTimeHours = await configurationService.getBookingCancellationTime();
+
+      console.log('[Availability Page] Cancellation window:', {
+        cancellationTimeHours,
+        hoursUntilBooking,
+        shouldBlock: hoursUntilBooking < cancellationTimeHours,
+      });
 
       if (hoursUntilBooking < cancellationTimeHours) {
         const formattedBookingTime = bookingTime.toLocaleString('en-US', {
           dateStyle: 'full',
           timeStyle: 'short',
         });
+        console.log('[Availability Page] BLOCKING: Within cancellation window');
         redirect(
           `/claimant/availability/success?status=error&message=${encodeURIComponent(
             `You cannot modify your booking within ${cancellationTimeHours} hours of the appointment time. Your booking is scheduled for ${formattedBookingTime}. Please contact support for assistance.`

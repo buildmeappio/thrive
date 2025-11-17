@@ -120,7 +120,13 @@ export async function getOrganizationDueDateOffset(): Promise<number> {
  */
 export async function getBookingCancellationTime(): Promise<number> {
   const value = await getConfigValue(CONFIG_KEYS.BOOKING_CANCELLATION_TIME);
-  return value ?? 24; // Default to 24 hours
+  const result = value ?? 24; // Default to 24 hours
+  console.log('[Configuration Service] getBookingCancellationTime:', {
+    configKey: CONFIG_KEYS.BOOKING_CANCELLATION_TIME,
+    valueFromDb: value,
+    returning: result,
+  });
+  return result;
 }
 
 const configurationService = {
