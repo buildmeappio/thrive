@@ -21,13 +21,14 @@ interface OverrideHoursProps {
 const OverrideHours: React.FC<OverrideHoursProps> = ({ form }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
-  const overrideHours = form.watch("overrideHours") || [];
+  const rawOverrideHours = form.watch("overrideHours");
+  const overrideHours = React.useMemo(() => rawOverrideHours ?? [], [rawOverrideHours]);
 
   // Sync selectedDates with overrideHours when component mounts or overrideHours changes
   React.useEffect(() => {
     const dates = new Set(overrideHours.map((oh) => oh.date));
     setSelectedDates(dates);
-  }, [overrideHours.length]); // Only re-run when the number of override hours changes
+  }, [overrideHours]);
 
   // Calendar functions
   const getDaysInMonth = (date: Date) => {

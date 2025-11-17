@@ -15,9 +15,13 @@ import { useForm } from "@/hooks/use-form-hook";
 
 type Step9PasswordProps = {
   token: string;
+  isPasswordReset?: boolean;
 };
 
-const SetPasswordForm: React.FC<Step9PasswordProps> = ({ token }) => {
+const SetPasswordForm: React.FC<Step9PasswordProps> = ({ 
+  token,
+  isPasswordReset = false
+}) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
@@ -36,10 +40,17 @@ const SetPasswordForm: React.FC<Step9PasswordProps> = ({ token }) => {
         password: values.password,
         confirmPassword: values.confirmPassword,
         token: token,
+        isPasswordReset: isPasswordReset,
       });
 
       if (result.success) {
-        router.push("/create-account/success");
+        if (isPasswordReset) {
+          // For password reset, redirect to login with success message
+          router.push("/login?reset=success");
+        } else {
+          // For account creation, redirect to success page
+          router.push("/create-account/success");
+        }
       } else {
         setError(result.message || "Failed to set password");
       }

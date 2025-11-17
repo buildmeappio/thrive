@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { getLatestContract } from "@/domains/contract/server/actions/getLatestContract.actions";
 import ContractSigningView from "@/domains/contract/components/ContractSigningView";
-import authActions from "@/domains/auth/actions";
 
 interface PageProps {
   params: Promise<{ id: string }>;

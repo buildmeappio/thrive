@@ -9,7 +9,7 @@ export type InputValidationType =
   | "numeric" // Money fields - allows digits and decimal point
   | "integer" // Count fields - allows digits only
   | "banking" // Banking numbers - allows digits only
-  | "address" // Address fields - allows alphanumeric, spaces, commas, periods, hyphens, apostrophes
+  | "address" // Address fields - allows alphanumeric, spaces, commas, periods, @, hyphens, apostrophes, #, /
   | "text" // Text areas - allows most characters but sanitizes dangerous ones
   | "email" // Email - already handled by type="email"
   | "phone" // Phone - already handled by PhoneInput component
@@ -27,7 +27,7 @@ const VALIDATION_PATTERNS: Record<
   numeric: /^[0-9.]*$/, // Digits and decimal point
   integer: /^[0-9]*$/, // Digits only
   banking: /^[0-9]*$/, // Digits only
-  address: /^[a-zA-Z0-9\s,.'-]*$/, // Alphanumeric, spaces, commas, periods, apostrophes, hyphens
+  address: /^[a-zA-Z0-9\s,.@'#/-]*$/, // Alphanumeric, spaces, commas, periods, @, apostrophes, #, /, hyphens
   text: /^[\s\S]*$/, // All characters (will sanitize dangerous ones)
 };
 

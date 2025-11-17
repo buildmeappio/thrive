@@ -9,19 +9,51 @@ import Header from "./Header";
 type LayoutWrapperProps = {
   children: ReactNode;
   isActivationComplete: boolean;
+  userName?: string;
+  userEmail?: string;
 };
 
 const LayoutWrapper = ({
   children,
   isActivationComplete,
+  userName,
+  userEmail,
 }: LayoutWrapperProps) => {
   const { isSidebarOpen, closeSidebar } = useSidebar();
   const pathname = usePathname();
+  const isOnboarding = pathname?.includes("/onboarding");
+
+  // Render with header but without sidebar for onboarding
+  if (isOnboarding) {
+    return (
+      <div className="min-h-screen bg-[#F9FAFB]">
+        {/* Fixed Header */}
+        <Header 
+          currentPath={pathname} 
+          userName={userName} 
+          userEmail={userEmail}
+          isActivationComplete={isActivationComplete}
+        />
+        
+        {/* Main Content without sidebar */}
+        <div className="pt-20">
+          <main className="flex-1 min-h-[calc(100vh-5rem)]">
+            {children}
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F4FBFF]">
       {/* Fixed Header */}
-      <Header currentPath={pathname} />
+      <Header 
+        currentPath={pathname} 
+        userName={userName} 
+        userEmail={userEmail}
+        isActivationComplete={isActivationComplete}
+      />
 
       <div className="flex pt-20">
         {/* Fixed Sidebar */}

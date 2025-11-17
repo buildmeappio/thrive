@@ -4,6 +4,7 @@ const getJwtSecret = (
   name:
     | "JWT_OTP_SECRET"
     | "JWT_SET_PASSWORD_SECRET"
+    | "JWT_FORGET_PASSWORD_SECRET"
     | "JWT_EXAMINER_INFO_REQUEST_SECRET"
     | "JWT_CLAIMANT_APPROVE_SECRET"
 ) => {
@@ -46,6 +47,30 @@ export function verifyPasswordToken(token: string): JwtPayload | null {
   try {
     const JWT_SET_PASSWORD_SECRET = getJwtSecret("JWT_SET_PASSWORD_SECRET");
     return jwt.verify(token, JWT_SET_PASSWORD_SECRET) as JwtPayload;
+  } catch {
+    return null;
+  }
+}
+
+// ----- Forgot Password Tokens -----
+export function signForgotPasswordToken(
+  payload: {
+    email: string;
+    id: string;
+    accountId: string;
+    role: string;
+  },
+  expiresIn: SignOptions["expiresIn"] = "1h"
+): string {
+  const options: SignOptions = { expiresIn };
+  const JWT_FORGET_PASSWORD_SECRET = getJwtSecret("JWT_FORGET_PASSWORD_SECRET");
+  return jwt.sign(payload, JWT_FORGET_PASSWORD_SECRET, options);
+}
+
+export function verifyForgotPasswordToken(token: string): JwtPayload | null {
+  try {
+    const JWT_FORGET_PASSWORD_SECRET = getJwtSecret("JWT_FORGET_PASSWORD_SECRET");
+    return jwt.verify(token, JWT_FORGET_PASSWORD_SECRET) as JwtPayload;
   } catch {
     return null;
   }

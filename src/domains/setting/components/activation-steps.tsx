@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Play, CircleCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -21,7 +22,7 @@ interface ActivationStepsProps {
 }
 
 const ActivationSteps: React.FC<ActivationStepsProps> = ({
-  initialActivationStep,
+  initialActivationStep: _initialActivationStep,
   examinerProfileId,
   profileData,
   specialtyData,
@@ -29,27 +30,55 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
   payoutData,
   languages,
 }) => {
+  const router = useRouter();
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [steps, setSteps] = useState<ActivationStep[]>(
     initializeActivationSteps()
   );
 
-  // Initialize steps based on the activation step from props
+  // Initialize steps based on activationStep - steps must be completed in order
   useEffect(() => {
-    if (initialActivationStep) {
-      setSteps((prevSteps) =>
-        prevSteps.map((step) => {
-          const completedStep = prevSteps.find(
-            (s) => s.id === initialActivationStep
-          );
-          if (completedStep && step.order <= completedStep.order) {
-            return { ...step, completed: true };
-          }
-          return step;
-        })
-      );
+    if (!profileData?.activationStep) {
+      // No steps completed yet
+      setSteps(initializeActivationSteps());
+      return;
     }
-  }, [initialActivationStep]);
+
+    setSteps((prevSteps) =>
+      prevSteps.map((step) => {
+        // Mark steps as completed based on activation order
+        switch (profileData.activationStep) {
+          case "profile":
+            return { ...step, completed: step.id === "profile" };
+          case "specialty":
+            return {
+              ...step,
+              completed: step.id === "profile" || step.id === "specialty",
+            };
+          case "availability":
+            return {
+              ...step,
+              completed:
+                step.id === "profile" ||
+                step.id === "specialty" ||
+                step.id === "availability",
+            };
+          case "payout":
+            return { ...step, completed: true }; // All steps completed
+          default:
+            return step;
+        }
+      })
+    );
+  }, [profileData?.activationStep]);
+
+  // Check if all steps are completed and redirect to dashboard
+  // When activationStep is "payout", all 4 steps are complete in order
+  useEffect(() => {
+    if (profileData?.activationStep === "payout") {
+      router.push("/dashboard");
+    }
+  }, [router, profileData?.activationStep]);
 
   const getNextUncompletedStepOrder = () => {
     const uncompletedStep = steps.find((step) => !step.completed);
@@ -57,6 +86,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
   };
 
   const isStepClickable = (stepOrder: number) => {
+    // Only the next uncompleted step is clickable
     return stepOrder === getNextUncompletedStepOrder();
   };
 
@@ -182,14 +212,14 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
           <button
             key={step.id}
             onClick={() => handleStepClick(step)}
-            disabled={!clickable || step.completed}
+            disabled={!clickable}
             className={cn(
               "w-full flex items-center justify-between p-3 rounded-2xl transition-all duration-200",
               "border-2 bg-white",
               step.completed
-                ? "border-none bg-white"
+                ? "border-none bg-white cursor-default"
                 : clickable
-                ? "cursor-pointer border-transparent"
+                ? "cursor-pointer border-transparent hover:border-[#00A8FF]/20"
                 : "opacity-50 cursor-not-allowed border-transparent"
             )}>
             <div className="flex items-center gap-4 flex-1">

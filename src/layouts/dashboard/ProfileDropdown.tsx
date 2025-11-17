@@ -11,12 +11,16 @@ type ProfileDropdownProps = {
   isMobile: boolean;
   session: Session;
   isActivationComplete?: boolean;
+  userName?: string;
+  userEmail?: string;
 };
 
 const ProfileDropdown = ({
   isMobile,
   session,
   isActivationComplete = false,
+  userName,
+  userEmail,
 }: ProfileDropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -58,7 +62,7 @@ const ProfileDropdown = ({
   }, []);
 
   const getInitials = () => {
-    const name = session?.user?.name || session?.user?.email || "U";
+    const name = userName || session?.user?.name || session?.user?.email || "U";
     return name
       .split(" ")
       .map((n) => n[0])
@@ -67,6 +71,10 @@ const ProfileDropdown = ({
       .slice(0, 2);
   };
 
+  // Use provided userName and userEmail, fallback to session
+  const displayName = userName || session?.user?.name || "User";
+  const displayEmail = userEmail || session?.user?.email || "";
+
   const renderDropdown = () => {
     return (
       <div
@@ -74,8 +82,8 @@ const ProfileDropdown = ({
         className="absolute left-[100%] z-50 mt-2 w-30 -translate-x-[100%] -translate-y-[5%] divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white shadow-lg"
         style={{ minWidth: 220 }}>
         <div className="px-4 py-3 text-sm text-gray-900">
-          <div className="font-medium">{session?.user?.name}</div>
-          <div className="truncate text-gray-500">{session?.user?.email}</div>
+          <div className="font-medium">{displayName}</div>
+          <div className="truncate text-gray-500">{displayEmail}</div>
         </div>
         <ul className="py-2 text-sm text-gray-700">
           <li>
@@ -178,7 +186,7 @@ const ProfileDropdown = ({
           onClick={() => setDropdownOpen((prev) => !prev)}>
           <AvatarImage
             src={profilePhotoUrl}
-            alt={session?.user?.name || "User"}
+            alt={displayName}
           />
           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
             {getInitials()}
@@ -200,7 +208,7 @@ const ProfileDropdown = ({
         onClick={() => setDropdownOpen((prev) => !prev)}>
         <AvatarImage
           src={profilePhotoUrl}
-          alt={session?.user?.name || "User"}
+          alt={displayName}
         />
         <AvatarFallback className="bg-[#00A8FF] text-white font-semibold text-xl">
           {getInitials()}
