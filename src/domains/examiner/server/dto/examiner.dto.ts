@@ -5,12 +5,13 @@ type ExaminerWithRelations = ExaminerProfile & {
   account: Account & {
     user: User;
   };
-  medicalLicenseDocument: Documents;
-  resumeDocument: Documents;
-  ndaDocument: Documents;
-  insuranceDocument: Documents;
+  medicalLicenseDocument: Documents | null;
+  resumeDocument: Documents | null;
+  ndaDocument: Documents | null;
+  insuranceDocument: Documents | null;
   examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
   feeStructure: ExaminerFeeStructure[];
+  contracts?: Array<any>; // Optional contracts relation
 };
 
 export class ExaminerDto {
