@@ -1,5 +1,4 @@
 import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
 import { Roles } from "../../constants/roles";
 import { tokenService, userService } from "../services";
 import emailService from "@/server/services/email.service";
@@ -39,7 +38,7 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
     }
     
     console.log(`[ForgotPassword] User found: ${user.id}, email in DB: ${user.email}, sending email to: ${user.email}`);
-  } catch (error) {
+  } catch {
     // User not found - same behavior as login
     console.log(`[ForgotPassword] User not found for: ${email}`);
     // For security, don't reveal if email exists or not

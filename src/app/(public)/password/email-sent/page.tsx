@@ -3,11 +3,11 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Mail, ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { toast } from "sonner";
 import forgotPassword from "@/domains/auth/actions/forgotPassword";
 
-const EmailSentPage = () => {
+const EmailSentContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
@@ -27,7 +27,7 @@ const EmailSentPage = () => {
       } else {
         toast.error(result.message || "Failed to resend email");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to resend email");
     } finally {
       setIsResending(false);
@@ -97,6 +97,20 @@ const EmailSentPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const EmailSentPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="bg-[#F4FBFF] h-screen flex items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00A8FF] border-t-transparent"></div>
+        </div>
+      }
+    >
+      <EmailSentContent />
+    </Suspense>
   );
 };
 

@@ -2,6 +2,7 @@ import Image from "@/components/Image";
 import { LoginForm } from "@/domains/auth";
 import { Metadata } from "next";
 import { ENV } from "@/constants/variables";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Login | Thrive Examiner",
@@ -22,7 +23,15 @@ const Page = () => {
               <h2 className="mb-6 text-2xl font-semibold sm:text-[30px]">
                 Log In
               </h2>
-              <LoginForm />
+              <Suspense
+                fallback={
+                  <div className="flex justify-center py-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00A8FF] border-t-transparent"></div>
+                  </div>
+                }
+              >
+                <LoginForm />
+              </Suspense>
             </div>
           </div>
         </div>
