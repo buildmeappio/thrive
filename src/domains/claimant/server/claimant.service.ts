@@ -111,13 +111,17 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
     throw HttpError.notFound(ErrorMessages.CASE_NOT_FOUND);
   }
 
-  // Check if booking already exists for this examination and claimant
+  // Check if booking already exists for this examination
+  // Only look for active bookings (PENDING or ACCEPT), ignore DISCARDED ones
+  // Note: examinationId is sufficient as each examination belongs to one claimant
   // Note: Prisma client needs to be regenerated after schema changes
   const existingBooking = await (prisma as any).claimantBooking.findFirst({
     where: {
       examinationId: data.examinationId,
-      claimantId: data.claimantId,
       deletedAt: null,
+      status: {
+        in: ['PENDING', 'ACCEPT'],
+      },
     },
   });
 

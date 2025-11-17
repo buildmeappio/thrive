@@ -109,18 +109,27 @@ export async function cancelBooking(
     const timeUntilBooking = bookingTime.getTime() - currentTime.getTime();
     const hoursUntilBooking = timeUntilBooking / (1000 * 60 * 60);
 
+    log.info('[Cancel Booking] Cancellation check:', {
+      bookingTime: bookingTime.toISOString(),
+      currentTime: currentTime.toISOString(),
+      hoursUntilBooking,
+      cancellationTimeHours,
+      shouldBlock: hoursUntilBooking < cancellationTimeHours && hoursUntilBooking > 0,
+    });
+
     if (hoursUntilBooking < cancellationTimeHours && hoursUntilBooking > 0) {
+      log.info('[Cancel Booking] BLOCKING: Within cancellation window');
       return {
         success: false,
         message: `You cannot cancel your booking within ${cancellationTimeHours} hours of the appointment time. Your booking is scheduled for ${bookingTime.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}. Please contact support for assistance.`,
       };
     }
 
-    // Update booking status to DECLINE
+    // Update booking status to DISCARDED (claimant cancelled)
     await (prisma as any).claimantBooking.update({
       where: { id: bookingId },
       data: {
-        status: 'DECLINE',
+        status: 'DISCARDED',
         updatedAt: new Date(),
       },
     });
@@ -131,7 +140,7 @@ export async function cancelBooking(
     const examinerEmail = booking.examiner.account.user.email;
     const examinerName = `${booking.examiner.account.user.firstName} ${booking.examiner.account.user.lastName}`;
     const claimantName = `${booking.examination.claimant.firstName} ${booking.examination.claimant.lastName}`;
-    const caseNumber = booking.examination.case.caseNumber;
+    const caseNumber = booking.examination.caseNumber;
     const bookingDate = new Date(booking.bookingTime).toLocaleString('en-US', {
       dateStyle: 'full',
       timeStyle: 'short',
@@ -161,7 +170,7 @@ export async function cancelBooking(
       message: 'Booking cancelled successfully',
       booking: {
         id: booking.id,
-        caseNumber: booking.examination.case.caseNumber,
+        caseNumber: booking.examination.caseNumber,
         examinationType: booking.examination.examinationType.name,
         bookingDate,
         examinerName,
@@ -251,7 +260,7 @@ export async function getBookingDetails(
       message: 'Booking details retrieved',
       booking: {
         id: booking.id,
-        caseNumber: booking.examination.case.caseNumber,
+        caseNumber: booking.examination.caseNumber,
         examinationType: booking.examination.examinationType.name,
         bookingDate,
         examinerName,

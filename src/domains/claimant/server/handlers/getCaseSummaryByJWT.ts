@@ -51,11 +51,15 @@ const getCaseSummaryByJWT = async (token: string) => {
     }
 
     // Check if a booking already exists for this examination
+    // Exclude DISCARDED bookings (cancelled/modified by claimant)
     // Note: Prisma client needs to be regenerated after schema changes
     const existingBooking = await (prisma as any).claimantBooking.findFirst({
       where: {
         examinationId,
         deletedAt: null,
+        status: {
+          not: 'DISCARDED',
+        },
       },
       include: {
         examiner: {

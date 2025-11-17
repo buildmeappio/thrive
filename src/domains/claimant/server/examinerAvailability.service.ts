@@ -231,7 +231,7 @@ const timeStringToMinutes = (timeStr: string): number => {
 
 /**
  * Extract time string from a Date object in HH:MM format (24-hour)
- * Uses UTC time to ensure consistent behavior regardless of server timezone
+ * Uses UTC time to match admin-configured UTC times
  */
 const dateToTimeString = (date: Date): string => {
   const hours = date.getUTCHours().toString().padStart(2, '0');
@@ -241,7 +241,7 @@ const dateToTimeString = (date: Date): string => {
 
 /**
  * Check if a time slot fits within any of the provider's time windows
- * All times are in UTC - no timezone conversion happens on the server
+ * All times are in UTC to support global timezones
  * @param slotStart - Start time of the slot (UTC)
  * @param slotEnd - End time of the slot (UTC)
  * @param timeSlots - Provider's time slots in UTC format from database
@@ -257,7 +257,7 @@ const isWithinAnyTimeSlot = (
     return false;
   }
 
-  // Extract time-only strings from the Date objects (in UTC)
+  // Extract time-only strings from the Date objects (in local time)
   const slotStartTime = dateToTimeString(slotStart);
   const slotEndTime = dateToTimeString(slotEnd);
 
@@ -266,8 +266,7 @@ const isWithinAnyTimeSlot = (
   const slotEndMinutes = timeStringToMinutes(slotEndTime);
 
   for (const ts of timeSlots) {
-    // Time slots from DB are already in UTC, so we compare directly
-    // No timezone conversion - all comparisons happen in UTC
+    // Time slots from DB are in local time, so we compare directly
     const windowStartMinutes = timeStringToMinutes(ts.startTime);
     const windowEndMinutes = timeStringToMinutes(ts.endTime);
 
@@ -285,7 +284,7 @@ const isWithinAnyTimeSlot = (
 
 /**
  * Check if a provider is available for a specific slot
- * All operations performed in UTC - no timezone conversion on server
+ * All operations performed in local timezone to match admin-configured times
  */
 const isProviderAvailableForSlot = (opts: {
   provider: {
@@ -305,7 +304,7 @@ const isProviderAvailableForSlot = (opts: {
 }): boolean => {
   const { provider, dayDate, slotStart, slotEnd } = opts;
 
-  // Map day index to weekday enum (using UTC to avoid timezone issues)
+  // Map day index to weekday enum (using UTC time)
   const dayKey = dayDate.getUTCDay(); // 0=Sunday, 1=Monday, etc.
   const weekdayEnum: Record<number, string> = {
     0: 'SUNDAY',
@@ -733,6 +732,7 @@ const fetchExistingBookings = async (
   }
 
   // Query all bookings for these examiners in the date range
+  // Exclude DISCARDED bookings (cancelled by claimant) as they don't block slots
   // Exclude the claimant's own booking so it can still be displayed
   // Note: Prisma client needs to be regenerated after schema changes
   const bookings = await (prisma as any).claimantBooking.findMany({
@@ -743,6 +743,9 @@ const fetchExistingBookings = async (
         lte: endDate,
       },
       deletedAt: null,
+      status: {
+        not: 'DISCARDED', // Don't count cancelled bookings as blocking slots
+      },
       ...(excludeBookingId ? { id: { not: excludeBookingId } } : {}), // Exclude claimant's own booking
     },
     select: {
@@ -791,20 +794,24 @@ const fetchDeclinedExaminerIds = async (
 };
 
 /**
- * Get pending booking date for this examination and claimant
- * Returns the booking date if there's a pending booking, null otherwise
+ * Get active booking date for this examination and claimant
+ * Returns the booking date if there's an active booking (PENDING or ACCEPT), null otherwise
+ * Excludes DISCARDED bookings (cancelled/modified by claimant)
  */
 const getPendingBookingDate = async (
   examinationId: string,
   claimantId: string
 ): Promise<Date | null> => {
-  // Query for any pending booking for this claimant and examination
+  // Query for any active booking (PENDING or ACCEPT) for this claimant and examination
+  // Exclude DISCARDED bookings
   // Note: Prisma client needs to be regenerated after schema changes
-  const pendingBooking = await (prisma as any).claimantBooking.findFirst({
+  const activeBooking = await (prisma as any).claimantBooking.findFirst({
     where: {
       examinationId,
       claimantId,
-      status: 'PENDING',
+      status: {
+        in: ['PENDING', 'ACCEPT'],
+      },
       deletedAt: null,
     },
     select: {
@@ -813,20 +820,20 @@ const getPendingBookingDate = async (
     },
   });
 
-  if (!pendingBooking) {
+  if (!activeBooking) {
     return null;
   }
 
   // Return the booking date (normalized to date-only)
-  const bookingDate = new Date(pendingBooking.bookingTime);
+  const bookingDate = new Date(activeBooking.bookingTime);
   bookingDate.setHours(0, 0, 0, 0);
   return bookingDate;
 };
 
 /**
  * Parse time string and create Date object for slot generation in UTC
- * This is used to create Date objects for the API response
- * All operations are in UTC to avoid server timezone issues
+ * This ensures slots work globally - clients convert to their local timezone
+ * Admin configures times in UTC, which are then displayed in each user's timezone
  */
 const createSlotTime = (baseDay: Date, timeStr: string): Date => {
   const year = baseDay.getUTCFullYear();
@@ -838,7 +845,7 @@ const createSlotTime = (baseDay: Date, timeStr: string): Date => {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
 
-  // Create date with the parsed time using UTC
+  // Create date with the parsed time in UTC for global timezone support
   return new Date(Date.UTC(year, month, date, hours, mins, 0, 0));
 };
 
@@ -1139,9 +1146,8 @@ export const getAvailableExaminersForExam = async (
       // Smart Slot Filtering Logic:
       // - Show at most 3 examiners per slot (MAX_EXAMINERS_PER_SLOT = 3)
       // - Show at least 1 examiner if available
-      // - Only apply minimum filtering when there are many examiners in the system but most have declined
       const MAX_EXAMINERS_PER_SLOT = 3;
-      const MIN_EXAMINERS_FOR_SLOT = availableExaminersCount >= 3 ? 3 : 1;
+      const MIN_EXAMINERS_FOR_SLOT = 1;
 
       // Debug: Log slot generation for all days
       const slotTimeStr = `${dateToTimeString(slotStart)} - ${dateToTimeString(slotEnd)}`;

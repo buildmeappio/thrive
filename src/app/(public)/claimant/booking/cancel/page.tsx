@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { cancelBooking, getBookingDetails } from '@/domains/claimant/actions/cancelBooking';
 
 function CancelBookingContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,12 +91,6 @@ function CancelBookingContent() {
             <p className="mb-6 text-gray-600">
               Your booking has been successfully cancelled. The examiner has been notified.
             </p>
-            <button
-              onClick={() => router.push('/')}
-              className="w-full rounded-md bg-blue-600 px-4 py-3 text-white transition-colors hover:bg-blue-700"
-            >
-              Go to Home
-            </button>
           </div>
         </div>
       </div>
@@ -125,12 +119,6 @@ function CancelBookingContent() {
             </div>
             <h2 className="mb-2 text-2xl font-bold text-gray-900">Error</h2>
             <p className="mb-6 text-gray-600">{error || 'Failed to load booking details'}</p>
-            <button
-              onClick={() => router.push('/')}
-              className="w-full rounded-md bg-gray-600 px-4 py-3 text-white transition-colors hover:bg-gray-700"
-            >
-              Go to Home
-            </button>
           </div>
         </div>
       </div>
@@ -141,10 +129,12 @@ function CancelBookingContent() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
         <div className="mb-6 text-center">
-          <img
-            src="https://assets.thriveassessmentcare.com/images/thriveLogo.png"
+          <Image
+            src={`${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
             alt="Thrive Logo"
-            className="mx-auto mb-4 h-16"
+            width={64}
+            height={64}
+            className="mx-auto mb-4"
           />
           <h2 className="mb-2 text-2xl font-bold text-gray-900">Cancel Booking</h2>
           <p className="text-gray-600">Are you sure you want to cancel this booking?</p>
@@ -176,7 +166,7 @@ function CancelBookingContent() {
         <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
           <div className="flex">
             <svg
-              className="mr-2 h-5 w-5 flex-shrink-0 text-yellow-600"
+              className="mr-2 h-5 w-5 shrink-0 text-yellow-600"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
