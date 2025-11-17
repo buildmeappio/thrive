@@ -42,68 +42,60 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ token: string }>
     existingBooking,
   } = caseSummary.result;
 
-  // Check if existing booking is within cancellation time window
-  if (existingBooking?.bookingTime) {
-    const bookingTime = new Date(existingBooking.bookingTime);
+  // Check if existing booking is within modification time window
+  // Note: We check WHEN the booking was created, not when it's scheduled for
+  // Only block if the booking status is PENDING or ACCEPT (active bookings)
+  if (
+    existingBooking?.createdAt &&
+    (existingBooking.status === 'PENDING' || existingBooking.status === 'ACCEPT')
+  ) {
+    const bookingCreatedAt = new Date(existingBooking.createdAt);
     const currentTime = new Date();
-    const timeUntilBooking = bookingTime.getTime() - currentTime.getTime();
-    const hoursUntilBooking = timeUntilBooking / (1000 * 60 * 60);
+    const timeSinceBookingCreated = currentTime.getTime() - bookingCreatedAt.getTime();
+    const hoursSinceBookingCreated = timeSinceBookingCreated / (1000 * 60 * 60);
 
-    console.log('[Availability Page] Cancellation check:', {
-      bookingTime: bookingTime.toISOString(),
+    console.log('[Availability Page] Modification check:', {
+      bookingStatus: existingBooking.status,
+      bookingCreatedAt: bookingCreatedAt.toISOString(),
       currentTime: currentTime.toISOString(),
-      hoursUntilBooking,
+      hoursSinceBookingCreated,
     });
 
-    // Only check if booking is in the future
-    if (hoursUntilBooking > 0) {
-      const cancellationTimeHours = await configurationService.getBookingCancellationTime();
+    const cancellationTimeHours = await configurationService.getBookingCancellationTime();
 
-      console.log('[Availability Page] Cancellation window:', {
-        cancellationTimeHours,
-        hoursUntilBooking,
-        shouldBlock: hoursUntilBooking < cancellationTimeHours,
+    console.log('[Availability Page] Modification window:', {
+      cancellationTimeHours,
+      hoursSinceBookingCreated,
+      shouldBlock: hoursSinceBookingCreated < cancellationTimeHours,
+    });
+
+    if (hoursSinceBookingCreated < cancellationTimeHours) {
+      const formattedCreatedTime = bookingCreatedAt.toLocaleString('en-US', {
+        dateStyle: 'full',
+        timeStyle: 'short',
       });
-
-      if (hoursUntilBooking < cancellationTimeHours) {
-        const formattedBookingTime = bookingTime.toLocaleString('en-US', {
-          dateStyle: 'full',
-          timeStyle: 'short',
-        });
-        console.log('[Availability Page] BLOCKING: Within cancellation window');
-        redirect(
-          `/claimant/availability/success?status=error&message=${encodeURIComponent(
-            `You cannot modify your booking within ${cancellationTimeHours} hours of the appointment time. Your booking is scheduled for ${formattedBookingTime}. Please contact support for assistance.`
-          )}`
-        );
-      }
+      console.log('[Availability Page] BLOCKING: Within modification window');
+      redirect(
+        `/claimant/availability/success?status=error&message=${encodeURIComponent(
+          `You cannot modify your booking within ${cancellationTimeHours} hours of creating it. Your booking was created on ${formattedCreatedTime}. Please contact support for assistance.`
+        )}`
+      );
     }
   }
 
   // Fetch availability data on the server
-  // Use approvedAt as start date, or today if approvedAt is not set
-  // Also ensure existingBooking date is included if it's after approvedAt but before today
+  // Always use today as the start date to avoid showing past dates
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  let startDate = approvedAt ? new Date(approvedAt) : today;
-  startDate.setHours(0, 0, 0, 0);
+  const startDate = today;
 
-  // If there's an existing booking and it's before today but after approvedAt,
-  // ensure it's included in the window by using the booking date as start if it's earlier
-  if (existingBooking?.bookingTime) {
-    const bookingDate = new Date(existingBooking.bookingTime);
-    bookingDate.setHours(0, 0, 0, 0);
-
-    // If booking is after approvedAt but before today, include it
-    if (bookingDate < today && bookingDate >= startDate) {
-      // Booking date is already after startDate, so it will be included
-      // But if startDate is today and booking is in the past, we need to adjust
-      if (startDate >= today && bookingDate < today) {
-        startDate = bookingDate; // Start from booking date to include it
-      }
-    }
-  }
+  console.log('[Availability Page] Date calculation:', {
+    today: today.toISOString(),
+    approvedAt: approvedAt?.toISOString(),
+    startDate: startDate.toISOString(),
+    existingBookingTime: existingBooking?.bookingTime,
+  });
 
   // Fetch availability settings from database configuration
   const settings = await configurationService.getAvailabilitySettings();
