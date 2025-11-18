@@ -4,13 +4,15 @@ const URLS = Object.freeze({
   DASHBOARD: "/dashboard",
   FORBIDDEN: "/forbidden",
   PASSWORD_FORGOT: "/password/forgot",
+  PASSWORD_EMAIL_SENT: "/password/email-sent",
   PASSWORD_RESET: "/password/reset",
   PASSWORD_VERIFY: "/password/verify",
-})	;
+});
 
 const PUBLIC_ROUTES = Object.freeze([
   URLS.LOGIN,
   URLS.PASSWORD_FORGOT,
+  URLS.PASSWORD_EMAIL_SENT,
   URLS.PASSWORD_RESET,
   URLS.PASSWORD_VERIFY,
   URLS.FORBIDDEN,

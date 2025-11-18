@@ -1,30 +1,29 @@
-import { ForgotPasswordForm } from "@/domains/auth";
 import type { Metadata } from "next";
 import Image from "@/components/Image";
 import { ENV } from "@/constants/variables";
+import EmailSentCard from "@/domains/auth/components/EmailSentCard";
 
 export const metadata: Metadata = {
-  title: "Forgot Password | Thrive Admin",
-  description: "Forgot Password on Thrive Admin",
+  title: "Email Sent | Thrive Admin",
+  description: "Password reset email sent",
 };
 
-const Page = () => {
+type PageProps = {
+  searchParams: Promise<{ email?: string }>;
+};
+
+const Page = async ({ searchParams }: PageProps) => {
+  const params = await searchParams;
+  const email = params.email || "your email";
+
   return (
     <section className="bg-[#F2F5F6]">
       <div className="h-[calc(100vh-5rem)] md:h-[calc(100vh-7.5rem)] min-h-[600px]">
         <div className="mx-auto grid h-full max-w-full grid-cols-1 lg:grid-cols-2">
-          {/* Left - Form Section */}
+          {/* Left - Email Sent Card */}
           <div className="flex items-center justify-center px-6 py-10 sm:px-10 md:px-16 lg:px-20 lg:col-span-1 lg:justify-end lg:pr-16 lg:ml-8">
             <div className="w-full max-w-md lg:max-w-[520px]">
-              <div className="rounded-3xl border border-[#E9EDEE] bg-white p-6 sm:p-7 md:p-8 shadow-xs">
-                <h2 className="mb-6 font-semibold text-[clamp(20px,2.2vw,30px)]">
-                  Forgot{" "}
-                  <span className="bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] bg-clip-text text-transparent">
-                    Password
-                  </span>
-                </h2>
-                <ForgotPasswordForm />
-              </div>
+              <EmailSentCard email={email} />
             </div>
           </div>
 
