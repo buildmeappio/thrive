@@ -574,22 +574,22 @@ export default function TransporterDetail({
             <Section title="Basic Information">
               <div className="space-y-4">
                 <FieldRow
-                  label="Company Name *"
+                  label="Company Name"
                   type="text"
                   value={capitalizeWords(transporter.companyName)}
                 />
                 <FieldRow
-                  label="Contact Person *"
+                  label="Contact Person"
                   type="text"
                   value={capitalizeWords(transporter.contactPerson)}
                 />
                 <FieldRow
-                  label="Email *"
+                  label="Email"
                   type="text"
                   value={transporter.email}
                 />
                 <FieldRow
-                  label="Phone *"
+                  label="Phone"
                   type="text"
                   value={formatPhoneNumber(transporter.phone)}
                 />
