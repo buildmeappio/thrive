@@ -24,7 +24,7 @@ export default function Pagination({
   totalPages,
   pageSize,
   totalRows,
-  setCurrentPage,
+  setCurrentPage: _setCurrentPage,
   setPageSize,
   canPreviousPage,
   canNextPage,

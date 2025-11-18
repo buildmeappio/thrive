@@ -1,15 +1,9 @@
 import { Metadata } from "next";
-import { ActivationSteps } from "@/domains/setting";
 import { getCurrentUser } from "@/domains/auth/server/session";
-import {
-  getExaminerProfileAction,
-  getSpecialtyPreferencesAction,
-  getAvailabilityAction,
-  getPayoutDetailsAction,
-} from "@/domains/setting/server/actions";
 import { redirect } from "next/navigation";
-import getLanguages from "@/domains/auth/actions/getLanguages";
-import { Header } from "@/domains/setting";
+import { getExaminerProfileAction } from "@/domains/setting/server/actions";
+import ProfileInformationSection from "@/domains/setting/components/profile-information-section";
+import ChangePasswordSection from "@/domains/setting/components/change-password-section";
 
 export const metadata: Metadata = {
   title: "Settings | Thrive - Examiner",
@@ -19,62 +13,48 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const SettingsPage = async () => {
-  // Fetch user and examiner profile data at the server level
+  // Fetch user
   const user = await getCurrentUser();
 
   if (!user) {
     redirect("/examiner/login");
   }
 
+  // Fetch examiner profile
   const profileResult = await getExaminerProfileAction(user.accountId);
 
-  const examinerProfile =
-    profileResult.success && "data" in profileResult
-      ? profileResult.data
-      : null;
-
-  if (!examinerProfile) {
+  if (!profileResult.success || !profileResult.data) {
     redirect("/examiner/login");
   }
 
-  // Fetch all data in parallel
-  const [
-    specialtyPreferencesResult,
-    availabilityResult,
-    payoutResult,
-    languages,
-  ] = await Promise.all([
-    getSpecialtyPreferencesAction(user.accountId),
-    getAvailabilityAction({ examinerProfileId: examinerProfile.id }),
-    getPayoutDetailsAction({ accountId: user.accountId }),
-    getLanguages(),
-  ]);
-
-  const specialtyPreferences =
-    specialtyPreferencesResult.success && "data" in specialtyPreferencesResult
-      ? specialtyPreferencesResult.data
-      : null;
-
-  const availability =
-    availabilityResult.success && "data" in availabilityResult
-      ? availabilityResult.data
-      : null;
-
-  const payoutDetails =
-    payoutResult.success && "data" in payoutResult ? payoutResult.data : null;
+  const profileData = profileResult.data;
 
   return (
-    <div className="space-y-4">
-      <Header userName={user.name || "User"} />
-      <ActivationSteps
-        initialActivationStep={examinerProfile.activationStep || null}
-        examinerProfileId={examinerProfile.id}
-        profileData={examinerProfile}
-        specialtyData={specialtyPreferences}
-        availabilityData={availability}
-        payoutData={payoutDetails}
-        languages={languages}
-      />
+    <div className="bg-[#F4FBFF] min-h-screen">
+      <div className="flex min-h-screen w-full max-w-5xl flex-col px-6 py-10">
+        <div className="mb-6 text-left">
+          <h1 className="text-[28px] font-semibold text-gray-900 md:text-[34px]">
+            Account Settings
+          </h1>
+        </div>
+
+        <div className="flex flex-col gap-8">
+          <ProfileInformationSection
+            examinerProfileId={profileData.id}
+            initialData={{
+              firstName: profileData.firstName,
+              lastName: profileData.lastName,
+              emailAddress: profileData.emailAddress,
+              phoneNumber: profileData.phoneNumber,
+              landlineNumber: profileData.landlineNumber || "",
+              provinceOfResidence: profileData.provinceOfResidence || "",
+              mailingAddress: profileData.mailingAddress || "",
+            }}
+          />
+
+          <ChangePasswordSection userId={user.id} />
+        </div>
+      </div>
     </div>
   );
 };

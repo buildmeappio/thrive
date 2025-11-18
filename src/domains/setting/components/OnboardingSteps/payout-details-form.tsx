@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { FormProvider } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
   onCancel: _onCancel,
 }) => {
   const router = useRouter();
+  const { update } = useSession();
   const [loading, setLoading] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string>(
     initialData?.payoutMethod || "direct_deposit"
@@ -77,9 +79,13 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       if (result.success) {
         toast.success("Payout details saved successfully");
         onComplete();
-        // Refresh server components to update activation status, then navigate
-        router.refresh();
+        
+        // Update session to refresh JWT token with new activationStep
+        await update();
+        
+        // Redirect to dashboard after session is updated
         router.push("/dashboard");
+        router.refresh();
       } else {
         toast.error(result.message || "Failed to update payout details");
       }

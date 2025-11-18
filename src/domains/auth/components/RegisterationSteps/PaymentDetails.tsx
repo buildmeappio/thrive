@@ -19,7 +19,7 @@ import {
 import { FormProvider, FormField } from "@/components/form";
 import { UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
-import { CircleDollarSign, Clock } from "lucide-react";
+import { CircleDollarSign } from "lucide-react";
 
 const PaymentDetails: React.FC<RegStepProps> = ({
   onNext,

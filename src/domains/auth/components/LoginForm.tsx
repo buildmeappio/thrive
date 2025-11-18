@@ -10,12 +10,29 @@ import Link from "next/link";
 import { createRoute, URLS } from "@/constants/route";
 import { LoginInput, loginSchema } from "@/domains/auth/schemas/auth.schemas";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import ErrorMessages from "@/constants/ErrorMessages";
 import { toast } from "sonner";
 
 const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const hasShownResetToast = useRef(false);
+
+  // Show success message if password was reset
+  useEffect(() => {
+    if (!hasShownResetToast.current && searchParams.get("reset") === "success") {
+      hasShownResetToast.current = true;
+      toast.success("Password reset successfully! You can now login with your new password.");
+
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("reset");
+      const query = params.toString();
+      router.replace(query ? `/login?${query}` : "/login");
+    }
+  }, [router, searchParams]);
 
   const handleSubmit = async (values: LoginInput) => {
     setIsLoading(true);
@@ -81,7 +98,7 @@ const LoginForm = () => {
           </div>
           <div className="mb-4 text-right">
             <Link
-              href={createRoute(URLS.PASSWORD_FORGOT)}
+              href={URLS.PASSWORD_FORGOT}
               className="text-sm font-bold text-[#0097E5] underline">
               Forgot Password?
             </Link>

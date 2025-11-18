@@ -35,6 +35,10 @@ const DashboardPage = async () => {
   }
 
   const examinerProfileId = profileResult.data.id;
+  const examinerProfile = profileResult.data;
+
+  // Get full name from database
+  const fullName = `${examinerProfile.firstName} ${examinerProfile.lastName}`;
 
   // Fetch dashboard bookings
   const bookingsResult = await getDashboardBookingsAction({
@@ -68,7 +72,7 @@ const DashboardPage = async () => {
 
   return (
     <div className="min-h-screen bg-[#F0F8FF]">
-      <Header userName={user.name || "User"} />
+      <Header userName={fullName} />
       <div className="max-w-[1800px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Three Tables */}

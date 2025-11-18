@@ -63,6 +63,7 @@ export default Object.freeze({
   PASSWORD_CONFIRM: "Passwords must match",
   PASSWORD_CONFIRM_REQUIRED: "Please confirm your password",
   AGREEMENT_REQUIRED: "You must agree to Terms & Conditions",
+  NEW_PASSWORD_SAME: "New password cannot match your current password",
   AUTHORIZATION_REQUIRED:
     "You must be authorized to create this account on behalf of your organization",
   INVALID_PHONE_NUMBER: "Invalid phone number format",

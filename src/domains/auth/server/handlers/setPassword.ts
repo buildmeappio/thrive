@@ -7,6 +7,7 @@ export type SetPasswordInput = {
   password: string;
   confirmPassword: string;
   token: string;
+  isPasswordReset?: boolean;
 };
 
 const hashPassword = async (password: string) => {
@@ -18,10 +19,10 @@ const hashPassword = async (password: string) => {
 };
 
 const setPassword = async (payload: SetPasswordInput) => {
-  // Verify token and extract user data
-  const { userId, accountId } = tokenService.extractUserFromToken(
-    payload.token
-  );
+  // Verify token and extract user data (using SET_PASSWORD_SECRET for both account creation and password reset)
+  const { userId, accountId, role, examinerId } = tokenService.extractUserFromToken(payload.token);
+  
+  console.log(`[SetPassword] ${payload.isPasswordReset ? 'Password reset' : 'Account creation'} - User: ${userId}, Account: ${accountId}, Role: ${role}, ExaminerId: ${examinerId || 'N/A'}`);
 
   // Validate passwords match
   if (payload.password !== payload.confirmPassword) {
