@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDateShort } from "@/utils/date";
-import { capitalizeWords, truncateText } from "@/utils/text";
+import { capitalizeWords, truncateText, getFirstName } from "@/utils/text";
 import { ReportsTableProps } from "@/domains/dashboard/types";
 
 export default function ReportsTable({
@@ -74,7 +74,7 @@ export default function ReportsTable({
                       <div
                         className="text-[16px] leading-normal truncate"
                         title={r.claimant}>
-                        {truncateText(r.claimant, 25)}
+                        {getFirstName(r.claimant)}
                       </div>
                     </TableCell>
                     <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">

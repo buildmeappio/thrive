@@ -31,3 +31,35 @@ export function formatDateTime(
     return "N/A";
   }
 }
+
+/**
+ * Formats appointment date: "MMM dd, yyyy"
+ * Example: "Nov 18, 2025"
+ */
+export function formatAppointmentDate(
+  date: Date | string | null | undefined
+): string {
+  if (!date) return "N/A";
+  try {
+    const dateObj = typeof date === "string" ? new Date(date) : date;
+    return format(dateObj, "MMM dd, yyyy");
+  } catch {
+    return "N/A";
+  }
+}
+
+/**
+ * Formats appointment time: "h:mma"
+ * Example: "8:00 AM"
+ */
+export function formatAppointmentTime(
+  date: Date | string | null | undefined
+): string {
+  if (!date) return "N/A";
+  try {
+    const dateObj = typeof date === "string" ? new Date(date) : date;
+    return format(dateObj, "h:mm a");
+  } catch {
+    return "N/A";
+  }
+}

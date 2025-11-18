@@ -102,7 +102,7 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm">
+    <div className="bg-white rounded-[29px] p-6 shadow-[0_0_36.92px_rgba(0,0,0,0.08)]">
       <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
       
       <FormProvider form={form} onSubmit={onSubmit}>
@@ -193,13 +193,13 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
             variant="outline"
             onClick={handleCancel}
             disabled={loading}
-            className="px-6 rounded-md border-gray-300 text-gray-700 hover:bg-gray-50">
+            className="px-6 rounded-[20px] border-gray-300 text-gray-700 hover:bg-gray-50">
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={loading}
-            className="px-6 rounded-md bg-[#00A8FF] hover:bg-[#0096E6] text-white">
+            className="px-6 rounded-[20px] bg-[#00A8FF] hover:bg-[#0096E6] text-white">
             {loading ? "Saving..." : "Save Changes"}
           </Button>
         </div>
