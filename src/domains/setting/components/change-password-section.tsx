@@ -78,7 +78,7 @@ const ChangePasswordSection: React.FC<ChangePasswordSectionProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm">
+    <div className="bg-white rounded-[29px] p-6 shadow-[0_0_36.92px_rgba(0,0,0,0.08)]">
       <h2 className="text-xl font-semibold mb-6">Change Password</h2>
 
       <FormProvider form={form} onSubmit={onSubmit}>
@@ -127,7 +127,7 @@ const ChangePasswordSection: React.FC<ChangePasswordSectionProps> = ({
         <Button
           type="submit"
           disabled={loading}
-          className="px-6 rounded-md bg-[#00A8FF] hover:bg-[#0096E6] text-white">
+          className="px-6 rounded-[20px] bg-[#00A8FF] hover:bg-[#0096E6] text-white">
           {loading ? "Updating..." : "Update Password"}
         </Button>
       </FormProvider>
