@@ -91,12 +91,12 @@ export default function InterpreterPageContent({ data, languages }: InterpreterP
         </h1>
         <Link
           href="/interpreter/new"
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 transition-opacity"
+          className="flex items-center gap-1 sm:gap-2 lg:gap-3 px-2 sm:px-4 lg:px-6 py-1 sm:py-2 lg:py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 transition-opacity"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          <span className="text-sm font-medium">Add New</span>
+          <span className="text-xs sm:text-sm lg:text-base font-medium">Add Interpreter</span>
         </Link>
       </div>
 
@@ -116,7 +116,7 @@ export default function InterpreterPageContent({ data, languages }: InterpreterP
 
       <div className="flex flex-col gap-3 sm:gap-6 mb-20 dashboard-zoom-mobile">
         {/* Search and Filters Section */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center sm:justify-between">
+        <div className="flex flex-row gap-2 sm:gap-4 items-center sm:justify-between">
           {/* Search Bar */}
           <div className="flex-1 sm:max-w-md w-full">
             <div className="relative">
@@ -136,7 +136,7 @@ export default function InterpreterPageContent({ data, languages }: InterpreterP
           </div>
 
           {/* Filter Buttons */}
-          <div className="flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
+          <div className="flex gap-2 sm:gap-3 flex-shrink-0">
             {/* Language Filter */}
             <div className="relative filter-dropdown">
               <button 
