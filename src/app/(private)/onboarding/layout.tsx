@@ -15,12 +15,7 @@ const OnboardingLayout = async ({ children }: OnboardingLayoutProps) => {
     redirect("/examiner/login");
   }
 
-  return (
-    <div className="min-h-screen bg-[#F9FAFB]">
-      {children}
-    </div>
-  );
+  return <div className="min-h-screen">{children}</div>;
 };
 
 export default OnboardingLayout;
-

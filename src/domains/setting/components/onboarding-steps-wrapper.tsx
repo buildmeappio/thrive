@@ -57,7 +57,7 @@ const OnboardingStepsWrapper = async () => {
     payoutResult.success && "data" in payoutResult ? payoutResult.data : null;
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] px-6 md:px-12 lg:px-24 py-8">
+    <div className="min-h-screen bg-[#F4FBFF] px-6 md:px-12 lg:px-24 py-8">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-semibold text-gray-900">
@@ -83,4 +83,3 @@ const OnboardingStepsWrapper = async () => {
 };
 
 export default OnboardingStepsWrapper;
-
