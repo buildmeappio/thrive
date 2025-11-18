@@ -82,7 +82,8 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
   });
 
   // Create reset link (basePath /examiner should be included in the URL)
-  const resetLink = `${ENV.NEXT_PUBLIC_APP_URL}/examiner/password/reset?token=${resetToken}`;
+  const baseUrl = ENV.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "";
+  const resetLink = `${baseUrl}/password/reset?token=${resetToken}`;
 
   // Send email using the existing email service
   try {
