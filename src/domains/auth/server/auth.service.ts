@@ -455,6 +455,155 @@ const resetPassword = async (token: string, password: string) => {
   }
 };
 
+const changePassword = async (email: string, newPassword: string, oldPassword: string) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+      },
+    });
+
+    if (!user) {
+      throw HttpError.notFound(ErrorMessages.USER_NOT_FOUND);
+    }
+
+    if (email.toLowerCase().trim() !== user.email.toLowerCase().trim()) {
+      throw HttpError.unauthorized(ErrorMessages.UNAUTHORIZED);
+    }
+
+    if (!user.password) {
+      throw HttpError.badRequest(ErrorMessages.PASSWORD_NOT_SET);
+    }
+
+    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isOldPasswordValid) {
+      throw HttpError.unauthorized(ErrorMessages.INCORRECT_OLD_PASSWORD);
+    }
+
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+
+    if (isSamePassword) {
+      throw HttpError.badRequest(ErrorMessages.SAME_PASSWORD);
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    return SuccessMessages.PASSWORD_CHANGED_SUCCESS;
+  } catch (error) {
+    throw HttpError.handleServiceError(error, ErrorMessages.ERROR_CHANGING_PASSWORD);
+  }
+};
+
+const updateOrganizationInfo = async (
+  accountId: string,
+  data: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    organizationName?: string;
+    website?: string;
+    organizationTypeId?: string;
+  }
+) => {
+  const account = await prisma.account.findUnique({
+    where: { id: accountId },
+    include: {
+      user: true,
+      managers: {
+        include: {
+          organization: true,
+        },
+      },
+    },
+  });
+
+  console.log('account id', accountId);
+
+  if (!account) {
+    throw new Error('Account not found');
+  }
+
+  const userUpdatePromise = prisma.user.update({
+    where: { id: account.userId },
+    data: {
+      ...(data.firstName && { firstName: data.firstName }),
+      ...(data.lastName && { lastName: data.lastName }),
+      ...(data.email && { email: data.email }),
+      ...(data.phone && { phone: data.phone }),
+    },
+  });
+
+  const organizationUpdatePromises = account.managers.map(manager =>
+    prisma.organization.update({
+      where: { id: manager.organizationId },
+      data: {
+        ...(data.organizationName && { name: data.organizationName }),
+        ...(data.website && { website: data.website }),
+        ...(data.organizationTypeId && { typeId: data.organizationTypeId }),
+      },
+    })
+  );
+
+  const results = await prisma.$transaction([userUpdatePromise, ...organizationUpdatePromises]);
+
+  return results;
+};
+
+const getAccountSettingsInfo = async (accountId: string) => {
+  const accountData = await prisma.account.findUnique({
+    where: {
+      id: accountId,
+    },
+    include: {
+      user: {
+        select: {
+          firstName: true,
+          lastName: true,
+          phone: true,
+          email: true,
+        },
+      },
+      managers: {
+        where: {
+          deletedAt: null,
+        },
+        include: {
+          organization: {
+            select: {
+              name: true,
+              website: true,
+              type: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return accountData;
+};
+
 const authService = {
   getUserByEmail,
   checkPassword,
@@ -470,6 +619,9 @@ const authService = {
   sendResetPasswordLink,
   verifyResetToken,
   resetPassword,
+  changePassword,
+  updateOrganizationInfo,
+  getAccountSettingsInfo,
 };
 
 export default authService;
