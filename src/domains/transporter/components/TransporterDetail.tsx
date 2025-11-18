@@ -319,16 +319,16 @@ export default function TransporterDetail({
             <div className="flex gap-2 w-full sm:w-auto">
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80 text-white rounded-lg flex-1 sm:flex-initial">
+                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-600 hover:bg-blue-100 transition-colors text-sm sm:text-base flex-1 sm:flex-initial">
                 <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                Edit
+                <span className="text-sm font-medium">Edit</span>
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-red-600 shadow-sm text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex-1 sm:flex-initial">
+                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base flex-1 sm:flex-initial">
                 <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                {isDeleting ? "Deleting..." : "Delete"}
+                <span className="text-sm font-medium">{isDeleting ? "Deleting..." : "Delete"}</span>
               </button>
             </div>
           )}
