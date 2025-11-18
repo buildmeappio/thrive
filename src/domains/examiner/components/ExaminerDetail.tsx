@@ -16,11 +16,12 @@ import {
   updateFeeStructure,
   sendContract,
 } from "../actions";
-import { Check, Pencil } from "lucide-react";
+import { Check, Pencil, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
 import { capitalizeWords } from "@/utils/text";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 // Utility function to format text from database: remove _, -, and capitalize each word
 const formatText = (str: string): string => {
@@ -236,15 +237,24 @@ export default function ExaminerDetail({ examiner }: Props) {
 
   return (
     <DashboardShell>
-      {/* Review Profile Heading */}
+      {/* Back Button and Review Profile Heading */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-          Review{" "}
-          <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
-            {capitalizeWords(examiner.name)}
-          </span>{" "}
-          Profile
-        </h1>
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          <Link
+            href="/examiner"
+            className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+              <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+            </div>
+            <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+              Review{" "}
+              <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
+                {capitalizeWords(examiner.name)}
+              </span>{" "}
+              Profile
+            </h1>
+          </Link>
+        </div>
         <div
           className={cn(
             "px-4 py-2 rounded-full border-2 flex items-center gap-2 w-fit",

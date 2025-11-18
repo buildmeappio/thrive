@@ -1,3 +1,5 @@
+"use server";
+
 import { AuthDtoType } from "@/domains/auth/server/dto/auth.dto";
 import authService from "@/domains/auth/server/auth.service";
 import { isAllowedRole } from "@/lib/rbac";

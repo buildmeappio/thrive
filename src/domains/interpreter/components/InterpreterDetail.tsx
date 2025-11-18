@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
 import PhoneInput from "@/components/PhoneNumber";
 import { useRouter } from "next/navigation";
-import { Trash2, Edit2, X, Check } from "lucide-react";
+import { Trash2, Edit2, X, Check, ArrowLeft } from "lucide-react";
 import { Language } from "@prisma/client";
 import DeleteInterpreterModal from "./DeleteInterpreterModal";
 import { filterUUIDLanguages } from "@/utils/languageUtils";
@@ -24,6 +24,7 @@ import {
 import { WeeklyHours, OverrideHours } from "@/domains/services/types/Availability";
 import { format } from "date-fns";
 import { saveInterpreterAvailabilityAction } from "../actions";
+import Link from "next/link";
 
 type Props = {
   interpreter: InterpreterData;
@@ -324,77 +325,84 @@ export default function InterpreterDetail({
 
   return (
     <DashboardShell>
-      {/* Header */}
+      {/* Back Button and Header */}
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start gap-4">
-        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-          <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
-            {capitalizeWords(interpreter.companyName)}
-          </span>
-        </h1>
+        <Link
+          href="/interpreter"
+          className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+            <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+          </div>
+          <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+            <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
+              {capitalizeWords(interpreter.companyName)}
+            </span>
+          </h1>
+        </Link>
         <div className="flex gap-2 w-full sm:w-auto">
-          {!isEditMode ? (
-            <>
-              <button
-                onClick={handleEdit}
-                className={cn(
-                  "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
-                  "bg-blue-50 border border-blue-200 text-blue-600",
-                  "hover:bg-blue-100 transition-colors",
-                  "text-sm sm:text-base",
-                  "flex-1 sm:flex-initial"
-                )}>
-                <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="text-sm font-medium">Edit</span>
-              </button>
-              <button
-                onClick={handleDeleteClick}
-                disabled={isDeleting}
-                className={cn(
-                  "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
-                  "bg-red-50 border border-red-200 text-red-600",
-                  "hover:bg-red-100 transition-colors",
-                  "disabled:opacity-50 disabled:cursor-not-allowed",
-                  "text-sm sm:text-base",
-                  "flex-1 sm:flex-initial"
-                )}>
-                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="text-sm font-medium">Delete</span>
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className={cn(
-                  "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
-                  "bg-green-50 border border-green-200 text-green-600",
-                  "hover:bg-green-100 transition-colors",
-                  "disabled:opacity-50 disabled:cursor-not-allowed",
-                  "text-sm sm:text-base",
-                  "flex-1 sm:flex-initial"
-                )}>
-                <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="text-sm font-medium">
-                  {isSaving ? "Saving..." : "Save"}
-                </span>
-              </button>
-              <button
-                onClick={handleCancel}
-                disabled={isSaving}
-                className={cn(
-                  "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
-                  "bg-gray-50 border border-gray-200 text-gray-600",
-                  "hover:bg-gray-100 transition-colors",
-                  "disabled:opacity-50 disabled:cursor-not-allowed",
-                  "text-sm sm:text-base",
-                  "flex-1 sm:flex-initial"
-                )}>
-                <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="text-sm font-medium">Cancel</span>
-              </button>
-            </>
-          )}
+            {!isEditMode ? (
+              <>
+                <button
+                  onClick={handleEdit}
+                  className={cn(
+                    "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
+                    "bg-blue-50 border border-blue-200 text-blue-600",
+                    "hover:bg-blue-100 transition-colors",
+                    "text-sm sm:text-base",
+                    "flex-1 sm:flex-initial"
+                  )}>
+                  <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="text-sm font-medium">Edit</span>
+                </button>
+                <button
+                  onClick={handleDeleteClick}
+                  disabled={isDeleting}
+                  className={cn(
+                    "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
+                    "bg-red-50 border border-red-200 text-red-600",
+                    "hover:bg-red-100 transition-colors",
+                    "disabled:opacity-50 disabled:cursor-not-allowed",
+                    "text-sm sm:text-base",
+                    "flex-1 sm:flex-initial"
+                  )}>
+                  <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="text-sm font-medium">Delete</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className={cn(
+                    "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
+                    "bg-green-50 border border-green-200 text-green-600",
+                    "hover:bg-green-100 transition-colors",
+                    "disabled:opacity-50 disabled:cursor-not-allowed",
+                    "text-sm sm:text-base",
+                    "flex-1 sm:flex-initial"
+                  )}>
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="text-sm font-medium">
+                    {isSaving ? "Saving..." : "Save"}
+                  </span>
+                </button>
+                <button
+                  onClick={handleCancel}
+                  disabled={isSaving}
+                  className={cn(
+                    "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
+                    "bg-gray-50 border border-gray-200 text-gray-600",
+                    "hover:bg-gray-100 transition-colors",
+                    "disabled:opacity-50 disabled:cursor-not-allowed",
+                    "text-sm sm:text-base",
+                    "flex-1 sm:flex-initial"
+                  )}>
+                  <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="text-sm font-medium">Cancel</span>
+                </button>
+              </>
+            )}
         </div>
       </div>
 
