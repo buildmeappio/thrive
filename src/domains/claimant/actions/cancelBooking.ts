@@ -102,31 +102,31 @@ export async function cancelBooking(
       };
     }
 
-    // Check if booking is within the cancellation time window
-    // Note: We check WHEN the booking was created, not when it's scheduled for
+    // Check if appointment is within the cancellation time window
+    // Block cancellation if the appointment is scheduled within X hours from now
     const cancellationTimeHours = await getBookingCancellationTime();
-    const bookingCreatedAt = new Date(booking.createdAt);
+    const bookingTime = new Date(booking.bookingTime);
     const currentTime = new Date();
-    const timeSinceBookingCreated = currentTime.getTime() - bookingCreatedAt.getTime();
-    const hoursSinceBookingCreated = timeSinceBookingCreated / (1000 * 60 * 60);
+    const timeUntilAppointment = bookingTime.getTime() - currentTime.getTime();
+    const hoursUntilAppointment = timeUntilAppointment / (1000 * 60 * 60);
 
     log.info('[Cancel Booking] Cancellation check:', {
-      bookingCreatedAt: bookingCreatedAt.toISOString(),
+      bookingTime: bookingTime.toISOString(),
       currentTime: currentTime.toISOString(),
-      hoursSinceBookingCreated,
+      hoursUntilAppointment,
       cancellationTimeHours,
-      shouldBlock: hoursSinceBookingCreated < cancellationTimeHours,
+      shouldBlock: hoursUntilAppointment < cancellationTimeHours,
     });
 
-    if (hoursSinceBookingCreated < cancellationTimeHours) {
-      const formattedCreatedTime = bookingCreatedAt.toLocaleString('en-US', {
+    if (hoursUntilAppointment < cancellationTimeHours) {
+      const formattedBookingTime = bookingTime.toLocaleString('en-US', {
         dateStyle: 'full',
         timeStyle: 'short',
       });
       log.info('[Cancel Booking] BLOCKING: Within cancellation window');
       return {
         success: false,
-        message: `You cannot cancel your booking within ${cancellationTimeHours} hours of creating it. Your booking was created on ${formattedCreatedTime}. Please contact support for assistance.`,
+        message: `You cannot cancel your appointment within ${cancellationTimeHours} hours of the scheduled time. Your appointment is scheduled for ${formattedBookingTime}. Please contact support for assistance.`,
       };
     }
 

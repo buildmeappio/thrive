@@ -42,42 +42,42 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ token: string }>
     existingBooking,
   } = caseSummary.result;
 
-  // Check if existing booking is within modification time window
-  // Note: We check WHEN the booking was created, not when it's scheduled for
+  // Check if existing appointment is within modification time window
+  // Block modification if the appointment is scheduled within X hours from now
   // Only block if the booking status is PENDING or ACCEPT (active bookings)
   if (
-    existingBooking?.createdAt &&
+    existingBooking?.bookingTime &&
     (existingBooking.status === 'PENDING' || existingBooking.status === 'ACCEPT')
   ) {
-    const bookingCreatedAt = new Date(existingBooking.createdAt);
+    const bookingTime = new Date(existingBooking.bookingTime);
     const currentTime = new Date();
-    const timeSinceBookingCreated = currentTime.getTime() - bookingCreatedAt.getTime();
-    const hoursSinceBookingCreated = timeSinceBookingCreated / (1000 * 60 * 60);
+    const timeUntilAppointment = bookingTime.getTime() - currentTime.getTime();
+    const hoursUntilAppointment = timeUntilAppointment / (1000 * 60 * 60);
 
     console.log('[Availability Page] Modification check:', {
       bookingStatus: existingBooking.status,
-      bookingCreatedAt: bookingCreatedAt.toISOString(),
+      bookingTime: bookingTime.toISOString(),
       currentTime: currentTime.toISOString(),
-      hoursSinceBookingCreated,
+      hoursUntilAppointment,
     });
 
     const cancellationTimeHours = await configurationService.getBookingCancellationTime();
 
     console.log('[Availability Page] Modification window:', {
       cancellationTimeHours,
-      hoursSinceBookingCreated,
-      shouldBlock: hoursSinceBookingCreated < cancellationTimeHours,
+      hoursUntilAppointment,
+      shouldBlock: hoursUntilAppointment < cancellationTimeHours,
     });
 
-    if (hoursSinceBookingCreated < cancellationTimeHours) {
-      const formattedCreatedTime = bookingCreatedAt.toLocaleString('en-US', {
+    if (hoursUntilAppointment < cancellationTimeHours) {
+      const formattedBookingTime = bookingTime.toLocaleString('en-US', {
         dateStyle: 'full',
         timeStyle: 'short',
       });
       console.log('[Availability Page] BLOCKING: Within modification window');
       redirect(
         `/claimant/availability/success?status=error&message=${encodeURIComponent(
-          `You cannot modify your booking within ${cancellationTimeHours} hours of creating it. Your booking was created on ${formattedCreatedTime}. Please contact support for assistance.`
+          `You cannot modify your appointment within ${cancellationTimeHours} hours of the scheduled time. Your appointment is scheduled for ${formattedBookingTime}. Please contact support for assistance.`
         )}`
       );
     }
