@@ -117,3 +117,17 @@ export type SelectedAppointment = {
     contactPerson: string;
   };
 };
+
+/**
+ * Props for AppointmentConfirmation component
+ */
+export type AppointmentConfirmationProps = {
+  appointment: SelectedAppointment | null;
+  claimantName: string;
+  onBack?: () => void;
+  onSubmit?: () => void;
+  isSubmitting?: boolean;
+  // Reservation details for timer
+  reservationExpiresAt?: string; // ISO timestamp
+  examinationId?: string;
+};
