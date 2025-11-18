@@ -15,3 +15,10 @@ export function truncateText(
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength) + "...";
 }
+
+// Extract first name from full name
+export function getFirstName(fullName: string | null | undefined): string {
+  if (!fullName) return "N/A";
+  const nameParts = fullName.trim().split(/\s+/);
+  return nameParts[0] || "N/A";
+}
