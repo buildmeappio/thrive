@@ -19,27 +19,33 @@ const ResetPasswordPage = async ({
     redirect("/examiner/login?error=invalid_token");
   }
 
-  return (
-    <div className="bg-[#F4FBFF] h-screen flex items-center justify-center p-4" style={{ overflow: 'hidden' }}>
-      <div className="max-w-[600px] w-full">
-        {/* Form Container */}
-        <div
-          className="rounded-[20px] bg-white px-8 py-8 md:px-12 md:py-10"
-          style={{
-            boxShadow: "0px 0px 36.35px 0px #00000008",
-          }}>
-          {/* Header */}
-          <div className="mb-6 flex items-center justify-center text-center">
-            <h2 className="text-2xl font-semibold">
-              Reset Your Password
-            </h2>
-          </div>
+  return <PasswordResetUI token={token} />;
+};
+
+const PasswordResetUI = ({ token }: { token: string }) => (
+  <div className="bg-[#F4FBFF]">
+    <div className="mx-auto min-h-screen max-w-[900px] p-6">
+      {/* Header */}
+      <div className="mt-8 mb-4 flex h-[60px] items-center justify-center text-center md:mt-0 md:h-[60px]">
+        <h2 className="text-[25px] font-semibold whitespace-nowrap md:text-[40px]">
+          Reset Your Password
+        </h2>
+      </div>
+
+      {/* Form Container */}
+      <div
+        className="min-h-[350px] rounded-[20px] bg-white px-1 py-5 md:min-h-[400px] md:px-[50px] md:py-0"
+        style={{
+          boxShadow: "0px 0px 36.35px 0px #00000008",
+        }}
+      >
+        <div className="-mb-6 pt-1 pb-1 md:mb-0">
           <SetPasswordForm token={token} isPasswordReset={true} />
         </div>
       </div>
     </div>
-  );
-};
+  </div>
+);
 
 export default ResetPasswordPage;
 

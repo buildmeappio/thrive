@@ -25,6 +25,10 @@ const passwordSchema = z
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
+  })
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    message: "New password cannot match your current password",
+    path: ["newPassword"],
   });
 
 type PasswordFormData = z.infer<typeof passwordSchema>;
@@ -78,7 +82,7 @@ const ChangePasswordSection: React.FC<ChangePasswordSectionProps> = ({
       <h2 className="text-xl font-semibold mb-6">Change Password</h2>
 
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="space-y-4 mb-6 max-w-md">
+        <div className="space-y-4 mb-6">
           <FormField
             name="currentPassword"
             label="Current Password"

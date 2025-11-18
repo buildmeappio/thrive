@@ -39,14 +39,15 @@ const EmailSentContent = () => {
   };
 
   return (
-    <div className="bg-[#F4FBFF] h-screen flex items-center justify-center p-6 overflow-hidden">
-      <div className="max-w-[500px] w-full">
-        {/* Card Container */}
-        <div
+    <div className="bg-[#F4FBFF] min-h-screen overflow-hidden">
+      <div className="flex h-screen items-center justify-center px-6">
+        <div className="max-w-[500px] w-full">
+          {/* Card Container */}
+          <div
           className="rounded-[20px] bg-white px-6 py-8 md:px-12 md:py-12 text-center"
           style={{
             boxShadow: "0px 0px 36.35px 0px #00000008",
-          }}>
+            }}>
           {/* Email Icon */}
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 rounded-full bg-[#E6F7FF] flex items-center justify-center">
@@ -74,15 +75,15 @@ const EmailSentContent = () => {
             <Button
               onClick={handleResend}
               disabled={isResending}
-              variant="outline"
-              className="w-full rounded-md border-2 border-[#00A8FF] text-[#00A8FF] hover:bg-[#E6F7FF] h-11"
+              className="w-full rounded-full bg-[#00A8FF] hover:bg-[#0096E6] text-white h-11 font-semibold"
             >
               {isResending ? "Resending..." : "Resend Email"}
             </Button>
 
             <Button
               onClick={handleBackToLogin}
-              className="w-full rounded-md bg-[#00A8FF] hover:bg-[#0096E6] text-white h-11 flex items-center justify-center gap-2"
+              variant="outline"
+              className="w-full rounded-full border-2 border-[#00A8FF] text-[#00A8FF] hover:bg-[#E6F7FF] h-11 flex items-center justify-center gap-2 font-semibold"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Login
@@ -94,6 +95,7 @@ const EmailSentContent = () => {
             Didn&apos;t receive the email? Check your spam folder or try
             resending.
           </p>
+          </div>
         </div>
       </div>
     </div>

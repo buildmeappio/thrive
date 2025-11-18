@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Mail, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import forgotPassword from "../actions/forgotPassword";
-import Link from "next/link";
 import { URLS } from "@/constants/route";
 
 const forgotPasswordSchema = Yup.object().shape({
@@ -42,11 +41,6 @@ const ForgotPasswordForm: React.FC = () => {
 
   return (
     <div className="w-full">
-      <p className="text-center text-gray-600 mb-4 text-sm">
-        Enter your email address and we&apos;ll send you a link to reset your
-        password.
-      </p>
-
       <Formik
         initialValues={{ email: "" }}
         validationSchema={forgotPasswordSchema}
@@ -76,18 +70,18 @@ const ForgotPasswordForm: React.FC = () => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-md bg-[#00A8FF] hover:bg-[#0096E6] text-white h-10 font-medium">
+              className="w-full rounded-full bg-[#00A8FF] hover:bg-[#0096E6] text-white h-11 text-base font-semibold">
               {isLoading ? "Sending..." : "Send Reset Link"}
             </Button>
 
-            <div className="mt-3 text-center">
-              <Link
-                href={URLS.LOGIN}
-                className="inline-flex items-center gap-2 text-sm text-[#00A8FF] hover:underline">
-                <ArrowLeft className="w-4 h-4" />
-                Back to Login
-              </Link>
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push(URLS.LOGIN)}
+              className="mt-4 w-full rounded-full border-2 border-[#00A8FF] text-[#00A8FF] hover:bg-[#E6F7FF] h-11 text-base font-semibold flex items-center justify-center gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Login
+            </Button>
           </Form>
         )}
       </Formik>
