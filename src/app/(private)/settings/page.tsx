@@ -31,7 +31,7 @@ const Page = async () => {
         </div>
       </div>
       <div>
-        <div className="rounded-3xl bg-white px-8 py-4">
+        <div className="mt-8 rounded-3xl bg-white px-8 py-4">
           <h1 className="mb-6 text-[20px] font-semibold sm:text-[24px] md:text-[28px] lg:text-[32px] xl:text-[28px]">
             Change Password
           </h1>
