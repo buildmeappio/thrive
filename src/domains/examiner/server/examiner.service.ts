@@ -97,14 +97,14 @@ class ExaminerService {
             },
           },
           contracts: {
-        where: {
-          status: 'SIGNED',
-        },
-        orderBy: {
-          signedAt: 'desc',
-        },
-        take: 1,
-      },
+            where: {
+              status: 'SIGNED',
+            },
+            orderBy: {
+              signedAt: 'desc',
+            },
+            take: 1,
+          },
         },
       });
 
@@ -114,6 +114,7 @@ class ExaminerService {
 
       return examiner;
     } catch (error) {
+      console.error("Database error in getExaminerById:", error);
       throw HttpError.fromError(error, "Failed to get examiner");
     }
   }
