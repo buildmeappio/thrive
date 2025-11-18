@@ -44,6 +44,12 @@ const changePassword = async (payload: ChangePasswordInput) => {
     throw HttpError.badRequest("Current password is incorrect");
   }
 
+  const isSamePassword = await bcrypt.compare(payload.newPassword, user.password);
+
+  if (isSamePassword) {
+    throw HttpError.badRequest(ErrorMessages.NEW_PASSWORD_SAME);
+  }
+
   // Hash new password
   const hashedPassword = await bcrypt.hash(payload.newPassword, 10);
 

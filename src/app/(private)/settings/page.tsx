@@ -30,25 +30,31 @@ const SettingsPage = async () => {
   const profileData = profileResult.data;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold text-gray-900">Account Settings</h1>
+    <div className="bg-[#F4FBFF] min-h-screen">
+      <div className="flex min-h-screen w-full max-w-5xl flex-col px-6 py-10">
+        <div className="mb-6 text-left">
+          <h1 className="text-[28px] font-semibold text-gray-900 md:text-[34px]">
+            Account Settings
+          </h1>
+        </div>
+
+        <div className="flex flex-col gap-8">
+          <ProfileInformationSection
+            examinerProfileId={profileData.id}
+            initialData={{
+              firstName: profileData.firstName,
+              lastName: profileData.lastName,
+              emailAddress: profileData.emailAddress,
+              phoneNumber: profileData.phoneNumber,
+              landlineNumber: profileData.landlineNumber || "",
+              provinceOfResidence: profileData.provinceOfResidence || "",
+              mailingAddress: profileData.mailingAddress || "",
+            }}
+          />
+
+          <ChangePasswordSection userId={user.id} />
+        </div>
       </div>
-
-      <ProfileInformationSection
-        examinerProfileId={profileData.id}
-        initialData={{
-          firstName: profileData.firstName,
-          lastName: profileData.lastName,
-          emailAddress: profileData.emailAddress,
-          phoneNumber: profileData.phoneNumber,
-          landlineNumber: profileData.landlineNumber || "",
-          provinceOfResidence: profileData.provinceOfResidence || "",
-          mailingAddress: profileData.mailingAddress || "",
-        }}
-      />
-
-      <ChangePasswordSection userId={user.id} />
     </div>
   );
 };
