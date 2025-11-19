@@ -83,3 +83,10 @@ export const getAccountSettingsInfo = async () => {
     'Failed to get account settings info'
   );
 };
+
+export const checkOrganizationName = async (name: string) => {
+  return await handleAction(
+    async () => await authHandlers.checkOrganizationName(name),
+    'Failed to check organization name'
+  );
+};

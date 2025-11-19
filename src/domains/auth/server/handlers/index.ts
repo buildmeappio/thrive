@@ -12,3 +12,4 @@ export { default as verifyResetToken } from './verifyResetToken';
 export { default as changePassword } from './changePassword';
 export { default as updateOrganizationInfo } from './updateOrganizationInfo';
 export { default as getAccountSettingsInfo } from './getAccountSettingsInfo';
+export { default as checkOrganizationName } from './checkOrganizationName';
