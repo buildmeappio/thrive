@@ -10,6 +10,8 @@ export interface CaseOverviewData {
   claimNumber: string;
   caseId: string;
   caseNumber: string;
+  examinerName?: string;
+  professionalTitle?: string;
 }
 
 export interface DynamicSection {
@@ -22,6 +24,7 @@ export interface DynamicSection {
 export interface UploadedDocument {
   id: string;
   name: string;
+  displayName?: string;
   size: number;
   type: string;
   url?: string;
@@ -85,4 +88,31 @@ export interface ReportActionsProps {
   onSaveDraft: () => Promise<void>;
   onPrint: () => void;
   isSubmitting: boolean;
+}
+
+// Server Action Response Types
+export interface GetReportResponse {
+  success: boolean;
+  data?: ReportFormData;
+  message?: string;
+}
+
+export interface SaveReportDraftInput {
+  bookingId: string;
+  reportData: ReportFormData;
+}
+
+export interface SaveReportDraftResponse {
+  success: boolean;
+  message?: string;
+}
+
+export interface SubmitReportInput {
+  bookingId: string;
+  reportData: ReportFormData;
+}
+
+export interface SubmitReportResponse {
+  success: boolean;
+  message?: string;
 }

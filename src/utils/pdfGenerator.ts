@@ -1,4 +1,4 @@
-import { ReportFormData, CaseOverviewData } from "../types";
+import { ReportFormData, CaseOverviewData } from "@/domains/reports/types";
 
 /**
  * Generate print-friendly HTML for the report

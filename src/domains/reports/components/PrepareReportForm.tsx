@@ -13,12 +13,18 @@ import ReportActions from "./ReportActions";
 import { reportFormSchema } from "../schemas/report.schemas";
 import { toast } from "sonner";
 import { printReport } from "@/utils/pdfGenerator";
+import {
+  getReportAction,
+  saveReportDraftAction,
+  submitReportAction,
+} from "../server/actions";
 
 export default function PrepareReportForm({
   bookingId,
   caseData,
 }: PrepareReportFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const {
     dynamicSections,
     setIsSaving,
@@ -32,9 +38,53 @@ export default function PrepareReportForm({
     dateOfReport,
     signature,
     confirmationChecked,
+    updateField,
+    loadReport,
   } = useReportStore();
 
-  console.log("Preparing report for booking:", bookingId);
+  // Load existing report on mount and pre-fill examiner info
+  useEffect(() => {
+    const loadExistingReport = async () => {
+      try {
+        setIsLoading(true);
+        
+        const currentDate = new Date().toISOString().split("T")[0];
+
+        // Load existing report data
+        const result = await getReportAction({ bookingId });
+        
+        if (result.success && result.data) {
+          // Load existing report which will overwrite defaults
+          loadReport(result.data);
+        } else {
+          // No existing report - set defaults
+          if (caseData.examinerName) {
+            updateField("examinerName", caseData.examinerName);
+          }
+          if (caseData.professionalTitle) {
+            updateField("professionalTitle", caseData.professionalTitle);
+          }
+          updateField("dateOfReport", currentDate);
+        }
+      } catch (error) {
+        console.error("Error loading report:", error);
+        // Set defaults on error
+        const errorCurrentDate = new Date().toISOString().split("T")[0];
+        if (caseData.examinerName) {
+          updateField("examinerName", caseData.examinerName);
+        }
+        if (caseData.professionalTitle) {
+          updateField("professionalTitle", caseData.professionalTitle);
+        }
+        updateField("dateOfReport", errorCurrentDate);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadExistingReport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookingId]);
 
   // Warn before leaving with unsaved changes
   useEffect(() => {
@@ -51,20 +101,38 @@ export default function PrepareReportForm({
     try {
       setIsSaving(true);
 
-      // TODO: Implement actual save to backend/Google Docs
-      // For now, we're using localStorage via Zustand persist
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Get current form data
+      const formData = {
+        consentFormSigned,
+        latRuleAcknowledgment,
+        referralQuestionsResponse,
+        referralDocuments,
+        dynamicSections,
+        examinerName,
+        professionalTitle,
+        dateOfReport,
+        signature,
+        confirmationChecked,
+      };
 
-      setLastSaved(new Date());
+      // Save to backend
+      const result = await saveReportDraftAction({
+        bookingId,
+        reportData: formData,
+      });
 
-      // Only show toast for manual saves
-      if (showToast) {
-        toast.success("Draft saved successfully");
+      if (result.success) {
+        setLastSaved(new Date());
+        if (showToast) {
+          toast.success("Draft saved successfully");
+        }
+      } else {
+        throw new Error(result.message || "Failed to save draft");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving draft:", error);
       if (showToast) {
-        toast.error("Failed to save draft");
+        toast.error(error.message || "Failed to save draft");
       }
     } finally {
       setIsSaving(false);
@@ -99,19 +167,42 @@ export default function PrepareReportForm({
       }
 
       // Save before printing
-      await handleSaveDraft();
+      await handleSaveDraft(false);
+
+      // Submit report
+      const submitResult = await submitReportAction({
+        bookingId,
+        reportData: formData,
+      });
+
+      if (!submitResult.success) {
+        toast.error(submitResult.message || "Failed to submit report");
+        setIsSubmitting(false);
+        return;
+      }
 
       // Generate and print PDF
       printReport(formData, caseData);
 
-      toast.success("Report ready for printing");
-    } catch (error) {
+      toast.success("Report submitted and ready for printing");
+    } catch (error: any) {
       console.error("Error preparing report for print:", error);
-      toast.error("Failed to prepare report");
+      toast.error(error.message || "Failed to prepare report");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00A8FF] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading report...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">

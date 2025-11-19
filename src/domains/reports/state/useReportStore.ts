@@ -45,7 +45,7 @@ const initialState: ReportFormData = {
 
 export const useReportStore = create<ReportState>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       ...initialState,
       isSaving: false,
       lastSaved: null,
@@ -59,6 +59,7 @@ export const useReportStore = create<ReportState>()(
           id: `section-${Date.now()}`,
           title: "",
           content: "",
+          documents: [],
         };
         set((state) => ({
           dynamicSections: [...state.dynamicSections, newSection],
