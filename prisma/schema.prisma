@@ -1038,24 +1038,25 @@ model Configuration {
 
 // Report models for IME report preparation
 model Report {
-  id                         String    @id @unique @default(uuid()) @db.Uuid
-  bookingId                  String    @unique @map("booking_id") @db.Uuid
-  consentFormSigned          Boolean   @default(false) @map("consent_form_signed")
-  latRuleAcknowledgment      Boolean   @default(false) @map("lat_rule_acknowledgment")
-  referralQuestionsResponse  String    @map("referral_questions_response") @db.Text
-  examinerName               String    @map("examiner_name") @db.VarChar(255)
-  professionalTitle          String    @map("professional_title") @db.VarChar(255)
-  dateOfReport               DateTime  @map("date_of_report") @db.Date
-  signatureType              String?   @map("signature_type") @db.VarChar(50)
-  signatureData              String?   @map("signature_data") @db.Text
-  confirmationChecked        Boolean   @default(false) @map("confirmation_checked")
+  id                        String   @id @unique @default(uuid()) @db.Uuid
+  bookingId                 String   @unique @map("booking_id") @db.Uuid
+  consentFormSigned         Boolean  @default(false) @map("consent_form_signed")
+  latRuleAcknowledgment     Boolean  @default(false) @map("lat_rule_acknowledgment")
+  referralQuestionsResponse String   @map("referral_questions_response") @db.Text
+  examinerName              String   @map("examiner_name") @db.VarChar(255)
+  professionalTitle         String   @map("professional_title") @db.VarChar(255)
+  dateOfReport              DateTime @map("date_of_report") @db.Date
+  signatureType             String?  @map("signature_type") @db.VarChar(50)
+  signatureData             String?  @map("signature_data") @db.Text
+  confirmationChecked       Boolean  @default(false) @map("confirmation_checked")
+  googleDocId               String?  @map("google_doc_id") @db.VarChar(255)
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  booking          ClaimantBooking        @relation("BookingReports", fields: [bookingId], references: [id])
-  dynamicSections  ReportDynamicSection[] @relation("ReportDynamicSections")
+  booking           ClaimantBooking        @relation("BookingReports", fields: [bookingId], references: [id])
+  dynamicSections   ReportDynamicSection[] @relation("ReportDynamicSections")
   referralDocuments ReportDocument[]       @relation("ReportReferralDocuments")
 
   @@index([bookingId])
@@ -1063,11 +1064,11 @@ model Report {
 }
 
 model ReportDynamicSection {
-  id       String   @id @unique @default(uuid()) @db.Uuid
-  reportId String   @map("report_id") @db.Uuid
-  title    String   @map("title") @db.VarChar(255)
-  content  String   @map("content") @db.Text
-  order    Int      @map("order") @default(0)
+  id       String @id @unique @default(uuid()) @db.Uuid
+  reportId String @map("report_id") @db.Uuid
+  title    String @map("title") @db.VarChar(255)
+  content  String @map("content") @db.Text
+  order    Int    @default(0) @map("order")
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
@@ -1080,9 +1081,9 @@ model ReportDynamicSection {
 }
 
 model ReportDocument {
-  id         String    @id @unique @default(uuid()) @db.Uuid
-  reportId   String    @map("report_id") @db.Uuid
-  documentId String    @map("document_id") @db.Uuid
+  id         String @id @unique @default(uuid()) @db.Uuid
+  reportId   String @map("report_id") @db.Uuid
+  documentId String @map("document_id") @db.Uuid
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
