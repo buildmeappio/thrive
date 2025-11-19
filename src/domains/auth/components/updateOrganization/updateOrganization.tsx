@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dropdown } from '@/components/Dropdown';
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import ErrorMessages from '@/constants/ErrorMessages';
 import SuccessMessages from '@/constants/SuccessMessages';
 import {
@@ -18,7 +18,6 @@ import {
 } from '../../schemas/updateOrganization';
 import { updateOrganizationInfo } from '../../actions';
 import { useSession } from 'next-auth/react';
-import { getOrganizationTypes } from '@/domains/organization/actions';
 import PhoneInput from '@/components/PhoneNumber';
 
 type UpdateOrganizationInfoForm = z.infer<typeof updateOrganizationSchema>;
@@ -56,9 +55,57 @@ const UpdateOrganizationInfo = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: session } = useSession();
 
+  const normalize = (str: string) =>
+    str.toLowerCase().trim().replace(/\s+/g, '_').replace(/-/g, '_');
+
+  // Fully type-safe defaultValues computation
+  const defaultValues = useMemo(() => {
+    if (!accountInfo || organizationTypeOptions.length === 0) {
+      return updateOrganizationInitialValues;
+    }
+
+    const manager = accountInfo.managers?.[0];
+    const organization = manager?.organization;
+    const user = accountInfo.user;
+
+    if (!organization || !user) {
+      return updateOrganizationInitialValues;
+    }
+
+    let organizationTypeId = '';
+
+    const orgType = organization.type;
+    if (orgType) {
+      // Safe access to id
+      if (orgType.id) {
+        const found = organizationTypeOptions.find(opt => opt.value === orgType.id);
+        if (found) organizationTypeId = found.value;
+      }
+
+      // Safe fallback to name
+      if (!organizationTypeId && typeof orgType.name === 'string') {
+        const target = normalize(orgType.name);
+        const match = organizationTypeOptions.find(opt => {
+          return normalize(opt.label) === target || normalize(opt.value) === target;
+        });
+        if (match) organizationTypeId = match.value;
+      }
+    }
+
+    return {
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      organizationName: organization.name || '',
+      website: organization.website || '',
+      organizationTypeId,
+    };
+  }, [accountInfo, organizationTypeOptions]);
+
   const form = useForm<UpdateOrganizationInfoForm>({
     resolver: zodResolver(updateOrganizationSchema),
-    defaultValues: updateOrganizationInitialValues,
+    defaultValues,
     mode: 'onChange',
   });
 
@@ -66,56 +113,13 @@ const UpdateOrganizationInfo = ({
     register,
     handleSubmit,
     formState: { errors, touchedFields },
-    reset,
     control,
   } = form;
-
-  // Fetch initial data and populate form
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (!accountInfo) {
-          toast.error('Failed to load organization information');
-          return;
-        }
-
-        // Extract organization data from the nested structure
-        const manager = accountInfo.managers?.[0];
-        const organization = manager?.organization;
-        const user = accountInfo.user;
-
-        // Find the organization type ID from organizationTypeOptions
-        const organizationTypeName = organization?.type?.name;
-        const matchingOrgType = organizationTypeOptions.find(
-          option => option.label === organizationTypeName || option.value === organizationTypeName
-        );
-
-        const orgInfo = {
-          firstName: user?.firstName || '',
-          lastName: user?.lastName || '',
-          email: user?.email || '',
-          phone: user?.phone || '',
-          organizationName: organization?.name || '',
-          website: organization?.website || '',
-          organizationTypeId: matchingOrgType?.value || '',
-        };
-
-        console.log('Populating form with:', orgInfo);
-        reset(orgInfo);
-      } catch (error) {
-        console.error('Error loading organization info:', error);
-        toast.error('Failed to load organization information');
-      }
-    };
-
-    fetchData();
-  }, [accountInfo, organizationTypeOptions, reset]);
 
   const onSubmit = async (values: UpdateOrganizationInfoForm) => {
     setIsSubmitting(true);
 
     try {
-      // Filter out empty strings and undefined values
       const dataToUpdate = Object.entries(values).reduce((acc, [key, value]) => {
         if (value && value !== '') {
           acc[key as keyof UpdateOrganizationInfoForm] = value;
@@ -123,7 +127,6 @@ const UpdateOrganizationInfo = ({
         return acc;
       }, {} as Partial<UpdateOrganizationInfoForm>);
 
-      // Check if there's anything to update
       if (Object.keys(dataToUpdate).length === 0) {
         toast.error('Please fill at least one field to update');
         setIsSubmitting(false);
@@ -154,10 +157,7 @@ const UpdateOrganizationInfo = ({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Official Information Section */}
       <div className="confirmNewPassword rounded-lg bg-white">
-        <h3 className="mb-4 text-lg font-semibold">Official Information</h3>
-
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* First Name Field */}
           <div>
             <Label
               htmlFor="firstName"
@@ -176,7 +176,6 @@ const UpdateOrganizationInfo = ({
             )}
           </div>
 
-          {/* Last Name Field */}
           <div>
             <Label
               htmlFor="lastName"
@@ -197,7 +196,6 @@ const UpdateOrganizationInfo = ({
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Email Field */}
           <div>
             <Label
               htmlFor="email"
@@ -217,7 +215,6 @@ const UpdateOrganizationInfo = ({
             )}
           </div>
 
-          {/* Phone Field */}
           <div>
             <Label
               htmlFor="phone"
@@ -247,10 +244,7 @@ const UpdateOrganizationInfo = ({
 
       {/* Organization Information Section */}
       <div className="confirmNewPassword rounded-lg bg-white">
-        <h3 className="mb-4 text-lg font-semibold">Organization Information</h3>
-
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Organization Name Field */}
           <div>
             <Label
               htmlFor="organizationName"
@@ -269,7 +263,6 @@ const UpdateOrganizationInfo = ({
             )}
           </div>
 
-          {/* Website Field */}
           <div>
             <Label
               htmlFor="website"
@@ -290,7 +283,6 @@ const UpdateOrganizationInfo = ({
           </div>
         </div>
 
-        {/* Organization Type Field */}
         <div className="mt-6">
           <Label
             htmlFor="organizationTypeId"
@@ -305,7 +297,7 @@ const UpdateOrganizationInfo = ({
               <Dropdown
                 id="organizationTypeId"
                 label=""
-                value={field.value || accountInfo.managers?.[0]?.organization?.type?.name || ''}
+                value={field.value || ''}
                 onChange={field.onChange}
                 options={organizationTypeOptions}
                 required={false}

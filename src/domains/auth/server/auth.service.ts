@@ -604,6 +604,16 @@ const getAccountSettingsInfo = async (accountId: string) => {
   return accountData;
 };
 
+const checkOrganizationExistsByName = async (name: string): Promise<boolean> => {
+  if (!name?.trim()) return false;
+
+  const org = await prisma.organization.findFirst({
+    where: { name: { equals: name.trim(), mode: 'insensitive' } },
+  });
+
+  return !!org;
+};
+
 const authService = {
   getUserByEmail,
   checkPassword,
@@ -622,6 +632,7 @@ const authService = {
   changePassword,
   updateOrganizationInfo,
   getAccountSettingsInfo,
+  checkOrganizationExistsByName,
 };
 
 export default authService;

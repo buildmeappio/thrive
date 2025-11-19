@@ -229,7 +229,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
           <div className="flex-shrink-0 p-4 px-6 md:px-4">
             <button
               onClick={() => router.push('/settings')}
-              className={`mb-4 flex w-full cursor-pointer items-center rounded-full border border-[#000093] font-semibold text-[#000093] shadow-lg transition-all duration-200 hover:bg-white active:scale-95 ${
+              className={`mb-4 flex w-full cursor-pointer items-center rounded-full border border-[#000093] font-semibold text-[#000093] transition-all duration-200 hover:bg-white active:scale-95 ${
                 isCollapsed ? 'justify-center px-3 py-3' : 'justify-center space-x-2 px-6 py-3'
               }`}
             >
