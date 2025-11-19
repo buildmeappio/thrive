@@ -141,10 +141,8 @@ export default function CasesPageContent({
                 <span>
                   {filters.status === "pending"
                     ? "Pending Review"
-                    : filters.status === "upcoming"
-                    ? "Upcoming Appointments"
-                    : filters.status === "reports"
-                    ? "Reports to Submit"
+                    : filters.status === "reportPending"
+                    ? "Report Pending"
                     : "Status"}
                 </span>
                 <svg
@@ -193,26 +191,14 @@ export default function CasesPageContent({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleFilterChange("status", "upcoming");
+                        handleFilterChange("status", "reportPending");
                       }}
                       className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "upcoming"
+                        filters.status === "reportPending"
                           ? "bg-gray-100 text-[#00A8FF]"
                           : ""
                       }`}>
-                      Upcoming Appointments
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleFilterChange("status", "reports");
-                      }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "reports"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
-                      }`}>
-                      Reports to Submit
+                      Report Pending
                     </button>
                   </div>
                 </div>

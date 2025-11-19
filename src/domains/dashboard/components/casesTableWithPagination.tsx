@@ -88,8 +88,7 @@ export default function CasesTableWithPagination({
 
   // Filter data based on search query and status filter
   const filteredData = useMemo(() => {
-    // Only show PENDING cases - exclude DECLINE, ACCEPT, REQUEST_MORE_INFO, DISCARDED
-    let result = data.filter((row) => row.status === "PENDING");
+    let result = data;
 
     // Apply search filter
     if (searchQuery) {
@@ -102,15 +101,13 @@ export default function CasesTableWithPagination({
       );
     }
 
-    // Apply status filter (currently only "pending" is relevant since we filter to PENDING only)
+    // Apply status filter
     if (filters.status && filters.status !== "all") {
       result = result.filter((row) => {
         if (filters.status === "pending") {
           return row.status === "PENDING";
-        } else if (filters.status === "upcoming") {
+        } else if (filters.status === "reportPending") {
           return row.status === "ACCEPT";
-        } else if (filters.status === "reports") {
-          return row.status === "DECLINE" || row.status === "REQUEST_MORE_INFO";
         }
         return true;
       });
@@ -267,9 +264,7 @@ export default function CasesTableWithPagination({
                 row.status === "PENDING"
                   ? "Pending Review"
                   : row.status === "ACCEPT"
-                  ? "Upcoming Appointment"
-                  : row.status === "DECLINE"
-                  ? "Declined"
+                  ? "Report Pending"
                   : row.status === "REQUEST_MORE_INFO"
                   ? "Request More Info"
                   : "N/A";

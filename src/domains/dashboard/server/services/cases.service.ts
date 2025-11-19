@@ -9,7 +9,9 @@ class CasesService {
     const bookings = await prisma.claimantBooking.findMany({
       where: {
         examinerProfileId,
-        status: "PENDING",
+        status: {
+          in: ["PENDING", "ACCEPT"],
+        },
         deletedAt: null,
       },
       include: {

@@ -208,22 +208,22 @@ class CaseDetailsService {
       },
     });
 
-    // If ACCEPT, update ExaminationSecureLink status to SUBMITTED
-    if (status === "ACCEPT") {
-      const secureLink = await prisma.examinationSecureLink.findFirst({
-        where: {
-          examinationId: booking.examinationId,
-          deletedAt: null,
-        },
-      });
+    // // If ACCEPT, update ExaminationSecureLink status to SUBMITTED
+    // if (status === "ACCEPT") {
+    //   const secureLink = await prisma.examinationSecureLink.findFirst({
+    //     where: {
+    //       examinationId: booking.examinationId,
+    //       deletedAt: null,
+    //     },
+    //   });
 
-      if (secureLink) {
-        await prisma.examinationSecureLink.update({
-          where: { id: secureLink.id },
-          data: { status: "SUBMITTED" },
-        });
-      }
-    }
+    //   if (secureLink) {
+    //     await prisma.examinationSecureLink.update({
+    //       where: { id: secureLink.id },
+    //       data: { status: "SUBMITTED" },
+    //     });
+    //   }
+    // }
 
     // Send email to claimant
     if (booking.examination && booking.examination.claimant) {
