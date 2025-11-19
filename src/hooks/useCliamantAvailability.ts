@@ -1,32 +1,48 @@
 'use client';
 
-import { createClaimantAvailability } from '@/domains/claimant/actions';
+import { createClaimantBooking } from '@/domains/claimant/actions';
 import { type ClaimantAvailabilityFormData } from '@/domains/claimant/schemas/claimantAvailability';
-import type {
-  ClaimantAvailabilityService,
-  ClaimantAvailabilitySlot,
-  CreateClaimantAvailabilityData,
-} from '@/domains/claimant/types/claimantAvailability';
-import { ClaimantPreference, TimeBand } from '@prisma/client';
+import type { CreateClaimantBookingData } from '@/domains/claimant/types/claimantAvailability';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-export function useClaimantAvailability(caseId: string, claimantId: string) {
+export function useClaimantAvailability(examinationId: string, claimantId: string) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const submitAvailability = async (formData: ClaimantAvailabilityFormData) => {
     setIsSubmitting(true);
 
     try {
-      const transformedData = transformFormDataToDbFormat(formData, caseId, claimantId);
-      const result = await createClaimantAvailability(transformedData);
+      // Always use new booking flow - examinerId should always be present
+      const firstAppointment = formData.appointments[0] as any;
+
+      // Debug logging
+      console.log('submitAvailability - formData:', formData);
+      console.log('submitAvailability - firstAppointment:', firstAppointment);
+      console.log('submitAvailability - examinerId:', firstAppointment?.examinerId);
+      console.log('submitAvailability - slotStart:', firstAppointment?.slotStart);
+
+      if (!firstAppointment?.examinerId || !firstAppointment?.slotStart) {
+        console.error('Validation failed - missing fields:', {
+          hasExaminerId: !!firstAppointment?.examinerId,
+          hasSlotStart: !!firstAppointment?.slotStart,
+          examinerId: firstAppointment?.examinerId,
+          slotStart: firstAppointment?.slotStart,
+          fullAppointment: firstAppointment,
+        });
+        toast.error('Please select an examiner and time slot');
+        return { success: false, error: 'Missing booking information' };
+      }
+
+      const bookingData = transformFormDataToBookingFormat(formData, examinationId, claimantId);
+      const result = await createClaimantBooking(bookingData);
 
       if (result.success) {
-        toast.success('Your availability has been submitted successfully!');
+        toast.success('Your appointment has been booked successfully!');
         return { success: true };
       } else {
-        toast.error('Failed to submit availability');
-        return { success: false, error: 'Submission failed' };
+        toast.error('Failed to book appointment');
+        return { success: false, error: 'Booking failed' };
       }
     } catch (error) {
       toast.error('An unexpected error occurred');
@@ -43,131 +59,31 @@ export function useClaimantAvailability(caseId: string, claimantId: string) {
   };
 }
 
-export function transformFormDataToDbFormat(
+export function transformFormDataToBookingFormat(
   formData: ClaimantAvailabilityFormData,
-  caseId: string,
+  examinationId: string,
   claimantId: string
-): CreateClaimantAvailabilityData {
-  const slots: ClaimantAvailabilitySlot[] = formData.appointments.map((apt: any) => {
-    const [day, month, year] = apt.date.split('-');
-    const date = new Date(parseInt(year), getMonthIndex(month), parseInt(day));
+): CreateClaimantBookingData {
+  // Get the first appointment (should only be one when booking)
+  const appointment = formData.appointments[0] as any;
 
-    let startTime = '08:00';
-    let endTime = '17:00';
-    let timeBand: TimeBand = TimeBand.EITHER;
-
-    switch (apt.time) {
-      case TimeBand.MORNING:
-        startTime = '08:00';
-        endTime = '12:00';
-        timeBand = TimeBand.MORNING;
-        break;
-      case TimeBand.AFTERNOON:
-        startTime = '12:00';
-        endTime = '17:00';
-        timeBand = TimeBand.AFTERNOON;
-        break;
-      default:
-        timeBand = TimeBand.EITHER;
-    }
-
-    const start = new Date(date);
-    start.setHours(parseInt(startTime.split(':')[0]), parseInt(startTime.split(':')[1]));
-
-    const end = new Date(date);
-    end.setHours(parseInt(endTime.split(':')[0]), parseInt(endTime.split(':')[1]));
-
-    return {
-      date: date.toISOString().split('T')[0],
-      startTime,
-      endTime,
-      start,
-      end,
-      timeBand,
-    };
-  });
-
-  // Convert services
-  const services: ClaimantAvailabilityService[] = [];
-
-  if (formData.interpreter) {
-    services.push({
-      type: 'interpreter',
-      enabled: true,
-      interpreter: formData.interpreterLanguage
-        ? {
-            languageId: formData.interpreterLanguage,
-          }
-        : undefined,
-    });
+  if (!appointment?.slotStart || !appointment?.examinerId) {
+    throw new Error('Missing required booking information');
   }
 
-  if (formData.transportation) {
-    services.push({
-      type: 'transport',
-      enabled: true,
-      transport: {
-        rawLookup: formData.pickupAddress || undefined,
-        notes:
-          [
-            formData.streetAddress,
-            formData.aptUnitSuite,
-            formData.city,
-            formData.postalCode,
-            formData.province,
-          ]
-            .filter(Boolean)
-            .join(', ') || undefined,
-      },
-    });
-  }
-
-  if (formData.chaperone) {
-    services.push({
-      type: 'chaperone',
-      enabled: true,
-    });
-  }
-
-  // Convert preference
-  let preference: ClaimantPreference;
-  switch (formData.preference) {
-    case ClaimantPreference.IN_PERSON:
-      preference = ClaimantPreference.IN_PERSON;
-      break;
-    case ClaimantPreference.VIRTUAL:
-      preference = ClaimantPreference.VIRTUAL;
-      break;
-    default:
-      preference = ClaimantPreference.EITHER;
-  }
+  const bookingTime = new Date(appointment.slotStart);
+  const preference = formData.preference;
 
   return {
-    caseId,
+    examinationId,
     claimantId,
+    examinerProfileId: appointment.examinerId,
+    bookingTime,
     preference,
     accessibilityNotes: formData.accessibilityNotes || undefined,
-    additionalNotes: formData.additionalNotesText || undefined,
     consentAck: formData.agreement || false,
-    slots,
-    services,
+    interpreterId: appointment.interpreterId || undefined,
+    chaperoneId: appointment.chaperoneId || undefined,
+    transporterId: appointment.transporterId || undefined,
   };
-}
-
-function getMonthIndex(monthName: string): number {
-  const months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
-  return months.indexOf(monthName);
 }

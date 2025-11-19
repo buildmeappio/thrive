@@ -12,6 +12,10 @@ const GettingStarted: React.FC = () => {
     e.preventDefault();
     router.push(URLS.REGISTER);
   };
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push(URLS.LOGIN);
+  };
   return (
     <div className="flex min-h-[calc(100vh-13vh)] flex-col bg-[#FAFAFF] md:flex-row">
       <div className="mt-8 flex-shrink-0 px-6 md:mt-20 md:w-[55%] md:px-0 md:pl-20">
@@ -35,17 +39,46 @@ const GettingStarted: React.FC = () => {
               from one secure platform.
             </p>
           </div>
-          <form onSubmit={handleGetStarted}>
-            <button
-              type="submit"
-              className="font-poppins flex cursor-pointer items-center gap-2 rounded-full px-8 py-4 text-center text-[12px] leading-[100%] font-medium tracking-[-0.02em] text-white transition-all duration-300 hover:scale-105 hover:shadow-lg md:text-[18.54px]"
-              style={{
-                background: 'linear-gradient(90deg, #000080 0%, #5151B9 100%)',
-              }}
-            >
-              Let&apos;s Get Started
-              <ArrowRight size={20} strokeWidth={3} />
-            </button>
+          <form>
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <button
+                onClick={handleGetStarted}
+                type="submit"
+                className="font-poppins flex cursor-pointer items-center gap-2 rounded-full px-8 py-4 text-center text-[12px] leading-[100%] font-medium tracking-[-0.02em] text-white transition-all duration-300 hover:scale-105 hover:shadow-lg md:text-[18.54px]"
+                style={{
+                  background: 'linear-gradient(90deg, #000080 0%, #5151B9 100%)',
+                }}
+              >
+                Let&apos;s Get Started
+                <ArrowRight size={20} strokeWidth={3} />
+              </button>
+
+              <button
+                onClick={handleLogin}
+                type="submit"
+                className="font-poppins relative flex cursor-pointer items-center gap-2 rounded-full px-8 py-4 text-center text-[12px] leading-[110%] font-medium tracking-[-0.01em] transition-all duration-300 hover:scale-105 hover:shadow-lg md:text-[18.54px]"
+                style={{
+                  background: 'white',
+                  border: '2px solid transparent',
+                  backgroundImage:
+                    'linear-gradient(white, white), linear-gradient(90deg, #000080 0%, #5151B9 100%)',
+                  backgroundOrigin: 'border-box',
+                  backgroundClip: 'padding-box, border-box',
+                }}
+              >
+                <span
+                  style={{
+                    backgroundImage: 'linear-gradient(90deg, #000080 0%, #5151B9 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
+                  Login
+                </span>
+                <ArrowRight size={20} strokeWidth={3} style={{ color: '#000080' }} />
+              </button>
+            </div>
           </form>
         </div>
 

@@ -114,7 +114,7 @@ export const PasswordSchema = Yup.object({
     .matches(/[A-Z]/, ErrorMessages.PASSWORD_UPPERCASE)
     .matches(/[a-z]/, ErrorMessages.PASSWORD_LOWERCASE)
     .matches(/[0-9]/, ErrorMessages.PASSWORD_NUMBER)
-    .matches(/[!@#$%^&*(),.?":{}|<>]/, ErrorMessages.PASSWORD_SPECIAL)
+    .matches(/[!@#$%^&*(),.?":{}|<>-]/, ErrorMessages.PASSWORD_SPECIAL)
     .required(ErrorMessages.PASSWORD_REQUIRED),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('password')], ErrorMessages.PASSWORD_CONFIRM)

@@ -20,10 +20,71 @@ const getCaseSummaryByJWT = async (token: string) => {
       examinationId: string;
     };
 
-    // Get the examination with case and claimant information
+    // Check secure link status - if SUBMITTED, the link is expired
+    // Note: The token in URL is a JWT, but DB stores a reference token (UUID)
+    // So we find by examinationId instead
+    const secureLink = await (prisma as any).examinationSecureLink.findFirst({
+      where: {
+        examinationId,
+        deletedAt: null,
+      },
+      orderBy: {
+        createdAt: 'desc', // Get the most recent secure link for this examination
+      },
+    });
+
+    if (!secureLink) {
+      return { success: false, message: 'Secure link not found', result: null };
+    }
+
+    // Block SUBMITTED and INVALID status
+    if (secureLink.status === 'SUBMITTED') {
+      return {
+        success: false,
+        message: 'This availability link has already been submitted and is no longer active.',
+        result: null,
+      };
+    }
+
+    if (secureLink.status === 'INVALID') {
+      return { success: false, message: 'This link is invalid', result: null };
+    }
+
+    // Check if a booking already exists for this examination
+    // Exclude DISCARDED bookings (cancelled/modified by claimant)
+    // Note: Prisma client needs to be regenerated after schema changes
+    const existingBooking = await (prisma as any).claimantBooking.findFirst({
+      where: {
+        examinationId,
+        deletedAt: null,
+        status: {
+          not: 'DISCARDED',
+        },
+      },
+      include: {
+        examiner: {
+          include: {
+            account: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        },
+        interpreter: true,
+        chaperone: true,
+        transporter: true,
+      },
+    });
+
+    // Get the examination with case and claimant information, including approvedAt and caseNumber
     const examination = (await prisma.examination.findUnique({
       where: { id: examinationId },
-      include: {
+      select: {
+        approvedAt: true,
+        caseNumber: true,
+        caseId: true,
+        claimantId: true,
         case: {
           include: {
             organization: true,
@@ -42,12 +103,29 @@ const getCaseSummaryByJWT = async (token: string) => {
       success: true,
       result: {
         caseId: examination.caseId,
+        caseNumber: examination.caseNumber, // Include caseNumber for display
         claimantId: examination.claimantId,
         claimantFirstName: examination.claimant.firstName,
         claimantLastName: examination.claimant.lastName,
         organizationName: examination.case.organization?.name || null,
         email,
         examinationId,
+        approvedAt: examination.approvedAt, // Include approvedAt for availability window
+        existingBooking: existingBooking
+          ? {
+              id: existingBooking.id,
+              examinerProfileId: existingBooking.examinerProfileId,
+              examinerName: existingBooking.examiner?.account?.user
+                ? `${existingBooking.examiner.account.user.firstName} ${existingBooking.examiner.account.user.lastName}`
+                : null,
+              bookingTime: existingBooking.bookingTime,
+              createdAt: existingBooking.createdAt, // Add createdAt for modification window check
+              status: existingBooking.status, // Add status for reference
+              interpreterId: existingBooking.interpreterId,
+              chaperoneId: existingBooking.chaperoneId,
+              transporterId: existingBooking.transporterId,
+            }
+          : null,
       },
     };
   } catch (error) {

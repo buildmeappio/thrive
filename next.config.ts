@@ -6,11 +6,8 @@ if (!frontendURL) {
   throw new Error('FRONTEND_URL is not set');
 }
 
-const basePath = process.env.BASE_PATH;
-
-if (!basePath) {
-  throw new Error('BASE_PATH is not set');
-}
+// Provide a default BASE_PATH for local development if not set
+const basePath = process.env.BASE_PATH || '/organization';
 
 const nextConfig: NextConfig = {
   /* config options here */

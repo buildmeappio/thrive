@@ -3,19 +3,12 @@ import { type NextAuthOptions } from 'next-auth';
 import { callbacks } from './callbacks';
 import { providers } from './providers';
 
-const cookiePath = process.env.BASE_PATH;
+// Provide a default BASE_PATH for local development if not set
+const cookiePath = process.env.BASE_PATH || '/organization';
 
-if (!cookiePath) {
-  throw new Error('BASE_PATH is not set');
-}
-
-const cookiePrefix = cookiePath.split('/').pop();
-
-if (!cookiePrefix) {
-  throw new Error('BASE_PATH is not set');
-}
-
-const isProd = process.env.NODE_ENV === 'production';
+// Since cookie configuration is commented out, we don't need to throw errors
+// But we keep this for future use when cookies are enabled
+// const cookiePrefix = cookiePath.split('/').filter(Boolean).pop() || 'organization';
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt', maxAge: 2 * 60 * 60 },
@@ -25,43 +18,101 @@ export const authOptions: NextAuthOptions = {
   callbacks,
   secret: process.env.NEXTAUTH_SECRET,
 
+  // cookies: {
+  //   sessionToken: {
+  //     name: `__Secure-${cookiePrefix}.session-token`,
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       path: cookiePath,
+  //       secure: true
+  //     }
+  //   },
+  //   callbackUrl: {
+  //     name: `__Secure-${cookiePrefix}.callback-url`,
+  //     options: {
+  //       sameSite: 'lax',
+  //       path: cookiePath,
+  //       secure: true
+  //     }
+  //   },
+  //   csrfToken: {
+  //     name: `__Host-${cookiePrefix}.csrf-token`,
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       path: cookiePath,
+  //       secure: true
+  //     }
+  //   },
+  //   pkceCodeVerifier: {
+  //     name: `${cookiePrefix}next-auth.pkce.code_verifier`,
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       path: cookiePath,
+  //       secure: true,
+  //       maxAge: 900
+  //     }
+  //   },
+  //   state: {
+  //     name: `${cookiePrefix}next-auth.state`,
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: "lax",
+  //       path: cookiePath,
+  //       secure: true,
+  //       maxAge: 900
+  //     },
+  //   },
+  //   nonce: {
+  //     name: `${cookiePrefix}next-auth.nonce`,
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: "lax",
+  //       path: cookiePath,
+  //       secure: true,
+  //     },
+  //   },
+  // }
+
   // 🔑 Key piece: unique names + path scoping
-  cookies: {
-    sessionToken: {
-      name: `__Secure-${cookiePrefix}.session-token`,
-      options: {
-        path: cookiePath,
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: isProd, // true in prod (HTTPS)
-      },
-    },
-    // NextAuth uses this for CSRF on POSTs to /api/auth/*
-    csrfToken: {
-      name: `__Secure-${cookiePrefix}.csrf-token`,
-      options: {
-        path: cookiePath,
-        httpOnly: false,
-        sameSite: 'lax',
-        secure: isProd,
-      },
-    },
-    // OAuth helpers (only used during sign-in flows)
-    pkceCodeVerifier: {
-      name: `__Secure-${cookiePrefix}.pkce.code_verifier`,
-      options: { path: cookiePath, httpOnly: true, sameSite: 'lax', secure: isProd },
-    },
-    state: {
-      name: `__Secure-${cookiePrefix}.oauth.state`,
-      options: { path: cookiePath, httpOnly: true, sameSite: 'lax', secure: isProd },
-    },
-    nonce: {
-      name: `__Secure-${cookiePrefix}.nonce`,
-      options: { path: cookiePath, httpOnly: true, sameSite: 'lax', secure: isProd },
-    },
-    callbackUrl: {
-      name: `__Secure-${cookiePrefix}.callback-url`,
-      options: { path: cookiePath, httpOnly: false, sameSite: 'lax', secure: isProd },
-    },
-  },
+  // cookies: {
+  //   sessionToken: {
+  //     name: `__Secure-${cookiePrefix}.session-token`,
+  //     options: {
+  //       path: cookiePath,
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       secure: isProd, // true in prod (HTTPS)
+  //     },
+  //   },
+  //   // NextAuth uses this for CSRF on POSTs to /api/auth/*
+  //   csrfToken: {
+  //     name: `__Secure-${cookiePrefix}.csrf-token`,
+  //     options: {
+  //       path: cookiePath,
+  //       httpOnly: false,
+  //       sameSite: 'lax',
+  //       secure: isProd,
+  //     },
+  //   },
+  //   // OAuth helpers (only used during sign-in flows)
+  //   pkceCodeVerifier: {
+  //     name: `__Secure-${cookiePrefix}.pkce.code_verifier`,
+  //     options: { path: cookiePath, httpOnly: true, sameSite: 'lax', secure: isProd },
+  //   },
+  //   state: {
+  //     name: `__Secure-${cookiePrefix}.oauth.state`,
+  //     options: { path: cookiePath, httpOnly: true, sameSite: 'lax', secure: isProd },
+  //   },
+  //   nonce: {
+  //     name: `__Secure-${cookiePrefix}.nonce`,
+  //     options: { path: cookiePath, httpOnly: true, sameSite: 'lax', secure: isProd },
+  //   },
+  //   callbackUrl: {
+  //     name: `__Secure-${cookiePrefix}.callback-url`,
+  //     options: { path: cookiePath, httpOnly: false, sameSite: 'lax', secure: isProd },
+  //   },
+  // },
 };

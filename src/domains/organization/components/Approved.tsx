@@ -53,7 +53,7 @@ const Approved = () => {
           onClick={() => router.push(URLS.IME_REFERRAL)}
           className="w-fit rounded-full bg-[#000093] px-6 py-2 text-xs font-medium tracking-[-0.03em] text-[#ffffff] hover:bg-[#000093] sm:px-8 sm:text-sm lg:px-12 lg:text-[11px]"
         >
-          ✚ New IME Referral
+          ✚ New Request
         </Button>
       </div>
     </div>

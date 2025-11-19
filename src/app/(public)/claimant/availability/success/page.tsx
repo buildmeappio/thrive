@@ -23,7 +23,7 @@ const Page = async ({
           <CheckCircle className="mx-auto h-16 w-16 text-green-600" />
         )}
         <h1 className={`mt-6 text-2xl font-bold ${isError ? 'text-red-900' : 'text-gray-900'}`}>
-          {isError ? 'Access Error' : 'Availability Submitted'}
+          {isError ? 'Access Error' : 'Submitted'}
         </h1>
         <p className={`mt-4 ${isError ? 'text-red-600' : 'text-gray-600'}`}>
           {isError
