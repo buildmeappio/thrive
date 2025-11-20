@@ -33,7 +33,7 @@ export default function CaseDetails({
   } = useCaseDetailsHandlers({ data, examinerProfileId });
 
   return (
-    <div className="min-h-screen bg-[#F0F8FF]">
+    <div className="min-h-screen">
       <div className="max-w-[1800px] mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
@@ -107,7 +107,7 @@ export default function CaseDetails({
 
         {/* Accordion Sections */}
         <div className="bg-white rounded-[29px] shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6 mb-6">
-          <Accordion type="single" collapsible className="w-full">
+          <Accordion type="single" collapsible className="w-full" defaultValue="claimant">
             <ClaimantDetailsSection claimant={data.claimant} />
 
             {data.insurance && (
