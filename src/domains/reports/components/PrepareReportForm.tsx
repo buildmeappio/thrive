@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { useReportStore } from "../state/useReportStore";
 import { PrepareReportFormProps } from "../types";
 import CaseOverviewSection from "./CaseOverviewSection";
@@ -23,6 +25,7 @@ export default function PrepareReportForm({
   bookingId,
   caseData,
 }: PrepareReportFormProps) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const {
@@ -40,6 +43,7 @@ export default function PrepareReportForm({
     confirmationChecked,
     updateField,
     loadReport,
+    resetForm,
   } = useReportStore();
 
   // Load existing report on mount and pre-fill examiner info
@@ -47,17 +51,20 @@ export default function PrepareReportForm({
     const loadExistingReport = async () => {
       try {
         setIsLoading(true);
-        
+
         const currentDate = new Date().toISOString().split("T")[0];
 
         // Load existing report data
         const result = await getReportAction({ bookingId });
-        
+
         if (result.success && result.data) {
           // Load existing report which will overwrite defaults
           loadReport(result.data);
         } else {
-          // No existing report - set defaults
+          // No existing report - clear localStorage and reset to initial state
+          resetForm();
+
+          // Then set defaults for this new case
           if (caseData.examinerName) {
             updateField("examinerName", caseData.examinerName);
           }
@@ -68,7 +75,9 @@ export default function PrepareReportForm({
         }
       } catch (error) {
         console.error("Error loading report:", error);
-        // Set defaults on error
+        // On error, reset form and set defaults
+        resetForm();
+
         const errorCurrentDate = new Date().toISOString().split("T")[0];
         if (caseData.examinerName) {
           updateField("examinerName", caseData.examinerName);
@@ -217,9 +226,17 @@ export default function PrepareReportForm({
       <div className="max-w-[1800px] mx-auto px-6 py-2">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-black">
-            Prepare IME Report
-          </h1>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center cursor-pointer justify-center w-12 h-12 rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+              aria-label="Go back">
+              <ArrowLeft className="h-5 w-5 text-[#00A8FF]" />
+            </button>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-black">
+              Prepare IME Report
+            </h1>
+          </div>
         </div>
 
         {/* Case Overview */}

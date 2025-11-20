@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
+import { Check, ArrowLeft } from "lucide-react";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { CaseDetailsProps } from "../types";
@@ -37,10 +37,18 @@ export default function CaseDetails({
       <div className="max-w-[1800px] mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-            <span className="text-black">Appointment Offer: </span>
-            <span className="text-[#00A8FF]">{data.caseNumber}</span>
-          </h1>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center cursor-pointer justify-center w-12 h-12 rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+              aria-label="Go back">
+              <ArrowLeft className="h-5 w-5 text-[#00A8FF]" />
+            </button>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+              <span className="text-black">Appointment Offer: </span>
+              <span className="text-[#00A8FF]">{data.caseNumber}</span>
+            </h1>
+          </div>
           {data.status === "ACCEPT" && !data.reportStatus && (
             <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#00A8FF] bg-[#E6F6FF]">
               <Check className="h-4 w-4 text-[#00A8FF]" strokeWidth={3} />

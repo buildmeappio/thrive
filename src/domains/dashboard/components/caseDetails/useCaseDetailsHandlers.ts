@@ -35,14 +35,18 @@ export function useCaseDetailsHandlers({
 
       if (result.success) {
         toast.success(result.message || "Action completed successfully");
+
+        // Close modals first
+        setIsDeclineModalOpen(false);
+
+        // Refresh the page to show updated status
         router.refresh();
-        if (status === "ACCEPT") {
-          router.push("/dashboard");
-        } else if (status === "DECLINE") {
+
+        // Only redirect to appointments page when declining
+        if (status === "DECLINE") {
           router.push("/appointments");
         }
-        // Close modals
-        setIsDeclineModalOpen(false);
+        // When accepting, stay on the current page (badges and buttons will update via refresh)
       } else {
         toast.error(result.message || "Failed to complete action");
       }
