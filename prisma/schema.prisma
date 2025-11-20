@@ -1043,6 +1043,7 @@ enum ReportStatus {
   REVIEWED
   APPROVED
   REJECTED
+  PENDING
 }
 
 model Report {
