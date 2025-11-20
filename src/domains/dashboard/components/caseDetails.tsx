@@ -41,11 +41,38 @@ export default function CaseDetails({
             <span className="text-black">Appointment Offer: </span>
             <span className="text-[#00A8FF]">{data.caseNumber}</span>
           </h1>
-          {data.status === "ACCEPT" && (
+          {data.status === "ACCEPT" && !data.reportStatus && (
             <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#00A8FF] bg-[#E6F6FF]">
               <Check className="h-4 w-4 text-[#00A8FF]" strokeWidth={3} />
               <span className="text-sm font-semibold text-[#00A8FF]">
                 Report Pending
+              </span>
+            </div>
+          )}
+          {data.reportStatus === "DRAFT" && (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#FFA500] bg-[#FFF4E6]">
+              <svg
+                className="h-4 w-4 text-[#FFA500]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={3}>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+              <span className="text-sm font-semibold text-[#FFA500]">
+                Draft
+              </span>
+            </div>
+          )}
+          {data.reportStatus === "SUBMITTED" && (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#10B981] bg-[#ECFDF5]">
+              <Check className="h-4 w-4 text-[#10B981]" strokeWidth={3} />
+              <span className="text-sm font-semibold text-[#10B981]">
+                Submitted
               </span>
             </div>
           )}
@@ -96,7 +123,27 @@ export default function CaseDetails({
         </div>
 
         {/* Action Buttons */}
-        {data.status === "ACCEPT" ? (
+        {data.reportStatus === "DRAFT" ? (
+          <div className="flex flex-col sm:flex-row gap-4 justify-end mt-6">
+            <Button
+              onClick={() => {
+                router.push(`/appointments/${data.bookingId}/prepare-report`);
+              }}
+              className="h-[48px] cursor-pointer px-6 rounded-[20px] bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] text-white font-medium hover:opacity-90 transition-opacity">
+              Continue Draft
+            </Button>
+          </div>
+        ) : data.reportStatus === "SUBMITTED" ? (
+          <div className="flex flex-col sm:flex-row gap-4 justify-end mt-6">
+            <Button
+              onClick={() => {
+                router.push(`/appointments/${data.bookingId}/prepare-report`);
+              }}
+              className="h-[48px] cursor-pointer px-6 rounded-[20px] bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] text-white font-medium hover:opacity-90 transition-opacity">
+              Review Report
+            </Button>
+          </div>
+        ) : data.status === "ACCEPT" ? (
           <div className="flex flex-col sm:flex-row gap-4 justify-end mt-6">
             <Button
               onClick={() => {

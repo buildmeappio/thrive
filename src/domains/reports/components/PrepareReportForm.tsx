@@ -12,7 +12,7 @@ import SignatureSubmissionSection from "./SignatureSubmissionSection";
 import ReportActions from "./ReportActions";
 import { reportFormSchema } from "../schemas/report.schemas";
 import { toast } from "sonner";
-import { printReport } from "@/utils/pdfGenerator";
+import { printReport, printReportFromHTML } from "@/utils/pdfGenerator";
 import {
   getReportAction,
   saveReportDraftAction,
@@ -169,7 +169,7 @@ export default function PrepareReportForm({
       // Save before printing
       await handleSaveDraft(false);
 
-      // Submit report
+      // Submit report and generate Google Doc
       const submitResult = await submitReportAction({
         bookingId,
         reportData: formData,
@@ -181,10 +181,18 @@ export default function PrepareReportForm({
         return;
       }
 
-      // Generate and print PDF
-      printReport(formData, caseData);
-
-      toast.success("Report submitted and ready for printing");
+      // Print PDF using Google Docs HTML if available, otherwise fallback to local generation
+      if (submitResult.htmlContent) {
+        console.log("Using Google Docs HTML for print");
+        printReportFromHTML(submitResult.htmlContent);
+        toast.success("Report submitted and ready for printing");
+      } else {
+        console.warn("Google Docs HTML not available, using fallback");
+        console.log("Submit result:", submitResult);
+        // Fallback to local HTML generation
+        printReport(formData, caseData);
+        toast.success("Report submitted (using fallback template)");
+      }
     } catch (error: any) {
       console.error("Error preparing report for print:", error);
       toast.error(error.message || "Failed to prepare report");

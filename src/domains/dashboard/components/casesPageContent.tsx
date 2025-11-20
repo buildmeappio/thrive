@@ -143,6 +143,10 @@ export default function CasesPageContent({
                     ? "Pending Review"
                     : filters.status === "reportPending"
                     ? "Report Pending"
+                    : filters.status === "reportDraft"
+                    ? "Report Draft"
+                    : filters.status === "reportSubmitted"
+                    ? "Report Submitted"
                     : "Status"}
                 </span>
                 <svg
@@ -199,6 +203,30 @@ export default function CasesPageContent({
                           : ""
                       }`}>
                       Report Pending
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFilterChange("status", "reportDraft");
+                      }}
+                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
+                        filters.status === "reportDraft"
+                          ? "bg-gray-100 text-[#00A8FF]"
+                          : ""
+                      }`}>
+                      Report Draft
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFilterChange("status", "reportSubmitted");
+                      }}
+                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
+                        filters.status === "reportSubmitted"
+                          ? "bg-gray-100 text-[#00A8FF]"
+                          : ""
+                      }`}>
+                      Report Submitted
                     </button>
                   </div>
                 </div>

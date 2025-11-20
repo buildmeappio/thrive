@@ -1,13 +1,34 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useReportStore } from "../state/useReportStore";
 import { X } from "lucide-react";
 
 export default function SignatureCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const { setSignature, clearSignature } = useReportStore();
+  const { signature, setSignature, clearSignature } = useReportStore();
+
+  // Restore signature from store when component mounts or signature changes
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Clear the canvas first
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // If there's a signature in the store, restore it to the canvas
+    if (signature?.data) {
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+      };
+      img.src = signature.data;
+    }
+  }, [signature]);
 
   const getCoordinates = (
     e: React.MouseEvent<HTMLCanvasElement>,

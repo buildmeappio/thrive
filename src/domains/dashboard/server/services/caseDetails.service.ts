@@ -3,6 +3,7 @@ import { CaseDetailsData } from "../../types";
 import emailService from "@/server/services/email.service";
 import { ENV } from "@/constants/variables";
 import { signClaimantApproveToken } from "@/lib/jwt";
+import { ClaimantBookingStatus } from "@prisma/client";
 
 class CaseDetailsService {
   /**
@@ -58,6 +59,15 @@ class CaseDetailsService {
             },
           },
         },
+        reports: {
+          where: {
+            deletedAt: null,
+          },
+          select: {
+            status: true,
+          },
+          take: 1,
+        },
       },
     });
 
@@ -84,10 +94,14 @@ class CaseDetailsService {
         size: cd.document.size,
       }));
 
+    // Get report status
+    const reportStatus = booking.reports?.[0]?.status || null;
+
     const caseDetails: CaseDetailsData = {
       bookingId: booking.id,
       caseNumber: exam.caseNumber,
       status: booking.status,
+      reportStatus,
       claimant: {
         firstName: claimant.firstName,
         lastName: claimant.lastName,
@@ -174,7 +188,12 @@ class CaseDetailsService {
   async updateBookingStatus(
     bookingId: string,
     examinerProfileId: string,
-    status: "ACCEPT" | "DECLINE" | "REQUEST_MORE_INFO" | "DISCARDED",
+    status:
+      | "ACCEPT"
+      | "DECLINE"
+      | "REQUEST_MORE_INFO"
+      | "DISCARDED"
+      | "REPORT_SUBMITTED",
     message?: string
   ): Promise<void> {
     const booking = await prisma.claimantBooking.findFirst({
@@ -201,6 +220,7 @@ class CaseDetailsService {
       where: { id: bookingId },
       data: {
         status: status as
+          | ClaimantBookingStatus
           | "ACCEPT"
           | "DECLINE"
           | "REQUEST_MORE_INFO"

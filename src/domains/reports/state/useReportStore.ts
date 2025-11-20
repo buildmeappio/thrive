@@ -20,6 +20,8 @@ interface ReportState extends ReportFormData {
   addDynamicSection: () => void;
   removeDynamicSection: (id: string) => void;
   updateDynamicSection: (id: string, field: keyof DynamicSection, value: string) => void;
+  addDocumentToSection: (sectionId: string, document: UploadedDocument) => void;
+  removeDocumentFromSection: (sectionId: string, documentId: string) => void;
   setSignature: (signature: SignatureData) => void;
   clearSignature: () => void;
   addDocument: (document: UploadedDocument) => void;
@@ -82,6 +84,31 @@ export const useReportStore = create<ReportState>()(
         }));
       },
 
+      addDocumentToSection: (sectionId, document) => {
+        set((state) => ({
+          dynamicSections: state.dynamicSections.map((section) =>
+            section.id === sectionId
+              ? { ...section, documents: [...section.documents, document] }
+              : section
+          ),
+        }));
+      },
+
+      removeDocumentFromSection: (sectionId, documentId) => {
+        set((state) => ({
+          dynamicSections: state.dynamicSections.map((section) =>
+            section.id === sectionId
+              ? {
+                  ...section,
+                  documents: section.documents.filter(
+                    (doc) => doc.id !== documentId
+                  ),
+                }
+              : section
+          ),
+        }));
+      },
+
       setSignature: (signature) => {
         set({ signature });
       },
@@ -131,6 +158,7 @@ export const useReportStore = create<ReportState>()(
         examinerName: state.examinerName,
         professionalTitle: state.professionalTitle,
         dateOfReport: state.dateOfReport,
+        signature: state.signature,
         confirmationChecked: state.confirmationChecked,
       }),
     }

@@ -1,5 +1,12 @@
 import prisma from "@/lib/db";
-import { CaseOverviewData, ReportFormData, DynamicSection, UploadedDocument } from "../../types";
+import {
+  CaseOverviewData,
+  ReportFormData,
+  DynamicSection,
+  UploadedDocument,
+} from "../../types";
+import { generateReportFromTemplate, ReportDocData } from "@/lib/google-docs";
+import { ENV } from "@/constants/variables";
 
 class ReportService {
   /**
@@ -61,11 +68,8 @@ class ReportService {
         ? `${booking.examiner.account.user.firstName} ${booking.examiner.account.user.lastName}`
         : undefined;
 
-      // Get professional title from examiner profile specialties
-      const specialties = booking.examiner?.specialties || [];
-      const professionalTitle = specialties.length > 0
-        ? specialties.join(", ")
-        : undefined;
+      // Get professional title from the examination type (medical specialty for this specific case)
+      const professionalTitle = booking.examination.examinationType?.name || undefined;
 
       const caseData: CaseOverviewData = {
         requestDateTime: booking.createdAt,
@@ -140,12 +144,13 @@ class ReportService {
         examinerName: report.examinerName,
         professionalTitle: report.professionalTitle,
         dateOfReport: report.dateOfReport.toISOString().split("T")[0],
-        signature: report.signatureType && report.signatureData
-          ? {
-              type: report.signatureType as "canvas" | "upload",
-              data: report.signatureData,
-            }
-          : null,
+        signature:
+          report.signatureType && report.signatureData
+            ? {
+                type: report.signatureType as "canvas" | "upload",
+                data: report.signatureData,
+              }
+            : null,
         confirmationChecked: report.confirmationChecked,
       };
 
@@ -181,7 +186,7 @@ class ReportService {
       // Parse date
       const dateOfReport = new Date(reportData.dateOfReport);
 
-      // Upsert report
+      // Upsert report with DRAFT status
       await prisma.report.upsert({
         where: { bookingId },
         create: {
@@ -195,6 +200,7 @@ class ReportService {
           signatureType: reportData.signature?.type || null,
           signatureData: reportData.signature?.data || null,
           confirmationChecked: reportData.confirmationChecked,
+          status: "DRAFT", // Set status to DRAFT
           dynamicSections: {
             create: reportData.dynamicSections.map((section, index) => ({
               title: section.title,
@@ -218,6 +224,7 @@ class ReportService {
           signatureType: reportData.signature?.type || null,
           signatureData: reportData.signature?.data || null,
           confirmationChecked: reportData.confirmationChecked,
+          status: "DRAFT", // Set status to DRAFT
           // Update dynamic sections
           dynamicSections: {
             deleteMany: { deletedAt: null },
@@ -257,7 +264,12 @@ class ReportService {
   async submitReport(
     bookingId: string,
     reportData: ReportFormData
-  ): Promise<{ success: boolean; error?: string }> {
+  ): Promise<{
+    success: boolean;
+    error?: string;
+    googleDocId?: string;
+    htmlContent?: string;
+  }> {
     try {
       // Validate all required fields
       if (!reportData.consentFormSigned) {
@@ -291,19 +303,126 @@ class ReportService {
         };
       }
 
-      // Save report (same as draft but validated)
-      const saveResult = await this.saveReportDraft(bookingId, reportData);
-      if (!saveResult.success) {
-        return saveResult;
+      // Get case/booking data for the report
+      const caseData = await this.getBookingDataForReport(bookingId);
+      if (!caseData) {
+        return { success: false, error: "Booking data not found" };
       }
+
+      // Generate Google Doc from template
+      let googleDocId: string | undefined;
+      let htmlContent: string | undefined;
+
+      try {
+        // Get logo URL from environment
+        const logoUrl = ENV.NEXT_PUBLIC_CDN_URL
+          ? `${ENV.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`
+          : undefined;
+
+        const reportDocData: ReportDocData = {
+          claimantName: caseData.claimantFullName,
+          dateOfBirth: caseData.dateOfBirth,
+          gender: caseData.gender,
+          caseNumber: caseData.caseNumber,
+          claimNumber: caseData.claimNumber,
+          insuranceCoverage: caseData.insuranceCoverage,
+          medicalSpecialty: caseData.medicalSpecialty,
+          requestDateTime: caseData.requestDateTime,
+          dueDate: caseData.dueDate,
+          claimantEmail: caseData.claimantEmail,
+          referralQuestionsResponse: reportData.referralQuestionsResponse,
+          dynamicSections: reportData.dynamicSections.map((section) => ({
+            title: section.title,
+            content: section.content,
+          })),
+          examinerName: reportData.examinerName,
+          professionalTitle: reportData.professionalTitle,
+          dateOfReport: reportData.dateOfReport,
+          signatureDataUrl: reportData.signature?.data,
+          logoUrl,
+        };
+
+        const result = await generateReportFromTemplate(reportDocData);
+        googleDocId = result.documentId;
+        htmlContent = result.htmlContent;
+      } catch (error: any) {
+        console.error("Error generating Google Doc:", error);
+        // Continue with submission even if Google Doc generation fails
+        // You can decide to fail here instead if Google Doc is critical
+      }
+
+      // Save report with SUBMITTED status
+      const documentIds: string[] = reportData.referralDocuments
+        .filter((doc) => doc.id)
+        .map((doc) => doc.id);
+
+      const dateOfReport = new Date(reportData.dateOfReport);
+
+      await prisma.report.upsert({
+        where: { bookingId },
+        create: {
+          bookingId,
+          consentFormSigned: reportData.consentFormSigned,
+          latRuleAcknowledgment: reportData.latRuleAcknowledgment,
+          referralQuestionsResponse: reportData.referralQuestionsResponse,
+          examinerName: reportData.examinerName,
+          professionalTitle: reportData.professionalTitle,
+          dateOfReport,
+          signatureType: reportData.signature?.type || null,
+          signatureData: reportData.signature?.data || null,
+          confirmationChecked: reportData.confirmationChecked,
+          googleDocId,
+          status: "SUBMITTED", // Set status to SUBMITTED
+          dynamicSections: {
+            create: reportData.dynamicSections.map((section, index) => ({
+              title: section.title,
+              content: section.content,
+              order: index,
+            })),
+          },
+          referralDocuments: {
+            create: documentIds.map((docId) => ({
+              documentId: docId,
+            })),
+          },
+        },
+        update: {
+          consentFormSigned: reportData.consentFormSigned,
+          latRuleAcknowledgment: reportData.latRuleAcknowledgment,
+          referralQuestionsResponse: reportData.referralQuestionsResponse,
+          examinerName: reportData.examinerName,
+          professionalTitle: reportData.professionalTitle,
+          dateOfReport,
+          signatureType: reportData.signature?.type || null,
+          signatureData: reportData.signature?.data || null,
+          confirmationChecked: reportData.confirmationChecked,
+          googleDocId,
+          status: "SUBMITTED", // Set status to SUBMITTED
+          dynamicSections: {
+            deleteMany: { deletedAt: null },
+            create: reportData.dynamicSections.map((section, index) => ({
+              title: section.title,
+              content: section.content,
+              order: index,
+            })),
+          },
+          referralDocuments: {
+            deleteMany: { deletedAt: null },
+            create: documentIds.map((docId) => ({
+              documentId: docId,
+            })),
+          },
+        },
+      });
 
       // TODO: Add any additional submission logic here
       // - Send notifications
-      // - Update booking status if needed
-      // - Generate PDF and store
-      // - etc.
 
-      return { success: true };
+      return {
+        success: true,
+        googleDocId,
+        htmlContent,
+      };
     } catch (error: any) {
       console.error("Error submitting report:", error);
       return {

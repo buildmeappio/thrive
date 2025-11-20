@@ -115,4 +115,6 @@ export interface SubmitReportInput {
 export interface SubmitReportResponse {
   success: boolean;
   message?: string;
+  googleDocId?: string;
+  htmlContent?: string;
 }

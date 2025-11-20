@@ -96,7 +96,9 @@ export default function CaseOverviewSection({
           </div>
 
           <div className="bg-[#F8F9FA] rounded-lg py-2 px-4 flex items-center justify-between">
-            <span className="text-sm text-gray-600 font-poppins">Case ID</span>
+            <span className="text-sm text-gray-600 font-poppins">
+              Case Number
+            </span>
             <span className="text-base font-medium text-[#00A8FF] font-poppins">
               {data.caseNumber}
             </span>

@@ -182,10 +182,6 @@ export function generateReportHTML(
           <div class="info-value">${caseData.medicalSpecialty}</div>
         </div>
         <div class="info-item">
-          <div class="info-label">Case ID</div>
-          <div class="info-value">${caseData.caseId}</div>
-        </div>
-        <div class="info-item">
           <div class="info-label">Claimant Full Name</div>
           <div class="info-value">${caseData.claimantFullName}</div>
         </div>
@@ -193,11 +189,15 @@ export function generateReportHTML(
 
       <h2>Consent & Legal Disclosure</h2>
       <div class="checkbox-item">
-        <span class="checkbox" style="background: ${reportData.consentFormSigned ? "#00A8FF" : "white"}"></span>
+        <span class="checkbox" style="background: ${
+          reportData.consentFormSigned ? "#00A8FF" : "white"
+        }"></span>
         <span>Consent Form Signed</span>
       </div>
       <div class="checkbox-item">
-        <span class="checkbox" style="background: ${reportData.latRuleAcknowledgment ? "#00A8FF" : "white"}"></span>
+        <span class="checkbox" style="background: ${
+          reportData.latRuleAcknowledgment ? "#00A8FF" : "white"
+        }"></span>
         <span>LAT Rule 10.2 Acknowledgment</span>
       </div>
 
@@ -262,7 +262,7 @@ export function generateReportHTML(
 }
 
 /**
- * Open print dialog with the report
+ * Open print dialog with the report (fallback if Google Docs HTML not available)
  */
 export function printReport(
   reportData: ReportFormData,
@@ -284,5 +284,93 @@ export function printReport(
   // Wait for content to load, then print
   printWindow.onload = () => {
     printWindow.print();
+  };
+}
+
+/**
+ * Open print dialog with Google Docs HTML
+ * This is the primary method for printing reports
+ */
+export function printReportFromHTML(htmlContent: string): void {
+  // Create a new window for printing
+  const printWindow = window.open("", "_blank");
+
+  if (!printWindow) {
+    alert("Please allow popups to print the report");
+    return;
+  }
+
+  // Extract logo URL from HTML if it exists (it will be a placeholder)
+  const logoUrlMatch = htmlContent.match(/\{\{logo_url\}\}/);
+  const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL;
+  const logoUrl = cdnUrl ? `${cdnUrl}/images/thriveLogo.png` : "";
+
+  // Replace logo placeholder with actual img tag
+  let processedHtml = htmlContent;
+  if (logoUrl && logoUrlMatch) {
+    processedHtml = htmlContent.replace(
+      /\{\{logo_url\}\}/g,
+      `<img src="${logoUrl}" alt="Thrive Logo" class="report-logo" />`
+    );
+  }
+
+  // Add print-friendly CSS to the Google Docs HTML
+  const styledHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Medical Examination Report</title>
+      <style>
+        @media print {
+          @page {
+            margin: 1in;
+            size: letter;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        }
+
+        body {
+          font-family: 'Arial', sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 8.5in;
+          margin: 0 auto;
+          padding: 20px;
+        }
+
+        /* Ensure Google Docs styles are preserved while adding print optimization */
+        img {
+          max-width: 100%;
+          height: auto;
+        }
+
+        /* Logo styling */
+        .report-logo {
+          max-width: 200px;
+          height: auto;
+          margin-bottom: 20px;
+          display: block;
+        }
+      </style>
+    </head>
+    <body>
+      ${processedHtml}
+    </body>
+    </html>
+  `;
+
+  printWindow.document.write(styledHTML);
+  printWindow.document.close();
+
+  // Wait for content and images to load, then print
+  printWindow.onload = () => {
+    // Small delay to ensure all content is rendered
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
   };
 }
