@@ -115,6 +115,12 @@ export default function CasesTableWithPagination({
         } else if (filters.status === "reportSubmitted") {
           // Show cases that are accepted and have a submitted report
           return row.status === "ACCEPT" && row.reportStatus === "SUBMITTED";
+        } else if (filters.status === "reportApproved") {
+          // Show cases that are accepted and have an approved report
+          return row.status === "ACCEPT" && row.reportStatus === "APPROVED";
+        } else if (filters.status === "reportRejected") {
+          // Show cases that are accepted and have a rejected report
+          return row.status === "ACCEPT" && row.reportStatus === "REJECTED";
         }
         return true;
       });
@@ -282,6 +288,15 @@ export default function CasesTableWithPagination({
                 } else if (row.reportStatus === "SUBMITTED") {
                   statusText = "Report Submitted";
                   statusColor = "text-[#10B981]";
+                } else if (row.reportStatus === "APPROVED") {
+                  statusText = "Report Approved";
+                  statusColor = "text-[#10B981]";
+                } else if (row.reportStatus === "REJECTED") {
+                  statusText = "Report Rejected";
+                  statusColor = "text-[#DC2626]";
+                } else if (row.reportStatus === "REVIEWED") {
+                  statusText = "Report Reviewed";
+                  statusColor = "text-[#00A8FF]";
                 } else {
                   // No report exists yet
                   statusText = "Report Pending";

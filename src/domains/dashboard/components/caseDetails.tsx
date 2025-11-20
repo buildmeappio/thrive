@@ -49,6 +49,25 @@ export default function CaseDetails({
               <span className="text-[#00A8FF]">{data.caseNumber}</span>
             </h1>
           </div>
+          {data.reportStatus === "PENDING" && (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#00A8FF] bg-[#E6F6FF]">
+              <svg
+                className="h-4 w-4 text-[#00A8FF]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={3}>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span className="text-sm font-semibold text-[#00A8FF]">
+                Report Pending
+              </span>
+            </div>
+          )}
           {data.status === "ACCEPT" && !data.reportStatus && (
             <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#00A8FF] bg-[#E6F6FF]">
               <Check className="h-4 w-4 text-[#00A8FF]" strokeWidth={3} />
@@ -72,7 +91,7 @@ export default function CaseDetails({
                 />
               </svg>
               <span className="text-sm font-semibold text-[#FFA500]">
-                Draft
+                Report Draft
               </span>
             </div>
           )}
@@ -80,7 +99,42 @@ export default function CaseDetails({
             <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#10B981] bg-[#ECFDF5]">
               <Check className="h-4 w-4 text-[#10B981]" strokeWidth={3} />
               <span className="text-sm font-semibold text-[#10B981]">
-                Submitted
+                Report Submitted
+              </span>
+            </div>
+          )}
+          {data.reportStatus === "REVIEWED" && (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#00A8FF] bg-[#E6F6FF]">
+              <Check className="h-4 w-4 text-[#00A8FF]" strokeWidth={3} />
+              <span className="text-sm font-semibold text-[#00A8FF]">
+                Reviewed
+              </span>
+            </div>
+          )}
+          {data.reportStatus === "APPROVED" && (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#10B981] bg-[#ECFDF5]">
+              <Check className="h-4 w-4 text-[#10B981]" strokeWidth={3} />
+              <span className="text-sm font-semibold text-[#10B981]">
+                Report Approved
+              </span>
+            </div>
+          )}
+          {data.reportStatus === "REJECTED" && (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#DC2626] bg-[#FEF2F2]">
+              <svg
+                className="h-4 w-4 text-[#DC2626]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={3}>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              <span className="text-sm font-semibold text-[#DC2626]">
+                Report Rejected
               </span>
             </div>
           )}
@@ -107,7 +161,11 @@ export default function CaseDetails({
 
         {/* Accordion Sections */}
         <div className="bg-white rounded-[29px] shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6 mb-6">
-          <Accordion type="single" collapsible className="w-full" defaultValue="claimant">
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full"
+            defaultValue="claimant">
             <ClaimantDetailsSection claimant={data.claimant} />
 
             {data.insurance && (
@@ -141,7 +199,19 @@ export default function CaseDetails({
               Continue Draft
             </Button>
           </div>
-        ) : data.reportStatus === "SUBMITTED" ? (
+        ) : data.reportStatus === "REJECTED" ? (
+          <div className="flex flex-col sm:flex-row gap-4 justify-end mt-6">
+            <Button
+              onClick={() => {
+                router.push(`/appointments/${data.bookingId}/prepare-report`);
+              }}
+              className="h-[48px] cursor-pointer px-6 rounded-[20px] bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] text-white font-medium hover:opacity-90 transition-opacity">
+              Update Report
+            </Button>
+          </div>
+        ) : data.reportStatus === "SUBMITTED" ||
+          data.reportStatus === "REVIEWED" ||
+          data.reportStatus === "APPROVED" ? (
           <div className="flex flex-col sm:flex-row gap-4 justify-end mt-6">
             <Button
               onClick={() => {
@@ -151,7 +221,8 @@ export default function CaseDetails({
               Review Report
             </Button>
           </div>
-        ) : data.status === "ACCEPT" ? (
+        ) : (data.status === "ACCEPT" && !data.reportStatus) ||
+          data.reportStatus === "PENDING" ? (
           <div className="flex flex-col sm:flex-row gap-4 justify-end mt-6">
             <Button
               onClick={() => {

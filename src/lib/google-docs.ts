@@ -216,20 +216,25 @@ export async function insertImageAtPlaceholder(
     findPlaceholder(doc.data.body.content);
 
     if (placeholderIndex === null || placeholderEndIndex === null) {
-      console.warn(`Placeholder "${placeholderText}" not found in document. Skipping image insertion.`);
+      console.warn(
+        `Placeholder "${placeholderText}" not found in document. Skipping image insertion.`
+      );
       return;
     }
 
     // Calculate actual text boundaries within the element
     const textContent = doc.data.body.content
       .flatMap((element: any) => element.paragraph?.elements || [])
-      .find((el: any) =>
-        el.textRun?.content?.includes(placeholderText) &&
-        el.startIndex === placeholderIndex
+      .find(
+        (el: any) =>
+          el.textRun?.content?.includes(placeholderText) &&
+          el.startIndex === placeholderIndex
       );
 
     if (!textContent) {
-      console.warn(`Could not find text content for placeholder "${placeholderText}"`);
+      console.warn(
+        `Could not find text content for placeholder "${placeholderText}"`
+      );
       return;
     }
 
@@ -256,12 +261,14 @@ export async function insertImageAtPlaceholder(
             index: actualStartIndex,
           },
           uri: imageUri,
-          ...(width && height ? {
-            objectSize: {
-              width: { magnitude: width, unit: "PT" },
-              height: { magnitude: height, unit: "PT" },
-            },
-          } : {}),
+          ...(width && height
+            ? {
+                objectSize: {
+                  width: { magnitude: width, unit: "PT" },
+                  height: { magnitude: height, unit: "PT" },
+                },
+              }
+            : {}),
         },
       },
     ];
@@ -271,7 +278,10 @@ export async function insertImageAtPlaceholder(
       requestBody: { requests },
     });
   } catch (error) {
-    console.error(`Error inserting image at placeholder "${placeholderText}":`, error);
+    console.error(
+      `Error inserting image at placeholder "${placeholderText}":`,
+      error
+    );
     // Don't throw - allow the process to continue with other placeholders
     console.warn(`Skipping image insertion for "${placeholderText}"`);
   }
@@ -357,7 +367,10 @@ export function postProcessHTML(
     // Escape special characters in data URL for regex (but be careful with data URLs)
     const dataUrlPattern = signatureDataUrl.substring(0, 50); // Use first 50 chars as pattern
     processedHtml = processedHtml.replace(
-      new RegExp(dataUrlPattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[^\\s<>]*", "gi"),
+      new RegExp(
+        dataUrlPattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[^\\s<>]*",
+        "gi"
+      ),
       `<img src="${signatureDataUrl}" alt="Signature" style="max-width: 300px; height: auto; display: block; margin-top: 20px;" />`
     );
   }
@@ -474,48 +487,6 @@ export function postProcessHTML(
 
   return processedHtml;
 }
-
-/**
- * Format date as "January 15, 2025"
- */
-function formatContractDate(date: Date | string): string {
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(dateObj);
-}
-
-/**
- * Format currency value (CAD)
- */
-function formatCurrency(amount: number | undefined | null): string {
-  if (amount === undefined || amount === null) {
-    return "";
-  }
-  return new Intl.NumberFormat("en-CA", {
-    style: "currency",
-    currency: "CAD",
-    minimumFractionDigits: 2,
-  }).format(amount);
-}
-
-/**
- * Contract data structure for placeholder mapping
- */
-export type ContractData = {
-  examinerName: string;
-  province: string;
-  effectiveDate: Date | string;
-  feeStructure: {
-    IMEFee: number;
-    recordReviewFee: number;
-    hourlyRate?: number;
-    cancellationFee: number;
-    paymentTerms: string;
-  };
-};
 
 /**
  * Report data structure for placeholder mapping
@@ -643,7 +614,7 @@ export async function generateReportFromTemplate(
         data.logoUrl,
         data.logoUrl, // The placeholder was replaced with the URL itself
         150, // width in points (approx 2 inches)
-        50   // height in points
+        50 // height in points
       );
     }
 
@@ -656,7 +627,7 @@ export async function generateReportFromTemplate(
         data.signatureDataUrl,
         data.signatureDataUrl.substring(0, 100), // Match beginning of data URL
         200, // width in points
-        80   // height in points
+        80 // height in points
       );
     }
 
