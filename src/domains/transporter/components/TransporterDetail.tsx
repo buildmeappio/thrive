@@ -6,7 +6,7 @@ import FieldRow from "@/components/FieldRow";
 import { cn } from "@/lib/utils";
 import { TransporterData } from "../types/TransporterData";
 import { updateTransporter, deleteTransporter } from "../server";
-import { Check, Edit, X, Trash2 } from "lucide-react";
+import { Check, Edit, X, Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
 import PhoneInput from "@/components/PhoneNumber";
@@ -24,6 +24,7 @@ import { format } from "date-fns";
 import { saveTransporterAvailabilityAction } from "../server";
 import { useRouter } from "next/navigation";
 import { showDeleteConfirmation } from "@/components";
+import Link from "next/link";
 
 const mapStatus = {
   ACTIVE: "active",
@@ -283,12 +284,19 @@ export default function TransporterDetail({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header with Back Button */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {capitalizeWords(transporter.companyName)}
-          </h1>
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          <Link
+            href="/transporter"
+            className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+              <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {capitalizeWords(transporter.companyName)}
+            </h1>
+          </Link>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           {isEditing ? (
@@ -311,16 +319,16 @@ export default function TransporterDetail({
             <div className="flex gap-2 w-full sm:w-auto">
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-sm hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80 text-white rounded-lg flex-1 sm:flex-initial">
+                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-600 hover:bg-blue-100 transition-colors text-sm sm:text-base flex-1 sm:flex-initial">
                 <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                Edit
+                <span className="text-sm font-medium">Edit</span>
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-red-600 shadow-sm text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex-1 sm:flex-initial">
+                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base flex-1 sm:flex-initial">
                 <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                {isDeleting ? "Deleting..." : "Delete"}
+                <span className="text-sm font-medium">{isDeleting ? "Deleting..." : "Delete"}</span>
               </button>
             </div>
           )}
@@ -566,22 +574,22 @@ export default function TransporterDetail({
             <Section title="Basic Information">
               <div className="space-y-4">
                 <FieldRow
-                  label="Company Name *"
+                  label="Company Name"
                   type="text"
                   value={capitalizeWords(transporter.companyName)}
                 />
                 <FieldRow
-                  label="Contact Person *"
+                  label="Contact Person"
                   type="text"
                   value={capitalizeWords(transporter.contactPerson)}
                 />
                 <FieldRow
-                  label="Email *"
+                  label="Email"
                   type="text"
                   value={transporter.email}
                 />
                 <FieldRow
-                  label="Phone *"
+                  label="Phone"
                   type="text"
                   value={formatPhoneNumber(transporter.phone)}
                 />

@@ -195,4 +195,73 @@ export const TaxonomyConfigs: Record<TaxonomyType, TaxonomyConfig> = {
     displayFields: ['name'],
     searchFields: ['name'],
   },
+  maximumDistanceTravel: {
+    name: 'Maximum Travel Distance',
+    singularName: 'Maximum Travel Distance',
+    tableName: 'maximumDistanceTravel',
+    fields: [
+      {
+        name: 'name',
+        label: 'Name',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter maximum travel distance',
+      },
+      {
+        name: 'description',
+        label: 'Description',
+        type: 'textarea',
+        required: false,
+        placeholder: 'Enter description (optional)',
+      },
+    ],
+    displayFields: ['name', 'description'],
+    searchFields: ['name', 'description'],
+  },
+  yearsOfExperience: {
+    name: 'Years of IME Experience',
+    singularName: 'Years of IME Experience',
+    tableName: 'yearsOfExperience',
+    fields: [
+      {
+        name: 'name',
+        label: 'Name',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter years of experience',
+      },
+      {
+        name: 'description',
+        label: 'Description',
+        type: 'textarea',
+        required: false,
+        placeholder: 'Enter description (optional)',
+      },
+    ],
+    displayFields: ['name', 'description'],
+    searchFields: ['name', 'description'],
+  },
+  configuration: {
+    name: 'Configurations',
+    singularName: 'Configuration',
+    tableName: 'configuration',
+    fields: [
+      {
+        name: 'name',
+        label: 'Name',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter configuration name',
+      },
+      {
+        name: 'value',
+        label: 'Value',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter value (number)',
+      },
+    ],
+    displayFields: ['name', 'value'],
+    searchFields: ['name'],
+  },
 };

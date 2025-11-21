@@ -11,6 +11,7 @@ export type CaseDetailDtoType = {
     additionalNotes: string,
     createdAt: Date,
     assignedAt: Date,
+    approvedAt: Date | null,
     status: {
         id: string,
         name: string,
@@ -107,4 +108,8 @@ export type CaseDetailDtoType = {
             managerName?: string | null;
         };
     };
+    report?: {
+        id: string;
+        status: string;
+    } | null;
 };

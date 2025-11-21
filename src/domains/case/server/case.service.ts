@@ -202,6 +202,22 @@ class CaseService {
               transport: { include: { pickupAddress: true } },  // Include transport details
             },
           },
+          claimantBookings: {
+            include: {
+              reports: {
+                where: {
+                  deletedAt: null,
+                  status: {
+                    in: ["SUBMITTED", "APPROVED", "REJECTED", "REVIEWED"],
+                  },
+                },
+                orderBy: {
+                  createdAt: "desc",
+                },
+                take: 1, // Get the most recent report
+              },
+            },
+          },
           case: {
             include: {
               caseType: true,  // Include case type
@@ -269,7 +285,8 @@ class CaseService {
       }
 
       const token = v4();
-      const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+      // Link expires in 7 days (168 hours)
+      const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
 
       await prisma.examinationSecureLink.create({
         data: {

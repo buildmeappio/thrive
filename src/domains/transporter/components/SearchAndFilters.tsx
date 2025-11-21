@@ -58,7 +58,7 @@ export default function SearchAndFilters({
       </svg>
 
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center sm:justify-between">
+      <div className="flex flex-row gap-2 sm:gap-4 items-center sm:justify-between">
         {/* Search Bar - Full width on mobile */}
         <div className="flex-1 sm:max-w-md w-full">
           <div className="relative">
@@ -86,8 +86,8 @@ export default function SearchAndFilters({
           </div>
         </div>
 
-        {/* Filter Buttons - Wrap on mobile */}
-        <div className="flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
+        {/* Filter Buttons - On right for mobile */}
+        <div className="flex gap-2 sm:gap-3 flex-shrink-0">
           {/* Status Filter */}
           <FilterDropdown
             label="Status"

@@ -9,7 +9,7 @@ const listCases = async (assignToUserId?: string) => {
   }
 
   const cases = await caseService.listCases(assignToId);
-  return cases.map((e) => CaseDto.toCaseDto(e));
+  return Promise.all(cases.map(async (e) => await CaseDto.toCaseDto(e)));
 };
 
 export default listCases;

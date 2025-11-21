@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import InterpreterTableWithPagination from "@/domains/interpreter/components/InterpreterTableWithPagination";
 import Pagination from "@/components/Pagination";
 import { InterpreterData } from "@/domains/interpreter/types/InterpreterData";
@@ -8,6 +8,7 @@ import { DashboardShell } from "@/layouts/dashboard";
 import { Funnel } from "lucide-react";
 import { Language } from "@prisma/client";
 import Link from "next/link";
+import { filterUUIDLanguages } from "@/utils/languageUtils";
 
 interface InterpreterPageContentProps {
   data: InterpreterData[];
@@ -24,6 +25,18 @@ export default function InterpreterPageContent({ data, languages }: InterpreterP
     languageId: "all",
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+
+  // Filter out UUID languages - only show languages with valid names
+  const validLanguages = useMemo(() => {
+    return filterUUIDLanguages(languages).filter(lang => lang.name && lang.name.trim() !== "");
+  }, [languages]);
+
+  // Reset filter if selected language is not in valid languages
+  useEffect(() => {
+    if (filters.languageId !== "all" && !validLanguages.find(l => l.id === filters.languageId)) {
+      setFilters(prev => ({ ...prev, languageId: "all" }));
+    }
+  }, [validLanguages, filters.languageId]);
 
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
     setFilters(prev => ({
@@ -78,12 +91,12 @@ export default function InterpreterPageContent({ data, languages }: InterpreterP
         </h1>
         <Link
           href="/interpreter/new"
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 transition-opacity"
+          className="flex items-center gap-1 sm:gap-2 lg:gap-3 px-2 sm:px-4 lg:px-6 py-1 sm:py-2 lg:py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 transition-opacity"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          <span className="text-sm font-medium">Add New</span>
+          <span className="text-xs sm:text-sm lg:text-base font-medium">Add Interpreter</span>
         </Link>
       </div>
 
@@ -103,7 +116,7 @@ export default function InterpreterPageContent({ data, languages }: InterpreterP
 
       <div className="flex flex-col gap-3 sm:gap-6 mb-20 dashboard-zoom-mobile">
         {/* Search and Filters Section */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center sm:justify-between">
+        <div className="flex flex-row gap-2 sm:gap-4 items-center sm:justify-between">
           {/* Search Bar */}
           <div className="flex-1 sm:max-w-md w-full">
             <div className="relative">
@@ -123,7 +136,7 @@ export default function InterpreterPageContent({ data, languages }: InterpreterP
           </div>
 
           {/* Filter Buttons */}
-          <div className="flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
+          <div className="flex gap-2 sm:gap-3 flex-shrink-0">
             {/* Language Filter */}
             <div className="relative filter-dropdown">
               <button 
@@ -137,7 +150,7 @@ export default function InterpreterPageContent({ data, languages }: InterpreterP
                 <Funnel className="w-3.5 h-3.5 sm:w-4 sm:h-4" stroke="url(#languageGradient)" />
                 <span>
                   {filters.languageId !== "all"
-                    ? languages.find(l => l.id === filters.languageId)?.name || "Language"
+                    ? validLanguages.find(l => l.id === filters.languageId)?.name || "Language"
                     : "Language"}
                 </span>
                 <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "language" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,7 +171,7 @@ export default function InterpreterPageContent({ data, languages }: InterpreterP
                     >
                       All Languages
                     </button>
-                    {languages.map((language) => (
+                    {validLanguages.map((language) => (
                       <button
                         key={language.id}
                         onClick={(e) => {

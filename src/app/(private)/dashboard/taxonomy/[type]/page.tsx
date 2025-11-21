@@ -16,6 +16,9 @@ const validTypes: TaxonomyType[] = [
   "examinationTypeBenefit",
   "language",
   "organizationType",
+  "maximumDistanceTravel",
+  "yearsOfExperience",
+  "configuration",
 ];
 
 type PageProps = {

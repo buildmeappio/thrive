@@ -1,5 +1,6 @@
 import { interpreterAvailabilityService } from "../services/availability.service";
 import { HttpError } from "@/utils/httpError";
+import { convertUTCToLocal } from "@/utils/timezone";
 
 export type GetAvailabilityInput = {
   interpreterId: string;
@@ -57,8 +58,8 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
       weeklyHoursObject[dayKey] = {
         enabled: dayData.enabled,
         timeSlots: dayData.timeSlots.map((slot) => ({
-          startTime: slot.startTime,
-          endTime: slot.endTime,
+          startTime: convertUTCToLocal(slot.startTime, undefined, new Date()),
+          endTime: convertUTCToLocal(slot.endTime, undefined, new Date()),
         })),
       };
     });
@@ -72,8 +73,8 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
         return {
           date: `${month}-${day}-${year}`,
           timeSlots: override.timeSlots.map((slot) => ({
-            startTime: slot.startTime,
-            endTime: slot.endTime,
+            startTime: convertUTCToLocal(slot.startTime, undefined, date),
+            endTime: convertUTCToLocal(slot.endTime, undefined, date),
           })),
         };
       }

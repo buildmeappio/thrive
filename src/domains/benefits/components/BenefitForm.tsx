@@ -192,8 +192,12 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
           </div>
         </Link>
         <div>
-          <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight">
-            {mode === "create" ? "Add New Benefit" : "Edit Benefit"}
+          <h1 className="text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight">
+            {mode === "create" ? (
+              "Add New Benefit"
+            ) : (
+              <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">{benefit?.benefit || "Benefit"}</span>
+            )}
           </h1>
         </div>
       </div>
@@ -214,7 +218,7 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
               <SelectTrigger
                 id="examinationTypeId"
                 className={cn(
-                  "h-10 rounded-full border-none bg-[#F2F5F6] text-[#333] focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none",
+                  "h-10 rounded-lg border-none bg-[#F2F5F6] text-[#333] focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none",
                   errors.examinationTypeId && "ring-2 ring-red-500/30"
                 )}
               >
@@ -259,7 +263,7 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
               placeholder="Enter benefit name"
               disabled={isSubmitting}
               className={cn(
-                "rounded-full border-none bg-[#F2F5F6] text-[#333] focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none",
+                "rounded-lg border-none bg-[#F2F5F6] text-[#333] focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none",
                 errors.benefit && "ring-2 ring-red-500/30"
               )}
             />
@@ -293,7 +297,7 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
               disabled={isSubmitting}
               rows={4}
               className={cn(
-                "border-none bg-[#F2F5F6] rounded-xl text-[#333] focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none resize-none",
+                "border-none bg-[#F2F5F6] rounded-lg text-[#333] focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none resize-none",
                 errors.description && "ring-2 ring-red-500/30"
               )}
             />

@@ -20,7 +20,7 @@ import {
 import { createTaxonomyColumns } from './TaxonomyColumns';
 import { cn } from '@/lib/utils';
 import Pagination from '@/components/Pagination';
-import { TaxonomyData } from '../types/Taxonomy';
+import { TaxonomyData, TaxonomyType } from '../types/Taxonomy';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -32,6 +32,7 @@ type TaxonomyTableProps = {
   onDelete: (taxonomy: TaxonomyData) => void;
   onCreate: () => void;
   singularName: string;
+  type: TaxonomyType;
 };
 
 const TaxonomyTable = ({ 
@@ -42,6 +43,7 @@ const TaxonomyTable = ({
   onDelete,
   onCreate,
   singularName,
+  type,
 }: TaxonomyTableProps) => {
   const [query, setQuery] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -61,7 +63,7 @@ const TaxonomyTable = ({
     });
   }, [taxonomyList, query, searchFields]);
 
-  const columns = useMemo(() => createTaxonomyColumns(displayFields, onEdit, onDelete), [displayFields, onEdit, onDelete]);
+  const columns = useMemo(() => createTaxonomyColumns(displayFields, onEdit, onDelete, type), [displayFields, onEdit, onDelete, type]);
 
   const table = useReactTable({
     data: filtered,
@@ -106,6 +108,7 @@ const TaxonomyTable = ({
           </div>
         </div>
 
+        {/* Add Button */}
         <Button
           onClick={onCreate}
           className="hidden sm:flex h-[50px] min-w-[100px] rounded-full items-center gap-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] cursor-pointer"

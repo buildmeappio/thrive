@@ -5,12 +5,13 @@ type ExaminerWithRelations = ExaminerProfile & {
   account: Account & {
     user: User;
   };
-  medicalLicenseDocument: Documents;
-  resumeDocument: Documents;
-  ndaDocument: Documents;
-  insuranceDocument: Documents;
+  medicalLicenseDocument: Documents | null;
+  resumeDocument: Documents | null;
+  ndaDocument: Documents | null;
+  insuranceDocument: Documents | null;
   examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
   feeStructure: ExaminerFeeStructure[];
+  contracts?: Array<any>; // Optional contracts relation
 };
 
 export class ExaminerDto {
@@ -41,11 +42,9 @@ export class ExaminerDto {
       updatedAt: examiner.updatedAt.toISOString(),
       feeStructure: feeStructure ? {
         id: feeStructure.id,
-        standardIMEFee: Number(feeStructure.standardIMEFee),
-        virtualIMEFee: Number(feeStructure.virtualIMEFee),
+        IMEFee: Number(feeStructure.IMEFee),
         recordReviewFee: Number(feeStructure.recordReviewFee),
         hourlyRate: feeStructure.hourlyRate ? Number(feeStructure.hourlyRate) : undefined,
-        reportTurnaroundDays: feeStructure.reportTurnaroundDays ?? undefined,
         cancellationFee: Number(feeStructure.cancellationFee),
         paymentTerms: feeStructure.paymentTerms,
       } : undefined,

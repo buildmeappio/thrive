@@ -1,14 +1,13 @@
+
 "use server";
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 type FeeStructure = {
-  standardIMEFee: number;
-  virtualIMEFee: number;
+  IMEFee: number;
   recordReviewFee: number;
   hourlyRate?: number;
-  reportTurnaroundDays?: number;
   cancellationFee: number;
   paymentTerms: string;
 };
@@ -126,20 +125,12 @@ export async function generateContractPDF(
 
     // Fee Structure Table
     const feeTableData: any[][] = [
-      ["Standard IME Fee", `$${feeStructure.standardIMEFee.toFixed(2)}`],
-      ["Virtual IME Fee", `$${feeStructure.virtualIMEFee.toFixed(2)}`],
-      ["Record Review Fee", `$${feeStructure.recordReviewFee.toFixed(2)}`],
+      ["IME Fee", `$${feeStructure.IMEFee.toFixed(2)}`],
+      ["Report Review Fee", `$${feeStructure.recordReviewFee.toFixed(2)}`],
     ];
 
     if (feeStructure.hourlyRate) {
       feeTableData.push(["Hourly Rate", `$${feeStructure.hourlyRate.toFixed(2)}/hour`]);
-    }
-
-    if (feeStructure.reportTurnaroundDays) {
-      feeTableData.push([
-        "Report Turnaround",
-        `${feeStructure.reportTurnaroundDays} ${feeStructure.reportTurnaroundDays === 1 ? "day" : "days"}`,
-      ]);
     }
 
     feeTableData.push(["Cancellation Fee", `$${feeStructure.cancellationFee.toFixed(2)}`]);
@@ -181,7 +172,6 @@ export async function generateContractPDF(
 
     const services = [
       "Conduct thorough and impartial medical examinations of claimants",
-      "Prepare detailed, objective medical reports within the agreed turnaround time",
       "Maintain professional standards in accordance with medical licensing requirements",
       "Be available for testimony or clarification if required",
       "Respond to case assignments in a timely manner",
