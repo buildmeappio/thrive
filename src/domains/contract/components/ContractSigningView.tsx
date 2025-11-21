@@ -451,129 +451,132 @@ const ContractSigningView = ({
   ]);
 
   return (
-    <div className="bg-[#F4FBFF] py-6 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl flex flex-col lg:flex-row gap-6 lg:gap-8">
-        {/* LEFT: Contract */}
-        <div
-          id="contract"
-          className="flex-1 overflow-y-auto bg-white rounded-[20px]"
-          style={{
-            fontFamily: "Arial, sans-serif",
-            padding: "40px 50px",
-            maxWidth: "210mm",
-            lineHeight: "1.4",
-            boxShadow: "0px 0px 36.35px 0px #00000008",
-          }}>
+    <div className="bg-[#F4FBFF] h-screen overflow-hidden flex flex-col">
+      <div className="flex-1 overflow-hidden px-4 sm:px-6 lg:px-8 py-6">
+        <div className="h-full mx-auto max-w-7xl flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* LEFT: Contract */}
           <div
-            id="contract-content"
-            dangerouslySetInnerHTML={{
-              __html: contractHtml || "<div>Empty contract HTML</div>",
-            }}
-          />
-        </div>
-
-        {/* RIGHT: Signature Panel */}
-        <div
-          className="w-full lg:w-96 bg-white p-6 md:p-8 rounded-[20px]"
-          style={{
-            boxShadow: "0px 0px 36.35px 0px #00000008",
-          }}>
-          <div className="border-b-2 border-[#00A8FF] pb-3 mb-6">
-            <h2 className="text-2xl md:text-[24px] font-semibold text-black">
-              Sign Agreement
-            </h2>
+            id="contract"
+            className="flex-1 overflow-y-auto overflow-x-hidden bg-white rounded-[20px]"
+            style={{
+              fontFamily: "Arial, sans-serif",
+              padding: "40px 50px",
+              maxWidth: "210mm",
+              lineHeight: "1.4",
+              boxShadow: "0px 0px 36.35px 0px #00000008",
+            }}>
+            <div
+              id="contract-content"
+              dangerouslySetInnerHTML={{
+                __html: contractHtml || "<div>Empty contract HTML</div>",
+              }}
+            />
           </div>
 
-          <div className="space-y-5">
-            <div>
-              <label className="block text-sm font-semibold text-black mb-2">
-                Full Name
-              </label>
-              <input
-                disabled
-                type="text"
-                value={sigName}
-                placeholder="Dr. Jane Doe"
-                className="mt-2 flex h-[55px] w-full items-center rounded-[10px] border-none bg-[#F2F5F6] px-3 text-sm text-[#333] placeholder:text-[14px] placeholder:text-[#9EA9AA] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:opacity-50"
-              />
+          {/* RIGHT: Signature Panel */}
+          <div
+            className="w-full lg:w-96 bg-white p-6 md:p-8 rounded-[20px] flex flex-col shrink-0"
+            style={{
+              boxShadow: "0px 0px 36.35px 0px #00000008",
+              overflow: "visible",
+            }}>
+            <div className="border-b-2 border-[#00A8FF] pb-3 mb-6">
+              <h2 className="text-2xl md:text-[24px] font-semibold text-black">
+                Sign Agreement
+              </h2>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-black mb-2">
-                Effective Date
-              </label>
-              <input
-                type="date"
-                value={sigDate}
-                disabled
-                className="mt-2 flex h-[55px] w-full items-center rounded-[10px] border-none bg-[#F2F5F6] px-3 text-sm text-[#333] placeholder:text-[14px] placeholder:text-[#9EA9AA] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:opacity-50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-black mb-2">
-                Draw Your Signature
-              </label>
-              <div className="border-2 border-[#00A8FF] rounded-[10px] p-1 bg-white">
-                <canvas
-                  ref={canvasRef}
-                  width={320}
-                  height={140}
-                  className="w-full cursor-crosshair bg-[#F2F5F6] rounded-[8px]"
-                  style={{ touchAction: "none" }}
-                />
-              </div>
-              <button
-                onClick={clearSignature}
-                className="mt-2 text-sm text-[#00A8FF] hover:text-[#0088CC] font-semibold underline transition-colors">
-                Clear Signature
-              </button>
-            </div>
-
-            <div className="border-2 border-[#E9EDEE] rounded-[10px] p-4 bg-[#F2F5F6]">
-              <label className="flex items-start gap-3 cursor-pointer">
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2">
+                  Full Name
+                </label>
                 <input
-                  type="checkbox"
-                  checked={agree}
-                  onChange={(e) => setAgree(e.target.checked)}
-                  className="mt-0.5 w-5 h-5 text-[#00A8FF] border-2 border-[#9EA9AA] rounded focus:ring-2 focus:ring-[#00A8FF]/30 focus-visible:outline-none cursor-pointer"
+                  disabled
+                  type="text"
+                  value={sigName}
+                  placeholder="Dr. Jane Doe"
+                  className="mt-2 flex h-[55px] w-full items-center rounded-[10px] border-none bg-[#F2F5F6] px-3 text-sm text-[#333] placeholder:text-[14px] placeholder:text-[#9EA9AA] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:opacity-50"
                 />
-                <span className="text-xs text-[#333] leading-relaxed font-medium">
-                  I agree that this electronic signature is the legal equivalent
-                  of my handwritten signature and I accept all terms and
-                  conditions of this agreement.
-                </span>
-              </label>
-            </div>
-
-            <button
-              onClick={handleSign}
-              disabled={
-                !agree || !sigName || !sigDate || !signatureImage || isSigning
-              }
-              className={`w-full py-3 px-4 rounded-lg font-semibold text-white text-base transition-all ${
-                agree && sigName && sigDate && signatureImage && !isSigning
-                  ? "cursor-pointer shadow-md hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40"
-                  : "bg-gray-400 cursor-not-allowed"
-              }`}
-              style={
-                agree && sigName && sigDate && signatureImage && !isSigning
-                  ? {
-                      background:
-                        "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
-                    }
-                  : {}
-              }>
-              {isSigning ? "Processing..." : "Sign Agreement"}
-            </button>
-
-            {signed && (
-              <div className="p-4 bg-green-50 border-2 border-green-500 rounded-[10px]">
-                <p className="text-sm text-green-700 font-semibold text-center">
-                  ✓ Agreement Signed Successfully
-                </p>
               </div>
-            )}
+
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2">
+                  Effective Date
+                </label>
+                <input
+                  type="date"
+                  value={sigDate}
+                  disabled
+                  className="mt-2 flex h-[55px] w-full items-center rounded-[10px] border-none bg-[#F2F5F6] px-3 text-sm text-[#333] placeholder:text-[14px] placeholder:text-[#9EA9AA] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:opacity-50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2">
+                  Draw Your Signature
+                </label>
+                <div className="border-2 border-[#00A8FF] rounded-[10px] p-1 bg-white">
+                  <canvas
+                    ref={canvasRef}
+                    width={320}
+                    height={140}
+                    className="w-full cursor-crosshair bg-[#F2F5F6] rounded-[8px]"
+                    style={{ touchAction: "none" }}
+                  />
+                </div>
+                <button
+                  onClick={clearSignature}
+                  className="mt-2 text-sm text-[#00A8FF] hover:text-[#0088CC] font-semibold underline transition-colors">
+                  Clear Signature
+                </button>
+              </div>
+
+              <div className="border-2 border-[#E9EDEE] rounded-[10px] p-4 bg-[#F2F5F6]">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={agree}
+                    onChange={(e) => setAgree(e.target.checked)}
+                    className="mt-0.5 w-5 h-5 text-[#00A8FF] border-2 border-[#9EA9AA] rounded focus:ring-2 focus:ring-[#00A8FF]/30 focus-visible:outline-none cursor-pointer"
+                  />
+                  <span className="text-xs text-[#333] leading-relaxed font-medium">
+                    I agree that this electronic signature is the legal
+                    equivalent of my handwritten signature and I accept all
+                    terms and conditions of this agreement.
+                  </span>
+                </label>
+              </div>
+
+              <button
+                onClick={handleSign}
+                disabled={
+                  !agree || !sigName || !sigDate || !signatureImage || isSigning
+                }
+                className={`w-full py-3 px-4 rounded-lg font-semibold text-white text-base transition-all ${
+                  agree && sigName && sigDate && signatureImage && !isSigning
+                    ? "cursor-pointer shadow-md hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40"
+                    : "bg-gray-400 cursor-not-allowed"
+                }`}
+                style={
+                  agree && sigName && sigDate && signatureImage && !isSigning
+                    ? {
+                        background:
+                          "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
+                      }
+                    : {}
+                }>
+                {isSigning ? "Processing..." : "Sign Agreement"}
+              </button>
+
+              {signed && (
+                <div className="p-4 bg-green-50 border-2 border-green-500 rounded-[10px]">
+                  <p className="text-sm text-green-700 font-semibold text-center">
+                    ✓ Agreement Signed Successfully
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
