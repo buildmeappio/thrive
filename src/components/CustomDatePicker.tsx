@@ -11,6 +11,7 @@ interface CustomDatePickerProps {
   onDateChange: (date: Date | null) => void;
   datePickLoading: boolean;
   dateRestriction?: DateRestriction;
+  minDate?: Date; // Minimum allowed date
   className?: string;
 }
 
@@ -19,6 +20,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
   datePickLoading,
   onDateChange,
   dateRestriction = 'future',
+  minDate,
   className = '',
 }) => {
   const today = new Date();
@@ -79,6 +81,15 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
     const checkDate = new Date(date);
     checkDate.setHours(0, 0, 0, 0);
 
+    // Check against minDate if provided
+    if (minDate) {
+      const minDateNormalized = new Date(minDate);
+      minDateNormalized.setHours(0, 0, 0, 0);
+      if (checkDate < minDateNormalized) {
+        return true;
+      }
+    }
+
     switch (dateRestriction) {
       case 'future':
         return checkDate < today;
@@ -92,12 +103,20 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
   };
 
   const showDisabledDateToast = () => {
-    const message =
-      dateRestriction === 'future'
-        ? 'Cannot select dates in the past'
-        : dateRestriction === 'past'
-          ? 'Cannot select dates in the future'
-          : '';
+    let message = '';
+
+    if (minDate) {
+      const formattedMinDate = minDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      message = `Cannot select dates before ${formattedMinDate}`;
+    } else if (dateRestriction === 'future') {
+      message = 'Cannot select dates in the past';
+    } else if (dateRestriction === 'past') {
+      message = 'Cannot select dates in the future';
+    }
 
     if (message) {
       toast.error(message);

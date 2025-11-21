@@ -144,3 +144,14 @@ export const getCaseStatusById = async (id: string) => {
   const result = await imeReferralHandlers.getCaseStatusById(id);
   return result;
 };
+
+export const getOrganizationDueDateOffset = async () => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(URLS.LOGIN);
+  }
+
+  const result = await imeReferralHandlers.getOrganizationDueDateOffset();
+  return result;
+};

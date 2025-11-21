@@ -10,3 +10,4 @@ export { default as getExaminationBenefits } from './getExaminationBenefits';
 export { default as getCaseList } from './getCaseList';
 export { default as getCaseStatuses } from './getCaseStatuses';
 export { default as getCaseStatusById } from './getCaseStatusById';
+export { default as getOrganizationDueDateOffset } from './getOrganizationDueDateOffset';

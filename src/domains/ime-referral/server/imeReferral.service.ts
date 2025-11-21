@@ -9,6 +9,7 @@ import { getE164PhoneNumber } from '@/utils/formatNumbers';
 import log from '@/utils/log';
 import { CaseStatus } from '@/constants/CaseStatus';
 import { moveFilesToTemp } from '@/lib/s3-actions';
+import configurationService from '@/services/configuration.service';
 
 export const createCase = async (formData: IMEFormData) => {
   const currentUser = await getCurrentUser();
@@ -202,6 +203,36 @@ export const createCase = async (formData: IMEFormData) => {
 
           // Use pre-generated case number
           const caseNumber = caseNumbers[i];
+
+          // Validate due date - must be at least X days from today
+          if (examData?.dueDate) {
+            const dueDateOffsetDays = await configurationService.getOrganizationDueDateOffset();
+            const selectedDueDate = new Date(examData.dueDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to start of day
+
+            const minimumDueDate = new Date(today);
+            minimumDueDate.setDate(today.getDate() + dueDateOffsetDays);
+
+            log.info('[Create Case] Due date validation:', {
+              selectedDueDate: selectedDueDate.toISOString(),
+              today: today.toISOString(),
+              minimumDueDate: minimumDueDate.toISOString(),
+              dueDateOffsetDays,
+              isValid: selectedDueDate >= minimumDueDate,
+            });
+
+            if (selectedDueDate < minimumDueDate) {
+              const formattedMinDate = minimumDueDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              });
+              throw new Error(
+                `Due date must be at least ${dueDateOffsetDays} days from today. Minimum allowed date is ${formattedMinDate}.`
+              );
+            }
+          }
 
           const examination = await tx.examination.create({
             data: {
