@@ -20,7 +20,7 @@ export const resetPasswordSchema = z
       .regex(/[A-Z]/, ErrorMessages.PASSWORD_UPPERCASE)
       .regex(/[a-z]/, ErrorMessages.PASSWORD_LOWERCASE)
       .regex(/[0-9]/, ErrorMessages.PASSWORD_NUMBER)
-      .regex(/[!@#$%^&*(),.?":{}|<>]/, ErrorMessages.PASSWORD_SPECIAL),
+      .regex(/[!@#$%^&*(),.?":{}|<>-]/, ErrorMessages.PASSWORD_SPECIAL),
     confirmPassword: z.string().min(1, ErrorMessages.PASSWORD_CONFIRM_REQUIRED),
   })
   .refine(data => data.password === data.confirmPassword, {

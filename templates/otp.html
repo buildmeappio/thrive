@@ -60,6 +60,9 @@
       .otp-container {
         margin: 40px 0;
       }
+      .otp-expiry {
+        margin: 20px 0;
+      }
       .otp-label {
         font-size: 14px;
         color: #666666;
@@ -141,6 +144,10 @@
         <div class="otp-container">
           <div class="otp-label">Verification Code</div>
           <div class="otp-box">{{otp}}</div>
+        </div>
+
+        <div className="otp-expiry">
+          This otp code will expire in 15 minutes.
         </div>
 
         <div class="footer">

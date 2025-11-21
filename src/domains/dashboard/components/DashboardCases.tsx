@@ -129,7 +129,7 @@ const DashboardCases = ({ dashboardCases, title }: CaseProps) => {
             </TableHeader>
             <TableBody>
               {dashboardCases?.map(caseItem => {
-                const href = `/cases/${caseItem.id}`;
+                const href = `/dashboard/cases/${caseItem.id}`;
 
                 return (
                   <TableRow key={caseItem.id} className="hover:bg-[#FAFAFF]">
