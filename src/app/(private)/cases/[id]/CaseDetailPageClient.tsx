@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, FileText } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -352,6 +352,53 @@ export default function CaseDetailPageClient({
             </button>
           </div>
         )}
+
+        {/* Review Report Button - Show when report is submitted */}
+        {caseDetails.report && caseDetails.report.status === "SUBMITTED" && (
+          <div className="flex justify-end px-3 sm:px-6 pb-4 sm:pb-6">
+            <Link
+              href={`/cases/${caseDetails.id}/report`}
+              className="px-3 sm:px-4 py-2 sm:py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 transition-colors flex items-center gap-2"
+              style={{
+                fontFamily: "Poppins, sans-serif",
+                fontWeight: 400,
+                lineHeight: "100%",
+                fontSize: "12px",
+              }}>
+              <FileText className="w-4 h-4" />
+              Review Report
+            </Link>
+          </div>
+        )}
+
+        {/* Report Status Badge - Show when report is approved or rejected */}
+        {caseDetails.report &&
+          (caseDetails.report.status === "APPROVED" ||
+            caseDetails.report.status === "REJECTED") && (
+            <div className="flex justify-end px-3 sm:px-6 pb-4 sm:pb-6">
+              <button
+                className={cn(
+                  "px-4 py-3 rounded-full border flex items-center gap-2 cursor-default",
+                  caseDetails.report.status === "APPROVED"
+                    ? "border-green-500 text-green-700 bg-green-50"
+                    : "border-red-500 text-red-700 bg-red-50"
+                )}
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: 500,
+                  lineHeight: "100%",
+                  fontSize: "14px",
+                }}
+                disabled>
+                {caseDetails.report.status === "APPROVED" && (
+                  <Check className="w-4 h-4" />
+                )}
+                {caseDetails.report.status === "APPROVED"
+                  ? "Report Approved"
+                  : "Report Rejected"}
+              </button>
+            </div>
+          )}
       </div>
 
       {/* Modals */}
