@@ -7,7 +7,7 @@ services:
       args:
         BUILDKIT_INLINE_CACHE: 1
     platform: linux/amd64 # Use linux/amd64 for production x86_64 deployments
-    container_name: avaweb-app
+    container_name: organization-web
     restart: unless-stopped
     env_file:
       - .env
