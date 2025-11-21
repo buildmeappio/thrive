@@ -101,7 +101,7 @@ const ResetPasswordContent = () => {
   // Loading state
   if (isVerifying) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex h-[calc(100vh-17vh)] items-center justify-center bg-gray-50">
         <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow">
           <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-gray-600" />
           <p className="text-gray-600">Verifying your reset link...</p>
@@ -113,7 +113,7 @@ const ResetPasswordContent = () => {
   // Invalid token state
   if (!isValidToken) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex h-[calc(100vh-17vh)] items-center justify-center bg-gray-50">
         <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow">
           <AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
           <h2 className="mb-2 text-xl font-semibold">Unauthorized Access</h2>
@@ -130,7 +130,7 @@ const ResetPasswordContent = () => {
 
   // Valid token - show reset form
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <div className="flex h-[calc(100vh-17vh)] items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow">
         <h2 className="mb-6 text-center text-2xl font-semibold">Reset Password</h2>
 
@@ -140,7 +140,7 @@ const ResetPasswordContent = () => {
               New Password<span className="text-red-500">*</span>
             </Label>
             <div className="relative">
-              <Lock className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
+              <Lock className="absolute top-4 left-3 h-5 w-5 text-gray-400" />
               <Input
                 id="password"
                 type="password"
@@ -160,7 +160,7 @@ const ResetPasswordContent = () => {
               Confirm Password<span className="text-red-500">*</span>
             </Label>
             <div className="relative">
-              <Lock className="absolute top-3 left-3 h-5 w-5 text-gray-400" />
+              <Lock className="absolute top-4 left-3 h-5 w-5 text-gray-400" />
               <Input
                 id="confirmPassword"
                 type="password"
@@ -175,7 +175,13 @@ const ResetPasswordContent = () => {
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button
+            variant="organizationLogin"
+            size="organizationLogin"
+            type="submit"
+            className="w-full"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? (
               <>
                 Resetting...
@@ -195,7 +201,7 @@ const ResetPassword = () => {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="flex h-[calc(100vh-17vh)] items-center justify-center bg-gray-50">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow">
             <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-gray-600" />
             <p className="text-gray-600">Loading...</p>

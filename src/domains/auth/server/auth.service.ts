@@ -350,7 +350,7 @@ const sendResetPasswordLink = async (email: string) => {
   try {
     const isUserExists = await prisma.user.findUnique({
       where: {
-        email: email,
+        email,
         deletedAt: null,
       },
       select: {
