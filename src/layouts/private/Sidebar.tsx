@@ -4,7 +4,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import useRouter from '@/hooks/useRouter';
 import Link from 'next/link';
-import { Home, LifeBuoy, LogOut, Plus, X, FileText, ChevronLeft, Menu } from 'lucide-react';
+import {
+  Home,
+  LifeBuoy,
+  LogOut,
+  Plus,
+  X,
+  FileText,
+  ChevronLeft,
+  Menu,
+  Settings,
+} from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { createRoute, URLS } from '@/constants/routes';
 import { useSession } from 'next-auth/react';
@@ -218,8 +228,17 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
           {/* Logout Button */}
           <div className="flex-shrink-0 p-4 px-6 md:px-4">
             <button
+              onClick={() => router.push('/settings')}
+              className={`mb-4 flex w-full cursor-pointer items-center rounded-full border border-[#000093] font-semibold text-[#000093] transition-all duration-200 hover:bg-white active:scale-95 ${
+                isCollapsed ? 'justify-center px-3 py-3' : 'justify-center space-x-2 px-6 py-3'
+              }`}
+            >
+              <Settings size={20} strokeWidth={2} className="" />
+              {!isCollapsed && <span className="text-sm">Settings</span>}
+            </button>
+            <button
               onClick={handleLogout}
-              className={`flex w-full cursor-pointer items-center rounded-full bg-[#000093] font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95 ${
+              className={`flex w-full cursor-pointer items-center rounded-full bg-[#000093] font-semibold text-white shadow-lg transition-all duration-200 active:scale-95 ${
                 isCollapsed ? 'justify-center px-3 py-3' : 'justify-center space-x-2 px-6 py-3'
               }`}
             >

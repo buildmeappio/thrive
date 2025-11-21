@@ -12,6 +12,8 @@ import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistration';
 import { OrganizationInfoInitialValues, OrganizationInfoSchema } from '../../schemas/register';
 import GoogleMapsInput from '@/components/GoogleMapsInput';
+import { checkOrganizationName } from '../../actions';
+import { toast } from 'sonner';
 
 export interface OrganizationTypeOption {
   value: string;
@@ -36,6 +38,21 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
 
   const handleSubmit = async (values: typeof OrganizationInfoInitialValues) => {
     try {
+      const exists = await checkOrganizationName(values.organizationName);
+      console.log('Organization exists:', exists);
+
+      // Check if the action was successful first
+      if (!exists.success) {
+        toast.error(exists.error);
+        return;
+      }
+
+      // Now TypeScript knows exists.data is available
+      if (exists.data) {
+        toast.error('This organization already exists.');
+        return;
+      }
+
       setData('step1', values);
 
       if (onNext) {

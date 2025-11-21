@@ -73,19 +73,10 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
 
           {/* Mobile Action Buttons */}
           <div className="flex items-center gap-1.5">
-            <button className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#E1E1FF] shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95">
-              <Settings size={18} strokeWidth={2} className="text-[#000093]" />
-            </button>
             <button className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#000093] shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95">
               <Bell size={18} strokeWidth={2} className="text-[#FFFFFF]" />
             </button>
             {session && <ProfileDropdown isMobile={true} session={session} />}
-            <button
-              onClick={handleLogout}
-              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#000093] shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95"
-            >
-              <LogOut size={18} strokeWidth={2} className="text-white" />
-            </button>
           </div>
         </div>
 
@@ -107,20 +98,11 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({ currentPath = '' }) =
           {currentPage?.search && <Searchbar currentPage={currentPage} isMobile={false} />}
 
           <div className="flex space-x-4">
-            <button className="flex cursor-pointer items-center justify-center rounded-full bg-[#E1E1FF] px-3 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95">
-              <Settings size={20} strokeWidth={2} className="text-[#000093]" />
-            </button>
             <button className="flex cursor-pointer items-center justify-center rounded-full bg-[#000093] px-3 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95">
-              <Bell size={20} strokeWidth={2} className="text-[#FFFFFF]" />
+              <Bell size={18} strokeWidth={2} className="text-[#FFFFFF]" />
             </button>
             {/* Profile Section for desktop */}
             {session && <ProfileDropdown isMobile={false} session={session} />}
-            <button
-              onClick={handleLogout}
-              className="flex cursor-pointer items-center justify-center rounded-full bg-[#000093] px-3 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#000093]/90 active:scale-95"
-            >
-              <LogOut size={20} strokeWidth={2} className="text-white" />
-            </button>
           </div>
         </div>
 

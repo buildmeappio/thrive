@@ -5,4 +5,6 @@ export default Object.freeze({
   LOGIN_SUCCESS: 'Login successful',
   PASSWORD_RESET_LINK_SENT: 'Password reset link sent to email',
   PASSWORD_RESET_SUCCESS: 'Password reset successfully',
+  PASSWORD_CHANGED_SUCCESS: 'Password changed successfully',
+  ORGANIZATION_INFO_UPDATED: 'Organization information updated successfully',
 });

@@ -31,7 +31,7 @@ import { locationOptions } from '@/config/locationType';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import CustomDatePicker from '@/components/CustomDatePicker';
 import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
-import { getCaseData, getExaminationBenefits } from '../actions';
+import { getCaseData, getExaminationBenefits, getOrganizationDueDateOffset } from '../actions';
 import MultiSelectBenefits from '@/components/MultiSelectDropDown';
 import log from '@/utils/log';
 
@@ -60,6 +60,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
     Record<string, Array<{ id: string; benefit: string }>>
   >({});
   const [loadingBenefits, setLoadingBenefits] = useState(false);
+  const [minDueDate, setMinDueDate] = useState<Date | null>(null);
 
   const selectedExamTypes: ExaminationType[] = useMemo(
     () => data.step4?.caseTypes || caseData?.caseTypes || [],
@@ -94,6 +95,26 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 
     fetchBenefits();
   }, [selectedExamTypes]);
+
+  // Fetch organization due date offset and calculate minimum due date
+  useEffect(() => {
+    const fetchDueDateOffset = async () => {
+      try {
+        const offsetDays = await getOrganizationDueDateOffset();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const minDate = new Date(today);
+        minDate.setDate(today.getDate() + offsetDays);
+
+        setMinDueDate(minDate);
+      } catch (error) {
+        log.error('Error fetching due date offset:', error);
+      }
+    };
+
+    fetchDueDateOffset();
+  }, []);
 
   const ensureCompleteServices = (services: ExaminationService[] = []): ExaminationService[] => {
     const serviceTypes: ExaminationService['type'][] = ['transportation', 'interpreter'];
@@ -603,6 +624,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                 examination.dueDate ? new Date(examination.dueDate) : null
                               }
                               datePickLoading={false}
+                              minDate={minDueDate || undefined}
                               onDateChange={date => {
                                 const updatedExaminations = [...(watchedValues.examinations || [])];
                                 updatedExaminations[index] = {

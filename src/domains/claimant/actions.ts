@@ -7,6 +7,7 @@ import {
 } from './types/claimantAvailability';
 import { type GetAvailableExaminersParams } from './types/examinerAvailability';
 import { processAvailabilityData } from './handlers/processAvailabilityData';
+import * as slotReservationActions from './actions/slotReservation';
 
 export const getClaimant = async (token: string) => {
   const result = await claimantHandlers.getClaimant(token);
@@ -76,4 +77,31 @@ export const updateClaimantBookingStatus = async (data: UpdateClaimantBookingSta
     console.error('Error updating claimant booking status:', error);
     return { success: false, result: null };
   }
+};
+
+// Slot reservation actions
+export const reserveTimeSlot = async (
+  examinerProfileId: string,
+  bookingTime: string,
+  examinationId: string,
+  claimantId: string
+) => {
+  return slotReservationActions.reserveTimeSlot(
+    examinerProfileId,
+    bookingTime,
+    examinationId,
+    claimantId
+  );
+};
+
+export const releaseTimeSlot = async (
+  examinerProfileId: string,
+  bookingTime: string,
+  examinationId: string
+) => {
+  return slotReservationActions.releaseTimeSlot(examinerProfileId, bookingTime, examinationId);
+};
+
+export const checkSlotAvailability = async (examinerProfileId: string, bookingTime: string) => {
+  return slotReservationActions.checkSlotAvailability(examinerProfileId, bookingTime);
 };

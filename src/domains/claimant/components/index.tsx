@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 // import AppointmentOptions from './AppointmentOptions'; // Commented out - Step 1 is disabled
@@ -8,7 +8,7 @@ import AppointmentConfirmation from './AppointmentConfirmation';
 import UserInfo from './UserInfo';
 import { useClaimantAvailability } from '@/hooks/useCliamantAvailability';
 import { toast } from 'sonner';
-import { type getLanguages } from '../actions';
+import { type getLanguages, reserveTimeSlot, releaseTimeSlot } from '../actions';
 import {
   type ClaimantAvailabilityFormData,
   claimantAvailabilityInitialValues,
@@ -59,6 +59,8 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
     'examiners'
   );
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const [reservationExpiresAt, setReservationExpiresAt] = useState<string | null>(null);
+  const isBackButtonClicked = useRef(false);
 
   const form = useForm<ClaimantAvailabilityFormData>({
     resolver: zodResolver(claimantAvailabilitySchema),
@@ -186,6 +188,9 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
     }
   }, [selectedAppointment, currentStep, form]);
 
+  // No automatic cleanup - DynamoDB TTL will handle expired reservations
+  // Manual release only happens via Back button or successful booking
+
   return (
     <div>
       {/* Heading */}
@@ -219,15 +224,35 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
               existingBooking={caseSummary.existingBooking}
               initialAvailabilityData={initialAvailabilityData}
               initialError={availabilityError}
-              onSelectAppointment={appointmentData => {
+              onSelectAppointment={async appointmentData => {
                 // Validate appointment data before proceeding
                 if (!appointmentData.examinerId || !appointmentData.slotStart) {
                   toast.error('Invalid appointment selection. Please try again.');
                   return;
                 }
-                // Set appointment and navigate to confirmation step (Step 3)
-                setSelectedAppointment(appointmentData);
-                setCurrentStep('confirmation');
+
+                // Reserve the time slot
+                try {
+                  const reservationResult = await reserveTimeSlot(
+                    appointmentData.examinerId,
+                    appointmentData.slotStart.toISOString(),
+                    caseSummary.examinationId,
+                    caseSummary.claimantId
+                  );
+
+                  if (reservationResult.success) {
+                    // Store reservation expiry time and appointment data
+                    setReservationExpiresAt(reservationResult.expiresAt || null);
+                    setSelectedAppointment(appointmentData);
+                    setCurrentStep('confirmation');
+                  } else {
+                    // Slot is no longer available
+                    toast.error(reservationResult.message);
+                  }
+                } catch (error) {
+                  console.error('Failed to reserve slot:', error);
+                  toast.error('Failed to reserve time slot. Please try again.');
+                }
               }}
               onBack={() => setCurrentStep('appointments')}
             />
@@ -235,7 +260,30 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
             <AppointmentConfirmation
               appointment={selectedAppointment}
               claimantName={caseSummary.claimantFirstName || 'Johnathan'}
-              onBack={() => setCurrentStep('examiners')}
+              onBack={async () => {
+                // Only release if user explicitly clicked back (not React remounting)
+                if (!isBackButtonClicked.current) {
+                  isBackButtonClicked.current = true;
+
+                  // Release the slot when going back
+                  if (selectedAppointment && reservationExpiresAt) {
+                    console.log('[Index] Back button clicked - releasing slot');
+                    await releaseTimeSlot(
+                      selectedAppointment.examinerId,
+                      selectedAppointment.slotStart.toISOString(),
+                      caseSummary.examinationId
+                    );
+                    setReservationExpiresAt(null);
+                  }
+                  setCurrentStep('examiners');
+                  // Reset for next time
+                  setTimeout(() => {
+                    isBackButtonClicked.current = false;
+                  }, 100);
+                } else {
+                  console.log('[Index] Back button already processing - skipping');
+                }
+              }}
               onSubmit={() => {
                 // Ensure form values are set before submission
                 if (selectedAppointment) {
@@ -254,6 +302,8 @@ const ClaimantAvailability: React.FC<ClaimantAvailabilityComponentProps> = ({
                 }
               }}
               isSubmitting={form.formState.isSubmitting}
+              reservationExpiresAt={reservationExpiresAt || undefined}
+              examinationId={caseSummary.examinationId}
             />
           )}
         </div>

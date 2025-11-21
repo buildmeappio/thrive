@@ -3,6 +3,8 @@
 import { type FormData } from '@/store/useRegistration';
 import { authHandlers } from './server';
 import { handleAction } from '@/utils/action';
+import { UpdateOrganizationInfo } from './types/updateOrganizationInfo';
+import { getCurrentUser } from './server/session';
 
 export const checkUserByEmail = async (email: string) => {
   return await handleAction(
@@ -54,5 +56,37 @@ export const resetPassword = async (token: string, password: string) => {
   return await handleAction(
     async () => await authHandlers.resetPassword(token, password),
     'Failed to reset password'
+  );
+};
+
+export const changePassword = async (email: string, oldPassword: string, newPassword: string) => {
+  return await handleAction(
+    async () => await authHandlers.changePassword(email, oldPassword, newPassword),
+    'Failed to change password'
+  );
+};
+
+export const updateOrganizationInfo = async (accountId: string, data: UpdateOrganizationInfo) => {
+  return await handleAction(
+    async () => await authHandlers.updateOrganizationInfo(accountId, data),
+    'Failed to update organization info'
+  );
+};
+
+export const getAccountSettingsInfo = async () => {
+  const user = await getCurrentUser();
+  if (!user?.accountId) {
+    return null;
+  }
+  return await handleAction(
+    async () => await authHandlers.getAccountSettingsInfo(user?.accountId),
+    'Failed to get account settings info'
+  );
+};
+
+export const checkOrganizationName = async (name: string) => {
+  return await handleAction(
+    async () => await authHandlers.checkOrganizationName(name),
+    'Failed to check organization name'
   );
 };

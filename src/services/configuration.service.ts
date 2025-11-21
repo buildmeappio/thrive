@@ -14,6 +14,7 @@ const CONFIG_KEYS = {
   START_WORKING_HOUR: 'start_working_hour_time',
   ORGANIZATION_DUE_DATE: 'organization_due_date_after',
   BOOKING_CANCELLATION_TIME: 'booking_cancellation_time',
+  BOOKING_RESERVATION_TIME: 'booking_reservation_time',
 } as const;
 
 /**
@@ -129,11 +130,27 @@ export async function getBookingCancellationTime(): Promise<number> {
   return result;
 }
 
+/**
+ * Get booking reservation time in seconds
+ * How long a slot reservation lasts before expiring
+ */
+export async function getBookingReservationTime(): Promise<number> {
+  const value = await getConfigValue(CONFIG_KEYS.BOOKING_RESERVATION_TIME);
+  const result = value ?? 300; // Default to 300 seconds (5 minutes)
+  console.log('[Configuration Service] getBookingReservationTime:', {
+    configKey: CONFIG_KEYS.BOOKING_RESERVATION_TIME,
+    valueFromDb: value,
+    returning: result,
+  });
+  return result;
+}
+
 const configurationService = {
   getAvailabilitySettings,
   getConfigValue,
   getOrganizationDueDateOffset,
   getBookingCancellationTime,
+  getBookingReservationTime,
 };
 
 export default configurationService;

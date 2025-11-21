@@ -135,35 +135,34 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
       throw new Error('Waiting to be Scheduled status not found in system');
     }
 
-    // Check if existing booking is within the cancellation time window
-    // Note: We check WHEN the existing booking was created, not when it's scheduled for
-    // This prevents modifications if the booking was created within the cancellation window
+    // Check if existing appointment is within the cancellation time window
+    // Block modification if the existing appointment is scheduled within X hours from now
     if (
       existingBooking &&
       (existingBooking.status === 'PENDING' || existingBooking.status === 'ACCEPT')
     ) {
       const cancellationTimeHours = await getBookingCancellationTime();
-      const existingBookingCreatedAt = new Date(existingBooking.createdAt);
+      const existingBookingTime = new Date(existingBooking.bookingTime);
       const currentTime = new Date();
-      const timeSinceBookingCreated = currentTime.getTime() - existingBookingCreatedAt.getTime();
-      const hoursSinceBookingCreated = timeSinceBookingCreated / (1000 * 60 * 60);
+      const timeUntilAppointment = existingBookingTime.getTime() - currentTime.getTime();
+      const hoursUntilAppointment = timeUntilAppointment / (1000 * 60 * 60);
 
       log.info('[Create Booking] Checking modification window:', {
-        existingBookingCreatedAt: existingBookingCreatedAt.toISOString(),
+        existingBookingTime: existingBookingTime.toISOString(),
         currentTime: currentTime.toISOString(),
-        hoursSinceBookingCreated,
+        hoursUntilAppointment,
         cancellationTimeHours,
-        shouldBlock: hoursSinceBookingCreated < cancellationTimeHours,
+        shouldBlock: hoursUntilAppointment < cancellationTimeHours,
       });
 
-      if (hoursSinceBookingCreated < cancellationTimeHours) {
-        const formattedCreatedTime = existingBookingCreatedAt.toLocaleString('en-US', {
+      if (hoursUntilAppointment < cancellationTimeHours) {
+        const formattedBookingTime = existingBookingTime.toLocaleString('en-US', {
           dateStyle: 'full',
           timeStyle: 'short',
         });
-        log.info('[Create Booking] BLOCKING: Booking created within modification window');
+        log.info('[Create Booking] BLOCKING: Appointment within modification window');
         throw new Error(
-          `You cannot modify your booking within ${cancellationTimeHours} hours of creating it. Your booking was created on ${formattedCreatedTime}. Please contact support for assistance.`
+          `You cannot modify your appointment within ${cancellationTimeHours} hours of the scheduled time. Your appointment is scheduled for ${formattedBookingTime}. Please contact support for assistance.`
         );
       }
     }

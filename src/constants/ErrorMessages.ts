@@ -140,4 +140,10 @@ export default Object.freeze({
   FAILED_TO_GET_CASE_LIST: 'Failed to get case list',
   CASES_NOT_FOUND: 'Cannot get case data',
   PASSWORD_ALREADY_EXISTS: 'Password already exists',
+  ERROR_CHANGING_PASSWORD: 'Error changing password',
+  PASSWORD_CHANGE_FAILED: 'Failed to change password',
+  INCORRECT_OLD_PASSWORD: 'The old password is incorrect',
+  PASSWORD_NOT_SET: 'Password is not set for this account',
+  SAME_PASSWORD: 'New password cannot be the same as the old password',
+  ORGANIZATION_INFO_UPDATE_FAILED: 'Failed to update organization information',
 });

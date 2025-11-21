@@ -2,22 +2,17 @@
 import React from 'react';
 import { ArrowLeft, Star, MapPin, Languages, Car, UserPlus, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
-import type { SelectedAppointment } from '../types/examinerAvailability';
-
-interface AppointmentConfirmationProps {
-  appointment: SelectedAppointment | null;
-  claimantName: string;
-  onBack?: () => void;
-  onSubmit?: () => void;
-  isSubmitting?: boolean;
-}
+import type { AppointmentConfirmationProps } from '../types/examinerAvailability';
+import SlotReservationTimer from './SlotReservationTimer';
 
 const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
   appointment,
-  claimantName,
+  claimantName: _claimantName,
   onBack,
   onSubmit,
   isSubmitting = false,
+  reservationExpiresAt,
+  examinationId,
 }) => {
   if (!appointment) {
     return (
@@ -31,8 +26,34 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
   // Show just the hour and AM/PM, e.g., "10 AM"
   const formattedTime = format(appointment.slotStart, 'h a');
 
+  const handleBackClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('[AppointmentConfirmation] Back button clicked');
+    onBack?.();
+  };
+
+  const handleSubmitClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('[AppointmentConfirmation] Submit button clicked');
+    onSubmit?.();
+  };
+
   return (
-    <div>
+    <div className="relative">
+      {/* Timer - Fixed to top-right corner, overlapping like a toast */}
+      {reservationExpiresAt && examinationId && appointment.examinerId && (
+        <div className="fixed top-4 right-4 z-50 w-full max-w-md px-4 sm:px-0">
+          <SlotReservationTimer
+            expiresAt={reservationExpiresAt}
+            examinerProfileId={appointment.examinerId}
+            bookingTime={appointment.slotStart.toISOString()}
+            examinationId={examinationId}
+          />
+        </div>
+      )}
+
       {/* Review Message */}
       <div className="mb-8 bg-[#FAFAFF] pt-8 pb-4 text-center">
         <h1 className="mb-4 text-2xl font-semibold text-gray-900 sm:text-3xl">
@@ -45,7 +66,7 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
 
       {/* Appointment Details Card */}
       <div className="mx-auto w-full max-w-4xl p-4 sm:px-6">
-        <div className="relative mb-8 rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-50 to-blue-50 p-6 shadow-lg">
+        <div className="relative rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-50 to-blue-50 p-6 shadow-lg">
           {/* Date/Time Label */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#E0E0FF] px-4 py-1 text-sm font-medium text-black">
             {formattedDate} – {formattedTime}
@@ -96,8 +117,10 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Instructions */}
+      {/* Instructions */}
+      <div className="mx-auto w-full max-w-4xl p-4 sm:px-6">
         <div className="mb-8 text-center">
           <h2 className="mb-4 text-3xl font-bold text-gray-900">Instructions</h2>
           <p className="text-gray-700">
@@ -112,7 +135,7 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
           {onBack && (
             <button
               type="button"
-              onClick={onBack}
+              onClick={handleBackClick}
               disabled={isSubmitting}
               className="flex items-center justify-center gap-2 rounded-lg border-2 border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -125,7 +148,7 @@ const AppointmentConfirmation: React.FC<AppointmentConfirmationProps> = ({
           {onSubmit && (
             <button
               type="button"
-              onClick={onSubmit}
+              onClick={handleSubmitClick}
               disabled={isSubmitting}
               className="flex items-center justify-center gap-2 rounded-lg bg-[#000093] px-6 py-3 text-base font-medium text-white transition-colors hover:bg-[#000080] disabled:cursor-not-allowed disabled:opacity-50"
             >
