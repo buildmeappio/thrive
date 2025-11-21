@@ -71,7 +71,7 @@ const DashboardPage = async () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F0F8FF]">
+    <div className="min-h-screen">
       <Header userName={fullName} />
       <div className="max-w-[1800px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

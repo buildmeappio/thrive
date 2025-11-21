@@ -3,8 +3,8 @@
 
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { formatDateShort, formatDateTime } from "@/utils/date";
-import { truncateText } from "@/utils/text";
+import { formatDateShort, formatAppointmentDate, formatAppointmentTime } from "@/utils/date";
+import { truncateText, getFirstName } from "@/utils/text";
 import {
   Table,
   TableBody,
@@ -82,21 +82,20 @@ export default function NewCaseOffers({
                       <div
                         className="text-[16px] leading-normal truncate"
                         title={r.claimant}>
-                        {truncateText(r.claimant, 25)}
+                        {getFirstName(r.claimant)}
                       </div>
                     </TableCell>
                     <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">
                       <div
                         className="text-[16px] leading-normal truncate"
                         title={r.claimType}>
-                        {truncateText(r.claimType, 25)}
+                        {truncateText(r.claimType, 20)}
                       </div>
                     </TableCell>
                     <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[25%]">
-                      <div
-                        className="text-[16px] leading-normal truncate"
-                        title={formatDateTime(r.appointment)}>
-                        {truncateText(formatDateTime(r.appointment), 25)}
+                      <div className="text-[16px] leading-normal">
+                        <div className="whitespace-nowrap">{formatAppointmentDate(r.appointment)}</div>
+                        <div className="whitespace-nowrap text-[14px] text-[#6B6B6B]">{formatAppointmentTime(r.appointment)}</div>
                       </div>
                     </TableCell>
                     <TableCell className="py-5 sm:py-3 overflow-hidden align-middle w-[21%]">

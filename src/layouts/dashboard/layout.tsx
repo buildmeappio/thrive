@@ -26,20 +26,18 @@ const LayoutWrapper = ({
   // Render with header but without sidebar for onboarding
   if (isOnboarding) {
     return (
-      <div className="min-h-screen bg-[#F9FAFB]">
+      <div className="min-h-screen bg-[#F4FBFF]">
         {/* Fixed Header */}
-        <Header 
-          currentPath={pathname} 
-          userName={userName} 
+        <Header
+          currentPath={pathname}
+          userName={userName}
           userEmail={userEmail}
           isActivationComplete={isActivationComplete}
         />
-        
+
         {/* Main Content without sidebar */}
         <div className="pt-20">
-          <main className="flex-1 min-h-[calc(100vh-5rem)]">
-            {children}
-          </main>
+          <main className="flex-1 min-h-[calc(100vh-5rem)]">{children}</main>
         </div>
       </div>
     );
@@ -48,9 +46,9 @@ const LayoutWrapper = ({
   return (
     <div className="min-h-screen bg-[#F4FBFF]">
       {/* Fixed Header */}
-      <Header 
-        currentPath={pathname} 
-        userName={userName} 
+      <Header
+        currentPath={pathname}
+        userName={userName}
         userEmail={userEmail}
         isActivationComplete={isActivationComplete}
       />

@@ -111,6 +111,14 @@ export type CaseDetailsData = {
     | "REQUEST_MORE_INFO"
     | "DISCARDED"
     | null;
+  reportStatus:
+    | "PENDING"
+    | "DRAFT"
+    | "SUBMITTED"
+    | "REVIEWED"
+    | "APPROVED"
+    | "REJECTED"
+    | null;
   claimant: {
     firstName: string;
     lastName: string;
@@ -222,6 +230,15 @@ export type CaseRowData = {
     | "DECLINE"
     | "REQUEST_MORE_INFO"
     | "DISCARDED"
+    | "REPORT_SUBMITTED"
+    | null;
+  reportStatus:
+    | "PENDING"
+    | "DRAFT"
+    | "SUBMITTED"
+    | "REVIEWED"
+    | "APPROVED"
+    | "REJECTED"
     | null;
 };
 

@@ -70,7 +70,7 @@ export default function CasesPageContent({
     <>
       {/* Cases Heading */}
       <div className="mb-4 sm:mb-6 dashboard-zoom-mobile flex justify-between items-center">
-        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight wrap-break-word">
           Appointments
         </h1>
       </div>
@@ -120,7 +120,7 @@ export default function CasesPageContent({
           </div>
 
           {/* Filter Buttons */}
-          <div className="flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
+          <div className="flex flex-wrap gap-2 sm:gap-3 shrink-0">
             {/* Status Filter */}
             <div className="relative filter-dropdown">
               <button
@@ -141,10 +141,16 @@ export default function CasesPageContent({
                 <span>
                   {filters.status === "pending"
                     ? "Pending Review"
-                    : filters.status === "upcoming"
-                    ? "Upcoming Appointments"
-                    : filters.status === "reports"
-                    ? "Reports to Submit"
+                    : filters.status === "reportPending"
+                    ? "Report Pending"
+                    : filters.status === "reportDraft"
+                    ? "Report Draft"
+                    : filters.status === "reportSubmitted"
+                    ? "Report Submitted"
+                    : filters.status === "reportApproved"
+                    ? "Report Approved"
+                    : filters.status === "reportRejected"
+                    ? "Report Rejected"
                     : "Status"}
                 </span>
                 <svg
@@ -193,26 +199,62 @@ export default function CasesPageContent({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleFilterChange("status", "upcoming");
+                        handleFilterChange("status", "reportPending");
                       }}
                       className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "upcoming"
+                        filters.status === "reportPending"
                           ? "bg-gray-100 text-[#00A8FF]"
                           : ""
                       }`}>
-                      Upcoming Appointments
+                      Report Pending
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleFilterChange("status", "reports");
+                        handleFilterChange("status", "reportDraft");
                       }}
                       className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "reports"
+                        filters.status === "reportDraft"
                           ? "bg-gray-100 text-[#00A8FF]"
                           : ""
                       }`}>
-                      Reports to Submit
+                      Report Draft
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFilterChange("status", "reportSubmitted");
+                      }}
+                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
+                        filters.status === "reportSubmitted"
+                          ? "bg-gray-100 text-[#00A8FF]"
+                          : ""
+                      }`}>
+                      Report Submitted
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFilterChange("status", "reportApproved");
+                      }}
+                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
+                        filters.status === "reportApproved"
+                          ? "bg-gray-100 text-[#00A8FF]"
+                          : ""
+                      }`}>
+                      Report Approved
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFilterChange("status", "reportRejected");
+                      }}
+                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
+                        filters.status === "reportRejected"
+                          ? "bg-gray-100 text-[#00A8FF]"
+                          : ""
+                      }`}>
+                      Report Rejected
                     </button>
                   </div>
                 </div>

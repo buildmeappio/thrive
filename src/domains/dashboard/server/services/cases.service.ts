@@ -9,7 +9,9 @@ class CasesService {
     const bookings = await prisma.claimantBooking.findMany({
       where: {
         examinerProfileId,
-        status: "PENDING",
+        status: {
+          in: ["PENDING", "ACCEPT"],
+        },
         deletedAt: null,
       },
       include: {
@@ -33,6 +35,15 @@ class CasesService {
             lastName: true,
           },
         },
+        reports: {
+          where: {
+            deletedAt: null,
+          },
+          select: {
+            status: true,
+          },
+          take: 1,
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -49,6 +60,9 @@ class CasesService {
       const benefits =
         benefitsList.length > 0 ? benefitsList.join(", ") : "N/A";
 
+      // Get report status
+      const reportStatus = booking.reports?.[0]?.status || null;
+
       return {
         id: booking.id,
         caseNumber: booking.examination.caseNumber,
@@ -58,6 +72,7 @@ class CasesService {
         appointment: booking.bookingTime,
         dueDate: booking.examination.dueDate || booking.examination.createdAt,
         status: booking.status,
+        reportStatus,
       };
     });
 

@@ -88,8 +88,7 @@ export default function CasesTableWithPagination({
 
   // Filter data based on search query and status filter
   const filteredData = useMemo(() => {
-    // Only show PENDING cases - exclude DECLINE, ACCEPT, REQUEST_MORE_INFO, DISCARDED
-    let result = data.filter((row) => row.status === "PENDING");
+    let result = data;
 
     // Apply search filter
     if (searchQuery) {
@@ -102,15 +101,26 @@ export default function CasesTableWithPagination({
       );
     }
 
-    // Apply status filter (currently only "pending" is relevant since we filter to PENDING only)
+    // Apply status filter
     if (filters.status && filters.status !== "all") {
       result = result.filter((row) => {
         if (filters.status === "pending") {
           return row.status === "PENDING";
-        } else if (filters.status === "upcoming") {
-          return row.status === "ACCEPT";
-        } else if (filters.status === "reports") {
-          return row.status === "DECLINE" || row.status === "REQUEST_MORE_INFO";
+        } else if (filters.status === "reportPending") {
+          // Show cases that are accepted but have no report yet
+          return row.status === "ACCEPT" && !row.reportStatus;
+        } else if (filters.status === "reportDraft") {
+          // Show cases that are accepted and have a draft report
+          return row.status === "ACCEPT" && row.reportStatus === "DRAFT";
+        } else if (filters.status === "reportSubmitted") {
+          // Show cases that are accepted and have a submitted report
+          return row.status === "ACCEPT" && row.reportStatus === "SUBMITTED";
+        } else if (filters.status === "reportApproved") {
+          // Show cases that are accepted and have an approved report
+          return row.status === "ACCEPT" && row.reportStatus === "APPROVED";
+        } else if (filters.status === "reportRejected") {
+          // Show cases that are accepted and have a rejected report
+          return row.status === "ACCEPT" && row.reportStatus === "REJECTED";
         }
         return true;
       });
@@ -263,16 +273,42 @@ export default function CasesTableWithPagination({
         <TableBody>
           {paginatedData.length > 0 ? (
             paginatedData.map((row) => {
-              const statusText =
-                row.status === "PENDING"
-                  ? "Pending Review"
-                  : row.status === "ACCEPT"
-                  ? "Upcoming Appointment"
-                  : row.status === "DECLINE"
-                  ? "Declined"
-                  : row.status === "REQUEST_MORE_INFO"
-                  ? "Request More Info"
-                  : "N/A";
+              // Determine status text based on booking status and report status
+              let statusText = "N/A";
+              let statusColor = "text-[#4D4D4D]";
+
+              if (row.status === "PENDING") {
+                statusText = "Pending Review";
+                statusColor = "text-[#FFA500]";
+              } else if (row.status === "ACCEPT") {
+                // When booking is accepted, check report status
+                if (row.reportStatus === "DRAFT") {
+                  statusText = "Report Draft";
+                  statusColor = "text-[#FFA500]";
+                } else if (row.reportStatus === "SUBMITTED") {
+                  statusText = "Report Submitted";
+                  statusColor = "text-[#10B981]";
+                } else if (row.reportStatus === "APPROVED") {
+                  statusText = "Report Approved";
+                  statusColor = "text-[#10B981]";
+                } else if (row.reportStatus === "REJECTED") {
+                  statusText = "Report Rejected";
+                  statusColor = "text-[#DC2626]";
+                } else if (row.reportStatus === "REVIEWED") {
+                  statusText = "Report Reviewed";
+                  statusColor = "text-[#00A8FF]";
+                } else {
+                  // No report exists yet
+                  statusText = "Report Pending";
+                  statusColor = "text-[#00A8FF]";
+                }
+              } else if (row.status === "REQUEST_MORE_INFO") {
+                statusText = "Request More Info";
+                statusColor = "text-[#FFA500]";
+              } else if (row.status === "DECLINE") {
+                statusText = "Declined";
+                statusColor = "text-[#DC2626]";
+              }
 
               return (
                 <TableRow
@@ -363,13 +399,7 @@ export default function CasesTableWithPagination({
                     <span
                       className={cn(
                         "text-[17px] sm:text-[14px] tracking-[-0.01em] font-poppins leading-normal",
-                        row.status === "PENDING"
-                          ? "text-[#FFA500]"
-                          : row.status === "ACCEPT"
-                          ? "text-[#00A8FF]"
-                          : row.status === "DECLINE"
-                          ? "text-[#DC2626]"
-                          : "text-[#4D4D4D]"
+                        statusColor
                       )}>
                       {statusText}
                     </span>
