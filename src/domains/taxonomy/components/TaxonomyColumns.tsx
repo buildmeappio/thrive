@@ -286,19 +286,18 @@ export const createTaxonomyColumns = (
   });
 
   // Add Actions column
-  // For configuration: show both edit and delete buttons
+  // For configuration: show only edit button (no delete)
   // For all other taxonomies: show only delete button (no edit)
   const isConfiguration = type === "configuration";
   const showEditButton = isConfiguration;
-  const showDeleteButton = true; // Show delete button for all taxonomies including configuration
+  const showDeleteButton = !isConfiguration;
 
   columns.push({
     header: "",
     accessorKey: "id",
     cell: ({ row }) => {
-      // Configuration items don't have frequency, so they can always be deleted
       const frequency = row.original.frequency ?? 0;
-      const isDisabled = isConfiguration ? false : frequency > 0;
+      const isDisabled = frequency > 0;
       const tooltip = isDisabled
         ? `This item has been assigned to ${frequency} ${
             frequency === 1 ? "person" : "people"
@@ -320,8 +319,8 @@ export const createTaxonomyColumns = (
         </div>
       );
     },
-    size: isConfiguration ? 120 : 100,
-    maxSize: isConfiguration ? 150 : 120,
+    size: 100,
+    maxSize: 120,
     enableSorting: false,
   });
 
