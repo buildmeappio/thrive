@@ -118,11 +118,14 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
   };
 
   const handleDelete = (taxonomy: TaxonomyData) => {
-    // Prevent deletion if frequency is greater than 0
-    const frequency = taxonomy.frequency ?? 0;
-    if (frequency > 0) {
-      toast.error(`Cannot delete ${config.singularName.toLowerCase()}. It is assigned to ${frequency} ${frequency === 1 ? 'person' : 'people'}.`);
-      return;
+    // Configuration items don't have frequency, so they can always be deleted
+    // For other taxonomies, prevent deletion if frequency is greater than 0
+    if (type !== "configuration") {
+      const frequency = taxonomy.frequency ?? 0;
+      if (frequency > 0) {
+        toast.error(`Cannot delete ${config.singularName.toLowerCase()}. It is assigned to ${frequency} ${frequency === 1 ? 'person' : 'people'}.`);
+        return;
+      }
     }
     setTaxonomyToDelete(taxonomy);
     setDeleteDialogOpen(true);
