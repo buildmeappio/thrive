@@ -32,6 +32,12 @@ export class CaseDto {
     examiner: { user: { id: string; firstName: string; lastName: string; email: string } };
     services: (ExaminationServices & { interpreter?: ExaminationInterpreter & { language: Language }; transport?: ExaminationTransport & { pickupAddress: Address } })[];
     claimant: Claimant & { address: Address };
+    claimantBookings?: Array<{
+      reports: Array<{
+        id: string;
+        status: string;
+      }>;
+    }>;
     case: Case & {
       caseType: CaseType;
       documents: (CaseDocument & { document: Documents })[];
@@ -176,7 +182,13 @@ export class CaseDto {
             ? `${examination.case.organization.manager[0].account.user.firstName} ${examination.case.organization.manager[0].account.user.lastName}`
             : null,
         },
-      }
+      },
+      report: examination.claimantBookings?.[0]?.reports?.[0] 
+        ? {
+            id: examination.claimantBookings[0].reports[0].id,
+            status: examination.claimantBookings[0].reports[0].status,
+          }
+        : null,
 
     };
   }

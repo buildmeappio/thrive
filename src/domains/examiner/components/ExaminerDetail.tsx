@@ -13,7 +13,7 @@ import { Check } from "lucide-react";
 import { toast } from "sonner";
 
 
-const mapStatus = { PENDING: "pending", ACCEPTED: "approved", REJECTED: "rejected", INFO_REQUESTED: "info_requested" } as const;
+const mapStatus = { PENDING: "pending", ACCEPTED: "approved", REJECTED: "rejected", INFO_REQUESTED: "info_requested", ACTIVE: "active" } as const;
 
 type Props = { examiner: ExaminerData };
 
@@ -70,18 +70,15 @@ export default function ExaminerDetail({ examiner }: Props) {
     };
 
     return (
-        <DashboardShell
-            title={
-                <h2 className="w-full text-left text-2xl sm:text-3xl font-bold">
+        <DashboardShell>
+            <div className="w-full flex flex-col items-center">
+                <h2 className="w-full text-left text-2xl sm:text-3xl font-bold mb-6">
                     Review{" "}
                     <span className="bg-[linear-gradient(270deg,#01F4C8_50%,#00A8FF_65.19%)] bg-clip-text text-transparent break-words">
                         {examiner.name}
                     </span>{" "}
                     Profile
                 </h2>
-            }
-        >
-            <div className="w-full flex flex-col items-center">
                 <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
                     <div className="flex flex-col gap-6 lg:gap-10">
                         {/* First row: Organization (left) and IME Experience (right) */}
@@ -105,11 +102,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                                 />
                                 <FieldRow
                                     label="Years of IME Experience"
-                                    value={
-                                        typeof examiner.yearsOfIMEExperience === "number"
-                                            ? String(examiner.yearsOfIMEExperience)
-                                            : "-"
-                                    }
+                                    value={examiner.yearsOfIMEExperience || "-"}
                                     type="text"
                                 />
                                 <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[169px] flex flex-col">

@@ -108,4 +108,8 @@ export type CaseDetailDtoType = {
             managerName?: string | null;
         };
     };
+    report?: {
+        id: string;
+        status: string;
+    } | null;
 };
