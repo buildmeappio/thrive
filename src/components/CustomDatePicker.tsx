@@ -187,11 +187,15 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
     return `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
   };
 
-  const prevMonth = () => {
+  const prevMonth = (event?: React.MouseEvent<HTMLButtonElement>) => {
+    event?.preventDefault();
+    event?.stopPropagation();
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   };
 
-  const nextMonth = () => {
+  const nextMonth = (event?: React.MouseEvent<HTMLButtonElement>) => {
+    event?.preventDefault();
+    event?.stopPropagation();
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
@@ -207,13 +211,21 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
     return (
       <div className="bg-opacity-50 w-[250px] rounded-3xl border-[1px] bg-white p-4 shadow-lg backdrop-blur-md">
         <div className="mb-2 flex w-[100%] items-center justify-between">
-          <button onClick={prevMonth} className="rounded p-1 text-gray-600 hover:bg-gray-100">
+          <button
+            type="button"
+            onClick={prevMonth}
+            className="rounded p-1 text-gray-600 hover:bg-gray-100"
+          >
             <ChevronLeft className="h-6 w-6" />
           </button>
           <h3 className="font-poppins text-center text-[13.9px] leading-[16.68px] font-bold tracking-[0.26px] text-[#000000]">
             {monthYearString(currentMonth)}
           </h3>
-          <button onClick={nextMonth} className="rounded p-1 text-gray-600 hover:bg-gray-100">
+          <button
+            type="button"
+            onClick={nextMonth}
+            className="rounded p-1 text-gray-600 hover:bg-gray-100"
+          >
             <ChevronRight className="h-6 w-6" />
           </button>
         </div>
@@ -275,6 +287,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
               placeholder="Select a date"
             />
             <button
+              type="button"
               ref={buttonRef}
               className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               onClick={toggleCalendar}

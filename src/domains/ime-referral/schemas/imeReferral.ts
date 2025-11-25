@@ -155,8 +155,19 @@ export const ClaimantDetailsInitialValues: ClaimantDetails = {
 
 // Step 2 - Insurance Details Schema
 export const InsuranceDetailsSchema = z.object({
-  insuranceCompanyName: z.string().trim().min(1, 'Insurance company name is required'),
-  insuranceAdjusterContact: z.string().min(1, 'Adjuster/contact is required'),
+  insuranceCompanyName: z
+    .string()
+    .trim()
+    .min(1, 'Insurance company name is required')
+    .regex(
+      /^[A-Za-z0-9][A-Za-z0-9\s.'-]*$/,
+      'Company name can only contain letters, numbers, spaces, hyphens, periods, and apostrophes'
+    ),
+  insuranceAdjusterContact: z
+    .string()
+    .trim()
+    .min(1, 'Adjuster/contact is required')
+    .regex(/^[A-Za-zÀ-ÿ' -]+$/, 'Adjuster/contact is invalid'),
   insurancePolicyNo: z.string().trim().min(1, 'Policy number is required'),
   insuranceClaimNo: z.string().trim().min(1, 'Claim number is required'),
   insuranceDateOfLoss: z.string().min(1, 'Date of loss is required'),
@@ -302,7 +313,7 @@ const ExaminationDetailsSchema = z.object({
   urgencyLevel: z.string().min(1, 'Urgency level is required'),
   dueDate: z.string().min(1, 'Due date is required'),
   instructions: z.string().trim().min(1, 'Instructions are required'),
-  selectedBenefits: z.array(z.string()).optional(),
+  selectedBenefits: z.array(z.string()).min(1, 'At least one benefit must be selected'),
   locationType: z.string().min(1, 'Location type is required'),
   services: z.array(ExaminationServiceSchema),
   additionalNotes: z.string().trim().optional(),
