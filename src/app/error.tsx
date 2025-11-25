@@ -1,10 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui";
-import { Navbar } from "@/layouts/auth";
 import { OctagonAlert } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
+import Image from "@/components/Image";
+import { URLS } from "@/constants/route";
+import { ENV } from "@/constants/variables";
+import { useSession } from "@/domains/auth/hooks/useSession";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -12,6 +15,9 @@ interface ErrorProps {
 }
 
 const Error = ({ error, reset }: ErrorProps) => {
+  const { data: session } = useSession();
+  const href = session?.user ? URLS.DASHBOARD : URLS.LOGIN;
+
   useEffect(() => {
     console.error("Error:", error);
   }, [error]);
@@ -25,7 +31,20 @@ const Error = ({ error, reset }: ErrorProps) => {
 
   return (
     <>
-      <Navbar />
+      <nav className="h-[5rem] md:h-[7.5rem] bg-white z-50 shadow-sm">
+        <div className="flex h-full items-center justify-center">
+          <Link href={href}>
+            <Image
+              src={`${ENV.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
+              alt="Thrive"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              width={120}         
+              height={120}
+              className="h-[5.5rem] md:h-[6.5rem] w-auto"
+            />
+          </Link>
+        </div>
+      </nav>
       <div className="flex h-[calc(100vh-80px)] flex-col items-center justify-center bg-gray-50">
         <div className="w-full max-w-md space-y-8 text-center">
           {/* Error Icon */}

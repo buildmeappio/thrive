@@ -66,15 +66,14 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
 
     const overrideHoursArray = availability.overrideHours.map(
       (override: OverrideHoursWithTimeSlots) => {
-        const date = new Date(override.date);
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        const year = date.getFullYear();
+        const isoDate = override.date.toISOString().split("T")[0];
+        const [year, month, day] = isoDate.split("-");
+
         return {
           date: `${month}-${day}-${year}`,
           timeSlots: override.timeSlots.map((slot) => ({
-            startTime: convertUTCToLocal(slot.startTime, undefined, date),
-            endTime: convertUTCToLocal(slot.endTime, undefined, date),
+            startTime: convertUTCToLocal(slot.startTime, undefined, override.date),
+            endTime: convertUTCToLocal(slot.endTime, undefined, override.date),
           })),
         };
       }
