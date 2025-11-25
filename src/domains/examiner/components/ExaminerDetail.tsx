@@ -43,6 +43,11 @@ const formatYearsOfExperience = (str: string): string => {
     return str; // Keep as is
   }
 
+  // Check if it's two numbers separated by a space like "2 3" and convert to "2-3"
+  if (/^\d+\s+\d+$/.test(str.trim())) {
+    return str.trim().replace(/\s+/g, "-");
+  }
+
   // Otherwise, format as text (replace hyphens/underscores with spaces and capitalize)
   return str
     .replace(/[-_]/g, " ")
