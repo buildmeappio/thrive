@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { OverrideHours } from '../types/Availability';
+import { formatOverrideDisplayDate, overrideDateToLocalDate } from '@/components/availability/converters';
 import { format } from 'date-fns';
 import { Plus, Trash2, AlertCircle } from 'lucide-react';
 import {
@@ -233,13 +234,18 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
   };
 
   const getSelectedDates = (): Date[] => {
-    return overrideHours.map((oh) => new Date(oh.date));
+    return overrideHours
+      .map((oh) => overrideDateToLocalDate(oh.date))
+      .filter((date): date is Date => !!date);
   };
 
   // Sort override hours by date
-  const sortedOverrideHours = [...overrideHours].sort((a, b) => 
-    new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  const sortedOverrideHours = [...overrideHours].sort((a, b) => {
+    const dateA = overrideDateToLocalDate(a.date);
+    const dateB = overrideDateToLocalDate(b.date);
+    if (!dateA || !dateB) return 0;
+    return dateA.getTime() - dateB.getTime();
+  });
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 items-start">
@@ -322,9 +328,9 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
                           htmlFor={`date-${override.date}`}
                           className="min-w-[100px] text-base font-poppins text-gray-900 cursor-pointer"
                         >
-                      {format(new Date(override.date), 'MM-dd-yyyy')}
-                    </label>
-                  )}
+                          {formatOverrideDisplayDate(override.date)}
+                        </label>
+                      )}
                   {slotIndex > 0 && <div className="min-w-[100px]" />}
                   
                       <Select
