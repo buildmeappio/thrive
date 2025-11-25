@@ -96,9 +96,7 @@ class InterpreterAvailabilityService {
     const createPromises = overrideHoursData.map(async (overrideData) => {
       const [month, day, year] = overrideData.date.split("-");
       const dateObj = new Date(
-        parseInt(year),
-        parseInt(month) - 1,
-        parseInt(day)
+        Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day))
       );
 
       const overrideHour = await prisma.providerOverrideHours.create({

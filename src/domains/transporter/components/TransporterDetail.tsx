@@ -15,11 +15,16 @@ import { provinceOptions } from "@/constants/options";
 import { TRANSPORTER_STATUSES } from "../types/TransporterData";
 import { TransporterFormHandler } from "../server";
 import {
-  UnifiedAvailabilitySection,
+  AvailabilityTabs,
   WeeklyHoursState,
   OverrideHoursState,
+  weeklyStateToArray,
+  weeklyArrayToState,
+  overrideStateToArray,
+  overrideArrayToState,
+  overrideDateToLocalDate,
+  formatOverrideDisplayDate,
 } from "@/components/availability";
-import { WeeklyHours, OverrideHours } from "@/domains/services/types/Availability";
 import { format } from "date-fns";
 import { saveTransporterAvailabilityAction } from "../server";
 import { useRouter } from "next/navigation";
@@ -69,45 +74,6 @@ const getDefaultWeeklyHours = (): WeeklyHoursState => ({
     timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
   },
 });
-
-// Helper to convert WeeklyHoursState to WeeklyHours[]
-const convertStateToArray = (state: WeeklyHoursState): WeeklyHours[] => {
-  const dayMap: Record<string, 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY'> = {
-    sunday: 'SUNDAY',
-    monday: 'MONDAY',
-    tuesday: 'TUESDAY',
-    wednesday: 'WEDNESDAY',
-    thursday: 'THURSDAY',
-    friday: 'FRIDAY',
-    saturday: 'SATURDAY',
-  };
-
-  return Object.entries(state).map(([day, data]) => ({
-    dayOfWeek: dayMap[day] || day.toUpperCase() as 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY',
-    enabled: data.enabled,
-    timeSlots: data.timeSlots,
-  }));
-};
-
-// Helper to convert OverrideHoursState to OverrideHours[]
-const convertOverrideStateToArray = (state: OverrideHoursState): OverrideHours[] => {
-  return state.map((oh) => {
-    // Convert MM-DD-YYYY to YYYY-MM-DD
-    const dateParts = oh.date.split('-');
-    if (dateParts.length === 3) {
-      const formattedDate = `${dateParts[2]}-${dateParts[0]}-${dateParts[1]}`;
-      return {
-        date: formattedDate,
-        timeSlots: oh.timeSlots,
-      };
-    }
-    // Fallback if format is unexpected
-    return {
-      date: oh.date,
-      timeSlots: oh.timeSlots,
-    };
-  });
-};
 
 export default function TransporterDetail({
   transporter,
@@ -451,42 +417,11 @@ export default function TransporterDetail({
             </Section>
 
             {/* Availability */}
-            <UnifiedAvailabilitySection
-              weeklyHours={weeklyHours}
-              overrideHours={overrideHours}
-              onWeeklyHoursChange={(wh) => {
-                if (Array.isArray(wh)) {
-                  // Convert from array format to state format
-                  const state: WeeklyHoursState = {};
-                  wh.forEach((day) => {
-                    const dayKey = day.dayOfWeek.toLowerCase();
-                    state[dayKey] = {
-                      enabled: day.enabled,
-                      timeSlots: day.timeSlots,
-                    };
-                  });
-                  setWeeklyHours(state);
-                } else {
-                  setWeeklyHours(wh);
-                }
-              }}
-              onOverrideHoursChange={(oh) => {
-                if (Array.isArray(oh)) {
-                  // Convert from array format to state format
-                  const state: OverrideHoursState = oh.map((item) => {
-                    const dateParts = item.date.split('-');
-                    const formattedDate = `${dateParts[1]}-${dateParts[2]}-${dateParts[0]}`;
-                    return {
-                      date: formattedDate,
-                      timeSlots: item.timeSlots,
-                    };
-                  });
-                  setOverrideHours(state);
-                } else {
-                  setOverrideHours(oh);
-                }
-              }}
-              dataFormat="transporter-interpreter"
+            <AvailabilityTabs
+              weeklyHours={weeklyStateToArray(weeklyHours)}
+              overrideHours={overrideStateToArray(overrideHours)}
+              onWeeklyHoursChange={(updated) => setWeeklyHours(weeklyArrayToState(updated))}
+              onOverrideHoursChange={(updated) => setOverrideHours(overrideArrayToState(updated))}
               disabled={!isEditing}
             />
 
@@ -650,8 +585,8 @@ export default function TransporterDetail({
             </div>
             <div className="p-6">
               {(() => {
-                const weeklyHoursArray = convertStateToArray(weeklyHours);
-                const overrideHoursArray = convertOverrideStateToArray(overrideHours);
+                const weeklyHoursArray = weeklyStateToArray(weeklyHours);
+                const overrideHoursArray = overrideStateToArray(overrideHours);
                 const hasWeeklyHours = weeklyHoursArray.filter((wh) => wh.enabled).length > 0;
                 const hasOverrideHours = overrideHoursArray.length > 0;
 
@@ -742,7 +677,12 @@ export default function TransporterDetail({
                                   />
                                 </svg>
                                 <p className="font-poppins font-semibold text-gray-900 text-base">
-                                  {format(new Date(oh.date), "EEEE, MMM dd, yyyy")}
+                                  {(() => {
+                                    const localDate = overrideDateToLocalDate(oh.date);
+                                    return localDate
+                                      ? format(localDate, "EEEE, MMM dd, yyyy")
+                                      : formatOverrideDisplayDate(oh.date);
+                                  })()}
                                 </p>
                               </div>
                               <div className="space-y-2">
