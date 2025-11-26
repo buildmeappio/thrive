@@ -124,6 +124,13 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                     icon={User}
                     placeholder="Dr. Sarah"
                     validationType="name"
+                    onBlur={(e) => {
+                      field.onBlur(e);
+                      // Trigger validation after blur to ensure errors clear
+                      setTimeout(() => {
+                        form.trigger("firstName");
+                      }, 0);
+                    }}
                   />
                 )}
               </FormField>
@@ -136,6 +143,13 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                     icon={User}
                     placeholder="Ahmed"
                     validationType="name"
+                    onBlur={(e) => {
+                      field.onBlur(e);
+                      // Trigger validation after blur to ensure errors clear
+                      setTimeout(() => {
+                        form.trigger("lastName");
+                      }, 0);
+                    }}
                   />
                 )}
               </FormField>

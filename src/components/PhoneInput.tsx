@@ -64,6 +64,53 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
       }
     };
 
+    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+      e.preventDefault();
+      const pastedText = e.clipboardData.getData("text");
+      
+      // Extract digits from pasted text
+      const digitsOnly = pastedText.replace(/\D/g, "");
+      
+      if (digitsOnly.length > 10) {
+        // Take only first 10 digits
+        const tenDigits = digitsOnly.slice(0, 10);
+        const formatter = new AsYouType("CA");
+        formatter.input(`+1${tenDigits}`);
+        const formatted = formatter.getNumber()?.formatInternational() || "";
+        
+        // Create synthetic event to trigger onChange
+        const input = e.currentTarget;
+        const syntheticEvent = {
+          ...e,
+          target: {
+            ...input,
+            name,
+            value: formatted,
+          },
+        } as React.ChangeEvent<HTMLInputElement>;
+        
+        onChange(syntheticEvent);
+      } else if (digitsOnly.length > 0) {
+        // Format the pasted digits
+        const formatter = new AsYouType("CA");
+        formatter.input(`+1${digitsOnly}`);
+        const formatted = formatter.getNumber()?.formatInternational() || "";
+        
+        // Create synthetic event to trigger onChange
+        const input = e.currentTarget;
+        const syntheticEvent = {
+          ...e,
+          target: {
+            ...input,
+            name,
+            value: formatted,
+          },
+        } as React.ChangeEvent<HTMLInputElement>;
+        
+        onChange(syntheticEvent);
+      }
+    };
+
     return (
       <Input
         ref={ref}
@@ -74,6 +121,7 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         value={value}
         onChange={handleChange}
         onKeyPress={handleKeyPress}
+        onPaste={handlePaste}
         onBlur={onBlur}
         disabled={disabled}
         className={className}
