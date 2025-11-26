@@ -63,7 +63,7 @@ export const timeOptions = [
   "9:00 PM",
   "10:00 PM",
   "11:00 PM",
-  "12:00 AM",
+  "11:59 PM",
 ];
 
 export const medicalSpecialtyOptions = [
