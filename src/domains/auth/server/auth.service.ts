@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma';
 import { HttpError } from '@/utils/httpError';
 import bcrypt from 'bcryptjs';
 import { type CreateOrganizationWithUserData } from '../types/createOrganization';
+import { type UpdateOrganizationData } from '../types/updateOrganizationData';
 import { Roles } from '@/constants/role';
 import emailService from '@/services/emailService';
 import {
@@ -614,6 +615,135 @@ const checkOrganizationExistsByName = async (name: string): Promise<boolean> => 
   return !!org;
 };
 
+const updateOrganizationData = async (organizationId: string, data: UpdateOrganizationData) => {
+  try {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const {
+        organizationType,
+        organizationName,
+        addressLookup,
+        streetAddress,
+        aptUnitSuite,
+        city,
+        provinceOfResidence,
+        postalCode,
+        organizationWebsite,
+        firstName,
+        lastName,
+        phoneNumber,
+        officialEmailAddress,
+        jobTitle,
+        department,
+        agreeTermsConditions,
+        consentSecureDataHandling,
+        authorizedToCreateAccount,
+      } = data;
+
+      // Get existing organization with related data
+      const existingOrg = await tx.organization.findUnique({
+        where: { id: organizationId },
+        include: {
+          address: true,
+          manager: {
+            include: {
+              account: {
+                include: {
+                  user: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!existingOrg) {
+        throw HttpError.notFound('Organization not found');
+      }
+
+      // Update Address
+      await tx.address.update({
+        where: { id: existingOrg.addressId },
+        data: {
+          address: addressLookup,
+          street: streetAddress,
+          suite: aptUnitSuite ?? '',
+          city,
+          province: provinceOfResidence,
+          postalCode,
+        },
+      });
+
+      // Update Organization
+      await tx.organization.update({
+        where: { id: organizationId },
+        data: {
+          name: organizationName,
+          website: organizationWebsite,
+          typeId: organizationType,
+          agreeToTermsAndPrivacy: agreeTermsConditions,
+          dataSharingConsent: consentSecureDataHandling,
+          isAuthorized: authorizedToCreateAccount,
+          status: 'PENDING', // Reset status to PENDING after update
+        },
+      });
+
+      // Get the first manager (organization contact person)
+      const manager = existingOrg.manager[0];
+      if (!manager) {
+        throw HttpError.notFound('Organization manager not found');
+      }
+
+      // Update User information
+      await tx.user.update({
+        where: { id: manager.account.userId },
+        data: {
+          firstName,
+          lastName,
+          email: officialEmailAddress,
+          phone: getE164PhoneNumber(phoneNumber),
+        },
+      });
+
+      // Update Department if provided
+      if (department) {
+        const dept = await tx.department.upsert({
+          where: { id: department },
+          create: { name: department },
+          update: {},
+        });
+
+        await tx.organizationManager.update({
+          where: { id: manager.id },
+          data: {
+            jobTitle,
+            departmentId: dept.id,
+          },
+        });
+      } else {
+        await tx.organizationManager.update({
+          where: { id: manager.id },
+          data: {
+            jobTitle,
+          },
+        });
+      }
+
+      return {
+        organizationId: existingOrg.id,
+        userId: manager.account.userId,
+        accountId: manager.accountId,
+        email: officialEmailAddress,
+        firstName,
+        lastName,
+      };
+    });
+
+    return result;
+  } catch (error) {
+    throw HttpError.handleServiceError(error, 'Failed to update organization data');
+  }
+};
+
 const authService = {
   getUserByEmail,
   checkPassword,
@@ -633,6 +763,7 @@ const authService = {
   updateOrganizationInfo,
   getAccountSettingsInfo,
   checkOrganizationExistsByName,
+  updateOrganizationData,
 };
 
 export default authService;

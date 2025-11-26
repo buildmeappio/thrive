@@ -46,13 +46,13 @@ export const ClaimantDetailsSchema = z.object({
     .string()
     .trim()
     .min(1, ErrorMessages.FIRST_NAME_REQUIRED)
-    .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.FIRST_NAME_INVALID),
+    .regex(/^[A-Za-zÀ-ÿ']+$/, ErrorMessages.FIRST_NAME_INVALID),
 
   lastName: z
     .string()
     .trim()
     .min(1, ErrorMessages.LAST_NAME_REQUIRED)
-    .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.LAST_NAME_INVALID),
+    .regex(/^[A-Za-zÀ-ÿ']+$/, ErrorMessages.LAST_NAME_INVALID),
 
   addressLookup: z.string().min(5, ErrorMessages.ADDRESS_LOOKUP_REQUIRED),
 
@@ -106,7 +106,12 @@ export const ClaimantDetailsSchema = z.object({
 
   // Optional family doctor fields
   relatedCasesDetails: z.string().trim().optional(),
-  familyDoctorName: z.string().trim().optional(),
+  familyDoctorName: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-zÀ-ÿ]+$/, ErrorMessages.FAMILY_DOCTOR_NAME_INVALID)
+    .optional(),
+
   familyDoctorEmail: z
     .string()
     .refine(val => val === '' || z.string().email().safeParse(val).success, {
