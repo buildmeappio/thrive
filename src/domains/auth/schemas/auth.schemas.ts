@@ -27,12 +27,31 @@ export const step1PersonalInfoSchema = z.object({
     .refine((val) => !/^\s+$/.test(val), {
       message: "First name cannot contain only spaces",
     })
-    .refine((val) => {
-      const error = validateNameField(val);
-      return error === null;
-    }, {
-      message: "Please enter a valid first name",
-    }),
+    .regex(
+      /^[a-zA-Z\s'.-]+$/,
+      "First name can only contain letters, spaces, apostrophes, hyphens, and periods"
+    )
+    .refine(
+      (val) => {
+        // Must contain at least one letter
+        if (!/[a-zA-Z]/.test(val)) {
+          return false;
+        }
+        // Cannot start or end with special characters or spaces
+        if (/^['-.\s]/.test(val) || /['-.\s]$/.test(val)) {
+          return false;
+        }
+        // Cannot have consecutive special characters
+        if (/['-]{2,}/.test(val) || /\.{2,}/.test(val)) {
+          return false;
+        }
+        return true;
+      },
+      {
+        message:
+          "First name must contain at least one letter and cannot start/end with special characters",
+      }
+    ),
   lastName: z
     .string()
     .transform((val) => val.trim()) // Trim whitespace
@@ -48,12 +67,31 @@ export const step1PersonalInfoSchema = z.object({
     .refine((val) => !/^\s+$/.test(val), {
       message: "Last name cannot contain only spaces",
     })
-    .refine((val) => {
-      const error = validateNameField(val);
-      return error === null;
-    }, {
-      message: "Please enter a valid last name",
-    }),
+    .regex(
+      /^[a-zA-Z\s'.-]+$/,
+      "Last name can only contain letters, spaces, apostrophes, hyphens, and periods"
+    )
+    .refine(
+      (val) => {
+        // Must contain at least one letter
+        if (!/[a-zA-Z]/.test(val)) {
+          return false;
+        }
+        // Cannot start or end with special characters or spaces
+        if (/^['-.\s]/.test(val) || /['-.\s]$/.test(val)) {
+          return false;
+        }
+        // Cannot have consecutive special characters
+        if (/['-]{2,}/.test(val) || /\.{2,}/.test(val)) {
+          return false;
+        }
+        return true;
+      },
+      {
+        message:
+          "Last name must contain at least one letter and cannot start/end with special characters",
+      }
+    ),
   phoneNumber: z
     .string()
     .min(5, { message: "Please enter a valid phone number" })
