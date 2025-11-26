@@ -105,13 +105,12 @@ function Input({
           }, 0);
           
           // Trigger onChange with filtered value
+          // Use the input element directly and create a minimal event object
           const syntheticEvent = {
-            ...e,
-            target: {
-              ...e.target,
-              value: newValue,
-            },
+            target: input,
+            currentTarget: input,
           } as React.ChangeEvent<HTMLInputElement>;
+          // The input.value is already updated above, so this will work
           onChange?.(syntheticEvent);
         } else {
           // Even if no filtering needed, ensure onChange fires after paste completes
@@ -119,11 +118,8 @@ function Input({
           setTimeout(() => {
             const input = e.currentTarget;
             const syntheticEvent = {
-              ...e,
-              target: {
-                ...e.target,
-                value: input.value,
-              },
+              target: input,
+              currentTarget: input,
             } as React.ChangeEvent<HTMLInputElement>;
             onChange?.(syntheticEvent);
           }, 0);
