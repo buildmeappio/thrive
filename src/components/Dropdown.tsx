@@ -129,11 +129,11 @@ const Dropdown: React.FC<DropdownProps> = ({
             <SelectTrigger
               id={id}
               disabled={disabled}
-              className={`h-[55px] w-full text-[#000000] rounded-[7.56px] border-none shadow-none bg-[${
-                from === "profile-info-form" ? "#F9F9F9" : "#F2F5F6"
-              }] ${
+              className={`h-[55px] w-full text-[#000000] rounded-[7.56px] border-none shadow-none ${
+                from === "profile-info-form" ? "bg-[#F9F9F9]" : "bg-[#F2F5F6]"
+              } ${
                 icon ? "pl-10" : "pl-3"
-              }  text-[14px] leading-[120%] font-normal tracking-[0.5%] text focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 ${
+              } text-[14px] leading-[120%] font-normal tracking-[0.5%] hover:bg-opacity-80 transition-colors focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 ${
                 error ? "ring-2 ring-red-500/30" : ""
               }`}
               aria-required={required}>
@@ -163,7 +163,7 @@ const Dropdown: React.FC<DropdownProps> = ({
               disabled={disabled}
               className={`h-[55px] w-full rounded-[7.56px] border-none bg-[#F2F5F6] pr-8 ${
                 icon ? "pl-10" : "pl-3"
-              } text-[14px] leading-[120%] font-normal tracking-[0.5%] text-left focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 relative ${
+              } text-[14px] leading-[120%] font-normal tracking-[0.5%] text-left hover:bg-opacity-80 transition-colors focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 relative ${
                 error ? "ring-2 ring-red-500/30" : ""
               }`}
               onClick={() => setOpen((o) => !o)}
