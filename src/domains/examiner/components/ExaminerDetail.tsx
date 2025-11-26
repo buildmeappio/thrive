@@ -194,6 +194,12 @@ export default function ExaminerDetail({ examiner }: Props) {
           className: "border-green-500 text-green-700 bg-green-50",
           icon: <Check className="w-4 h-4" />,
         };
+      case "active":
+        return {
+          text: "Active",
+          className: "border-green-500 text-green-700 bg-green-50",
+          icon: <Check className="w-4 h-4" />,
+        };
       case "rejected":
         return {
           text: "Rejected",
@@ -482,6 +488,22 @@ export default function ExaminerDetail({ examiner }: Props) {
                       <Check className="w-4 h-4" />
                       Approved
                     </button>
+                  ) : status === "active" ? (
+                    <button
+                      className={cn(
+                        "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-green-50 flex items-center gap-2 cursor-default"
+                      )}
+                      style={{
+                        fontFamily: "Poppins, sans-serif",
+                        fontWeight: 500,
+                        lineHeight: "100%",
+                        fontSize: "14px",
+                      }}
+                      disabled
+                    >
+                      <Check className="w-4 h-4" />
+                      Active
+                    </button>
                   ) : status === "rejected" ? (
                     <button
                       className={cn(
@@ -583,8 +605,8 @@ export default function ExaminerDetail({ examiner }: Props) {
                     </>
                   )}
 
-                  {/* Send Contract button - only show if not approved */}
-                  {status !== "approved" && (
+                  {/* Send Contract button - only show if not approved or active */}
+                  {status !== "approved" && status !== "active" && (
                     <button
                       onClick={handleSendContract}
                       disabled={!examiner.feeStructure || loadingAction !== null}

@@ -97,6 +97,7 @@ const columns: ColumnDef<ExaminerData>[] = [
       const statusText = 
         status === "PENDING" ? "Pending Approval" : 
         status === "ACCEPTED" ? "Approved" : 
+        status === "ACTIVE" ? "Active" : 
         status === "INFO_REQUESTED" ? "Information Requested" : 
         "Rejected";
       return <Content title={statusText}>{statusText}</Content>;
