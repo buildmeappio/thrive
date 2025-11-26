@@ -18,6 +18,17 @@ type FormData = {
   overrideHours: OverrideHoursState;
 };
 
+type ErrorWithStatus = {
+  message?: string;
+  status?: number;
+  code?: string;
+};
+
+const isErrorWithMessage = (error: unknown): error is ErrorWithStatus => {
+  if (!error || typeof error !== "object") return false;
+  return "message" in error && typeof (error as Record<string, unknown>).message === "string";
+};
+
 export default function InterpreterCreateContent() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -25,18 +36,27 @@ export default function InterpreterCreateContent() {
   const handleSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
-      const interpreter = await createInterpreter({
+      const result = await createInterpreter({
         companyName: data.companyName,
         contactPerson: data.contactPerson,
         email: data.email,
         phone: data.phone || undefined,
         languageIds: data.languageIds,
       });
+
+      if (!result.success) {
+        const errorMessage =
+          "message" in result && typeof result.message === "string"
+            ? result.message
+            : "Failed to create interpreter.";
+        toast.error(errorMessage);
+        return;
+      }
       
       // Save availability after interpreter is created
-      if (interpreter?.id) {
+      if (result.interpreter?.id) {
         await saveInterpreterAvailabilityAction({
-          interpreterId: interpreter.id,
+          interpreterId: result.interpreter.id,
           weeklyHours: data.weeklyHours,
           overrideHours: data.overrideHours,
         });
@@ -46,7 +66,11 @@ export default function InterpreterCreateContent() {
       router.push("/interpreter");
     } catch (error) {
       console.error("Failed to create interpreter:", error);
-      toast.error("Failed to create interpreter. Please try again.");
+      if (isErrorWithMessage(error) && error.message) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to create interpreter. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
