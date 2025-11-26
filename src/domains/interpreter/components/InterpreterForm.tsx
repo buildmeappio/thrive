@@ -44,6 +44,8 @@ export default function InterpreterForm({
 }: Props) {
   const [allLanguages, setAllLanguages] = useState<Language[]>([]);
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const [languageFieldTouched, setLanguageFieldTouched] = useState(false);
   const [formData, setFormData] = useState<FormData>(
     initialData || {
       companyName: "",
@@ -121,6 +123,7 @@ export default function InterpreterForm({
   }, [languageDropdownOpen]);
 
   const handleLanguageToggle = (languageId: string) => {
+    setLanguageFieldTouched(true);
     setFormData((prev) => ({
       ...prev,
       languageIds: prev.languageIds.includes(languageId)
@@ -204,6 +207,7 @@ export default function InterpreterForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setHasAttemptedSubmit(true);
 
     // Validate email
     if (!isValidEmail(formData.email)) {
@@ -223,7 +227,8 @@ export default function InterpreterForm({
     if (
       !trimmedData.companyName ||
       !trimmedData.contactPerson ||
-      !trimmedData.email
+      !trimmedData.email ||
+      trimmedData.languageIds.length === 0
     ) {
       return;
     }
@@ -342,10 +347,13 @@ export default function InterpreterForm({
               <div className="relative language-dropdown">
                 <button
                   type="button"
-                  onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+                  onClick={() => {
+                    setLanguageFieldTouched(true);
+                    setLanguageDropdownOpen(!languageDropdownOpen);
+                  }}
                   className={cn(
                     "w-full px-4 py-3 border rounded-xl text-left focus:outline-none focus:ring-2 focus:border-transparent transition-all",
-                    formData.languageIds.length === 0
+                    formData.languageIds.length === 0 && (hasAttemptedSubmit || languageFieldTouched)
                       ? "border-red-300 focus:ring-red-500"
                       : "border-gray-300 focus:ring-[#00A8FF]"
                   )}>
@@ -418,7 +426,7 @@ export default function InterpreterForm({
                   </div>
                 )}
               </div>
-              {formData.languageIds.length === 0 && (
+              {formData.languageIds.length === 0 && (hasAttemptedSubmit || languageFieldTouched) && (
                 <p className="text-xs text-red-500 mt-1">
                   At least one language is required
                 </p>
