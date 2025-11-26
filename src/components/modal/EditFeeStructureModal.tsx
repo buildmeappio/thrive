@@ -18,10 +18,54 @@ export default function EditFeeStructureModal({
   title = "Edit Fee Structure",
   isLoading = false,
 }: Props) {
-  const [IMEFee, setIMEFee] = useState(initialData?.IMEFee?.toString() || "");
-  const [recordReviewFee, setRecordReviewFee] = useState(initialData?.recordReviewFee?.toString() || "");
-  const [hourlyRate, setHourlyRate] = useState(initialData?.hourlyRate?.toString() || "");
-  const [cancellationFee, setCancellationFee] = useState(initialData?.cancellationFee?.toString() || "");
+  const [IMEFee, setIMEFee] = useState(
+    initialData?.IMEFee ? Math.floor(initialData.IMEFee).toString() : ""
+  );
+  const [recordReviewFee, setRecordReviewFee] = useState(
+    initialData?.recordReviewFee ? Math.floor(initialData.recordReviewFee).toString() : ""
+  );
+  const [hourlyRate, setHourlyRate] = useState(
+    initialData?.hourlyRate ? Math.floor(initialData.hourlyRate).toString() : ""
+  );
+  const [cancellationFee, setCancellationFee] = useState(
+    initialData?.cancellationFee ? Math.floor(initialData.cancellationFee).toString() : ""
+  );
+
+  // Helper function to sanitize input to only allow positive integers
+  const sanitizePositiveInteger = (value: string): string => {
+    // Remove all non-digit characters
+    const digitsOnly = value.replace(/\D/g, "");
+    return digitsOnly;
+  };
+
+  // Handler for positive integer input
+  const handleIntegerChange = (
+    value: string,
+    setter: (value: string) => void
+  ) => {
+    const sanitized = sanitizePositiveInteger(value);
+    setter(sanitized);
+  };
+
+  // Prevent typing negative signs, decimals, and other non-numeric characters
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow: backspace, delete, tab, escape, enter, and arrow keys
+    if (
+      ["Backspace", "Delete", "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(
+        e.key
+      )
+    ) {
+      return;
+    }
+    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+    if ((e.ctrlKey || e.metaKey) && ["a", "c", "v", "x"].includes(e.key.toLowerCase())) {
+      return;
+    }
+    // Prevent: negative sign, decimal point, and any non-numeric character
+    if (e.key === "-" || e.key === "." || e.key === "," || isNaN(Number(e.key))) {
+      e.preventDefault();
+    }
+  };
   
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -29,10 +73,10 @@ export default function EditFeeStructureModal({
 
   useEffect(() => {
     if (initialData) {
-      setIMEFee(initialData.IMEFee?.toString() || "");
-      setRecordReviewFee(initialData.recordReviewFee?.toString() || "");
-      setHourlyRate(initialData.hourlyRate?.toString() || "");
-      setCancellationFee(initialData.cancellationFee?.toString() || "");
+      setIMEFee(initialData.IMEFee ? Math.floor(initialData.IMEFee).toString() : "");
+      setRecordReviewFee(initialData.recordReviewFee ? Math.floor(initialData.recordReviewFee).toString() : "");
+      setHourlyRate(initialData.hourlyRate ? Math.floor(initialData.hourlyRate).toString() : "");
+      setCancellationFee(initialData.cancellationFee ? Math.floor(initialData.cancellationFee).toString() : "");
     }
   }, [initialData]);
 
@@ -64,10 +108,10 @@ export default function EditFeeStructureModal({
   const handleSubmit = () => {
     if (canSubmit) {
       onSubmit({
-        IMEFee: parseFloat(IMEFee),
-        recordReviewFee: parseFloat(recordReviewFee),
-        hourlyRate: hourlyRate ? parseFloat(hourlyRate) : undefined,
-        cancellationFee: parseFloat(cancellationFee),
+        IMEFee: parseInt(IMEFee, 10) || 0,
+        recordReviewFee: parseInt(recordReviewFee, 10) || 0,
+        hourlyRate: hourlyRate ? parseInt(hourlyRate, 10) || undefined : undefined,
+        cancellationFee: parseInt(cancellationFee, 10) || 0,
         paymentTerms: initialData?.paymentTerms || "N/A",
       } as Omit<ExaminerFeeStructure, "id">);
     }
@@ -130,9 +174,10 @@ export default function EditFeeStructureModal({
               id="ime-fee"
               ref={firstInputRef}
               type="number"
-              step="0.01"
+              min="0"
               value={IMEFee}
-              onChange={(e) => setIMEFee(e.target.value)}
+              onChange={(e) => handleIntegerChange(e.target.value, setIMEFee)}
+              onKeyDown={handleKeyDown}
               className="
                 h-12 w-full
                 rounded-xl sm:rounded-[15px]
@@ -158,9 +203,10 @@ export default function EditFeeStructureModal({
             <input
               id="record-review-fee"
               type="number"
-              step="0.01"
+              min="0"
               value={recordReviewFee}
-              onChange={(e) => setRecordReviewFee(e.target.value)}
+              onChange={(e) => handleIntegerChange(e.target.value, setRecordReviewFee)}
+              onKeyDown={handleKeyDown}
               className="
                 h-12 w-full
                 rounded-xl sm:rounded-[15px]
@@ -186,9 +232,10 @@ export default function EditFeeStructureModal({
             <input
               id="hourly-rate"
               type="number"
-              step="0.01"
+              min="0"
               value={hourlyRate}
-              onChange={(e) => setHourlyRate(e.target.value)}
+              onChange={(e) => handleIntegerChange(e.target.value, setHourlyRate)}
+              onKeyDown={handleKeyDown}
               className="
                 h-12 w-full
                 rounded-xl sm:rounded-[15px]
@@ -214,9 +261,10 @@ export default function EditFeeStructureModal({
             <input
               id="cancellation-fee"
               type="number"
-              step="0.01"
+              min="0"
               value={cancellationFee}
-              onChange={(e) => setCancellationFee(e.target.value)}
+              onChange={(e) => handleIntegerChange(e.target.value, setCancellationFee)}
+              onKeyDown={handleKeyDown}
               className="
                 h-12 w-full
                 rounded-xl sm:rounded-[15px]
