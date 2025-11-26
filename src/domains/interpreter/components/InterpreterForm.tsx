@@ -9,27 +9,16 @@ import { Check, ChevronDown } from "lucide-react";
 import PhoneInput from "@/components/PhoneNumber";
 import {
   AvailabilityTabs,
-  WeeklyHoursState,
-  OverrideHoursState,
   weeklyStateToArray,
   weeklyArrayToState,
   overrideStateToArray,
   overrideArrayToState,
 } from "@/components/availability";
-
-type FormData = {
-  companyName: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  languageIds: string[];
-  weeklyHours: WeeklyHoursState;
-  overrideHours: OverrideHoursState;
-};
+import { InterpreterFormData } from "../types/interpreterForm.types";
 
 type Props = {
-  initialData?: FormData;
-  onSubmit: (data: FormData) => Promise<void>;
+  initialData?: InterpreterFormData;
+  onSubmit: (data: InterpreterFormData) => Promise<void>;
   onCancel?: () => void;
   submitLabel?: string;
   isLoading?: boolean;
@@ -46,7 +35,7 @@ export default function InterpreterForm({
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [languageFieldTouched, setLanguageFieldTouched] = useState(false);
-  const [formData, setFormData] = useState<FormData>(
+  const [formData, setFormData] = useState<InterpreterFormData>(
     initialData || {
       companyName: "",
       contactPerson: "",

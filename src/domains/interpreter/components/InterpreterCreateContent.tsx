@@ -3,37 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardShell } from "@/layouts/dashboard";
-import InterpreterForm from "@/domains/interpreter/components/InterpreterForm";
-import { createInterpreter, saveInterpreterAvailabilityAction } from "@/domains/interpreter/actions";
+import InterpreterForm from "./InterpreterForm";
+import { createInterpreter, saveInterpreterAvailabilityAction } from "../actions";
 import { toast } from "sonner";
-import { WeeklyHoursState, OverrideHoursState } from "@/components/availability";
-
-type FormData = {
-  companyName: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  languageIds: string[];
-  weeklyHours: WeeklyHoursState;
-  overrideHours: OverrideHoursState;
-};
-
-type ErrorWithStatus = {
-  message?: string;
-  status?: number;
-  code?: string;
-};
-
-const isErrorWithMessage = (error: unknown): error is ErrorWithStatus => {
-  if (!error || typeof error !== "object") return false;
-  return "message" in error && typeof (error as Record<string, unknown>).message === "string";
-};
+import { InterpreterFormData, isErrorWithMessage } from "../types/interpreterForm.types";
 
 export default function InterpreterCreateContent() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (data: FormData) => {
+  const handleSubmit = async (data: InterpreterFormData) => {
     setIsLoading(true);
     try {
       const result = await createInterpreter({
