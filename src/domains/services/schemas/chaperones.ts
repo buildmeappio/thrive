@@ -6,12 +6,24 @@ export const chaperoneFormSchema = z.object({
     .string()
     .min(1, "First name is required")
     .max(50, "First name must be less than 50 characters")
-    .trim(),
+    .trim()
+    .refine(
+      (val) => val.length > 0 && /^[A-Za-z][A-Za-z\s]*$/.test(val),
+      {
+        message: "First name must start with a letter and contain only letters and spaces",
+      }
+    ),
   lastName: z
     .string()
     .min(1, "Last name is required")
     .max(50, "Last name must be less than 50 characters")
-    .trim(),
+    .trim()
+    .refine(
+      (val) => val.length > 0 && /^[A-Za-z][A-Za-z\s]*$/.test(val),
+      {
+        message: "Last name must start with a letter and contain only letters and spaces",
+      }
+    ),
   email: z
     .string()
     .min(1, "Email is required")

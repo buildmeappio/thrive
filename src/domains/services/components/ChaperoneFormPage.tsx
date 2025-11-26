@@ -84,6 +84,7 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
     formState: { errors },
     setValue,
     watch,
+    setError,
   } = useForm<ChaperoneFormData>({
     resolver: zodResolver(chaperoneFormSchema),
     defaultValues: {
@@ -96,6 +97,15 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
   });
 
   const phone = watch("phone");
+  const firstNameValue = watch("firstName");
+  const lastNameValue = watch("lastName");
+
+  // Sanitize name input: remove special characters, prevent leading spaces, collapse multiple spaces
+  const sanitizeNameInput = (value: string) => {
+    const noSpecialCharacters = value.replace(/[^a-zA-Z\s]/g, "");
+    const noLeadingSpaces = noSpecialCharacters.replace(/^\s+/g, "");
+    return noLeadingSpaces.replace(/\s+/g, " ");
+  };
 
   // Helper function to convert time string to minutes since midnight
   const timeToMinutes = (timeStr: string): number => {
@@ -190,6 +200,44 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
 
   const handleFormSubmit = async (data: ChaperoneFormData) => {
     try {
+      // Additional validation for names (double-check after zod validation)
+      const cleanFirstName = data.firstName.trim();
+      const cleanLastName = data.lastName.trim();
+
+      // Validate first name
+      if (!cleanFirstName || cleanFirstName.length === 0) {
+        setError("firstName", {
+          type: "manual",
+          message: "First name is required",
+        });
+        return;
+      }
+
+      if (!/^[A-Za-z][A-Za-z\s]*$/.test(cleanFirstName)) {
+        setError("firstName", {
+          type: "manual",
+          message: "First name must start with a letter and contain only letters and spaces",
+        });
+        return;
+      }
+
+      // Validate last name
+      if (!cleanLastName || cleanLastName.length === 0) {
+        setError("lastName", {
+          type: "manual",
+          message: "Last name is required",
+        });
+        return;
+      }
+
+      if (!/^[A-Za-z][A-Za-z\s]*$/.test(cleanLastName)) {
+        setError("lastName", {
+          type: "manual",
+          message: "Last name must start with a letter and contain only letters and spaces",
+        });
+        return;
+      }
+
       // Validate time slots before submission
       const validation = validateTimeSlots();
       if (!validation.isValid) {
@@ -205,9 +253,9 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
       );
 
       const submitData: CreateChaperoneInput | UpdateChaperoneInput = {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
+        firstName: cleanFirstName,
+        lastName: cleanLastName,
+        email: data.email.trim(),
         phone: data.phone || undefined,
         gender: data.gender || undefined,
         availability: {
@@ -261,9 +309,31 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                 </Label>
                 <Input
                   id="firstName"
-                  {...register("firstName")}
+                  value={firstNameValue}
+                  {...register("firstName", {
+                    onChange: (event) => {
+                      const sanitized = sanitizeNameInput(event.target.value);
+                      setValue("firstName", sanitized, { shouldValidate: true });
+                    },
+                    onBlur: (event) => {
+                      const trimmedValue = event.target.value.trim();
+                      if (trimmedValue !== event.target.value) {
+                        setValue("firstName", trimmedValue, { shouldValidate: true });
+                      }
+                    },
+                  })}
                   placeholder="Enter first name"
                   disabled={isSubmitting}
+                  onKeyDown={(e) => {
+                    // Prevent space at the beginning
+                    if (
+                      e.key === " " &&
+                      e.currentTarget.selectionStart === 0 &&
+                      e.currentTarget.value.trim().length === 0
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
                 />
                 {errors.firstName && (
                   <p className="text-sm text-red-500">
@@ -278,9 +348,31 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                 </Label>
                 <Input
                   id="lastName"
-                  {...register("lastName")}
+                  value={lastNameValue}
+                  {...register("lastName", {
+                    onChange: (event) => {
+                      const sanitized = sanitizeNameInput(event.target.value);
+                      setValue("lastName", sanitized, { shouldValidate: true });
+                    },
+                    onBlur: (event) => {
+                      const trimmedValue = event.target.value.trim();
+                      if (trimmedValue !== event.target.value) {
+                        setValue("lastName", trimmedValue, { shouldValidate: true });
+                      }
+                    },
+                  })}
                   placeholder="Enter last name"
                   disabled={isSubmitting}
+                  onKeyDown={(e) => {
+                    // Prevent space at the beginning
+                    if (
+                      e.key === " " &&
+                      e.currentTarget.selectionStart === 0 &&
+                      e.currentTarget.value.trim().length === 0
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
                 />
                 {errors.lastName && (
                   <p className="text-sm text-red-500">
