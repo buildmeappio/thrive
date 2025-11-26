@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getExaminerProfileAction } from "@/domains/setting/server/actions";
 import ProfileInformationSection from "@/domains/setting/components/profile-information-section";
 import ChangePasswordSection from "@/domains/setting/components/change-password-section";
+import { URLS } from "@/constants/route";
 
 export const metadata: Metadata = {
   title: "Settings | Thrive - Examiner",
@@ -17,14 +18,14 @@ const SettingsPage = async () => {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect("/examiner/login");
+    redirect(URLS.LOGIN);
   }
 
   // Fetch examiner profile
   const profileResult = await getExaminerProfileAction(user.accountId);
 
   if (!profileResult.success || !profileResult.data) {
-    redirect("/examiner/login");
+    redirect(URLS.LOGIN);
   }
 
   const profileData = profileResult.data;

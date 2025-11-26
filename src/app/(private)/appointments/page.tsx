@@ -4,6 +4,7 @@ import CasesPageContent from "@/domains/dashboard/components/casesPageContent";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import { getExaminerProfileAction } from "@/domains/setting/server/actions/getExaminerProfile";
 import { getAllCasesAction } from "@/domains/dashboard/server/actions/getAllCases";
+import { URLS } from "@/constants/route";
 
 export const metadata: Metadata = {
   title: "Appointments | Thrive - Examiner",
@@ -17,14 +18,14 @@ const CasesPage = async () => {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(URLS.LOGIN);
   }
 
   // Get examiner profile
   const profileResult = await getExaminerProfileAction(user.accountId);
 
   if (!profileResult.success || !profileResult.data) {
-    redirect("/login");
+    redirect(URLS.LOGIN);
   }
 
   const examinerProfileId = profileResult.data.id;

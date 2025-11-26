@@ -10,6 +10,7 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import { getExaminerProfileAction } from "@/domains/setting/server/actions/getExaminerProfile";
 import { getDashboardBookingsAction } from "@/domains/dashboard/server/actions/getDashboardBookings";
 import { Header } from "@/domains/setting";
+import { URLS } from "@/constants/route";
 
 export const metadata: Metadata = {
   title: "Dashboard | Thrive - Examiner",
@@ -24,14 +25,14 @@ const DashboardPage = async () => {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(URLS.LOGIN);
   }
 
   // Get examiner profile
   const profileResult = await getExaminerProfileAction(user.accountId);
 
   if (!profileResult.success || !profileResult.data) {
-    redirect("/login");
+    redirect(URLS.LOGIN);
   }
 
   const examinerProfileId = profileResult.data.id;
