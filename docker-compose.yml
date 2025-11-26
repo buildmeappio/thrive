@@ -3,10 +3,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      shm_size: '2gb'
+      shm_size: "2gb"
       args:
         BUILDKIT_INLINE_CACHE: 1
-    platform: linux/amd64  # Use linux/amd64 for production x86_64 deployments
+    platform: linux/amd64 # Use linux/amd64 for production x86_64 deployments
     container_name: admin-web
     restart: unless-stopped
     env_file:
