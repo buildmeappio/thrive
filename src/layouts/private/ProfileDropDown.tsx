@@ -63,16 +63,16 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
           </li>
           <li>
             <a
-              href="/dashboard/ime-referrals"
+              href="/organization/dashboard/cases"
               className="flex items-center space-x-2 px-3 py-1.5 transition-colors hover:bg-gray-100"
             >
               <UserPlus size={16} />
-              <span>Referrals</span>
+              <span>Cases</span>
             </a>
           </li>
           <li>
             <a
-              href="/dashboard/support"
+              href="/organization/dashboard/support"
               className="flex items-center space-x-2 px-3 py-1.5 transition-colors hover:bg-gray-100"
             >
               <LifeBuoy size={16} />

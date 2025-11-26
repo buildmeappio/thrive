@@ -148,6 +148,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
           ...exam,
           dueDate: fixDateFormat(exam.dueDate),
           services: ensureCompleteServices(exam.services),
+          selectedBenefits: exam.selectedBenefits || [],
         };
         return fixed;
       });
@@ -166,6 +167,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
           ...exam,
           dueDate: fixDateFormat(exam.dueDate),
           services: ensureCompleteServices(exam.services),
+          selectedBenefits: exam.selectedBenefits || [],
         };
         return fixed;
       });

@@ -45,17 +45,16 @@ export const OrganizationInfoInitialValues = {
   organizationWebsite: '',
 };
 
+const nameValidation = Yup.string()
+  .trim()
+  .matches(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
+  .min(1, ErrorMessages.NAME_REQUIRED)
+  .max(100, ErrorMessages.NAME_TOO_LONG);
+
 // Step2
 export const OfficeDetailsSchema = Yup.object({
-  firstName: Yup.string()
-    .trim()
-    .matches(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.FIRST_NAME_INVALID)
-    .required(ErrorMessages.FIRST_NAME_REQUIRED),
-
-  lastName: Yup.string()
-    .trim()
-    .matches(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.LAST_NAME_INVALID)
-    .required(ErrorMessages.LAST_NAME_REQUIRED),
+  firstName: nameValidation.required(ErrorMessages.FIRST_NAME_REQUIRED),
+  lastName: nameValidation.required(ErrorMessages.LAST_NAME_REQUIRED),
 
   phoneNumber: Yup.string()
     .required(ErrorMessages.PHONE_REQUIRED)

@@ -1,7 +1,7 @@
 import ErrorMessages from '@/constants/ErrorMessages';
 import jwt, { type SignOptions, type JwtPayload } from 'jsonwebtoken';
 
-const getJwtSecret = (name: 'otp' | 'password' | 'claimant_approve') => {
+const getJwtSecret = (name: 'otp' | 'password' | 'claimant_approve' | 'org_info_request') => {
   let secret: string | null = null;
   if (name === 'otp') {
     secret = process.env.JWT_OTP_SECRET as string;
@@ -9,6 +9,8 @@ const getJwtSecret = (name: 'otp' | 'password' | 'claimant_approve') => {
     secret = process.env.JWT_SET_PASSWORD_SECRET as string;
   } else if (name === 'claimant_approve') {
     secret = process.env.JWT_CLAIMANT_APPROVE_SECRET as string;
+  } else if (name === 'org_info_request') {
+    secret = process.env.JWT_ORGANIZATION_INFO_REQUEST_SECRET as string;
   }
   if (!secret) {
     throw new Error(ErrorMessages.JWT_SECRETS_REQUIRED);
@@ -84,6 +86,25 @@ export function verifyClaimantApprovalToken(token: string): JwtPayload | null {
   try {
     const claimantSecret = getJwtSecret('claimant_approve');
     return jwt.verify(token, claimantSecret) as JwtPayload;
+  } catch {
+    return null;
+  }
+}
+
+// ----- Organization Info Request Tokens -----
+export function signOrgInfoRequestToken(
+  payload: { email: string; organizationId: string },
+  expiresIn: SignOptions['expiresIn'] = '7d'
+): string {
+  const orgInfoRequestSecret = getJwtSecret('org_info_request');
+  const options: SignOptions = { expiresIn };
+  return jwt.sign(payload, orgInfoRequestSecret, options);
+}
+
+export function verifyOrgInfoRequestToken(token: string): JwtPayload | null {
+  try {
+    const orgInfoRequestSecret = getJwtSecret('org_info_request');
+    return jwt.verify(token, orgInfoRequestSecret) as JwtPayload;
   } catch {
     return null;
   }

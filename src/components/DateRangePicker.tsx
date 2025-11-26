@@ -127,11 +127,15 @@ const DateRangePicker = ({ value, onChange, className }: DateRangePickerProps) =
     return `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
   };
 
-  const prevMonth = () => {
+  const prevMonth = (event?: React.MouseEvent<HTMLButtonElement>) => {
+    event?.preventDefault();
+    event?.stopPropagation();
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   };
 
-  const nextMonth = () => {
+  const nextMonth = (event?: React.MouseEvent<HTMLButtonElement>) => {
+    event?.preventDefault();
+    event?.stopPropagation();
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
@@ -159,6 +163,7 @@ const DateRangePicker = ({ value, onChange, className }: DateRangePickerProps) =
   return (
     <div className={`relative ${className || ''}`}>
       <button
+        type="button"
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="font-poppins flex h-[45px] w-44 justify-between gap-2 rounded-full border border-gray-200 bg-white px-3 text-sm text-gray-700 transition-colors hover:bg-gray-50"
@@ -217,6 +222,7 @@ const DateRangePicker = ({ value, onChange, className }: DateRangePickerProps) =
               <div className="rounded-2xl bg-gray-50 p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <button
+                    type="button"
                     onClick={prevMonth}
                     className="rounded p-1 text-gray-600 hover:bg-gray-200"
                   >
@@ -226,6 +232,7 @@ const DateRangePicker = ({ value, onChange, className }: DateRangePickerProps) =
                     {monthYearString(currentMonth)}
                   </h3>
                   <button
+                    type="button"
                     onClick={nextMonth}
                     className="rounded p-1 text-gray-600 hover:bg-gray-200"
                   >
@@ -277,12 +284,14 @@ const DateRangePicker = ({ value, onChange, className }: DateRangePickerProps) =
             {/* Action Buttons */}
             <div className="flex gap-2 pt-2">
               <button
+                type="button"
                 onClick={handleCancel}
                 className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-800"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handleApply}
                 className="flex-1 rounded-lg bg-[#000093] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0080FF]"
               >

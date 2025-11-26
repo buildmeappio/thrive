@@ -32,6 +32,7 @@ interface DepartmentOption {
 
 type OfficeDetailProps = OrganizationRegStepProps & {
   departmentTypes: DepartmentOption[];
+  isUpdateMode?: boolean;
 };
 
 const OfficeDetails: React.FC<OfficeDetailProps> = ({
@@ -40,6 +41,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
   currentStep,
   totalSteps,
   departmentTypes: departmentOptions,
+  isUpdateMode = false,
 }) => {
   const { setData, data, _hasHydrated } = useRegistrationStore();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -54,17 +56,20 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
     actions: FormikHelpers<typeof OfficeDetailsInitialValues>
   ) => {
     try {
-      log.debug('Checking email:', values.officialEmailAddress);
-      const result = await checkUserByEmail(values.officialEmailAddress);
+      // Skip email check in update mode since email cannot be changed
+      if (!isUpdateMode) {
+        log.debug('Checking email:', values.officialEmailAddress);
+        const result = await checkUserByEmail(values.officialEmailAddress);
 
-      if (!result.success) {
-        throw new Error(result.error);
-      }
+        if (!result.success) {
+          throw new Error(result.error);
+        }
 
-      if (result.data) {
-        setShowLoginPrompt(true);
-        actions.setSubmitting(false);
-        return;
+        if (result.data) {
+          setShowLoginPrompt(true);
+          actions.setSubmitting(false);
+          return;
+        }
       }
 
       setData('step2', values);
@@ -154,13 +159,14 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                     Official Email Address<span className="text-red-500">*</span>
                   </Label>
                   <Input
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isUpdateMode}
                     name="officialEmailAddress"
                     icon={Mail}
                     type="email"
                     placeholder="lois@desjardins.com"
                     value={values.officialEmailAddress}
                     onChange={handleChange}
+                    className={isUpdateMode ? 'cursor-not-allowed bg-gray-100' : ''}
                   />
                   {errors.officialEmailAddress && (
                     <p className="text-xs text-red-500">{errors.officialEmailAddress}</p>
