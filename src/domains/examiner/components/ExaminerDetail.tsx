@@ -34,22 +34,28 @@ const formatText = (str: string): string => {
     .join(" ");
 };
 
-// Utility function to format years of experience: keep numeric ranges like "1-2", format text like "less-than-1"
+// Utility function to format years of experience: keep numeric ranges and hyphens intact
 const formatYearsOfExperience = (str: string): string => {
   if (!str) return str;
+  const trimmed = str.trim();
 
-  // Check if it's a numeric range like "1-2", "3-5", "10-15"
-  if (/^\d+-\d+$/.test(str)) {
-    return str; // Keep as is
+  // Match patterns like "2-3", "2 - 3", "2 3", optionally with trailing text (e.g., "Years")
+  const rangeMatch = trimmed.match(/^(\d+)[\s-]+(\d+)(.*)$/i);
+  if (rangeMatch) {
+    const [, start, end, suffix] = rangeMatch;
+    const formattedSuffix = suffix
+      ? ` ${formatText(suffix.trim().replace(/^-+/, ""))}`
+      : "";
+    return `${start}-${end}${formattedSuffix}`.trim();
   }
 
-  // Check if it's two numbers separated by a space like "2 3" and convert to "2-3"
-  if (/^\d+\s+\d+$/.test(str.trim())) {
-    return str.trim().replace(/\s+/g, "-");
+  // Match standalone numeric range (no suffix)
+  if (/^\d+-\d+$/.test(trimmed)) {
+    return trimmed;
   }
 
   // Otherwise, format as text (replace hyphens/underscores with spaces and capitalize)
-  return str
+  return trimmed
     .replace(/[-_]/g, " ")
     .split(" ")
     .filter((word) => word.length > 0)
@@ -362,59 +368,58 @@ export default function ExaminerDetail({ examiner }: Props) {
             {/* Second row: Fee Structure (left) and Medical Credentials (right) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
               {/* Left column - Fee Structure */}
-              <div className="relative">
-                
-                <Section title="Fee Structure">
-                  {examiner.feeStructure ? (
-                    <>
-                      
+              <Section
+                title="Fee Structure"
+                actionSlot={
+                  status !== "approved" ? (
+                    <button
+                      onClick={() => setIsFeeStructureOpen(true)}
+                      disabled={loadingAction === "feeStructure"}
+                      className="flex items-center gap-2 p-2 rounded-full text-cyan-600 hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      title={
+                        examiner.feeStructure
+                          ? "Edit Fee Structure"
+                          : "Add Fee Structure"
+                      }
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  ) : null
+                }
+              >
+                {examiner.feeStructure ? (
+                  <>
+                    <FieldRow
+                      label="IME Fee"
+                      value={`$${examiner.feeStructure.IMEFee}`}
+                      type="text"
+                    />
+                    <FieldRow
+                      label="Report Review Fee"
+                      value={`$${examiner.feeStructure.recordReviewFee}`}
+                      type="text"
+                    />
+                    {examiner.feeStructure.hourlyRate && (
                       <FieldRow
-                        label="IME Fee"
-                        value={`$${examiner.feeStructure.IMEFee}`}
+                        label="Hourly Rate"
+                        value={`$${examiner.feeStructure.hourlyRate}`}
                         type="text"
                       />
-                      <FieldRow
-                        label="Report Review Fee"
-                        value={`$${examiner.feeStructure.recordReviewFee}`}
-                        type="text"
-                      />
-                      {examiner.feeStructure.hourlyRate && (
-                        <FieldRow
-                          label="Hourly Rate"
-                          value={`$${examiner.feeStructure.hourlyRate}`}
-                          type="text"
-                        />
-                      )}
-                      <FieldRow
-                        label="Cancellation Fee"
-                        value={`$${examiner.feeStructure.cancellationFee}`}
-                        type="text"
-                      />
-                    </>
-                  ) : (
-                    <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[100px] flex items-center justify-center">
-                      <p className="font-poppins text-[14px] text-[#7A7A7A]">
-                        No fee structure added
-                      </p>
-                    </div>
-                  )}
-                </Section>
-                {/* Only show edit button if examiner is not approved */}
-                {status !== "approved" && (
-                  <button
-                    onClick={() => setIsFeeStructureOpen(true)}
-                    disabled={loadingAction === "feeStructure"}
-                    className="absolute top-3 right-3 flex items-center gap-2 p-2 rounded-full text-cyan-600 hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    title={
-                      examiner.feeStructure
-                        ? "Edit Fee Structure"
-                        : "Add Fee Structure"
-                    }
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
+                    )}
+                    <FieldRow
+                      label="Cancellation Fee"
+                      value={`$${examiner.feeStructure.cancellationFee}`}
+                      type="text"
+                    />
+                  </>
+                ) : (
+                  <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[100px] flex items-center justify-center">
+                    <p className="font-poppins text-[14px] text-[#7A7A7A]">
+                      No fee structure added
+                    </p>
+                  </div>
                 )}
-              </div>
+              </Section>
 
               {/* Right column - Medical Credentials */}
               <Section title="Medical Credentials">
