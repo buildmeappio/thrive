@@ -163,7 +163,7 @@ class ReportService {
                   order: section.order,
                 },
               });
-            } catch (error) {
+            } catch {
               // If update fails (section might have been deleted), create new one
               await prisma.reportDynamicSection.create({
                 data: {

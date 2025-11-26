@@ -15,9 +15,13 @@ import { provinceOptions } from "@/constants/options";
 import { cn } from "@/lib/utils";
 import { TransporterFormHandler } from "../server";
 import {
-  UnifiedAvailabilitySection,
+  AvailabilityTabs,
   WeeklyHoursState,
   OverrideHoursState,
+  weeklyStateToArray,
+  weeklyArrayToState,
+  overrideStateToArray,
+  overrideArrayToState,
 } from "@/components/availability";
 
 export default function CreateTransporterPageContent() {
@@ -345,14 +349,11 @@ export default function CreateTransporterPageContent() {
 
         {/* Availability Section - Full Width */}
         <div className="col-span-full">
-          <UnifiedAvailabilitySection
-            weeklyHours={weeklyHours}
-            overrideHours={overrideHours}
-            onWeeklyHoursChange={(weeklyHours) =>
-              setWeeklyHours(weeklyHours as WeeklyHoursState)
-            }
-            onOverrideHoursChange={setOverrideHours}
-            dataFormat="transporter-interpreter"
+          <AvailabilityTabs
+            weeklyHours={weeklyStateToArray(weeklyHours)}
+            overrideHours={overrideStateToArray(overrideHours)}
+            onWeeklyHoursChange={(updated) => setWeeklyHours(weeklyArrayToState(updated))}
+            onOverrideHoursChange={(updated) => setOverrideHours(overrideArrayToState(updated))}
             disabled={isLoading}
           />
         </div>

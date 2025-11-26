@@ -32,6 +32,24 @@ const getExaminerById = async (id: string) => {
   const mappedData = await mapSpecialtyIdsToNames([examinerData]);
   examinerData = mappedData[0];
 
+  // If yearsOfIMEExperience looks like a UUID, fetch the actual name from the taxonomy table
+  if (examiner.yearsOfIMEExperience) {
+    const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+    if (uuidRegex.test(examiner.yearsOfIMEExperience.replace(/\s/g, ''))) {
+      try {
+        const { default: prisma } = await import("@/lib/db");
+        const yearsOfExperience = await prisma.yearsOfExperience.findUnique({
+          where: { id: examiner.yearsOfIMEExperience },
+        });
+        if (yearsOfExperience) {
+          examinerData.yearsOfIMEExperience = yearsOfExperience.name;
+        }
+      } catch (error) {
+        console.error("Failed to fetch years of experience:", error);
+      }
+    }
+  }
+
   if (examiner.resumeDocument) {
     try {
       examinerData.cvUrl = await generatePresignedUrl(

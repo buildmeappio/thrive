@@ -8,9 +8,13 @@ import { filterUUIDLanguages } from "@/utils/languageUtils";
 import { Check, ChevronDown } from "lucide-react";
 import PhoneInput from "@/components/PhoneNumber";
 import {
-  UnifiedAvailabilitySection,
+  AvailabilityTabs,
   WeeklyHoursState,
   OverrideHoursState,
+  weeklyStateToArray,
+  weeklyArrayToState,
+  overrideStateToArray,
+  overrideArrayToState,
 } from "@/components/availability";
 
 type FormData = {
@@ -425,16 +429,15 @@ export default function InterpreterForm({
       </div>
 
       {/* Availability Section */}
-      <UnifiedAvailabilitySection
-        weeklyHours={formData.weeklyHours}
-        overrideHours={formData.overrideHours}
+      <AvailabilityTabs
+        weeklyHours={weeklyStateToArray(formData.weeklyHours)}
+        overrideHours={overrideStateToArray(formData.overrideHours)}
         onWeeklyHoursChange={(weeklyHours) =>
-          setFormData((prev) => ({ ...prev, weeklyHours: weeklyHours as WeeklyHoursState }))
+          setFormData((prev) => ({ ...prev, weeklyHours: weeklyArrayToState(weeklyHours) }))
         }
         onOverrideHoursChange={(overrideHours) =>
-          setFormData((prev) => ({ ...prev, overrideHours }))
+          setFormData((prev) => ({ ...prev, overrideHours: overrideArrayToState(overrideHours) }))
         }
-        dataFormat="transporter-interpreter"
         disabled={isLoading}
       />
 
