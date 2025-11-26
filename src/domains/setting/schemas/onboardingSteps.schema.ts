@@ -18,9 +18,11 @@ export const profileInfoSchema = z.object({
     .refine((val) => !/^\s+$/.test(val), {
       message: "First name cannot contain only spaces",
     })
-    .regex(
-      /^[a-zA-Z\s'.-]+$/,
-      "First name can only contain letters, spaces, apostrophes, hyphens, and periods"
+    .refine(
+      (val) => /^[a-zA-Z\s'.-]+$/.test(val),
+      {
+        message: "First name can only contain letters, spaces, apostrophes, hyphens, and periods",
+      }
     )
     .refine(
       (val) => {
@@ -58,9 +60,11 @@ export const profileInfoSchema = z.object({
     .refine((val) => !/^\s+$/.test(val), {
       message: "Last name cannot contain only spaces",
     })
-    .regex(
-      /^[a-zA-Z\s'.-]+$/,
-      "Last name can only contain letters, spaces, apostrophes, hyphens, and periods"
+    .refine(
+      (val) => /^[a-zA-Z\s'.-]+$/.test(val),
+      {
+        message: "Last name can only contain letters, spaces, apostrophes, hyphens, and periods",
+      }
     )
     .refine(
       (val) => {
