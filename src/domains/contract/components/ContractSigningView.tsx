@@ -451,13 +451,13 @@ const ContractSigningView = ({
   ]);
 
   return (
-    <div className="bg-[#F4FBFF] h-screen overflow-hidden flex flex-col">
+    <div className="bg-[#F4FBFF]  overflow-hidden flex flex-col">
       <div className="flex-1 overflow-hidden px-4 sm:px-6 lg:px-8 py-6">
         <div className="h-full mx-auto max-w-7xl flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* LEFT: Contract */}
           <div
             id="contract"
-            className="flex-1 overflow-y-auto overflow-x-hidden bg-white rounded-[20px]"
+            className="flex-1 overflow-y-auto overflow-x-hidden bg-white rounded-[20px] h-[calc(130vh-100px)]"
             style={{
               fontFamily: "Arial, sans-serif",
               padding: "40px 50px",
