@@ -3,8 +3,7 @@ import { type Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { LogOut, Home, LifeBuoy, UserPlus } from 'lucide-react';
-import Link from 'next/link';
+import { LogOut, LifeBuoy } from 'lucide-react';
 import { ENV } from '@/constants/variables';
 
 type ProfileDropdownProps = {
@@ -50,7 +49,7 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
     return (
       <div
         ref={dropdownRef}
-        className="absolute right-0 z-50 mt-2 w-48 sm:w-64 divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white shadow-lg"
+        className="absolute right-0 z-50 mt-2 w-48 sm:w-64 rounded-lg border border-gray-200 bg-white shadow-lg"
         style={{ minWidth: 180 }}
       >
         <div className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">
@@ -61,45 +60,27 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
         </div>
         <ul className="py-1 sm:py-2 text-xs sm:text-sm text-gray-700">
           <li>
-            <Link
-              href="/dashboard"
-              className="flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 transition-colors hover:bg-gray-100"
-            >
-              <Home size={14} className="sm:w-4 sm:h-4" />
-              <span>Dashboard</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/cases"
-              className="flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 transition-colors hover:bg-gray-100"
-            >
-              <UserPlus size={14} className="sm:w-4 sm:h-4" />
-              <span>Referrals</span>
-            </Link>
-          </li>
-          <li>
             <a
-              href="/support"
+              href="/admin/support"
               className="flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 transition-colors hover:bg-gray-100"
             >
               <LifeBuoy size={14} className="sm:w-4 sm:h-4" />
               <span>Support</span>
             </a>
           </li>
+          <li>
+            <button
+              onClick={async () => {
+                localStorage.removeItem('token');
+                await signOut({ callbackUrl: '/admin/login', redirect: true });
+              }}
+              className="flex w-full cursor-pointer items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 transition-colors hover:bg-gray-100"
+            >
+              <LogOut size={14} className="sm:w-4 sm:h-4" />
+              <span>Sign out</span>
+            </button>
+          </li>
         </ul>
-        <div className="py-0.5 sm:py-1">
-          <button
-            onClick={async () => {
-              localStorage.removeItem('token');
-              await signOut({ callbackUrl: '/admin/login', redirect: true });
-            }}
-            className="flex w-full cursor-pointer items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 transition-colors hover:bg-gray-100"
-          >
-            <LogOut size={14} className="sm:w-4 sm:h-4" />
-            <span>Sign out</span>
-          </button>
-        </div>
       </div>
     );
   };
