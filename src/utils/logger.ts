@@ -4,10 +4,11 @@ const log = (...args: any[]) => {
   }
 };
 
-
 const error = (...args: any[]) => {
   if (process.env.NODE_ENV === "development") {
     console.error(...args);
+  } else {
+    console.log(`Error at ${new Date().toISOString()}:`, ...args);
   }
 };
 
@@ -28,4 +29,4 @@ export default {
   error,
   warn,
   info,
-}
+};
