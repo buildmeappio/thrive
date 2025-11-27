@@ -16,6 +16,9 @@ export const login = async (data: LoginData): Promise<AuthDtoType> => {
   if (!user) {
     throw new Error("User not found");
   }
+  if (!user.isLoginEnabled) {
+    throw new Error("Your account is disabled. Please contact an administrator.");
+  }
   if (!isAllowedRole(user.accounts[0].role.name)) {
     throw new Error("Invalid role");
   }

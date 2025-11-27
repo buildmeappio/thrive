@@ -123,6 +123,9 @@ model User {
   gender         String?   @map("gender") @db.VarChar(255)
   dateOfBirth    DateTime? @map("date_of_birth") @db.Timestamptz()
   profilePhotoId String?   @map("profile_photo_id") @db.Uuid
+  isLoginEnabled Boolean   @default(true) @map("is_login_enabled")
+  mustResetPassword Boolean @default(false) @map("must_reset_password")
+  temporaryPasswordIssuedAt DateTime? @map("temporary_password_issued_at") @db.Timestamptz()
 
   profilePhoto Documents? @relation(name: "ProfilePhoto", fields: [profilePhotoId], references: [id])
 

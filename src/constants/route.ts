@@ -2,11 +2,13 @@ const URLS = Object.freeze({
   HOME: "/",
   LOGIN: "/login",
   DASHBOARD: "/dashboard",
+  USERS: "/users",
   FORBIDDEN: "/forbidden",
   PASSWORD_FORGOT: "/password/forgot",
   PASSWORD_EMAIL_SENT: "/password/email-sent",
   PASSWORD_RESET: "/password/reset",
   PASSWORD_VERIFY: "/password/verify",
+  PASSWORD_SET: "/admin/password/set",
 });
 
 const PUBLIC_ROUTES = Object.freeze([
@@ -20,7 +22,7 @@ const PUBLIC_ROUTES = Object.freeze([
 
 export const PREFIX = "/admin";
 
-const PRIVATE_ROUTES = Object.freeze([URLS.DASHBOARD]);
+const PRIVATE_ROUTES = Object.freeze([URLS.DASHBOARD, URLS.USERS, URLS.PASSWORD_SET]);
 
 export { URLS, PUBLIC_ROUTES, PRIVATE_ROUTES };
 

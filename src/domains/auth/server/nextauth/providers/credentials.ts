@@ -12,13 +12,14 @@ export const credentials = CredentialsProvider({
     const u = await authHandlers.login({ email: creds.email, password: creds.password });
     console.log(u);
     if (!u) throw new Error("Invalid credentials");
-		return {
-			id: u.id,
-			email: u.email,
-			name: u.name,
-			image: u.image,
-			roleName: u.roleName,
-			accountId: u.accountId,
-		}
+    return {
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      image: u.image,
+      roleName: u.roleName,
+      accountId: u.accountId,
+      mustResetPassword: u.mustResetPassword,
+    };
   },
 });

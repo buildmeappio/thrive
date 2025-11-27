@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { isAllowedRole } from "./lib/rbac";
 
-const protectedRoutes = ["/dashboard", "/cases"];
+const protectedRoutes = ["/dashboard", "/cases", "/users", "/admin/password/set"];
 
 export default withAuth(
   async function middleware(request: NextRequest) {
@@ -22,6 +22,20 @@ export default withAuth(
       if (!isAllowedRole(roleName)) {
         return NextResponse.redirect(new URL("/forbidden", request.url));
       }
+    }
+
+    // Restrict /users route to SUPER_ADMIN only
+    if (pathname.startsWith("/users") && token) {
+      const roleName = token.roleName as string;
+      if (roleName !== "super_admin") {
+        return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+      }
+    }
+
+    const requiresPasswordUpdate = Boolean(token?.mustResetPassword);
+    const isPasswordSetupRoute = pathname.startsWith("/admin/password/set") || pathname.startsWith("/password/set");
+    if (requiresPasswordUpdate && !isPasswordSetupRoute) {
+      return NextResponse.redirect(new URL("/admin/password/set", request.url));
     }
 
     // Allow the request to proceed
@@ -61,5 +75,8 @@ export const config = {
     "/organization/:path*",
     "/transporter/:path*",
     "/support/:path*",
+    "/users/:path*",
+    "/password/set/:path*",
+    "/admin/password/set/:path*",
   ],
 };

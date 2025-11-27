@@ -22,7 +22,11 @@ export const resetPassword = async (
     // Update the user's password
     await prisma.user.update({
       where: { id: tokenData.userId },
-      data: { password: hashedPassword },
+      data: {
+        password: hashedPassword,
+        mustResetPassword: false,
+        temporaryPasswordIssuedAt: null,
+      },
     });
 
     console.log(`✅ Password reset successful for user: ${tokenData.email}`);
