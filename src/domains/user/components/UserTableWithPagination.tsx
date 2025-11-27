@@ -25,7 +25,6 @@ import { Edit, Trash2 } from "lucide-react";
 type UserTableWithPaginationProps = {
   data: UserTableRow[];
   searchQuery: string;
-  roleFilter: string | null;
   togglingUserId: string | null;
   currentUserId?: string | null;
   onToggleStatus: (id: string, enabled: boolean) => void;
@@ -186,7 +185,6 @@ const createColumns = (
 export default function UserTableWithPagination({
   data,
   searchQuery,
-  roleFilter,
   togglingUserId,
   currentUserId,
   onToggleStatus,
@@ -195,11 +193,6 @@ export default function UserTableWithPagination({
 }: UserTableWithPaginationProps) {
   const filteredData = useMemo(() => {
     let filtered = data;
-
-    // Filter by role
-    if (roleFilter) {
-      filtered = filtered.filter((user) => user.role === roleFilter);
-    }
 
     // Filter by search query
     const term = searchQuery.trim().toLowerCase();
@@ -212,7 +205,7 @@ export default function UserTableWithPagination({
     }
 
     return filtered;
-  }, [data, searchQuery, roleFilter]);
+  }, [data, searchQuery]);
 
   const columns = useMemo(
     () => createColumns(togglingUserId, currentUserId, onToggleStatus, onEditUser, onDeleteUser),
