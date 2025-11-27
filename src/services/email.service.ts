@@ -3,6 +3,7 @@ import { google } from "googleapis";
 import fs from "fs/promises";
 import path from "path";
 import { ENV } from "@/constants/variables";
+import logger from "@/utils/logger";
 
 const emailConfig: EmailConfig = {
   oauth: {
@@ -63,7 +64,7 @@ class EmailService {
     try {
       return await fs.readFile(templatePath, "utf-8");
     } catch (err) {
-      console.log("Error loading email template:", err);
+      logger.log("Error loading email template:", err);
       throw new Error(`Template ${templateName} not found`);
     }
   }
@@ -96,10 +97,10 @@ class EmailService {
         html: htmlContent,
       });
 
-      console.log(`✅ Email sent to ${to}`);
+      logger.log(`✅ Email sent to ${to}`);
       return { success: true };
     } catch (err) {
-      console.error("❌ Error sending email:", err);
+      logger.error("❌ Error sending email:", err);
       return { success: false, error: (err as Error).message };
     }
   }

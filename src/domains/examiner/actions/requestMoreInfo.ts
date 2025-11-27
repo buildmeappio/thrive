@@ -50,7 +50,7 @@ const requestMoreInfo = async (
   // Send request for more info email
   try {
     await sendRequestMoreInfoEmail(examiner, message, documentsRequired);
-    console.log("✓ Request more info email sent successfully");
+    logger.log("✓ Request more info email sent successfully");
   } catch (emailError) {
     console.error("⚠️ Failed to send request email:", emailError);
     throw emailError;

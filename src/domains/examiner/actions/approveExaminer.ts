@@ -19,6 +19,7 @@ import {
 } from "@prisma/client";
 import { Roles } from "@/domains/auth/constants/roles";
 import { HttpError } from "@/utils/httpError";
+import logger from "@/utils/logger";
 
 interface ExaminerWithRelations extends ExaminerProfile {
   account: Account & {
@@ -47,14 +48,14 @@ const approveExaminer = async (examinerId: string) => {
 
   // Generate and upload contract to S3 (don't fail approval if this fails)
   try {
-    console.log("📄 Generating contract for examiner...");
+    logger.log("📄 Generating contract for examiner...");
     const contractResult = await contractService.createAndSendContract(
       examinerId,
       user.accountId
     );
 
     if (contractResult.success) {
-      console.log("✅ Contract generated and uploaded successfully:", contractResult.contractId);
+      logger.log("✅ Contract generated and uploaded successfully:", contractResult.contractId);
     } else {
       console.error("⚠️ Failed to generate contract (but approval succeeded):", contractResult.error);
     }
@@ -65,7 +66,7 @@ const approveExaminer = async (examinerId: string) => {
   // Send approval email with token (don't fail approval if email fails)
   try {
     await sendApprovalEmailToExaminer(examiner);
-    console.log("✓ Approval email sent successfully");
+    logger.log("✓ Approval email sent successfully");
   } catch (emailError) {
     console.error(
       "⚠️ Failed to send approval email (but approval succeeded):",

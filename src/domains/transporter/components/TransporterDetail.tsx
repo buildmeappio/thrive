@@ -30,6 +30,7 @@ import { saveTransporterAvailabilityAction } from "../server";
 import { useRouter } from "next/navigation";
 import { showDeleteConfirmation } from "@/components";
 import Link from "next/link";
+import logger from "@/utils/logger";
 
 const mapStatus = {
   ACTIVE: "active",
@@ -118,7 +119,7 @@ export default function TransporterDetail({
         status: formData.status, // Include the status field
       };
 
-      console.log("Updating transporter with data:", updateData);
+      logger.log("Updating transporter with data:", updateData);
 
       const result = await updateTransporter(transporter.id, updateData);
       if (result.success) {

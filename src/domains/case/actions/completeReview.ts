@@ -8,6 +8,7 @@ import caseHandlers from "../server/handlers";
 import prisma from "@/lib/db";
 import { CaseDetailDtoType } from "../types/CaseDetailDtoType";
 import createSecureLink from "@/utils/createSecureLink";
+import logger from "@/utils/logger";
 
 const completeReview = async (caseId: string): Promise<void> => {
   const user = await getCurrentUser();
@@ -42,7 +43,7 @@ const completeReview = async (caseId: string): Promise<void> => {
       },
     });
 
-    console.log("✓ Case status updated to Ready to be Appointment with approval timestamp");
+    logger.log("✓ Case status updated to Ready to be Appointment with approval timestamp");
   } catch (dbError) {
     console.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");
@@ -51,7 +52,7 @@ const completeReview = async (caseId: string): Promise<void> => {
   // Send approval email to claimant
   try {
     await sendApprovalEmailToClaimant(caseDetails);
-    console.log("✓ Approval email sent to claimant");
+    logger.log("✓ Approval email sent to claimant");
   } catch (emailError) {
     console.error("⚠️ Failed to send approval email:", emailError);
     throw emailError;

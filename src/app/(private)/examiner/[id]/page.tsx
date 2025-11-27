@@ -2,16 +2,17 @@ import ExaminerDetail from "@/domains/examiner/components/ExaminerDetail";
 import { getExaminerById } from "@/domains/examiner/actions";
 import { notFound } from "next/navigation";
 import { HttpError } from "@/utils/httpError";
+import logger from "@/utils/logger";
 
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
   try {
     const { id } = await params;
-    console.log("Fetching examiner with ID:", id);
+    logger.log("Fetching examiner with ID:", id);
     const examiner = await getExaminerById(id);
-    console.log("Successfully fetched examiner:", examiner?.id);
+    logger.log("Successfully fetched examiner:", examiner?.id);
     return <ExaminerDetail examiner={examiner} />;
   } catch (error) {
-    console.error("Error in examiner detail page:", error);
+    logger.error("Error in examiner detail page:", error);
     
     // Only return notFound for 404 errors, re-throw others
     if (error instanceof HttpError && error.status === 404) {

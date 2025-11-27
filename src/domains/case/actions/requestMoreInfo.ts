@@ -7,6 +7,7 @@ import emailService from "@/services/email.service";
 import caseHandlers from "../server/handlers";
 import prisma from "@/lib/db";
 import { CaseDetailDtoType } from "../types/CaseDetailDtoType";
+import logger from "@/utils/logger";
 
 const requestMoreInfo = async (
   caseId: string,
@@ -45,7 +46,7 @@ const requestMoreInfo = async (
       data: { statusId: infoRequiredStatus.id },
     });
 
-    console.log("✓ Case status updated to More Information required");
+    logger.log("✓ Case status updated to More Information required");
   } catch (dbError) {
     console.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");
@@ -54,7 +55,7 @@ const requestMoreInfo = async (
   // Send request more info email to organization
   try {
     await sendRequestMoreInfoEmailToOrganization(caseDetails, messageToOrganization);
-    console.log("✓ Request more info email sent to organization");
+    logger.log("✓ Request more info email sent to organization");
   } catch (emailError) {
     console.error("⚠️ Failed to send request more info email:", emailError);
     throw emailError;

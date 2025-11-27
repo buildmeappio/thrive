@@ -74,7 +74,7 @@ const mapStatus = {
 type Props = { examiner: ExaminerData };
 
 export default function ExaminerDetail({ examiner }: Props) {
-  console.log(examiner.feeStructure)
+  logger.log(examiner.feeStructure)
   const router = useRouter();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);

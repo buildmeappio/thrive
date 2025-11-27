@@ -1,7 +1,6 @@
 "use client";
 
 import { toast } from "sonner";
-
 /**
  * ConfirmationToast Component
  *
@@ -13,7 +12,7 @@ import { toast } from "sonner";
  * showConfirmationToast({
  *   title: "Are you sure?",
  *   description: "This action cannot be undone.",
- *   onConfirm: () => console.log("Confirmed"),
+ *   onConfirm: () => logger.log("Confirmed", "Confirmed"),
  * });
  *
  * @example
@@ -27,7 +26,7 @@ import { toast } from "sonner";
  * showWarningConfirmation(
  *   "Proceed with caution",
  *   "This will affect multiple records.",
- *   () => console.log("Proceeded")
+ *   () => logger.log("Proceeded")
  * );
  */
 

@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { sendMail } from "@/lib/email";
 import { generateContractPDF } from "@/lib/pdf-generator";
+import logger from "@/utils/logger";
 
 export async function sendContract(examinerProfileId: string) {
   try {
@@ -37,7 +38,7 @@ export async function sendContract(examinerProfileId: string) {
     const examinerEmail = examiner.account.user.email;
 
     // Generate PDF
-    console.log("📄 Generating contract PDF...");
+    logger.log("📄 Generating contract PDF...");
     const pdfBuffer = await generateContractPDF(
       examinerName,
       examiner.provinceOfResidence,
@@ -53,7 +54,7 @@ export async function sendContract(examinerProfileId: string) {
     const fileName = `IME_Agreement_${examinerName.replace(/\s+/g, "_")}.pdf`;
 
     // Send email with PDF attachment
-    console.log("📧 Sending contract email with PDF attachment...");
+    logger.log("📧 Sending contract email with PDF attachment...");
 
     await sendMail({
       to: examinerEmail,
@@ -118,7 +119,7 @@ export async function sendContract(examinerProfileId: string) {
       ],
     });
 
-    console.log(`✅ Contract email sent to ${examinerEmail}`);
+    logger.log(`✅ Contract email sent to ${examinerEmail}`);
 
     // Revalidate the examiner page
     revalidatePath(`/examiner/${examinerProfileId}`);

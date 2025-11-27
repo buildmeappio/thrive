@@ -7,6 +7,7 @@ import emailService from "@/services/email.service";
 import caseHandlers from "../server/handlers";
 import prisma from "@/lib/db";
 import { CaseDetailDtoType } from "../types/CaseDetailDtoType";
+import logger from "@/utils/logger";
 
 const rejectCase = async (
   caseId: string,
@@ -46,7 +47,7 @@ const rejectCase = async (
       data: { statusId: rejectedStatus.id },
     });
 
-    console.log("✓ Case status updated to Rejected");
+    logger.log("✓ Case status updated to Rejected");
   } catch (dbError) {
     console.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");
@@ -56,7 +57,7 @@ const rejectCase = async (
   if (messageToOrganization?.trim()) {
     try {
       await sendRejectionEmailToOrganization(caseDetails, messageToOrganization);
-      console.log("✓ Rejection email sent to organization");
+      logger.log("✓ Rejection email sent to organization");
     } catch (emailError) {
       console.error("⚠️ Failed to send rejection email to organization:", emailError);
     }
@@ -66,7 +67,7 @@ const rejectCase = async (
   if (messageToClaimant?.trim()) {
     try {
       await sendRejectionEmailToClaimant(caseDetails, messageToClaimant);
-      console.log("✓ Rejection email sent to claimant");
+      logger.log("✓ Rejection email sent to claimant");
     } catch (emailError) {
       console.error("⚠️ Failed to send rejection email to claimant:", emailError);
     }
