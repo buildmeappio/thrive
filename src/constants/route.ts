@@ -8,7 +8,7 @@ const URLS = Object.freeze({
   PASSWORD_EMAIL_SENT: "/password/email-sent",
   PASSWORD_RESET: "/password/reset",
   PASSWORD_VERIFY: "/password/verify",
-  PASSWORD_SET: "/password/set",
+  PASSWORD_SET: "/admin/password/set",
 });
 
 const PUBLIC_ROUTES = Object.freeze([

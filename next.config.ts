@@ -8,6 +8,18 @@ const hostname = cdnUrl.split("//")[1];
 const nextConfig: NextConfig = {
   /* config options here */
   basePath: "/admin",
+  async rewrites() {
+    return [
+      {
+        source: "/admin/password/set",
+        destination: "/password/set",
+      },
+      {
+        source: "/admin/password/set/:path*",
+        destination: "/password/set/:path*",
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
