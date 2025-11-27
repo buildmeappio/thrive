@@ -1,12 +1,14 @@
 "use client";
 import React from "react";
 import { Menu, HelpCircle } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 import { useSidebar } from "@/providers/Sidebar";
 import ProfileDropdown from "./ProfileDropdown";
 import Image from "@/components/Image";
 import { ENV } from "@/constants/variables";
+import { URLS } from "@/constants/route";
 
 interface HeaderProps {
   currentPath?: string;
@@ -15,7 +17,7 @@ interface HeaderProps {
   isActivationComplete?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ 
+const Header: React.FC<HeaderProps> = ({
   currentPath: _currentPath = "",
   userName,
   userEmail,
@@ -52,18 +54,20 @@ const Header: React.FC<HeaderProps> = ({
         {/* Right Side - Profile and Help */}
         <div className="flex items-center gap-2">
           {/* Help Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex items-center gap-2 bg-gray-100 rounded-full">
-            <HelpCircle className="h-4 w-4 text-[#000093]" />
-            <span className="hidden sm:inline">Help</span>
-          </Button>
+          <Link href={URLS.SUPPORT}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-2 cursor-pointer bg-gray-100 rounded-full hover:bg-gray-100">
+              <HelpCircle className="h-4 w-4 text-[#000093]" />
+              <span className="hidden sm:inline">Help</span>
+            </Button>
+          </Link>
 
           {/* Profile Dropdown */}
           {session && (
-            <ProfileDropdown 
-              isMobile={false} 
+            <ProfileDropdown
+              isMobile={false}
               session={session}
               userName={userName}
               userEmail={userEmail}
