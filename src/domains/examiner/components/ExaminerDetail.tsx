@@ -22,6 +22,7 @@ import { formatPhoneNumber } from "@/utils/phone";
 import { capitalizeWords } from "@/utils/text";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import logger from "@/utils/logger";
 
 // Utility function to format text from database: remove _, -, and capitalize each word
 const formatText = (str: string): string => {
