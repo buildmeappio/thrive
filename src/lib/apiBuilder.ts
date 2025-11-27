@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import type { Method, RouteCtx, Handler, User } from '@/types/apiBuilder';
 import { HttpError } from '@/utils/httpError';
 import z, { type ZodObject, type ZodAny, ZodError, type ZodRawShape } from 'zod';
+import logger from '@/utils/logger';
 
 type Validator = ZodObject<ZodRawShape> | ZodAny;
 
@@ -76,14 +77,14 @@ class ApiBuilder<M extends Method | null = Method, TBody extends Record<string, 
 
     const run = async (req: NextRequest) => {
       try {
-        console.log("run", req.method, this.method);
+        logger.log("run", req.method, this.method);
         if (req.method !== this.method) throw new HttpError(405, 'Method Not Allowed');
 
-        console.log("authFn", this.authFn);
+        logger.log("authFn", this.authFn);
         const ctx: RouteCtx<TBody> = { body: {} as TBody };
 
         if (this.authFn) await this.authFn(req, ctx);
-        console.log("validator", this.validator);
+        logger.log("validator", this.validator);
         if (this.validator) {
           const body = await jsonIfAny(req);
           const data = await this.validator.safeParseAsync(body);
@@ -91,11 +92,11 @@ class ApiBuilder<M extends Method | null = Method, TBody extends Record<string, 
           ctx.body = data.data;
         } else {
           // get body from request
-          console.log("reqjson");  
+          logger.log("reqjson");  
           ctx.body = await req.json();
-          console.log("ctx.body", ctx.body);
+          logger.log("ctx.body", ctx.body);
         }
-        console.log("middlewares", this.middlewares); 
+        logger.log("middlewares", this.middlewares); 
 
         if (this.middlewares.length > 0) {
           // sequential middlewares, compliant with no-await-in-loop
@@ -108,7 +109,7 @@ class ApiBuilder<M extends Method | null = Method, TBody extends Record<string, 
         const result = this?.bound?.(req, ctx) || Promise.resolve({});
           
         const payload = await result;
-        console.log("payload", payload);
+        logger.log("payload", payload);
         return NextResponse.json(payload, { status: 200 });
       } catch (err) {
         if (this.errorHandler) return this.errorHandler(err);
@@ -149,7 +150,7 @@ function defaultError(err: unknown) {
 export const api = () => new ApiBuilder();
 
 const getUser = async (token: string): Promise<User> => {
-  console.log('token', token);
+  logger.log('token', token);
   return {
     id: '1',
     name: 'John Doe',

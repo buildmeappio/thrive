@@ -5,9 +5,10 @@ import { HttpError } from "@/utils/httpError";
 import { CaseStatus } from "../constants/case-status";
 import { sendMail } from "@/lib/email";
 import { ENV } from "@/constants/variables";
+import logger from "@/utils/logger";
 
 function sendLinkToClaimant(email: string, link: string) {
-  console.log(`Sending link to ${email}: ${link}`);
+  logger.log(`Sending link to ${email}: ${link}`);
 
   sendMail({
     to: email,

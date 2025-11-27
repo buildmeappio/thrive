@@ -13,6 +13,7 @@ import {
   Language,
 } from "@prisma/client";
 import { HttpError } from "@/utils/httpError";
+import logger from "@/utils/logger";
 
 interface ExaminerWithRelations extends ExaminerProfile {
   account: Account & {
@@ -48,7 +49,7 @@ const rejectExaminer = async (
   // Send rejection email
   try {
     await sendRejectionEmailToExaminer(examiner, messageToExaminer);
-    console.log("✓ Rejection email sent successfully");
+    logger.log("✓ Rejection email sent successfully");
   } catch (emailError) {
     console.error(
       "⚠️ Failed to send rejection email (but rejection succeeded):",

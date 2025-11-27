@@ -4,6 +4,7 @@ import {
   UpdateTransporterData,
   TransporterData,
 } from "../../types/TransporterData";
+import logger from "@/utils/logger";
 
 export class TransporterService {
   static async create(data: CreateTransporterData) {
@@ -26,7 +27,7 @@ export class TransporterService {
 
       return { success: true, data: transformed };
     } catch (error) {
-      console.error("Error creating transporter:", error);
+      logger.error("Error creating transporter:", error);
       return { success: false, error: "Failed to create transporter" };
     }
   }
@@ -80,7 +81,7 @@ export class TransporterService {
         },
       };
     } catch (error) {
-      console.error("Error fetching transporters:", error);
+      logger.error("Error fetching transporters:", error);
       return { success: false, error: "Failed to fetch transporters" };
     }
   }
@@ -103,14 +104,14 @@ export class TransporterService {
 
       return { success: true, data: transformed };
     } catch (error) {
-      console.error("Error fetching transporter:", error);
+      logger.error("Error fetching transporter:", error);
       return { success: false, error: "Failed to fetch transporter" };
     }
   }
 
   static async update(id: string, data: UpdateTransporterData) {
     try {
-      console.log("TransporterService.update called with:", { id, data });
+      logger.log("TransporterService.update called with:", { id, data });
 
       const transporter = await prisma.transporter.update({
         where: { id },
@@ -133,10 +134,10 @@ export class TransporterService {
         serviceAreas: transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
       };
 
-      console.log("Transporter updated successfully:", transporter);
+      logger.log("Transporter updated successfully:", transporter);
       return { success: true, data: transformed };
     } catch (error) {
-      console.error("Error updating transporter:", error);
+      logger.error("Error updating transporter:", error);
       return { success: false, error: "Failed to update transporter" };
     }
   }
@@ -150,7 +151,7 @@ export class TransporterService {
 
       return { success: true };
     } catch (error) {
-      console.error("Error deleting transporter:", error);
+      logger.error("Error deleting transporter:", error);
       return { success: false, error: "Failed to delete transporter" };
     }
   }

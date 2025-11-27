@@ -4,6 +4,7 @@ import { uploadToS3 } from "@/lib/s3";
 import { sha256Buffer, hashContractData } from "@/lib/crypto";
 import { signContractToken } from "@/lib/jwt";
 import { ENV } from "@/constants/variables";
+import logger from "@/utils/logger";
 
 type ContractData = {
   examinerName: string;
@@ -31,7 +32,7 @@ class ContractService {
 
     // If template doesn't exist, create it (requires ENV vars for initial setup)
     if (!template) {
-      console.log("📝 Creating default IME agreement template...");
+      logger.log("📝 Creating default IME agreement template...");
       if (!ENV.GOOGLE_CONTRACT_TEMPLATE_ID || !ENV.GOOGLE_CONTRACTS_FOLDER_ID) {
         return {
           success: false,
@@ -181,7 +182,7 @@ class ContractService {
       };
 
       // 4. Create Google Doc, merge placeholders, and export HTML
-      console.log("📄 Creating contract from Google Doc template...");
+      logger.log("📄 Creating contract from Google Doc template...");
       const { documentId, htmlContent, driveHtmlId } = await createContractDocument(
         template.currentVersion.googleDocTemplateId,
         template.currentVersion.googleDocFolderId,
@@ -236,16 +237,16 @@ class ContractService {
       expiresAt.setDate(expiresAt.getDate() + 90);
 
       // 10. Update contract with S3 details, Google Doc fields, token, and mark as SENT
-      console.log("💾 Updating contract status to SENT...");
+      logger.log("💾 Updating contract status to SENT...");
       const googleDocUrl = `https://docs.google.com/document/d/${documentId}`;
-      console.log("googleDocUrl", googleDocUrl);
-      console.log("documentId", documentId);
-      console.log("driveHtmlId", driveHtmlId);
-      console.log("s3Key", s3Key);
-      console.log("htmlHash", htmlHash);
-      console.log("accessToken", accessToken);
-      console.log("expiresAt", expiresAt);
-      console.log("tempContract", tempContract);
+      logger.log("googleDocUrl", googleDocUrl);
+      logger.log("documentId", documentId);
+      logger.log("driveHtmlId", driveHtmlId);
+      logger.log("s3Key", s3Key);
+      logger.log("htmlHash", htmlHash);
+      logger.log("accessToken", accessToken);
+      logger.log("expiresAt", expiresAt);
+      logger.log("tempContract", tempContract);
       const contract = await prisma.contract.update({
         where: { id: tempContract.id },
         data: {
@@ -291,9 +292,9 @@ class ContractService {
         },
       });
 
-      console.log(`✅ Contract created and sent successfully: ${contract.id}`);
-      console.log(`   Google Doc ID: ${documentId}`);
-      console.log(`   S3 Key: ${s3Key}`);
+      logger.log(`✅ Contract created and sent successfully: ${contract.id}`);
+      logger.log(`   Google Doc ID: ${documentId}`);
+      logger.log(`   S3 Key: ${s3Key}`);
 
       return {
         success: true,
@@ -306,7 +307,7 @@ class ContractService {
         driveHtmlId: driveHtmlId,
       };
     } catch (error) {
-      console.error("❌ Error creating contract:", error);
+      logger.error("❌ Error creating contract:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to create contract",

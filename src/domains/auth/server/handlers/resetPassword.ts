@@ -2,6 +2,7 @@
 
 import { verifyPasswordResetToken } from "./verifyPasswordResetToken";
 import prisma from "@/lib/db";
+import logger from "@/utils/logger";
 import bcrypt from "bcryptjs";
 
 type ResetPasswordData = {
@@ -29,7 +30,7 @@ export const resetPassword = async (
       },
     });
 
-    console.log(`✅ Password reset successful for user: ${tokenData.email}`);
+    logger.log(`✅ Password reset successful for user: ${tokenData.email}`);
 
     return { success: true };
   } catch (error) {

@@ -3,6 +3,7 @@
 import authService from "@/domains/auth/server/auth.service";
 import { signAccountToken } from "@/lib/jwt";
 import { ENV } from "@/constants/variables";
+import logger from "@/utils/logger";
 
 type ForgotPasswordData = {
   email: string;
@@ -15,7 +16,7 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
 
     // Check if user exists and has admin role
     if (!user) {
-      console.log(`Password reset requested for non-existent email: ${data.email}`);
+      logger.log(`Password reset requested for non-existent email: ${data.email}`);
       return {
         success: false,
         message: "If an account with that email exists, we've sent password reset instructions.",
@@ -26,7 +27,7 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
     // Check if user has an admin role
     const isAdminRole = user.accounts && user.accounts.length > 0;
     if (!isAdminRole) {
-      console.log(`Password reset requested for non-admin email: ${data.email}`);
+      logger.log(`Password reset requested for non-admin email: ${data.email}`);
       return {
         success: false,
         message: "If an account with that email exists, we've sent password reset instructions.",
@@ -40,7 +41,7 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
     const accountId = account.id;
     const roleName = account.role?.name;
 
-    console.log(`Generating password reset token for user: ${user.email}, userId: ${userId}, accountId: ${accountId}, role: ${roleName}`);
+    logger.log(`Generating password reset token for user: ${user.email}, userId: ${userId}, accountId: ${accountId}, role: ${roleName}`);
 
     // Generate password reset token with userId, accountId, role, and updatedAt timestamp (expires in 1 hour)
     // The updatedAt timestamp ensures token becomes invalid once password is changed
@@ -76,14 +77,14 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
         }),
       });
       emailSent = true;
-      console.log(`✅ Password reset email sent to ${data.email} (via sendMail)`);
+      logger.log(`✅ Password reset email sent to ${data.email} (via sendMail)`);
     } catch (emailError) {
       console.error("Primary email method failed:", emailError);
       lastError = emailError;
       
       // Fallback to emailService if sendMail fails
       try {
-        console.log("Trying emailService fallback...");
+        logger.log("Trying emailService fallback...");
         const emailService = (await import("@/services/email.service")).default;
         const result = await emailService.sendEmail(
           "Reset Your Password - Thrive Admin",
@@ -98,7 +99,7 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
         
         if (result.success) {
           emailSent = true;
-          console.log(`✅ Password reset email sent to ${data.email} (via emailService)`);
+          logger.log(`✅ Password reset email sent to ${data.email} (via emailService)`);
         } else {
           const errorMsg = (result as { success: false; error: string }).error;
           console.error("EmailService also failed:", errorMsg);

@@ -365,7 +365,7 @@ export async function generateContractPDF(
     const pdfArrayBuffer = doc.output("arraybuffer");
     const pdfBuffer = Buffer.from(pdfArrayBuffer);
 
-    console.log("✅ PDF generated successfully with jsPDF");
+    logger.log("✅ PDF generated successfully with jsPDF");
 
     return pdfBuffer;
   } catch (error) {

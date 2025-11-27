@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import prisma from "@/lib/db";
 import { signClaimantApproveToken } from "@/lib/jwt";
+import logger from "@/utils/logger";
 
 /**
  * Creates a secure link for claimant availability submission
@@ -81,13 +82,13 @@ const createSecureLink = async (
       "/claimant/availability";
     const link = `${baseUrl}${availabilityUrl}?token=${jwtToken}`;
 
-    console.log(
+    logger.log(
       `Created secure link for examination ${examinationId}: ${link} (stored in DB with ID: ${secureLink.id})`
     );
 
     return link;
   } catch (error) {
-    console.error("Error creating secure link:", error);
+    logger.error("Error creating secure link:", error);
     throw new Error("Failed to create secure link");
   }
 };

@@ -5,7 +5,7 @@ import prisma from '@/lib/db';
 
 export const createChaperone = async (data: CreateChaperoneInput) => {
   try {
-    console.log('Creating chaperone with data:', JSON.stringify(data, null, 2));
+    logger.log('Creating chaperone with data:', JSON.stringify(data, null, 2));
     
     // Check if email already exists
     const existingChaperone = await prisma.chaperone.findFirst({

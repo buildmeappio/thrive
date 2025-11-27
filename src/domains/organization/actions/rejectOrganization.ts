@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
 import emailService from "@/services/email.service";
 import { OrganizationData } from "../types/OrganizationData";
+import logger from "@/utils/logger";
 
 const rejectOrganization = async (id: string, reason: string) => {
   const user = await getCurrentUser();
@@ -17,7 +18,7 @@ const rejectOrganization = async (id: string, reason: string) => {
   // Send rejection email
   try {
     await sendRejectReasonToOrganization(organization, reason);
-    console.log("✓ Rejection email sent successfully");
+    logger.log("✓ Rejection email sent successfully");
   } catch (emailError) {
     console.error("⚠️ Failed to send rejection email (but rejection succeeded):", emailError);
   }

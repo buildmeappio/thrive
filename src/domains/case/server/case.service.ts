@@ -4,6 +4,7 @@ import { Examination, Prisma, ExaminationSecureLinkStatus } from "@prisma/client
 import { Roles } from "@/domains/auth/constants/roles";
 import { isAllowedRole } from "@/lib/rbac";
 import { v4 } from "uuid";
+import logger from "@/utils/logger";
 
 export type ListCasesFilter = {
   assignToUserId?: string;
@@ -51,19 +52,19 @@ class CaseService {
 
   // Retrieve a user's assignable account ID based on their roles
   async getAssignTo(userId: string) {
-    console.log("userId", userId);
+    logger.log("userId", userId);
 
     const accounts = await prisma.account.findMany({
       where: { userId },
       include: { role: true },
     });
 
-    console.log("roles", accounts);
+    logger.log("roles", accounts);
     const isInvalidRole = accounts.some(
       (account) => !isAllowedRole(account.role.name)
     );
 
-    console.log("isInvalidRole", isInvalidRole);
+    logger.log("isInvalidRole", isInvalidRole);
 
     if (accounts.length === 0 || isInvalidRole) {
       throw HttpError.badRequest("Invalid role");
@@ -176,10 +177,10 @@ class CaseService {
           createdAt: "desc",
         },
       });
-      console.log("list cases", cases);
+      logger.log("list cases", cases);
       return cases;
     } catch (error) {
-      console.log("list cases", error);
+      logger.log("list cases", error);
       throw HttpError.fromError(error, "Failed to list cases");
     }
   }
