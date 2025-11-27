@@ -109,7 +109,7 @@ export const ClaimantDetailsSchema = z.object({
   familyDoctorName: z
     .string()
     .trim()
-    .regex(/^[A-Za-zÀ-ÿ]+$/, ErrorMessages.FAMILY_DOCTOR_NAME_INVALID)
+    .regex(/^[A-Za-zÀ-ÿ]*$/, ErrorMessages.FAMILY_DOCTOR_NAME_INVALID)
     .optional(),
 
   familyDoctorEmail: z
