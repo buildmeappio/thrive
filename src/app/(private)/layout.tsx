@@ -14,7 +14,7 @@ type DashboardLayoutProps = {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { isCollapsed } = useSidebar();
   const pathname = usePathname();
-  const hideChrome = pathname?.startsWith("/password/set");
+  const hideChrome = pathname?.startsWith("/admin/password/set") || pathname?.startsWith("/password/set");
 
   if (hideChrome) {
     return (

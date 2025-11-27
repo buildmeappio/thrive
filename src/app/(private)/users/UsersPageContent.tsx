@@ -127,6 +127,7 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
     searchQuery,
     roleFilter,
     togglingUserId,
+    currentUserId: session?.user?.id,
     onToggleStatus: handleToggleStatus,
     onEditUser: handleEditUser,
     onDeleteUser: handleDeleteRequest,

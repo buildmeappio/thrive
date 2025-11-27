@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { isAllowedRole } from "./lib/rbac";
 
-const protectedRoutes = ["/dashboard", "/cases", "/users", "/password/set"];
+const protectedRoutes = ["/dashboard", "/cases", "/users", "/admin/password/set"];
 
 export default withAuth(
   async function middleware(request: NextRequest) {
@@ -25,9 +25,9 @@ export default withAuth(
     }
 
     const requiresPasswordUpdate = Boolean(token?.mustResetPassword);
-    const isPasswordSetupRoute = pathname.startsWith("/password/set");
+    const isPasswordSetupRoute = pathname.startsWith("/admin/password/set") || pathname.startsWith("/password/set");
     if (requiresPasswordUpdate && !isPasswordSetupRoute) {
-      return NextResponse.redirect(new URL("/password/set", request.url));
+      return NextResponse.redirect(new URL("/admin/password/set", request.url));
     }
 
     // Allow the request to proceed
@@ -69,5 +69,6 @@ export const config = {
     "/support/:path*",
     "/users/:path*",
     "/password/set/:path*",
+    "/admin/password/set/:path*",
   ],
 };
