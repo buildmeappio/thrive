@@ -54,7 +54,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
         </SelectTrigger>
 
         <SelectContent
-          className="scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-500 hover:scrollbar-thumb-gray-500 z-50 max-h-[250px] overflow-y-scroll rounded-md border-none bg-white shadow-lg"
+          className="z-50 max-h-[250px] overflow-y-auto rounded-md border-none bg-white shadow-lg [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           position="popper"
         >
           {options.map(option => (

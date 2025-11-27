@@ -126,7 +126,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
         isMobileOpen ? 'top-0 translate-x-0' : 'top-0 -translate-x-full md:translate-x-0'
       } ${isCollapsed ? 'md:w-[77px]' : 'w-[270px]'}`}
     >
-      <div className="relative flex h-full w-full flex-col overflow-hidden">
+      <div className="relative flex h-full w-full flex-col overflow-visible">
         {/* Close button for mobile */}
         <button
           className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent text-2xl text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 md:hidden"
@@ -136,22 +136,19 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
           <X size={20} />
         </button>
 
-        {/* Collapse button for desktop */}
-        {isCollapsed || (
+        {/* Collapse button for desktop - positioned to stick out of sidebar */}
+        {!isCollapsed && (
           <button
-            className="absolute top-12 left-[255px] z-10 hidden cursor-pointer items-center justify-center rounded-full border border-[#DBDBFF] bg-[#F1F1FF] text-2xl text-gray-500 transition-colors duration-200 hover:bg-[#000093]/10 md:flex"
+            className="absolute top-12 -right-3 z-50 hidden h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-[#DBDBFF] bg-[#F1F1FF] text-2xl text-gray-500 transition-colors duration-200 hover:bg-[#000093]/10 md:flex"
             onClick={toggleCollapse}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label="Collapse sidebar"
           >
-            <ChevronLeft
-              size={20}
-              className="h-6 w-6 text-[#000093] transition-transform duration-300"
-            />
+            <ChevronLeft size={16} className="text-[#000093] transition-transform duration-300" />
           </button>
         )}
 
         {/* Sidebar Content */}
-        <div className="flex h-full flex-col pt-16 md:pt-10">
+        <div className="flex h-full flex-col overflow-hidden pt-16 md:pt-10">
           {/* Hamburger button when collapsed */}
           {isCollapsed && (
             <div className="mb-4 flex flex-shrink-0 justify-center px-4">
