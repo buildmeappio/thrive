@@ -7,10 +7,8 @@ import { PasswordInput } from "@/components/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { URLS } from "@/constants/route";
 import authActions from "@/domains/auth/actions";
-import { useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 
 const schema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -23,8 +21,6 @@ const schema = z.object({
 type FormInput = z.infer<typeof schema>;
 
 const SetPasswordForm = () => {
-  const router = useRouter();
-  const { update } = useSession();
   const { register, handleSubmit, formState: { errors, isSubmitting } } =
     useForm<FormInput>({
       resolver: zodResolver(schema),
@@ -39,10 +35,11 @@ const SetPasswordForm = () => {
       });
       
       if (result.success) {
-        await update?.({ mustResetPassword: false } as any);
-        toast.success("Password set successfully!");
+        toast.success("Password set successfully! Please log in with your new password.");
+        
+        // Sign out the user and redirect to login page
         setTimeout(() => {
-          router.replace(URLS.DASHBOARD);
+          signOut({ callbackUrl: "/admin/login", redirect: true });
         }, 1500);
       } else {
         toast.error(result.error || "Failed to set password. Please try again.");

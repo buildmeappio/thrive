@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -92,13 +92,10 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }: AddUserModalProps) => 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-w-lg rounded-3xl p-0">
-        <DialogHeader className="border-b border-gray-100 px-8 py-6">
+        <DialogHeader className="border-b border-gray-100 px-8 py-4">
           <DialogTitle className="text-2xl font-semibold text-gray-900">
             Add User
           </DialogTitle>
-          <DialogDescription className="text-sm text-gray-500">
-            Create an admin user and automatically send them a temporary password.
-          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 px-8 py-6">
