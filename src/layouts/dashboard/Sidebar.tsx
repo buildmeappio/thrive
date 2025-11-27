@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -21,9 +21,10 @@ import {
   ThumbsUp,
   Users,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useSidebar } from "@/providers/Sidebar";
 import { cn } from "@/lib/utils";
+import { Roles } from "@/domains/auth/constants/roles";
 
 type SubRoute = {
   label: string;
@@ -125,6 +126,7 @@ export const routes: Route[] = [
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [selectedBtn, setSelectedBtn] = useState<number | null>(null);
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
 
@@ -134,6 +136,16 @@ const Sidebar = () => {
     toggleCollapse,
     closeSidebar: onMobileClose,
   } = useSidebar();
+
+  // Filter routes based on user role - only show Users tab for SUPER_ADMIN
+  const filteredRoutes = useMemo(() => {
+    return routes.filter((route) => {
+      if (route.label === "Users") {
+        return session?.user?.roleName === Roles.SUPER_ADMIN;
+      }
+      return true;
+    });
+  }, [session?.user?.roleName]);
 
   const isValidSidebarIndex = (index: string | null) => {
     return index && !isNaN(Number(index)) && Number(index) >= 0;
@@ -185,7 +197,7 @@ const Sidebar = () => {
       return;
     }
 
-    const matchedItem = routes.find((item) => {
+    const matchedItem = filteredRoutes.find((item) => {
       if (item.href && checkIsPartOfSidebar(pathname, item.href)) {
         return true;
       }
@@ -204,7 +216,7 @@ const Sidebar = () => {
         setExpandedMenus((prev) => new Set(prev).add(matchedItem.index));
       }
     }
-  }, [pathname]);
+  }, [pathname, filteredRoutes]);
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/admin/login", redirect: true });
@@ -274,7 +286,7 @@ const Sidebar = () => {
                 isCollapsed ? "px-4" : "px-3 md:px-6"
               )}
             >
-              {routes.map((item) => {
+              {filteredRoutes.map((item) => {
                 const hasSubRoutes =
                   item.subRoutes && item.subRoutes.length > 0;
                 const isExpanded = expandedMenus.has(item.index);

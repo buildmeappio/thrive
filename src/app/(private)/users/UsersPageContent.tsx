@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useTransition, useCallback, useMemo } from "react";
+import { useState, useTransition, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
 import { DashboardShell } from "@/layouts/dashboard";
 import { toast } from "sonner";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import AddUserModal from "@/domains/user/components/AddUserModal";
 import UserTableWithPagination from "@/domains/user/components/UserTableWithPagination";
 import EditUserModal from "@/domains/user/components/EditUserModal";
@@ -29,25 +27,9 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
   const [, startToggle] = useTransition();
   const [togglingUserId, setTogglingUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<UserTableRow | null>(null);
   const [deletingUser, setDeletingUser] = useState<UserTableRow | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // Get unique roles from users
-  const availableRoles = useMemo(() => {
-    const uniqueRoles = new Set(users.map((user) => user.role));
-    return Array.from(uniqueRoles)
-      .filter((role) => role && role !== "N/A")
-      .sort()
-      .map((role) => ({
-        value: role,
-        label: role
-          .split("_")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-          .join(" "),
-      }));
-  }, [users]);
 
 
   const handleToggleStatus = (userId: string, enabled: boolean) => {
@@ -125,7 +107,6 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
   const { table, tableElement } = UserTableWithPagination({
     data: users,
     searchQuery,
-    roleFilter,
     togglingUserId,
     currentUserId: session?.user?.id,
     onToggleStatus: handleToggleStatus,
@@ -158,16 +139,11 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
             <stop offset="0%" stopColor="#00A8FF" />
             <stop offset="100%" stopColor="#01F4C8" />
           </linearGradient>
-          <linearGradient id="roleFilterGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#00A8FF" />
-            <stop offset="100%" stopColor="#01F4C8" />
-          </linearGradient>
         </defs>
       </svg>
         <div className="flex flex-col gap-3 sm:gap-6 mb-20 dashboard-zoom-mobile">
-          {/* Search, Filter, and Add User Section */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center sm:justify-between">
-            {/* Search Bar - Full width on mobile */}
+          {/* Search Bar */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
             <div className="flex-1 sm:max-w-md w-full">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -184,63 +160,6 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
                 />
               </div>
             </div>
-
-            {/* Role Filter Dropdown */}
-            {availableRoles.length > 0 && (
-              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 min-w-0">
-                <Select
-                  value={roleFilter || undefined}
-                  onValueChange={(value) => setRoleFilter(value === "all" ? null : value)}
-                >
-                  <SelectTrigger
-                    className={cn(
-                      "w-[100px] sm:w-auto min-w-[100px] sm:min-w-[130px] text-xs sm:text-sm px-3 sm:px-6 py-2 sm:py-3 border rounded-full font-poppins bg-white [&>svg]:hidden",
-                      roleFilter !== null
-                        ? "border-[#00A8FF] text-[#00A8FF]"
-                        : "border-gray-200 text-gray-700"
-                    )}
-                  >
-                    <div className="flex items-center gap-1.5 sm:gap-2 w-full min-w-0">
-                      <svg
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 self-center align-middle"
-                        fill="none"
-                        stroke="url(#roleFilterGradient)"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 5v14M5 12h14"
-                        />
-                      </svg>
-                      <SelectValue placeholder="Role" className="truncate" />
-                      <svg
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 ml-auto"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent position="popper" side="bottom" sideOffset={4}>
-                    <SelectItem value="all">View All</SelectItem>
-                    {availableRoles.map((role) => (
-                      <SelectItem key={role.value} value={role.value}>
-                        {role.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
           </div>
 
           <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">

@@ -37,9 +37,7 @@ const listAdminUsers = async () => {
         accounts: {
           some: {
             role: {
-              name: {
-                not: Roles.SUPER_ADMIN,
-              },
+              name: Roles.ADMIN,
             },
           },
         },

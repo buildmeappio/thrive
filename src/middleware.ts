@@ -24,6 +24,14 @@ export default withAuth(
       }
     }
 
+    // Restrict /users route to SUPER_ADMIN only
+    if (pathname.startsWith("/users") && token) {
+      const roleName = token.roleName as string;
+      if (roleName !== "super_admin") {
+        return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+      }
+    }
+
     const requiresPasswordUpdate = Boolean(token?.mustResetPassword);
     const isPasswordSetupRoute = pathname.startsWith("/admin/password/set") || pathname.startsWith("/password/set");
     if (requiresPasswordUpdate && !isPasswordSetupRoute) {
