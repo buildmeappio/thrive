@@ -14,6 +14,7 @@ import {
   Language,
 } from "@prisma/client";
 import { HttpError } from "@/utils/httpError";
+import logger from "@/utils/logger";
 
 interface ExaminerWithRelations extends ExaminerProfile {
   account: Account & {
@@ -52,7 +53,7 @@ const requestMoreInfo = async (
     await sendRequestMoreInfoEmail(examiner, message, documentsRequired);
     logger.log("✓ Request more info email sent successfully");
   } catch (emailError) {
-    console.error("⚠️ Failed to send request email:", emailError);
+    logger.error("⚠️ Failed to send request email:", emailError);
     throw emailError;
   }
 
@@ -83,7 +84,7 @@ async function sendRequestMoreInfoEmail(
     !accountId ||
     !examinerId
   ) {
-    console.error("Missing required user information for request email");
+    logger.error("Missing required user information for request email");
     throw new Error("Missing user information");
   }
 

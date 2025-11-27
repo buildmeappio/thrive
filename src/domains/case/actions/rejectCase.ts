@@ -49,7 +49,7 @@ const rejectCase = async (
 
     logger.log("✓ Case status updated to Rejected");
   } catch (dbError) {
-    console.error("⚠️ Failed to update case status:", dbError);
+    logger.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");
   }
 
@@ -59,7 +59,7 @@ const rejectCase = async (
       await sendRejectionEmailToOrganization(caseDetails, messageToOrganization);
       logger.log("✓ Rejection email sent to organization");
     } catch (emailError) {
-      console.error("⚠️ Failed to send rejection email to organization:", emailError);
+      logger.error("⚠️ Failed to send rejection email to organization:", emailError);
     }
   }
 
@@ -69,7 +69,7 @@ const rejectCase = async (
       await sendRejectionEmailToClaimant(caseDetails, messageToClaimant);
       logger.log("✓ Rejection email sent to claimant");
     } catch (emailError) {
-      console.error("⚠️ Failed to send rejection email to claimant:", emailError);
+      logger.error("⚠️ Failed to send rejection email to claimant:", emailError);
     }
   }
 
@@ -87,7 +87,7 @@ async function sendRejectionEmailToOrganization(caseDetails: CaseDetailDtoType, 
   const lastName = managerName.split(' ').slice(1).join(' ') || "";
 
   if (!organizationEmail) {
-    console.error("Organization email not found");
+    logger.error("Organization email not found");
     return;
   }
 
@@ -126,7 +126,7 @@ async function sendRejectionEmailToClaimant(caseDetails: CaseDetailDtoType, reje
   const organizationName = caseDetails.case.organization?.name || "Unknown Organization";
 
   if (!claimantEmail) {
-    console.error("Claimant email not found");
+    logger.error("Claimant email not found");
     return;
   }
 
