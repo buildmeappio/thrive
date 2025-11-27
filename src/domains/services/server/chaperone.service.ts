@@ -2,6 +2,7 @@ import { HttpError } from '@/utils/httpError';
 import { CreateChaperoneInput, UpdateChaperoneInput, ChaperoneData, ChaperoneWithAvailability } from '../types/Chaperone';
 import { convertTimeToUTC, convertUTCToLocal } from '@/utils/timezone';
 import prisma from '@/lib/db';
+import logger from '@/utils/logger';
 
 export const createChaperone = async (data: CreateChaperoneInput) => {
   try {
@@ -104,7 +105,7 @@ export const createChaperone = async (data: CreateChaperoneInput) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    console.error('Error creating chaperone:', error);
+    logger.error('Error creating chaperone:', error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -265,6 +266,7 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
     if (error instanceof HttpError) {
       throw error;
     }
+    logger.error('Error updating chaperone:', error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -290,7 +292,8 @@ export const getChaperones = async (): Promise<ChaperoneData[]> => {
       fullName: `${chaperone.firstName} ${chaperone.lastName}`,
       createdAt: chaperone.createdAt,
     }));
-  } catch {
+  } catch (error) {
+    logger.error('Error getting chaperones:', error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -370,6 +373,7 @@ export const getChaperoneById = async (id: string): Promise<ChaperoneWithAvailab
     if (error instanceof HttpError) {
       throw error;
     }
+    logger.error('Error getting chaperone by id:', error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -400,7 +404,7 @@ export const deleteChaperone = async (id: string) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    console.error('Error deleting chaperone:', error);
+    logger.error('Error deleting chaperone:', error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
