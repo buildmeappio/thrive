@@ -9,7 +9,7 @@ export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
     return true;
   },
 
-  async jwt({ token, user }) {
+  async jwt({ token, user, trigger, session }) {
     if (user) {
       const u = user;
       token.id = u.id;
@@ -18,6 +18,10 @@ export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
       token.image = u.image;
       token.roleName = u.roleName;
       token.accountId = u.accountId;
+      token.mustResetPassword = (u as any).mustResetPassword ?? false;
+    }
+    if (trigger === "update" && session?.mustResetPassword !== undefined) {
+      token.mustResetPassword = session.mustResetPassword;
     }
     return token;
   },
@@ -30,6 +34,7 @@ export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
       image: token.image ?? null,
       roleName: token.roleName,
       accountId: token.accountId,
+      mustResetPassword: Boolean(token.mustResetPassword),
     };
     return session;
   },

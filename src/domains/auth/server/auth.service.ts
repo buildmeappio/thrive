@@ -1,7 +1,13 @@
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/db";
 import { isAllowedRole } from "@/lib/rbac";
-  
+import { Account, Role, User } from "@prisma/client";
+import { UserLoginFlags } from "@/domains/auth/types/userFlags";
+
+type AuthUserRecord = (User & UserLoginFlags) & {
+  accounts: Array<Account & { role: Role }>;
+};
+
 export class AuthService {
   /** Fetch user with most-recent account + role. Null if user missing OR no role. */
   async getUserWithRoleByEmail(email: string) {
@@ -16,7 +22,7 @@ export class AuthService {
       },
     });
     if (!user) return null;
-    return user;
+    return user as AuthUserRecord;
   }
 
   /** Verify password against stored hash. */

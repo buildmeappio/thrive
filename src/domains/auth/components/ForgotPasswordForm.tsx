@@ -11,7 +11,6 @@ import Link from "next/link";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 import authActions from "../actions";
-import { toast } from "sonner";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -20,7 +19,7 @@ type FormInput = z.infer<typeof schema>;
 
 const Form = () => {
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } =
+  const { register, handleSubmit, formState: { errors, isSubmitting }, setError } =
     useForm<FormInput>({
       resolver: zodResolver(schema),
       defaultValues: { email: "" },
@@ -34,15 +33,22 @@ const Form = () => {
       
       const result = await authActions.forgotPassword(formData);
       
-      if (result.success) {
+      if (result.success && result.userExists !== false) {
         // Redirect to email sent page with email in query params
         router.push(`${URLS.PASSWORD_EMAIL_SENT}?email=${encodeURIComponent(values.email)}`);
       } else {
-        toast.error("Failed to send reset link. Please try again.");
+        // Email not registered
+        setError("email", {
+          type: "manual",
+          message: "User does not exists. Please contact your administrator",
+        });
       }
     } catch (error) {
       console.error("Error in forgot password:", error);
-      toast.error("An error occurred. Please try again.");
+      setError("email", {
+        type: "manual",
+        message: "User does not exists. Please contact your administrator",
+      });
     }
   };
 
@@ -64,7 +70,7 @@ const Form = () => {
                       ${errors.email ? "ring-1 ring-red-500" : ""}`}
           {...register("email")}
         />
-        <p className="min-h-[16px] text-xs text-red-500 mt-1">{errors.email?.message}</p>
+        <p className="min-h-[16px] text-sm text-red-500 mt-1">{errors.email?.message}</p>
       </div>
 
       <Button

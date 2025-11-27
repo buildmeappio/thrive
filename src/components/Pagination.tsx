@@ -70,7 +70,8 @@ export default function Pagination<TData>({ table, className }: Props<TData>) {
             "flex items-center gap-0.5 sm:gap-1 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
             table.getCanPreviousPage()
               ? "text-gray-600 hover:text-gray-800"
-              : "text-gray-400 cursor-not-allowed"
+              : "text-gray-400 cursor-not-allowed",
+            totalRows === 0 ? "hidden sm:flex" : ""
           )}
         >
           <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
@@ -97,7 +98,8 @@ export default function Pagination<TData>({ table, className }: Props<TData>) {
             "flex items-center gap-0.5 sm:gap-1 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
             table.getCanNextPage()
               ? "text-gray-600 hover:text-gray-800"
-              : "text-gray-400 cursor-not-allowed"
+              : "text-gray-400 cursor-not-allowed",
+            totalRows === 0 ? "hidden sm:flex" : ""
           )}
         >
           <span className="hidden sm:inline">Next</span>

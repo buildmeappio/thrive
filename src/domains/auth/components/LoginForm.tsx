@@ -35,12 +35,14 @@ const LoginForm = () => {
     });
 
     if (res?.ok) {
-      toast.success('Login successful');
+      toast.success("Login successful");
       router.replace(URLS.DASHBOARD);
       return;
     }
 
-    toast.error('Invalid email or password. Please try again.');
+    const errorMessage =
+      res?.error ?? "Invalid email or password. Please try again.";
+    toast.error(errorMessage);
   };
 
   return (
