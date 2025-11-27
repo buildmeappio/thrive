@@ -1,7 +1,10 @@
 import { User, Account, Role } from "@prisma/client";
 import { RoleType } from "@/domains/auth/constants/roles";
+import { UserLoginFlags } from "@/domains/auth/types/userFlags";
 
-type UserWithAccounts = User & { accounts: Array<Account & { role: Role }> };
+type UserWithAccounts = (User & UserLoginFlags) & {
+  accounts: Array<Account & { role: Role }>;
+};
 
 export type AuthDtoType = {
   id: string;
@@ -10,6 +13,7 @@ export type AuthDtoType = {
   image: string | null;
   roleName: RoleType;
   accountId: string;
+  mustResetPassword: boolean;
 };
 
 export class AuthDto {
@@ -24,6 +28,7 @@ export class AuthDto {
       image: null,
       roleName,
       accountId: primary?.id ?? "",
+      mustResetPassword: Boolean(u.mustResetPassword),
     };
   }
 }

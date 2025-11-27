@@ -8,18 +8,18 @@ type ForgotPasswordData = {
   email: string;
 };
 
-export const forgotPassword = async (data: ForgotPasswordData): Promise<{ success: boolean; message: string }> => {
+export const forgotPassword = async (data: ForgotPasswordData): Promise<{ success: boolean; message: string; userExists?: boolean }> => {
   try {
     // Check if user exists
     const user = await authService.getUserWithRoleByEmail(data.email);
 
-    // Always return success to prevent email enumeration attacks
-    // But only send email if user actually exists
+    // Check if user exists and has admin role
     if (!user) {
       console.log(`Password reset requested for non-existent email: ${data.email}`);
       return {
-        success: true,
+        success: false,
         message: "If an account with that email exists, we've sent password reset instructions.",
+        userExists: false,
       };
     }
 
@@ -28,8 +28,9 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
     if (!isAdminRole) {
       console.log(`Password reset requested for non-admin email: ${data.email}`);
       return {
-        success: true,
+        success: false,
         message: "If an account with that email exists, we've sent password reset instructions.",
+        userExists: false,
       };
     }
 
@@ -117,13 +118,15 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
     return {
       success: true,
       message: "If an account with that email exists, we've sent password reset instructions.",
+      userExists: true,
     };
   } catch (error) {
     console.error("Error in forgotPassword:", error);
-    // Still return success to prevent information leakage
+    // Return error with userExists false for unknown errors
     return {
-      success: true,
+      success: false,
       message: "If an account with that email exists, we've sent password reset instructions.",
+      userExists: false,
     };
   }
 };

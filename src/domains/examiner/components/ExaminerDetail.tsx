@@ -393,39 +393,39 @@ export default function ExaminerDetail({ examiner }: Props) {
                   ) : null
                 }
               >
-                {examiner.feeStructure ? (
-                  <>
-                    <FieldRow
-                      label="IME Fee"
-                      value={`$${examiner.feeStructure.IMEFee}`}
-                      type="text"
-                    />
-                    <FieldRow
-                      label="Report Review Fee"
-                      value={`$${examiner.feeStructure.recordReviewFee}`}
-                      type="text"
-                    />
-                    {examiner.feeStructure.hourlyRate && (
+                  {examiner.feeStructure ? (
+                    <>
                       <FieldRow
-                        label="Hourly Rate"
-                        value={`$${examiner.feeStructure.hourlyRate}`}
+                        label="IME Fee"
+                        value={`$${examiner.feeStructure.IMEFee}`}
                         type="text"
                       />
-                    )}
-                    <FieldRow
-                      label="Cancellation Fee"
-                      value={`$${examiner.feeStructure.cancellationFee}`}
-                      type="text"
-                    />
-                  </>
-                ) : (
-                  <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[100px] flex items-center justify-center">
-                    <p className="font-poppins text-[14px] text-[#7A7A7A]">
-                      No fee structure added
-                    </p>
-                  </div>
-                )}
-              </Section>
+                      <FieldRow
+                        label="Report Review Fee"
+                        value={`$${examiner.feeStructure.recordReviewFee}`}
+                        type="text"
+                      />
+                      {examiner.feeStructure.hourlyRate && (
+                        <FieldRow
+                          label="Hourly Rate"
+                          value={`$${examiner.feeStructure.hourlyRate}`}
+                          type="text"
+                        />
+                      )}
+                      <FieldRow
+                        label="Cancellation Fee"
+                        value={`$${examiner.feeStructure.cancellationFee}`}
+                        type="text"
+                      />
+                    </>
+                  ) : (
+                    <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[100px] flex items-center justify-center">
+                      <p className="font-poppins text-[14px] text-[#7A7A7A]">
+                        No fee structure added
+                      </p>
+                    </div>
+                  )}
+                </Section>
 
               {/* Right column - Medical Credentials */}
               <Section title="Medical Credentials">
