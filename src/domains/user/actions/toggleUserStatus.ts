@@ -1,6 +1,7 @@
 "use server";
 
 import userService from "../server/user.service";
+import logger from "@/utils/logger";
 
 type ToggleUserStatusInput = {
   userId: string;
@@ -14,7 +15,7 @@ export const toggleUserStatus = async (
     await userService.toggleUserStatus(data.userId, data.isLoginEnabled);
     return { success: true };
   } catch (error) {
-    console.error("Toggle user status failed:", error);
+    logger.error("Toggle user status failed:", error);
     return {
       success: false,
       error:

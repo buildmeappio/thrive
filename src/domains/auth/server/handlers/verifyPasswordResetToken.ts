@@ -3,6 +3,7 @@
 import { verifyAccountToken } from "@/lib/jwt";
 import { JwtPayload } from "jsonwebtoken";
 import prisma from "@/lib/db";
+import logger from "@/utils/logger";
 
 type PasswordResetTokenPayload = {
   email: string;
@@ -64,7 +65,7 @@ export const verifyPasswordResetToken = async (token: string): Promise<PasswordR
       purpose: payload.purpose,
     };
   } catch (error) {
-    console.error("Error verifying password reset token:", error);
+    logger.error("Error verifying password reset token:", error);
     
     // Preserve the specific error message
     if (error instanceof Error && error.message === "This password reset link has already been used") {

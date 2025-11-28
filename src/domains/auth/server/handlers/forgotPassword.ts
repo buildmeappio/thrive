@@ -79,7 +79,7 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
       emailSent = true;
       logger.log(`✅ Password reset email sent to ${data.email} (via sendMail)`);
     } catch (emailError) {
-      console.error("Primary email method failed:", emailError);
+      logger.error("Primary email method failed:", emailError);
       lastError = emailError;
       
       // Fallback to emailService if sendMail fails
@@ -102,17 +102,17 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
           logger.log(`✅ Password reset email sent to ${data.email} (via emailService)`);
         } else {
           const errorMsg = (result as { success: false; error: string }).error;
-          console.error("EmailService also failed:", errorMsg);
+          logger.error("EmailService also failed:", errorMsg);
           lastError = new Error(errorMsg || "Email service failed");
         }
       } catch (fallbackError) {
-        console.error("Fallback email method also failed:", fallbackError);
+        logger.error("Fallback email method also failed:", fallbackError);
         lastError = fallbackError;
       }
     }
 
     if (!emailSent) {
-      console.error(`❌ Failed to send password reset email to ${data.email}:`, lastError);
+      logger.error(`❌ Failed to send password reset email to ${data.email}:`, lastError);
       // Still return success to prevent email enumeration, but log the error
     }
 
@@ -122,7 +122,7 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
       userExists: true,
     };
   } catch (error) {
-    console.error("Error in forgotPassword:", error);
+    logger.error("Error in forgotPassword:", error);
     // Return error with userExists false for unknown errors
     return {
       success: false,

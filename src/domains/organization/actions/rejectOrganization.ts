@@ -20,7 +20,7 @@ const rejectOrganization = async (id: string, reason: string) => {
     await sendRejectReasonToOrganization(organization, reason);
     logger.log("✓ Rejection email sent successfully");
   } catch (emailError) {
-    console.error("⚠️ Failed to send rejection email (but rejection succeeded):", emailError);
+    logger.error("⚠️ Failed to send rejection email (but rejection succeeded):", emailError);
   }
 
   // Revalidate dashboard and organization pages
@@ -37,7 +37,7 @@ async function sendRejectReasonToOrganization(org: OrganizationData, reason: str
   const lastName = org.managerName?.split(' ').slice(1).join(' ') || "";
 
   if (!email) {
-    console.error("Organization manager email not found");
+    logger.error("Organization manager email not found");
     return;
   }
 

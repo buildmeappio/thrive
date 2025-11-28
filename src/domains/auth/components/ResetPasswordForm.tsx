@@ -12,6 +12,7 @@ import authActions from "../actions";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import logger from "@/utils/logger";
 
 const schema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -51,7 +52,7 @@ const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
           setTokenError(result.error || "Invalid or expired token");
         }
       } catch (error) {
-        console.error("Token verification error:", error);
+        logger.error("Token verification error:", error);
         setTokenError("Invalid or expired token");
       } finally {
         setIsVerifying(false);
@@ -77,7 +78,7 @@ const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
         toast.error(result.error || "Failed to reset password. Please try again.");
       }
     } catch (error) {
-      console.error("Error resetting password:", error);
+      logger.error("Error resetting password:", error);
       toast.error("An error occurred. Please try again.");
     }
   };

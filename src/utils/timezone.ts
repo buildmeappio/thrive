@@ -1,3 +1,5 @@
+import logger from "@/utils/logger";
+
 /**
  * Convert a time string to UTC format (HH:mm)
  * @param timeString - Time string in format "8:00 AM", "08:00", "2:30 PM", etc.
@@ -60,7 +62,7 @@ export function convertTimeToUTC(
     // Format as HH:mm
     return `${utcHours.toString().padStart(2, '0')}:${utcMinutes.toString().padStart(2, '0')}`;
   } catch (error) {
-    console.error(`Error converting time to UTC: ${error}`);
+    logger.error(`Error converting time to UTC: ${error}`);
     return timeString;
   }
 }
@@ -115,7 +117,7 @@ export function convertUTCToLocal(
 
     return `${displayHours}:${localMinutes.toString().padStart(2, '0')} ${period}`;
   } catch (error) {
-    console.error(`Error converting UTC to local: ${error}`);
+    logger.error(`Error converting UTC to local: ${error}`);
     return utcTimeString;
   }
 }
@@ -156,7 +158,7 @@ export function convertUTCMinutesToLocal(
 
     return `${displayHours}:${localMinutes.toString().padStart(2, '0')} ${period}`;
   } catch (error) {
-    console.error(`Error converting UTC minutes to local: ${error}`);
+    logger.error(`Error converting UTC minutes to local: ${error}`);
     return String(utcMinutes);
   }
 }
@@ -218,7 +220,7 @@ export function convertLocalTimeToUTCMinutes(
     // Convert to total minutes
     return utcHours * 60 + utcMinutes;
   } catch (error) {
-    console.error(`Error converting local time to UTC minutes: ${error}`);
+    logger.error(`Error converting local time to UTC minutes: ${error}`);
     throw error;
   }
 }

@@ -102,7 +102,7 @@ export default function ExaminerDetail({ examiner }: Props) {
         "Examiner approved successfully! An email has been sent to the examiner."
       );
     } catch (error) {
-      console.error("Failed to approve examiner:", error);
+      logger.error("Failed to approve examiner:", error);
       toast.error("Failed to approve examiner. Please try again.");
     } finally {
       setLoadingAction(null);
@@ -122,7 +122,7 @@ export default function ExaminerDetail({ examiner }: Props) {
         "Examiner rejected. An email has been sent to the examiner."
       );
     } catch (error) {
-      console.error("Failed to reject examiner:", error);
+      logger.error("Failed to reject examiner:", error);
       toast.error("Failed to reject examiner. Please try again.");
     } finally {
       setLoadingAction(null);
@@ -141,7 +141,7 @@ export default function ExaminerDetail({ examiner }: Props) {
       setIsRequestOpen(false);
       toast.success("Request sent. An email has been sent to the examiner.");
     } catch (error) {
-      console.error("Failed to request more info:", error);
+      logger.error("Failed to request more info:", error);
       toast.error("Failed to send request. Please try again.");
     } finally {
       setLoadingAction(null);
@@ -162,7 +162,7 @@ export default function ExaminerDetail({ examiner }: Props) {
         toast.error(result.error || "Failed to update fee structure.");
       }
     } catch (error) {
-      console.error("Failed to update fee structure:", error);
+      logger.error("Failed to update fee structure:", error);
       toast.error("Failed to update fee structure. Please try again.");
     } finally {
       setLoadingAction(null);
@@ -179,7 +179,7 @@ export default function ExaminerDetail({ examiner }: Props) {
         toast.error(result.error || "Failed to send contract.");
       }
     } catch (error) {
-      console.error("Failed to send contract:", error);
+      logger.error("Failed to send contract:", error);
       toast.error("Failed to send contract. Please try again.");
     } finally {
       setLoadingAction(null);
@@ -295,7 +295,7 @@ export default function ExaminerDetail({ examiner }: Props) {
             {/* First row: Organization (left) and IME Experience (right) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
               {/* Left column - Examiner Info */}
-              <Section title="What Organization Do You Represent?">
+              <Section title="Personal Information">
                 <FieldRow
                   label="Name"
                   value={capitalizeWords(examiner.name || "-")}
@@ -372,9 +372,39 @@ export default function ExaminerDetail({ examiner }: Props) {
               </Section>
             </div>
 
-            {/* Second row: Fee Structure (left) and Medical Credentials (right) */}
+            {/* Second row: Medical Credentials (left) and Fee Structure (right) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-              {/* Left column - Fee Structure */}
+              {/* Left column - Medical Credentials */}
+              <Section title="Medical Credentials">
+                <FieldRow
+                  label="License Number"
+                  value={examiner.licenseNumber || "-"}
+                  type="text"
+                />
+                <FieldRow
+                  label="Province of Licensure"
+                  value={examiner.provinceOfLicensure || "-"}
+                  type="text"
+                />
+                <FieldRow
+                  label="CV / Resume"
+                  value={examiner.cvUrl ? "CV_Resume.pdf" : "Not uploaded"}
+                  type={examiner.cvUrl ? "document" : "text"}
+                  documentUrl={examiner.cvUrl}
+                />
+                <FieldRow
+                  label="Medical License"
+                  value={
+                    examiner.medicalLicenseUrl
+                      ? "Medical_License.pdf"
+                      : "Not uploaded"
+                  }
+                  type={examiner.medicalLicenseUrl ? "document" : "text"}
+                  documentUrl={examiner.medicalLicenseUrl}
+                />
+              </Section>
+
+              {/* Right column - Fee Structure */}
               <Section
                 title="Fee Structure"
                 actionSlot={
@@ -427,36 +457,6 @@ export default function ExaminerDetail({ examiner }: Props) {
                     </div>
                   )}
                 </Section>
-
-              {/* Right column - Medical Credentials */}
-              <Section title="Medical Credentials">
-                <FieldRow
-                  label="License Number"
-                  value={examiner.licenseNumber || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="Province of Licensure"
-                  value={examiner.provinceOfLicensure || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="CV / Resume"
-                  value={examiner.cvUrl ? "CV_Resume.pdf" : "Not uploaded"}
-                  type={examiner.cvUrl ? "document" : "text"}
-                  documentUrl={examiner.cvUrl}
-                />
-                <FieldRow
-                  label="Medical License"
-                  value={
-                    examiner.medicalLicenseUrl
-                      ? "Medical_License.pdf"
-                      : "Not uploaded"
-                  }
-                  type={examiner.medicalLicenseUrl ? "document" : "text"}
-                  documentUrl={examiner.medicalLicenseUrl}
-                />
-              </Section>
             </div>
 
             {/* Third row: Consent (left) and Actions (right) */}

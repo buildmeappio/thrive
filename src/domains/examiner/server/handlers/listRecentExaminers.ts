@@ -3,6 +3,7 @@ import { ExaminerDto } from "../dto/examiner.dto";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { mapSpecialtyIdsToNames } from "../../utils/mapSpecialtyIdsToNames";
 import prisma from "@/lib/db";
+import logger from "@/utils/logger";
 
 export async function listRecentExaminers(limit = 7): Promise<ExaminerData[]> {
   const examiners = await examinerService.getRecentExaminers(limit, "PENDING");
@@ -40,7 +41,7 @@ export async function listRecentExaminers(limit = 7): Promise<ExaminerData[]> {
         }
       }
     } catch (error) {
-      console.error("Failed to fetch years of experience:", error);
+      logger.error("Failed to fetch years of experience:", error);
     }
   }
 

@@ -13,6 +13,7 @@ import RejectModal from "@/domains/case/components/RejectModal";
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
 import caseActions from "@/domains/case/actions";
 import { cn } from "@/lib/utils";
+import logger from "@/utils/logger";
 
 // Utility function to format text from database: remove _, -, and capitalize each word
 const formatText = (str: string): string => {
@@ -120,7 +121,7 @@ export default function CaseDetailPageClient({
       );
       router.refresh();
     } catch (error) {
-      console.error("Error completing review:", error);
+      logger.error("Error completing review:", error);
       toast.error("Failed to approve case. Please try again.");
     } finally {
       setLoadingAction(null);
@@ -138,7 +139,7 @@ export default function CaseDetailPageClient({
       );
       router.refresh();
     } catch (error) {
-      console.error("Error requesting more info:", error);
+      logger.error("Error requesting more info:", error);
       toast.error("Failed to send request. Please try again.");
     } finally {
       setLoadingAction(null);
@@ -163,7 +164,7 @@ export default function CaseDetailPageClient({
       );
       router.push("/cases");
     } catch (error) {
-      console.error("Error rejecting case:", error);
+      logger.error("Error rejecting case:", error);
       toast.error("Failed to reject case. Please try again.");
     } finally {
       setLoadingAction(null);

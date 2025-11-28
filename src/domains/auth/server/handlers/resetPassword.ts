@@ -34,7 +34,7 @@ export const resetPassword = async (
 
     return { success: true };
   } catch (error) {
-    console.error("Error resetting password:", error);
+    logger.error("Error resetting password:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to reset password",

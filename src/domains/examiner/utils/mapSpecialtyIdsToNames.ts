@@ -1,5 +1,6 @@
 import examinationTypeService from "@/domains/taxonomy/server/examinationType.service";
 import { ExaminerData } from "../types/ExaminerData";
+import logger from "@/utils/logger";
 
 /**
  * Maps specialty IDs to examination type names for examiner data
@@ -37,7 +38,7 @@ export async function mapSpecialtyIdsToNames(
       examTypesMap.set(spacesInsteadOfDashes, et.name);
     });
   } catch (error) {
-    console.error("Failed to fetch examination types:", error);
+    logger.error("Failed to fetch examination types:", error);
   }
 
   // Map specialty IDs to exam type names for all examiners

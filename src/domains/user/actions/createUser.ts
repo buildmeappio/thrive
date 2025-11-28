@@ -3,6 +3,7 @@
 import { z } from "zod";
 import userService from "../server/user.service";
 import { UserTableRow } from "../types/UserData";
+import logger from "@/utils/logger";
 
 const createUserSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -33,7 +34,7 @@ export const createUser = async (
       },
     };
   } catch (error) {
-    console.error("Create user failed:", error);
+    logger.error("Create user failed:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to create user",

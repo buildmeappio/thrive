@@ -7,6 +7,7 @@ import InterpreterForm from "./InterpreterForm";
 import { createInterpreter, saveInterpreterAvailabilityAction } from "../actions";
 import { toast } from "sonner";
 import { InterpreterFormData, isErrorWithMessage } from "../types/interpreterForm.types";
+import logger from "@/utils/logger";
 
 export default function InterpreterCreateContent() {
   const router = useRouter();
@@ -44,7 +45,7 @@ export default function InterpreterCreateContent() {
       toast.success("Interpreter added successfully!");
       router.push("/interpreter");
     } catch (error) {
-      console.error("Failed to create interpreter:", error);
+      logger.error("Failed to create interpreter:", error);
       if (isErrorWithMessage(error) && error.message) {
         toast.error(error.message);
       } else {

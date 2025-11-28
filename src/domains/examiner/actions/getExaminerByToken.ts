@@ -2,6 +2,7 @@
 
 import { verifyExaminerResubmitToken } from "@/lib/jwt";
 import examinerService from "../server/examiner.service";
+import logger from "@/utils/logger";
 
 /**
  * Fetch examiner data using a resubmission token
@@ -58,7 +59,7 @@ export async function getExaminerByToken(token: string) {
       },
     };
   } catch (error) {
-    console.error("Error fetching examiner by token:", error);
+    logger.error("Error fetching examiner by token:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to fetch examiner data",

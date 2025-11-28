@@ -1,6 +1,7 @@
 import { interpreterAvailabilityService } from "../services/availability.service";
 import { HttpError } from "@/utils/httpError";
 import { convertUTCToLocal } from "@/utils/timezone";
+import logger from "@/utils/logger";
 
 export type GetAvailabilityInput = {
   interpreterId: string;
@@ -87,7 +88,7 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
       },
     };
   } catch (error) {
-    console.error("Error fetching interpreter availability:", error);
+    logger.error("Error fetching interpreter availability:", error);
     throw HttpError.internalServerError(
       "Failed to fetch interpreter availability"
     );

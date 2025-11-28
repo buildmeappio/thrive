@@ -129,7 +129,7 @@ export async function sendContract(examinerProfileId: string) {
       message: "Contract sent successfully",
     };
   } catch (error) {
-    console.error("Error sending contract:", error);
+    logger.error("Error sending contract:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to send contract",
