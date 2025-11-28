@@ -372,9 +372,39 @@ export default function ExaminerDetail({ examiner }: Props) {
               </Section>
             </div>
 
-            {/* Second row: Fee Structure (left) and Medical Credentials (right) */}
+            {/* Second row: Medical Credentials (left) and Fee Structure (right) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-              {/* Left column - Fee Structure */}
+              {/* Left column - Medical Credentials */}
+              <Section title="Medical Credentials">
+                <FieldRow
+                  label="License Number"
+                  value={examiner.licenseNumber || "-"}
+                  type="text"
+                />
+                <FieldRow
+                  label="Province of Licensure"
+                  value={examiner.provinceOfLicensure || "-"}
+                  type="text"
+                />
+                <FieldRow
+                  label="CV / Resume"
+                  value={examiner.cvUrl ? "CV_Resume.pdf" : "Not uploaded"}
+                  type={examiner.cvUrl ? "document" : "text"}
+                  documentUrl={examiner.cvUrl}
+                />
+                <FieldRow
+                  label="Medical License"
+                  value={
+                    examiner.medicalLicenseUrl
+                      ? "Medical_License.pdf"
+                      : "Not uploaded"
+                  }
+                  type={examiner.medicalLicenseUrl ? "document" : "text"}
+                  documentUrl={examiner.medicalLicenseUrl}
+                />
+              </Section>
+
+              {/* Right column - Fee Structure */}
               <Section
                 title="Fee Structure"
                 actionSlot={
@@ -427,36 +457,6 @@ export default function ExaminerDetail({ examiner }: Props) {
                     </div>
                   )}
                 </Section>
-
-              {/* Right column - Medical Credentials */}
-              <Section title="Medical Credentials">
-                <FieldRow
-                  label="License Number"
-                  value={examiner.licenseNumber || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="Province of Licensure"
-                  value={examiner.provinceOfLicensure || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="CV / Resume"
-                  value={examiner.cvUrl ? "CV_Resume.pdf" : "Not uploaded"}
-                  type={examiner.cvUrl ? "document" : "text"}
-                  documentUrl={examiner.cvUrl}
-                />
-                <FieldRow
-                  label="Medical License"
-                  value={
-                    examiner.medicalLicenseUrl
-                      ? "Medical_License.pdf"
-                      : "Not uploaded"
-                  }
-                  type={examiner.medicalLicenseUrl ? "document" : "text"}
-                  documentUrl={examiner.medicalLicenseUrl}
-                />
-              </Section>
             </div>
 
             {/* Third row: Consent (left) and Actions (right) */}
