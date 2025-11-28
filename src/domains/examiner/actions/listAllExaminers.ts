@@ -3,6 +3,7 @@ import prisma from "@/lib/db";
 import { ExaminerDto } from "../server/dto/examiner.dto";
 import { HttpError } from "@/utils/httpError";
 import { mapSpecialtyIdsToNames } from "../utils/mapSpecialtyIdsToNames";
+import logger from "@/utils/logger";
 
 const listAllExaminers = async () => {
   try {
@@ -78,13 +79,13 @@ const listAllExaminers = async () => {
           }
         }
       } catch (error) {
-        console.error("Failed to fetch years of experience:", error);
+        logger.error("Failed to fetch years of experience:", error);
       }
     }
 
     return mappedData;
   } catch (error) {
-    console.error("Error fetching all examiners:", error);
+    logger.error("Error fetching all examiners:", error);
     throw HttpError.fromError(error, "Failed to get examiners");
   }
 };

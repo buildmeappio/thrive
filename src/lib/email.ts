@@ -1,6 +1,7 @@
 import { google } from 'googleapis';
 import nodemailer, { type Transporter } from "nodemailer";
 import { ENV } from "@/constants/variables";
+import logger from "@/utils/logger";
 
 type SendArgs = {
   to: string | string[];
@@ -89,7 +90,7 @@ export async function sendMail(args: SendArgs) {
   try {
     return await t.sendMail(mail);
   } catch (err: unknown) {
-    console.error("Error sending email:", err);
+    logger.error("Error sending email:", err);
     // If token expired or transporter got invalidated, rebuild once and retry.
     if ((err as any)?.code === "EAUTH" || (err as any)?.responseCode === 401 || (err as any)?.responseCode === 535) {
       transporterPromise = null;

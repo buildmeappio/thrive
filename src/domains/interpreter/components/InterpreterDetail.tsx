@@ -27,6 +27,7 @@ import {
   overrideDateToLocalDate,
   formatOverrideDisplayDate,
 } from "@/components/availability";
+import logger from "@/utils/logger";
 import { format } from "date-fns";
 import { saveInterpreterAvailabilityAction } from "../actions";
 import Link from "next/link";
@@ -106,7 +107,7 @@ export default function InterpreterDetail({
         const filteredLanguages = filterUUIDLanguages(languages);
         setAllLanguages(filteredLanguages);
       } catch (error) {
-        console.error("Failed to fetch languages:", error);
+        logger.error("Failed to fetch languages:", error);
       }
     };
     fetchLanguages();
@@ -123,7 +124,7 @@ export default function InterpreterDetail({
       toast.success("Interpreter deleted successfully!");
       router.push("/interpreter");
     } catch (error) {
-      console.error("Failed to delete interpreter:", error);
+      logger.error("Failed to delete interpreter:", error);
       toast.error("Failed to delete interpreter. Please try again.");
       setIsDeleting(false);
       setIsDeleteModalOpen(false);
@@ -200,7 +201,7 @@ export default function InterpreterDetail({
       setIsEditMode(false);
       router.refresh();
     } catch (error) {
-      console.error("Failed to update interpreter:", error);
+      logger.error("Failed to update interpreter:", error);
       toast.error("Failed to update interpreter. Please try again.");
     } finally {
       setIsSaving(false);

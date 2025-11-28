@@ -1,5 +1,6 @@
 import { google } from "googleapis";
 import { ENV } from "@/constants/variables";
+import logger from "@/utils/logger";
 
 /**
  * Google Docs API service for contract generation
@@ -62,7 +63,7 @@ export async function copyTemplate(
 
     return response.data.id;
   } catch (error) {
-    console.error("Error copying Google Doc template:", error);
+    logger.error("Error copying Google Doc template:", error);
     if (error instanceof Error) {
       if (error.message.includes("File not found") || (error as any).code === 404) {
         throw new Error(
@@ -123,7 +124,7 @@ export async function replacePlaceholders(
       },
     });
   } catch (error) {
-    console.error("Error replacing placeholders:", error);
+    logger.error("Error replacing placeholders:", error);
     if (error instanceof Error) {
       if (error.message.includes("File not found") || (error as any).code === 404) {
         throw new Error(
@@ -169,7 +170,7 @@ export async function exportAsHTML(documentId: string): Promise<string> {
 
     return response.data as string;
   } catch (error) {
-    console.error("Error exporting HTML:", error);
+    logger.error("Error exporting HTML:", error);
     if (error instanceof Error) {
       if (error.message.includes("File not found") || (error as any).code === 404) {
         throw new Error(
@@ -302,7 +303,7 @@ export async function generateContractFromTemplate(
       const drive = google.drive({ version: "v3", auth });
       await drive.files.delete({ fileId: documentId });
     } catch (cleanupError) {
-      console.error("Failed to cleanup temporary document:", cleanupError);
+      logger.error("Failed to cleanup temporary document:", cleanupError);
     }
     throw error;
   }
@@ -384,7 +385,7 @@ export async function createContractDocument(
       const drive = google.drive({ version: "v3", auth });
       await drive.files.delete({ fileId: documentId });
     } catch (cleanupError) {
-      console.error("Failed to cleanup document:", cleanupError);
+      logger.error("Failed to cleanup document:", cleanupError);
     }
     throw error;
   }

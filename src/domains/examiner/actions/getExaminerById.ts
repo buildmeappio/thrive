@@ -4,6 +4,7 @@ import { ExaminerDto } from "../server/dto/examiner.dto";
 import { generatePresignedUrl } from "@/lib/s3";
 import { mapSpecialtyIdsToNames } from "../utils/mapSpecialtyIdsToNames";
 import { Decimal } from '@prisma/client/runtime/library';
+import logger from "@/utils/logger";
 
 // Helper function to serialize Decimals and other non-plain objects
 const serializeValue = (value: any): any => {
@@ -45,7 +46,7 @@ const getExaminerById = async (id: string) => {
           examinerData.yearsOfIMEExperience = yearsOfExperience.name;
         }
       } catch (error) {
-        console.error("Failed to fetch years of experience:", error);
+        logger.error("Failed to fetch years of experience:", error);
       }
     }
   }
@@ -57,7 +58,7 @@ const getExaminerById = async (id: string) => {
         3600
       );
     } catch (error) {
-      console.error(`Failed to generate presigned URL for CV:`, error);
+      logger.error(`Failed to generate presigned URL for CV:`, error);
     }
   }
 
@@ -68,7 +69,7 @@ const getExaminerById = async (id: string) => {
         3600
       );
     } catch (error) {
-      console.error(
+      logger.error(
         `Failed to generate presigned URL for medical license:`,
         error
       );
@@ -82,7 +83,7 @@ const getExaminerById = async (id: string) => {
         3600
       );
     } catch (error) {
-      console.error(
+      logger.error(
         `Failed to generate presigned URL for insurance proof:`,
         error
       );
@@ -96,7 +97,7 @@ const getExaminerById = async (id: string) => {
         3600
       );
     } catch (error) {
-      console.error(`Failed to generate presigned URL for NDA:`, error);
+      logger.error(`Failed to generate presigned URL for NDA:`, error);
     }
   }
 

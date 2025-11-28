@@ -3,6 +3,7 @@
 import { getServerSession } from "next-auth";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/db";
+import logger from "@/utils/logger";
 
 type CompleteTemporaryPasswordInput = {
   password: string;
@@ -31,7 +32,7 @@ export const completeTemporaryPassword = async ({
 
     return { success: true };
   } catch (error) {
-    console.error("Error completing temporary password:", error);
+    logger.error("Error completing temporary password:", error);
     return {
       success: false,
       error:

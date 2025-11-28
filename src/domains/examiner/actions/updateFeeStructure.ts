@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import logger from "@/utils/logger";
 
 export type UpdateFeeStructureData = {
   IMEFee: number;
@@ -65,7 +66,7 @@ export async function updateFeeStructure(
       data: feeStructure,
     };
   } catch (error) {
-    console.error("Error updating fee structure:", error);
+    logger.error("Error updating fee structure:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to update fee structure",

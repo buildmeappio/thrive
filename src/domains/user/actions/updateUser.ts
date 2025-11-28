@@ -3,6 +3,7 @@
 import { z } from "zod";
 import userService from "../server/user.service";
 import { UserTableRow } from "../types/UserData";
+import logger from "@/utils/logger";
 
 const schema = z.object({
   id: z.string().uuid(),
@@ -34,7 +35,7 @@ export const updateUser = async (
       },
     };
   } catch (error) {
-    console.error("Update user failed:", error);
+    logger.error("Update user failed:", error);
     return {
       success: false,
       error:

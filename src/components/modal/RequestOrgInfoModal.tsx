@@ -1,3 +1,5 @@
+"use client";
+
 // components/modal/RequestOrgInfoModal.tsx
 import React, { useEffect, useId, useRef, useState } from "react";
 

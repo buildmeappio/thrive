@@ -48,7 +48,7 @@ const requestMoreInfo = async (
 
     logger.log("✓ Case status updated to More Information required");
   } catch (dbError) {
-    console.error("⚠️ Failed to update case status:", dbError);
+    logger.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");
   }
 
@@ -57,7 +57,7 @@ const requestMoreInfo = async (
     await sendRequestMoreInfoEmailToOrganization(caseDetails, messageToOrganization);
     logger.log("✓ Request more info email sent to organization");
   } catch (emailError) {
-    console.error("⚠️ Failed to send request more info email:", emailError);
+    logger.error("⚠️ Failed to send request more info email:", emailError);
     throw emailError;
   }
 
@@ -75,7 +75,7 @@ async function sendRequestMoreInfoEmailToOrganization(caseDetails: CaseDetailDto
   const lastName = managerName.split(' ').slice(1).join(' ') || "";
 
   if (!organizationEmail) {
-    console.error("Organization email not found");
+    logger.error("Organization email not found");
     throw new Error("Organization email not found");
   }
 

@@ -14,6 +14,7 @@ import {
   overrideStateToArray,
   overrideArrayToState,
 } from "@/components/availability";
+import logger from "@/utils/logger";
 import { InterpreterFormData } from "../types/interpreterForm.types";
 
 type Props = {
@@ -84,7 +85,7 @@ export default function InterpreterForm({
         const filteredLanguages = filterUUIDLanguages(languages);
         setAllLanguages(filteredLanguages);
       } catch (error) {
-        console.error("Failed to fetch languages:", error);
+        logger.error("Failed to fetch languages:", error);
       }
     };
     fetchLanguages();

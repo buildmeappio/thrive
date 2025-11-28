@@ -1,5 +1,8 @@
-// domains/dashboard/index.tsx
 "use client";
+
+import logger from "@/utils/logger";
+
+// domains/dashboard/index.tsx
 
 import { useState } from "react";
 import StatCard from "./StatCard";
@@ -53,7 +56,7 @@ export default function Dashboard({
       const count = await getDueCasesCount(period);
       setDueCount(count);
     } catch (error) {
-      console.error("Failed to fetch due cases count:", error);
+      logger.error("Failed to fetch due cases count:", error);
     } finally {
       setIsLoadingDueCount(false);
     }
@@ -100,6 +103,10 @@ export default function Dashboard({
       <div className="w-full flex flex-col xl:flex-row gap-3 sm:gap-6">
         {/* Left: three stacked tables */}
         <div className="w-full xl:w-8/12 flex flex-col gap-3 sm:gap-6 min-w-0 dashboard-zoom-mobile">
+          <NewExaminers
+            items={examinerRows}
+            listHref="/examiner"
+          />
           <NewCases
             items={caseRows}
             listHref="/cases"
@@ -107,10 +114,6 @@ export default function Dashboard({
           <WaitingCases
             items={waitingCaseRows}
             listHref="/cases"
-          />
-          <NewExaminers
-            items={examinerRows}
-            listHref="/examiner"
           />
         </div>
 

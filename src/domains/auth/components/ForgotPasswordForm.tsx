@@ -11,6 +11,7 @@ import Link from "next/link";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 import authActions from "../actions";
+import logger from "@/utils/logger";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -44,7 +45,7 @@ const Form = () => {
         });
       }
     } catch (error) {
-      console.error("Error in forgot password:", error);
+      logger.error("Error in forgot password:", error);
       setError("email", {
         type: "manual",
         message: "User does not exists. Please contact your administrator",

@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import authHandlers from "@/domains/auth/server/handlers";
+import logger from "@/utils/logger";
 
 const schema = z.object({
   email: z.string().email(),
@@ -17,7 +18,7 @@ export const requestPasswordReset = async (
     await authHandlers.forgotPassword({ email: input.email });
     return { success: true };
   } catch (error) {
-    console.error("Password reset link failed:", error);
+    logger.error("Password reset link failed:", error);
     return {
       success: false,
       error:

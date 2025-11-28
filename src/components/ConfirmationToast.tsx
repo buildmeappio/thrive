@@ -1,6 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
+import logger from "@/utils/logger";
 /**
  * ConfirmationToast Component
  *
@@ -64,7 +65,7 @@ export const showConfirmationToast = ({
         try {
           await onConfirm();
         } catch (error) {
-          console.error("Confirmation action failed:", error);
+          logger.error("Confirmation action failed:", error);
         }
       },
     },

@@ -57,10 +57,10 @@ const approveExaminer = async (examinerId: string) => {
     if (contractResult.success) {
       logger.log("✅ Contract generated and uploaded successfully:", contractResult.contractId);
     } else {
-      console.error("⚠️ Failed to generate contract (but approval succeeded):", contractResult.error);
+      logger.error("⚠️ Failed to generate contract (but approval succeeded):", contractResult.error);
     }
   } catch (contractError) {
-    console.error("⚠️ Failed to generate contract (but approval succeeded):", contractError);
+    logger.error("⚠️ Failed to generate contract (but approval succeeded):", contractError);
   }
 
   // Send approval email with token (don't fail approval if email fails)
@@ -68,7 +68,7 @@ const approveExaminer = async (examinerId: string) => {
     await sendApprovalEmailToExaminer(examiner);
     logger.log("✓ Approval email sent successfully");
   } catch (emailError) {
-    console.error(
+    logger.error(
       "⚠️ Failed to send approval email (but approval succeeded):",
       emailError
     );
@@ -85,7 +85,7 @@ async function sendApprovalEmailToExaminer(examiner: ExaminerWithRelations) {
   const accountId = examiner.accountId;
 
   if (!userEmail || !firstName || !lastName || !userId) {
-    console.error("Missing required user information for email");
+    logger.error("Missing required user information for email");
     return;
   }
 

@@ -3,6 +3,7 @@ import {
   type WeeklyHoursData,
   type OverrideHoursData,
 } from "../services/availability.service";
+import logger from "@/utils/logger";
 import { HttpError } from "@/utils/httpError";
 
 export type SaveAvailabilityInput = {
@@ -39,7 +40,7 @@ const saveAvailability = async (payload: SaveAvailabilityInput) => {
 
     return { success: true as const, message: "Availability preferences saved successfully" };
   } catch (error) {
-    console.error("Error saving transporter availability:", error);
+    logger.error("Error saving transporter availability:", error);
     throw HttpError.internalServerError("Failed to save transporter availability");
   }
 };

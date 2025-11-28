@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import authActions from "@/domains/auth/actions";
 import { signOut } from "next-auth/react";
+import logger from "@/utils/logger";
 
 const schema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -45,7 +46,7 @@ const SetPasswordForm = () => {
         toast.error(result.error || "Failed to set password. Please try again.");
       }
     } catch (error) {
-      console.error("Error setting password:", error);
+      logger.error("Error setting password:", error);
       toast.error("An error occurred. Please try again.");
     }
   };

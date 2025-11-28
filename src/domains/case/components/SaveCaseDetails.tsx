@@ -6,6 +6,7 @@ import caseActions from "../actions";
 import { CaseStatus } from "../constants/case-status";
 import { CaseStatus as PrismaCaseStatus } from "@prisma/client";
 import { toast } from "sonner";
+import logger from "@/utils/logger";
 
 type SaveCaseDetailsProps = {
   caseId: string;
@@ -34,7 +35,7 @@ const SaveCaseDetails = ({ caseId, status, assignTo, statusOptions }: SaveCaseDe
       // Add other status update logic here if needed
     } catch (error) {
       toast.error("Error Updating Case Status")
-      console.error("Error updating case status:", error);
+      logger.error("Error updating case status:", error);
     } 
   };
 

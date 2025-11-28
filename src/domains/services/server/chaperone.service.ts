@@ -2,6 +2,7 @@ import { HttpError } from '@/utils/httpError';
 import { CreateChaperoneInput, UpdateChaperoneInput, ChaperoneData, ChaperoneWithAvailability } from '../types/Chaperone';
 import { convertTimeToUTC, convertUTCToLocal } from '@/utils/timezone';
 import prisma from '@/lib/db';
+import logger from '@/utils/logger';
 
 export const createChaperone = async (data: CreateChaperoneInput) => {
   try {
@@ -104,7 +105,7 @@ export const createChaperone = async (data: CreateChaperoneInput) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    console.error('Error creating chaperone:', error);
+    logger.error('Error creating chaperone:', error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -400,7 +401,7 @@ export const deleteChaperone = async (id: string) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    console.error('Error deleting chaperone:', error);
+    logger.error('Error deleting chaperone:', error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
