@@ -4,6 +4,7 @@ import authService from "@/domains/auth/server/auth.service";
 import { signAccountToken } from "@/lib/jwt";
 import { ENV } from "@/constants/variables";
 import logger from "@/utils/logger";
+import { Roles } from "@/domains/auth/constants/roles";
 
 type ForgotPasswordData = {
   email: string;
@@ -24,10 +25,9 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
       };
     }
 
-    // Check if user has an admin role
-    const isAdminRole = user.accounts && user.accounts.length > 0;
-    if (!isAdminRole) {
-      logger.log(`Password reset requested for non-admin email: ${data.email}`);
+    // Check if user has accounts
+    if (!user.accounts || user.accounts.length === 0) {
+      logger.log(`Password reset requested for user with no accounts: ${data.email}`);
       return {
         success: false,
         message: "If an account with that email exists, we've sent password reset instructions.",
@@ -37,9 +37,22 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
 
     // Get account and role information
     const account = user.accounts[0];
+    const roleName = account.role?.name;
+
+    // Check if the user has an allowed admin role (only SUPER_ADMIN or ADMIN, not STAFF)
+    // This prevents examiners, interpreters, staff, etc. from using admin password reset
+    const isAdminOrSuperAdmin = roleName === Roles.SUPER_ADMIN || roleName === Roles.ADMIN;
+    if (!roleName || !isAdminOrSuperAdmin) {
+      logger.log(`Password reset requested for non-allowed role: ${data.email}, role: ${roleName || 'none'}`);
+      return {
+        success: false,
+        message: "If an account with that email exists, we've sent password reset instructions.",
+        userExists: false,
+      };
+    }
+
     const userId = user.id;
     const accountId = account.id;
-    const roleName = account.role?.name;
 
     logger.log(`Generating password reset token for user: ${user.email}, userId: ${userId}, accountId: ${accountId}, role: ${roleName}`);
 
