@@ -1,6 +1,7 @@
 import { HttpError } from '@/utils/httpError';
 import { CreateTaxonomyInput, UpdateTaxonomyInput, TaxonomyData, TaxonomyType } from '../types/Taxonomy';
 import prisma from '@/lib/db';
+import logger from "@/utils/logger";
 
 // Map taxonomy type to Prisma model
 const getPrismaModel = (type: TaxonomyType) => {
@@ -39,7 +40,7 @@ const parseValueAsNumber = (value: string | number): number => {
 
     throw new Error(`Invalid numeric value: ${stringValue}`);
   } catch (error) {
-    console.error(`Error parsing value as number: ${error}`);
+    logger.error(`Error parsing value as number: ${error}`);
     throw new Error('Failed to parse value as number');
   }
 };
@@ -80,7 +81,7 @@ export const createTaxonomy = async (type: TaxonomyType, data: CreateTaxonomyInp
             value: parseValueAsNumber(data.value),
           };
         } catch (error) {
-          console.error('Error parsing value:', error);
+          logger.error('Error parsing value:', error);
           throw HttpError.badRequest('Invalid value. Please provide a valid number.');
         }
       } else {
@@ -103,7 +104,7 @@ export const createTaxonomy = async (type: TaxonomyType, data: CreateTaxonomyInp
     if (error instanceof HttpError) {
       throw error;
     }
-    console.error(`Error creating ${type}:`, error);
+    logger.error(`Error creating ${type}:`, error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -157,7 +158,7 @@ export const updateTaxonomy = async (type: TaxonomyType, id: string, data: Updat
           try {
             updateData.value = parseValueAsNumber(data.value);
           } catch (error) {
-            console.error('Error parsing value:', error);
+            logger.error('Error parsing value:', error);
             throw HttpError.badRequest('Invalid value. Please provide a valid number.');
           }
         } else {
@@ -180,7 +181,7 @@ export const updateTaxonomy = async (type: TaxonomyType, id: string, data: Updat
     if (error instanceof HttpError) {
       throw error;
     }
-    console.error(`Error updating ${type}:`, error);
+    logger.error(`Error updating ${type}:`, error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -406,7 +407,7 @@ const getFrequencyCounts = async (type: TaxonomyType, items: Array<{ id: string;
         break;
     }
   } catch (error) {
-    console.error(`Error getting frequency counts for ${type}:`, error);
+    logger.error(`Error getting frequency counts for ${type}:`, error);
   }
 
   // Ensure all items have a frequency (default to 0 if not found)
@@ -586,7 +587,7 @@ export const getTaxonomies = async (type: TaxonomyType): Promise<TaxonomyData[]>
       };
     });
   } catch (error) {
-    console.error(`Error getting taxonomies for ${type}:`, error);
+    logger.error(`Error getting taxonomies for ${type}:`, error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -675,7 +676,7 @@ export const deleteTaxonomy = async (type: TaxonomyType, id: string) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    console.error(`Error deleting ${type}:`, error);
+    logger.error(`Error deleting ${type}:`, error);
     throw HttpError.internalServerError("Internal server error");
   }
 };

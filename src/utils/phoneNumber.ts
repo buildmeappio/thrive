@@ -1,4 +1,5 @@
 import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js';
+import logger from "@/utils/logger";
 
 export const getE164PhoneNumber = (value: string | undefined): string | null => {
   if (!value) return null;
@@ -18,7 +19,7 @@ export const getE164PhoneNumber = (value: string | undefined): string | null => 
 
     return null;
   } catch {
-    console.error('Error parsing phone number to E.164:', value);
+    logger.error('Error parsing phone number to E.164:', value);
     return null;
   }
 };
@@ -37,7 +38,7 @@ export const formatE164ForDisplay = (e164Value: string | undefined | null): stri
 
     return e164Value;
   } catch {
-    console.error('Error formatting E.164 number for display:', e164Value);
+    logger.error('Error formatting E.164 number for display:', e164Value);
     return e164Value;
   }
 };

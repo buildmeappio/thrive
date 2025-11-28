@@ -45,7 +45,7 @@ const completeReview = async (caseId: string): Promise<void> => {
 
     logger.log("✓ Case status updated to Ready to be Appointment with approval timestamp");
   } catch (dbError) {
-    console.error("⚠️ Failed to update case status:", dbError);
+    logger.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");
   }
 
@@ -54,7 +54,7 @@ const completeReview = async (caseId: string): Promise<void> => {
     await sendApprovalEmailToClaimant(caseDetails);
     logger.log("✓ Approval email sent to claimant");
   } catch (emailError) {
-    console.error("⚠️ Failed to send approval email:", emailError);
+    logger.error("⚠️ Failed to send approval email:", emailError);
     throw emailError;
   }
 
@@ -72,7 +72,7 @@ async function sendApprovalEmailToClaimant(caseDetails: CaseDetailDtoType) {
     caseDetails.case.organization?.name || "Unknown Organization";
 
   if (!claimantEmail) {
-    console.error("Claimant email not found");
+    logger.error("Claimant email not found");
     throw new Error("Claimant email not found");
   }
 

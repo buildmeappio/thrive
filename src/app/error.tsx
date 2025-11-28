@@ -8,6 +8,7 @@ import Image from "@/components/Image";
 import { URLS } from "@/constants/route";
 import { ENV } from "@/constants/variables";
 import { useSession } from "@/domains/auth/hooks/useSession";
+import logger from "@/utils/logger";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -19,7 +20,7 @@ const Error = ({ error, reset }: ErrorProps) => {
   const href = session?.user ? URLS.DASHBOARD : URLS.LOGIN;
 
   useEffect(() => {
-    console.error("Error:", error);
+    logger.error("Error:", error);
   }, [error]);
 
   // Check if it's a database/server error

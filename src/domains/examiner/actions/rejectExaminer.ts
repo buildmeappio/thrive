@@ -51,7 +51,7 @@ const rejectExaminer = async (
     await sendRejectionEmailToExaminer(examiner, messageToExaminer);
     logger.log("✓ Rejection email sent successfully");
   } catch (emailError) {
-    console.error(
+    logger.error(
       "⚠️ Failed to send rejection email (but rejection succeeded):",
       emailError
     );
@@ -73,7 +73,7 @@ async function sendRejectionEmailToExaminer(
   const lastName = examiner.account?.user?.lastName;
 
   if (!userEmail || !firstName || !lastName) {
-    console.error("Missing required user information for rejection email");
+    logger.error("Missing required user information for rejection email");
     return;
   }
 

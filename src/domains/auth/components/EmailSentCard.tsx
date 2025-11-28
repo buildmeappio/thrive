@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import authActions from "@/domains/auth/actions";
 import { toast } from "sonner";
+import logger from "@/utils/logger";
 
 type EmailSentCardProps = {
   email: string;
@@ -35,7 +36,7 @@ const EmailSentCard = ({ email }: EmailSentCardProps) => {
         toast.error("Failed to resend. Please try again.");
       }
     } catch (error) {
-      console.error("Error resending email:", error);
+      logger.error("Error resending email:", error);
       toast.error("An error occurred. Please try again.");
     } finally {
       setIsResending(false);

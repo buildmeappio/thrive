@@ -1,3 +1,5 @@
+import logger from "@/utils/logger";
+
 // src/dto/case.dto.ts
 import { Examination, Case, CaseType, Documents, Claimant, Organization, LegalRepresentative, Insurance, ExaminationServices, ExaminationInterpreter, ExaminationTransport, Address, Language, ExaminationType, CaseDocument, CaseStatus, OrganizationManager, Account, User } from "@prisma/client";
 import { CaseDetailDtoType } from "../../types/CaseDetailDtoType";
@@ -20,7 +22,7 @@ export class CaseDto {
         });
         return language?.name || "Unknown Language";
       } catch (error) {
-        console.error("Error fetching language:", error);
+        logger.error("Error fetching language:", error);
         return "Unknown Language";
       }
     }

@@ -1,5 +1,8 @@
-// OrganizationDetail.tsx
 "use client";
+
+import logger from "@/utils/logger";
+
+// OrganizationDetail.tsx
 
 import React, { useState } from "react";
 import Section from "@/components/Section";
@@ -71,7 +74,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
       toast.success("Request sent. An email has been sent to the organization.");
       router.refresh();
     } catch (error) {
-      console.error("Failed to request more info:", error);
+      logger.error("Failed to request more info:", error);
       toast.error("Failed to send request. Please try again.");
     } finally {
       setLoadingAction(null);
@@ -93,7 +96,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
       toast.success("Organization approved successfully! An email has been sent to the organization.");
       router.refresh();
     } catch (error) {
-      console.error("Failed to approve organization:", error);
+      logger.error("Failed to approve organization:", error);
       toast.error("Failed to approve organization. Please try again.");
     } finally {
       setLoadingAction(null);
@@ -116,7 +119,7 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
       toast.success("Organization rejected. An email has been sent to the organization.");
       router.refresh();
     } catch (error) {
-      console.error("Failed to reject organization:", error);
+      logger.error("Failed to reject organization:", error);
       toast.error("Failed to reject organization. Please try again.");
     } finally {
       setLoadingAction(null);

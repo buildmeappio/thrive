@@ -2,6 +2,7 @@ import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
 import { startOfMonth, endOfMonth } from "date-fns";
 import { ExaminerStatus } from "@prisma/client";
+import logger from "@/utils/logger";
 
 class ExaminerService {
   // Get count of examiners created this month with specific status
@@ -66,7 +67,7 @@ class ExaminerService {
       // Note: Documents can be optional as the DTO will handle missing documents
       return examiners.filter(examiner => examiner.account?.user);
     } catch (error) {
-      console.error("Error fetching recent examiners:", error);
+      logger.error("Error fetching recent examiners:", error);
       throw HttpError.fromError(error, "Failed to get recent examiners");
     }
   }
@@ -114,7 +115,7 @@ class ExaminerService {
 
       return examiner;
     } catch (error) {
-      console.error("Database error in getExaminerById:", error);
+      logger.error("Database error in getExaminerById:", error);
       throw HttpError.fromError(error, "Failed to get examiner");
     }
   }

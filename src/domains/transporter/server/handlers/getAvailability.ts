@@ -1,6 +1,7 @@
 import { transporterAvailabilityService } from "../services/availability.service";
 import { HttpError } from "@/utils/httpError";
 import { convertUTCToLocal } from "@/utils/timezone";
+import logger from "@/utils/logger";
 
 export type GetAvailabilityInput = {
   transporterId: string;
@@ -87,7 +88,7 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
       },
     };
   } catch (error) {
-    console.error("Error fetching transporter availability:", error);
+    logger.error("Error fetching transporter availability:", error);
     throw HttpError.internalServerError(
       "Failed to fetch transporter availability"
     );

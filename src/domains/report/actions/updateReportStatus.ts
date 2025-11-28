@@ -5,6 +5,7 @@ import handlers from "../server/handlers";
 import { redirect } from "next/navigation";
 import { ReportStatus } from "@prisma/client";
 import emailService from "@/services/email.service";
+import logger from "@/utils/logger";
 
 const updateReportStatus = async (id: string, status: ReportStatus) => {
   const user = await getCurrentUser();
@@ -20,7 +21,7 @@ const updateReportStatus = async (id: string, status: ReportStatus) => {
   try {
     await sendReportStatusEmailToExaminer(report, status);
   } catch (emailError) {
-    console.error("⚠️ Failed to send report status email:", emailError);
+    logger.error("⚠️ Failed to send report status email:", emailError);
     // Don't throw error - email failure shouldn't block status update
   }
 
@@ -49,7 +50,7 @@ async function sendReportStatusEmailToExaminer(
   }
 
   if (!userEmail || !firstName || !lastName) {
-    console.error("Missing examiner information for email");
+    logger.error("Missing examiner information for email");
     return;
   }
 

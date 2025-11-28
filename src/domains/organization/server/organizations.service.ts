@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
+import logger from "@/utils/logger";
 
 export class OrganizationsService {
   async listOrganizations() {
@@ -24,7 +25,7 @@ export class OrganizationsService {
         },
       });
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       throw new HttpError(500, "Failed to list organizations", { details: error });
     }
   }
@@ -49,7 +50,7 @@ export class OrganizationsService {
         },
       });
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       throw new HttpError(500, "Failed to get organization", { details: error });
     }
   }
@@ -96,7 +97,7 @@ export class OrganizationsService {
       return updated;
     } catch (error) {
       if (error instanceof HttpError) throw error;
-      console.error(error);
+      logger.error(error);
       throw new HttpError(500, "Failed to approve organization", { details: error });
     }
   }
@@ -145,7 +146,7 @@ export class OrganizationsService {
       return updated;
     } catch (error) {
       if (error instanceof HttpError) throw error;
-      console.error(error);
+      logger.error(error);
       throw new HttpError(500, "Failed to reject organization", { details: error });
     }
   }
@@ -186,7 +187,7 @@ export class OrganizationsService {
       return updated;
     } catch (error) {
       if (error instanceof HttpError) throw error;
-      console.error(error);
+      logger.error(error);
       throw new HttpError(500, "Failed to update organization status to INFO_REQUESTED", { details: error });
     }
   }
@@ -195,7 +196,7 @@ export class OrganizationsService {
     try {
       return await prisma.organizationType.findMany();
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       throw new HttpError(500, "Failed to list organization types", { details: error });
     }
   }

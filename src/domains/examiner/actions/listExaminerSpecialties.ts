@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/db";
 import examinationTypeService from "@/domains/taxonomy/server/examinationType.service";
+import logger from "@/utils/logger";
 
 export default async function listExaminerSpecialties(): Promise<string[]> {
   const examiners = await prisma.examinerProfile.findMany({
@@ -38,7 +39,7 @@ export default async function listExaminerSpecialties(): Promise<string[]> {
       examTypesMap.set(lowerCase, et.name);
     });
   } catch (error) {
-    console.error("Failed to fetch examination types:", error);
+    logger.error("Failed to fetch examination types:", error);
   }
   
   // Map specialty IDs to names

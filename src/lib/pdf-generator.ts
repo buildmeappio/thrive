@@ -370,7 +370,7 @@ export async function generateContractPDF(
 
     return pdfBuffer;
   } catch (error) {
-    console.error("❌ Error generating PDF:", error);
+    logger.error("❌ Error generating PDF:", error);
     throw new Error(`Failed to generate PDF: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 }

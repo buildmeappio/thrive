@@ -1,6 +1,7 @@
 import { Report, ReportDynamicSection, ReportDocument, Documents, ClaimantBooking, Examination, ExaminationType, CaseStatus, Claimant, Address } from "@prisma/client";
 import { ReportDetailDtoType } from "../../types/ReportDetailDtoType";
 import { generatePresignedUrl } from "@/lib/s3";
+import logger from "@/utils/logger";
 
 export class ReportDto {
   static async toReportDetailDto(
@@ -33,7 +34,7 @@ export class ReportDto {
             },
           };
         } catch (error) {
-          console.error(
+          logger.error(
             `Failed to generate presigned URL for document ${rd.document.name}:`,
             error
           );

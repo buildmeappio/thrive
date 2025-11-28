@@ -12,6 +12,7 @@ import CollapsibleSection from "@/components/CollapsibleSection";
 import FieldRow from "@/components/FieldRow";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import logger from "@/utils/logger";
 
 interface ReportDetailPageClientProps {
   reportDetails: ReportDetailDtoType;
@@ -48,7 +49,7 @@ export default function ReportDetailPageClient({
       router.push(`/cases/${reportDetails.booking.examination.id}`);
       router.refresh();
     } catch (error) {
-      console.error("Error approving report:", error);
+      logger.error("Error approving report:", error);
       toast.error("Failed to approve report. Please try again.");
     } finally {
       setLoadingAction(null);
@@ -64,7 +65,7 @@ export default function ReportDetailPageClient({
       router.push(`/cases/${reportDetails.booking.examination.id}`);
       router.refresh();
     } catch (error) {
-      console.error("Error rejecting report:", error);
+      logger.error("Error rejecting report:", error);
       toast.error("Failed to reject report. Please try again.");
     } finally {
       setLoadingAction(null);
@@ -87,7 +88,7 @@ export default function ReportDetailPageClient({
       toast.success("Report updated successfully.");
       router.refresh();
     } catch (error) {
-      console.error("Error updating report:", error);
+      logger.error("Error updating report:", error);
       toast.error("Failed to update report. Please try again.");
     } finally {
       setLoadingAction(null);

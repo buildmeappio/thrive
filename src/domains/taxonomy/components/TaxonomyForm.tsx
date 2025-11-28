@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import logger from "@/utils/logger";
 import { CreateTaxonomyInput, UpdateTaxonomyInput, TaxonomyType, TaxonomyData } from '../types/Taxonomy';
 import { TaxonomyConfig, TaxonomyField } from '../types/Taxonomy';
 import { convertUTCMinutesToLocal, convertLocalTimeToUTCMinutes } from '@/utils/timezone';
@@ -118,7 +119,7 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
             // Convert "8:00 AM" (browser timezone) → UTC minutes
             value = String(convertLocalTimeToUTCMinutes(value));
           } catch (error) {
-            console.error('Error converting time to UTC:', error);
+            logger.error('Error converting time to UTC:', error);
             // If conversion fails, send as-is and let backend validation handle it
           }
         }

@@ -2,6 +2,7 @@ import {
   getServerSession,
   User,
 } from "next-auth";
+import logger from "@/utils/logger";
 import { authOptions } from "./nextauth/options";
 import { NextRequest } from "next/server";
 import { HttpError } from "@/utils/httpError";
@@ -33,7 +34,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
       
       // Only log unexpected errors (not during build/static generation)
       if (!isExpectedError && process.env.NODE_ENV !== 'production') {
-        console.error("Error getting current user:", error);
+        logger.error("Error getting current user:", error);
       }
     }
     return null;

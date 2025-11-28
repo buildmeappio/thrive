@@ -3,6 +3,7 @@
 import { verifyExaminerResubmitToken } from "@/lib/jwt";
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import logger from "@/utils/logger";
 
 type UpdateExaminerData = {
   // Personal details
@@ -113,7 +114,7 @@ export async function updateExaminerProfile(token: string, data: UpdateExaminerD
       data: result,
     };
   } catch (error) {
-    console.error("Error updating examiner profile:", error);
+    logger.error("Error updating examiner profile:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to update examiner profile",

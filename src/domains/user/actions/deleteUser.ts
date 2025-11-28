@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import userService from "../server/user.service";
+import logger from "@/utils/logger";
 
 const schema = z.object({
   id: z.string().uuid(),
@@ -17,7 +18,7 @@ export const deleteUser = async (
     await userService.deleteUser(input.id);
     return { success: true };
   } catch (error) {
-    console.error("Delete user failed:", error);
+    logger.error("Delete user failed:", error);
     return {
       success: false,
       error:

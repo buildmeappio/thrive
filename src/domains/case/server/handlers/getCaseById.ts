@@ -1,6 +1,7 @@
 import caseService from "../case.service";
 import { CaseDto } from "../dto/case.dto";
 import { generatePresignedUrl } from "@/lib/s3";
+import logger from "@/utils/logger";
 
 const getCaseById = async (id: string, userId: string) => {
   const casee = await caseService.getCaseById(id);
@@ -15,7 +16,7 @@ const getCaseById = async (id: string, userId: string) => {
           const url = await generatePresignedUrl(document.name, 3600); // 1 hour expiration
           return { ...document, url };
         } catch (error) {
-          console.error(`Failed to generate presigned URL for document ${document.name}:`, error);
+          logger.error(`Failed to generate presigned URL for document ${document.name}:`, error);
           return { ...document, url: null };
         }
       })
