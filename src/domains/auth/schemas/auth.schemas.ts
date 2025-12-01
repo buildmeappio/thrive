@@ -141,26 +141,49 @@ export const step1PersonalInfoSchema = z.object({
   emailAddress: z
     .string()
     .email({ message: "Please enter a valid email address" }),
-  provinceOfResidence: z
-    .string({ error: "Province of residence is required" })
-    .min(1, { message: "Province of residence is required" }),
-  mailingAddress: z
-    .string()
-    .transform((val) => val.trim()) // Trim whitespace
-    .refine((val) => val.length > 0, {
-      message: "Mailing address is required",
-    })
-    .refine((val) => val.length >= 10, {
-      message: "Mailing address must be at least 10 characters",
-    }),
 });
 
 export type Step1PersonalInfoInput = z.infer<typeof step1PersonalInfoSchema>;
 
+export const step2AddressSchema = z.object({
+  address: z
+    .string()
+    .transform((val) => val.trim())
+    .refine((val) => val.length > 0, {
+      message: "Address is required",
+    })
+    .refine((val) => val.length >= 10, {
+      message: "Address must be at least 10 characters",
+    }),
+  street: z
+    .string()
+    .transform((val) => val.trim())
+    .optional()
+    .default(""),
+  suite: z
+    .string()
+    .transform((val) => val.trim())
+    .optional()
+    .default(""),
+  postalCode: z
+    .string()
+    .transform((val) => val.trim())
+    .optional()
+    .default(""),
+  province: z
+    .string()
+    .optional()
+    .default(""),
+  city: z
+    .string()
+    .transform((val) => val.trim())
+    .optional()
+    .default(""),
+});
+
+export type Step2AddressInput = z.infer<typeof step2AddressSchema>;
+
 export const step2MedicalCredentialsSchema = z.object({
-  medicalSpecialty: z
-    .array(z.string())
-    .min(1, { message: "Medical specialty is required" }),
   licenseNumber: z
     .string()
     .transform((val) => val.trim()) // Trim whitespace
@@ -182,9 +205,6 @@ export const step2MedicalCredentialsSchema = z.object({
     }, {
       message: "Please enter a valid license number",
     }),
-  provinceOfLicensure: z
-    .string({ error: "Province of licensure is required" })
-    .min(1, { message: "Province of licensure is required" }),
   // licenseExpiryDate: z
   //   .string({ error: "License expiry date is required" })
   //   .min(1, { message: "License expiry date is required" }),
@@ -220,6 +240,22 @@ export const step2MedicalCredentialsSchema = z.object({
         message: "Medical license must be a PDF, DOC, or DOCX file",
       }
     ),
+});
+
+export type Step2MedicalCredentialsInput = z.infer<
+  typeof step2MedicalCredentialsSchema
+>;
+
+export const step3IMEExperienceSchema = z.object({
+  medicalSpecialty: z
+    .array(z.string())
+    .min(1, { message: "Medical specialty is required" }),
+  yearsOfIMEExperience: z
+    .string({ error: "Years of IME experience is required" })
+    .min(1, { message: "Years of IME experience is required" }),
+  forensicAssessmentTrained: z
+    .string({ error: "Forensic assessment training status is required" })
+    .min(1, { message: "Forensic assessment training status is required" }),
   cvResume: z
     .any()
     .refine((val) => val !== null && val !== undefined && val !== "", {
@@ -254,25 +290,6 @@ export const step2MedicalCredentialsSchema = z.object({
     ),
 });
 
-export type Step2MedicalCredentialsInput = z.infer<
-  typeof step2MedicalCredentialsSchema
->;
-
-export const step3IMEExperienceSchema = z.object({
-  yearsOfIMEExperience: z
-    .string({ error: "Years of IME experience is required" })
-    .min(1, { message: "Years of IME experience is required" }),
-  provinceOfLicensure: z
-    .string({ error: "Province of licensure is required" })
-    .min(1, { message: "Province of licensure is required" }),
-  languagesSpoken: z
-    .array(z.string())
-    .min(1, { message: "At least one language is required" }),
-  forensicAssessmentTrained: z
-    .string({ error: "Forensic assessment training status is required" })
-    .min(1, { message: "Forensic assessment training status is required" }),
-});
-
 export type Step3IMEExperienceInput = z.infer<typeof step3IMEExperienceSchema>;
 
 export const step4ExperienceDetailsSchema = z.object({
@@ -289,29 +306,6 @@ export type Step4ExperienceDetailsInput = z.infer<
   typeof step4ExperienceDetailsSchema
 >;
 
-export const step5AvailabilitySchema = z.object({
-  preferredRegions: z
-    .array(z.string())
-    .min(1, { message: "Please select at least one region" }),
-  maxTravelDistance: z
-    .string()
-    .min(1, { message: "Maximum travel distance is required" }),
-  // daysAvailable: z.string().min(1, { message: "Days available is required" }),
-  // timeWindows: z
-  //   .object({
-  //     morning: z.boolean(),
-  //     afternoon: z.boolean(),
-  //     evening: z.boolean(),
-  //   })
-  //   .refine((value) => value.morning || value.afternoon || value.evening, {
-  //     message: "Please select at least one time window",
-  //   }),
-  acceptVirtualAssessments: z
-    .string()
-    .min(1, { message: "Please specify if you accept virtual assessments" }),
-});
-
-export type Step5AvailabilityInput = z.infer<typeof step5AvailabilitySchema>;
 
 export const step6LegalSchema = z.object({
   // signedNDA: z.any().refine((val) => val !== null, {

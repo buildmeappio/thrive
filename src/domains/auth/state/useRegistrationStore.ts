@@ -4,14 +4,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type Language = {
-  id: string;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-};
-
 type YearsOfExperience = {
   id: string;
   name: string;
@@ -21,14 +13,15 @@ type YearsOfExperience = {
   deletedAt: Date | null;
 };
 
-type MaximumDistanceTravel = {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-};
+// Removed - not used in current flow
+// type MaximumDistanceTravel = {
+//   id: string;
+//   name: string;
+//   description: string | null;
+//   createdAt: Date;
+//   updatedAt: Date;
+//   deletedAt: Date | null;
+// };
 
 // Document types for handling both new uploads and existing documents
 export type ExistingDocument = {
@@ -49,23 +42,29 @@ export type Step1PersonalInfo = {
   lastName: string;
   phoneNumber: string;
   emailAddress: string;
-  provinceOfResidence: string;
-  mailingAddress: string;
   landlineNumber: string;
+};
+
+export type Step2Address = {
+  address: string;
+  street?: string;
+  suite?: string;
+  postalCode?: string;
+  province?: string;
+  city?: string;
 };
 
 export type Step2MedicalCredentials = {
   medicalSpecialty: string[];
   licenseNumber: string;
-  provinceOfLicensure: string; // reused in step 3 as well
-  licenseExpiryDate: string; // ISO yyyy-mm-dd
+  licenseExpiryDate?: string; // ISO yyyy-mm-dd (optional)
   medicalLicense: DocumentFile;
   cvResume: DocumentFile;
 };
 
 export type Step3IMEExperience = {
   yearsOfIMEExperience: string;
-  languagesSpoken: string[];
+  languagesSpoken?: string[]; // Optional - not used in current flow
   forensicAssessmentTrained: string; // "yes"/"no" or similar
 };
 
@@ -73,30 +72,18 @@ export type Step4ExperienceDetails = {
   experienceDetails: string;
 };
 
-export type Step5Availability = {
-  preferredRegions: string[];
-  maxTravelDistance: string;
-  daysAvailable: string;
-  timeWindows: {
-    morning: boolean;
-    afternoon: boolean;
-    evening: boolean;
-  };
-  acceptVirtualAssessments: string; // "yes"/"no"
-};
-
 export type Step6Legal = {
-  signedNDA: File | null;
-  insuranceProof: File | null;
+  signedNDA?: File | null; // Optional - not used in current flow
+  insuranceProof?: File | null; // Optional - not used in current flow
   consentBackgroundVerification: boolean;
   agreeTermsConditions: boolean;
 };
 
 export type Step7PaymentDetails = {
-  IMEFee: string;
-  recordReviewFee: string;
-  hourlyRate: string;
-  cancellationFee: string;
+  IMEFee?: string; // Optional - not used in current flow
+  recordReviewFee?: string; // Optional - not used in current flow
+  hourlyRate?: string; // Optional - not used in current flow
+  cancellationFee?: string; // Optional - not used in current flow
 };
 
 export type Step9Password = {
@@ -109,10 +96,10 @@ export type Step9Password = {
  * - Province of licensure appears in Step2 schema and Step3 schema. We keep one field.
  */
 export type RegistrationData = Step1PersonalInfo &
+  Step2Address &
   Step2MedicalCredentials &
   Step3IMEExperience &
   Step4ExperienceDetails &
-  Step5Availability &
   Step6Legal &
   Step7PaymentDetails &
   Step9Password;
@@ -126,13 +113,17 @@ export const initialData: RegistrationData = {
   lastName: "",
   phoneNumber: "",
   emailAddress: "",
-  provinceOfResidence: "",
-  mailingAddress: "",
   landlineNumber: "",
-  // Step 2
+  // Step 2 - Address
+  address: "",
+  street: "",
+  suite: "",
+  postalCode: "",
+  province: "",
+  city: "",
+  // Step 2 - Medical Credentials
   medicalSpecialty: [],
   licenseNumber: "",
-  provinceOfLicensure: "",
   licenseExpiryDate: "",
   medicalLicense: null,
   cvResume: null,
@@ -142,12 +133,6 @@ export const initialData: RegistrationData = {
   forensicAssessmentTrained: "",
   // Step 4
   experienceDetails: "",
-  // Step 5
-  preferredRegions: [],
-  maxTravelDistance: "",
-  daysAvailable: "",
-  timeWindows: { morning: false, afternoon: false, evening: false },
-  acceptVirtualAssessments: "",
   // Step 6
   signedNDA: null,
   insuranceProof: null,
@@ -175,14 +160,8 @@ type Store = {
   /** Reset to initial */
   reset: () => void;
 
-  languages: Language[];
-  setLanguages: (languages: Language[]) => void;
-
   yearsOfExperience: YearsOfExperience[];
   setYearsOfExperience: (years: YearsOfExperience[]) => void;
-
-  maxTravelDistances: MaximumDistanceTravel[];
-  setMaxTravelDistances: (distances: MaximumDistanceTravel[]) => void;
 
   // Edit mode state
   isEditMode: boolean;
@@ -252,16 +231,9 @@ export const useRegistrationStore = create<Store>()(
       ) => set((s) => ({ data: { ...s.data, ...patch } })),
       setAll: (all: RegistrationData) => set({ data: all }),
       reset: () => set({ data: initialData }),
-      languages: [],
-      setLanguages: (languages: Language[]) => set({ languages }),
-
       yearsOfExperience: [],
       setYearsOfExperience: (years: YearsOfExperience[]) =>
         set({ yearsOfExperience: years }),
-
-      maxTravelDistances: [],
-      setMaxTravelDistances: (distances: MaximumDistanceTravel[]) =>
-        set({ maxTravelDistances: distances }),
 
       // Edit mode state
       isEditMode: false,
@@ -275,14 +247,19 @@ export const useRegistrationStore = create<Store>()(
           lastName: examinerData.account?.user?.lastName || "",
           emailAddress: examinerData.account?.user?.email || "",
           phoneNumber: examinerData.account?.user?.phone || "",
-          provinceOfResidence: examinerData.provinceOfResidence || "",
-          mailingAddress: examinerData.mailingAddress || "",
           landlineNumber: examinerData.landlineNumber || "",
+
+          // Step 2: Address
+          address: examinerData.address?.address || "",
+          street: examinerData.address?.street || "",
+          suite: examinerData.address?.suite || "",
+          postalCode: examinerData.address?.postalCode || "",
+          province: examinerData.address?.province || "",
+          city: examinerData.address?.city || "",
 
           // Step 2: Medical Credentials
           medicalSpecialty: examinerData.specialties || [],
           licenseNumber: examinerData.licenseNumber || "",
-          provinceOfLicensure: examinerData.provinceOfLicensure || "",
           licenseExpiryDate: examinerData.licenseExpiryDate
             ? new Date(examinerData.licenseExpiryDate)
                 .toISOString()
@@ -325,15 +302,6 @@ export const useRegistrationStore = create<Store>()(
           // Step 4: Experience Details
           experienceDetails: examinerData.bio || "",
 
-          // Step 5: Availability
-          preferredRegions: examinerData.preferredRegions
-            ? examinerData.preferredRegions.split(",")
-            : [],
-          maxTravelDistance: examinerData.maxTravelDistance || "",
-          acceptVirtualAssessments: examinerData.acceptVirtualAssessments
-            ? "yes"
-            : "no",
-
           // Step 6: Legal
           consentBackgroundVerification:
             examinerData.isConsentToBackgroundVerification || false,
@@ -343,14 +311,14 @@ export const useRegistrationStore = create<Store>()(
           IMEFee: examinerData.feeStructure?.[0]?.IMEFee
             ? examinerData.feeStructure[0].IMEFee.toString()
             : "",
-          
+
           recordReviewFee: examinerData.feeStructure?.[0]?.recordReviewFee
             ? examinerData.feeStructure[0].recordReviewFee.toString()
             : "",
           hourlyRate: examinerData.feeStructure?.[0]?.hourlyRate
             ? examinerData.feeStructure[0].hourlyRate.toString()
             : "",
-          
+
           cancellationFee: examinerData.feeStructure?.[0]?.cancellationFee
             ? examinerData.feeStructure[0].cancellationFee.toString()
             : "",
@@ -379,15 +347,21 @@ export const selectStep1 = (d: RegistrationData): Step1PersonalInfo => ({
   lastName: d.lastName,
   phoneNumber: d.phoneNumber,
   emailAddress: d.emailAddress,
-  provinceOfResidence: d.provinceOfResidence,
-  mailingAddress: d.mailingAddress,
   landlineNumber: d.landlineNumber,
+});
+
+export const selectStep2Address = (d: RegistrationData): Step2Address => ({
+  address: d.address || "",
+  street: d.street || "",
+  suite: d.suite || "",
+  postalCode: d.postalCode || "",
+  province: d.province || "",
+  city: d.city || "",
 });
 
 export const selectStep2 = (d: RegistrationData): Step2MedicalCredentials => ({
   medicalSpecialty: d.medicalSpecialty || [],
   licenseNumber: d.licenseNumber,
-  provinceOfLicensure: d.provinceOfLicensure,
   licenseExpiryDate: d.licenseExpiryDate,
   medicalLicense: d.medicalLicense,
   cvResume: d.cvResume,
@@ -401,14 +375,6 @@ export const selectStep3 = (d: RegistrationData): Step3IMEExperience => ({
 
 export const selectStep4 = (d: RegistrationData): Step4ExperienceDetails => ({
   experienceDetails: d.experienceDetails,
-});
-
-export const selectStep5 = (d: RegistrationData): Step5Availability => ({
-  preferredRegions: d.preferredRegions,
-  maxTravelDistance: d.maxTravelDistance,
-  daysAvailable: d.daysAvailable,
-  timeWindows: d.timeWindows,
-  acceptVirtualAssessments: d.acceptVirtualAssessments,
 });
 
 export const selectStep6 = (d: RegistrationData): Step6Legal => ({

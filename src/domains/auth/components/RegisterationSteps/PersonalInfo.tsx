@@ -20,16 +20,9 @@ import {
 } from "@/domains/auth/schemas/auth.schemas";
 import authActions from "../../actions";
 import ErrorMessages from "@/constants/ErrorMessages";
-import {
-  FormProvider,
-  FormField,
-  FormDropdown,
-  FormPhoneInput,
-  FormGoogleMapsInput,
-} from "@/components/form";
+import { FormProvider, FormField, FormPhoneInput } from "@/components/form";
 import { UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
-import { provinces } from "@/constants/options";
 
 const PersonalInfo: React.FC<RegStepProps> = ({
   onNext,
@@ -46,8 +39,6 @@ const PersonalInfo: React.FC<RegStepProps> = ({
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
       emailAddress: data.emailAddress,
-      provinceOfResidence: data.provinceOfResidence,
-      mailingAddress: data.mailingAddress,
       landlineNumber: data.landlineNumber,
     },
     mode: "onSubmit",
@@ -61,8 +52,6 @@ const PersonalInfo: React.FC<RegStepProps> = ({
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
       emailAddress: data.emailAddress,
-      provinceOfResidence: data.provinceOfResidence,
-      mailingAddress: data.mailingAddress,
       landlineNumber: data.landlineNumber,
     });
   }, [
@@ -70,8 +59,6 @@ const PersonalInfo: React.FC<RegStepProps> = ({
     data.lastName,
     data.phoneNumber,
     data.emailAddress,
-    data.provinceOfResidence,
-    data.mailingAddress,
     data.landlineNumber,
     form,
   ]);
@@ -110,19 +97,19 @@ const PersonalInfo: React.FC<RegStepProps> = ({
         gradientTo="#00A8FF"
       />
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="space-y-6 pb-8 md:px-0">
+        <div className="space-y-4 pb-6 md:px-0">
           <div className="pt-1 md:pt-0">
             <h3 className="mt-4 mb-2 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
               Enter Your Personal Details
             </h3>
-            <div className="mt-6 md:px-0 px-8 grid grid-cols-1 gap-x-14 gap-y-5 md:mt-8 md:grid-cols-2">
+            <div className="mt-4 md:px-0 px-8 grid grid-cols-1 gap-x-12 gap-y-4 md:mt-6 md:grid-cols-2">
               <FormField name="firstName" label="First Name" required>
                 {(field: UseFormRegisterReturn & { error?: boolean }) => (
                   <Input
                     {...field}
                     id="firstName"
                     icon={User}
-                    placeholder="Dr. Sarah"
+                    placeholder="Enter your first name"
                     validationType="name"
                     onBlur={(e) => {
                       field.onBlur(e);
@@ -141,7 +128,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                     {...field}
                     id="lastName"
                     icon={User}
-                    placeholder="Ahmed"
+                    placeholder="Enter your last name"
                     validationType="name"
                     onBlur={(e) => {
                       field.onBlur(e);
@@ -153,19 +140,6 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                   />
                 )}
               </FormField>
-
-              <FormPhoneInput
-                name="phoneNumber"
-                label="Phone Number"
-                required
-              />
-
-              <FormPhoneInput
-                name="landlineNumber"
-                label="Landline Number"
-                required
-                icon={PhoneCall}
-              />
 
               <FormField
                 name="emailAddress"
@@ -180,7 +154,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                     id="emailAddress"
                     icon={Mail}
                     type="email"
-                    placeholder="john.doe@example.com"
+                    placeholder="Enter your email address"
                     disabled={isEditMode}
                     className={
                       isEditMode ? "bg-gray-100 cursor-not-allowed" : ""
@@ -189,39 +163,24 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                 )}
               </FormField>
 
-              <FormDropdown
-                name="provinceOfResidence"
-                label="Province of Residence"
-                options={provinces}
+              <FormPhoneInput
+                name="phoneNumber"
+                label="Cell Number"
                 required
-                placeholder="Select Province"
-                icon={null}
+                placeholder="Enter your cell number"
               />
 
-              <div className="md:col-span-2 flex justify-center">
-                <div className="w-full max-w-md">
-                  <FormGoogleMapsInput
-                    name="mailingAddress"
-                    label="Mailing Address"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* <FormField name="mailingAddress" label="Mailing Address" required>
-                {(field: UseFormRegisterReturn & { error?: boolean }) => (
-                  <Input
-                    {...field}
-                    id="mailingAddress"
-                    icon={MapPin}
-                    placeholder="125 Bay Street, Suite 600"
-                  />
-                )}
-              </FormField> */}
+              <FormPhoneInput
+                name="landlineNumber"
+                label="Work Number"
+                required
+                icon={PhoneCall}
+                placeholder="Enter your work number"
+              />
             </div>
           </div>
 
-          <div className="mt-10 flex flex-row justify-center gap-3 px-2 md:mt-12 md:justify-between md:gap-4 md:px-0">
+          <div className="mt-6 flex flex-row justify-center gap-3 px-2 md:mt-8 md:justify-between md:gap-4 md:px-0">
             <div className="hidden md:block" />
             <ContinueButton
               onClick={form.handleSubmit(onSubmit)}

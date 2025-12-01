@@ -11,30 +11,30 @@ export type UpdateMedicalExaminerInput = {
   lastName?: string;
   email?: string;
   phone?: string;
-  provinceOfResidence?: string;
-  mailingAddress?: string;
   landlineNumber?: string;
 
-  // step 2
+  // step 2 - Address
+  address?: string;
+  street?: string;
+  suite?: string;
+  postalCode?: string;
+  province?: string;
+  city?: string;
+
+  // step 2 - Medical Credentials
   specialties?: string[];
   licenseNumber?: string;
-  provinceOfLicensure?: string;
   licenseExpiryDate?: Date;
   medicalLicenseDocumentId?: string;
   resumeDocumentId?: string;
 
   // step 3
   yearsOfIMEExperience?: string;
-  languagesSpoken?: string[];
+  languagesSpoken?: string[]; // Optional - not used in current flow
   forensicAssessmentTrained?: boolean;
 
   // step 4
   experienceDetails?: string;
-
-  // step 5
-  preferredRegions?: string[];
-  maxTravelDistance?: string;
-  acceptVirtualAssessments?: boolean;
 
   // step 7
   signedNDADocumentId?: string;

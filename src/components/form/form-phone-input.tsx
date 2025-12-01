@@ -19,6 +19,7 @@ const FormPhoneInput = <TFieldValues extends FieldValues>({
   name,
   label,
   required = false,
+  placeholder,
   className = "",
   disabled = false,
   icon,
@@ -51,6 +52,7 @@ const FormPhoneInput = <TFieldValues extends FieldValues>({
             disabled={disabled}
             className={className}
             icon={icon}
+            placeholder={placeholder}
           />
         )}
       />

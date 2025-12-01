@@ -11,30 +11,31 @@ export type CreateMedicalExaminerInput = {
   lastName: string;
   email: string;
   phone: string;
-  provinceOfResidence: string;
-  mailingAddress: string;
   landlineNumber: string;
 
-  // step 2
+  // step 2 - Address
+  address: string;
+  street?: string;
+  suite?: string;
+  postalCode?: string;
+  province?: string;
+  city?: string;
+
+  // step 2 - Medical Credentials
   specialties: string[];
   licenseNumber: string;
-  provinceOfLicensure: string;
-  licenseExpiryDate: Date;
+  licenseExpiryDate?: Date; // Optional
   medicalLicenseDocumentId: string;
   resumeDocumentId: string;
 
   // step 3
   yearsOfIMEExperience: string;
-  languagesSpoken: string[];
+  languagesSpoken?: string[]; // Optional
   forensicAssessmentTrained: boolean;
 
   // step 4
   experienceDetails?: string;
 
-  // step 5
-  preferredRegions?: string[];
-  maxTravelDistance?: string;
-  acceptVirtualAssessments?: boolean;
 
   // step 7
   // signedNDADocumentId: string;
@@ -91,19 +92,35 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
       },
     });
 
+    // Create address
+    const address = await prisma.address.create({
+      data: {
+        address: payload.address,
+        street: payload.street || null,
+        suite: payload.suite || null,
+        postalCode: payload.postalCode || null,
+        province: payload.province || null,
+        city: payload.city || null,
+      },
+    });
+
     // Create examiner profile
     const examinerProfile = await prisma.examinerProfile.create({
       data: {
         account: {
           connect: { id: account.id },
         },
-        provinceOfResidence: payload.provinceOfResidence,
-        mailingAddress: payload.mailingAddress,
+        address: {
+          connect: { id: address.id },
+        },
+        provinceOfResidence: payload.province || "", // Use address province as residence
+        mailingAddress: payload.address, // Keep mailingAddress for backward compatibility
         landlineNumber: payload.landlineNumber,
         specialties: payload.specialties,
         licenseNumber: payload.licenseNumber,
-        provinceOfLicensure: payload.provinceOfLicensure,
-        licenseExpiryDate: payload.licenseExpiryDate,
+        ...(payload.licenseExpiryDate && {
+          licenseExpiryDate: payload.licenseExpiryDate,
+        }),
         medicalLicenseDocument: {
           connect: { id: payload.medicalLicenseDocumentId },
         },
@@ -119,9 +136,6 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
         isConsentToBackgroundVerification:
           payload.consentBackgroundVerification,
         bio: payload.experienceDetails || "",
-        preferredRegions: payload.preferredRegions?.join(","),
-        maxTravelDistance: payload.maxTravelDistance,
-        acceptVirtualAssessments: payload.acceptVirtualAssessments,
         // insuranceDocument: {
         //   connect: { id: payload.insuranceProofDocumentId },
         // },
@@ -130,13 +144,20 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
     });
 
     // Create languages, payment terms, availability provider, and send email in parallel
+    const languagePromises = [];
+    if (payload.languagesSpoken && payload.languagesSpoken.length > 0) {
+      languagePromises.push(
+        prisma.examinerLanguage.createMany({
+          data: payload.languagesSpoken.map((language) => ({
+            examinerProfileId: examinerProfile.id,
+            languageId: language,
+          })),
+        })
+      );
+    }
+    
     await Promise.all([
-      prisma.examinerLanguage.createMany({
-        data: payload.languagesSpoken.map((language) => ({
-          examinerProfileId: examinerProfile.id,
-          languageId: language,
-        })),
-      }),
+      ...languagePromises,
       // prisma.examinerFeeStructure.create({
       //   data: {
       //     examinerProfileId: examinerProfile.id,

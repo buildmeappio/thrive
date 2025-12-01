@@ -1,7 +1,7 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
-import { BackButton, ContinueButton, ProgressIndicator } from "@/components";
+import { BackButton, ContinueButton, ProgressIndicator, FileUploadInput } from "@/components";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   step3IMEExperienceSchema,
@@ -15,6 +15,8 @@ import {
 import { FormProvider, FormDropdown } from "@/components/form";
 import { Controller } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
+import getExamTypesAction from "@/server/actions/getExamTypes";
+import { ExamTypesResponse, ExamType } from "@/server/types/examTypes";
 
 interface Step3IMEExperinceProps {
   onNext: () => void;
@@ -29,17 +31,49 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { data, merge, languages, yearsOfExperience } =
-    useRegistrationStore();
+  const { data, merge, yearsOfExperience } = useRegistrationStore();
+  const [examTypes, setExamTypes] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+  const [loadingExamTypes, setLoadingExamTypes] = useState(true);
+
+  // Fetch exam types from database
+  useEffect(() => {
+    const fetchExamTypes = async () => {
+      try {
+        setLoadingExamTypes(true);
+        const result: ExamTypesResponse = await getExamTypesAction();
+
+        if (result.success) {
+          const formattedExamTypes = result.data.map((examType: ExamType) => ({
+            value: examType.id,
+            label: examType.name,
+          }));
+          setExamTypes(formattedExamTypes);
+        } else {
+          console.error("Failed to fetch exam types:", result.message);
+          setExamTypes([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch exam types:", error);
+        // Fallback to empty array if fetch fails
+        setExamTypes([]);
+      } finally {
+        setLoadingExamTypes(false);
+      }
+    };
+
+    fetchExamTypes();
+  }, []);
 
   const form = useForm<Step3IMEExperienceInput>({
     schema: step3IMEExperienceSchema,
     defaultValues: {
       ...step3InitialValues,
+      medicalSpecialty: data.medicalSpecialty || [],
       yearsOfIMEExperience: data.yearsOfIMEExperience || "",
-      provinceOfLicensure: data.provinceOfLicensure || "",
-      languagesSpoken: data.languagesSpoken || [],
       forensicAssessmentTrained: data.forensicAssessmentTrained || "",
+      cvResume: data.cvResume || null,
     },
     mode: "onSubmit",
   });
@@ -48,16 +82,16 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
   useEffect(() => {
     form.reset({
       ...step3InitialValues,
+      medicalSpecialty: data.medicalSpecialty || [],
       yearsOfIMEExperience: data.yearsOfIMEExperience || "",
-      provinceOfLicensure: data.provinceOfLicensure || "",
-      languagesSpoken: data.languagesSpoken || [],
       forensicAssessmentTrained: data.forensicAssessmentTrained || "",
+      cvResume: data.cvResume || null,
     });
   }, [
+    data.medicalSpecialty,
     data.yearsOfIMEExperience,
-    data.provinceOfLicensure,
-    data.languagesSpoken,
     data.forensicAssessmentTrained,
+    data.cvResume,
     form,
   ]);
 
@@ -86,6 +120,21 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
 
             <div className="mt-6 md:px-0 px-8 grid grid-cols-1 gap-x-14 gap-y-6 md:mt-8 md:grid-cols-2">
               <FormDropdown
+                name="medicalSpecialty"
+                label="Medical Specialties"
+                options={examTypes}
+                required
+                placeholder={
+                  loadingExamTypes
+                    ? "Loading medical specialties..."
+                    : "Select Medical Specialties"
+                }
+                multiSelect={true}
+                icon={null}
+                disabled={loadingExamTypes}
+              />
+
+              <FormDropdown
                 name="yearsOfIMEExperience"
                 label="Years of IME Experience"
                 options={yearsOfExperience.map((year) => ({
@@ -97,17 +146,26 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                 icon={null}
               />
 
-              <FormDropdown
-                name="languagesSpoken"
-                label="Languages Spoken"
-                options={languages.map((language) => ({
-                  value: language.id,
-                  label: language.name,
-                }))}
-                required
-                placeholder="Select Language"
-                multiSelect={true}
-                icon={null}
+              <Controller
+                name="cvResume"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <div className="space-y-2">
+                    <FileUploadInput
+                      name="cvResume"
+                      label="Upload CV / Resume"
+                      value={field.value}
+                      onChange={(file) => {
+                        field.onChange(file);
+                      }}
+                      accept=".pdf,.doc,.docx"
+                      required
+                      placeholder="Upload CV / Resume"
+                      error={fieldState.error?.message}
+                      showIcon={false}
+                    />
+                  </div>
+                )}
               />
 
               <Controller

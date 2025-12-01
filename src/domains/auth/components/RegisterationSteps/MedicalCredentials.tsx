@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Input } from "@/components/ui";
 import {
   BackButton,
@@ -18,12 +18,9 @@ import {
   useRegistrationStore,
 } from "@/domains/auth/state/useRegistrationStore";
 // import DatePickerInput from "@/components/DatePickerInput";
-import { FormProvider, FormField, FormDropdown } from "@/components/form";
+import { FormProvider, FormField } from "@/components/form";
 import { Controller, UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
-import { provinces } from "@/constants/options";
-import getExamTypesAction from "@/server/actions/getExamTypes";
-import { ExamTypesResponse, ExamType } from "@/server/types/examTypes";
 
 const MedicalCredentials: React.FC<RegStepProps> = ({
   onNext,
@@ -33,55 +30,19 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
 }) => {
   const { data, merge } = useRegistrationStore();
   const [isClient, setIsClient] = React.useState(false);
-  const [examTypes, setExamTypes] = useState<
-    Array<{ value: string; label: string }>
-  >([]);
-  const [loadingExamTypes, setLoadingExamTypes] = useState(true);
 
   // Ensure component only renders on client to avoid hydration mismatch
   React.useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Fetch exam types from database
-  useEffect(() => {
-    const fetchExamTypes = async () => {
-      try {
-        setLoadingExamTypes(true);
-        const result: ExamTypesResponse = await getExamTypesAction();
-
-        if (result.success) {
-          const formattedExamTypes = result.data.map((examType: ExamType) => ({
-            value: examType.id,
-            label: examType.name,
-          }));
-          setExamTypes(formattedExamTypes);
-        } else {
-          console.error("Failed to fetch exam types:", result.message);
-          setExamTypes([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch exam types:", error);
-        // Fallback to empty array if fetch fails
-        setExamTypes([]);
-      } finally {
-        setLoadingExamTypes(false);
-      }
-    };
-
-    fetchExamTypes();
-  }, []);
-
   const form = useForm<Step2MedicalCredentialsInput>({
     schema: step2MedicalCredentialsSchema,
     defaultValues: {
       ...step2InitialValues,
-      medicalSpecialty: data.medicalSpecialty,
       licenseNumber: data.licenseNumber,
-      provinceOfLicensure: data.provinceOfLicensure,
       // licenseExpiryDate: data.licenseExpiryDate,
       medicalLicense: data.medicalLicense,
-      cvResume: data.cvResume,
     },
     mode: "onSubmit",
   });
@@ -90,21 +51,11 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
   useEffect(() => {
     form.reset({
       ...step2InitialValues,
-      medicalSpecialty: data.medicalSpecialty,
       licenseNumber: data.licenseNumber,
-      provinceOfLicensure: data.provinceOfLicensure,
       // licenseExpiryDate: data.licenseExpiryDate,
       medicalLicense: data.medicalLicense,
-      cvResume: data.cvResume,
     });
-  }, [
-    data.medicalSpecialty,
-    data.licenseNumber,
-    data.provinceOfLicensure,
-    data.medicalLicense,
-    data.cvResume,
-    form,
-  ]);
+  }, [data.licenseNumber, data.medicalLicense, form]);
 
   const onSubmit = (values: Step2MedicalCredentialsInput) => {
     merge(values as Partial<RegistrationData>);
@@ -150,40 +101,16 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-x-14 gap-y-4 md:mt-8 md:grid-cols-2 md:px-0 px-8">
-            <FormDropdown
-              name="medicalSpecialty"
-              label="Medical Specialties"
-              options={examTypes}
-              required
-              placeholder={
-                loadingExamTypes
-                  ? "Loading medical specialties..."
-                  : "Select Medical Specialties"
-              }
-              multiSelect={true}
-              icon={null}
-              disabled={loadingExamTypes}
-            />
-
-            <FormField name="licenseNumber" label="License Number" required>
+            <FormField name="licenseNumber" label="CPS Number" required>
               {(field: UseFormRegisterReturn & { error?: boolean }) => (
                 <Input
                   {...field}
                   id="licenseNumber"
-                  placeholder="CPSO #09234"
+                  placeholder="Enter your CPS number"
                   validationType="license"
                 />
               )}
             </FormField>
-
-            <FormDropdown
-              name="provinceOfLicensure"
-              label="Province of Licensure"
-              options={provinces}
-              required
-              placeholder="Select Province"
-              icon={null}
-            />
 
             {/* <Controller
               name="licenseExpiryDate"
@@ -227,30 +154,6 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
                 </div>
               )}
             />
-
-            <div className="md:col-span-2 md:flex md:justify-center">
-              <Controller
-                name="cvResume"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <div className="space-y-2 md:w-1/2">
-                    <FileUploadInput
-                      name="cvResume"
-                      label="Upload CV / Resume"
-                      value={field.value}
-                      onChange={(file) => {
-                        field.onChange(file);
-                      }}
-                      accept=".pdf,.doc,.docx"
-                      required
-                      placeholder="Upload CV / Resume"
-                      error={fieldState.error?.message}
-                      showIcon={false}
-                    />
-                  </div>
-                )}
-              />
-            </div>
           </div>
         </div>
 

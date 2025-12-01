@@ -16,9 +16,7 @@ const Page = async ({
   searchParams: Promise<{ token?: string }>;
 }) => {
   const { token } = await searchParams;
-  const languages = await authActions.getLanguages();
   const yearsOfExperience = await authActions.getYearsOfExperience();
-  const maxTravelDistances = await authActions.getMaxTravelDistances();
 
   // If token exists, fetch examiner data and pass to RegisterForm
   let examinerData = null;
@@ -35,9 +33,7 @@ const Page = async ({
 
   return (
     <RegisterForm
-      languages={languages}
       yearsOfExperience={yearsOfExperience}
-      maxTravelDistances={maxTravelDistances}
       examinerData={examinerData}
     />
   );
