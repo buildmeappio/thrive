@@ -6,6 +6,7 @@ import { useRegistrationStore } from "@/domains/auth/state/useRegistrationStore"
 import { uploadFileToS3 } from "@/lib/s3";
 import authActions from "@/domains/auth/actions";
 import { CreateMedicalExaminerInput } from "@/domains/auth/server/handlers/createMedicalExaminer";
+import { log, error } from "@/utils/logger";
 
 const SubmitConfirmation: React.FC<RegStepProps> = ({
   onNext,
@@ -21,7 +22,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
     setLoading(true);
     setErr(null);
     try {
-      console.log(data);
+      log(data);
 
       if (
         !data.medicalLicense ||
@@ -123,7 +124,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
       // Check if the action was successful
       if (result && !result.success) {
         setErr(result.message || "Submission failed");
-        console.error("Submission failed:", result.message);
+        error("Submission failed:", result.message);
         setLoading(false);
         return;
       }
@@ -137,7 +138,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
       // Handle unexpected errors
       const errorMessage =
         e instanceof Error ? e.message : "An unexpected error occurred";
-      console.error("Submission error:", e);
+      error("Submission error:", e);
       setErr(errorMessage);
       setLoading(false);
     }

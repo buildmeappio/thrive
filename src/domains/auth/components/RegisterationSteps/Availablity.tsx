@@ -18,6 +18,7 @@ import {
   RegistrationData,
 } from "@/domains/auth/state/useRegistrationStore";
 import { provinces } from "@/constants/options";
+import { log } from "@/utils/logger";
 
 const Availablity: React.FC<RegStepProps> = ({
   onNext,
@@ -58,7 +59,7 @@ const Availablity: React.FC<RegStepProps> = ({
   ]);
 
   const onSubmit = (values: Step5AvailabilityInput) => {
-    console.log("Step 5 Form Data:", values);
+    log("Step 5 Form Data:", values);
     merge(values as Partial<RegistrationData>);
     onNext();
   };

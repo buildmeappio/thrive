@@ -4,6 +4,7 @@ import { tokenService, userService } from "../services";
 import emailService from "@/server/services/email.service";
 import { ENV } from "@/constants/variables";
 import prisma from "@/lib/db";
+import { log, error } from "@/utils/logger";
 
 export type ForgotPasswordInput = {
   email: string;
@@ -14,7 +15,7 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
   // This ensures consistency with how login works
   const email = payload.email.trim();
 
-  console.log(`[ForgotPassword] Looking for user with email: ${email}`);
+  log(`[ForgotPassword] Looking for user with email: ${email}`);
 
   let user;
   try {
@@ -27,10 +28,10 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
     );
 
     if (examinerAccounts.length === 0) {
-      console.log(
+      log(
         `[ForgotPassword] User found but no medical examiner account for: ${email}`
       );
-      console.log(
+      log(
         `[ForgotPassword] User has ${
           user.accounts.length
         } account(s) with roles: ${user.accounts
@@ -45,12 +46,12 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
       };
     }
 
-    console.log(
+    log(
       `[ForgotPassword] User found: ${user.id}, email in DB: ${user.email}, sending email to: ${user.email}`
     );
   } catch {
     // User not found - same behavior as login
-    console.log(`[ForgotPassword] User not found for: ${email}`);
+    error(`[ForgotPassword] User not found for: ${email}`);
     // For security, don't reveal if email exists or not
     return {
       success: true,
@@ -76,7 +77,7 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
   });
 
   if (!examinerProfile) {
-    console.log(
+    log(
       `[ForgotPassword] No examiner profile found for account: ${account.id}`
     );
     return {
@@ -101,7 +102,7 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
 
   // Send email using the existing email service
   try {
-    console.log(`[ForgotPassword] Attempting to send email to: ${user.email}`);
+    log(`[ForgotPassword] Attempting to send email to: ${user.email}`);
     const result = await emailService.sendEmail(
       "Reset Your Password - Thrive Examiner",
       "password-reset.html",
@@ -112,24 +113,20 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
     );
 
     if (!result.success) {
-      console.error(
-        `[ForgotPassword] Email service returned error: ${result.error}`
-      );
+      error(`[ForgotPassword] Email service returned error: ${result.error}`);
       throw new Error(result.error);
     }
 
-    console.log(
-      `[ForgotPassword] ✅ Email sent successfully to: ${user.email}`
-    );
-  } catch (error) {
-    console.error(
+    log(`[ForgotPassword] ✅ Email sent successfully to: ${user.email}`);
+  } catch (err) {
+    error(
       `[ForgotPassword] ❌ Error sending password reset email to ${user.email}:`,
-      error
+      err
     );
     // Log the full error details
     if (error instanceof Error) {
-      console.error(`[ForgotPassword] Error message: ${error.message}`);
-      console.error(`[ForgotPassword] Error stack: ${error.stack}`);
+      error(`[ForgotPassword] Error message: ${error.message}`);
+      error(`[ForgotPassword] Error stack: ${error.stack}`);
     }
     throw HttpError.internalServerError(
       "Failed to send password reset email. Please try again later."

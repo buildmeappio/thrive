@@ -13,6 +13,7 @@ import {
 } from "./RegisterationSteps";
 import { RegStepProps } from "@/domains/auth/types/index";
 import { useRegistrationStore } from "@/domains/auth/state/useRegistrationStore";
+import { log } from "@/utils/logger";
 
 type Language = {
   id: string;
@@ -101,8 +102,8 @@ const RegisterForm: React.FC<{
   ];
 
   const goToNext = () => {
-    console.log("goToNext", currentStep);
-    console.log("data", data);
+    log("goToNext", currentStep);
+    log("data", data);
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     }

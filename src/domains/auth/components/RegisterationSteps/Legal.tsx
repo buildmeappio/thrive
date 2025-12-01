@@ -59,11 +59,6 @@ const Legal: React.FC<RegStepProps> = ({
     onNext();
   };
 
-  // const downloadNDA = () => {
-  //   // replace with real download
-  //   console.log("Downloading NDA template...");
-  // };
-
   return (
     <div
       className="mt-4 flex w-full flex-col rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
