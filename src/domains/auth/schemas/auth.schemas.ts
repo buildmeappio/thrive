@@ -141,6 +141,24 @@ export const step1PersonalInfoSchema = z.object({
   emailAddress: z
     .string()
     .email({ message: "Please enter a valid email address" }),
+  city: z
+    .string()
+    .transform((val) => val.trim())
+    .refine((val) => val.length > 0, {
+      message: "City is required",
+    })
+    .refine((val) => val.length >= 2, {
+      message: "City must be at least 2 characters",
+    })
+    .refine((val) => val.length <= 100, {
+      message: "City must be less than 100 characters",
+    }),
+  province: z
+    .string()
+    .min(1, { message: "Province is required" }),
+  languagesSpoken: z
+    .array(z.string())
+    .min(1, { message: "At least one language must be selected" }),
 });
 
 export type Step1PersonalInfoInput = z.infer<typeof step1PersonalInfoSchema>;
@@ -210,28 +228,50 @@ export const step2MedicalCredentialsSchema = z.object({
   //   .min(1, { message: "License expiry date is required" }),
   medicalLicense: z
     .any()
-    .refine((val) => val !== null && val !== undefined && val !== "", {
-      message: "Medical license document is required",
+    .refine((val) => {
+      // Check if it's an array
+      if (Array.isArray(val)) {
+        return val.length > 0;
+      }
+      // Backward compatibility: allow single file
+      return val !== null && val !== undefined && val !== "";
+    }, {
+      message: "At least one medical license document is required",
     })
     .refine(
       (val) => {
         if (!val || val === "") return false;
+        
+        const allowedTypes = [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ];
+
+        // Handle array of files
+        if (Array.isArray(val)) {
+          return val.every((file) => {
+            if (!file) return false;
+            // Check if it's a File object
+            if (file instanceof File) {
+              return allowedTypes.includes(file.type);
+            }
+            // Check if it's an existing file object with type property
+            if (file.type) {
+              return allowedTypes.includes(file.type);
+            }
+            // Allow existing files without type check
+            return true;
+          });
+        }
+
+        // Handle single file (backward compatibility)
         // Check if it's a File object
         if (val instanceof File) {
-          const allowedTypes = [
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          ];
           return allowedTypes.includes(val.type);
         }
         // Check if it's an existing file object with type property
         if (val.type) {
-          const allowedTypes = [
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          ];
           return allowedTypes.includes(val.type);
         }
         return true; // Allow existing files without type check

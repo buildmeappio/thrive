@@ -12,6 +12,7 @@ import { uploadFileToS3 } from "@/lib/s3";
 import authActions from "@/domains/auth/actions";
 import { CreateMedicalExaminerInput } from "@/domains/auth/server/handlers/createMedicalExaminer";
 import { log, error } from "@/utils/logger";
+import { DocumentFile } from "@/domains/auth/state/useRegistrationStore";
 import {
   step6LegalSchema,
   Step6LegalInput,
@@ -78,22 +79,61 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         return;
       }
 
+      // Helper function to process a single file (File or ExistingDocument)
+      const processFile = async (file: DocumentFile) => {
+        if (!file) {
+          return { success: false as const, error: "No file provided" };
+        }
+        
+        // Check if it's an existing document
+        if ("isExisting" in file && file.isExisting) {
+          return { success: true as const, document: { id: file.id } };
+        }
+        
+        // It's a new File, upload it
+        if (file instanceof File) {
+          return await uploadFileToS3(file);
+        }
+        
+        return { success: false as const, error: "Invalid file type" };
+      };
+
+      // Handle medicalLicense - can be array or single file
+      const medicalLicenseFiles = Array.isArray(data.medicalLicense)
+        ? data.medicalLicense
+        : data.medicalLicense
+        ? [data.medicalLicense]
+        : [];
+
+      if (medicalLicenseFiles.length === 0) {
+        setErr("Please upload at least one medical license document");
+        setLoading(false);
+        return;
+      }
+
+      // Process all medical license files
+      const medicalLicenseResults = await Promise.all(
+        medicalLicenseFiles.map((file) => processFile(file))
+      );
+
+      // Check if all uploads succeeded
+      const failedUploads = medicalLicenseResults.filter((r) => !r.success);
+      if (failedUploads.length > 0) {
+        setErr("Failed to upload some medical license documents");
+        setLoading(false);
+        return;
+      }
+
+      // Use the first file's document ID for backward compatibility with backend
+      // TODO: Update backend to support multiple medical license documents
+      const medicalLicenseDocument = medicalLicenseResults[0];
+
       const [
-        medicalLicenseDocument,
         cvResumeDocument,
         // signedNDADocument,
         // insuranceProofDocument,
       ] = await Promise.all([
-        data.medicalLicense &&
-        "isExisting" in data.medicalLicense &&
-        data.medicalLicense.isExisting
-          ? { success: true, document: { id: data.medicalLicense.id } }
-          : uploadFileToS3(data.medicalLicense as File),
-        data.cvResume &&
-        "isExisting" in data.cvResume &&
-        data.cvResume.isExisting
-          ? { success: true, document: { id: data.cvResume.id } }
-          : uploadFileToS3(data.cvResume as File),
+        processFile(data.cvResume),
         // uploadFileToS3(data.signedNDA),
         // uploadFileToS3(data.insuranceProof),
       ]);
@@ -307,23 +347,23 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
               )}
             />
           </div>
+        </div>
 
-          <div className="mt-10 flex items-center justify-center gap-8 px-2 pb-8 md:mt-12 md:justify-between md:gap-4 md:px-0">
-            <BackButton
-              onClick={onPrevious}
-              disabled={currentStep === 1 || loading}
-              borderColor="#00A8FF"
-              iconColor="#00A8FF"
-            />
-            <ContinueButton
-              onClick={form.handleSubmit(handleSubmit)}
-              isLastStep={true}
-              gradientFrom="#89D7FF"
-              gradientTo="#00A8FF"
-              loading={loading}
-              disabled={form.formState.isSubmitting}
-            />
-          </div>
+        <div className="mt-10 flex items-center justify-center gap-8 px-2 pb-8 md:mt-12 md:justify-between md:gap-4 md:px-0">
+          <BackButton
+            onClick={onPrevious}
+            disabled={currentStep === 1 || loading}
+            borderColor="#00A8FF"
+            iconColor="#00A8FF"
+          />
+          <ContinueButton
+            onClick={form.handleSubmit(handleSubmit)}
+            isLastStep={true}
+            gradientFrom="#89D7FF"
+            gradientTo="#00A8FF"
+            loading={loading}
+            disabled={form.formState.isSubmitting}
+          />
         </div>
       </FormProvider>
     </div>

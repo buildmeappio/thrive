@@ -5,7 +5,7 @@ import {
   BackButton,
   ContinueButton,
   ProgressIndicator,
-  FileUploadInput,
+  MultipleFileUploadInput,
 } from "@/components";
 import {
   step2MedicalCredentialsSchema,
@@ -42,7 +42,11 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
       ...step2InitialValues,
       licenseNumber: data.licenseNumber,
       // licenseExpiryDate: data.licenseExpiryDate,
-      medicalLicense: data.medicalLicense,
+      medicalLicense: Array.isArray(data.medicalLicense)
+        ? data.medicalLicense
+        : data.medicalLicense
+        ? [data.medicalLicense]
+        : [],
     },
     mode: "onSubmit",
   });
@@ -53,7 +57,11 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
       ...step2InitialValues,
       licenseNumber: data.licenseNumber,
       // licenseExpiryDate: data.licenseExpiryDate,
-      medicalLicense: data.medicalLicense,
+      medicalLicense: Array.isArray(data.medicalLicense)
+        ? data.medicalLicense
+        : data.medicalLicense
+        ? [data.medicalLicense]
+        : [],
     });
   }, [data.licenseNumber, data.medicalLicense, form]);
 
@@ -93,20 +101,23 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
       />
 
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="flex-grow space-y-4 md:px-0">
+        <div className="grow space-y-4 md:px-0">
           <div className="text-center">
             <h3 className="mt-4 mb-2 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
-              Enter Your Medical Credentials
+              Medical Credentials
             </h3>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-x-14 gap-y-4 md:mt-8 md:grid-cols-2 md:px-0 px-8">
-            <FormField name="licenseNumber" label="CPS Number" required>
+          <div className="mt-4 grid grid-cols-1 gap-x-14 gap-y-3 md:mt-6 md:grid-cols-2 md:px-0 px-8">
+            <FormField
+              name="licenseNumber"
+              label="Registration Number"
+              required>
               {(field: UseFormRegisterReturn & { error?: boolean }) => (
                 <Input
                   {...field}
                   id="licenseNumber"
-                  placeholder="Enter your CPS number"
+                  placeholder="Enter your registration number"
                   validationType="license"
                 />
               )}
@@ -137,13 +148,19 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
               name="medicalLicense"
               control={form.control}
               render={({ field, fieldState }) => (
-                <div className="space-y-2">
-                  <FileUploadInput
+                <div className="space-y-2 md:col-span-2">
+                  <MultipleFileUploadInput
                     name="medicalLicense"
                     label="Upload Medical License"
-                    value={field.value}
-                    onChange={(file) => {
-                      field.onChange(file);
+                    value={
+                      Array.isArray(field.value)
+                        ? field.value
+                        : field.value
+                        ? [field.value]
+                        : []
+                    }
+                    onChange={(files) => {
+                      field.onChange(files);
                     }}
                     accept=".pdf,.doc,.docx"
                     required

@@ -1,5 +1,5 @@
 export { default as PersonalInfo } from "./PersonalInfo";
-export { default as AddressLookup } from "./AddressLookup";
+// export { default as AddressLookup } from "./AddressLookup";
 export { default as MedicalCredentials } from "./MedicalCredentials";
 export { default as IMEExperince } from "./IMEExperience";
 export { default as ExperienceDetails } from "./ExperienceDetails";

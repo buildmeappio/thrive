@@ -1,12 +1,7 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui";
-import {
-  Mail,
-  // MapPin,
-  User,
-  PhoneCall,
-} from "lucide-react";
+import { Mail, MapPin, User, PhoneCall, Languages } from "lucide-react";
 import { ContinueButton, ProgressIndicator } from "@/components";
 import {
   useRegistrationStore,
@@ -20,9 +15,16 @@ import {
 } from "@/domains/auth/schemas/auth.schemas";
 import authActions from "../../actions";
 import ErrorMessages from "@/constants/ErrorMessages";
-import { FormProvider, FormField, FormPhoneInput } from "@/components/form";
+import {
+  FormProvider,
+  FormField,
+  FormPhoneInput,
+  FormDropdown,
+} from "@/components/form";
 import { UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
+import { provinces } from "@/constants/options";
+import getLanguages from "@/domains/auth/actions/getLanguages";
 
 const PersonalInfo: React.FC<RegStepProps> = ({
   onNext,
@@ -30,6 +32,31 @@ const PersonalInfo: React.FC<RegStepProps> = ({
   totalSteps,
 }) => {
   const { data, merge, isEditMode } = useRegistrationStore();
+  const [languages, setLanguages] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [loadingLanguages, setLoadingLanguages] = useState(true);
+
+  // Fetch languages from database
+  useEffect(() => {
+    const fetchLanguages = async () => {
+      try {
+        setLoadingLanguages(true);
+        const languagesData = await getLanguages();
+        const languageOptions = languagesData.map((lang: any) => ({
+          value: lang.id,
+          label: lang.name,
+        }));
+        setLanguages(languageOptions);
+      } catch (error) {
+        console.error("Failed to fetch languages:", error);
+        setLanguages([]);
+      } finally {
+        setLoadingLanguages(false);
+      }
+    };
+    fetchLanguages();
+  }, []);
 
   const form = useForm<Step1PersonalInfoInput>({
     schema: step1PersonalInfoSchema,
@@ -40,6 +67,9 @@ const PersonalInfo: React.FC<RegStepProps> = ({
       phoneNumber: data.phoneNumber,
       emailAddress: data.emailAddress,
       landlineNumber: data.landlineNumber,
+      city: data.city || "",
+      province: data.province || "",
+      languagesSpoken: data.languagesSpoken || [],
     },
     mode: "onSubmit",
   });
@@ -53,6 +83,9 @@ const PersonalInfo: React.FC<RegStepProps> = ({
       phoneNumber: data.phoneNumber,
       emailAddress: data.emailAddress,
       landlineNumber: data.landlineNumber,
+      city: data.city || "",
+      province: data.province || "",
+      languagesSpoken: data.languagesSpoken || [],
     });
   }, [
     data.firstName,
@@ -60,6 +93,9 @@ const PersonalInfo: React.FC<RegStepProps> = ({
     data.phoneNumber,
     data.emailAddress,
     data.landlineNumber,
+    data.city,
+    data.province,
+    data.languagesSpoken,
     form,
   ]);
 
@@ -100,7 +136,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
         <div className="space-y-4 pb-6 md:px-0">
           <div className="pt-1 md:pt-0">
             <h3 className="mt-4 mb-2 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
-              Enter Your Personal Details
+              Personal Details
             </h3>
             <div className="mt-4 md:px-0 px-8 grid grid-cols-1 gap-x-12 gap-y-4 md:mt-6 md:grid-cols-2">
               <FormField name="firstName" label="First Name" required>
@@ -176,6 +212,40 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                 required
                 icon={PhoneCall}
                 placeholder="Enter your work number"
+              />
+
+              <FormField name="city" label="City" required>
+                {(field: UseFormRegisterReturn & { error?: boolean }) => (
+                  <Input
+                    {...field}
+                    id="city"
+                    icon={MapPin}
+                    placeholder="Enter your city"
+                    validationType="name"
+                  />
+                )}
+              </FormField>
+
+              <FormDropdown
+                name="province"
+                label="Province"
+                required
+                options={provinces}
+                placeholder="Select Province"
+                icon={<MapPin size={16} color="#A4A4A4" strokeWidth={2} />}
+              />
+
+              <FormDropdown
+                name="languagesSpoken"
+                label="Languages Spoken"
+                required
+                options={languages}
+                placeholder={
+                  loadingLanguages ? "Loading languages..." : "Select languages"
+                }
+                multiSelect={true}
+                icon={<Languages size={16} color="#A4A4A4" strokeWidth={2} />}
+                disabled={loadingLanguages}
               />
             </div>
           </div>

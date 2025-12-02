@@ -43,6 +43,9 @@ export type Step1PersonalInfo = {
   phoneNumber: string;
   emailAddress: string;
   landlineNumber: string;
+  city: string;
+  province: string;
+  languagesSpoken: string[];
 };
 
 export type Step2Address = {
@@ -58,7 +61,7 @@ export type Step2MedicalCredentials = {
   medicalSpecialty: string[];
   licenseNumber: string;
   licenseExpiryDate?: string; // ISO yyyy-mm-dd (optional)
-  medicalLicense: DocumentFile;
+  medicalLicense: DocumentFile | DocumentFile[]; // Support both single file (backward compatibility) and array
   cvResume: DocumentFile;
 };
 

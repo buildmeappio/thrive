@@ -16,6 +16,9 @@ export const step1InitialValues: Step1PersonalInfoInput = {
   phoneNumber: "",
   emailAddress: "",
   landlineNumber: "",
+  city: "",
+  province: "",
+  languagesSpoken: [],
 };
 
 export const step2AddressInitialValues: Step2AddressInput = {
@@ -30,7 +33,7 @@ export const step2AddressInitialValues: Step2AddressInput = {
 export const step2InitialValues: Step2MedicalCredentialsInput = {
   licenseNumber: "",
   // licenseExpiryDate: "",
-  medicalLicense: null,
+  medicalLicense: [],
 };
 
 export const step3InitialValues: Step3IMEExperienceInput = {

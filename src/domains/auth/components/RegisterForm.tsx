@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import {
   PersonalInfo,
-  AddressLookup,
   MedicalCredentials,
   IMEExperince,
   ExperienceDetails,
@@ -55,7 +54,6 @@ const RegisterForm: React.FC<{
 
   const steps: Step[] = [
     { component: PersonalInfo },
-    { component: AddressLookup },
     { component: MedicalCredentials },
     { component: IMEExperince },
     { component: ExperienceDetails },
@@ -92,10 +90,10 @@ const RegisterForm: React.FC<{
     );
   };
 
-  const showTitle = currentStep <= 6;
+  const showTitle = currentStep <= 5;
   return (
-    <div className="mx-auto max-w-[900px] p-4 md:py-7 py-10">
-      <div className="mb-8 flex h-[60px] items-center justify-between ">
+    <div className="mx-auto max-w-[900px] p-4 md:py-5 py-10">
+      <div className="mb-6 flex h-[60px] items-center justify-between ">
         {showTitle && (
           <h2 className="md:ml-12 text-center text-3xl md:text-5xl font-semibold md:whitespace-nowrap">
             {isEditMode
