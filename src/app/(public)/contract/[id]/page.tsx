@@ -51,13 +51,19 @@ const ContractSigningPage = async ({ params, searchParams }: PageProps) => {
 
   const contractData = contract.data as unknown as ContractType;
 
+  // Check if contract is already signed by examining the timestamp
+  const isAlreadySigned = contract.examinerProfile.contractSignedByExaminerAt !== null;
+
   return (
     <ContractSigningView
       token={token}
       contractId={id}
+      examinerProfileId={contract.examinerProfileId}
+      examinerEmail={contract.examinerProfile.account.user.email}
       examinerName={contractData.examinerName}
       feeStructure={contractData.feeStructure}
       contractHtml={contract.contractHtml}
+      isAlreadySigned={isAlreadySigned}
     />
   );
 };

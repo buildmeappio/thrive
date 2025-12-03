@@ -26,7 +26,7 @@ const sendRegistrationEmails = async (input: SendRegistrationEmailsInput) => {
     const adminEmail = ENV.ADMIN_NOTIFICATION_EMAIL || "admin@thrivenetwork.ca";
 
     // Application URL for admin
-    const applicationUrl = `${ENV.NEXT_PUBLIC_APP_URL || "https://app.thriveassessmentcare.com"}/admin/examiners/${examinerProfileId}`;
+    const applicationUrl = `${ENV.NEXT_PUBLIC_APP_URL}/admin/examiner/${examinerProfileId}`;
 
     // Fetch specialty names from database
     let specialtiesText = "Not specified";

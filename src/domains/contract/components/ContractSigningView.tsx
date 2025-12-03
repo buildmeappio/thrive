@@ -2,12 +2,14 @@
 
 import { useRef, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { signContract } from "../server/actions/signContract.actions";
+import { signContractByExaminer } from "../server/actions/signContractByExaminer";
 
 interface ContractSigningViewProps {
   token: string;
   contractId: string;
+  examinerProfileId: string;
+  examinerEmail: string;
   examinerName: string;
   feeStructure: {
     IMEFee: number;
@@ -17,23 +19,26 @@ interface ContractSigningViewProps {
     effectiveDate?: string;
   };
   contractHtml: string;
+  isAlreadySigned: boolean;
 }
 
 const ContractSigningView = ({
-  token,
+  token: _token,
   contractId,
+  examinerProfileId,
+  examinerEmail,
   examinerName,
   feeStructure,
   contractHtml,
+  isAlreadySigned,
 }: ContractSigningViewProps) => {
   const today = new Date().toISOString().split("T")[0];
   const [sigName, _setSigName] = useState(examinerName);
   const [sigDate, _setSigDate] = useState(feeStructure.effectiveDate || today);
   const [agree, setAgree] = useState(false);
-  const [signed, setSigned] = useState(false);
+  const [signed, setSigned] = useState(isAlreadySigned); // Initialize with isAlreadySigned
   const [signatureImage, setSignatureImage] = useState<string | null>(null);
   const [isSigning, setIsSigning] = useState(false);
-  const router = useRouter();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -57,6 +62,7 @@ const ContractSigningView = ({
       const pdfBase64 = signatureImage?.split(",")[1] || "";
       const userAgent = navigator.userAgent;
 
+      // 1. Sign the contract (stores signature and updates status)
       const result = await signContract(
         contractId,
         sigName,
@@ -70,9 +76,17 @@ const ContractSigningView = ({
         throw new Error("Failed to sign contract");
       }
 
+      // 2. Notify admin that contract is signed (don't fail if notification fails)
+      try {
+        await signContractByExaminer(examinerProfileId, examinerEmail);
+      } catch (notificationError) {
+        console.warn("Failed to send admin notification:", notificationError);
+        // Continue anyway - signature was successful
+      }
+
       toast.success("Contract signed successfully!");
       setSigned(true);
-      router.push(`/create-account?token=${token}`);
+      // Don't redirect - show success message on same page
     } catch (error) {
       console.error("Error signing contract:", error);
       const errorMessage =
@@ -450,6 +464,75 @@ const ContractSigningView = ({
     signed,
   ]);
 
+  // Show success page after signing
+  if (signed) {
+    return (
+      <div className="bg-[#F4FBFF] h-screen overflow-hidden p-4 pt-8 flex items-start justify-center">
+        {/* Success Content */}
+        <div className="max-w-2xl w-full">
+          <div
+            className="bg-white rounded-[20px] p-8 md:p-12 text-center"
+            style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+          >
+            {/* Success Icon */}
+            <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+              <svg
+                className="w-10 h-10 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+
+            {/* Title */}
+            <h1 className="text-3xl md:text-4xl font-semibold text-[#140047] mb-4">
+              Contract Signed Successfully!
+            </h1>
+
+            {/* Message */}
+            <p className="text-lg text-gray-600 mb-6">
+              Thank you for signing the agreement. Your contract has been submitted and is now awaiting admin review and confirmation.
+            </p>
+
+            {/* Info Box */}
+            <div className="bg-[#F7FCFF] border-2 border-[#00A8FF]/20 rounded-lg p-6 mb-8">
+              <h3 className="text-lg font-semibold text-[#140047] mb-3">
+                What happens next?
+              </h3>
+              <ul className="text-left space-y-2 text-gray-700">
+                <li className="flex items-start">
+                  <span className="text-[#00A8FF] mr-2">•</span>
+                  <span>Our admin team will review your signed contract</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-[#00A8FF] mr-2">•</span>
+                  <span>Once confirmed, you&apos;ll receive an email to create your account password</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-[#00A8FF] mr-2">•</span>
+                  <span>After setting up your password, you can access the Thrive platform</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Additional Info */}
+            <p className="text-sm text-gray-500">
+              You will receive an email notification once the admin confirms your contract.
+              This typically takes 1-2 business days.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#F4FBFF] min-h-screen">
       <div className="px-4 sm:px-6 lg:px-8 py-6">
@@ -573,14 +656,6 @@ const ContractSigningView = ({
               >
                 {isSigning ? "Processing..." : "Sign Agreement"}
               </button>
-
-              {signed && (
-                <div className="p-4 bg-green-50 border-2 border-green-500 rounded-[10px]">
-                  <p className="text-sm text-green-700 font-semibold text-center">
-                    ✓ Agreement Signed Successfully
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         </div>
