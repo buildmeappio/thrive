@@ -24,13 +24,24 @@ export type CreateMedicalExaminerInput = {
   // step 2 - Medical Credentials
   specialties: string[];
   licenseNumber: string;
+  licenseIssuingProvince: string;
+  yearsOfIMEExperience: string;
   licenseExpiryDate?: Date; // Optional
   medicalLicenseDocumentId: string;
   resumeDocumentId?: string; // Optional - CV/Resume will be added later
 
-  // step 3
-  yearsOfIMEExperience: string;
-  languagesSpoken?: string[]; // Optional
+  // step 1 - Languages
+  languagesSpoken: string[];
+
+  // step 3 - IME Background & Experience
+  imesCompleted: string;
+  currentlyConductingIMEs: boolean;
+  insurersOrClinics?: string;
+  assessmentTypes: string[];
+  assessmentTypeOther?: string;
+  redactedIMEReportDocumentId?: string;
+  
+  // Legacy field
   forensicAssessmentTrained?: boolean; // Optional - removed from Step 3
 
   // step 4
@@ -118,6 +129,7 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
         landlineNumber: payload.landlineNumber,
         specialties: payload.specialties,
         licenseNumber: payload.licenseNumber,
+        provinceOfLicensure: payload.licenseIssuingProvince,
         ...(payload.licenseExpiryDate && {
           licenseExpiryDate: payload.licenseExpiryDate,
         }),
@@ -130,6 +142,20 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
           },
         }),
         yearsOfIMEExperience: payload.yearsOfIMEExperience,
+        assessmentTypes: payload.assessmentTypes,
+        imesCompleted: payload.imesCompleted,
+        currentlyConductingIMEs: payload.currentlyConductingIMEs,
+        ...(payload.insurersOrClinics && {
+          insurersOrClinics: payload.insurersOrClinics,
+        }),
+        ...(payload.assessmentTypeOther && {
+          assessmentTypeOther: payload.assessmentTypeOther,
+        }),
+        ...(payload.redactedIMEReportDocumentId && {
+          redactedIMEReportDocument: {
+            connect: { id: payload.redactedIMEReportDocumentId },
+          },
+        }),
         isForensicAssessmentTrained: payload.forensicAssessmentTrained ?? false,
         // ndaDocument: {
         //   connect: { id: payload.signedNDADocumentId },

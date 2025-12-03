@@ -63,15 +63,18 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
     // Merge form values into store
     merge(formValues as Partial<RegistrationData>);
 
+    // Use merged data for submission (combine store data with form values)
+    const submissionData = { ...data, ...formValues };
+
     setLoading(true);
     setErr(null);
     try {
-      log(data);
+      log(submissionData);
 
       if (
-        !data.medicalLicense
-        // || !data.signedNDA ||
-        // !data.insuranceProof
+        !submissionData.medicalLicense
+        // || !submissionData.signedNDA ||
+        // !submissionData.insuranceProof
       ) {
         setErr("Please upload all required documents");
         setLoading(false);
@@ -98,10 +101,10 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
       };
 
       // Handle medicalLicense - can be array or single file
-      const medicalLicenseFiles = Array.isArray(data.medicalLicense)
-        ? data.medicalLicense
-        : data.medicalLicense
-        ? [data.medicalLicense]
+      const medicalLicenseFiles = Array.isArray(submissionData.medicalLicense)
+        ? submissionData.medicalLicense
+        : submissionData.medicalLicense
+        ? [submissionData.medicalLicense]
         : [];
 
       if (medicalLicenseFiles.length === 0) {
@@ -127,62 +130,68 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
       // TODO: Update backend to support multiple medical license documents
       const medicalLicenseDocument = medicalLicenseResults[0];
 
-      // CV/Resume removed from Step 2 - will be added to a different step later
-      // const [
-      //   cvResumeDocument,
-      //   // signedNDADocument,
-      //   // insuranceProofDocument,
-      // ] = await Promise.all([
-      //   processFile(data.cvResume),
-      //   // uploadFileToS3(data.signedNDA),
-      //   // uploadFileToS3(data.insuranceProof),
-      // ]);
-
-      if (
-        !medicalLicenseDocument.success
-        // || !signedNDADocument.success ||
-        // !insuranceProofDocument.success
-      ) {
-        setErr("Failed to upload documents");
+      if (!medicalLicenseDocument.success) {
+        setErr("Failed to upload medical license document");
         setLoading(false);
         return;
       }
 
+      // Process optional redacted IME report from Step 3
+      let redactedIMEReportDocumentId: string | undefined;
+      if (submissionData.redactedIMEReport) {
+        const redactedReportResult = await processFile(submissionData.redactedIMEReport);
+        if (redactedReportResult.success) {
+          redactedIMEReportDocumentId = redactedReportResult.document.id;
+        } else {
+          // Don't fail submission for optional document
+          console.warn("Failed to upload redacted IME report (optional):", redactedReportResult.error);
+        }
+      }
+
       const payload: CreateMedicalExaminerInput = {
         // step 1
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.emailAddress,
-        phone: data.phoneNumber,
-        landlineNumber: data.landlineNumber,
+        firstName: submissionData.firstName,
+        lastName: submissionData.lastName,
+        email: submissionData.emailAddress,
+        phone: submissionData.phoneNumber,
+        landlineNumber: submissionData.landlineNumber,
 
         // step 2 - Address
-        address: data.address || "",
-        street: data.street || "",
-        suite: data.suite || "",
-        postalCode: data.postalCode || "",
-        province: data.province || "",
-        city: data.city || "",
+        address: submissionData.address || "",
+        street: submissionData.street || "",
+        suite: submissionData.suite || "",
+        postalCode: submissionData.postalCode || "",
+        province: submissionData.province || "",
+        city: submissionData.city || "",
+
+        // step 1 - Languages
+        languagesSpoken: submissionData.languagesSpoken || [],
 
         // step 2 - Medical Credentials
-        specialties: data.medicalSpecialty,
-        licenseNumber: data.licenseNumber,
-        licenseExpiryDate: data.licenseExpiryDate
-          ? new Date(data.licenseExpiryDate)
+        specialties: submissionData.medicalSpecialty,
+        licenseNumber: submissionData.licenseNumber,
+        licenseIssuingProvince: submissionData.licenseIssuingProvince || "",
+        yearsOfIMEExperience: submissionData.yearsOfIMEExperience,
+        licenseExpiryDate: submissionData.licenseExpiryDate
+          ? new Date(submissionData.licenseExpiryDate)
           : new Date(),
         medicalLicenseDocumentId: medicalLicenseDocument.document.id,
         // resumeDocumentId removed - CV/Resume will be added in a different step later
 
         // Step3 - IME Background & Experience
-        yearsOfIMEExperience: data.yearsOfIMEExperience,
-        // forensicAssessmentTrained removed - replaced with new Step 3 fields
+        imesCompleted: submissionData.imesCompleted || "",
+        currentlyConductingIMEs: submissionData.currentlyConductingIMEs === "yes",
+        ...(submissionData.insurersOrClinics && { insurersOrClinics: submissionData.insurersOrClinics }),
+        assessmentTypes: submissionData.assessmentTypes || [],
+        ...(submissionData.assessmentTypeOther && { assessmentTypeOther: submissionData.assessmentTypeOther }),
+        ...(redactedIMEReportDocumentId && { redactedIMEReportDocumentId }),
 
         // Step4
-        experienceDetails: data.experienceDetails,
+        experienceDetails: submissionData.experienceDetails,
 
         // Step7
-        agreeTermsConditions: data.agreeTermsConditions,
-        consentBackgroundVerification: data.consentBackgroundVerification,
+        agreeTermsConditions: submissionData.agreeTermsConditions,
+        consentBackgroundVerification: submissionData.consentBackgroundVerification,
 
         // Step6 - Payment Details
         // IMEFee: data.IMEFee,
@@ -218,14 +227,14 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         
         await authActions.sendRegistrationEmails({
           examinerData: {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            email: data.emailAddress,
-            province: data.province || "",
-            licenseNumber: data.licenseNumber,
-            specialties: data.medicalSpecialty,
-            imeExperience: data.yearsOfIMEExperience,
-            imesCompleted: data.imesCompleted || "",
+            firstName: submissionData.firstName,
+            lastName: submissionData.lastName,
+            email: submissionData.emailAddress,
+            province: submissionData.province || "",
+            licenseNumber: submissionData.licenseNumber,
+            specialties: submissionData.medicalSpecialty,
+            imeExperience: submissionData.yearsOfIMEExperience,
+            imesCompleted: submissionData.imesCompleted || "",
           },
           examinerProfileId: profileId,
         });
