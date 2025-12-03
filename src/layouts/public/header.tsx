@@ -5,13 +5,13 @@ const Header = () => {
   return (
     <header className="bg-white">
       {/* fixed 120px header to match design */}
-      <div className="mx-auto flex w-full max-w-none items-center justify-center p-3">
+      <div className="mx-auto flex w-full max-w-none items-center justify-center p-2">
         <Image
           src={`${ENV.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
           alt="Thrive Assessment & Care"
           width={240}
-          height={80}
-          className="h-20 w-auto"
+          height={75}
+          className="h-18 w-auto"
           priority
         />
       </div>

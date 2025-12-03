@@ -93,7 +93,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                       {...field}
                       id="IMEFee"
                       icon={CircleDollarSign}
-                      placeholder="1500.00"
+                      placeholder="Enter standard IME fee"
                       type="number"
                       step="0.01"
                       min="0"
@@ -111,7 +111,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                       {...field}
                       id="recordReviewFee"
                       icon={CircleDollarSign}
-                      placeholder="500.00"
+                      placeholder="Enter record review fee"
                       type="number"
                       step="0.01"
                       min="0"
@@ -126,7 +126,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                       {...field}
                       id="hourlyRate"
                       icon={CircleDollarSign}
-                      placeholder="250.00"
+                      placeholder="Enter hourly rate"
                       type="number"
                       step="0.01"
                       min="0"
@@ -144,7 +144,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                       {...field}
                       id="cancellationFee"
                       icon={CircleDollarSign}
-                      placeholder="300.00"
+                      placeholder="Enter cancellation fee"
                       type="number"
                       step="0.01"
                       min="0"

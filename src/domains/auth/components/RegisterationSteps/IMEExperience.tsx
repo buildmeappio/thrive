@@ -1,8 +1,10 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
-import { BackButton, ContinueButton, ProgressIndicator } from "@/components";
+import { BackButton, ContinueButton, ProgressIndicator, FileUploadInput } from "@/components";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui";
 import {
   step3IMEExperienceSchema,
   Step3IMEExperienceInput,
@@ -12,9 +14,13 @@ import {
   useRegistrationStore,
   RegistrationData,
 } from "@/domains/auth/state/useRegistrationStore";
-import { FormProvider, FormDropdown } from "@/components/form";
-import { Controller } from "@/lib/form";
+import { FormProvider, FormField, FormDropdown } from "@/components/form";
+import { Controller, UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
+import {
+  assessmentTypeOptions,
+  imeCompletionOptions,
+} from "@/domains/setting/constants/options";
 
 interface Step3IMEExperinceProps {
   onNext: () => void;
@@ -23,41 +29,67 @@ interface Step3IMEExperinceProps {
   totalSteps: number;
 }
 
+// Add "Other" option to assessment types
+const assessmentTypeOptionsWithOther = [
+  ...assessmentTypeOptions,
+  { value: "other", label: "Other" },
+];
+
 const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
   onNext,
   onPrevious,
   currentStep,
   totalSteps,
 }) => {
-  const { data, merge, languages, yearsOfExperience } =
-    useRegistrationStore();
+  const { data, merge } = useRegistrationStore();
+  const [showOtherField, setShowOtherField] = useState(false);
 
   const form = useForm<Step3IMEExperienceInput>({
     schema: step3IMEExperienceSchema,
     defaultValues: {
       ...step3InitialValues,
-      yearsOfIMEExperience: data.yearsOfIMEExperience || "",
-      provinceOfLicensure: data.provinceOfLicensure || "",
-      languagesSpoken: data.languagesSpoken || [],
-      forensicAssessmentTrained: data.forensicAssessmentTrained || "",
+      imesCompleted: data.imesCompleted || "",
+      currentlyConductingIMEs: data.currentlyConductingIMEs || "",
+      insurersOrClinics: data.insurersOrClinics || "",
+      assessmentTypes: data.assessmentTypes || [],
+      assessmentTypeOther: data.assessmentTypeOther || "",
+      redactedIMEReport: data.redactedIMEReport || null,
     },
     mode: "onSubmit",
   });
+
+  // Watch for currentlyConductingIMEs and assessmentTypes changes
+  const currentlyConductingIMEs = form.watch("currentlyConductingIMEs");
+  const assessmentTypes = form.watch("assessmentTypes");
+
+  // Check if "other" is selected
+  useEffect(() => {
+    if (assessmentTypes && assessmentTypes.includes("other")) {
+      setShowOtherField(true);
+    } else {
+      setShowOtherField(false);
+      form.setValue("assessmentTypeOther", "");
+    }
+  }, [assessmentTypes, form]);
 
   // Reset form when store data changes
   useEffect(() => {
     form.reset({
       ...step3InitialValues,
-      yearsOfIMEExperience: data.yearsOfIMEExperience || "",
-      provinceOfLicensure: data.provinceOfLicensure || "",
-      languagesSpoken: data.languagesSpoken || [],
-      forensicAssessmentTrained: data.forensicAssessmentTrained || "",
+      imesCompleted: data.imesCompleted || "",
+      currentlyConductingIMEs: data.currentlyConductingIMEs || "",
+      insurersOrClinics: data.insurersOrClinics || "",
+      assessmentTypes: data.assessmentTypes || [],
+      assessmentTypeOther: data.assessmentTypeOther || "",
+      redactedIMEReport: data.redactedIMEReport || null,
     });
   }, [
-    data.yearsOfIMEExperience,
-    data.provinceOfLicensure,
-    data.languagesSpoken,
-    data.forensicAssessmentTrained,
+    data.imesCompleted,
+    data.currentlyConductingIMEs,
+    data.insurersOrClinics,
+    data.assessmentTypes,
+    data.assessmentTypeOther,
+    data.redactedIMEReport,
     form,
   ]);
 
@@ -81,83 +113,152 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
         <div className="flex-grow pt-4 sm:px-4 sm:py-6 sm:pt-0 md:px-0">
           <div className="space-y-4 sm:space-y-6">
             <h3 className="mt-4 mb-2 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
-              IME Experience & Qualifications
+              IME Background & Experience
             </h3>
 
-            <div className="mt-6 md:px-0 px-8 grid grid-cols-1 gap-x-14 gap-y-6 md:mt-8 md:grid-cols-2">
-              <FormDropdown
-                name="yearsOfIMEExperience"
-                label="Years of IME Experience"
-                options={yearsOfExperience.map((year) => ({
-                  value: year.id,
-                  label: year.name,
-                }))}
-                required
-                placeholder="Select Years"
-                icon={null}
-              />
+            {/* Two-Column Layout */}
+            <div className="mt-6 md:px-0 px-8 grid grid-cols-1 gap-x-12 gap-y-6 md:mt-8 md:grid-cols-2">
+              
+              {/* LEFT COLUMN */}
+              <div className="space-y-6">
+                {/* How many IMEs have you completed? */}
+                <FormDropdown
+                  name="imesCompleted"
+                  label="How many IMEs have you completed?"
+                  options={imeCompletionOptions}
+                  required
+                  placeholder="Select range"
+                  icon={null}
+                />
 
-              <FormDropdown
-                name="languagesSpoken"
-                label="Languages Spoken"
-                options={languages.map((language) => ({
-                  value: language.id,
-                  label: language.name,
-                }))}
-                required
-                placeholder="Select Language"
-                multiSelect={true}
-                icon={null}
-              />
+                {/* Are you currently conducting IMEs? */}
+                <Controller
+                  name="currentlyConductingIMEs"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <div className="space-y-2">
+                      <Label className="text-black">
+                        Are you currently conducting IMEs for any insurer or clinic?{" "}
+                        <span className="text-red-500">*</span>
+                      </Label>
+                      <RadioGroup
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        className="flex flex-row flex-wrap gap-x-4 gap-y-2 pt-2 sm:gap-x-6">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="yes"
+                            id="conducting-yes"
+                            checkedColor="#00A8FF"
+                            indicatorColor="#00A8FF"
+                          />
+                          <Label
+                            htmlFor="conducting-yes"
+                            className="cursor-pointer text-sm font-medium text-gray-700">
+                            Yes
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="no"
+                            id="conducting-no"
+                            checkedColor="#00A8FF"
+                            indicatorColor="#00A8FF"
+                          />
+                          <Label
+                            htmlFor="conducting-no"
+                            className="cursor-pointer text-sm font-medium text-gray-700">
+                            No
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                      {fieldState.error && (
+                        <p className="text-xs text-red-500">
+                          {fieldState.error.message}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                />
 
-              <Controller
-                name="forensicAssessmentTrained"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <div className="space-y-2">
-                    <Label className="text-black">
-                      Forensic Assessment Trained{" "}
-                      <span className="text-red-500">*</span>
-                    </Label>
-                    <RadioGroup
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      className="flex flex-row flex-wrap gap-x-4 gap-y-2 pt-2 sm:gap-x-6">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem
-                          value="yes"
-                          id="forensic-yes"
-                          checkedColor="#00A8FF"
-                          indicatorColor="#00A8FF"
-                        />
-                        <Label
-                          htmlFor="forensic-yes"
-                          className="cursor-pointer text-sm font-medium text-gray-700">
-                          Yes
+                {/* Conditional: Which insurers or clinics? */}
+                {currentlyConductingIMEs === "yes" && (
+                  <Controller
+                    name="insurersOrClinics"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <div className="space-y-2">
+                        <Label className="text-black">
+                          Which insurers or clinics?
                         </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem
-                          value="no"
-                          id="forensic-no"
-                          checkedColor="#00A8FF"
-                          indicatorColor="#00A8FF"
+                        <Textarea
+                          {...field}
+                          placeholder="List insurers or clinics..."
+                          className="min-h-[100px] resize-none"
                         />
-                        <Label
-                          htmlFor="forensic-no"
-                          className="cursor-pointer text-sm font-medium text-gray-700">
-                          No
-                        </Label>
+                        {fieldState.error && (
+                          <p className="text-xs text-red-500">
+                            {fieldState.error.message}
+                          </p>
+                        )}
                       </div>
-                    </RadioGroup>
-                    {fieldState.error && (
-                      <p className="text-xs text-red-500">
-                        {fieldState.error.message}
-                      </p>
                     )}
-                  </div>
+                  />
                 )}
-              />
+              </div>
+
+              {/* RIGHT COLUMN */}
+              <div className="space-y-6">
+                {/* Assessment Types */}
+                <FormDropdown
+                  name="assessmentTypes"
+                  label="Assessment Types"
+                  options={assessmentTypeOptionsWithOther}
+                  required
+                  placeholder="Multi-select (Disability, WSIB, MVA, etc.)"
+                  multiSelect={true}
+                  icon={null}
+                />
+
+                {/* Conditional: Other assessment type */}
+                {showOtherField && (
+                  <FormField name="assessmentTypeOther" label="Please specify other assessment type">
+                    {(field: UseFormRegisterReturn & { error?: boolean }) => (
+                      <Input
+                        {...field}
+                        id="assessmentTypeOther"
+                        placeholder="Specify other assessment type"
+                      />
+                    )}
+                  </FormField>
+                )}
+
+                {/* Upload Redacted IME Report (Optional) */}
+                <Controller
+                  name="redactedIMEReport"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <div className="space-y-2">
+                      <FileUploadInput
+                        name="redactedIMEReport"
+                        label="Upload Redacted IME Report"
+                        value={field.value}
+                        onChange={(file) => {
+                          field.onChange(file);
+                        }}
+                        accept=".pdf,.doc,.docx"
+                        required={false}
+                        placeholder="Upload Redacted IME Report (Optional)"
+                        error={fieldState.error?.message}
+                        showIcon={false}
+                      />
+                      <p className="text-xs text-gray-500">
+                        Optional • Accepted formats: PDF, DOC, DOCX • Max size: 10 MB
+                      </p>
+                    </div>
+                  )}
+                />
+              </div>
             </div>
           </div>
         </div>

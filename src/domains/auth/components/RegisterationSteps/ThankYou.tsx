@@ -30,11 +30,11 @@ const ThankYou: React.FC<RegStepProps> = ({ currentStep, totalSteps }) => {
           <h1 className="mb-3 text-3xl font-bold text-black sm:mb-0 md:text-[56px]">
             Thank You!
           </h1>
-
-          <h2 className="mb-6 px-2 text-lg font-medium text-[#00A8FF] md:mb-8 md:text-[28px]">
+          {/* 
+          <h2 className="mb-2 px-2 text-lg font-medium text-[#00A8FF] md:mb-4 md:text-[28px]">
             Your Profile Has Been Submitted.
-          </h2>
-          <p className="max-w-lg px-4 text-[14px] leading-relaxed font-light text-[#8A8A8A] md:text-base">
+          </h2> */}
+          <p className="max-w-lg px-4 text-sm leading-relaxed font-light text-[#8A8A8A] md:text-base">
             We&apos;ve received your application and our team is now reviewing
             your information. You&apos;ll be notified by email once your profile
             has been verified.

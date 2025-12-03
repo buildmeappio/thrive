@@ -2,7 +2,7 @@
 import { type Session } from "next-auth";
 import { signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
-import { LogOut, Home, LifeBuoy, UserPlus } from "lucide-react";
+import { LogOut, LifeBuoy } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createRoute, URLS } from "@/constants/route";
 import { getProfilePhotoUrlAction } from "@/server/actions/getProfilePhotoUrl";
@@ -89,40 +89,6 @@ const ProfileDropdown = ({
           <li>
             {isActivationComplete ? (
               <a
-                href={createRoute(URLS.DASHBOARD)}
-                className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
-                <Home size={16} />
-                <span>Dashboard</span>
-              </a>
-            ) : (
-              <div
-                className="flex items-center space-x-2 px-4 py-2 text-gray-400 cursor-not-allowed"
-                title="Complete activation steps to unlock">
-                <Home size={16} />
-                <span>Dashboard</span>
-              </div>
-            )}
-          </li>
-          <li>
-            {isActivationComplete ? (
-              <a
-                href={createRoute(URLS.APPOINTMENTS)}
-                className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
-                <UserPlus size={16} />
-                <span>All Appointments</span>
-              </a>
-            ) : (
-              <div
-                className="flex items-center space-x-2 px-4 py-2 text-gray-400 cursor-not-allowed"
-                title="Complete activation steps to unlock">
-                <UserPlus size={16} />
-                <span>All Cases</span>
-              </div>
-            )}
-          </li>
-          <li>
-            {isActivationComplete ? (
-              <a
                 href={createRoute(URLS.BILLING)}
                 className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
                 <LifeBuoy size={16} />
@@ -184,10 +150,7 @@ const ProfileDropdown = ({
         <Avatar
           className="h-[50px] w-[50px] cursor-pointer border border-[#DBDBFF]"
           onClick={() => setDropdownOpen((prev) => !prev)}>
-          <AvatarImage
-            src={profilePhotoUrl}
-            alt={displayName}
-          />
+          <AvatarImage src={profilePhotoUrl} alt={displayName} />
           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
             {getInitials()}
           </AvatarFallback>
@@ -206,10 +169,7 @@ const ProfileDropdown = ({
       <Avatar
         className="h-[40px] w-[40px] cursor-pointer border border-[#DBDBFF]"
         onClick={() => setDropdownOpen((prev) => !prev)}>
-        <AvatarImage
-          src={profilePhotoUrl}
-          alt={displayName}
-        />
+        <AvatarImage src={profilePhotoUrl} alt={displayName} />
         <AvatarFallback className="bg-[#00A8FF] text-white font-semibold text-xl">
           {getInitials()}
         </AvatarFallback>

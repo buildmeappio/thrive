@@ -75,7 +75,7 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
                     <Textarea
                       {...field}
                       id="experienceDetails"
-                      placeholder="Type here"
+                      placeholder="Enter your experience details"
                       className="min-h-[150px] w-full resize-none text-sm sm:text-base md:min-h-[200px]"
                       maxLength={500}
                     />

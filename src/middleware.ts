@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { log } from "@/utils/logger";
 
 const protectedRoutes = [
   "/dashboard",
@@ -13,8 +14,8 @@ export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const token = await getToken({ req: request });
 
-  console.log("Middleware triggered for:", pathname);
-  console.log("Token activationStep:", token?.activationStep);
+  log("Middleware triggered for:", pathname);
+  log("Token activationStep:", token?.activationStep);
 
   // Check if user's activation is complete
   const isActivationComplete = token?.activationStep === "payout";
@@ -27,19 +28,19 @@ export default async function middleware(request: NextRequest) {
   // Check if user is trying to access onboarding
   const isOnboardingRoute = pathname.startsWith("/onboarding");
 
-  console.log("isActivationComplete:", isActivationComplete);
-  console.log("isProtectedRoute:", isProtectedRoute);
-  console.log("isOnboardingRoute:", isOnboardingRoute);
+  log("isActivationComplete:", isActivationComplete);
+  log("isProtectedRoute:", isProtectedRoute);
+  log("isOnboardingRoute:", isOnboardingRoute);
 
   // If activation is complete and user tries to access onboarding, redirect to dashboard
   if (isActivationComplete && isOnboardingRoute) {
-    console.log("Activation complete, redirecting to /examiner/dashboard");
+    log("Activation complete, redirecting to /examiner/dashboard");
     return NextResponse.redirect(new URL("/examiner/dashboard", request.url));
   }
 
   // If activation is not complete and user tries to access protected routes (except onboarding)
   if (!isActivationComplete && isProtectedRoute && !isOnboardingRoute) {
-    console.log("Redirecting to /examiner/onboarding");
+    log("Redirecting to /examiner/onboarding");
     return NextResponse.redirect(new URL("/examiner/onboarding", request.url));
   }
 

@@ -2,12 +2,12 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  FormProvider, 
-  FormField, 
+import {
+  FormProvider,
+  FormField,
   FormPhoneInput,
   FormDropdown,
-  FormGoogleMapsInput
+  FormGoogleMapsInput,
 } from "@/components/form";
 import { Input } from "@/components/ui";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,64 @@ import { User, Mail, PhoneCall } from "lucide-react";
 import { provinces } from "@/constants/options";
 
 const profileSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  firstName: z
+    .string()
+    .min(1, "First name is required")
+    .regex(
+      /^[a-zA-Z\s'.-]+$/,
+      "First name can only contain letters, spaces, apostrophes, hyphens, and periods"
+    )
+    .refine(
+      (val) => {
+        const trimmed = val.trim();
+        // Must contain at least one letter
+        if (!/[a-zA-Z]/.test(trimmed)) {
+          return false;
+        }
+        // Cannot start or end with special characters or spaces
+        if (/^['-.\s]/.test(trimmed) || /['-.\s]$/.test(trimmed)) {
+          return false;
+        }
+        // Cannot have consecutive special characters
+        if (/['-]{2,}/.test(trimmed) || /\.{2,}/.test(trimmed)) {
+          return false;
+        }
+        return true;
+      },
+      {
+        message:
+          "First name must contain at least one letter and cannot start/end with special characters",
+      }
+    ),
+  lastName: z
+    .string()
+    .min(1, "Last name is required")
+    .regex(
+      /^[a-zA-Z\s'.-]+$/,
+      "Last name can only contain letters, spaces, apostrophes, hyphens, and periods"
+    )
+    .refine(
+      (val) => {
+        const trimmed = val.trim();
+        // Must contain at least one letter
+        if (!/[a-zA-Z]/.test(trimmed)) {
+          return false;
+        }
+        // Cannot start or end with special characters or spaces
+        if (/^['-.\s]/.test(trimmed) || /['-.\s]$/.test(trimmed)) {
+          return false;
+        }
+        // Cannot have consecutive special characters
+        if (/['-]{2,}/.test(trimmed) || /\.{2,}/.test(trimmed)) {
+          return false;
+        }
+        return true;
+      },
+      {
+        message:
+          "Last name must contain at least one letter and cannot start/end with special characters",
+      }
+    ),
   emailAddress: z.string().email("Invalid email address"),
   phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
   landlineNumber: z.string().optional(),
@@ -104,7 +160,7 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
   return (
     <div className="bg-white rounded-[29px] p-6 shadow-[0_0_36.92px_rgba(0,0,0,0.08)]">
       <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
-      
+
       <FormProvider form={form} onSubmit={onSubmit}>
         <div className="space-y-6">
           {/* First Row - First Name, Last Name */}
@@ -153,7 +209,10 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
 
           {/* Third Row - Email, Province */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField name="emailAddress" label="Email Address" hint="Email cannot be changed">
+            <FormField
+              name="emailAddress"
+              label="Email Address"
+              hint="Email cannot be changed">
               {(field: UseFormRegisterReturn & { error?: boolean }) => (
                 <Input
                   {...field}
@@ -209,4 +268,3 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
 };
 
 export default ProfileInformationSection;
-

@@ -21,7 +21,7 @@ export const useGoogleMaps = () => {
     }
 
     // If Google Maps is already loaded, set state immediately
-    if (window.google?.maps?.places) {
+    if (window.google?.maps?.places?.Autocomplete) {
       setIsLoaded(true);
       return;
     }
@@ -31,10 +31,10 @@ export const useGoogleMaps = () => {
     if (existingScript) {
       // Script exists, wait for it to load
       const checkLoaded = () => {
-        if (window.google?.maps?.places) {
+        if (window.google?.maps?.places?.Autocomplete) {
           setIsLoaded(true);
         } else {
-          setTimeout(checkLoaded, 50);
+          setTimeout(checkLoaded, 100);
         }
       };
       checkLoaded();
@@ -44,17 +44,20 @@ export const useGoogleMaps = () => {
     // Load the script
     const script = document.createElement("script");
     script.id = SCRIPT_ID;
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places&loading=async`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`;
     script.async = true;
     script.defer = true;
 
     script.onload = () => {
-      // Wait a bit for the places library to initialize
-      setTimeout(() => {
-        if (window.google?.maps?.places) {
+      // Wait for the places library to fully initialize
+      const checkPlacesReady = () => {
+        if (window.google?.maps?.places?.Autocomplete) {
           setIsLoaded(true);
+        } else {
+          setTimeout(checkPlacesReady, 100);
         }
-      }, 100);
+      };
+      checkPlacesReady();
     };
 
     script.onerror = () => {

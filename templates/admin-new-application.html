@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Medical Examiner Application</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background-color: #f7fcff;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+        color: #333333;
+        background-color: #f7fcff;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        width: 100%;
+      }
+      .email-wrapper {
+        width: 100%;
+        background-color: #f7fcff;
+        padding: 40px 20px;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .logo {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .logo img {
+        max-width: 150px;
+        height: auto;
+      }
+      .alert-badge {
+        display: inline-block;
+        background: #00A8FF;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 20px;
+      }
+      .main-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #000000;
+        margin: 0 0 20px 0;
+      }
+      .content {
+        font-size: 16px;
+        color: #333333;
+        line-height: 1.6;
+      }
+      .content p {
+        margin-bottom: 16px;
+      }
+      .preview-section {
+        background-color: #f7fcff;
+        border: 2px solid #e0f2ff;
+        padding: 24px;
+        margin: 24px 0;
+        border-radius: 8px;
+      }
+      .preview-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #666666;
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .preview-item {
+        display: flex;
+        margin-bottom: 12px;
+        align-items: flex-start;
+      }
+      .preview-item:last-child {
+        margin-bottom: 0;
+      }
+      .preview-label {
+        font-weight: 600;
+        color: #000000;
+        min-width: 160px;
+        font-size: 15px;
+      }
+      .preview-value {
+        color: #555555;
+        font-size: 15px;
+        flex: 1;
+      }
+      .preview-value-list {
+        color: #555555;
+        font-size: 15px;
+      }
+      .cta-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #89D7FF 0%, #00A8FF 100%);
+        color: white;
+        text-decoration: none;
+        padding: 14px 32px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        text-align: center;
+        margin: 24px 0;
+      }
+      .cta-button:hover {
+        opacity: 0.9;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #999999;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 20px;
+        margin-top: 30px;
+        line-height: 1.5;
+      }
+
+      @media only screen and (max-width: 600px) {
+        .email-wrapper {
+          padding: 20px 10px;
+        }
+        .container {
+          padding: 30px 20px;
+          border-radius: 8px;
+        }
+        .main-title {
+          font-size: 20px;
+        }
+        .preview-item {
+          flex-direction: column;
+        }
+        .preview-label {
+          min-width: auto;
+          margin-bottom: 4px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-wrapper">
+      <div class="container">
+        <div class="logo">
+          <img
+            src="https://assets.thriveassessmentcare.com/images/thriveLogo.png"
+            alt="Thrive Logo" />
+        </div>
+
+        <div class="alert-badge">New Application</div>
+
+        <h1 class="main-title">New Medical Examiner Application Received</h1>
+
+        <div class="content">
+          <p>
+            A new Medical Examiner has submitted an onboarding application.
+          </p>
+
+          <p>Click below to review the application:</p>
+
+          <a href="{{applicationUrl}}" class="cta-button"
+            >Open Examiner Application</a
+          >
+
+          <div class="preview-section">
+            <div class="preview-title">Application Preview</div>
+
+            <div class="preview-item">
+              <div class="preview-label">Name:</div>
+              <div class="preview-value">
+                Dr. {{firstName}} {{lastName}}
+              </div>
+            </div>
+
+            <div class="preview-item">
+              <div class="preview-label">Email:</div>
+              <div class="preview-value">{{email}}</div>
+            </div>
+
+            <div class="preview-item">
+              <div class="preview-label">Province:</div>
+              <div class="preview-value">{{province}}</div>
+            </div>
+
+            <div class="preview-item">
+              <div class="preview-label">License Number:</div>
+              <div class="preview-value">{{licenseNumber}}</div>
+            </div>
+
+            <div class="preview-item">
+              <div class="preview-label">Specialties:</div>
+              <div class="preview-value-list">{{specialties}}</div>
+            </div>
+
+            <div class="preview-item">
+              <div class="preview-label">IME Experience:</div>
+              <div class="preview-value">{{imeExperience}}</div>
+            </div>
+
+            <div class="preview-item">
+              <div class="preview-label">Documents Provided:</div>
+              <div class="preview-value-list">{{documentsProvided}}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>This is an automated notification from Thrive Admin System</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

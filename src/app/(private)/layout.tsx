@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import { getExaminerProfileAction } from "@/domains/setting/server";
 import { redirect } from "next/navigation";
 import { Layout } from "@/layouts/dashboard";
+import { URLS } from "@/constants/route";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -16,7 +17,7 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect("/examiner/login");
+    redirect(URLS.LOGIN);
   }
 
   const profileResult = await getExaminerProfileAction(user.accountId);
@@ -42,11 +43,10 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
   return (
     <SidebarProvider>
       <SearchProvider>
-        <Layout 
+        <Layout
           isActivationComplete={isActivationComplete}
           userName={userName}
-          userEmail={examinerProfile?.emailAddress || user.email || ""}
-        >
+          userEmail={examinerProfile?.emailAddress || user.email || ""}>
           <Suspense
             fallback={
               <div className="flex h-full w-full flex-1 items-center justify-center">

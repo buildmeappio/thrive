@@ -27,8 +27,8 @@ const ContractSigningView = ({
   contractHtml,
 }: ContractSigningViewProps) => {
   const today = new Date().toISOString().split("T")[0];
-  const [sigName, setSigName] = useState(examinerName);
-  const [sigDate, setSigDate] = useState(feeStructure.effectiveDate || today);
+  const [sigName, _setSigName] = useState(examinerName);
+  const [sigDate, _setSigDate] = useState(feeStructure.effectiveDate || today);
   const [agree, setAgree] = useState(false);
   const [signed, setSigned] = useState(false);
   const [signatureImage, setSignatureImage] = useState<string | null>(null);
@@ -451,9 +451,9 @@ const ContractSigningView = ({
   ]);
 
   return (
-    <div className="bg-[#F4FBFF]  overflow-hidden flex flex-col">
-      <div className="flex-1 overflow-hidden px-4 sm:px-6 lg:px-8 py-6">
-        <div className="h-full mx-auto max-w-7xl flex flex-col lg:flex-row gap-6 lg:gap-8">
+    <div className="bg-[#F4FBFF] min-h-screen">
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
+        <div className="mx-auto max-w-7xl flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* LEFT: Contract */}
           <div
             id="contract"
@@ -464,11 +464,14 @@ const ContractSigningView = ({
               maxWidth: "210mm",
               lineHeight: "1.4",
               boxShadow: "0px 0px 36.35px 0px #00000008",
-            }}>
+              maxHeight: "calc(100vh - 3rem)",
+            }}
+          >
             <div
               id="contract-content"
               dangerouslySetInnerHTML={{
-                __html: contractHtml || "<div>Empty contract HTML</div>",
+                __html:
+                  contractHtml || "<div>Sample Contract Content Here</div>",
               }}
             />
           </div>
@@ -478,8 +481,8 @@ const ContractSigningView = ({
             className="w-full lg:w-96 bg-white p-6 md:p-8 rounded-[20px] flex flex-col shrink-0"
             style={{
               boxShadow: "0px 0px 36.35px 0px #00000008",
-              overflow: "visible",
-            }}>
+            }}
+          >
             <div className="border-b-2 border-[#00A8FF] pb-3 mb-6">
               <h2 className="text-2xl md:text-[24px] font-semibold text-black">
                 Sign Agreement
@@ -527,7 +530,8 @@ const ContractSigningView = ({
                 </div>
                 <button
                   onClick={clearSignature}
-                  className="mt-2 text-sm text-[#00A8FF] hover:text-[#0088CC] font-semibold underline transition-colors">
+                  className="mt-2 text-sm text-[#00A8FF] hover:text-[#0088CC] font-semibold underline transition-colors"
+                >
                   Clear Signature
                 </button>
               </div>
@@ -565,7 +569,8 @@ const ContractSigningView = ({
                           "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
                       }
                     : {}
-                }>
+                }
+              >
                 {isSigning ? "Processing..." : "Sign Agreement"}
               </button>
 

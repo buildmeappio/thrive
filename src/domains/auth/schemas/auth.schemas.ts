@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { parsePhoneNumberWithError } from "libphonenumber-js";
-import { validateNameField, validateLicenseField } from "@/utils/inputValidation";
+import { validateLicenseField } from "@/utils/inputValidation";
 
 export const loginSchema = z.object({
   email: z.string().email({ message: "Enter a valid email address" }),
@@ -27,12 +27,33 @@ export const step1PersonalInfoSchema = z.object({
     .refine((val) => !/^\s+$/.test(val), {
       message: "First name cannot contain only spaces",
     })
-    .refine((val) => {
-      const error = validateNameField(val);
-      return error === null;
-    }, {
-      message: "Please enter a valid first name",
-    }),
+    .refine(
+      (val) => /^[a-zA-Z\s'.-]+$/.test(val),
+      {
+        message: "First name can only contain letters, spaces, apostrophes, hyphens, and periods",
+      }
+    )
+    .refine(
+      (val) => {
+        // Must contain at least one letter
+        if (!/[a-zA-Z]/.test(val)) {
+          return false;
+        }
+        // Cannot start or end with special characters or spaces
+        if (/^['-.\s]/.test(val) || /['-.\s]$/.test(val)) {
+          return false;
+        }
+        // Cannot have consecutive special characters
+        if (/['-]{2,}/.test(val) || /\.{2,}/.test(val)) {
+          return false;
+        }
+        return true;
+      },
+      {
+        message:
+          "First name must contain at least one letter and cannot start/end with special characters",
+      }
+    ),
   lastName: z
     .string()
     .transform((val) => val.trim()) // Trim whitespace
@@ -48,12 +69,33 @@ export const step1PersonalInfoSchema = z.object({
     .refine((val) => !/^\s+$/.test(val), {
       message: "Last name cannot contain only spaces",
     })
-    .refine((val) => {
-      const error = validateNameField(val);
-      return error === null;
-    }, {
-      message: "Please enter a valid last name",
-    }),
+    .refine(
+      (val) => /^[a-zA-Z\s'.-]+$/.test(val),
+      {
+        message: "Last name can only contain letters, spaces, apostrophes, hyphens, and periods",
+      }
+    )
+    .refine(
+      (val) => {
+        // Must contain at least one letter
+        if (!/[a-zA-Z]/.test(val)) {
+          return false;
+        }
+        // Cannot start or end with special characters or spaces
+        if (/^['-.\s]/.test(val) || /['-.\s]$/.test(val)) {
+          return false;
+        }
+        // Cannot have consecutive special characters
+        if (/['-]{2,}/.test(val) || /\.{2,}/.test(val)) {
+          return false;
+        }
+        return true;
+      },
+      {
+        message:
+          "Last name must contain at least one letter and cannot start/end with special characters",
+      }
+    ),
   phoneNumber: z
     .string()
     .min(5, { message: "Please enter a valid phone number" })
@@ -99,115 +141,152 @@ export const step1PersonalInfoSchema = z.object({
   emailAddress: z
     .string()
     .email({ message: "Please enter a valid email address" }),
-  provinceOfResidence: z
-    .string({ error: "Province of residence is required" })
-    .min(1, { message: "Province of residence is required" }),
-  mailingAddress: z
+  city: z
     .string()
-    .transform((val) => val.trim()) // Trim whitespace
+    .transform((val) => val.trim())
     .refine((val) => val.length > 0, {
-      message: "Mailing address is required",
+      message: "City is required",
     })
-    .refine((val) => val.length >= 10, {
-      message: "Mailing address must be at least 10 characters",
+    .refine((val) => val.length >= 2, {
+      message: "City must be at least 2 characters",
+    })
+    .refine((val) => val.length <= 100, {
+      message: "City must be less than 100 characters",
     }),
+  province: z
+    .string()
+    .min(1, { message: "Province is required" }),
+  languagesSpoken: z
+    .array(z.string())
+    .min(1, { message: "At least one language must be selected" }),
 });
 
 export type Step1PersonalInfoInput = z.infer<typeof step1PersonalInfoSchema>;
 
+export const step2AddressSchema = z.object({
+  address: z
+    .string()
+    .transform((val) => val.trim())
+    .refine((val) => val.length > 0, {
+      message: "Address is required",
+    })
+    .refine((val) => val.length >= 10, {
+      message: "Address must be at least 10 characters",
+    }),
+  street: z
+    .string()
+    .transform((val) => val.trim())
+    .optional()
+    .default(""),
+  suite: z
+    .string()
+    .transform((val) => val.trim())
+    .optional()
+    .default(""),
+  postalCode: z
+    .string()
+    .transform((val) => val.trim())
+    .optional()
+    .default(""),
+  province: z
+    .string()
+    .optional()
+    .default(""),
+  city: z
+    .string()
+    .transform((val) => val.trim())
+    .optional()
+    .default(""),
+});
+
+export type Step2AddressInput = z.infer<typeof step2AddressSchema>;
+
 export const step2MedicalCredentialsSchema = z.object({
-  medicalSpecialty: z
-    .array(z.string())
-    .min(1, { message: "Medical specialty is required" }),
   licenseNumber: z
     .string()
     .transform((val) => val.trim()) // Trim whitespace
     .refine((val) => val.length > 0, {
-      message: "License number is required",
+      message: "Medical license number is required",
     })
     .refine((val) => val.length >= 5, {
-      message: "License number must be at least 5 characters",
+      message: "Medical license number must be at least 5 characters",
     })
     .refine((val) => val.length <= 50, {
-      message: "License number must be less than 50 characters",
+      message: "Medical license number must be less than 50 characters",
     })
     .refine((val) => !/^\s+$/.test(val), {
-      message: "License number cannot contain only spaces",
+      message: "Medical license number cannot contain only spaces",
     })
     .refine((val) => {
       const error = validateLicenseField(val);
       return error === null;
     }, {
-      message: "Please enter a valid license number",
+      message: "Please enter a valid medical license number",
     }),
-  provinceOfLicensure: z
-    .string({ error: "Province of licensure is required" })
-    .min(1, { message: "Province of licensure is required" }),
+  licenseIssuingProvince: z
+    .string()
+    .min(1, { message: "License issuing province is required" }),
+  medicalSpecialty: z
+    .array(z.string())
+    .min(1, { message: "At least one medical specialty is required" }),
+  yearsOfIMEExperience: z
+    .string({ error: "Years of IME experience is required" })
+    .min(1, { message: "Years of IME experience is required" }),
   // licenseExpiryDate: z
   //   .string({ error: "License expiry date is required" })
   //   .min(1, { message: "License expiry date is required" }),
   medicalLicense: z
     .any()
-    .refine((val) => val !== null && val !== undefined && val !== "", {
-      message: "Medical license document is required",
-    })
-    .refine(
-      (val) => {
-        if (!val || val === "") return false;
-        // Check if it's a File object
-        if (val instanceof File) {
-          const allowedTypes = [
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          ];
-          return allowedTypes.includes(val.type);
-        }
-        // Check if it's an existing file object with type property
-        if (val.type) {
-          const allowedTypes = [
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          ];
-          return allowedTypes.includes(val.type);
-        }
-        return true; // Allow existing files without type check
-      },
-      {
-        message: "Medical license must be a PDF, DOC, or DOCX file",
+    .refine((val) => {
+      // Check if it's an array
+      if (Array.isArray(val)) {
+        return val.length > 0;
       }
-    ),
-  cvResume: z
-    .any()
-    .refine((val) => val !== null && val !== undefined && val !== "", {
-      message: "CV/Resume document is required",
+      // Backward compatibility: allow single file
+      return val !== null && val !== undefined && val !== "";
+    }, {
+      message: "At least one medical document is required",
     })
     .refine(
       (val) => {
         if (!val || val === "") return false;
+        
+        const allowedTypes = [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ];
+
+        // Handle array of files
+        if (Array.isArray(val)) {
+          return val.every((file) => {
+            if (!file) return false;
+            // Check if it's a File object
+            if (file instanceof File) {
+              return allowedTypes.includes(file.type);
+            }
+            // Check if it's an existing file object with type property
+            if (file.type) {
+              return allowedTypes.includes(file.type);
+            }
+            // Allow existing files without type check
+            return true;
+          });
+        }
+
+        // Handle single file (backward compatibility)
         // Check if it's a File object
         if (val instanceof File) {
-          const allowedTypes = [
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          ];
           return allowedTypes.includes(val.type);
         }
         // Check if it's an existing file object with type property
         if (val.type) {
-          const allowedTypes = [
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          ];
           return allowedTypes.includes(val.type);
         }
         return true; // Allow existing files without type check
       },
       {
-        message: "CV/Resume must be a PDF, DOC, or DOCX file",
+        message: "Medical documents must be PDF, DOC, or DOCX files",
       }
     ),
 });
@@ -217,18 +296,46 @@ export type Step2MedicalCredentialsInput = z.infer<
 >;
 
 export const step3IMEExperienceSchema = z.object({
-  yearsOfIMEExperience: z
-    .string({ error: "Years of IME experience is required" })
-    .min(1, { message: "Years of IME experience is required" }),
-  provinceOfLicensure: z
-    .string({ error: "Province of licensure is required" })
-    .min(1, { message: "Province of licensure is required" }),
-  languagesSpoken: z
+  imesCompleted: z
+    .string()
+    .min(1, { message: "Please specify how many IMEs you have completed" }),
+  currentlyConductingIMEs: z
+    .string()
+    .min(1, { message: "Please specify if you are currently conducting IMEs" }),
+  insurersOrClinics: z
+    .string()
+    .optional(),
+  assessmentTypes: z
     .array(z.string())
-    .min(1, { message: "At least one language is required" }),
-  forensicAssessmentTrained: z
-    .string({ error: "Forensic assessment training status is required" })
-    .min(1, { message: "Forensic assessment training status is required" }),
+    .min(1, { message: "Please select at least one assessment type" }),
+  assessmentTypeOther: z
+    .string()
+    .optional(),
+  redactedIMEReport: z
+    .any()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val || val === "") return true; // Optional field
+        const allowedTypes = [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ];
+        // Check if it's a File object
+        if (val instanceof File) {
+          return allowedTypes.includes(val.type);
+        }
+        // Check if it's an existing file object with type property
+        if (val.type) {
+          return allowedTypes.includes(val.type);
+        }
+        return true; // Allow existing files without type check
+      },
+      {
+        message: "Redacted IME Report must be a PDF, DOC, or DOCX file",
+      }
+    ),
 });
 
 export type Step3IMEExperienceInput = z.infer<typeof step3IMEExperienceSchema>;
@@ -247,29 +354,6 @@ export type Step4ExperienceDetailsInput = z.infer<
   typeof step4ExperienceDetailsSchema
 >;
 
-export const step5AvailabilitySchema = z.object({
-  preferredRegions: z
-    .array(z.string())
-    .min(1, { message: "Please select at least one region" }),
-  maxTravelDistance: z
-    .string()
-    .min(1, { message: "Maximum travel distance is required" }),
-  // daysAvailable: z.string().min(1, { message: "Days available is required" }),
-  // timeWindows: z
-  //   .object({
-  //     morning: z.boolean(),
-  //     afternoon: z.boolean(),
-  //     evening: z.boolean(),
-  //   })
-  //   .refine((value) => value.morning || value.afternoon || value.evening, {
-  //     message: "Please select at least one time window",
-  //   }),
-  acceptVirtualAssessments: z
-    .string()
-    .min(1, { message: "Please specify if you accept virtual assessments" }),
-});
-
-export type Step5AvailabilityInput = z.infer<typeof step5AvailabilitySchema>;
 
 export const step6LegalSchema = z.object({
   // signedNDA: z.any().refine((val) => val !== null, {

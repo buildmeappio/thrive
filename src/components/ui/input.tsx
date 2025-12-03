@@ -6,6 +6,7 @@ import {
   handleKeyPress,
   handleInputChange,
   sanitizeOnBlur,
+  filterInputValue,
 } from "@/utils/inputValidation";
 
 interface InputProps extends React.ComponentProps<"input"> {
@@ -76,6 +77,58 @@ function Input({
     [validationType, onChange, onBlur]
   );
 
+  const handlePasteEvent = React.useCallback(
+    (e: React.ClipboardEvent<HTMLInputElement>) => {
+      // Get pasted text
+      const pastedText = e.clipboardData.getData("text");
+      
+      // If validation is enabled, filter the pasted text
+      if (validationType !== "none" && validationType !== "email" && validationType !== "phone") {
+        const filteredValue = filterInputValue(pastedText, validationType);
+        
+        // If the filtered value is different, prevent default and set the filtered value
+        if (filteredValue !== pastedText) {
+          e.preventDefault();
+          const input = e.currentTarget;
+          const start = input.selectionStart || 0;
+          const end = input.selectionEnd || 0;
+          const currentValue = input.value || "";
+          const newValue = currentValue.slice(0, start) + filteredValue + currentValue.slice(end);
+          
+          // Update input value
+          input.value = newValue;
+          
+          // Set cursor position
+          const newCursorPos = start + filteredValue.length;
+          setTimeout(() => {
+            input.setSelectionRange(newCursorPos, newCursorPos);
+          }, 0);
+          
+          // Trigger onChange with filtered value
+          // Use the input element directly and create a minimal event object
+          const syntheticEvent = {
+            target: input,
+            currentTarget: input,
+          } as React.ChangeEvent<HTMLInputElement>;
+          // The input.value is already updated above, so this will work
+          onChange?.(syntheticEvent);
+        } else {
+          // Even if no filtering needed, ensure onChange fires after paste completes
+          // This helps with form validation timing
+          setTimeout(() => {
+            const input = e.currentTarget;
+            const syntheticEvent = {
+              target: input,
+              currentTarget: input,
+            } as React.ChangeEvent<HTMLInputElement>;
+            onChange?.(syntheticEvent);
+          }, 0);
+        }
+      }
+    },
+    [validationType, onChange]
+  );
+
   return (
     <div className="relative">
       {Icon && iconPosition === "left" && (
@@ -100,6 +153,7 @@ function Input({
         onChange={handleChangeEvent}
         onKeyPress={handleKeyPressEvent}
         onBlur={handleBlurEvent}
+        onPaste={handlePasteEvent}
         {...props}
       />
       {Icon && iconPosition === "right" && (

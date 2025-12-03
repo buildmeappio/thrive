@@ -1,60 +1,55 @@
 import {
   Step1PersonalInfoInput,
+  Step2AddressInput,
   Step2MedicalCredentialsInput,
   Step3IMEExperienceInput,
   Step4ExperienceDetailsInput,
-  Step5AvailabilityInput,
   Step6LegalInput,
   Step7PaymentDetailsInput,
   Step9PasswordInput,
   LoginInput,
 } from "../schemas/auth.schemas";
 
-export const step1InitialValues: Omit<
-  Step1PersonalInfoInput,
-  "provinceOfResidence"
-> & {
-  provinceOfResidence: string | null;
-} = {
+export const step1InitialValues: Step1PersonalInfoInput = {
   firstName: "",
   lastName: "",
   phoneNumber: "",
   emailAddress: "",
-  provinceOfResidence: null,
-  mailingAddress: "",
   landlineNumber: "",
+  city: "",
+  province: "",
+  languagesSpoken: [],
+};
+
+export const step2AddressInitialValues: Step2AddressInput = {
+  address: "",
+  street: "",
+  suite: "",
+  postalCode: "",
+  province: "",
+  city: "",
 };
 
 export const step2InitialValues: Step2MedicalCredentialsInput = {
-  medicalSpecialty: [],
   licenseNumber: "",
-  provinceOfLicensure: "",
+  licenseIssuingProvince: "",
+  medicalSpecialty: [],
+  yearsOfIMEExperience: "",
   // licenseExpiryDate: "",
-  medicalLicense: null,
-  cvResume: null,
+  medicalLicense: [],
 };
 
 export const step3InitialValues: Step3IMEExperienceInput = {
-  provinceOfLicensure: "",
-  languagesSpoken: [],
-  forensicAssessmentTrained: "",
-  yearsOfIMEExperience: "",
+  imesCompleted: "",
+  currentlyConductingIMEs: "",
+  insurersOrClinics: "",
+  assessmentTypes: [],
+  assessmentTypeOther: "",
+  redactedIMEReport: null,
 };
 
 export const step4InitialValues: Step4ExperienceDetailsInput = {
   experienceDetails: "",
-};
-
-export const step5InitialValues: Step5AvailabilityInput = {
-  preferredRegions: [],
-  maxTravelDistance: "",
-  // daysAvailable: "",
-  // timeWindows: {
-  //   morning: false,
-  //   afternoon: false,
-  //   evening: false,
-  // },
-  acceptVirtualAssessments: "",
 };
 
 export const step6InitialValues: Step6LegalInput = {

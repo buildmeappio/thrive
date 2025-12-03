@@ -3,6 +3,7 @@ import React, { useRef, useState } from "react";
 import { Upload, File, X, Download } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { log } from "@/utils/logger";
 
 // Document types for handling both new uploads and existing documents
 export type ExistingDocument = {
@@ -82,7 +83,7 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
     event.stopPropagation();
     if (value && "isExisting" in value && value.isExisting) {
       // TODO: Implement download functionality for existing documents
-      console.log("Download existing document:", value.id);
+      log("Download existing document:", value.id);
     }
   };
 
