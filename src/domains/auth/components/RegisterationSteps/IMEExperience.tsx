@@ -1,7 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
-import { BackButton, ContinueButton, ProgressIndicator, FileUploadInput } from "@/components";
+import {
+  BackButton,
+  ContinueButton,
+  ProgressIndicator,
+  FileUploadInput,
+} from "@/components";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui";
@@ -112,13 +117,12 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
       <FormProvider form={form} onSubmit={onSubmit}>
         <div className="flex-grow pt-4 sm:px-4 sm:py-6 sm:pt-0 md:px-0">
           <div className="space-y-4 sm:space-y-6">
-            <h3 className="mt-4 mb-2 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
+            <h3 className="mt-4 mb-2 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
               IME Background & Experience
             </h3>
 
             {/* Two-Column Layout */}
             <div className="mt-6 md:px-0 px-8 grid grid-cols-1 gap-x-12 gap-y-6 md:mt-8 md:grid-cols-2">
-              
               {/* LEFT COLUMN */}
               <div className="space-y-6">
                 {/* How many IMEs have you completed? */}
@@ -138,8 +142,8 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                   render={({ field, fieldState }) => (
                     <div className="space-y-2">
                       <Label className="text-black">
-                        Are you currently conducting IMEs for any insurer or clinic?{" "}
-                        <span className="text-red-500">*</span>
+                        Are you currently conducting IMEs for any insurer or
+                        clinic? <span className="text-red-500">*</span>
                       </Label>
                       <RadioGroup
                         value={field.value}
@@ -172,11 +176,18 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                           </Label>
                         </div>
                       </RadioGroup>
-                      {fieldState.error && (
-                        <p className="text-xs text-red-500">
-                          {fieldState.error.message}
-                        </p>
-                      )}
+                      {fieldState.error &&
+                        (() => {
+                          const errorMsg = fieldState.error.message;
+                          const isRequiredError =
+                            errorMsg &&
+                            (errorMsg.toLowerCase() === "required" ||
+                              errorMsg.toLowerCase().endsWith(" is required") ||
+                              errorMsg.toLowerCase() === "is required");
+                          return !isRequiredError ? (
+                            <p className="text-xs text-red-500">{errorMsg}</p>
+                          ) : null;
+                        })()}
                     </div>
                   )}
                 />
@@ -196,11 +207,20 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                           placeholder="List insurers or clinics..."
                           className="min-h-[100px] resize-none"
                         />
-                        {fieldState.error && (
-                          <p className="text-xs text-red-500">
-                            {fieldState.error.message}
-                          </p>
-                        )}
+                        {fieldState.error &&
+                          (() => {
+                            const errorMsg = fieldState.error.message;
+                            const isRequiredError =
+                              errorMsg &&
+                              (errorMsg.toLowerCase() === "required" ||
+                                errorMsg
+                                  .toLowerCase()
+                                  .endsWith(" is required") ||
+                                errorMsg.toLowerCase() === "is required");
+                            return !isRequiredError ? (
+                              <p className="text-xs text-red-500">{errorMsg}</p>
+                            ) : null;
+                          })()}
                       </div>
                     )}
                   />
@@ -222,7 +242,9 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
 
                 {/* Conditional: Other assessment type */}
                 {showOtherField && (
-                  <FormField name="assessmentTypeOther" label="Please specify other assessment type">
+                  <FormField
+                    name="assessmentTypeOther"
+                    label="Please specify other assessment type">
                     {(field: UseFormRegisterReturn & { error?: boolean }) => (
                       <Input
                         {...field}
@@ -234,7 +256,7 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                 )}
 
                 {/* Upload Redacted IME Report (Optional) */}
-                <Controller
+                {/* <Controller
                   name="redactedIMEReport"
                   control={form.control}
                   render={({ field, fieldState }) => (
@@ -253,11 +275,12 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                         showIcon={false}
                       />
                       <p className="text-xs text-gray-500">
-                        Optional • Accepted formats: PDF, DOC, DOCX • Max size: 10 MB
+                        Optional • Accepted formats: PDF, DOC, DOCX • Max size:
+                        10 MB
                       </p>
                     </div>
                   )}
-                />
+                /> */}
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import {
   PersonalInfo,
   MedicalCredentials,
+  VerificationDocuments,
   IMEExperince,
   ExperienceDetails,
   // PaymentDetails,
@@ -55,6 +56,7 @@ const RegisterForm: React.FC<{
   const steps: Step[] = [
     { component: PersonalInfo },
     { component: MedicalCredentials },
+    { component: VerificationDocuments },
     { component: IMEExperince },
     { component: ExperienceDetails },
     // { component: PaymentDetails },
@@ -90,7 +92,7 @@ const RegisterForm: React.FC<{
     );
   };
 
-  const showTitle = currentStep <= 5;
+  const showTitle = currentStep <= 6;
   return (
     <div className="mx-auto max-w-[900px] p-4 md:py-5 py-4">
       <div className="mb-2 flex h-[50px] items-center justify-between ">

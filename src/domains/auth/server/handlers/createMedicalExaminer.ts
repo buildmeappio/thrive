@@ -141,7 +141,7 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
         // insuranceDocument: {
         //   connect: { id: payload.insuranceProofDocumentId },
         // },
-        status: ExaminerStatus.PENDING,
+        status: ExaminerStatus.SUBMITTED,
       },
     });
 

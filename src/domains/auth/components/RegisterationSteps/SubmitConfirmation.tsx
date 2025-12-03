@@ -83,17 +83,17 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         if (!file) {
           return { success: false as const, error: "No file provided" };
         }
-        
+
         // Check if it's an existing document
         if ("isExisting" in file && file.isExisting) {
           return { success: true as const, document: { id: file.id } };
         }
-        
+
         // It's a new File, upload it
         if (file instanceof File) {
           return await uploadFileToS3(file);
         }
-        
+
         return { success: false as const, error: "Invalid file type" };
       };
 
@@ -213,9 +213,9 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
 
       // Send registration confirmation emails (don't fail if emails fail)
       try {
-        const profileId = 
+        const profileId =
           (result as any).examinerProfileId || examinerProfileId || "";
-        
+
         await authActions.sendRegistrationEmails({
           examinerData: {
             firstName: data.firstName,
@@ -320,11 +320,18 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
                       <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  {fieldState.error && (
-                    <p className="text-xs text-red-500">
-                      {fieldState.error.message}
-                    </p>
-                  )}
+                  {fieldState.error &&
+                    (() => {
+                      const errorMsg = fieldState.error.message;
+                      const isRequiredError =
+                        errorMsg &&
+                        (errorMsg.toLowerCase() === "required" ||
+                          errorMsg.toLowerCase().endsWith(" is required") ||
+                          errorMsg.toLowerCase() === "is required");
+                      return !isRequiredError ? (
+                        <p className="text-xs text-red-500">{errorMsg}</p>
+                      ) : null;
+                    })()}
                 </div>
               )}
             />
@@ -359,11 +366,18 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
                       <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  {fieldState.error && (
-                    <p className="text-xs text-red-500">
-                      {fieldState.error.message}
-                    </p>
-                  )}
+                  {fieldState.error &&
+                    (() => {
+                      const errorMsg = fieldState.error.message;
+                      const isRequiredError =
+                        errorMsg &&
+                        (errorMsg.toLowerCase() === "required" ||
+                          errorMsg.toLowerCase().endsWith(" is required") ||
+                          errorMsg.toLowerCase() === "is required");
+                      return !isRequiredError ? (
+                        <p className="text-xs text-red-500">{errorMsg}</p>
+                      ) : null;
+                    })()}
                 </div>
               )}
             />

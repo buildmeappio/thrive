@@ -22,7 +22,7 @@ const FormProvider = <TFieldValues extends FieldValues>({
 }: FormProviderProps<TFieldValues>) => {
   return (
     <RHFFormProvider {...form}>
-      <form id={id} onSubmit={form.handleSubmit(onSubmit)}>
+      <form id={id} onSubmit={form.handleSubmit(onSubmit)} noValidate>
         {children}
       </form>
     </RHFFormProvider>

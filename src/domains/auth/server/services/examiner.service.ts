@@ -284,8 +284,8 @@ class ExaminerService {
               connect: { id: data.insuranceProofDocumentId },
             },
           }),
-          // Change status from INFO_REQUESTED to PENDING
-          status: ExaminerStatus.PENDING,
+          // Change status to SUBMITTED when examiner updates their profile
+          status: ExaminerStatus.SUBMITTED,
         },
       });
 

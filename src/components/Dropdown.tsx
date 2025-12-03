@@ -231,7 +231,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           </div>
         )}
       </div>
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && error.trim() && error.trim() !== " " && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
 };

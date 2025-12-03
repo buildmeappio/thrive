@@ -196,9 +196,27 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
         aria-label={label}
       />
 
-      {(error || sizeError) && (
-        <p className="text-xs text-red-500 mt-1">{error || sizeError}</p>
-      )}
+      {(() => {
+        const errorToShow = error || sizeError;
+        if (!errorToShow) return null;
+        
+        // Only show error message for validation errors, not simple "required" errors
+        const isRequiredError = error && (
+          error.toLowerCase() === "required" ||
+          error.toLowerCase().endsWith(" is required") ||
+          error.toLowerCase() === "is required"
+        );
+        
+        // Always show sizeError (it's a validation error)
+        // Only show error if it's not a required error
+        if (sizeError) {
+          return <p className="text-xs text-red-500 mt-1">{sizeError}</p>;
+        }
+        if (error && !isRequiredError) {
+          return <p className="text-xs text-red-500 mt-1">{error}</p>;
+        }
+        return null;
+      })()}
 
       {accept && !error && !sizeError && (
         <p className="text-xs text-[#9EA9AA] mt-1">

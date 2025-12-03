@@ -88,11 +88,17 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
                     className="-mt-2 text-xs font-normal text-[#8A8A8A] sm:text-sm">
                     Talk about yourself and your background
                   </Label>
-                  {fieldState.error && (
-                    <p className="text-xs text-red-500">
-                      {fieldState.error.message}
-                    </p>
-                  )}
+                  {fieldState.error && (() => {
+                    const errorMsg = fieldState.error.message;
+                    const isRequiredError = errorMsg && (
+                      errorMsg.toLowerCase() === "required" ||
+                      errorMsg.toLowerCase().endsWith(" is required") ||
+                      errorMsg.toLowerCase() === "is required"
+                    );
+                    return !isRequiredError ? (
+                      <p className="text-xs text-red-500">{errorMsg}</p>
+                    ) : null;
+                  })()}
                 </div>
               )}
             />

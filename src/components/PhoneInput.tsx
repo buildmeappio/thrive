@@ -16,10 +16,11 @@ interface PhoneInputProps {
   className?: string;
   icon?: LucideIcon;
   placeholder?: string;
+  error?: boolean;
 }
 
 const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ name, value, onChange, onBlur, disabled, className, icon, placeholder }, ref) => {
+  ({ name, value, onChange, onBlur, disabled, className, icon, placeholder, error }, ref) => {
     // Remove +1 prefix from value if present (for display)
     const displayValue = value ? value.replace(/^\+1\s*/, "") : "";
 
@@ -129,6 +130,7 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         onBlur={onBlur}
         disabled={disabled}
         className={className}
+        error={error}
       />
     );
   }

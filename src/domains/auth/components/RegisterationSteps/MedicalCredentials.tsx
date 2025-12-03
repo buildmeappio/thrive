@@ -1,12 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui";
-import {
-  BackButton,
-  ContinueButton,
-  ProgressIndicator,
-  MultipleFileUploadInput,
-} from "@/components";
+import { BackButton, ContinueButton, ProgressIndicator } from "@/components";
 import {
   step2MedicalCredentialsSchema,
   Step2MedicalCredentialsInput,
@@ -19,7 +14,7 @@ import {
 } from "@/domains/auth/state/useRegistrationStore";
 // import DatePickerInput from "@/components/DatePickerInput";
 import { FormProvider, FormField, FormDropdown } from "@/components/form";
-import { Controller, UseFormRegisterReturn } from "@/lib/form";
+import { UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { provinces } from "@/constants/options";
 import getExamTypesAction from "@/server/actions/getExamTypes";
@@ -80,11 +75,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
       medicalSpecialty: data.medicalSpecialty || [],
       yearsOfIMEExperience: data.yearsOfIMEExperience || "",
       // licenseExpiryDate: data.licenseExpiryDate,
-      medicalLicense: Array.isArray(data.medicalLicense)
-        ? data.medicalLicense
-        : data.medicalLicense
-        ? [data.medicalLicense]
-        : [],
+      medicalLicense: [],
     },
     mode: "onSubmit",
   });
@@ -98,18 +89,13 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
       medicalSpecialty: data.medicalSpecialty || [],
       yearsOfIMEExperience: data.yearsOfIMEExperience || "",
       // licenseExpiryDate: data.licenseExpiryDate,
-      medicalLicense: Array.isArray(data.medicalLicense)
-        ? data.medicalLicense
-        : data.medicalLicense
-        ? [data.medicalLicense]
-        : [],
+      medicalLicense: [],
     });
   }, [
     data.licenseNumber,
     data.licenseIssuingProvince,
     data.medicalSpecialty,
     data.yearsOfIMEExperience,
-    data.medicalLicense,
     form,
   ]);
 
@@ -151,8 +137,8 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
       <FormProvider form={form} onSubmit={onSubmit}>
         <div className="grow space-y-4 md:px-0">
           <div className="text-center">
-            <h3 className="mt-4 mb-2 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
-              Medical Credentials
+            <h3 className="mt-4 mb-2 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
+              Enter Your Medical Credentials
             </h3>
           </div>
 
@@ -160,13 +146,13 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
             {/* Row 1: Medical License Number, License Issuing Province */}
             <FormField
               name="licenseNumber"
-              label="Medical License Number"
+              label="License/Registration Number"
               required>
               {(field: UseFormRegisterReturn & { error?: boolean }) => (
                 <Input
                   {...field}
                   id="licenseNumber"
-                  placeholder="Enter your medical license number"
+                  placeholder="Enter your license/registration number"
                   validationType="license"
                 />
               )}
@@ -174,10 +160,10 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
 
             <FormDropdown
               name="licenseIssuingProvince"
-              label="License Issuing Province"
+              label="License/Registration Issuing Province"
               required
               options={provinces}
-              placeholder="Select Province"
+              placeholder="Select License/Registration Issuing Province"
               icon={null}
             />
 
@@ -208,39 +194,10 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
               placeholder="Select Years"
               icon={null}
             />
-
-            {/* Row 3: Upload Medical Documents (full width) */}
-            <Controller
-              name="medicalLicense"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <div className="space-y-2 md:col-span-2">
-                  <MultipleFileUploadInput
-                    name="medicalLicense"
-                    label="Upload Medical Documents"
-                    value={
-                      Array.isArray(field.value)
-                        ? field.value
-                        : field.value
-                        ? [field.value]
-                        : []
-                    }
-                    onChange={(files) => {
-                      field.onChange(files);
-                    }}
-                    accept=".pdf,.doc,.docx"
-                    required
-                    placeholder="Upload Medical Documents"
-                    error={fieldState.error?.message}
-                    showIcon={false}
-                  />
-                </div>
-              )}
-            />
           </div>
         </div>
 
-        <div className="pt-8 md:pt-2 flex justify-center gap-8 px-2 pb-8 md:justify-between md:gap-4 md:px-0">
+        <div className="mt-10 flex items-center justify-center gap-8 px-2 pb-8 md:mt-12 md:justify-between md:gap-4 md:px-0">
           <BackButton
             onClick={onPrevious}
             disabled={currentStep === 1}

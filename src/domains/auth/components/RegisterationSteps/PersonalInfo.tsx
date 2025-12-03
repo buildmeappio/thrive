@@ -72,21 +72,34 @@ const PersonalInfo: React.FC<RegStepProps> = ({
       languagesSpoken: data.languagesSpoken || [],
     },
     mode: "onSubmit",
+    reValidateMode: "onSubmit",
+    shouldUnregister: false,
   });
 
-  // Reset form when store data changes
+  // Reset form when store data changes (but preserve errors if form has been submitted)
   useEffect(() => {
-    form.reset({
-      ...step1InitialValues,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      phoneNumber: data.phoneNumber,
-      emailAddress: data.emailAddress,
-      landlineNumber: data.landlineNumber,
-      city: data.city || "",
-      province: data.province || "",
-      languagesSpoken: data.languagesSpoken || [],
-    });
+    const hasBeenSubmitted = form.formState.isSubmitted;
+    form.reset(
+      {
+        ...step1InitialValues,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phoneNumber: data.phoneNumber,
+        emailAddress: data.emailAddress,
+        landlineNumber: data.landlineNumber,
+        city: data.city || "",
+        province: data.province || "",
+        languagesSpoken: data.languagesSpoken || [],
+      },
+      {
+        keepErrors: hasBeenSubmitted, // Keep errors if form has been submitted
+        keepDirty: false,
+        keepIsSubmitted: hasBeenSubmitted,
+        keepTouched: false,
+        keepIsValid: false,
+        keepSubmitCount: hasBeenSubmitted,
+      }
+    );
   }, [
     data.firstName,
     data.lastName,
@@ -135,8 +148,8 @@ const PersonalInfo: React.FC<RegStepProps> = ({
       <FormProvider form={form} onSubmit={onSubmit}>
         <div className="space-y-2 pb-3 md:px-0">
           <div className="pt-0 md:pt-0">
-            <h3 className="mt-2 mb-0 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
-              Personal Details
+            <h3 className="mt-2 mb-0 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
+              Enter Your Personal Details
             </h3>
             <div className="mt-2 md:px-0 px-8 grid grid-cols-1 gap-x-12 gap-y-2 md:mt-6 md:grid-cols-2">
               {/* Row 1: First Name, Last Name */}
@@ -178,7 +191,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                 )}
               </FormField>
 
-              {/* Row 2: Email Address, Languages Spoken */}
+              {/* Row 2: Email Address, City */}
               <FormField
                 name="emailAddress"
                 label="Email Address"
@@ -201,6 +214,28 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                 )}
               </FormField>
 
+              <FormField name="city" label="City" required>
+                {(field: UseFormRegisterReturn & { error?: boolean }) => (
+                  <Input
+                    {...field}
+                    id="city"
+                    icon={MapPin}
+                    placeholder="Enter your city"
+                    validationType="name"
+                  />
+                )}
+              </FormField>
+
+              {/* Row 3: Province, Languages Spoken */}
+              <FormDropdown
+                name="province"
+                label="Province"
+                required
+                options={provinces}
+                placeholder="Select Province"
+                icon={<MapPin size={16} color="#A4A4A4" strokeWidth={2} />}
+              />
+
               <FormDropdown
                 name="languagesSpoken"
                 label="Languages Spoken"
@@ -214,32 +249,10 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                 disabled={loadingLanguages}
               />
 
-              {/* Row 3: Province, City */}
-              <FormDropdown
-                name="province"
-                label="Province"
-                required
-                options={provinces}
-                placeholder="Select Province"
-                icon={<MapPin size={16} color="#A4A4A4" strokeWidth={2} />}
-              />
-
-              <FormField name="city" label="City" required>
-                {(field: UseFormRegisterReturn & { error?: boolean }) => (
-                  <Input
-                    {...field}
-                    id="city"
-                    icon={MapPin}
-                    placeholder="Enter your city"
-                    validationType="name"
-                  />
-                )}
-              </FormField>
-
               {/* Row 4: Work Number, Cell Number */}
               <FormPhoneInput
                 name="landlineNumber"
-                label="Work Number"
+                label="Work Phone"
                 required
                 icon={PhoneCall}
                 placeholder="Enter your work number"
@@ -247,12 +260,12 @@ const PersonalInfo: React.FC<RegStepProps> = ({
 
               <FormPhoneInput
                 name="phoneNumber"
-                label="Cell Number"
+                label="Cell Phone"
                 required
                 placeholder="Enter your cell number"
               />
             </div>
-        </div>
+          </div>
 
           <div className="mt-3 flex flex-row justify-center gap-3 px-2 md:mt-5 md:justify-between md:gap-4 md:px-0">
             <div className="hidden md:block" />

@@ -98,12 +98,19 @@ export const step1PersonalInfoSchema = z.object({
     ),
   phoneNumber: z
     .string()
-    .min(5, { message: "Please enter a valid phone number" })
+    .min(1, { message: "Cell phone is required" })
     .refine(
       (val) => {
+        // Only validate format if field has a value
+        if (!val || val.trim().length === 0) {
+          return true; // Let min(1) handle empty validation
+        }
         try {
           // Handle both formats: "+1 (123) 456-7890" and raw digits
           const cleanVal = val.replace(/^\+1\s*/, "").replace(/\D/g, "");
+          if (cleanVal.length < 5) {
+            return false;
+          }
           const phone = parsePhoneNumberWithError(`+1${cleanVal}`);
           if (phone.countryCallingCode === "1") {
             return true;
@@ -118,16 +125,19 @@ export const step1PersonalInfoSchema = z.object({
     ),
   landlineNumber: z
     .string()
-    .min(5, { message: "Please enter a valid landline number" })
-    .optional()
+    .min(1, { message: "Work phone is required" })
     .refine(
       (val) => {
+        // Only validate format if field has a value
+        if (!val || val.trim().length === 0) {
+          return true; // Let min(1) handle empty validation
+        }
         try {
-          if (!val) {
-            return true;
-          }
           // Handle both formats: "+1 (123) 456-7890" and raw digits
           const cleanVal = val?.replace(/^\+1\s*/, "").replace(/\D/g, "");
+          if (cleanVal.length < 5) {
+            return false;
+          }
           const phone = parsePhoneNumberWithError(`+1${cleanVal}`);
           return phone.countryCallingCode === "1";
         } catch (error) {
@@ -140,6 +150,7 @@ export const step1PersonalInfoSchema = z.object({
 
   emailAddress: z
     .string()
+    .min(1, { message: "Email address is required" })
     .email({ message: "Please enter a valid email address" }),
   city: z
     .string()
@@ -237,6 +248,61 @@ export const step2MedicalCredentialsSchema = z.object({
   //   .min(1, { message: "License expiry date is required" }),
   medicalLicense: z
     .any()
+    .optional()
+    .refine(
+      (val) => {
+        // If value is provided, validate it
+        if (!val || val === "" || (Array.isArray(val) && val.length === 0)) {
+          return true; // Optional, so empty is valid
+        }
+        
+        const allowedTypes = [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ];
+
+        // Handle array of files
+        if (Array.isArray(val)) {
+          return val.every((file) => {
+            if (!file) return false;
+            // Check if it's a File object
+            if (file instanceof File) {
+              return allowedTypes.includes(file.type);
+            }
+            // Check if it's an existing file object with type property
+            if (file.type) {
+              return allowedTypes.includes(file.type);
+            }
+            // Allow existing files without type check
+            return true;
+          });
+        }
+
+        // Handle single file (backward compatibility)
+        // Check if it's a File object
+        if (val instanceof File) {
+          return allowedTypes.includes(val.type);
+        }
+        // Check if it's an existing file object with type property
+        if (val.type) {
+          return allowedTypes.includes(val.type);
+        }
+        return true; // Allow existing files without type check
+      },
+      {
+        message: "Medical documents must be PDF, DOC, or DOCX files",
+      }
+    ),
+});
+
+export type Step2MedicalCredentialsInput = z.infer<
+  typeof step2MedicalCredentialsSchema
+>;
+
+export const verificationDocumentsSchema = z.object({
+  medicalLicense: z
+    .any()
     .refine((val) => {
       // Check if it's an array
       if (Array.isArray(val)) {
@@ -291,8 +357,8 @@ export const step2MedicalCredentialsSchema = z.object({
     ),
 });
 
-export type Step2MedicalCredentialsInput = z.infer<
-  typeof step2MedicalCredentialsSchema
+export type VerificationDocumentsInput = z.infer<
+  typeof verificationDocumentsSchema
 >;
 
 export const step3IMEExperienceSchema = z.object({

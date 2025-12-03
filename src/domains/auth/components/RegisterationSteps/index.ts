@@ -1,6 +1,7 @@
 export { default as PersonalInfo } from "./PersonalInfo";
 // export { default as AddressLookup } from "./AddressLookup";
 export { default as MedicalCredentials } from "./MedicalCredentials";
+export { default as VerificationDocuments } from "./VerificationDocuments";
 export { default as IMEExperince } from "./IMEExperience";
 export { default as ExperienceDetails } from "./ExperienceDetails";
 // export { default as PaymentDetails } from './PaymentDetails';

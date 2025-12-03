@@ -39,6 +39,7 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [sizeError, setSizeError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleClick = () => {
     if (!disabled) {
@@ -46,23 +47,13 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = event.target.files;
+  const processFiles = (filesArray: File[]) => {
     setSizeError(null);
-
-    if (!selectedFiles || selectedFiles.length === 0) {
-      return;
-    }
-
-    const filesArray = Array.from(selectedFiles);
     const currentFiles = value || [];
 
     // Check max files limit
     if (maxFiles && currentFiles.length + filesArray.length > maxFiles) {
       setSizeError(`Maximum ${maxFiles} file(s) allowed`);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
       return;
     }
 
@@ -101,10 +92,48 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
     if (validFiles.length > 0) {
       onChange([...currentFiles, ...validFiles]);
     }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = event.target.files;
+
+    if (!selectedFiles || selectedFiles.length === 0) {
+      return;
+    }
+
+    const filesArray = Array.from(selectedFiles);
+    processFiles(filesArray);
 
     // Reset input to allow selecting the same files again
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!disabled) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (disabled) return;
+
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    if (droppedFiles.length > 0) {
+      processFiles(droppedFiles);
     }
   };
 
@@ -142,11 +171,6 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
 
   const files = value || [];
   const hasFiles = files.length > 0;
-  // Each file item is approximately 75px tall (including padding and spacing)
-  // Show only 2 files visible, rest will scroll
-  // 2 files = ~75px * 2 + 8px gap = ~158px
-  const maxVisibleHeight = 158; // Height for exactly 2 files
-  const needsScrolling = files.length > 2;
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -157,97 +181,105 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
         </Label>
       )}
 
-      {/* Upload Button */}
+      {/* Upload Button with Drag and Drop */}
       <div
         onClick={handleClick}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         className={cn(
-          "mt-2 flex h-[55px] w-full cursor-pointer items-center rounded-[10px] border-none bg-[#F2F5F6] px-3 text-sm transition-all",
-          "hover:bg-[#E8EBEC] focus-within:ring-2 focus-within:ring-[#00A8FF]/30 focus-within:ring-offset-0",
+          "mt-2 flex h-[120px] w-full cursor-pointer items-center justify-center rounded-[10px] border-2 border-dashed px-3 text-sm transition-all flex-col gap-2",
+          isDragging
+            ? "border-[#00A8FF] bg-[#E6F4FF]"
+            : "border-[#D1D5DB] bg-[#F2F5F6]",
+          "hover:border-[#00A8FF] hover:bg-[#E8EBEC] focus-within:ring-2 focus-within:ring-[#00A8FF]/30 focus-within:ring-offset-0",
           disabled && "cursor-not-allowed opacity-50",
-          error && "ring-2 ring-red-500/30"
+          error && "ring-2 ring-red-500/30 border-red-300"
         )}>
         {showIcon && (
-          <Upload
-            className="mr-3 h-5 w-5 text-[#A4A4A4] flex-shrink-0"
-            strokeWidth={2}
-          />
+          <div className="flex items-center justify-center">
+            <Upload
+              className={cn(
+                "h-8 w-8 transition-colors",
+                isDragging ? "text-[#00A8FF]" : "text-[#A4A4A4]"
+              )}
+              strokeWidth={2}
+            />
+          </div>
         )}
 
-        <div className="flex-1 flex items-center justify-between min-w-0">
-          <span className="text-[14px] font-normal text-[#9EA9AA]">
-            {hasFiles ? `${files.length} file(s) selected` : placeholder}
+        <div className="flex items-center justify-center">
+          <span
+            className={cn(
+              "text-[14px] font-normal transition-colors text-center",
+              isDragging
+                ? "text-[#00A8FF]"
+                : hasFiles
+                ? "text-[#333]"
+                : "text-[#9EA9AA]"
+            )}>
+            {isDragging
+              ? "Drop files here"
+              : hasFiles
+              ? `${files.length} file(s) selected`
+              : `${placeholder} or drag and drop`}
           </span>
         </div>
       </div>
 
       {/* Files List */}
       {hasFiles && (
-        <div
-          className="mt-2"
-          style={{
-            maxHeight: `${maxVisibleHeight}px`,
-            overflow: "hidden",
-            height: needsScrolling ? `${maxVisibleHeight}px` : "auto",
-          }}>
-          <div
-            className="overflow-y-auto overflow-x-hidden pr-2 scrollbar-thin"
-            style={{
-              height: needsScrolling ? "100%" : "auto",
-              maxHeight: `${maxVisibleHeight}px`,
-            }}>
-            <div className="space-y-2">
-              {files.map((file: DocumentFile, index: number) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 rounded-[10px] bg-[#F8F9FA] border border-[#E8EBEC] p-2 transition-all hover:bg-[#F2F5F6] flex-shrink-0">
-                  <File className="h-5 w-5 text-[#00A8FF] flex-shrink-0" />
+        <div className="mt-2 space-y-2">
+          {files.map((file: DocumentFile, index: number) => (
+            <div
+              key={index}
+              className="flex items-center gap-2 rounded-[10px] bg-[#F8F9FA] border border-[#E8EBEC] p-2 transition-all hover:bg-[#F2F5F6] flex-shrink-0">
+              <File className="h-5 w-5 text-[#00A8FF] flex-shrink-0" />
 
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-[#333] truncate">
-                      {isExistingDocument(file)
-                        ? file?.displayName || file?.name || ""
-                        : file?.name || ""}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <p className="text-[11px] text-[#9EA9AA]">
-                        {formatFileSize(file?.size || 0)}
-                      </p>
-                      {isExistingDocument(file) && (
-                        <span className="text-[10px] text-[#00A8FF] bg-[#E6F4FF] px-2 py-0.5 rounded">
-                          Previously uploaded
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    {isExistingDocument(file) && (
-                      <button
-                        type="button"
-                        onClick={handleDownloadExisting(file)}
-                        className="p-1.5 rounded-full hover:bg-blue-100 text-blue-500 transition-colors"
-                        disabled={disabled}
-                        title="Download existing document">
-                        <Download className="h-4 w-4" />
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={handleRemoveFile(index)}
-                      className="p-1.5 rounded-full hover:bg-red-100 text-red-500 transition-colors"
-                      disabled={disabled}
-                      title={
-                        isExistingDocument(file)
-                          ? "Remove and upload new file"
-                          : "Remove file"
-                      }>
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-medium text-[#333] truncate">
+                  {isExistingDocument(file)
+                    ? file?.displayName || file?.name || ""
+                    : file?.name || ""}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-[11px] text-[#9EA9AA]">
+                    {formatFileSize(file?.size || 0)}
+                  </p>
+                  {isExistingDocument(file) && (
+                    <span className="text-[10px] text-[#00A8FF] bg-[#E6F4FF] px-2 py-0.5 rounded">
+                      Previously uploaded
+                    </span>
+                  )}
                 </div>
-              ))}
+              </div>
+
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {isExistingDocument(file) && (
+                  <button
+                    type="button"
+                    onClick={handleDownloadExisting(file)}
+                    className="p-1.5 rounded-full hover:bg-blue-100 text-blue-500 transition-colors"
+                    disabled={disabled}
+                    title="Download existing document">
+                    <Download className="h-4 w-4" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleRemoveFile(index)}
+                  className="p-1.5 rounded-full hover:bg-red-100 text-red-500 transition-colors"
+                  disabled={disabled}
+                  title={
+                    isExistingDocument(file)
+                      ? "Remove and upload new file"
+                      : "Remove file"
+                  }>
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       )}
 
@@ -263,9 +295,27 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
         aria-label={label}
       />
 
-      {(error || sizeError) && (
-        <p className="text-xs text-red-500 mt-1">{error || sizeError}</p>
-      )}
+      {(() => {
+        const errorToShow = error || sizeError;
+        if (!errorToShow) return null;
+
+        // Only show error message for validation errors, not simple "required" errors
+        const isRequiredError =
+          error &&
+          (error.toLowerCase() === "required" ||
+            error.toLowerCase().endsWith(" is required") ||
+            error.toLowerCase() === "is required");
+
+        // Always show sizeError (it's a validation error)
+        // Only show error if it's not a required error
+        if (sizeError) {
+          return <p className="text-xs text-red-500 mt-1">{sizeError}</p>;
+        }
+        if (error && !isRequiredError) {
+          return <p className="text-xs text-red-500 mt-1">{error}</p>;
+        }
+        return null;
+      })()}
 
       {accept && !error && !sizeError && (
         <p className="text-xs text-[#9EA9AA] mt-1">
