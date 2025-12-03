@@ -684,6 +684,8 @@ model ExaminerProfile {
   rejectedBy                        String?        @map("rejected_by") @db.Uuid
   rejectedAt                        DateTime?      @map("rejected_at") @db.Timestamptz()
   rejectedReason                    String?        @map("rejected_reason") @db.Text
+  contractSignedByExaminerAt        DateTime?      @map("contract_signed_by_examiner_at") @db.Timestamptz()
+  contractConfirmedByAdminAt        DateTime?      @map("contract_confirmed_by_admin_at") @db.Timestamptz()
   createdAt                         DateTime       @default(now()) @db.Timestamptz()
   updatedAt                         DateTime       @updatedAt @db.Timestamptz()
   deletedAt                         DateTime?
