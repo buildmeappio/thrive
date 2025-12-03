@@ -130,6 +130,7 @@ class ContractService {
               user: true,
             },
           },
+          address: true,
           feeStructure: {
             where: {
               deletedAt: null,
@@ -146,14 +147,14 @@ class ContractService {
         return { success: false, error: "Examiner not found" };
       }
 
-      if (!examiner.feeStructure || examiner.feeStructure.length === 0) {
-        return {
-          success: false,
-          error: "Fee structure not found. Please add fee structure before sending contract.",
-        };
-      }
-
-      const feeStructure = examiner.feeStructure[0];
+      // Fee structure is optional - use placeholder values if not available
+      const feeStructure = examiner.feeStructure?.[0] || {
+        IMEFee: 0,
+        recordReviewFee: 0,
+        hourlyRate: null,
+        cancellationFee: 0,
+        paymentTerms: "To be determined",
+      };
       const examinerName = `${examiner.account.user.firstName} ${examiner.account.user.lastName}`;
       const examinerEmail = examiner.account.user.email;
 

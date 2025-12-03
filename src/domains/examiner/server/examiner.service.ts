@@ -45,6 +45,7 @@ class ExaminerService {
           resumeDocument: true,
           ndaDocument: true,
           insuranceDocument: true,
+          redactedIMEReportDocument: true,
           examinerLanguages: {
             include: {
               language: true,
@@ -89,6 +90,7 @@ class ExaminerService {
           resumeDocument: true,
           ndaDocument: true,
           insuranceDocument: true,
+          redactedIMEReportDocument: true,
           examinerLanguages: {
             include: {
               language: true,
@@ -128,7 +130,7 @@ class ExaminerService {
       const examiner = await prisma.examinerProfile.update({
         where: { id },
         data: {
-          status: "ACCEPTED",
+          status: "APPROVED",
           approvedBy,
           approvedAt: new Date(),
         },
@@ -143,6 +145,7 @@ class ExaminerService {
           resumeDocument: true,
           ndaDocument: true,
           insuranceDocument: true,
+          redactedIMEReportDocument: true,
           examinerLanguages: {
             include: {
               language: true,
@@ -183,6 +186,7 @@ class ExaminerService {
           resumeDocument: true,
           ndaDocument: true,
           insuranceDocument: true,
+          redactedIMEReportDocument: true,
           examinerLanguages: {
             include: {
               language: true,
@@ -203,7 +207,7 @@ class ExaminerService {
       const examiner = await prisma.examinerProfile.update({
         where: { id },
         data: {
-          status: "INFO_REQUESTED",
+          status: "MORE_INFO_REQUESTED",
         },
         include: {
           account: {
@@ -216,6 +220,7 @@ class ExaminerService {
           resumeDocument: true,
           ndaDocument: true,
           insuranceDocument: true,
+          redactedIMEReportDocument: true,
           examinerLanguages: {
             include: {
               language: true,
@@ -227,6 +232,68 @@ class ExaminerService {
       return examiner;
     } catch (error) {
       throw HttpError.fromError(error, "Failed to update examiner status");
+    }
+  }
+
+  // Move examiner to review (SUBMITTED/PENDING → IN_REVIEW)
+  async moveToReview(id: string) {
+    try {
+      const examiner = await prisma.examinerProfile.update({
+        where: { id },
+        data: {
+          status: "IN_REVIEW",
+        },
+      });
+      return examiner;
+    } catch (error) {
+      throw HttpError.fromError(error, "Failed to move examiner to review");
+    }
+  }
+
+  // Schedule interview (IN_REVIEW → INTERVIEW_SCHEDULED)
+  async scheduleInterview(id: string) {
+    try {
+      const examiner = await prisma.examinerProfile.update({
+        where: { id },
+        data: {
+          status: "INTERVIEW_SCHEDULED",
+        },
+      });
+      return examiner;
+    } catch (error) {
+      throw HttpError.fromError(error, "Failed to schedule interview");
+    }
+  }
+
+  // Mark interview as completed (INTERVIEW_SCHEDULED → INTERVIEW_COMPLETED)
+  async markInterviewCompleted(id: string) {
+    try {
+      const examiner = await prisma.examinerProfile.update({
+        where: { id },
+        data: {
+          status: "INTERVIEW_COMPLETED",
+        },
+      });
+      return examiner;
+    } catch (error) {
+      throw HttpError.fromError(error, "Failed to mark interview as completed");
+    }
+  }
+
+  // Mark contract as signed (CONTRACT_SENT → CONTRACT_SIGNED)
+  // Admin confirms the examiner's signature
+  async markContractSigned(id: string) {
+    try {
+      const examiner = await prisma.examinerProfile.update({
+        where: { id },
+        data: {
+          status: "CONTRACT_SIGNED",
+          contractConfirmedByAdminAt: new Date(),
+        },
+      });
+      return examiner;
+    } catch (error) {
+      throw HttpError.fromError(error, "Failed to mark contract as signed");
     }
   }
 }
