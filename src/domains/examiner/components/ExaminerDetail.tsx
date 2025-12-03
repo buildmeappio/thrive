@@ -6,7 +6,7 @@ import Section from "@/components/Section";
 import FieldRow from "@/components/FieldRow";
 import RequestInfoModal from "@/components/modal/RequestInfoModal";
 import RejectModal from "@/components/modal/RejectModal";
-import EditFeeStructureModal from "@/components/modal/EditFeeStructureModal";
+//import EditFeeStructureModal from "@/components/modal/EditFeeStructureModal";
 import { cn } from "@/lib/utils";
 import { ExaminerData, ExaminerFeeStructure } from "../types/ExaminerData";
 import {
@@ -88,11 +88,11 @@ export default function ExaminerDetail({ examiner }: Props) {
   >(null);
 
   const handleApprove = async () => {
-    // Check if fee structure exists before approving
-    if (!examiner.feeStructure) {
-      toast.error("Please add the fee structure before approving the examiner.");
-      return;
-    }
+    // Fee structure check commented out - fee structure section removed
+    // if (!examiner.feeStructure) {
+    //   toast.error("Please add the fee structure before approving the examiner.");
+    //   return;
+    // }
 
     setLoadingAction("approve");
     try {
@@ -291,33 +291,15 @@ export default function ExaminerDetail({ examiner }: Props) {
 
       <div className="w-full flex flex-col items-center">
         <div className="bg-white rounded-2xl shadow px-4 sm:px-6 lg:px-12 py-6 sm:py-8 w-full">
-          <div className="flex flex-col gap-6 lg:gap-10">
-            {/* First row: Organization (left) and IME Experience (right) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-              {/* Left column - Examiner Info */}
+          {/* 2-Column Layout: Left (3 sections) | Right (3 sections) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+            {/* LEFT COLUMN */}
+            <div className="flex flex-col gap-6 lg:gap-10">
+              {/* Section 1: Personal Information */}
               <Section title="Personal Information">
                 <FieldRow
                   label="Name"
                   value={capitalizeWords(examiner.name || "-")}
-                  type="text"
-                />
-                <FieldRow
-                  label="Medical Specialties"
-                  value={
-                    examiner.specialties
-                      ?.map((s) => formatText(s))
-                      .join(", ") || "-"
-                  }
-                  type="text"
-                />
-                <FieldRow
-                  label="Phone Number"
-                  value={formatPhoneNumber(examiner.phone)}
-                  type="text"
-                />
-                <FieldRow
-                  label="Landline Number"
-                  value={formatPhoneNumber(examiner.landlineNumber)}
                   type="text"
                 />
                 <FieldRow
@@ -326,22 +308,90 @@ export default function ExaminerDetail({ examiner }: Props) {
                   type="text"
                 />
                 <FieldRow
+                  label="Cell Number"
+                  value={formatPhoneNumber(examiner.phone)}
+                  type="text"
+                />
+                <FieldRow
+                  label="Work Number"
+                  value={formatPhoneNumber(examiner.landlineNumber)}
+                  type="text"
+                />
+                <FieldRow
                   label="Province"
                   value={examiner.province || "-"}
                   type="text"
                 />
                 <FieldRow
-                  label="Mailing Address"
-                  value={examiner.mailingAddress || "-"}
+                  label="City"
+                  value={examiner.addressCity || "-"}
+                  type="text"
+                />
+                <FieldRow
+                  label="Languages Spoken"
+                  value={examiner.languagesSpoken?.join(", ") || "-"}
                   type="text"
                 />
               </Section>
 
-              {/* Right column - IME Experience */}
+              {/* Section 2: Medical Credentials */}
+              <Section title="Medical Credentials">
+                <FieldRow
+                  label="Registration Number"
+                  value={examiner.licenseNumber || "-"}
+                  type="text"
+                />
+                {/* Medical License(s) - Show file name with Preview/Download on the right */}
+                {examiner.medicalLicenseUrls && examiner.medicalLicenseUrls.length > 1 ? (
+                  // Multiple licenses - show each file with Preview/Download
+                  <div className="space-y-2">
+                    <div className="rounded-lg bg-[#F6F6F6] px-3 sm:px-4 py-2">
+                      <h4 className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E]">
+                        Medical License
+                      </h4>
+                    </div>
+                    <div className="max-h-[200px] overflow-y-auto space-y-2">
+                      {examiner.medicalLicenseUrls.map((url, index) => (
+                        <FieldRow
+                          key={index}
+                          label={`License ${index + 1}`}
+                          value={`Medical_License_${index + 1}.pdf`}
+                          type="document"
+                          documentUrl={url}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : examiner.medicalLicenseUrl ? (
+                  // Single license - use FieldRow
+                  <FieldRow
+                    label="Medical License"
+                    value="Medical_License.pdf"
+                    type="document"
+                    documentUrl={examiner.medicalLicenseUrl}
+                  />
+                ) : (
+                  // No license uploaded
+                  <FieldRow
+                    label="Medical License"
+                    value="Not uploaded"
+                    type="text"
+                  />
+                )}
+              </Section>
+            </div>
+
+            {/* RIGHT COLUMN */}
+            <div className="flex flex-col gap-6 lg:gap-10">
+              {/* Section 4: IME Experience & Qualifications */}
               <Section title="IME Experience & Qualifications">
                 <FieldRow
-                  label="Languages Spoken"
-                  value={examiner.languagesSpoken?.join(", ") || "-"}
+                  label="Medical Specialties"
+                  value={
+                    examiner.specialties
+                      ?.map((s) => formatText(s))
+                      .join(", ") || "-"
+                  }
                   type="text"
                 />
                 <FieldRow
@@ -353,37 +403,9 @@ export default function ExaminerDetail({ examiner }: Props) {
                   }
                   type="text"
                 />
-                <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[169px] flex flex-col">
-                  <h4 className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] mb-3">
-                    Share Some Details About Your Past Experience
-                  </h4>
-                  <p
-                    className="font-poppins text-base text-[#000080] flex-1 overflow-hidden"
-                    style={{
-                      display: "-webkit-box",
-                      WebkitLineClamp: 6,
-                      WebkitBoxOrient: "vertical",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {examiner.experienceDetails || "-"}
-                  </p>
-                </div>
-              </Section>
-            </div>
-
-            {/* Second row: Medical Credentials (left) and Fee Structure (right) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-              {/* Left column - Medical Credentials */}
-              <Section title="Medical Credentials">
                 <FieldRow
-                  label="License Number"
-                  value={examiner.licenseNumber || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="Province of Licensure"
-                  value={examiner.provinceOfLicensure || "-"}
+                  label="Forensic Assessment Trained"
+                  value={examiner.isForensicAssessmentTrained ? "Yes" : "No"}
                   type="text"
                 />
                 <FieldRow
@@ -392,85 +414,48 @@ export default function ExaminerDetail({ examiner }: Props) {
                   type={examiner.cvUrl ? "document" : "text"}
                   documentUrl={examiner.cvUrl}
                 />
-                <FieldRow
-                  label="Medical License"
-                  value={
-                    examiner.medicalLicenseUrl
-                      ? "Medical_License.pdf"
-                      : "Not uploaded"
-                  }
-                  type={examiner.medicalLicenseUrl ? "document" : "text"}
-                  documentUrl={examiner.medicalLicenseUrl}
-                />
+                {/* Share Details - Show inline if empty, full width if has content */}
+                {examiner.experienceDetails && examiner.experienceDetails.trim() !== "" ? (
+                  <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[169px] flex flex-col">
+                    <h4 className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] mb-3">
+                      Share Some Details About Your Past Experience
+                    </h4>
+                    <p
+                      className="font-poppins text-base text-[#000080] flex-1 overflow-hidden"
+                      style={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 6,
+                        WebkitBoxOrient: "vertical",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {examiner.experienceDetails}
+                    </p>
+                  </div>
+                ) : (
+                  <FieldRow
+                    label="Share Some Details About Your Past Experience"
+                    value="-"
+                    type="text"
+                  />
+                )}
               </Section>
 
-              {/* Right column - Fee Structure */}
-              <Section
-                title="Fee Structure"
-                actionSlot={
-                  status !== "approved" ? (
-                    <button
-                      onClick={() => setIsFeeStructureOpen(true)}
-                      disabled={loadingAction === "feeStructure"}
-                      className="flex items-center gap-2 p-2 rounded-full text-cyan-600 hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      title={
-                        examiner.feeStructure
-                          ? "Edit Fee Structure"
-                          : "Add Fee Structure"
-                      }
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                  ) : null
-                }
-              >
-                  {examiner.feeStructure ? (
-                    <>
-                      <FieldRow
-                        label="IME Fee"
-                        value={`$${examiner.feeStructure.IMEFee}`}
-                        type="text"
-                      />
-                      <FieldRow
-                        label="Report Review Fee"
-                        value={`$${examiner.feeStructure.recordReviewFee}`}
-                        type="text"
-                      />
-                      {examiner.feeStructure.hourlyRate && (
-                        <FieldRow
-                          label="Hourly Rate"
-                          value={`$${examiner.feeStructure.hourlyRate}`}
-                          type="text"
-                        />
-                      )}
-                      <FieldRow
-                        label="Cancellation Fee"
-                        value={`$${examiner.feeStructure.cancellationFee}`}
-                        type="text"
-                      />
-                    </>
-                  ) : (
-                    <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[100px] flex items-center justify-center">
-                      <p className="font-poppins text-[14px] text-[#7A7A7A]">
-                        No fee structure added
-                      </p>
-                    </div>
-                  )}
-                </Section>
-            </div>
-
-            {/* Third row: Consent (left) and Actions (right) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-              {/* Left column - Consent */}
+              {/* Section 5: Consent */}
               <Section title="Consent">
                 <FieldRow
                   label="Consent to Background Verification"
-                  value="Yes" // Default to Yes since this is required for examiners
+                  value="Yes"
+                  type="text"
+                />
+                <FieldRow
+                  label="Agree to Terms & Conditions and Privacy Policy"
+                  value={examiner.agreeToTerms ? "Yes" : "No"}
                   type="text"
                 />
               </Section>
 
-              {/* Right column - Actions */}
+              {/* Section 6: Actions */}
               <Section title="Actions">
                 <div className="flex flex-row flex-wrap gap-3">
                   {status === "approved" ? (
@@ -610,7 +595,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                   {status !== "approved" && status !== "active" && (
                     <button
                       onClick={handleSendContract}
-                      disabled={!examiner.feeStructure || loadingAction !== null}
+                      disabled={loadingAction !== null}
                       className={cn(
                         "px-4 py-3 rounded-full border border-blue-600 text-blue-600 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       )}
@@ -620,11 +605,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                         lineHeight: "100%",
                         fontSize: "14px",
                       }}
-                      title={
-                        !examiner.feeStructure
-                          ? "Add fee structure before sending contract"
-                          : "Send contract for review to examiner"
-                      }
+                      title="Send contract for review to examiner"
                     >
                       {loadingAction === "sendContract"
                         ? "Sending..."
@@ -635,6 +616,64 @@ export default function ExaminerDetail({ examiner }: Props) {
               </Section>
             </div>
           </div>
+
+            {/* Fee Structure Section - Commented Out */}
+            {/* 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+              <Section
+                title="Fee Structure"
+                actionSlot={
+                  status !== "approved" ? (
+                    <button
+                      onClick={() => setIsFeeStructureOpen(true)}
+                      disabled={loadingAction === "feeStructure"}
+                      className="flex items-center gap-2 p-2 rounded-full text-cyan-600 hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      title={
+                        examiner.feeStructure
+                          ? "Edit Fee Structure"
+                          : "Add Fee Structure"
+                      }
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  ) : null
+                }
+              >
+                  {examiner.feeStructure ? (
+                    <>
+                      <FieldRow
+                        label="IME Fee"
+                        value={`$${examiner.feeStructure.IMEFee}`}
+                        type="text"
+                      />
+                      <FieldRow
+                        label="Report Review Fee"
+                        value={`$${examiner.feeStructure.recordReviewFee}`}
+                        type="text"
+                      />
+                      {examiner.feeStructure.hourlyRate && (
+                        <FieldRow
+                          label="Hourly Rate"
+                          value={`$${examiner.feeStructure.hourlyRate}`}
+                          type="text"
+                        />
+                      )}
+                      <FieldRow
+                        label="Cancellation Fee"
+                        value={`$${examiner.feeStructure.cancellationFee}`}
+                        type="text"
+                      />
+                    </>
+                  ) : (
+                    <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[100px] flex items-center justify-center">
+                      <p className="font-poppins text-[14px] text-[#7A7A7A]">
+                        No fee structure added
+                      </p>
+                    </div>
+                  )}
+                </Section>
+            </div>
+            */}
         </div>
 
         {/* Modals */}
@@ -654,6 +693,8 @@ export default function ExaminerDetail({ examiner }: Props) {
           maxLength={200}
         />
 
+        {/* Fee Structure Modal - Commented Out */}
+        {/*
         <EditFeeStructureModal
           open={isFeeStructureOpen}
           onClose={() => setIsFeeStructureOpen(false)}
@@ -664,6 +705,7 @@ export default function ExaminerDetail({ examiner }: Props) {
           }
           isLoading={loadingAction === "feeStructure"}
         />
+        */}
       </div>
     </DashboardShell>
   );

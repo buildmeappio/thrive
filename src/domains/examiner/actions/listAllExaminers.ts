@@ -18,6 +18,7 @@ const listAllExaminers = async () => {
             user: true,
           },
         },
+        address: true,
         medicalLicenseDocument: true,
         resumeDocument: true,
         ndaDocument: true,

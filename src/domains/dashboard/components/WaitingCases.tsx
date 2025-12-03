@@ -85,17 +85,11 @@ export default function WaitingCases({
               <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[130px] sm:min-w-0">
                 Due Date
               </TableHead>
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[140px] sm:min-w-0">
-                Status
-              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {items?.map((r) => {
               const href = buildDetailHref(r.id);
-              const statusText = r.status?.name
-                ? formatText(r.status.name)
-                : "N/A";
 
               return (
                 <TableRow
@@ -121,15 +115,10 @@ export default function WaitingCases({
                       {formatDateShort(r.createdAt)}
                     </span>
                   </TableCell>
-                  <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[130px] sm:min-w-0">
-                    <span className="block">
-                      {r.dueDate ? formatDateShort(r.dueDate) : "N/A"}
-                    </span>
-                  </TableCell>
-                  <TableCell className="py-5 sm:py-3 min-w-[140px] sm:min-w-0">
+                  <TableCell className="py-5 sm:py-3 min-w-[130px] sm:min-w-0">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins min-w-0 flex-1">
-                        {statusText}
+                        {r.dueDate ? formatDateShort(r.dueDate) : "N/A"}
                       </span>
                       <Link
                         href={href}
