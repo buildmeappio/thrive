@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: ["*"],
-      bodySizeLimit: "10mb",
+      bodySizeLimit: "50mb", // Increased to support multiple file uploads
     },
   },
   async headers() {

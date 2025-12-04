@@ -34,6 +34,9 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
     mode: "onSubmit",
   });
 
+  // Watch the field value for real-time updates
+  const experienceDetailsValue = form.watch("experienceDetails");
+
   // Reset form when store data changes
   useEffect(() => {
     form.reset({
@@ -58,7 +61,7 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
         gradientTo="#00A8FF"
       />
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="flex-grow pt-4 md:px-0 px-8 sm:py-6 sm:pt-0">
+        <div className="grow pt-4 md:px-0 px-8 sm:py-6 sm:pt-0">
           <div className="space-y-4 sm:space-y-6">
             <div className="mt-0 text-center sm:mt-0">
               <h3 className="mt-4 mb-2 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
@@ -76,11 +79,13 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
                       {...field}
                       id="experienceDetails"
                       placeholder="Enter your experience details"
-                      className="min-h-[150px] w-full resize-none text-sm sm:text-base md:min-h-[200px]"
+                      className={`min-h-[150px] w-full resize-none text-sm sm:text-base md:min-h-[200px] ${
+                        fieldState.error ? "ring-2 ring-red-500/30" : ""
+                      }`}
                       maxLength={500}
                     />
                     <div className="absolute right-4 bottom-6 text-xs text-gray-400 ">
-                      {(field.value || "").length}/500
+                      {(experienceDetailsValue || "").length}/500
                     </div>
                   </div>
                   <Label
@@ -88,17 +93,18 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
                     className="-mt-2 text-xs font-normal text-[#8A8A8A] sm:text-sm">
                     Talk about yourself and your background
                   </Label>
-                  {fieldState.error && (() => {
-                    const errorMsg = fieldState.error.message;
-                    const isRequiredError = errorMsg && (
-                      errorMsg.toLowerCase() === "required" ||
-                      errorMsg.toLowerCase().endsWith(" is required") ||
-                      errorMsg.toLowerCase() === "is required"
-                    );
-                    return !isRequiredError ? (
-                      <p className="text-xs text-red-500">{errorMsg}</p>
-                    ) : null;
-                  })()}
+                  {fieldState.error &&
+                    (() => {
+                      const errorMsg = fieldState.error.message;
+                      const isRequiredError =
+                        errorMsg &&
+                        (errorMsg.toLowerCase() === "required" ||
+                          errorMsg.toLowerCase().endsWith(" is required") ||
+                          errorMsg.toLowerCase() === "is required");
+                      return !isRequiredError ? (
+                        <p className="text-xs text-red-500">{errorMsg}</p>
+                      ) : null;
+                    })()}
                 </div>
               )}
             />

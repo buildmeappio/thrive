@@ -1,12 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
-import {
-  BackButton,
-  ContinueButton,
-  ProgressIndicator,
-  FileUploadInput,
-} from "@/components";
+import { BackButton, ContinueButton, ProgressIndicator } from "@/components";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui";
@@ -115,7 +110,7 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
       />
 
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="flex-grow pt-4 sm:px-4 sm:py-6 sm:pt-0 md:px-0">
+        <div className="grow pt-4 sm:px-4 sm:py-6 sm:pt-0 md:px-0">
           <div className="space-y-4 sm:space-y-6">
             <h3 className="mt-4 mb-2 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
               IME Background & Experience
@@ -200,12 +195,15 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                     render={({ field, fieldState }) => (
                       <div className="space-y-2">
                         <Label className="text-black">
-                          Which insurers or clinics?
+                          Which insurers or clinics?{" "}
+                          <span className="text-red-500">*</span>
                         </Label>
                         <Textarea
                           {...field}
                           placeholder="List insurers or clinics..."
-                          className="min-h-[100px] resize-none"
+                          className={`min-h-[100px] resize-none ${
+                            fieldState.error ? "ring-2 ring-red-500/30" : ""
+                          }`}
                         />
                         {fieldState.error &&
                           (() => {
@@ -254,33 +252,6 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                     )}
                   </FormField>
                 )}
-
-                {/* Upload Redacted IME Report (Optional) */}
-                {/* <Controller
-                  name="redactedIMEReport"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <div className="space-y-2">
-                      <FileUploadInput
-                        name="redactedIMEReport"
-                        label="Upload Redacted IME Report"
-                        value={field.value}
-                        onChange={(file) => {
-                          field.onChange(file);
-                        }}
-                        accept=".pdf,.doc,.docx"
-                        required={false}
-                        placeholder="Upload Redacted IME Report (Optional)"
-                        error={fieldState.error?.message}
-                        showIcon={false}
-                      />
-                      <p className="text-xs text-gray-500">
-                        Optional • Accepted formats: PDF, DOC, DOCX • Max size:
-                        10 MB
-                      </p>
-                    </div>
-                  )}
-                /> */}
               </div>
             </div>
           </div>
