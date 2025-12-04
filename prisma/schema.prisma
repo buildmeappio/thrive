@@ -618,6 +618,7 @@ enum ExaminerStatus {
   CONTRACT_SIGNED
   APPROVED
   WITHDRAWN
+  SUSPENDED
 }
 
 model ExaminerLanguage {
@@ -685,6 +686,9 @@ model ExaminerProfile {
   rejectedReason                    String?        @map("rejected_reason") @db.Text
   contractSignedByExaminerAt        DateTime?      @map("contract_signed_by_examiner_at") @db.Timestamptz()
   contractConfirmedByAdminAt        DateTime?      @map("contract_confirmed_by_admin_at") @db.Timestamptz()
+  contractDeclinedByExaminerAt      DateTime?      @map("contract_declined_by_examiner_at") @db.Timestamptz()
+  contractDeclinedByAdminAt         DateTime?      @map("contract_declined_by_admin_at") @db.Timestamptz()
+  contractDeclineReason             String?        @map("contract_decline_reason") @db.Text
   createdAt                         DateTime       @default(now()) @db.Timestamptz()
   updatedAt                         DateTime       @updatedAt @db.Timestamptz()
   deletedAt                         DateTime?

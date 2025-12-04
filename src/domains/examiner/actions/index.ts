@@ -17,4 +17,6 @@ export { default as markInterviewCompleted } from "./markInterviewCompleted";
 export { default as markContractSigned } from "./markContractSigned";
 export { default as signContractByExaminer } from "./signContractByExaminer";
 export { default as getExaminerContract } from "./getExaminerContract";
+export { suspendExaminer } from "./suspendExaminer";
+export { reactivateExaminer } from "./reactivateExaminer";
 
