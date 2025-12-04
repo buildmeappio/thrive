@@ -618,6 +618,7 @@ enum ExaminerStatus {
   CONTRACT_SIGNED
   APPROVED
   WITHDRAWN
+  SUSPENDED
 }
 
 model ExaminerLanguage {

@@ -497,35 +497,8 @@ const ContractSigningView = ({
             </h1>
 
             {/* Message */}
-            <p className="text-lg text-gray-600 mb-6">
+            <p className="text-lg text-gray-600">
               Thank you for signing the agreement. Your contract has been submitted and is now awaiting admin review and confirmation.
-            </p>
-
-            {/* Info Box */}
-            <div className="bg-[#F7FCFF] border-2 border-[#00A8FF]/20 rounded-lg p-6 mb-8">
-              <h3 className="text-lg font-semibold text-[#140047] mb-3">
-                What happens next?
-              </h3>
-              <ul className="text-left space-y-2 text-gray-700">
-                <li className="flex items-start">
-                  <span className="text-[#00A8FF] mr-2">•</span>
-                  <span>Our admin team will review your signed contract</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-[#00A8FF] mr-2">•</span>
-                  <span>Once confirmed, you&apos;ll receive an email to create your account password</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-[#00A8FF] mr-2">•</span>
-                  <span>After setting up your password, you can access the Thrive platform</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Additional Info */}
-            <p className="text-sm text-gray-500">
-              You will receive an email notification once the admin confirms your contract.
-              This typically takes 1-2 business days.
             </p>
           </div>
         </div>
