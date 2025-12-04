@@ -22,7 +22,6 @@ class DashboardService {
             language: true,
           },
         },
-        medicalLicenseDocument: true,
         resumeDocument: true,
       },
     });

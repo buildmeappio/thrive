@@ -27,7 +27,7 @@ export type CreateMedicalExaminerInput = {
   licenseIssuingProvince: string;
   yearsOfIMEExperience: string;
   licenseExpiryDate?: Date; // Optional
-  medicalLicenseDocumentId: string;
+  medicalLicenseDocumentIds: string[]; // Support multiple documents
   resumeDocumentId?: string; // Optional - CV/Resume will be added later
 
   // step 1 - Languages
@@ -133,9 +133,7 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
         ...(payload.licenseExpiryDate && {
           licenseExpiryDate: payload.licenseExpiryDate,
         }),
-        medicalLicenseDocument: {
-          connect: { id: payload.medicalLicenseDocumentId },
-        },
+        medicalLicenseDocumentIds: payload.medicalLicenseDocumentIds,
         ...(payload.resumeDocumentId && {
           resumeDocument: {
             connect: { id: payload.resumeDocumentId },

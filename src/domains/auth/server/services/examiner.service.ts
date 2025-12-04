@@ -109,7 +109,6 @@ class ExaminerService {
               language: true,
             },
           },
-          medicalLicenseDocument: true,
           resumeDocument: true,
           ndaDocument: true,
           insuranceDocument: true,
@@ -153,7 +152,7 @@ class ExaminerService {
       specialties?: string[];
       licenseNumber?: string;
       licenseExpiryDate?: Date;
-      medicalLicenseDocumentId?: string;
+      medicalLicenseDocumentIds?: string[]; // Support multiple documents
       resumeDocumentId?: string;
 
       // Step 3: IME Experience
@@ -268,11 +267,10 @@ class ExaminerService {
             isConsentToBackgroundVerification:
               data.consentBackgroundVerification,
           }),
-          ...(data.medicalLicenseDocumentId && {
-            medicalLicenseDocument: {
-              connect: { id: data.medicalLicenseDocumentId },
-            },
-          }),
+          ...(data.medicalLicenseDocumentIds &&
+            data.medicalLicenseDocumentIds.length > 0 && {
+              medicalLicenseDocumentIds: data.medicalLicenseDocumentIds,
+            }),
           ...(data.resumeDocumentId && {
             resumeDocument: { connect: { id: data.resumeDocumentId } },
           }),
