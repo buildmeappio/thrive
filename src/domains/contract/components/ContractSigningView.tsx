@@ -505,7 +505,7 @@ const ContractSigningView = ({
   // Show declined page
   if (declined) {
     return (
-      <div className="bg-[#F4FBFF] fixed inset-0 overflow-hidden p-4 flex items-center justify-center">
+      <div className="bg-[#F4FBFF] min-h-[calc(100vh-80px)] overflow-hidden p-4 flex items-center justify-center">
         {/* Declined Content */}
         <div className="max-w-2xl w-full">
           <div
@@ -546,7 +546,7 @@ const ContractSigningView = ({
   // Show success page after signing
   if (signed) {
     return (
-      <div className="bg-[#F4FBFF] fixed inset-0 overflow-hidden p-4 flex items-center justify-center">
+      <div className="bg-[#F4FBFF] min-h-[calc(100vh-80px)] overflow-hidden p-4 flex items-center justify-center">
         {/* Success Content */}
         <div className="max-w-2xl w-full">
           <div
