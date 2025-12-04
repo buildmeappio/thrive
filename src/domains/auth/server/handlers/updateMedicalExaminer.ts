@@ -25,7 +25,7 @@ export type UpdateMedicalExaminerInput = {
   specialties?: string[];
   licenseNumber?: string;
   licenseExpiryDate?: Date;
-  medicalLicenseDocumentId?: string;
+  medicalLicenseDocumentIds?: string[]; // Support multiple documents
   resumeDocumentId?: string;
 
   // step 3

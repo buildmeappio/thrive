@@ -126,12 +126,13 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         return;
       }
 
-      // Use the first file's document ID for backward compatibility with backend
-      // TODO: Update backend to support multiple medical license documents
-      const medicalLicenseDocument = medicalLicenseResults[0];
+      // Extract all document IDs from successful uploads
+      const medicalLicenseDocumentIds = medicalLicenseResults
+        .filter((r) => r.success)
+        .map((r) => r.document.id);
 
-      if (!medicalLicenseDocument.success) {
-        setErr("Failed to upload medical license document");
+      if (medicalLicenseDocumentIds.length === 0) {
+        setErr("Failed to upload medical license documents");
         setLoading(false);
         return;
       }
@@ -175,7 +176,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         licenseExpiryDate: submissionData.licenseExpiryDate
           ? new Date(submissionData.licenseExpiryDate)
           : new Date(),
-        medicalLicenseDocumentId: medicalLicenseDocument.document.id,
+        medicalLicenseDocumentIds: medicalLicenseDocumentIds,
         // resumeDocumentId removed - CV/Resume will be added in a different step later
 
         // Step3 - IME Background & Experience
