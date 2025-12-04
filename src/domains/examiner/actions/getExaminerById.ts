@@ -62,17 +62,35 @@ const getExaminerById = async (id: string) => {
     }
   }
 
-  if (examiner.medicalLicenseDocument) {
+  // Fetch multiple verification documents using IDs array
+  if (examiner.medicalLicenseDocumentIds && examiner.medicalLicenseDocumentIds.length > 0) {
     try {
-      examinerData.medicalLicenseUrl = await generatePresignedUrl(
-        `examiner/${examiner.medicalLicenseDocument.name}`,
-        3600
+      const { default: prisma } = await import("@/lib/db");
+      const documents = await prisma.documents.findMany({
+        where: {
+          id: { in: examiner.medicalLicenseDocumentIds },
+          deletedAt: null,
+        },
+      });
+
+      // Generate presigned URLs for all documents
+      const urls = await Promise.all(
+        documents.map(async (doc) => {
+          try {
+            return await generatePresignedUrl(`examiner/${doc.name}`, 3600);
+          } catch (error) {
+            logger.error(`Failed to generate presigned URL for document ${doc.id}:`, error);
+            return null;
+          }
+        })
       );
+
+      // Filter out any failed URLs and set both single and array
+      const validUrls = urls.filter((url): url is string => url !== null);
+      examinerData.medicalLicenseUrls = validUrls;
+      examinerData.medicalLicenseUrl = validUrls[0] || undefined; // Set first URL for backward compatibility
     } catch (error) {
-      logger.error(
-        `Failed to generate presigned URL for medical license:`,
-        error
-      );
+      logger.error("Failed to fetch verification documents:", error);
     }
   }
 

@@ -504,60 +504,40 @@ export default function ExaminerDetail({ examiner }: Props) {
                   }
                   type="text"
                 />
-                {/* Medical Documents - Scrollable if multiple */}
-                {examiner.medicalLicenseUrls && examiner.medicalLicenseUrls.length > 1 ? (
+              </Section>
+
+              {/* Section 3: Verification Documents */}
+              <Section title="Verification Documents">
+                {examiner.medicalLicenseUrls && examiner.medicalLicenseUrls.length > 0 ? (
                   // Multiple documents - show each file with Preview/Download
-                  <div className="space-y-2">
-                    <div className="rounded-lg bg-[#F6F6F6] px-3 sm:px-4 py-2">
-                      <h4 className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E]">
-                        Medical Documents
-                      </h4>
-                    </div>
-                    <div className="max-h-[200px] overflow-y-auto space-y-2">
-                      {examiner.medicalLicenseUrls.map((url, index) => (
-                        <FieldRow
-                          key={index}
-                          label={`Document ${index + 1}`}
-                          value={`Medical_Document_${index + 1}.pdf`}
-                          type="document"
-                          documentUrl={url}
-                        />
-                      ))}
-                    </div>
+                  <div className="max-h-[300px] overflow-y-auto space-y-2">
+                    {examiner.medicalLicenseUrls.map((url, index) => (
+                      <FieldRow
+                        key={index}
+                        label={`Document ${index + 1}`}
+                        value={`Verification_Document_${index + 1}.pdf`}
+                        type="document"
+                        documentUrl={url}
+                      />
+                    ))}
                   </div>
                 ) : examiner.medicalLicenseUrl ? (
                   // Single document - use FieldRow
                   <FieldRow
-                    label="Medical Documents"
-                    value="Medical_Document.pdf"
+                    label="Document 1"
+                    value="Verification_Document.pdf"
                     type="document"
                     documentUrl={examiner.medicalLicenseUrl}
                   />
                 ) : (
-                  // No documents uploaded
+                  // No documents uploaded - styled like other empty states
                   <FieldRow
-                    label="Medical Documents"
+                    label="Verification Documents"
                     value="Not uploaded"
                     type="text"
                   />
                 )}
               </Section>
-
-              {/* Conditional: Show Consent on left if currentlyConductingIMEs is true */}
-              {examiner.currentlyConductingIMEs && (
-                <Section title="Consent">
-                  <FieldRow
-                    label="Consent to Background Verification"
-                    value="Yes"
-                    type="text"
-                  />
-                  <FieldRow
-                    label="Agree to Terms & Conditions and Privacy Policy"
-                    value={examiner.agreeToTerms ? "Yes" : "No"}
-                    type="text"
-                  />
-                </Section>
-              )}
             </div>
 
             {/* RIGHT COLUMN */}
@@ -633,23 +613,21 @@ export default function ExaminerDetail({ examiner }: Props) {
                 )}
               </Section>
 
-              {/* Conditional: Show Consent on right if currentlyConductingIMEs is false */}
-              {!examiner.currentlyConductingIMEs && (
-                <Section title="Consent">
-                  <FieldRow
-                    label="Consent to Background Verification"
-                    value="Yes"
-                    type="text"
-                  />
-                  <FieldRow
-                    label="Agree to Terms & Conditions and Privacy Policy"
-                    value={examiner.agreeToTerms ? "Yes" : "No"}
-                    type="text"
-                  />
-                </Section>
-              )}
+              {/* Section 4: Consent */}
+              <Section title="Consent">
+                <FieldRow
+                  label="Consent to Background Verification"
+                  value="Yes"
+                  type="text"
+                />
+                <FieldRow
+                  label="Agree to Terms & Conditions and Privacy Policy"
+                  value={examiner.agreeToTerms ? "Yes" : "No"}
+                  type="text"
+                />
+              </Section>
 
-              {/* Section 4: Actions */}
+              {/* Section 5: Actions */}
               <Section title="Actions">
                 <div className="flex flex-row flex-wrap gap-3">
                   {/* SUBMITTED or PENDING: Move to Review */}
@@ -729,7 +707,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                     </div>
                   )}
 
-                  {/* INTERVIEW_SCHEDULED: Mark Interview Completed, Reject */}
+                  {/* INTERVIEW_SCHEDULED: Mark Interview Completed, Request More Info, Reject */}
                   {status === "interview_scheduled" && (
                     <>
                       <button
@@ -746,6 +724,21 @@ export default function ExaminerDetail({ examiner }: Props) {
                         onClick={handleMarkInterviewCompleted}
                       >
                         {loadingAction === "markInterviewCompleted" ? "Marking..." : "Mark Interview Completed"}
+                      </button>
+                      <button
+                        onClick={() => setIsRequestOpen(true)}
+                        className={cn(
+                          "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        )}
+                        style={{
+                          fontFamily: "Poppins, sans-serif",
+                          fontWeight: 400,
+                          lineHeight: "100%",
+                          fontSize: "14px",
+                        }}
+                        disabled={loadingAction !== null}
+                      >
+                        Request More Info
                       </button>
                       <button
                         className={cn(
@@ -765,7 +758,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                     </>
                   )}
 
-                  {/* INTERVIEW_COMPLETED: Send Contract, Reject */}
+                  {/* INTERVIEW_COMPLETED: Send Contract, Request More Info, Reject */}
                   {status === "interview_completed" && (
                     <>
                       <button
@@ -782,6 +775,21 @@ export default function ExaminerDetail({ examiner }: Props) {
                         }}
                       >
                         {loadingAction === "sendContract" ? "Sending..." : "Send Contract"}
+                      </button>
+                      <button
+                        onClick={() => setIsRequestOpen(true)}
+                        className={cn(
+                          "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        )}
+                        style={{
+                          fontFamily: "Poppins, sans-serif",
+                          fontWeight: 400,
+                          lineHeight: "100%",
+                          fontSize: "14px",
+                        }}
+                        disabled={loadingAction !== null}
+                      >
+                        Request More Info
                       </button>
                       <button
                         className={cn(

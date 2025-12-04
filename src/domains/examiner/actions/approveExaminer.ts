@@ -25,7 +25,6 @@ interface ExaminerWithRelations extends ExaminerProfile {
   account: Account & {
     user: User;
   };
-  medicalLicenseDocument: Documents | null;
   resumeDocument: Documents | null;
   ndaDocument: Documents | null;
   insuranceDocument: Documents | null;
