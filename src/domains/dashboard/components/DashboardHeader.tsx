@@ -13,7 +13,7 @@ export default function DashboardHeader() {
     setIsRefreshing(true);
     try {
       router.refresh(); // Revalidate server data without page reload
-    } catch (error) {
+    } catch {
       toast.error("Failed to refresh data");
     } finally {
       // Keep spinning animation for a moment for visual feedback

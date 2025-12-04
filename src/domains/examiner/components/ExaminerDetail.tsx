@@ -113,7 +113,8 @@ export default function ExaminerDetail({ examiner }: Props) {
   // Automatically move to IN_REVIEW when admin opens a SUBMITTED/PENDING application
   useEffect(() => {
     const autoMoveToReview = async () => {
-      if (status === "submitted" || status === "pending") {
+      const currentStatus = mapStatus[examiner.status];
+      if (currentStatus === "submitted" || currentStatus === "pending") {
         // Update UI immediately
         setStatus("in_review");
         
@@ -123,13 +124,14 @@ export default function ExaminerDetail({ examiner }: Props) {
         } catch (error) {
           logger.error("Failed to auto-move to review:", error);
           // Revert status on error
-          setStatus(mapStatus[examiner.status]);
+          setStatus(currentStatus);
         }
       }
     };
 
     autoMoveToReview();
-  }, []); // Run only once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount - examiner.id and examiner.status are intentionally not included
 
   const handleApprove = async () => {
     // Fee structure check commented out - fee structure section removed
