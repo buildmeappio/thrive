@@ -16,5 +16,6 @@ export default async function listExaminerStatuses(): Promise<string[]> {
     "CONTRACT_SIGNED",
     "APPROVED",
     "WITHDRAWN",
+    "SUSPENDED",
   ];
 }

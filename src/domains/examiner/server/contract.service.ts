@@ -147,14 +147,15 @@ class ContractService {
         return { success: false, error: "Examiner not found" };
       }
 
-      // Fee structure is optional - use placeholder values if not available
-      const feeStructure = examiner.feeStructure?.[0] || {
-        IMEFee: 0,
-        recordReviewFee: 0,
-        hourlyRate: null,
-        cancellationFee: 0,
-        paymentTerms: "To be determined",
-      };
+      // Fee structure is required for contract creation
+      if (!examiner.feeStructure || examiner.feeStructure.length === 0) {
+        return {
+          success: false,
+          error: "Fee structure not found. Please add fee structure before sending contract.",
+        };
+      }
+
+      const feeStructure = examiner.feeStructure[0];
       const examinerName = `${examiner.account.user.firstName} ${examiner.account.user.lastName}`;
       const examinerEmail = examiner.account.user.email;
 
