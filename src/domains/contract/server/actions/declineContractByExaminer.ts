@@ -1,23 +1,27 @@
 "use server";
 
 import prisma from "@/lib/db";
+import { ExaminerStatus } from "@prisma/client";
 import emailService from "@/server/services/email.service";
 import { ENV } from "@/constants/variables";
 
 /**
- * Action called after examiner signs the contract
- * Updates timestamp and notifies admin
+ * Action called when examiner declines the contract
+ * Updates status to REJECTED and notifies admin
  */
-export const signContractByExaminer = async (
+export const declineContractByExaminer = async (
   examinerProfileId: string,
-  examinerEmail: string
+  examinerEmail: string,
+  declineReason: string
 ) => {
   try {
-    // 1. Update contractSignedByExaminerAt timestamp
+    // 1. Update examiner profile with decline timestamp, reason, and status
     const examinerProfile = await prisma.examinerProfile.update({
       where: { id: examinerProfileId },
       data: {
-        contractSignedByExaminerAt: new Date(),
+        contractDeclinedByExaminerAt: new Date(),
+        contractDeclineReason: declineReason,
+        status: ExaminerStatus.REJECTED,
       },
       include: {
         account: {
@@ -49,12 +53,13 @@ export const signContractByExaminer = async (
 
     // 5. Send notification email to admin
     await emailService.sendEmail(
-      `Contract Signed - ${examinerName}`,
-      "admin-contract-signed.html",
+      `Contract Declined - ${examinerName}`,
+      "admin-contract-declined.html",
       {
         examinerName,
         examinerEmail,
         examinerProvince,
+        declineReason,
         reviewUrl: adminReviewUrl,
       },
       adminEmail
@@ -62,13 +67,13 @@ export const signContractByExaminer = async (
 
     return {
       success: true,
-      message: "Contract signed successfully and admin notified",
+      message: "Contract declined successfully",
     };
   } catch (error: any) {
-    console.error("Error in signContractByExaminer:", error);
+    console.error("Error in declineContractByExaminer:", error);
     return {
       success: false,
-      message: error?.message || "Failed to update contract signature status",
+      message: error?.message || "Failed to decline contract",
     };
   }
 };

@@ -22,6 +22,15 @@ const sendRegistrationEmails = async (input: SendRegistrationEmailsInput) => {
   try {
     const { examinerData, examinerProfileId } = input;
 
+    // Capitalize first letter of names
+    const capitalizeFirstLetter = (str: string) => {
+      if (!str) return str;
+      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    };
+
+    const firstName = capitalizeFirstLetter(examinerData.firstName);
+    const lastName = capitalizeFirstLetter(examinerData.lastName);
+
     // Admin email address - use environment variable or default
     const adminEmail = ENV.ADMIN_NOTIFICATION_EMAIL || "admin@thrivenetwork.ca";
 
@@ -77,7 +86,7 @@ const sendRegistrationEmails = async (input: SendRegistrationEmailsInput) => {
         "Your Thrive Application Is Now Under Review",
         "application-under-review.html",
         {
-          firstName: examinerData.firstName,
+          firstName: firstName,
         },
         examinerData.email
       ),
@@ -87,8 +96,8 @@ const sendRegistrationEmails = async (input: SendRegistrationEmailsInput) => {
         "New Medical Examiner Application Received",
         "admin-new-application.html",
         {
-          firstName: examinerData.firstName,
-          lastName: examinerData.lastName,
+          firstName: firstName,
+          lastName: lastName,
           email: examinerData.email,
           province: examinerData.province || "Not specified",
           licenseNumber: examinerData.licenseNumber,
