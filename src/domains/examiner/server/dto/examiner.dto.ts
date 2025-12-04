@@ -6,7 +6,6 @@ type ExaminerWithRelations = ExaminerProfile & {
     user: User;
   };
   address: Address | null;
-  medicalLicenseDocument: Documents | null;
   resumeDocument: Documents | null;
   ndaDocument: Documents | null;
   insuranceDocument: Documents | null;
