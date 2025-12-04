@@ -45,7 +45,7 @@ export const getExaminerById = async (id: string) => {
   });
 };
 
-export const approveExaminer = async (id: string, accountId?: string) => {
+export const approveExaminer = async (id: string, _accountId?: string) => {
   return prisma.examinerProfile.update({
     where: { id },
     data: {
@@ -68,8 +68,8 @@ export const rejectExaminer = async (id: string, accountId?: string, rejectionRe
 
 export const requestMoreInfoFromExaminer = async (
   id: string,
-  message: string,
-  documentsRequired: boolean
+  _message: string,
+  _documentsRequired: boolean
 ) => {
   // Note: message and documentsRequired are sent via email but not stored in DB
   // as these fields don't exist in the schema
