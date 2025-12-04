@@ -505,21 +505,19 @@ const ContractSigningView = ({
   // Show declined page
   if (declined) {
     return (
-      <div className="bg-[#F4FBFF] h-screen overflow-hidden p-4 pt-8 flex items-start justify-center">
+      <div className="bg-[#F4FBFF] min-h-[calc(100vh-80px)] overflow-hidden p-4 flex items-center justify-center">
         {/* Declined Content */}
         <div className="max-w-2xl w-full">
           <div
             className="bg-white rounded-[20px] p-8 md:p-12 text-center"
-            style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
-          >
+            style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
             {/* Declined Icon */}
             <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
               <svg
                 className="w-10 h-10 text-red-600"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -536,7 +534,8 @@ const ContractSigningView = ({
 
             {/* Message */}
             <p className="text-lg text-gray-600">
-              You have declined the contract. The admin team has been notified of your decision.
+              You have declined the contract. The admin team has been notified
+              of your decision.
             </p>
           </div>
         </div>
@@ -547,21 +546,19 @@ const ContractSigningView = ({
   // Show success page after signing
   if (signed) {
     return (
-      <div className="bg-[#F4FBFF] h-screen overflow-hidden p-4 pt-8 flex items-start justify-center">
+      <div className="bg-[#F4FBFF] min-h-[calc(100vh-80px)] overflow-hidden p-4 flex items-center justify-center">
         {/* Success Content */}
         <div className="max-w-2xl w-full">
           <div
             className="bg-white rounded-[20px] p-8 md:p-12 text-center"
-            style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
-          >
+            style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
             {/* Success Icon */}
             <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
               <svg
                 className="w-10 h-10 text-green-600"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -578,7 +575,8 @@ const ContractSigningView = ({
 
             {/* Message */}
             <p className="text-lg text-gray-600">
-              Thank you for signing the agreement. Your contract has been submitted and is now awaiting admin review and confirmation.
+              Thank you for signing the agreement. Your contract has been
+              submitted and is now awaiting admin review and confirmation.
             </p>
           </div>
         </div>
@@ -587,13 +585,13 @@ const ContractSigningView = ({
   }
 
   return (
-    <div className="bg-[#F4FBFF] min-h-screen">
+    <div className="bg-[#F4FBFF] min-h-screen overflow-x-hidden">
       <div className="px-4 sm:px-6 lg:px-8 py-6">
-        <div className="mx-auto max-w-7xl flex flex-col lg:flex-row gap-6 lg:gap-8">
+        <div className="mx-auto max-w-7xl flex flex-col lg:flex-row gap-6 lg:gap-8 min-w-0 w-full">
           {/* LEFT: Contract */}
           <div
             id="contract"
-            className="flex-1 overflow-y-auto overflow-x-hidden bg-white rounded-[20px]"
+            className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden bg-white rounded-[20px]"
             style={{
               fontFamily: "Arial, sans-serif",
               padding: "40px 50px",
@@ -601,8 +599,7 @@ const ContractSigningView = ({
               lineHeight: "1.4",
               boxShadow: "0px 0px 36.35px 0px #00000008",
               height: "calc(100vh - 100px)",
-            }}
-          >
+            }}>
             <div
               id="contract-content"
               dangerouslySetInnerHTML={{
@@ -614,11 +611,10 @@ const ContractSigningView = ({
 
           {/* RIGHT: Signature Panel */}
           <div
-            className="w-full lg:w-96 bg-white p-6 md:p-8 rounded-[20px] flex flex-col shrink-0"
+            className="w-full lg:w-96 lg:min-w-[384px] bg-white p-6 md:p-8 rounded-[20px] flex flex-col shrink-0"
             style={{
               boxShadow: "0px 0px 36.35px 0px #00000008",
-            }}
-          >
+            }}>
             <div className="border-b-2 border-[#00A8FF] pb-3 mb-6">
               <h2 className="text-2xl md:text-[24px] font-semibold text-black">
                 Sign Agreement
@@ -666,8 +662,7 @@ const ContractSigningView = ({
                 </div>
                 <button
                   onClick={clearSignature}
-                  className="mt-2 text-sm text-[#00A8FF] hover:text-[#0088CC] font-semibold underline transition-colors"
-                >
+                  className="mt-2 text-sm text-[#00A8FF] hover:text-[#0088CC] font-semibold underline transition-colors">
                   Clear Signature
                 </button>
               </div>
@@ -705,8 +700,7 @@ const ContractSigningView = ({
                           "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
                       }
                     : {}
-                }
-              >
+                }>
                 {isSigning ? "Processing..." : "Sign Agreement"}
               </button>
 
@@ -714,8 +708,7 @@ const ContractSigningView = ({
               <button
                 onClick={() => setShowDeclineModal(true)}
                 disabled={isSigning}
-                className="w-full py-3 px-4 rounded-lg font-semibold text-red-600 text-base transition-all border-2 border-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+                className="w-full py-3 px-4 rounded-lg font-semibold text-red-600 text-base transition-all border-2 border-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed">
                 Decline Agreement
               </button>
             </div>
@@ -725,28 +718,27 @@ const ContractSigningView = ({
         {/* Decline Modal */}
         {showDeclineModal && (
           <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center p-4 z-50">
-            <div 
+            <div
               className="bg-white rounded-[20px] p-8 max-w-md w-full"
-              style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
-            >
+              style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
               {/* Modal Header with border */}
               <div className="border-b-2 border-[#00A8FF] pb-3 mb-6">
                 <h3 className="text-2xl font-semibold text-[#140047]">
                   Decline Agreement
                 </h3>
               </div>
-              
+
               <p className="text-sm text-gray-600 mb-4">
                 Please provide a reason for declining this agreement:
               </p>
-              
+
               <textarea
                 value={declineReason}
                 onChange={(e) => setDeclineReason(e.target.value)}
                 placeholder="Enter your reason..."
                 className="w-full h-32 p-3 border-2 border-gray-200 rounded-[10px] focus:ring-2 focus:ring-[#00A8FF]/30 focus:border-[#00A8FF] resize-none text-sm"
               />
-              
+
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => {
@@ -754,8 +746,7 @@ const ContractSigningView = ({
                     setDeclineReason("");
                   }}
                   disabled={isDeclining}
-                  className="flex-1 py-3 px-4 rounded-[10px] font-semibold text-[#00A8FF] border-2 border-[#00A8FF] bg-white hover:bg-[#F7FCFF] transition-colors disabled:opacity-50"
-                >
+                  className="flex-1 py-3 px-4 rounded-[10px] font-semibold text-[#00A8FF] border-2 border-[#00A8FF] bg-white hover:bg-[#F7FCFF] transition-colors disabled:opacity-50">
                   Cancel
                 </button>
                 <button
@@ -763,11 +754,11 @@ const ContractSigningView = ({
                   disabled={isDeclining || !declineReason.trim()}
                   className="flex-1 py-3 px-4 rounded-[10px] font-semibold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
-                    background: isDeclining || !declineReason.trim() 
-                      ? "#9CA3AF" 
-                      : "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)"
-                  }}
-                >
+                    background:
+                      isDeclining || !declineReason.trim()
+                        ? "#9CA3AF"
+                        : "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
+                  }}>
                   {isDeclining ? "Declining..." : "Confirm Decline"}
                 </button>
               </div>
