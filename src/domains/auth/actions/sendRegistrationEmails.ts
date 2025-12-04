@@ -79,37 +79,24 @@ const sendRegistrationEmails = async (input: SendRegistrationEmailsInput) => {
       .filter(Boolean)
       .join(", ");
 
-    // Send both emails in parallel
-    await Promise.all([
-      // 1. Email to Medical Examiner
-      emailService.sendEmail(
-        "Your Thrive Application Is Now Under Review",
-        "application-under-review.html",
-        {
-          firstName: firstName,
-        },
-        examinerData.email
-      ),
-
-      // 2. Email to Admin
-      emailService.sendEmail(
-        "New Medical Examiner Application Received",
-        "admin-new-application.html",
-        {
-          firstName: firstName,
-          lastName: lastName,
-          email: examinerData.email,
-          province: examinerData.province || "Not specified",
-          licenseNumber: examinerData.licenseNumber,
-          specialties: specialtiesText,
-          imeExperience: imeExperienceText,
-          imesCompleted: examinerData.imesCompleted || "Not specified",
-          documentsProvided,
-          applicationUrl,
-        },
-        adminEmail
-      ),
-    ]);
+    // Send email to Admin only (examiner already gets "application-received" email from createMedicalExaminer)
+    await emailService.sendEmail(
+      "New Medical Examiner Application Received",
+      "admin-new-application.html",
+      {
+        firstName: firstName,
+        lastName: lastName,
+        email: examinerData.email,
+        province: examinerData.province || "Not specified",
+        licenseNumber: examinerData.licenseNumber,
+        specialties: specialtiesText,
+        imeExperience: imeExperienceText,
+        imesCompleted: examinerData.imesCompleted || "Not specified",
+        documentsProvided,
+        applicationUrl,
+      },
+      adminEmail
+    );
 
     return {
       success: true,
