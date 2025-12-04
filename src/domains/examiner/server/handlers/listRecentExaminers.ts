@@ -45,5 +45,42 @@ export async function listRecentExaminers(limit = 7): Promise<ExaminerData[]> {
     }
   }
 
+  // Map assessment types if they are UUIDs
+  const assessmentTypeUuids = new Set<string>();
+  for (const examiner of examiners) {
+    if (examiner.assessmentTypes) {
+      examiner.assessmentTypes.forEach(typeId => {
+        if (uuidRegex.test(typeId.replace(/\s/g, ''))) {
+          assessmentTypeUuids.add(typeId);
+        }
+      });
+    }
+  }
+
+  if (assessmentTypeUuids.size > 0) {
+    try {
+      const examTypes = await prisma.examinationType.findMany({
+        where: { 
+          id: { in: Array.from(assessmentTypeUuids) },
+          deletedAt: null 
+        },
+      });
+      
+      const typeMap = new Map(examTypes.map(t => [t.id, t.name]));
+      
+      for (let i = 0; i < mappedData.length; i++) {
+        const examinerData = mappedData[i];
+        const originalExaminer = examiners[i];
+        if (originalExaminer.assessmentTypes && originalExaminer.assessmentTypes.length > 0) {
+          examinerData.assessmentTypes = originalExaminer.assessmentTypes.map(id => 
+            typeMap.get(id) || id
+          );
+        }
+      }
+    } catch (error) {
+      logger.error("Failed to map assessment types:", error);
+    }
+  }
+
   return mappedData;
 }

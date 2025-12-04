@@ -101,6 +101,44 @@ const getExaminerById = async (id: string) => {
     }
   }
 
+  if (examiner.redactedIMEReportDocument) {
+    try {
+      examinerData.redactedIMEReportUrl = await generatePresignedUrl(
+        `examiner/${examiner.redactedIMEReportDocument.name}`,
+        3600
+      );
+    } catch (error) {
+      logger.error(`Failed to generate presigned URL for redacted IME report:`, error);
+    }
+  }
+
+  // Map assessment types if they are UUIDs to examination type names
+  if (examiner.assessmentTypes && examiner.assessmentTypes.length > 0) {
+    const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+    const assessmentTypeIds = examiner.assessmentTypes.filter(id => 
+      uuidRegex.test(id.replace(/\s/g, ''))
+    );
+    
+    if (assessmentTypeIds.length > 0) {
+      try {
+        const { default: prisma } = await import("@/lib/db");
+        const examTypes = await prisma.examinationType.findMany({
+          where: { 
+            id: { in: assessmentTypeIds },
+            deletedAt: null 
+          },
+        });
+        
+        const typeMap = new Map(examTypes.map(t => [t.id, t.name]));
+        examinerData.assessmentTypes = examiner.assessmentTypes.map(id => 
+          typeMap.get(id) || id
+        );
+      } catch (error) {
+        logger.error("Failed to map assessment types:", error);
+      }
+    }
+  }
+
   // Serialize all Decimal fields and other non-plain objects before returning
   return serializeValue(examinerData);
 };
