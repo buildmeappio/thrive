@@ -3,6 +3,7 @@ import React, { useRef, useState } from "react";
 import { Upload, File, X, Download } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { log } from "@/utils/logger";
 
 // Document types for handling both new uploads and existing documents
 export type ExistingDocument = {
@@ -82,7 +83,7 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
     event.stopPropagation();
     if (value && "isExisting" in value && value.isExisting) {
       // TODO: Implement download functionality for existing documents
-      console.log("Download existing document:", value.id);
+      log("Download existing document:", value.id);
     }
   };
 
@@ -195,9 +196,27 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
         aria-label={label}
       />
 
-      {(error || sizeError) && (
-        <p className="text-xs text-red-500 mt-1">{error || sizeError}</p>
-      )}
+      {(() => {
+        const errorToShow = error || sizeError;
+        if (!errorToShow) return null;
+        
+        // Only show error message for validation errors, not simple "required" errors
+        const isRequiredError = error && (
+          error.toLowerCase() === "required" ||
+          error.toLowerCase().endsWith(" is required") ||
+          error.toLowerCase() === "is required"
+        );
+        
+        // Always show sizeError (it's a validation error)
+        // Only show error if it's not a required error
+        if (sizeError) {
+          return <p className="text-xs text-red-500 mt-1">{sizeError}</p>;
+        }
+        if (error && !isRequiredError) {
+          return <p className="text-xs text-red-500 mt-1">{error}</p>;
+        }
+        return null;
+      })()}
 
       {accept && !error && !sizeError && (
         <p className="text-xs text-[#9EA9AA] mt-1">

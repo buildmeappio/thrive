@@ -1,12 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui";
-import {
-  BackButton,
-  ContinueButton,
-  ProgressIndicator,
-  FileUploadInput,
-} from "@/components";
+import { BackButton, ContinueButton, ProgressIndicator } from "@/components";
 import {
   step2MedicalCredentialsSchema,
   Step2MedicalCredentialsInput,
@@ -19,7 +14,7 @@ import {
 } from "@/domains/auth/state/useRegistrationStore";
 // import DatePickerInput from "@/components/DatePickerInput";
 import { FormProvider, FormField, FormDropdown } from "@/components/form";
-import { Controller, UseFormRegisterReturn } from "@/lib/form";
+import { UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { provinces } from "@/constants/options";
 import getExamTypesAction from "@/server/actions/getExamTypes";
@@ -31,7 +26,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
   currentStep,
   totalSteps,
 }) => {
-  const { data, merge } = useRegistrationStore();
+  const { data, merge, yearsOfExperience } = useRegistrationStore();
   const [isClient, setIsClient] = React.useState(false);
   const [examTypes, setExamTypes] = useState<
     Array<{ value: string; label: string }>
@@ -62,7 +57,6 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
         }
       } catch (error) {
         console.error("Failed to fetch exam types:", error);
-        // Fallback to empty array if fetch fails
         setExamTypes([]);
       } finally {
         setLoadingExamTypes(false);
@@ -76,12 +70,12 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
     schema: step2MedicalCredentialsSchema,
     defaultValues: {
       ...step2InitialValues,
-      medicalSpecialty: data.medicalSpecialty,
       licenseNumber: data.licenseNumber,
-      provinceOfLicensure: data.provinceOfLicensure,
+      licenseIssuingProvince: data.licenseIssuingProvince || "",
+      medicalSpecialty: data.medicalSpecialty || [],
+      yearsOfIMEExperience: data.yearsOfIMEExperience || "",
       // licenseExpiryDate: data.licenseExpiryDate,
-      medicalLicense: data.medicalLicense,
-      cvResume: data.cvResume,
+      medicalLicense: [],
     },
     mode: "onSubmit",
   });
@@ -90,19 +84,18 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
   useEffect(() => {
     form.reset({
       ...step2InitialValues,
-      medicalSpecialty: data.medicalSpecialty,
       licenseNumber: data.licenseNumber,
-      provinceOfLicensure: data.provinceOfLicensure,
+      licenseIssuingProvince: data.licenseIssuingProvince || "",
+      medicalSpecialty: data.medicalSpecialty || [],
+      yearsOfIMEExperience: data.yearsOfIMEExperience || "",
       // licenseExpiryDate: data.licenseExpiryDate,
-      medicalLicense: data.medicalLicense,
-      cvResume: data.cvResume,
+      medicalLicense: [],
     });
   }, [
-    data.medicalSpecialty,
     data.licenseNumber,
-    data.provinceOfLicensure,
-    data.medicalLicense,
-    data.cvResume,
+    data.licenseIssuingProvince,
+    data.medicalSpecialty,
+    data.yearsOfIMEExperience,
     form,
   ]);
 
@@ -142,14 +135,39 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
       />
 
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="flex-grow space-y-4 md:px-0">
+        <div className="grow space-y-4 md:px-0">
           <div className="text-center">
-            <h3 className="mt-4 mb-2 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
+            <h3 className="mt-4 mb-2 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
               Enter Your Medical Credentials
             </h3>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-x-14 gap-y-4 md:mt-8 md:grid-cols-2 md:px-0 px-8">
+          <div className="mt-4 grid grid-cols-1 gap-x-14 gap-y-3 md:mt-6 md:grid-cols-2 md:px-0 px-8">
+            {/* Row 1: Medical License Number, License Issuing Province */}
+            <FormField
+              name="licenseNumber"
+              label="License/Registration Number"
+              required>
+              {(field: UseFormRegisterReturn & { error?: boolean }) => (
+                <Input
+                  {...field}
+                  id="licenseNumber"
+                  placeholder="Enter your license/registration number"
+                  validationType="license"
+                />
+              )}
+            </FormField>
+
+            <FormDropdown
+              name="licenseIssuingProvince"
+              label="License/Registration Issuing Province"
+              required
+              options={provinces}
+              placeholder="Select License/Registration Issuing Province"
+              icon={null}
+            />
+
+            {/* Row 2: Medical Specialties, Years of IME Experience */}
             <FormDropdown
               name="medicalSpecialty"
               label="Medical Specialties"
@@ -165,96 +183,21 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
               disabled={loadingExamTypes}
             />
 
-            <FormField name="licenseNumber" label="License Number" required>
-              {(field: UseFormRegisterReturn & { error?: boolean }) => (
-                <Input
-                  {...field}
-                  id="licenseNumber"
-                  placeholder="CPSO #09234"
-                  validationType="license"
-                />
-              )}
-            </FormField>
-
             <FormDropdown
-              name="provinceOfLicensure"
-              label="Province of Licensure"
-              options={provinces}
+              name="yearsOfIMEExperience"
+              label="Years of IME Experience"
+              options={yearsOfExperience.map((year) => ({
+                value: year.id,
+                label: year.name,
+              }))}
               required
-              placeholder="Select Province"
+              placeholder="Select Years"
               icon={null}
             />
-
-            {/* <Controller
-              name="licenseExpiryDate"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <div className="space-y-2">
-                  <DatePickerInput
-                    name="licenseExpiryDate"
-                    label="License Expiry Date"
-                    placeholder="December 31, 2025"
-                    value={field.value}
-                    onChange={(date) => {
-                      const dateString = date ? date.toISOString() : "";
-                      field.onChange(dateString);
-                    }}
-                    error={fieldState.error?.message}
-                    required
-                  />
-                </div>
-              )}
-            /> */}
-
-            <Controller
-              name="medicalLicense"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <div className="space-y-2">
-                  <FileUploadInput
-                    name="medicalLicense"
-                    label="Upload Medical License"
-                    value={field.value}
-                    onChange={(file) => {
-                      field.onChange(file);
-                    }}
-                    accept=".pdf,.doc,.docx"
-                    required
-                    placeholder="Upload Medical License"
-                    error={fieldState.error?.message}
-                    showIcon={false}
-                  />
-                </div>
-              )}
-            />
-
-            <div className="md:col-span-2 md:flex md:justify-center">
-              <Controller
-                name="cvResume"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <div className="space-y-2 md:w-1/2">
-                    <FileUploadInput
-                      name="cvResume"
-                      label="Upload CV / Resume"
-                      value={field.value}
-                      onChange={(file) => {
-                        field.onChange(file);
-                      }}
-                      accept=".pdf,.doc,.docx"
-                      required
-                      placeholder="Upload CV / Resume"
-                      error={fieldState.error?.message}
-                      showIcon={false}
-                    />
-                  </div>
-                )}
-              />
-            </div>
           </div>
         </div>
 
-        <div className="pt-8 md:pt-2 flex justify-center gap-8 px-2 pb-8 md:justify-between md:gap-4 md:px-0">
+        <div className="mt-10 flex items-center justify-center gap-8 px-2 pb-8 md:mt-12 md:justify-between md:gap-4 md:px-0">
           <BackButton
             onClick={onPrevious}
             disabled={currentStep === 1}

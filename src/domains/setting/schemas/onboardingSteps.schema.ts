@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { validateNameField, validateAddressField } from "@/utils/inputValidation";
+import { validateAddressField } from "@/utils/inputValidation";
 
 // Schema for profile info
 export const profileInfoSchema = z.object({

@@ -66,36 +66,17 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
     }
 
     try {
-      // Initialize Google Maps Autocomplete with province-based bounds
+      // Initialize Google Maps Autocomplete for Canada only
       const autocompleteOptions: any = {
-        fields: ["address_components", "formatted_address", "geometry"],
+        fields: ["address_components", "formatted_address", "geometry", "name"],
         types: ["address"],
-        componentRestrictions: { country: "ca" }, // Restrict to Canada
+        componentRestrictions: { country: "CA" }, // Restrict to Canada only
       };
-
-      // If a province is selected, add it to the search query bias
-      if (province) {
-        autocompleteOptions.bounds = null; // Clear any existing bounds
-        autocompleteOptions.strictBounds = false;
-      }
 
       autoCompleteRef.current = new window.google.maps.places.Autocomplete(
         inputRef.current,
         autocompleteOptions
       );
-
-      // Add bias towards the selected province
-      if (province && autoCompleteRef.current) {
-        // Create a search query that includes the province
-        autoCompleteRef.current.setBounds(undefined);
-        autoCompleteRef.current.setOptions({
-          ...autocompleteOptions,
-          componentRestrictions: {
-            country: "ca",
-            administrativeArea: province, // Filter by province
-          },
-        });
-      }
 
       // Add place changed listener
       const placeChangedListener = autoCompleteRef.current?.addListener(
@@ -130,8 +111,14 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
         return;
       }
 
+      // Format address in Canadian format and remove "Canada" suffix
+      let formattedAddress = place.formatted_address || "";
+
+      // Remove ", Canada" from the end of the address
+      formattedAddress = formattedAddress.replace(/, Canada$/i, "");
+
       const placeData = {
-        formattedAddress: place.formatted_address || "",
+        formattedAddress: formattedAddress,
         latitude: place.geometry.location?.lat() || 0,
         longitude: place.geometry.location?.lng() || 0,
         components: place.address_components,

@@ -15,12 +15,10 @@ export type SubmitExaminerApplicationInput = {
   lastName: string;
   emailAddress: string;
   phoneNumber: string;
-  provinceOfResidence: string;
   mailingAddress: string;
 
   // Credentials
   licenseNumber: string;
-  provinceOfLicensure: string;
   licenseExpiryDate: Date;
 
   // Experience

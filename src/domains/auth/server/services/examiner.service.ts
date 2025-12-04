@@ -103,6 +103,7 @@ class ExaminerService {
               user: true,
             },
           },
+          address: true,
           examinerLanguages: {
             include: {
               language: true,
@@ -138,14 +139,19 @@ class ExaminerService {
       lastName?: string;
       email?: string;
       phone?: string;
-      provinceOfResidence?: string;
-      mailingAddress?: string;
       landlineNumber?: string;
+
+      // Step 2: Address
+      address?: string;
+      street?: string;
+      suite?: string;
+      postalCode?: string;
+      province?: string;
+      city?: string;
 
       // Step 2: Medical Credentials
       specialties?: string[];
       licenseNumber?: string;
-      provinceOfLicensure?: string;
       licenseExpiryDate?: Date;
       medicalLicenseDocumentId?: string;
       resumeDocumentId?: string;
@@ -158,10 +164,6 @@ class ExaminerService {
       // Step 4: Experience Details
       experienceDetails?: string;
 
-      // Step 5: Availability
-      preferredRegions?: string[];
-      maxTravelDistance?: string;
-      acceptVirtualAssessments?: boolean;
 
       // Step 6: Legal
       signedNDADocumentId?: string;
@@ -199,20 +201,54 @@ class ExaminerService {
         });
       }
 
+      // Handle address update/create
+      let addressId: string | undefined;
+      if (data.address) {
+        // Check if examiner already has an address
+        const existingProfile = await prisma.examinerProfile.findUnique({
+          where: { id: examinerProfileId },
+          select: { addressId: true },
+        });
+
+        if (existingProfile?.addressId) {
+          // Update existing address
+          await prisma.address.update({
+            where: { id: existingProfile.addressId },
+            data: {
+              address: data.address,
+              street: data.street || null,
+              suite: data.suite || null,
+              postalCode: data.postalCode || null,
+              province: data.province || null,
+              city: data.city || null,
+            },
+          });
+          addressId = existingProfile.addressId;
+        } else {
+          // Create new address
+          const newAddress = await prisma.address.create({
+            data: {
+              address: data.address,
+              street: data.street || null,
+              suite: data.suite || null,
+              postalCode: data.postalCode || null,
+              province: data.province || null,
+              city: data.city || null,
+            },
+          });
+          addressId = newAddress.id;
+        }
+      }
+
       // Update examiner profile
       const updatedProfile = await prisma.examinerProfile.update({
         where: { id: examinerProfileId },
         data: {
-          ...(data.provinceOfResidence && {
-            provinceOfResidence: data.provinceOfResidence,
-          }),
-          ...(data.mailingAddress && { mailingAddress: data.mailingAddress }),
+          ...(addressId && { address: { connect: { id: addressId } } }),
+          ...(data.address && { mailingAddress: data.address }), // Keep mailingAddress for backward compatibility
           ...(data.landlineNumber && { landlineNumber: data.landlineNumber }),
           ...(data.specialties && { specialties: data.specialties }),
           ...(data.licenseNumber && { licenseNumber: data.licenseNumber }),
-          ...(data.provinceOfLicensure && {
-            provinceOfLicensure: data.provinceOfLicensure,
-          }),
           ...(data.licenseExpiryDate && {
             licenseExpiryDate: data.licenseExpiryDate,
           }),
@@ -224,15 +260,6 @@ class ExaminerService {
           }),
           ...(data.experienceDetails !== undefined && {
             bio: data.experienceDetails,
-          }),
-          ...(data.preferredRegions && {
-            preferredRegions: data.preferredRegions.join(","),
-          }),
-          ...(data.maxTravelDistance && {
-            maxTravelDistance: data.maxTravelDistance,
-          }),
-          ...(data.acceptVirtualAssessments !== undefined && {
-            acceptVirtualAssessments: data.acceptVirtualAssessments,
           }),
           ...(data.agreeTermsConditions !== undefined && {
             agreeToTerms: data.agreeTermsConditions,
@@ -257,8 +284,8 @@ class ExaminerService {
               connect: { id: data.insuranceProofDocumentId },
             },
           }),
-          // Change status from INFO_REQUESTED to PENDING
-          status: ExaminerStatus.PENDING,
+          // Change status to SUBMITTED when examiner updates their profile
+          status: ExaminerStatus.SUBMITTED,
         },
       });
 

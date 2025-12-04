@@ -3,35 +3,19 @@ import React, { useEffect, useState } from "react";
 import {
   PersonalInfo,
   MedicalCredentials,
+  VerificationDocuments,
   IMEExperince,
   ExperienceDetails,
-  Availablity,
-  Legal,
   // PaymentDetails,
   SubmitConfirmation,
   ThankYou,
 } from "./RegisterationSteps";
 import { RegStepProps } from "@/domains/auth/types/index";
 import { useRegistrationStore } from "@/domains/auth/state/useRegistrationStore";
-
-type Language = {
-  id: string;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-};
+import { log } from "@/utils/logger";
+import { useGoogleMaps } from "@/lib/useGoogleMaps";
 
 type YearsOfExperience = {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-};
-
-type MaximumDistanceTravel = {
   id: string;
   name: string;
   description: string | null;
@@ -45,27 +29,15 @@ interface Step {
 }
 
 const RegisterForm: React.FC<{
-  languages: Language[];
   yearsOfExperience: YearsOfExperience[];
-  maxTravelDistances: MaximumDistanceTravel[];
   examinerData?: any;
-}> = ({ languages, yearsOfExperience, maxTravelDistances, examinerData }) => {
+}> = ({ yearsOfExperience, examinerData }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const {
-    setLanguages,
-    setYearsOfExperience,
-    setMaxTravelDistances,
-    data,
-    loadExaminerData,
-    isEditMode,
-  } = useRegistrationStore();
+  const { setYearsOfExperience, data, loadExaminerData, isEditMode } =
+    useRegistrationStore();
 
-  useEffect(() => {
-    if (languages.length > 0) {
-      setLanguages(languages);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [languages]);
+  // Preload Google Maps API when the registration form loads
+  useGoogleMaps();
 
   useEffect(() => {
     if (yearsOfExperience.length > 0) {
@@ -73,13 +45,6 @@ const RegisterForm: React.FC<{
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [yearsOfExperience]);
-
-  useEffect(() => {
-    if (maxTravelDistances.length > 0) {
-      setMaxTravelDistances(maxTravelDistances);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [maxTravelDistances]);
 
   // Load examiner data if in edit mode
   useEffect(() => {
@@ -91,18 +56,17 @@ const RegisterForm: React.FC<{
   const steps: Step[] = [
     { component: PersonalInfo },
     { component: MedicalCredentials },
+    { component: VerificationDocuments },
     { component: IMEExperince },
     { component: ExperienceDetails },
-    { component: Availablity },
     // { component: PaymentDetails },
-    { component: Legal },
     { component: SubmitConfirmation },
     { component: ThankYou },
   ];
 
   const goToNext = () => {
-    console.log("goToNext", currentStep);
-    console.log("data", data);
+    log("goToNext", currentStep);
+    log("data", data);
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     }
@@ -128,10 +92,10 @@ const RegisterForm: React.FC<{
     );
   };
 
-  const showTitle = currentStep <= 8;
+  const showTitle = currentStep <= 6;
   return (
-    <div className="mx-auto max-w-[900px] p-4 md:py-7 py-10">
-      <div className="mb-8 flex h-[60px] items-center justify-between ">
+    <div className="mx-auto max-w-[900px] p-4 md:py-5 py-4">
+      <div className="mb-2 flex h-[50px] items-center justify-between ">
         {showTitle && (
           <h2 className="md:ml-12 text-center text-3xl md:text-5xl font-semibold md:whitespace-nowrap">
             {isEditMode

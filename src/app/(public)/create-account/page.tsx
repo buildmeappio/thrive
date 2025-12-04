@@ -7,7 +7,6 @@ import { Metadata } from "next";
 import { getExaminerProfileByAccountId } from "@/domains/contract/server/actions/getExaminerProfileByAccountId.actions";
 import { getContractByExaminerProfileId } from "@/domains/contract/server/actions/getContractByExaminerProfileId.actions";
 import { getAccountById } from "@/domains/contract/server/actions/getAccountById.actions";
-import { markContractAsViewed } from "@/domains/contract/server/actions/markContractAsViewed.actions";
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
@@ -84,21 +83,11 @@ const Page = async ({
     redirect("/create-account/success?error=account_already_created");
   }
 
-  // Step 7: Check if contract needs to be viewed
-  if (
-    latestContract &&
-    (latestContract.status === "SENT" || latestContract.status === "VIEWED")
-  ) {
-    // Mark contract as viewed if status is SENT
-    if (latestContract.status === "SENT") {
-      await markContractAsViewed(latestContract.id, accountId);
-    }
+  // Step 7: Contract signing is now handled separately via email link
+  // No redirect to contract page - proceed directly to password setup
+  // Examiner signs contract from email → then admin confirms → then this page for password
 
-    // Redirect to contract page
-    redirect(`/contract/${latestContract.id}?token=${token}`);
-  }
-
-  // Step 8: Default - show password setup
+  // Step 8: Show password setup
   return <PasswordSetupUI token={token} />;
 };
 

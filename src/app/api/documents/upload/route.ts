@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { S3Client, PutObjectCommand, S3ClientConfig } from "@aws-sdk/client-s3";
 import prisma from "@/lib/db";
 import { ENV } from "@/constants/variables";
-
+import { log, error, warn } from "@/utils/logger";
 // Allowed file types for document uploads
 const ALLOWED_FILE_TYPES = [
   // Documents
@@ -43,29 +43,27 @@ const MAX_FILES_PER_REQUEST = 10;
  * Initialize S3 Client with proper credentials
  */
 function initializeS3Client() {
-  console.log("🔧 Initializing S3 client...");
+  log("🔧 Initializing S3 client...");
 
   if (!ENV.AWS_REGION) {
-    console.error("❌ AWS_REGION is not configured");
+    error("❌ AWS_REGION is not configured");
     throw new Error("AWS_REGION is not configured");
   }
 
-  console.log(`✅ AWS Region: ${ENV.AWS_REGION}`);
+  log(`✅ AWS Region: ${ENV.AWS_REGION}`);
 
   const config: S3ClientConfig = {
     region: ENV.AWS_REGION,
   };
 
   if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
-    console.log("✅ Using AWS credentials from environment");
+    log("✅ Using AWS credentials from environment");
     config.credentials = {
       accessKeyId: ENV.AWS_ACCESS_KEY_ID,
       secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
     };
   } else {
-    console.warn(
-      "⚠️  No AWS credentials provided, using default credential chain"
-    );
+    warn("⚠️  No AWS credentials provided, using default credential chain");
   }
 
   return new S3Client(config);
@@ -139,12 +137,12 @@ async function uploadToS3(
   key: string
 ): Promise<void> {
   try {
-    console.log(`📤 Converting file "${file.name}" to buffer...`);
+    log(`📤 Converting file "${file.name}" to buffer...`);
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    console.log(`✅ Buffer created (${buffer.length} bytes)`);
+    log(`✅ Buffer created (${buffer.length} bytes)`);
 
-    console.log(`📤 Preparing S3 upload command...`);
+    log(`📤 Preparing S3 upload command...`);
     const command = new PutObjectCommand({
       Bucket: ENV.AWS_S3_BUCKET!,
       Key: key,
@@ -157,7 +155,7 @@ async function uploadToS3(
       },
     });
 
-    console.log(`📤 Uploading to S3:`, {
+    log(`📤 Uploading to S3:`, {
       bucket: ENV.AWS_S3_BUCKET,
       key: key,
       contentType: file.type,
@@ -165,20 +163,20 @@ async function uploadToS3(
     });
 
     await s3Client.send(command);
-    console.log(`✅ File uploaded to S3 successfully: ${file.name}`);
-  } catch (error) {
-    console.error(`❌ Failed to upload file to S3: ${file.name}`);
-    console.error(`📋 S3 upload error details:`, {
+    log(`✅ File uploaded to S3 successfully: ${file.name}`);
+  } catch (err) {
+    error(`❌ Failed to upload file to S3: ${file.name}`);
+    error(`📋 S3 upload error details:`, {
       fileName: file.name,
       s3Key: key,
       bucket: ENV.AWS_S3_BUCKET,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: err instanceof Error ? err.message : "Unknown error",
     });
-    console.error(`📋 Full error:`, error);
+    error(`📋 Full error:`, err);
 
     throw new Error(
       `Failed to upload file "${file.name}" to S3: ${
-        error instanceof Error ? error.message : "Unknown error"
+        err instanceof Error ? err.message : "Unknown error"
       }`
     );
   }
@@ -196,7 +194,7 @@ async function saveDocumentToDatabase(
   userId?: string
 ) {
   try {
-    console.log(`💾 Saving document metadata to database:`, {
+    log(`💾 Saving document metadata to database:`, {
       fileName,
       originalName,
       size: `${(fileSize / 1024).toFixed(2)}KB`,
@@ -216,20 +214,20 @@ async function saveDocumentToDatabase(
       },
     });
 
-    console.log(`✅ Document saved to database with ID: ${document.id}`);
+    log(`✅ Document saved to database with ID: ${document.id}`);
     return document;
-  } catch (error) {
-    console.error("❌ Failed to save document to database");
-    console.error("📋 Database error details:", {
+  } catch (err) {
+    error("❌ Failed to save document to database");
+    error("📋 Database error details:", {
       fileName,
       originalName,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: err instanceof Error ? err.message : "Unknown error",
     });
-    console.error("📋 Full error:", error);
+    error("📋 Full error:", err);
 
     throw new Error(
       `Failed to save document metadata: ${
-        error instanceof Error ? error.message : "Unknown error"
+        err instanceof Error ? err.message : "Unknown error"
       }`
     );
   }
@@ -272,14 +270,14 @@ async function saveDocumentToDatabase(
  */
 export async function POST(request: NextRequest) {
   const requestId = Math.random().toString(36).substring(7);
-  console.log(`[${requestId}] 📤 Document upload request initiated`);
+  log(`[${requestId}] 📤 Document upload request initiated`);
 
   let s3Client: S3Client | null = null;
 
   try {
     // Check if S3 bucket is configured
     if (!ENV.AWS_S3_BUCKET) {
-      console.error(`[${requestId}] ❌ S3 bucket not configured`);
+      error(`[${requestId}] ❌ S3 bucket not configured`);
       return NextResponse.json(
         {
           success: false,
@@ -290,31 +288,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`[${requestId}] ✅ S3 bucket configured: ${ENV.AWS_S3_BUCKET}`);
+    log(`[${requestId}] ✅ S3 bucket configured: ${ENV.AWS_S3_BUCKET}`);
 
     // Initialize S3 client
     try {
       s3Client = initializeS3Client();
-      console.log(`[${requestId}] ✅ S3 client initialized successfully`);
-    } catch (error) {
-      console.error(`[${requestId}] ❌ Failed to initialize S3 client:`, error);
+      log(`[${requestId}] ✅ S3 client initialized successfully`);
+    } catch (err) {
+      error(`[${requestId}] ❌ Failed to initialize S3 client:`, err);
       return NextResponse.json(
         {
           success: false,
           message: "Failed to initialize S3 client",
-          errors: [error instanceof Error ? error.message : "Unknown error"],
+          errors: [err instanceof Error ? err.message : "Unknown error"],
         },
         { status: 500 }
       );
     }
 
     // Parse form data
-    console.log(`[${requestId}] 📋 Parsing form data...`);
+    log(`[${requestId}] 📋 Parsing form data...`);
     const formData = await request.formData();
     const files = formData.getAll("files") as File[];
     const userId = formData.get("userId") as string | null;
 
-    console.log(`[${requestId}] 📊 Request details:`, {
+    log(`[${requestId}] 📊 Request details:`, {
       filesCount: files.length,
       userId: userId || "Not provided",
       fileNames: files.map((f) => f.name),
@@ -323,7 +321,7 @@ export async function POST(request: NextRequest) {
 
     // Validate that files are provided
     if (!files || files.length === 0) {
-      console.error(`[${requestId}] ❌ No files provided in request`);
+      error(`[${requestId}] ❌ No files provided in request`);
       return NextResponse.json(
         {
           success: false,
@@ -338,7 +336,7 @@ export async function POST(request: NextRequest) {
 
     // Check maximum files limit
     if (files.length > MAX_FILES_PER_REQUEST) {
-      console.error(
+      error(
         `[${requestId}] ❌ Too many files: ${files.length} (max: ${MAX_FILES_PER_REQUEST})`
       );
       return NextResponse.json(
@@ -354,25 +352,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate all files first
-    console.log(`[${requestId}] 🔍 Validating ${files.length} file(s)...`);
+    log(`[${requestId}] 🔍 Validating ${files.length} file(s)...`);
     const validationErrors: string[] = [];
     for (const file of files) {
       const validation = validateFile(file);
       if (!validation.valid && validation.error) {
-        console.error(
+        error(
           `[${requestId}] ❌ Validation failed for "${file.name}": ${validation.error}`
         );
         validationErrors.push(validation.error);
       } else {
-        console.log(`[${requestId}] ✅ Validation passed for "${file.name}"`);
+        log(`[${requestId}] ✅ Validation passed for "${file.name}"`);
       }
     }
 
     if (validationErrors.length > 0) {
-      console.error(
-        `[${requestId}] ❌ File validation failed:`,
-        validationErrors
-      );
+      error(`[${requestId}] ❌ File validation failed:`, validationErrors);
       return NextResponse.json(
         {
           success: false,
@@ -383,10 +378,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`[${requestId}] ✅ All files validated successfully`);
+    log(`[${requestId}] ✅ All files validated successfully`);
 
     // Upload files to S3 and save to database
-    console.log(
+    log(
       `[${requestId}] 🚀 Starting upload process for ${files.length} file(s)...`
     );
     const uploadedDocuments: any[] = [];
@@ -394,7 +389,7 @@ export async function POST(request: NextRequest) {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      console.log(
+      log(
         `[${requestId}] 📁 Processing file ${i + 1}/${files.length}: "${
           file.name
         }"`
@@ -404,19 +399,15 @@ export async function POST(request: NextRequest) {
         const s3Key = createS3Key(file, userId || undefined);
         const fileName = s3Key.split("/").pop() || file.name;
 
-        console.log(`[${requestId}] 🔑 Generated S3 key: ${s3Key}`);
+        log(`[${requestId}] 🔑 Generated S3 key: ${s3Key}`);
 
         // Upload to S3
-        console.log(`[${requestId}] ⬆️  Uploading "${file.name}" to S3...`);
+        log(`[${requestId}] ⬆️  Uploading "${file.name}" to S3...`);
         await uploadToS3(s3Client, file, s3Key);
-        console.log(
-          `[${requestId}] ✅ S3 upload successful for "${file.name}"`
-        );
+        log(`[${requestId}] ✅ S3 upload successful for "${file.name}"`);
 
         // Save to database
-        console.log(
-          `[${requestId}] 💾 Saving document metadata to database...`
-        );
+        log(`[${requestId}] 💾 Saving document metadata to database...`);
         const document = await saveDocumentToDatabase(
           fileName,
           file.name,
@@ -425,7 +416,7 @@ export async function POST(request: NextRequest) {
           s3Key,
           userId || undefined
         );
-        console.log(
+        log(
           `[${requestId}] ✅ Database save successful. Document ID: ${document.id}`
         );
 
@@ -435,9 +426,9 @@ export async function POST(request: NextRequest) {
           : null;
 
         if (cdnUrl) {
-          console.log(`[${requestId}] 🌐 CDN URL generated: ${cdnUrl}`);
+          log(`[${requestId}] 🌐 CDN URL generated: ${cdnUrl}`);
         } else {
-          console.warn(
+          warn(
             `[${requestId}] ⚠️  No CDN URL configured (NEXT_PUBLIC_CDN_URL not set)`
           );
         }
@@ -453,20 +444,17 @@ export async function POST(request: NextRequest) {
           createdAt: document.createdAt,
         });
 
-        console.log(
+        log(
           `[${requestId}] ✅ File "${file.name}" processed successfully (${
             i + 1
           }/${files.length})`
         );
-      } catch (error) {
+      } catch (err) {
         const errorMessage =
-          error instanceof Error ? error.message : "Unknown error";
+          err instanceof Error ? err.message : "Unknown error";
         uploadErrors.push(`Failed to upload "${file.name}": ${errorMessage}`);
-        console.error(
-          `[${requestId}] ❌ Error uploading file "${file.name}":`,
-          error
-        );
-        console.error(`[${requestId}] 📋 Error details:`, {
+        error(`[${requestId}] ❌ Error uploading file "${file.name}":`, err);
+        error(`[${requestId}] 📋 Error details:`, {
           fileName: file.name,
           fileSize: file.size,
           fileType: file.type,
@@ -477,8 +465,8 @@ export async function POST(request: NextRequest) {
 
     // Check if any files were successfully uploaded
     if (uploadedDocuments.length === 0) {
-      console.error(`[${requestId}] ❌ All files failed to upload`);
-      console.error(`[${requestId}] 📋 Errors:`, uploadErrors);
+      error(`[${requestId}] ❌ All files failed to upload`);
+      error(`[${requestId}] 📋 Errors:`, uploadErrors);
       return NextResponse.json(
         {
           success: false,
@@ -491,10 +479,10 @@ export async function POST(request: NextRequest) {
 
     // Partial success if some files failed
     if (uploadErrors.length > 0) {
-      console.warn(
+      warn(
         `[${requestId}] ⚠️  Partial success: ${uploadedDocuments.length}/${files.length} files uploaded`
       );
-      console.warn(`[${requestId}] 📋 Failed uploads:`, uploadErrors);
+      warn(`[${requestId}] 📋 Failed uploads:`, uploadErrors);
       return NextResponse.json(
         {
           success: true,
@@ -511,10 +499,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Full success
-    console.log(
+    log(
       `[${requestId}] 🎉 All ${uploadedDocuments.length} file(s) uploaded successfully`
     );
-    console.log(`[${requestId}] 📊 Upload summary:`, {
+    log(`[${requestId}] 📊 Upload summary:`, {
       totalFiles: files.length,
       successfulUploads: uploadedDocuments.length,
       documentIds: uploadedDocuments.map((d) => d.id),
@@ -531,21 +519,18 @@ export async function POST(request: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error) {
-    console.error(
-      `[${requestId}] ❌ Unexpected error in document upload:`,
-      error
-    );
-    console.error(
+  } catch (err) {
+    error(`[${requestId}] ❌ Unexpected error in document upload:`, err);
+    error(
       `[${requestId}] 📋 Error stack:`,
-      error instanceof Error ? error.stack : "No stack trace"
+      err instanceof Error ? err.stack : "No stack trace"
     );
 
     return NextResponse.json(
       {
         success: false,
         message: "An unexpected error occurred during file upload",
-        errors: [error instanceof Error ? error.message : "Unknown error"],
+        errors: [err instanceof Error ? err.message : "Unknown error"],
       },
       { status: 500 }
     );

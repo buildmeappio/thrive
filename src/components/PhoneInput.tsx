@@ -15,10 +15,15 @@ interface PhoneInputProps {
   disabled?: boolean;
   className?: string;
   icon?: LucideIcon;
+  placeholder?: string;
+  error?: boolean;
 }
 
 const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ name, value, onChange, onBlur, disabled, className, icon }, ref) => {
+  ({ name, value, onChange, onBlur, disabled, className, icon, placeholder, error }, ref) => {
+    // Remove +1 prefix from value if present (for display)
+    const displayValue = value ? value.replace(/^\+1\s*/, "") : "";
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = e.target.value;
 
@@ -31,10 +36,10 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         return;
       }
 
-      // Format with +1 prefix
+      // Format without +1 prefix (keep formatting like (123) 456-7890)
       const formatter = new AsYouType("CA");
       formatter.input(`+1${digitsOnly}`);
-      const formatted = formatter.getNumber()?.formatInternational() || "";
+      const formatted = formatter.getNumber()?.formatNational() || "";
 
       const syntheticEvent = {
         ...e,
@@ -76,7 +81,7 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         const tenDigits = digitsOnly.slice(0, 10);
         const formatter = new AsYouType("CA");
         formatter.input(`+1${tenDigits}`);
-        const formatted = formatter.getNumber()?.formatInternational() || "";
+        const formatted = formatter.getNumber()?.formatNational() || "";
         
         // Create synthetic event to trigger onChange
         const input = e.currentTarget;
@@ -94,7 +99,7 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         // Format the pasted digits
         const formatter = new AsYouType("CA");
         formatter.input(`+1${digitsOnly}`);
-        const formatted = formatter.getNumber()?.formatInternational() || "";
+        const formatted = formatter.getNumber()?.formatNational() || "";
         
         // Create synthetic event to trigger onChange
         const input = e.currentTarget;
@@ -117,14 +122,15 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         name={name}
         icon={icon || Phone}
         type="tel"
-        placeholder="+1 (123) 456-7890"
-        value={value}
+        placeholder={placeholder || "Enter your phone number"}
+        value={displayValue}
         onChange={handleChange}
         onKeyPress={handleKeyPress}
         onPaste={handlePaste}
         onBlur={onBlur}
         disabled={disabled}
         className={className}
+        error={error}
       />
     );
   }

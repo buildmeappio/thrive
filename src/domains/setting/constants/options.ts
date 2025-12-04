@@ -6,6 +6,13 @@ const assessmentTypeOptions = [
   { value: "cpp", label: "CPP" },
 ];
 
+const imeCompletionOptions = [
+  { value: "0-10", label: "0-10" },
+  { value: "11-25", label: "11-25" },
+  { value: "26-50", label: "26-50" },
+  { value: "51+", label: "51+" },
+];
+
 const formatOptions = [
   { value: "in_person", label: "In-person" },
   { value: "virtual", label: "Virtual" },
@@ -30,6 +37,7 @@ const advanceBookingOptions = [
 
 export {
   assessmentTypeOptions,
+  imeCompletionOptions,
   formatOptions,
   bufferTimeOptions,
   advanceBookingOptions,

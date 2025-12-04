@@ -4,14 +4,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type Language = {
-  id: string;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-};
-
 type YearsOfExperience = {
   id: string;
   name: string;
@@ -21,14 +13,15 @@ type YearsOfExperience = {
   deletedAt: Date | null;
 };
 
-type MaximumDistanceTravel = {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-};
+// Removed - not used in current flow
+// type MaximumDistanceTravel = {
+//   id: string;
+//   name: string;
+//   description: string | null;
+//   createdAt: Date;
+//   updatedAt: Date;
+//   deletedAt: Date | null;
+// };
 
 // Document types for handling both new uploads and existing documents
 export type ExistingDocument = {
@@ -49,54 +42,55 @@ export type Step1PersonalInfo = {
   lastName: string;
   phoneNumber: string;
   emailAddress: string;
-  provinceOfResidence: string;
-  mailingAddress: string;
   landlineNumber: string;
+  city: string;
+  province: string;
+  languagesSpoken: string[];
+};
+
+export type Step2Address = {
+  address: string;
+  street?: string;
+  suite?: string;
+  postalCode?: string;
+  province?: string;
+  city?: string;
 };
 
 export type Step2MedicalCredentials = {
   medicalSpecialty: string[];
   licenseNumber: string;
-  provinceOfLicensure: string; // reused in step 3 as well
-  licenseExpiryDate: string; // ISO yyyy-mm-dd
-  medicalLicense: DocumentFile;
-  cvResume: DocumentFile;
+  licenseIssuingProvince: string;
+  yearsOfIMEExperience: string;
+  licenseExpiryDate?: string; // ISO yyyy-mm-dd (optional)
+  medicalLicense: DocumentFile | DocumentFile[]; // Support both single file (backward compatibility) and array
 };
 
 export type Step3IMEExperience = {
-  yearsOfIMEExperience: string;
-  languagesSpoken: string[];
-  forensicAssessmentTrained: string; // "yes"/"no" or similar
+  imesCompleted: string; // Number range or count
+  currentlyConductingIMEs: string; // "yes" or "no"
+  insurersOrClinics?: string; // Conditional field when yes
+  assessmentTypes: string[]; // Multi-select checkboxes
+  assessmentTypeOther?: string; // When "Other" is selected
+  redactedIMEReport?: DocumentFile; // Optional file upload
 };
 
 export type Step4ExperienceDetails = {
   experienceDetails: string;
 };
 
-export type Step5Availability = {
-  preferredRegions: string[];
-  maxTravelDistance: string;
-  daysAvailable: string;
-  timeWindows: {
-    morning: boolean;
-    afternoon: boolean;
-    evening: boolean;
-  };
-  acceptVirtualAssessments: string; // "yes"/"no"
-};
-
 export type Step6Legal = {
-  signedNDA: File | null;
-  insuranceProof: File | null;
+  signedNDA?: File | null; // Optional - not used in current flow
+  insuranceProof?: File | null; // Optional - not used in current flow
   consentBackgroundVerification: boolean;
   agreeTermsConditions: boolean;
 };
 
 export type Step7PaymentDetails = {
-  IMEFee: string;
-  recordReviewFee: string;
-  hourlyRate: string;
-  cancellationFee: string;
+  IMEFee?: string; // Optional - not used in current flow
+  recordReviewFee?: string; // Optional - not used in current flow
+  hourlyRate?: string; // Optional - not used in current flow
+  cancellationFee?: string; // Optional - not used in current flow
 };
 
 export type Step9Password = {
@@ -109,10 +103,10 @@ export type Step9Password = {
  * - Province of licensure appears in Step2 schema and Step3 schema. We keep one field.
  */
 export type RegistrationData = Step1PersonalInfo &
+  Step2Address &
   Step2MedicalCredentials &
   Step3IMEExperience &
   Step4ExperienceDetails &
-  Step5Availability &
   Step6Legal &
   Step7PaymentDetails &
   Step9Password;
@@ -126,28 +120,31 @@ export const initialData: RegistrationData = {
   lastName: "",
   phoneNumber: "",
   emailAddress: "",
-  provinceOfResidence: "",
-  mailingAddress: "",
   landlineNumber: "",
-  // Step 2
+  city: "",
+  province: "",
+  languagesSpoken: [],
+  // Step 2 - Address
+  address: "",
+  street: "",
+  suite: "",
+  postalCode: "",
+  // Step 2 - Medical Credentials
   medicalSpecialty: [],
   licenseNumber: "",
-  provinceOfLicensure: "",
+  licenseIssuingProvince: "",
+  yearsOfIMEExperience: "",
   licenseExpiryDate: "",
   medicalLicense: null,
-  cvResume: null,
   // Step 3
-  yearsOfIMEExperience: "",
-  languagesSpoken: [],
-  forensicAssessmentTrained: "",
+  imesCompleted: "",
+  currentlyConductingIMEs: "",
+  insurersOrClinics: "",
+  assessmentTypes: [],
+  assessmentTypeOther: "",
+  redactedIMEReport: null,
   // Step 4
   experienceDetails: "",
-  // Step 5
-  preferredRegions: [],
-  maxTravelDistance: "",
-  daysAvailable: "",
-  timeWindows: { morning: false, afternoon: false, evening: false },
-  acceptVirtualAssessments: "",
   // Step 6
   signedNDA: null,
   insuranceProof: null,
@@ -175,14 +172,8 @@ type Store = {
   /** Reset to initial */
   reset: () => void;
 
-  languages: Language[];
-  setLanguages: (languages: Language[]) => void;
-
   yearsOfExperience: YearsOfExperience[];
   setYearsOfExperience: (years: YearsOfExperience[]) => void;
-
-  maxTravelDistances: MaximumDistanceTravel[];
-  setMaxTravelDistances: (distances: MaximumDistanceTravel[]) => void;
 
   // Edit mode state
   isEditMode: boolean;
@@ -252,16 +243,9 @@ export const useRegistrationStore = create<Store>()(
       ) => set((s) => ({ data: { ...s.data, ...patch } })),
       setAll: (all: RegistrationData) => set({ data: all }),
       reset: () => set({ data: initialData }),
-      languages: [],
-      setLanguages: (languages: Language[]) => set({ languages }),
-
       yearsOfExperience: [],
       setYearsOfExperience: (years: YearsOfExperience[]) =>
         set({ yearsOfExperience: years }),
-
-      maxTravelDistances: [],
-      setMaxTravelDistances: (distances: MaximumDistanceTravel[]) =>
-        set({ maxTravelDistances: distances }),
 
       // Edit mode state
       isEditMode: false,
@@ -275,14 +259,23 @@ export const useRegistrationStore = create<Store>()(
           lastName: examinerData.account?.user?.lastName || "",
           emailAddress: examinerData.account?.user?.email || "",
           phoneNumber: examinerData.account?.user?.phone || "",
-          provinceOfResidence: examinerData.provinceOfResidence || "",
-          mailingAddress: examinerData.mailingAddress || "",
           landlineNumber: examinerData.landlineNumber || "",
+          city: examinerData.address?.city || "",
+          province: examinerData.address?.province || "",
+          languagesSpoken:
+            examinerData.examinerLanguages?.map((l: any) => l.languageId) || [],
+
+          // Step 2: Address
+          address: examinerData.address?.address || "",
+          street: examinerData.address?.street || "",
+          suite: examinerData.address?.suite || "",
+          postalCode: examinerData.address?.postalCode || "",
 
           // Step 2: Medical Credentials
           medicalSpecialty: examinerData.specialties || [],
           licenseNumber: examinerData.licenseNumber || "",
-          provinceOfLicensure: examinerData.provinceOfLicensure || "",
+          licenseIssuingProvince: examinerData.licenseIssuingProvince || "",
+          yearsOfIMEExperience: examinerData.yearsOfIMEExperience || "",
           licenseExpiryDate: examinerData.licenseExpiryDate
             ? new Date(examinerData.licenseExpiryDate)
                 .toISOString()
@@ -301,38 +294,28 @@ export const useRegistrationStore = create<Store>()(
                 isExisting: true,
               }
             : null,
-          cvResume: examinerData.resumeDocument
+
+          // Step 3: IME Experience
+          imesCompleted: examinerData.imesCompleted || "",
+          currentlyConductingIMEs: examinerData.currentlyConductingIMEs ? "yes" : "no",
+          insurersOrClinics: examinerData.insurersOrClinics || "",
+          assessmentTypes: examinerData.assessmentTypes || [],
+          assessmentTypeOther: examinerData.assessmentTypeOther || "",
+          redactedIMEReport: examinerData.redactedIMEReportDocument
             ? {
-                id: examinerData.resumeDocument.id,
-                name: examinerData.resumeDocument.name,
+                id: examinerData.redactedIMEReportDocument.id,
+                name: examinerData.redactedIMEReportDocument.name,
                 displayName:
-                  examinerData.resumeDocument.displayName ||
-                  examinerData.resumeDocument.name,
-                type: examinerData.resumeDocument.type,
-                size: examinerData.resumeDocument.size,
+                  examinerData.redactedIMEReportDocument.displayName ||
+                  examinerData.redactedIMEReportDocument.name,
+                type: examinerData.redactedIMEReportDocument.type,
+                size: examinerData.redactedIMEReportDocument.size,
                 isExisting: true,
               }
             : null,
 
-          // Step 3: IME Experience
-          yearsOfIMEExperience: examinerData.yearsOfIMEExperience || "",
-          languagesSpoken:
-            examinerData.examinerLanguages?.map((l: any) => l.languageId) || [],
-          forensicAssessmentTrained: examinerData.isForensicAssessmentTrained
-            ? "yes"
-            : "no",
-
           // Step 4: Experience Details
           experienceDetails: examinerData.bio || "",
-
-          // Step 5: Availability
-          preferredRegions: examinerData.preferredRegions
-            ? examinerData.preferredRegions.split(",")
-            : [],
-          maxTravelDistance: examinerData.maxTravelDistance || "",
-          acceptVirtualAssessments: examinerData.acceptVirtualAssessments
-            ? "yes"
-            : "no",
 
           // Step 6: Legal
           consentBackgroundVerification:
@@ -343,14 +326,14 @@ export const useRegistrationStore = create<Store>()(
           IMEFee: examinerData.feeStructure?.[0]?.IMEFee
             ? examinerData.feeStructure[0].IMEFee.toString()
             : "",
-          
+
           recordReviewFee: examinerData.feeStructure?.[0]?.recordReviewFee
             ? examinerData.feeStructure[0].recordReviewFee.toString()
             : "",
           hourlyRate: examinerData.feeStructure?.[0]?.hourlyRate
             ? examinerData.feeStructure[0].hourlyRate.toString()
             : "",
-          
+
           cancellationFee: examinerData.feeStructure?.[0]?.cancellationFee
             ? examinerData.feeStructure[0].cancellationFee.toString()
             : "",
@@ -379,36 +362,41 @@ export const selectStep1 = (d: RegistrationData): Step1PersonalInfo => ({
   lastName: d.lastName,
   phoneNumber: d.phoneNumber,
   emailAddress: d.emailAddress,
-  provinceOfResidence: d.provinceOfResidence,
-  mailingAddress: d.mailingAddress,
   landlineNumber: d.landlineNumber,
+  city: d.city || "",
+  province: d.province || "",
+  languagesSpoken: d.languagesSpoken || [],
+});
+
+export const selectStep2Address = (d: RegistrationData): Step2Address => ({
+  address: d.address || "",
+  street: d.street || "",
+  suite: d.suite || "",
+  postalCode: d.postalCode || "",
+  province: d.province || "",
+  city: d.city || "",
 });
 
 export const selectStep2 = (d: RegistrationData): Step2MedicalCredentials => ({
   medicalSpecialty: d.medicalSpecialty || [],
   licenseNumber: d.licenseNumber,
-  provinceOfLicensure: d.provinceOfLicensure,
+  licenseIssuingProvince: d.licenseIssuingProvince,
+  yearsOfIMEExperience: d.yearsOfIMEExperience,
   licenseExpiryDate: d.licenseExpiryDate,
   medicalLicense: d.medicalLicense,
-  cvResume: d.cvResume,
 });
 
 export const selectStep3 = (d: RegistrationData): Step3IMEExperience => ({
-  yearsOfIMEExperience: d.yearsOfIMEExperience,
-  languagesSpoken: d.languagesSpoken || [],
-  forensicAssessmentTrained: d.forensicAssessmentTrained,
+  imesCompleted: d.imesCompleted,
+  currentlyConductingIMEs: d.currentlyConductingIMEs,
+  insurersOrClinics: d.insurersOrClinics,
+  assessmentTypes: d.assessmentTypes || [],
+  assessmentTypeOther: d.assessmentTypeOther,
+  redactedIMEReport: d.redactedIMEReport,
 });
 
 export const selectStep4 = (d: RegistrationData): Step4ExperienceDetails => ({
   experienceDetails: d.experienceDetails,
-});
-
-export const selectStep5 = (d: RegistrationData): Step5Availability => ({
-  preferredRegions: d.preferredRegions,
-  maxTravelDistance: d.maxTravelDistance,
-  daysAvailable: d.daysAvailable,
-  timeWindows: d.timeWindows,
-  acceptVirtualAssessments: d.acceptVirtualAssessments,
 });
 
 export const selectStep6 = (d: RegistrationData): Step6Legal => ({

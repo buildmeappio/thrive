@@ -20,6 +20,7 @@ import {
   saveReportDraftAction,
   submitReportAction,
 } from "../server/actions";
+import { log, error } from "@/utils/logger";
 
 export default function PrepareReportForm({
   bookingId,
@@ -73,8 +74,8 @@ export default function PrepareReportForm({
           }
           updateField("dateOfReport", currentDate);
         }
-      } catch (error) {
-        console.error("Error loading report:", error);
+      } catch (err) {
+        error("Error loading report:", err);
         // On error, reset form and set defaults
         resetForm();
 
@@ -139,7 +140,7 @@ export default function PrepareReportForm({
         throw new Error(result.message || "Failed to save draft");
       }
     } catch (error: any) {
-      console.error("Error saving draft:", error);
+      error("Error saving draft:", error);
       if (showToast) {
         toast.error(error.message || "Failed to save draft");
       }
@@ -192,18 +193,18 @@ export default function PrepareReportForm({
 
       // Print PDF using Google Docs HTML if available, otherwise fallback to local generation
       if (submitResult.htmlContent) {
-        console.log("Using Google Docs HTML for print");
+        log("Using Google Docs HTML for print");
         printReportFromHTML(submitResult.htmlContent);
         toast.success("Report submitted and ready for printing");
       } else {
         console.warn("Google Docs HTML not available, using fallback");
-        console.log("Submit result:", submitResult);
+        log("Submit result:", submitResult);
         // Fallback to local HTML generation
         printReport(formData, caseData);
         toast.success("Report submitted (using fallback template)");
       }
     } catch (error: any) {
-      console.error("Error preparing report for print:", error);
+      error("Error preparing report for print:", error);
       toast.error(error.message || "Failed to prepare report");
     } finally {
       setIsSubmitting(false);

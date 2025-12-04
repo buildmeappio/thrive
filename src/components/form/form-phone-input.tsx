@@ -19,6 +19,7 @@ const FormPhoneInput = <TFieldValues extends FieldValues>({
   name,
   label,
   required = false,
+  placeholder,
   className = "",
   disabled = false,
   icon,
@@ -30,6 +31,15 @@ const FormPhoneInput = <TFieldValues extends FieldValues>({
 
   const error = errors[name];
   const errorMessage = error?.message as string | undefined;
+  const hasError = !!error;
+  
+  // Only show error message for validation errors, not simple "required" errors
+  const isRequiredError = errorMessage && (
+    errorMessage.toLowerCase() === "required" ||
+    errorMessage.toLowerCase().endsWith(" is required") ||
+    errorMessage.toLowerCase() === "is required"
+  );
+  const showErrorMessage = errorMessage && !isRequiredError;
 
   return (
     <div className="space-y-2">
@@ -51,10 +61,12 @@ const FormPhoneInput = <TFieldValues extends FieldValues>({
             disabled={disabled}
             className={className}
             icon={icon}
+            placeholder={placeholder}
+            error={hasError}
           />
         )}
       />
-      {errorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
+      {showErrorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
     </div>
   );
 };

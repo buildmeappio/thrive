@@ -12,6 +12,7 @@ import getExaminerProfileDetails from "./getExaminerProfileDetails";
 import updateMedicalExaminer from "./updateMedicalExaminer";
 import getYearsOfExperience from "./getYearsOfExperience";
 import getMaxTravelDistances from "./getMaxTravelDistances";
+import sendRegistrationEmails from "./sendRegistrationEmails";
 
 const authActions = {
   checkUserExists,
@@ -28,6 +29,7 @@ const authActions = {
   updateMedicalExaminer,
   getYearsOfExperience,
   getMaxTravelDistances,
+  sendRegistrationEmails,
 };
 
 export default authActions;

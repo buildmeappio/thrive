@@ -106,10 +106,15 @@ const Dropdown: React.FC<DropdownProps> = ({
   const displayValue = multiSelect
     ? selectedValues.length === 0
       ? ""
-      : uniqueOptions
-          .filter((opt) => selectedValues.includes(opt.value))
-          .map((opt) => opt.label)
-          .join(", ")
+      : (() => {
+          const selectedLabels = uniqueOptions
+            .filter((opt) => selectedValues.includes(opt.value))
+            .map((opt) => opt.label);
+          if (selectedLabels.length === 0) return "";
+          if (selectedLabels.length === 1) return selectedLabels[0];
+          // Show first language + count of remaining
+          return `${selectedLabels[0]} +${selectedLabels.length - 1}`;
+        })()
     : uniqueOptions.find((opt) => opt.value === value)?.label || "";
 
   return (
@@ -226,7 +231,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           </div>
         )}
       </div>
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && error.trim() && error.trim() !== " " && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
 };
