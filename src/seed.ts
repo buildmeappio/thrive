@@ -21,6 +21,7 @@ import ChaperoneSeeder from "./seeders/chaperone.seeder";
 import MaximumDistanceTravelSeeder from "./seeders/maximumDistanceTravel.seeder";
 import YearsOfExperienceSeeder from "./seeders/yearsOfExperience.seeder";
 import ConfigurationSeeder from "./seeders/configuration.seeder";
+import AssessmentTypeSeeder from "./seeders/assessmentType.seeder";
 
 const seeds = [
   RoleSeeder,
@@ -43,6 +44,7 @@ const seeds = [
   MaximumDistanceTravelSeeder,
   YearsOfExperienceSeeder,
   ConfigurationSeeder,
+  AssessmentTypeSeeder,
 ];
 
 const prisma = new PrismaClient();
