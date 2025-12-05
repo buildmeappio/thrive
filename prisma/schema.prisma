@@ -176,6 +176,7 @@ model Address {
   legalRepresentatives LegalRepresentative[]  @relation("LegalRepresentativeAddress")
   insurances           Insurance[]            @relation("InsuranceAddress")
   examiners            ExaminerProfile[]      @relation("ExaminerAddress")
+  examinerApplications ExaminerApplication[]  @relation("ExaminerApplicationAddress")
 
   @@map("addresses")
 }
@@ -466,21 +467,25 @@ model CaseDocument {
 }
 
 model Documents {
-  id                String            @id @unique @default(uuid()) @db.Uuid
-  name              String            @map("name") @db.VarChar(255)
-  displayName       String?           @map("display_name") @db.VarChar(255)
-  type              String            @map("type") @db.VarChar(255)
-  size              Int               @map("size") @db.Integer
-  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt         DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt         DateTime?         @map("deleted_at") @db.Timestamptz()
-  users                      User[]            @relation("ProfilePhoto")
-  cases                      CaseDocument[]    @relation("DocumentCases")
-  examinerResume             ExaminerProfile[] @relation(name: "ExaminerResumeDocument")
-  examinerNDA                ExaminerProfile[] @relation(name: "ExaminerNDADocument")
-  examinerInsurance          ExaminerProfile[] @relation(name: "ExaminerInsuranceDocument")
-  examinerRedactedIMEReports ExaminerProfile[] @relation(name: "ExaminerRedactedIMEReportDocument")
-  reportDocuments            ReportDocument[]  @relation("ReportReferralDocuments")
+  id                                    String                @id @unique @default(uuid()) @db.Uuid
+  name                                  String                @map("name") @db.VarChar(255)
+  displayName                           String?               @map("display_name") @db.VarChar(255)
+  type                                  String                @map("type") @db.VarChar(255)
+  size                                  Int                   @map("size") @db.Integer
+  createdAt                             DateTime              @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt                             DateTime              @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt                             DateTime?             @map("deleted_at") @db.Timestamptz()
+  users                                 User[]                @relation("ProfilePhoto")
+  cases                                 CaseDocument[]        @relation("DocumentCases")
+  examinerResume                        ExaminerProfile[]     @relation(name: "ExaminerResumeDocument")
+  examinerNDA                           ExaminerProfile[]     @relation(name: "ExaminerNDADocument")
+  examinerInsurance                     ExaminerProfile[]     @relation(name: "ExaminerInsuranceDocument")
+  examinerRedactedIMEReports            ExaminerProfile[]     @relation(name: "ExaminerRedactedIMEReportDocument")
+  examinerApplicationResume             ExaminerApplication[] @relation(name: "ExaminerApplicationResumeDocument")
+  examinerApplicationNDA                ExaminerApplication[] @relation(name: "ExaminerApplicationNDADocument")
+  examinerApplicationInsurance          ExaminerApplication[] @relation(name: "ExaminerApplicationInsuranceDocument")
+  examinerApplicationRedactedIMEReports ExaminerApplication[] @relation(name: "ExaminerApplicationRedactedIMEReportDocument")
+  reportDocuments                       ReportDocument[]      @relation("ReportReferralDocuments")
 
   @@map("documents")
 }
@@ -579,6 +584,17 @@ model ClaimType {
   @@map("claim_types")
 }
 
+model AssessmentType {
+  id          String    @id @unique @default(uuid()) @db.Uuid
+  name        String    @map("name") @db.VarChar(255)
+  description String?   @map("description") @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz()
+
+  @@map("assessment_types")
+}
+
 model PrismaSeed {
   id        String    @id @unique @default(uuid()) @db.Uuid
   name      String    @map("name") @db.VarChar(255)
@@ -621,6 +637,77 @@ enum ExaminerStatus {
   SUSPENDED
 }
 
+model ExaminerApplication {
+  id                  String  @id @default(uuid()) @db.Uuid
+  // Personal Information
+  firstName           String? @map("first_name") @db.VarChar(255)
+  lastName            String? @map("last_name") @db.VarChar(255)
+  email               String  @unique @map("email") @db.VarChar(255)
+  phone               String? @map("phone") @db.VarChar(255)
+  provinceOfResidence String  @map("province_of_residence") @db.VarChar(255)
+  mailingAddress      String  @map("mailing_address") @db.Text
+  addressId           String? @map("address_id") @db.Uuid
+  landlineNumber      String? @map("landline_number") @db.VarChar(255)
+
+  // Medical Credentials
+  specialties               String[]  @map("specialties")
+  licenseNumber             String    @map("license_number") @db.VarChar(255)
+  provinceOfLicensure       String?   @map("province_of_licensure") @db.VarChar(255)
+  licenseExpiryDate         DateTime? @map("license_expiry_date") @db.Date
+  medicalLicenseDocumentIds String[]  @map("medical_license_document_ids")
+
+  // Documents
+  resumeDocumentId            String? @map("resume_document_id") @db.Uuid
+  NdaDocumentId               String? @map("nda_document_id") @db.Uuid
+  insuranceDocumentId         String? @map("insurance_document_id") @db.Uuid
+  redactedIMEReportDocumentId String? @map("redacted_ime_report_document_id") @db.Uuid
+
+  // IME Background
+  isForensicAssessmentTrained Boolean  @map("is_forensic_assessment_trained")
+  yearsOfIMEExperience        String   @map("years_of_ime_experience") @db.VarChar(255)
+  imesCompleted               String?  @map("imes_completed") @db.VarChar(50)
+  currentlyConductingIMEs     Boolean? @map("currently_conducting_imes")
+  insurersOrClinics           String?  @map("insurers_or_clinics") @db.Text
+  assessmentTypeIds           String[] @map("assessment_type_ids")
+  assessmentTypeOther         String?  @map("assessment_type_other") @db.VarChar(255)
+  experienceDetails           String?  @map("experience_details") @db.Text
+
+  // Languages
+  languagesSpoken String[] @map("languages_spoken")
+
+  // Consent
+  isConsentToBackgroundVerification Boolean @map("is_consent_to_background_verification")
+  agreeToTerms                      Boolean @map("agree_to_terms")
+
+  // Application Status
+  status                       ExaminerStatus @default(SUBMITTED) @map("status")
+  approvedBy                   String?        @map("approved_by") @db.Uuid
+  approvedAt                   DateTime?      @map("approved_at") @db.Timestamptz()
+  rejectedBy                   String?        @map("rejected_by") @db.Uuid
+  rejectedAt                   DateTime?      @map("rejected_at") @db.Timestamptz()
+  rejectedReason               String?        @map("rejected_reason") @db.Text
+  contractSignedByExaminerAt   DateTime?      @map("contract_signed_by_examiner_at") @db.Timestamptz()
+  contractConfirmedByAdminAt   DateTime?      @map("contract_confirmed_by_admin_at") @db.Timestamptz()
+  contractDeclinedByExaminerAt DateTime?      @map("contract_declined_by_examiner_at") @db.Timestamptz()
+  contractDeclinedByAdminAt    DateTime?      @map("contract_declined_by_admin_at") @db.Timestamptz()
+  contractDeclineReason        String?        @map("contract_decline_reason") @db.Text
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  address                   Address?         @relation("ExaminerApplicationAddress", fields: [addressId], references: [id])
+  resumeDocument            Documents?       @relation(name: "ExaminerApplicationResumeDocument", references: [id], fields: [resumeDocumentId])
+  ndaDocument               Documents?       @relation(name: "ExaminerApplicationNDADocument", references: [id], fields: [NdaDocumentId])
+  insuranceDocument         Documents?       @relation(name: "ExaminerApplicationInsuranceDocument", references: [id], fields: [insuranceDocumentId])
+  redactedIMEReportDocument Documents?       @relation(name: "ExaminerApplicationRedactedIMEReportDocument", references: [id], fields: [redactedIMEReportDocumentId])
+  examinerProfile           ExaminerProfile? @relation("ExaminerApplicationProfile")
+
+  @@index([email])
+  @@index([status])
+  @@map("examiner_applications")
+}
+
 model ExaminerLanguage {
   id                String   @id @default(uuid()) @db.Uuid
   examinerProfileId String   @map("examiner_profile_id") @db.Uuid
@@ -638,6 +725,7 @@ model ExaminerLanguage {
 
 model ExaminerProfile {
   id                                String         @id @default(uuid()) @db.Uuid
+  applicationId                     String?        @unique @map("application_id") @db.Uuid
   accountId                         String         @map("account_id") @db.Uuid
   addressId                         String?        @map("address_id") @db.Uuid
   provinceOfResidence               String         @map("province_of_residence") @db.VarChar(255)
@@ -691,20 +779,23 @@ model ExaminerProfile {
   contractDeclineReason             String?        @map("contract_decline_reason") @db.Text
   createdAt                         DateTime       @default(now()) @db.Timestamptz()
   updatedAt                         DateTime       @updatedAt @db.Timestamptz()
-  deletedAt                         DateTime?
+  deletedAt                         DateTime?      @map("deleted_at") @db.Timestamptz()
 
-  account                     Account                @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  address                     Address?               @relation("ExaminerAddress", fields: [addressId], references: [id])
-  resumeDocument              Documents?             @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
-  ndaDocument                 Documents?             @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
-  insuranceDocument           Documents?             @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
-  redactedIMEReportDocument   Documents?             @relation(name: "ExaminerRedactedIMEReportDocument", references: [id], fields: [redactedIMEReportDocumentId])
-  feeStructure                ExaminerFeeStructure[] @relation("ExaminerFeeStructure")
-  examinerLanguages           ExaminerLanguage[]
-  claimantBookings            ClaimantBooking[]      @relation("ClaimantBookingExaminer")
-  contracts                   Contract[]             @relation("ExaminerContracts")
+  application               ExaminerApplication?   @relation("ExaminerApplicationProfile", fields: [applicationId], references: [id])
+  account                   Account                @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  address                   Address?               @relation("ExaminerAddress", fields: [addressId], references: [id])
+  resumeDocument            Documents?             @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
+  ndaDocument               Documents?             @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
+  insuranceDocument         Documents?             @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
+  redactedIMEReportDocument Documents?             @relation(name: "ExaminerRedactedIMEReportDocument", references: [id], fields: [redactedIMEReportDocumentId])
+  feeStructure              ExaminerFeeStructure[] @relation("ExaminerFeeStructure")
+  examinerLanguages         ExaminerLanguage[]
+  claimantBookings          ClaimantBooking[]      @relation("ClaimantBookingExaminer")
+  contracts                 Contract[]             @relation("ExaminerContracts")
 
   // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'EXAMINER' } })
+  @@index([applicationId])
+  @@index([accountId])
   @@map("examiner_profiles")
 }
 

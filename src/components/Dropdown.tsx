@@ -111,9 +111,8 @@ const Dropdown: React.FC<DropdownProps> = ({
             .filter((opt) => selectedValues.includes(opt.value))
             .map((opt) => opt.label);
           if (selectedLabels.length === 0) return "";
-          if (selectedLabels.length === 1) return selectedLabels[0];
-          // Show first language + count of remaining
-          return `${selectedLabels[0]} +${selectedLabels.length - 1}`;
+          // Show all values comma-separated
+          return selectedLabels.join(", ");
         })()
     : uniqueOptions.find((opt) => opt.value === value)?.label || "";
 

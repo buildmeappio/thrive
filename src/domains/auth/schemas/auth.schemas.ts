@@ -365,58 +365,15 @@ export const step3IMEExperienceSchema = z
   .object({
     imesCompleted: z
       .string()
-      .min(1, { message: "Please specify how many IMEs you have completed" }),
+      .min(1, { message: "Please specify if you have completed any IMEs" }),
     currentlyConductingIMEs: z
       .string()
       .min(1, { message: "Please specify if you are currently conducting IMEs" }),
-    insurersOrClinics: z.string().optional().default(""),
     assessmentTypes: z
       .array(z.string())
       .min(1, { message: "Please select at least one assessment type" }),
-    assessmentTypeOther: z.string().optional(),
-    redactedIMEReport: z
-      .any()
-      .optional()
-      .refine(
-        (val) => {
-          if (!val || val === "") return true; // Optional field
-          const allowedTypes = [
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          ];
-          // Check if it's a File object
-          if (val instanceof File) {
-            return allowedTypes.includes(val.type);
-          }
-          // Check if it's an existing file object with type property
-          if (val.type) {
-            return allowedTypes.includes(val.type);
-          }
-          return true; // Allow existing files without type check
-        },
-        {
-          message: "Redacted IME Report must be a PDF, DOC, or DOCX file",
-        }
-      ),
-  })
-  .refine(
-    (data) => {
-      // If currently conducting IMEs is "yes", insurersOrClinics is required
-      if (data.currentlyConductingIMEs === "yes") {
-        return (
-          data.insurersOrClinics !== undefined &&
-          data.insurersOrClinics !== null &&
-          data.insurersOrClinics.trim().length > 0
-        );
-      }
-      return true;
-    },
-    {
-      message: "Please specify which insurers or clinics",
-      path: ["insurersOrClinics"], // This will show the error on the insurersOrClinics field
-    }
-  );
+    // redactedIMEReport removed - not collected in this step
+  });
 
 export type Step3IMEExperienceInput = z.infer<typeof step3IMEExperienceSchema>;
 

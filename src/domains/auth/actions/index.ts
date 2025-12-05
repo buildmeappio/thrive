@@ -3,6 +3,7 @@ import resendOtp from "./resendOtp";
 import verifyOtp from "./verifyOtp";
 import createMedicalExaminer from "./createMedicalExaminer";
 import getLanguages from "./getLanguages";
+import getAssessmentTypes from "./getAssessmentTypes";
 import approveMedicalExaminer from "./approveMedicalExaminer";
 import verifyAccountToken from "./verifyAccountToken";
 import setPassword from "./setPassword";
@@ -20,6 +21,7 @@ const authActions = {
   verifyOtp,
   createMedicalExaminer,
   getLanguages,
+  getAssessmentTypes,
   approveMedicalExaminer,
   verifyAccountToken,
   setPassword,

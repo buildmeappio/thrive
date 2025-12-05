@@ -36,9 +36,7 @@ export type CreateMedicalExaminerInput = {
   // step 3 - IME Background & Experience
   imesCompleted: string;
   currentlyConductingIMEs: boolean;
-  insurersOrClinics?: string;
   assessmentTypes: string[];
-  assessmentTypeOther?: string;
   redactedIMEReportDocumentId?: string;
   
   // Legacy field
@@ -143,12 +141,6 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
         assessmentTypes: payload.assessmentTypes,
         imesCompleted: payload.imesCompleted,
         currentlyConductingIMEs: payload.currentlyConductingIMEs,
-        ...(payload.insurersOrClinics && {
-          insurersOrClinics: payload.insurersOrClinics,
-        }),
-        ...(payload.assessmentTypeOther && {
-          assessmentTypeOther: payload.assessmentTypeOther,
-        }),
         ...(payload.redactedIMEReportDocumentId && {
           redactedIMEReportDocument: {
             connect: { id: payload.redactedIMEReportDocumentId },

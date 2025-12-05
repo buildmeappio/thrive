@@ -13,6 +13,7 @@ import getExaminerProfileDetails from "./getExaminerProfileDetails";
 import updateMedicalExaminer from "./updateMedicalExaminer";
 import getYearsOfExperience from "./getYearsOfExperience";
 import getMaxTravelDistances from "./getMaxTravelDistances";
+import getAssessmentTypes from "./getAssessmentTypes";
 
 const handlers = {
   checkUserExists,
@@ -30,6 +31,7 @@ const handlers = {
   updateMedicalExaminer,
   getYearsOfExperience,
   getMaxTravelDistances,
+  getAssessmentTypes,
 };
 
 export default handlers;

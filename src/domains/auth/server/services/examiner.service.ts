@@ -112,6 +112,7 @@ class ExaminerService {
           resumeDocument: true,
           ndaDocument: true,
           insuranceDocument: true,
+          redactedIMEReportDocument: true,
           feeStructure: true,
         },
       });
@@ -120,7 +121,23 @@ class ExaminerService {
         throw HttpError.notFound(ErrorMessages.EXAMINER_PROFILE_NOT_FOUND);
       }
 
-      return examinerProfile;
+      // Fetch medical license documents by IDs (support multiple documents)
+      let medicalLicenseDocuments: any[] = [];
+      if (examinerProfile.medicalLicenseDocumentIds && examinerProfile.medicalLicenseDocumentIds.length > 0) {
+        medicalLicenseDocuments = await prisma.documents.findMany({
+          where: {
+            id: {
+              in: examinerProfile.medicalLicenseDocumentIds,
+            },
+          },
+        });
+      }
+
+      // Return examiner profile with medical license documents attached
+      return {
+        ...examinerProfile,
+        medicalLicenseDocuments, // Add as array
+      };
     } catch (error) {
       throw HttpError.fromError(
         error,
