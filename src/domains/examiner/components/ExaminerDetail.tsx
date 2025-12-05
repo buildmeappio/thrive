@@ -758,96 +758,79 @@ export default function ExaminerDetail({ examiner }: Props) {
                 />
               </Section>
 
-              {/* Section 6: Actions */}
-              <Section title="Actions">
-                <div className="flex flex-row flex-wrap gap-3">
-                  {/* SUBMITTED or PENDING: Auto-moved to IN_REVIEW (no button needed) */}
-                  
-                  {/* IN_REVIEW: Schedule Interview, Send Contract, Request More Info, Reject */}
-                  {status === "in_review" && (
-                    <>
-                      <button
-                        className={cn(
-                          "px-4 py-3 rounded-full border border-purple-500 text-purple-600 bg-white hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        )}
-                        style={{
-                          fontFamily: "Poppins, sans-serif",
-                          fontWeight: 400,
-                          lineHeight: "100%",
-                          fontSize: "14px",
-                        }}
-                        disabled={loadingAction !== null}
-                        onClick={handleScheduleInterview}
-                      >
-                        {loadingAction === "scheduleInterview" ? "Scheduling..." : "Schedule Interview"}
-                      </button>
-                      <button
-                        onClick={handleSendContract}
-                        disabled={loadingAction !== null}
-                        className={cn(
-                          "px-4 py-3 rounded-full border border-green-600 text-green-600 bg-white hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        )}
-                        style={{
-                          fontFamily: "Poppins, sans-serif",
-                          fontWeight: 400,
-                          lineHeight: "100%",
-                          fontSize: "14px",
-                        }}
-                      >
-                        {loadingAction === "sendContract" ? "Sending..." : "Send Contract"}
-                      </button>
-                      <button
-                        onClick={() => setIsRequestOpen(true)}
-                        className={cn(
-                          "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        )}
-                        style={{
-                          fontFamily: "Poppins, sans-serif",
-                          fontWeight: 400,
-                          lineHeight: "100%",
-                          fontSize: "14px",
-                        }}
-                        disabled={loadingAction !== null}
-                      >
-                        Request More Info
-                      </button>
-                      <button
-                        className={cn(
-                          "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                        )}
-                        style={{
-                          fontFamily: "Poppins, sans-serif",
-                          fontWeight: 400,
-                          lineHeight: "100%",
-                          fontSize: "14px",
-                        }}
-                        disabled={loadingAction !== null}
-                        onClick={() => setIsRejectOpen(true)}
-                      >
-                        Reject Application
-                      </button>
-                    </>
-                  )}
+              {/* Section 6: Actions - Hidden when MORE_INFO_REQUESTED or INFO_REQUESTED */}
+              {status !== "more_info_requested" && status !== "info_requested" && (
+                <Section title="Actions">
+                  <div className="flex flex-row flex-wrap gap-3">
+                    {/* SUBMITTED or PENDING: Auto-moved to IN_REVIEW (no button needed) */}
+                    
+                    {/* IN_REVIEW: Schedule Interview, Send Contract, Request More Info, Reject */}
+                    {status === "in_review" && (
+                      <>
+                        <button
+                          className={cn(
+                            "px-4 py-3 rounded-full border border-purple-500 text-purple-600 bg-white hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          )}
+                          style={{
+                            fontFamily: "Poppins, sans-serif",
+                            fontWeight: 400,
+                            lineHeight: "100%",
+                            fontSize: "14px",
+                          }}
+                          disabled={loadingAction !== null}
+                          onClick={handleScheduleInterview}
+                        >
+                          {loadingAction === "scheduleInterview" ? "Scheduling..." : "Schedule Interview"}
+                        </button>
+                        <button
+                          onClick={handleSendContract}
+                          disabled={loadingAction !== null}
+                          className={cn(
+                            "px-4 py-3 rounded-full border border-green-600 text-green-600 bg-white hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          )}
+                          style={{
+                            fontFamily: "Poppins, sans-serif",
+                            fontWeight: 400,
+                            lineHeight: "100%",
+                            fontSize: "14px",
+                          }}
+                        >
+                          {loadingAction === "sendContract" ? "Sending..." : "Send Contract"}
+                        </button>
+                        <button
+                          onClick={() => setIsRequestOpen(true)}
+                          className={cn(
+                            "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          )}
+                          style={{
+                            fontFamily: "Poppins, sans-serif",
+                            fontWeight: 400,
+                            lineHeight: "100%",
+                            fontSize: "14px",
+                          }}
+                          disabled={loadingAction !== null}
+                        >
+                          Request More Info
+                        </button>
+                        <button
+                          className={cn(
+                            "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                          )}
+                          style={{
+                            fontFamily: "Poppins, sans-serif",
+                            fontWeight: 400,
+                            lineHeight: "100%",
+                            fontSize: "14px",
+                          }}
+                          disabled={loadingAction !== null}
+                          onClick={() => setIsRejectOpen(true)}
+                        >
+                          Reject Application
+                        </button>
+                      </>
+                    )}
 
-                  {/* MORE_INFO_REQUESTED or INFO_REQUESTED: Show status badge */}
-                  {(status === "more_info_requested" || status === "info_requested") && (
-                    <button
-                      className={cn(
-                        "px-4 py-3 rounded-full flex items-center gap-2 cursor-default border border-blue-500 text-blue-700 bg-blue-50"
-                      )}
-                      style={{
-                        fontFamily: "Poppins, sans-serif",
-                        fontWeight: 500,
-                        lineHeight: "100%",
-                        fontSize: "14px",
-                      }}
-                      disabled
-                    >
-                      More Information Requested
-                    </button>
-                  )}
-
-                  {/* INTERVIEW_SCHEDULED: Mark Interview Completed, Reject */}
+                    {/* INTERVIEW_SCHEDULED: Mark Interview Completed, Reject */}
                   {status === "interview_scheduled" && (
                     <>
                       <button
@@ -863,7 +846,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                         disabled={loadingAction !== null}
                         onClick={handleMarkInterviewCompleted}
                       >
-                        {loadingAction === "markInterviewCompleted" ? "Marking..." : "Mark Interview Completed"}
+                        {loadingAction === "markInterviewCompleted" ? "Marking..." : "Interview Held"}
                       </button>
                       <button
                         className={cn(
@@ -1036,28 +1019,29 @@ export default function ExaminerDetail({ examiner }: Props) {
                     </button>
                   )}
 
-                  {/* Final states (REJECTED, WITHDRAWN): Read-only */}
-                  {(status === "rejected" || status === "withdrawn") && (
-                    <button
-                      className={cn(
-                        "px-4 py-3 rounded-full flex items-center gap-2 cursor-default",
-                        status === "rejected" ? "text-white bg-red-700" :
-                        "border border-gray-500 text-gray-700 bg-gray-50"
-                      )}
-                      style={{
-                        fontFamily: "Poppins, sans-serif",
-                        fontWeight: 500,
-                        lineHeight: "100%",
-                        fontSize: "14px",
-                      }}
-                      disabled
-                    >
-                      {status === "rejected" && "Rejected"}
-                      {status === "withdrawn" && "Withdrawn"}
-                    </button>
-                  )}
-                </div>
-              </Section>
+                    {/* Final states (REJECTED, WITHDRAWN): Read-only */}
+                    {(status === "rejected" || status === "withdrawn") && (
+                      <button
+                        className={cn(
+                          "px-4 py-3 rounded-full flex items-center gap-2 cursor-default",
+                          status === "rejected" ? "text-white bg-red-700" :
+                          "border border-gray-500 text-gray-700 bg-gray-50"
+                        )}
+                        style={{
+                          fontFamily: "Poppins, sans-serif",
+                          fontWeight: 500,
+                          lineHeight: "100%",
+                          fontSize: "14px",
+                        }}
+                        disabled
+                      >
+                        {status === "rejected" && "Rejected"}
+                        {status === "withdrawn" && "Withdrawn"}
+                      </button>
+                    )}
+                  </div>
+                </Section>
+              )}
             </div>
           </div>
 
