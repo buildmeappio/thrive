@@ -14,6 +14,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ErrorMessages from "@/constants/ErrorMessages";
 import { toast } from "sonner";
+import { checkSuspensionByEmail } from "@/app/actions/checkSuspensionByEmail";
 
 const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +39,20 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
+      // Check if account is suspended before attempting login
+      console.log("LoginForm: Checking suspension for email:", values.email);
+      const suspensionCheck = await checkSuspensionByEmail(values.email.toLowerCase());
+      console.log("LoginForm: Suspension check result:", suspensionCheck);
+      
+      if (suspensionCheck.isSuspended) {
+        console.log("LoginForm: Account is suspended, blocking login");
+        toast.error("Your account is suspended. Please contact administrator.", {
+          position: "top-right",
+        });
+        return; // Early return prevents login attempt
+      }
+
+      console.log("LoginForm: Account not suspended, proceeding with login");
       const result = await signIn("credentials", {
         email: values.email,
         password: values.password,
@@ -49,7 +64,8 @@ const LoginForm = () => {
       } else {
         window.location.href = createRoute(URLS.DASHBOARD);
       }
-    } catch {
+    } catch (error) {
+      console.error("Login error:", error);
       toast.error(ErrorMessages.LOGIN_FAILED);
     } finally {
       setIsLoading(false);
@@ -104,9 +120,7 @@ const LoginForm = () => {
             </Link>
           </div>
           <Button
-            onClick={() => {
-              handleSubmit(values);
-            }}
+            type="submit"
             className="w-full bg-[#00A8FF] hover:bg-[#0097E5] text-white text-xl font-semibold py-7 px-3 rounded-full flex items-center justify-center gap-2"
             disabled={isLoading}>
             {isLoading ? "Logging in..." : "Log In"}

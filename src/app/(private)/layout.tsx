@@ -6,6 +6,7 @@ import { getExaminerProfileAction } from "@/domains/setting/server";
 import { redirect } from "next/navigation";
 import { Layout } from "@/layouts/dashboard";
 import { URLS } from "@/constants/route";
+import { SuspendedCheckWrapper } from "@/components/SuspendedCheckWrapper";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -41,23 +42,25 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
     : user.name || "User";
 
   return (
-    <SidebarProvider>
-      <SearchProvider>
-        <Layout
-          isActivationComplete={isActivationComplete}
-          userName={userName}
-          userEmail={examinerProfile?.emailAddress || user.email || ""}>
-          <Suspense
-            fallback={
-              <div className="flex h-full w-full flex-1 items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
-              </div>
-            }>
-            {children}
-          </Suspense>
-        </Layout>
-      </SearchProvider>
-    </SidebarProvider>
+    <SuspendedCheckWrapper>
+      <SidebarProvider>
+        <SearchProvider>
+          <Layout
+            isActivationComplete={isActivationComplete}
+            userName={userName}
+            userEmail={examinerProfile?.emailAddress || user.email || ""}>
+            <Suspense
+              fallback={
+                <div className="flex h-full w-full flex-1 items-center justify-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
+                </div>
+              }>
+              {children}
+            </Suspense>
+          </Layout>
+        </SearchProvider>
+      </SidebarProvider>
+    </SuspendedCheckWrapper>
   );
 };
 
