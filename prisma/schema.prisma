@@ -466,14 +466,14 @@ model CaseDocument {
 }
 
 model Documents {
-  id                String            @id @unique @default(uuid()) @db.Uuid
-  name              String            @map("name") @db.VarChar(255)
-  displayName       String?           @map("display_name") @db.VarChar(255)
-  type              String            @map("type") @db.VarChar(255)
-  size              Int               @map("size") @db.Integer
-  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt         DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
-  deletedAt         DateTime?         @map("deleted_at") @db.Timestamptz()
+  id                         String            @id @unique @default(uuid()) @db.Uuid
+  name                       String            @map("name") @db.VarChar(255)
+  displayName                String?           @map("display_name") @db.VarChar(255)
+  type                       String            @map("type") @db.VarChar(255)
+  size                       Int               @map("size") @db.Integer
+  createdAt                  DateTime          @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt                  DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt                  DateTime?         @map("deleted_at") @db.Timestamptz()
   users                      User[]            @relation("ProfilePhoto")
   cases                      CaseDocument[]    @relation("DocumentCases")
   medicalLicenses            ExaminerProfile[] @relation(name: "ExaminerMedicalLicenseDocument")
@@ -679,17 +679,17 @@ model ExaminerProfile {
   updatedAt                         DateTime       @updatedAt @db.Timestamptz()
   deletedAt                         DateTime?
 
-  account                     Account                @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  address                     Address?               @relation("ExaminerAddress", fields: [addressId], references: [id])
-  medicalLicenseDocument      Documents              @relation(name: "ExaminerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
-  resumeDocument              Documents?             @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
-  ndaDocument                 Documents?             @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
-  insuranceDocument           Documents?             @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
-  redactedIMEReportDocument   Documents?             @relation(name: "ExaminerRedactedIMEReportDocument", references: [id], fields: [redactedIMEReportDocumentId])
-  feeStructure                ExaminerFeeStructure[] @relation("ExaminerFeeStructure")
-  examinerLanguages           ExaminerLanguage[]
-  claimantBookings            ClaimantBooking[]      @relation("ClaimantBookingExaminer")
-  contracts                   Contract[]             @relation("ExaminerContracts")
+  account                   Account                @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  address                   Address?               @relation("ExaminerAddress", fields: [addressId], references: [id])
+  medicalLicenseDocument    Documents              @relation(name: "ExaminerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
+  resumeDocument            Documents?             @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
+  ndaDocument               Documents?             @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
+  insuranceDocument         Documents?             @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])
+  redactedIMEReportDocument Documents?             @relation(name: "ExaminerRedactedIMEReportDocument", references: [id], fields: [redactedIMEReportDocumentId])
+  feeStructure              ExaminerFeeStructure[] @relation("ExaminerFeeStructure")
+  examinerLanguages         ExaminerLanguage[]
+  claimantBookings          ClaimantBooking[]      @relation("ClaimantBookingExaminer")
+  contracts                 Contract[]             @relation("ExaminerContracts")
 
   // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'EXAMINER' } })
   @@map("examiner_profiles")
