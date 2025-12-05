@@ -174,6 +174,7 @@ type Store = {
   // Edit mode state
   isEditMode: boolean;
   examinerProfileId: string | null;
+  applicationId: string | null; // For ExaminerApplication updates
   setEditMode: (isEdit: boolean, profileId?: string) => void;
   loadExaminerData: (examinerData: any) => void;
 };
@@ -266,6 +267,7 @@ export const useRegistrationStore = create<Store>()(
       // Edit mode state
       isEditMode: false,
       examinerProfileId: null,
+      applicationId: null,
       setEditMode: (isEdit: boolean, profileId?: string) =>
         set({ isEditMode: isEdit, examinerProfileId: profileId || null }),
       loadExaminerData: (examinerData: any) => {
@@ -277,20 +279,37 @@ export const useRegistrationStore = create<Store>()(
           console.warn("Failed to clear localStorage:", e);
         }
 
+        // Check if this is ExaminerApplication (has email directly) or ExaminerProfile (has account.user)
+        const isApplication = examinerData.email && !examinerData.account;
+
         const mappedData: Partial<RegistrationData> = {
           // Step 1: Personal Info
-          firstName: examinerData.account?.user?.firstName || "",
-          lastName: examinerData.account?.user?.lastName || "",
-          emailAddress: examinerData.account?.user?.email || "",
-          phoneNumber: examinerData.account?.user?.phone || "",
+          firstName: isApplication
+            ? examinerData.firstName || ""
+            : examinerData.account?.user?.firstName || "",
+          lastName: isApplication
+            ? examinerData.lastName || ""
+            : examinerData.account?.user?.lastName || "",
+          emailAddress: isApplication
+            ? examinerData.email || ""
+            : examinerData.account?.user?.email || "",
+          phoneNumber: isApplication
+            ? examinerData.phone || ""
+            : examinerData.account?.user?.phone || "",
           landlineNumber: examinerData.landlineNumber || "",
           city: examinerData.address?.city || "",
-          province: examinerData.address?.province || "",
-          languagesSpoken:
-            examinerData.examinerLanguages?.map((l: any) => l.languageId) || [],
+          province:
+            examinerData.address?.province ||
+            examinerData.provinceOfResidence ||
+            "",
+          languagesSpoken: isApplication
+            ? examinerData.languagesSpoken || [] // Array of language IDs
+            : examinerData.examinerLanguages?.map((l: any) => l.languageId) ||
+              [],
 
           // Step 2: Address
-          address: examinerData.address?.address || "",
+          address:
+            examinerData.address?.address || examinerData.mailingAddress || "",
           street: examinerData.address?.street || "",
           suite: examinerData.address?.suite || "",
           postalCode: examinerData.address?.postalCode || "",
@@ -328,7 +347,9 @@ export const useRegistrationStore = create<Store>()(
           currentlyConductingIMEs: examinerData.currentlyConductingIMEs
             ? "yes"
             : "no",
-          assessmentTypes: examinerData.assessmentTypes || [],
+          assessmentTypes: isApplication
+            ? examinerData.assessmentTypeIds || [] // From ExaminerApplication
+            : examinerData.assessmentTypes || [], // From ExaminerProfile
           redactedIMEReport: examinerData.redactedIMEReportDocument
             ? {
                 id: examinerData.redactedIMEReportDocument.id,
@@ -343,34 +364,41 @@ export const useRegistrationStore = create<Store>()(
             : null,
 
           // Step 4: Experience Details
-          experienceDetails: examinerData.bio || "",
+          experienceDetails: isApplication
+            ? examinerData.experienceDetails || "" // From ExaminerApplication
+            : examinerData.bio || "", // From ExaminerProfile
 
           // Step 6: Legal
           consentBackgroundVerification:
             examinerData.isConsentToBackgroundVerification || false,
           agreeTermsConditions: examinerData.agreeToTerms || false,
 
-          // Step 7: Payment Details
-          IMEFee: examinerData.feeStructure?.[0]?.IMEFee
-            ? examinerData.feeStructure[0].IMEFee.toString()
-            : "",
+          // Step 7: Payment Details (only for ExaminerProfile, not in Application)
+          IMEFee:
+            !isApplication && examinerData.feeStructure?.[0]?.IMEFee
+              ? examinerData.feeStructure[0].IMEFee.toString()
+              : "",
 
-          recordReviewFee: examinerData.feeStructure?.[0]?.recordReviewFee
-            ? examinerData.feeStructure[0].recordReviewFee.toString()
-            : "",
-          hourlyRate: examinerData.feeStructure?.[0]?.hourlyRate
-            ? examinerData.feeStructure[0].hourlyRate.toString()
-            : "",
+          recordReviewFee:
+            !isApplication && examinerData.feeStructure?.[0]?.recordReviewFee
+              ? examinerData.feeStructure[0].recordReviewFee.toString()
+              : "",
+          hourlyRate:
+            !isApplication && examinerData.feeStructure?.[0]?.hourlyRate
+              ? examinerData.feeStructure[0].hourlyRate.toString()
+              : "",
 
-          cancellationFee: examinerData.feeStructure?.[0]?.cancellationFee
-            ? examinerData.feeStructure[0].cancellationFee.toString()
-            : "",
+          cancellationFee:
+            !isApplication && examinerData.feeStructure?.[0]?.cancellationFee
+              ? examinerData.feeStructure[0].cancellationFee.toString()
+              : "",
         };
 
         set(() => ({
           data: { ...initialData, ...mappedData },
           isEditMode: true,
-          examinerProfileId: examinerData.id,
+          examinerProfileId: isApplication ? null : examinerData.id, // Applications don't have profileId yet
+          applicationId: isApplication ? examinerData.id : null, // Store applicationId for application updates
         }));
       },
     }),

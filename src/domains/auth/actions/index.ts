@@ -11,6 +11,7 @@ import changePassword from "./changePassword";
 import forgotPassword from "./forgotPassword";
 import getExaminerProfileDetails from "./getExaminerProfileDetails";
 import updateMedicalExaminer from "./updateMedicalExaminer";
+import updateExaminerApplication from "./updateExaminerApplication";
 import getYearsOfExperience from "./getYearsOfExperience";
 import getMaxTravelDistances from "./getMaxTravelDistances";
 import sendRegistrationEmails from "./sendRegistrationEmails";
@@ -29,6 +30,7 @@ const authActions = {
   forgotPassword,
   getExaminerProfileDetails,
   updateMedicalExaminer,
+  updateExaminerApplication,
   getYearsOfExperience,
   getMaxTravelDistances,
   sendRegistrationEmails,

@@ -1,6 +1,5 @@
 import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
-import ErrorMessages from "@/constants/ErrorMessages";
 
 class AssessmentTypeService {
   async getAssessmentTypes() {
@@ -18,7 +17,7 @@ class AssessmentTypeService {
     } catch (error) {
       throw HttpError.fromError(
         error,
-        ErrorMessages.ASSESSMENT_TYPES_NOT_FOUND || "Failed to fetch assessment types",
+        "Failed to fetch assessment types",
         500
       );
     }

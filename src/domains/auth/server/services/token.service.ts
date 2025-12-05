@@ -31,8 +31,9 @@ class TokenService {
 
   generatePasswordToken(payload: {
     email: string;
-    id: string;
-    accountId: string;
+    id?: string; // userId (optional, for existing users)
+    accountId?: string; // accountId (optional, for existing accounts)
+    applicationId?: string; // applicationId (for new applications)
     role: string;
     examinerId?: string;
   }): string {
@@ -88,9 +89,10 @@ class TokenService {
     const decoded = this.verifyToken(token);
 
     return {
-      userId: decoded.id as string,
+      userId: decoded.id as string | undefined,
       email: decoded.email as string,
-      accountId: decoded.accountId as string,
+      accountId: decoded.accountId as string | undefined,
+      applicationId: decoded.applicationId as string | undefined,
       role: decoded.role as string,
       examinerId: decoded.examinerId as string | undefined,
     };

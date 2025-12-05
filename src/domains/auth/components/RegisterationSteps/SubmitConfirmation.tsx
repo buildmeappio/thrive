@@ -28,7 +28,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
   totalSteps,
   currentStep,
 }) => {
-  const { data, merge, isEditMode, examinerProfileId, reset } =
+  const { data, merge, isEditMode, examinerProfileId, applicationId, reset } =
     useRegistrationStore();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -217,14 +217,20 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
       };
 
       let result;
-      if (isEditMode && examinerProfileId) {
-        // Update existing examiner
+      if (isEditMode && applicationId) {
+        // Update existing examiner application
+        result = await authActions.updateExaminerApplication({
+          applicationId,
+          ...payload,
+        });
+      } else if (isEditMode && examinerProfileId) {
+        // Update existing examiner profile (legacy flow)
         result = await authActions.updateMedicalExaminer({
           examinerProfileId,
           ...payload,
         });
       } else {
-        // Create new examiner
+        // Create new examiner application
         result = await authActions.createMedicalExaminer(payload);
       }
 
@@ -237,8 +243,10 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
       }
 
       // Send registration confirmation emails asynchronously (don't block submission)
-      const profileId =
-        (result as any).examinerProfileId || examinerProfileId || "";
+      // For new applications, use applicationId; for updates, use applicationId or examinerProfileId
+      const profileId = isEditMode
+        ? applicationId || examinerProfileId || ""
+        : (result as any).applicationId || "";
 
       // Fire and forget - don't wait for email to complete
       authActions
@@ -253,7 +261,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
             imeExperience: submissionData.yearsOfIMEExperience,
             imesCompleted: submissionData.imesCompleted || "",
           },
-          examinerProfileId: profileId,
+          examinerProfileId: profileId, // For new applications, this will be applicationId
         })
         .catch((emailError) => {
           // Log but don't fail the submission

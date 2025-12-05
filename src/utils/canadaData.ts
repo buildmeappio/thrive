@@ -1,4 +1,4 @@
-import { cities, provinces, territories } from "canada";
+import { provinces, territories } from "canada";
 
 // Map full province names to province codes
 const provinceNameToCode: { [key: string]: string } = {
@@ -309,19 +309,19 @@ const toTitleCase = (str: string): string => {
  * Territories are already in title case, so they don't need conversion
  */
 export const getProvinceOptions = (): { value: string; label: string }[] => {
-  // Get provinces (in uppercase) and convert to title case
-  const provinceOptions = Object.entries(provinces).map(([code, name]) => {
-    const titleCaseName = toTitleCase(name as string);
+  // Get provinces (object with code as key and name as value) and convert to title case
+  const provinceOptions = Object.entries(provinces).map(([_code, name]) => {
+    const titleCaseName = toTitleCase(name);
     return {
       value: titleCaseName,
       label: titleCaseName,
     };
   });
 
-  // Get territories (already in title case)
-  const territoryOptions = Object.entries(territories).map(([code, name]) => ({
-    value: name as string,
-    label: name as string,
+  // Get territories (object with code as key and name as value)
+  const territoryOptions = Object.entries(territories).map(([_code, name]) => ({
+    value: name,
+    label: name,
   }));
 
   // Combine and sort alphabetically

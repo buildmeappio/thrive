@@ -49,7 +49,12 @@ const RegisterForm: React.FC<{
   // Load examiner data if in edit mode
   useEffect(() => {
     if (examinerData) {
-      loadExaminerData(examinerData.examinerProfile);
+      // Check if it's an ExaminerApplication or ExaminerProfile
+      if (examinerData.examinerApplication) {
+        loadExaminerData(examinerData.examinerApplication);
+      } else if (examinerData.examinerProfile) {
+        loadExaminerData(examinerData.examinerProfile);
+      }
     }
   }, [examinerData, loadExaminerData]);
 

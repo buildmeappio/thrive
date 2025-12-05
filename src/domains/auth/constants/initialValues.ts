@@ -43,7 +43,6 @@ export const step3InitialValues: Step3IMEExperienceInput = {
   imesCompleted: "",
   currentlyConductingIMEs: "",
   assessmentTypes: [],
-  assessmentTypeOther: "",
   // redactedIMEReport removed - not collected in this step
 };
 

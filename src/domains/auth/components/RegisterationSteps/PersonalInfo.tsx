@@ -353,13 +353,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
               </FormField>
 
               {/* Row 2: Email Address, Languages Spoken */}
-              <FormField
-                name="emailAddress"
-                label="Email Address"
-                required
-                hint={
-                  isEditMode ? "Email address cannot be changed" : undefined
-                }>
+              <FormField name="emailAddress" label="Email Address" required>
                 {(field: UseFormRegisterReturn & { error?: boolean }) => (
                   <Input
                     {...field}
@@ -367,10 +361,6 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                     icon={Mail}
                     type="email"
                     placeholder="Enter your email address"
-                    disabled={isEditMode}
-                    className={
-                      isEditMode ? "bg-gray-100 cursor-not-allowed" : ""
-                    }
                   />
                 )}
               </FormField>

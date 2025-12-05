@@ -747,6 +747,7 @@ model ExaminerProfile {
   insurersOrClinics                 String?        @map("insurers_or_clinics") @db.Text
   assessmentTypeOther               String?        @map("assessment_type_other") @db.VarChar(255)
   redactedIMEReportDocumentId       String?        @map("redacted_ime_report_document_id") @db.Uuid
+  experienceDetails                 String?        @map("experience_details") @db.Text
   bio                               String         @map("bio") @db.Text
   preferredRegions                  String?        @map("preferred_regions") @db.VarChar(255)
   maxTravelDistance                 String?        @map("max_travel_distance") @db.VarChar(255)
