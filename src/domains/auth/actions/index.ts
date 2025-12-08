@@ -15,6 +15,9 @@ import updateExaminerApplication from "./updateExaminerApplication";
 import getYearsOfExperience from "./getYearsOfExperience";
 import getMaxTravelDistances from "./getMaxTravelDistances";
 import sendRegistrationEmails from "./sendRegistrationEmails";
+import saveApplicationProgress from "./saveApplicationProgress";
+import sendResumeLink from "./sendResumeLink";
+import verifyResumeToken from "./verifyResumeToken";
 
 const authActions = {
   checkUserExists,
@@ -34,6 +37,9 @@ const authActions = {
   getYearsOfExperience,
   getMaxTravelDistances,
   sendRegistrationEmails,
+  saveApplicationProgress,
+  sendResumeLink,
+  verifyResumeToken,
 };
 
 export default authActions;

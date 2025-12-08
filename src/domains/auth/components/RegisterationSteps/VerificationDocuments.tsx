@@ -5,6 +5,7 @@ import {
   ContinueButton,
   ProgressIndicator,
   MultipleFileUploadInput,
+  SaveAndContinueButton,
 } from "@/components";
 import {
   verificationDocumentsSchema,
@@ -18,6 +19,7 @@ import {
 import { FormProvider } from "@/components/form";
 import { Controller } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
+import { useSaveApplicationProgress } from "@/domains/auth/hooks/useSaveApplicationProgress";
 
 const VerificationDocuments: React.FC<RegStepProps> = ({
   onNext,
@@ -26,6 +28,7 @@ const VerificationDocuments: React.FC<RegStepProps> = ({
   totalSteps,
 }) => {
   const { merge } = useRegistrationStore();
+  const { saveProgress, isSaving } = useSaveApplicationProgress();
   // Use selector to directly subscribe to medicalLicense changes
   const medicalLicense = useRegistrationStore(
     (state) => state.data.medicalLicense
@@ -128,14 +131,25 @@ const VerificationDocuments: React.FC<RegStepProps> = ({
             borderColor="#00A8FF"
             iconColor="#00A8FF"
           />
-          <ContinueButton
-            onClick={form.handleSubmit(onSubmit)}
-            isLastStep={currentStep === totalSteps}
-            gradientFrom="#89D7FF"
-            gradientTo="#00A8FF"
-            disabled={!isFormComplete || form.formState.isSubmitting}
-            loading={form.formState.isSubmitting}
-          />
+          <div className="flex items-center gap-4">
+            <SaveAndContinueButton
+              onClick={() => {
+                // Get current form values and save them along with store data
+                const currentValues = form.getValues();
+                saveProgress(currentValues as Partial<RegistrationData>);
+              }}
+              loading={isSaving}
+              disabled={isSaving || form.formState.isSubmitting}
+            />
+            <ContinueButton
+              onClick={form.handleSubmit(onSubmit)}
+              isLastStep={currentStep === totalSteps}
+              gradientFrom="#89D7FF"
+              gradientTo="#00A8FF"
+              disabled={!isFormComplete || form.formState.isSubmitting}
+              loading={form.formState.isSubmitting}
+            />
+          </div>
         </div>
       </FormProvider>
     </div>
