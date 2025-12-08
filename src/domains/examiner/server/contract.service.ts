@@ -106,6 +106,203 @@ class ContractService {
   }
 
   /**
+   * Create and send a contract for an application
+   * This is called when sending a contract to an application (before examiner profile exists)
+   */
+  async createAndSendContractForApplication(
+    applicationId: string,
+    createdBy: string
+  ): Promise<{
+    success: boolean;
+    contractId?: string;
+    documentId?: string;
+    s3?: { bucket: string; key: string };
+    driveHtmlId?: string;
+    error?: string;
+  }> {
+    try {
+      // 1. Get application details
+      const application = await prisma.examinerApplication.findUnique({
+        where: { id: applicationId },
+        include: {
+          address: true,
+        },
+      });
+
+      if (!application) {
+        return { success: false, error: "Application not found" };
+      }
+
+      // Fee structure is required for contract creation
+      if (!application.IMEFee || !application.recordReviewFee || !application.cancellationFee || !application.paymentTerms) {
+        return {
+          success: false,
+          error: "Fee structure not found. Please add fee structure before sending contract.",
+        };
+      }
+
+      const examinerName = `${application.firstName || ""} ${application.lastName || ""}`.trim();
+      const examinerEmail = application.email;
+
+      // 2. Get or create the IME template
+      const templateResult = await this.getOrCreateTemplate(createdBy);
+      if (!templateResult.success || !templateResult.template) {
+        return { success: false, error: templateResult.error || "Template not found" };
+      }
+
+      const template = templateResult.template;
+
+      // 3. Prepare contract data for Google Docs
+      const googleDocsContractData: GoogleDocsContractData = {
+        examinerName,
+        province: application.provinceOfResidence,
+        effectiveDate: new Date(),
+        feeStructure: {
+          IMEFee: Number(application.IMEFee),
+          recordReviewFee: Number(application.recordReviewFee),
+          hourlyRate: application.hourlyRate ? Number(application.hourlyRate) : undefined,
+          cancellationFee: Number(application.cancellationFee),
+          paymentTerms: application.paymentTerms,
+        },
+      };
+
+      // 4. Create Google Doc, merge placeholders, and export HTML
+      logger.log("📄 Creating contract from Google Doc template...");
+      const { documentId, htmlContent, driveHtmlId } = await createContractDocument(
+        template.currentVersion.googleDocTemplateId,
+        template.currentVersion.googleDocFolderId,
+        googleDocsContractData,
+        false // Don't save HTML to Drive for now
+      );
+
+      // 5. Prepare contract data for database (contract content data only, no metadata)
+      const contractData: ContractData = {
+        examinerName,
+        examinerEmail,
+        province: application.provinceOfResidence,
+        feeStructure: {
+          IMEFee: Number(application.IMEFee),
+          recordReviewFee: Number(application.recordReviewFee),
+          hourlyRate: application.hourlyRate ? Number(application.hourlyRate) : undefined,
+          cancellationFee: Number(application.cancellationFee),
+          paymentTerms: application.paymentTerms,
+        },
+        effectiveDate: new Date().toISOString().split("T")[0],
+      };
+
+      // 6. Calculate hashes - convert HTML string to Buffer for hashing
+      const htmlBuffer = Buffer.from(htmlContent, 'utf-8');
+      const htmlHash = sha256Buffer(htmlBuffer);
+      const dataHash = hashContractData("", contractData);
+
+      // 7. Upload unsigned HTML to S3
+      const fileName = `application/${applicationId}/unsigned_${Date.now()}.html`;
+      const s3Key = await uploadToS3(htmlBuffer, fileName, "text/html", "contracts");
+
+      // 8. Create contract record to get ID for JWT token
+      const tempContract = await prisma.contract.create({
+        data: {
+          applicationId: applicationId,
+          examinerProfileId: null, // Will be set when profile is created
+          templateId: template.id,
+          templateVersionId: template.currentVersion.id,
+          status: "DRAFT",
+          data: contractData as any,
+          dataHash,
+          createdBy,
+        },
+      });
+
+      // 9. Generate JWT token with contract ID and application ID (expires in 90 days)
+      const accessToken = signContractToken({
+        contractId: tempContract.id,
+        applicationId: applicationId,
+      }, '90d');
+
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 90);
+
+      // 10. Update contract with S3 details, Google Doc fields, token, and mark as SENT
+      logger.log("💾 Updating contract status to SENT...");
+      const googleDocUrl = `https://docs.google.com/document/d/${documentId}`;
+      logger.log("googleDocUrl", googleDocUrl);
+      logger.log("documentId", documentId);
+      logger.log("driveHtmlId", driveHtmlId);
+      logger.log("s3Key", s3Key);
+      logger.log("htmlHash", htmlHash);
+      logger.log("accessToken", accessToken);
+
+      const contract = await prisma.contract.update({
+        where: { id: tempContract.id },
+        data: {
+          unsignedHtmlS3Key: s3Key,
+          unsignedHtmlSha256: htmlHash,
+          googleDocId: documentId,
+          googleDocUrl: googleDocUrl,
+          driveHtmlId: driveHtmlId || null,
+          status: "SENT",
+          sentAt: new Date(),
+          accessToken: accessToken,
+          accessTokenExpiresAt: expiresAt,
+        },
+      });
+
+      // 11. Create audit events
+      await prisma.contractEvent.create({
+        data: {
+          contractId: contract.id,
+          eventType: "created",
+          actorRole: "admin",
+          actorId: createdBy,
+          meta: {
+            s3Key,
+            htmlHash,
+            googleDocId: documentId,
+            driveHtmlId: driveHtmlId,
+            applicationId: applicationId,
+          },
+        },
+      });
+
+      await prisma.contractEvent.create({
+        data: {
+          contractId: contract.id,
+          eventType: "sent",
+          actorRole: "admin",
+          actorId: createdBy,
+          meta: {
+            sentTo: examinerEmail,
+            s3Key,
+            googleDocId: documentId,
+            applicationId: applicationId,
+          },
+        },
+      });
+
+      logger.log(`✅ Contract created and sent successfully for application: ${contract.id}`);
+      logger.log(`   Google Doc ID: ${documentId}`);
+      logger.log(`   S3 Key: ${s3Key}`);
+
+      return {
+        success: true,
+        contractId: contract.id,
+        documentId: documentId,
+        s3: {
+          bucket: ENV.AWS_S3_BUCKET || "",
+          key: s3Key,
+        },
+        driveHtmlId: driveHtmlId || undefined,
+      };
+    } catch (error) {
+      logger.error("Error creating contract for application:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to create contract",
+      };
+    }
+  }
+
+  /**
    * Create and send a contract for an examiner
    * This is the main entry point called when approving an examiner
    */

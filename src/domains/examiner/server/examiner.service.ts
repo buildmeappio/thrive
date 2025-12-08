@@ -18,6 +18,11 @@ const includeRelations = {
       language: true,
     },
   },
+  application: {
+    select: {
+      status: true,
+    },
+  },
 };
 
 export const getRecentExaminers = async (limit?: number, status?: string | string[]) => {
@@ -166,6 +171,125 @@ export const getExaminerCountThisMonth = async (status: string | string[]) => {
   });
 };
 
+// Copy data from ExaminerApplication to ExaminerProfile when account is created
+export const createProfileFromApplication = async (
+  applicationId: string,
+  accountId: string
+) => {
+  // Get the application with all relations
+  const application = await prisma.examinerApplication.findUnique({
+    where: { id: applicationId },
+    include: {
+      address: true,
+    },
+  });
+
+  if (!application) {
+    throw new Error("Application not found");
+  }
+
+  // Check if application is deleted
+  if (application.deletedAt) {
+    throw new Error("Application has been deleted");
+  }
+
+  // Validate that the application is APPROVED or CONTRACT_SIGNED before allowing account creation
+  // CONTRACT_SIGNED: Contract has been signed, waiting for admin approval
+  // APPROVED: Application has been approved, ready for account creation
+  if (application.status !== ExaminerStatus.APPROVED && application.status !== ExaminerStatus.CONTRACT_SIGNED) {
+    throw new Error(`Application is not approved. Current status: ${application.status}. Application must be APPROVED or CONTRACT_SIGNED to create account.`);
+  }
+
+  // Check if profile already exists
+  const existingProfile = await prisma.examinerProfile.findUnique({
+    where: { applicationId },
+  });
+
+  if (existingProfile) {
+    // Profile already exists, return it
+    return prisma.examinerProfile.findUnique({
+      where: { id: existingProfile.id },
+      include: includeRelations,
+    });
+  }
+
+  // Create ExaminerProfile from ExaminerApplication data and update application status to ACTIVE
+  // This happens when examiner creates their password/account
+  const profile = await prisma.$transaction(async (tx) => {
+    // Create the profile
+    const createdProfile = await tx.examinerProfile.create({
+      data: {
+        applicationId: application.id,
+        accountId: accountId,
+        addressId: application.addressId,
+        provinceOfResidence: application.provinceOfResidence,
+        mailingAddress: application.mailingAddress,
+        specialties: application.specialties,
+        licenseNumber: application.licenseNumber,
+        landlineNumber: application.landlineNumber,
+        assessmentTypes: application.assessmentTypeIds,
+        provinceOfLicensure: application.provinceOfLicensure,
+        licenseExpiryDate: application.licenseExpiryDate,
+        medicalLicenseDocumentIds: application.medicalLicenseDocumentIds,
+        resumeDocumentId: application.resumeDocumentId,
+        NdaDocumentId: application.NdaDocumentId,
+        insuranceDocumentId: application.insuranceDocumentId,
+        isForensicAssessmentTrained: application.isForensicAssessmentTrained,
+        yearsOfIMEExperience: application.yearsOfIMEExperience,
+        imesCompleted: application.imesCompleted,
+        currentlyConductingIMEs: application.currentlyConductingIMEs,
+        insurersOrClinics: application.insurersOrClinics,
+        assessmentTypeOther: application.assessmentTypeOther,
+        redactedIMEReportDocumentId: application.redactedIMEReportDocumentId,
+        bio: application.experienceDetails || "",
+        experienceDetails: application.experienceDetails || "",
+        isConsentToBackgroundVerification: application.isConsentToBackgroundVerification,
+        agreeToTerms: application.agreeToTerms,
+        status: ExaminerStatus.ACTIVE, // Set to ACTIVE when account is created
+      },
+      include: includeRelations,
+    });
+
+    // Create fee structure from application fee structure if it exists
+    if (application.IMEFee !== null && application.recordReviewFee !== null && application.cancellationFee !== null && application.paymentTerms !== null) {
+      await tx.examinerFeeStructure.create({
+        data: {
+          examinerProfileId: createdProfile.id,
+          IMEFee: application.IMEFee,
+          recordReviewFee: application.recordReviewFee,
+          hourlyRate: application.hourlyRate ?? null,
+          cancellationFee: application.cancellationFee,
+          paymentTerms: application.paymentTerms,
+        },
+      });
+    }
+
+    // Link any contracts from the application to the new profile
+    await tx.contract.updateMany({
+      where: {
+        applicationId: applicationId,
+        examinerProfileId: null,
+      },
+      data: {
+        examinerProfileId: createdProfile.id,
+        applicationId: null, // Remove application link since we now have a profile
+      },
+    });
+
+    // Update application status to ACTIVE when examiner creates account
+    await tx.examinerApplication.update({
+      where: { id: applicationId },
+      data: {
+        status: ExaminerStatus.ACTIVE,
+      },
+    });
+
+    return createdProfile;
+  });
+
+  return profile;
+};
+
 // Default export for backward compatibility
 const examinerService = {
   getRecentExaminers,
@@ -180,6 +304,7 @@ const examinerService = {
   suspendExaminer,
   reactivateExaminer,
   getExaminerCountThisMonth,
+  createProfileFromApplication,
 };
 
 export default examinerService;

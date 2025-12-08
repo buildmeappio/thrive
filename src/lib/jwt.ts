@@ -143,12 +143,12 @@ export function verifyClaimantApproveToken(token: string): string | jwt.JwtPaylo
 
 /**
  * Sign a token for contract review/signing (uses JWT_SET_PASSWORD_SECRET)
- * @param payload - The data to encode in the token (should include contractId and examinerProfileId)
+ * @param payload - The data to encode in the token (should include contractId and optionally examinerProfileId or applicationId)
  * @param expiresIn - Token expiration time (default: 90 days)
  * @returns Signed JWT token
  */
 export function signContractToken(
-  payload: { contractId: string; examinerProfileId: string },
+  payload: { contractId: string; examinerProfileId?: string; applicationId?: string },
   expiresIn: SignOptions['expiresIn'] = '90d'
 ): string {
   const options: SignOptions = { expiresIn };
@@ -159,22 +159,61 @@ export function signContractToken(
 /**
  * Verify and decode a contract token (uses JWT_SET_PASSWORD_SECRET)
  * @param token - The JWT token to verify
- * @returns Decoded token payload with contractId and examinerProfileId
+ * @returns Decoded token payload with contractId and optionally examinerProfileId or applicationId
  */
-export function verifyContractToken(token: string): { contractId: string; examinerProfileId: string } {
+export function verifyContractToken(token: string): { contractId: string; examinerProfileId?: string; applicationId?: string } {
   try {
     const JWT_SET_PASSWORD_SECRET = getJwtSecret('JWT_SET_PASSWORD_SECRET');
     const decoded = jwt.verify(token, JWT_SET_PASSWORD_SECRET) as jwt.JwtPayload;
     
-    if (!decoded.contractId || !decoded.examinerProfileId) {
+    if (!decoded.contractId) {
       throw new Error("Invalid contract token payload");
     }
     
     return {
-      contractId: decoded.contractId,
-      examinerProfileId: decoded.examinerProfileId,
+      contractId: decoded.contractId as string,
+      examinerProfileId: decoded.examinerProfileId as string | undefined,
+      applicationId: decoded.applicationId as string | undefined,
     };
   } catch {
     throw new Error("Invalid or expired contract token");
+  }
+}
+
+/**
+ * Sign a token for examiner application approval (uses JWT_SET_PASSWORD_SECRET)
+ * @param payload - The data to encode in the token (should include email and applicationId)
+ * @param expiresIn - Token expiration time (default: 7 days)
+ * @returns Signed JWT token
+ */
+export function signExaminerApplicationToken(
+  payload: { email: string; applicationId: string },
+  expiresIn: SignOptions['expiresIn'] = '7d'
+): string {
+  const options: SignOptions = { expiresIn };
+  const JWT_SET_PASSWORD_SECRET = getJwtSecret('JWT_SET_PASSWORD_SECRET');
+  return jwt.sign(payload, JWT_SET_PASSWORD_SECRET, options);
+}
+
+/**
+ * Verify and decode an examiner application token (uses JWT_SET_PASSWORD_SECRET)
+ * @param token - The JWT token to verify
+ * @returns Decoded token payload with email and applicationId
+ */
+export function verifyExaminerApplicationToken(token: string): { email: string; applicationId: string } {
+  try {
+    const JWT_SET_PASSWORD_SECRET = getJwtSecret('JWT_SET_PASSWORD_SECRET');
+    const decoded = jwt.verify(token, JWT_SET_PASSWORD_SECRET) as jwt.JwtPayload;
+    
+    if (!decoded.email || !decoded.applicationId) {
+      throw new Error("Invalid application token payload");
+    }
+    
+    return {
+      email: decoded.email as string,
+      applicationId: decoded.applicationId as string,
+    };
+  } catch {
+    throw new Error("Invalid or expired application token");
   }
 }

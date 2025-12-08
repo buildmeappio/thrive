@@ -20,8 +20,6 @@ import {
   markInterviewCompleted,
   markContractSigned,
   getExaminerContract,
-  suspendExaminer,
-  reactivateExaminer,
 } from "../actions";
 import { Check, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -89,17 +87,15 @@ const mapStatus = {
   SUSPENDED: "suspended",
 } as const;
 
-type Props = { examiner: ExaminerData };
+type Props = { examiner: ExaminerData; isApplication?: boolean };
 
-export default function ExaminerDetail({ examiner }: Props) {
+export default function ExaminerDetail({ examiner, isApplication = false }: Props) {
   logger.log(examiner.feeStructure)
   const router = useRouter();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
   const [isFeeStructureOpen, setIsFeeStructureOpen] = useState(false);
   const [isContractReviewOpen, setIsContractReviewOpen] = useState(false);
-  const [isSuspendOpen, setIsSuspendOpen] = useState(false);
-  const [isSuspendSubmitted, setIsSuspendSubmitted] = useState(false);
   const [contractHtml, setContractHtml] = useState<string | null>(null);
   const [loadingContract, setLoadingContract] = useState(false);
   const [pendingSendContract, setPendingSendContract] = useState(false);
@@ -107,7 +103,7 @@ export default function ExaminerDetail({ examiner }: Props) {
     (typeof mapStatus)[ExaminerData["status"]]
   >(mapStatus[examiner.status]);
   const [loadingAction, setLoadingAction] = useState<
-    "approve" | "reject" | "request" | "feeStructure" | "sendContract" | "moveToReview" | "scheduleInterview" | "markInterviewCompleted" | "markContractSigned" | "suspend" | "reactivate" | null
+    "approve" | "reject" | "request" | "feeStructure" | "sendContract" | "moveToReview" | "scheduleInterview" | "markInterviewCompleted" | "markContractSigned" | null
   >(null);
 
   // Automatically move to IN_REVIEW when admin opens a SUBMITTED/PENDING application
@@ -143,13 +139,19 @@ export default function ExaminerDetail({ examiner }: Props) {
     setLoadingAction("approve");
     try {
       await approveExaminer(examiner.id);
+      if (isApplication) {
+        toast.success(
+          "Application approved successfully! An email has been sent to the applicant."
+        );
+      } else {
+        toast.success(
+          "Examiner approved successfully! An email has been sent to the examiner."
+        );
+      }
       setStatus("approved");
-      toast.success(
-        "Examiner approved successfully! An email has been sent to the examiner."
-      );
     } catch (error) {
-      logger.error("Failed to approve examiner:", error);
-      toast.error("Failed to approve examiner. Please try again.");
+      logger.error("Failed to approve:", error);
+      toast.error(`Failed to approve ${isApplication ? "application" : "examiner"}. Please try again.`);
     } finally {
       setLoadingAction(null);
     }
@@ -162,14 +164,20 @@ export default function ExaminerDetail({ examiner }: Props) {
     setLoadingAction("reject");
     try {
       await rejectExaminer(examiner.id, messageToExaminer);
+      if (isApplication) {
+        toast.success(
+          "Application rejected. An email has been sent to the applicant."
+        );
+      } else {
+        toast.success(
+          "Examiner rejected. An email has been sent to the examiner."
+        );
+      }
       setStatus("rejected");
       setIsRejectOpen(false);
-      toast.success(
-        "Examiner rejected. An email has been sent to the examiner."
-      );
     } catch (error) {
-      logger.error("Failed to reject examiner:", error);
-      toast.error("Failed to reject examiner. Please try again.");
+      logger.error("Failed to reject:", error);
+      toast.error(`Failed to reject ${isApplication ? "application" : "examiner"}. Please try again.`);
     } finally {
       setLoadingAction(null);
     }
@@ -183,9 +191,13 @@ export default function ExaminerDetail({ examiner }: Props) {
     setLoadingAction("request");
     try {
       await requestMoreInfo(examiner.id, messageToExaminer, documentsRequired);
+      if (isApplication) {
+        toast.success("Request sent. An email has been sent to the applicant.");
+      } else {
+        toast.success("Request sent. An email has been sent to the examiner.");
+      }
       setStatus("more_info_requested");
       setIsRequestOpen(false);
-      toast.success("Request sent. An email has been sent to the examiner.");
     } catch (error) {
       logger.error("Failed to request more info:", error);
       toast.error("Failed to send request. Please try again.");
@@ -241,45 +253,7 @@ export default function ExaminerDetail({ examiner }: Props) {
     }
   };
 
-  const handleSuspendExaminer = async (suspensionReason?: string) => {
-    setLoadingAction("suspend");
-    try {
-      const result = await suspendExaminer(examiner.id, suspensionReason);
-      if (result.success) {
-        setStatus("suspended");
-        setIsSuspendSubmitted(true); // Mark as submitted
-        toast.success("Examiner suspended successfully.");
-        router.refresh();
-      } else {
-        toast.error(result.error || "Failed to suspend examiner.");
-      }
-    } catch (error) {
-      logger.error("Failed to suspend examiner:", error);
-      toast.error("Failed to suspend examiner. Please try again.");
-    } finally {
-      setLoadingAction(null);
-      // Don't close the modal - keep it open with disabled fields
-    }
-  };
-
-  const handleReactivateExaminer = async () => {
-    setLoadingAction("reactivate");
-    try {
-      const result = await reactivateExaminer(examiner.id);
-      if (result.success) {
-        setStatus("approved");
-        toast.success("Examiner reactivated successfully.");
-        router.refresh();
-      } else {
-        toast.error(result.error || "Failed to reactivate examiner.");
-      }
-    } catch (error) {
-      logger.error("Failed to reactivate examiner:", error);
-      toast.error("Failed to reactivate examiner. Please try again.");
-    } finally {
-      setLoadingAction(null);
-    }
-  };
+  // Suspend/Reactivate handlers removed - skipping for now
 
   const handleDeclineContract = async () => {
     setLoadingAction("reject");
@@ -512,7 +486,7 @@ export default function ExaminerDetail({ examiner }: Props) {
               <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
                 {capitalizeWords(examiner.name)}
               </span>{" "}
-              Profile
+              {isApplication ? "Application" : "Profile"}
             </h1>
           </Link>
         </div>
@@ -648,31 +622,23 @@ export default function ExaminerDetail({ examiner }: Props) {
               {/* Section 3: IME Background and Experience */}
               <Section title="IME Background and Experience">
                 <FieldRow
-                  label="How many IMEs have you completed?"
-                  value={examiner.imesCompleted || "-"}
+                  label="Have you completed any IMEs?"
+                  value={
+                    examiner.imesCompleted 
+                      ? (examiner.imesCompleted.toLowerCase() === "yes" 
+                          ? "Yes" 
+                          : examiner.imesCompleted.toLowerCase() === "no" 
+                          ? "No" 
+                          : examiner.imesCompleted.charAt(0).toUpperCase() + examiner.imesCompleted.slice(1).toLowerCase())
+                      : "-"
+                  }
                   type="text"
                 />
                 <FieldRow
-                  label="Are you currently conducting IMEs for any insurer or clinic?"
+                  label="Are you currently conducting IMEs?"
                   value={examiner.currentlyConductingIMEs ? "Yes" : "No"}
                   type="text"
                 />
-                {examiner.currentlyConductingIMEs && examiner.insurersOrClinics ? (
-                  <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[100px] flex flex-col">
-                    <h4 className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] mb-3">
-                      Which insurers or clinics?
-                    </h4>
-                    <p className="font-poppins text-base text-[#000080] whitespace-pre-wrap">
-                      {examiner.insurersOrClinics}
-                    </p>
-                  </div>
-                ) : examiner.currentlyConductingIMEs ? (
-                  <FieldRow
-                    label="Which insurers or clinics?"
-                    value="-"
-                    type="text"
-                  />
-                ) : null}
                 <FieldRow
                   label="Assessment Types"
                   value={
@@ -716,8 +682,8 @@ export default function ExaminerDetail({ examiner }: Props) {
                 )}
               </Section>
 
-              {/* Section 4: Fee Structure (visible if fee structure exists) */}
-              {examiner.feeStructure && (
+              {/* Section 4: Fee Structure (visible if fee structure exists, for both applications and examiners after interview_scheduled) */}
+              {examiner.feeStructure && ["interview_scheduled", "interview_completed", "contract_sent", "contract_signed", "approved", "active"].includes(status) && (
                 <Section title="Fee Structure">
                   <FieldRow
                     label="IME Fee"
@@ -758,13 +724,14 @@ export default function ExaminerDetail({ examiner }: Props) {
                 />
               </Section>
 
-              {/* Section 6: Actions - Hidden when MORE_INFO_REQUESTED or INFO_REQUESTED */}
-              {status !== "more_info_requested" && status !== "info_requested" && (
+              {/* Section 6: Actions - Hidden when MORE_INFO_REQUESTED, INFO_REQUESTED, or ACTIVE */}
+              {/* Hide actions for approved applications (they're now examiners) and active examiners */}
+              {status !== "more_info_requested" && status !== "info_requested" && status !== "active" && !(isApplication && status === "approved") && (
                 <Section title="Actions">
                   <div className="flex flex-row flex-wrap gap-3">
                     {/* SUBMITTED or PENDING: Auto-moved to IN_REVIEW (no button needed) */}
                     
-                    {/* IN_REVIEW: Schedule Interview, Send Contract, Request More Info, Reject */}
+                    {/* IN_REVIEW: Schedule Interview, Request More Info, Reject */}
                     {status === "in_review" && (
                       <>
                         <button
@@ -781,21 +748,6 @@ export default function ExaminerDetail({ examiner }: Props) {
                           onClick={handleScheduleInterview}
                         >
                           {loadingAction === "scheduleInterview" ? "Scheduling..." : "Schedule Interview"}
-                        </button>
-                        <button
-                          onClick={handleSendContract}
-                          disabled={loadingAction !== null}
-                          className={cn(
-                            "px-4 py-3 rounded-full border border-green-600 text-green-600 bg-white hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                          )}
-                          style={{
-                            fontFamily: "Poppins, sans-serif",
-                            fontWeight: 400,
-                            lineHeight: "100%",
-                            fontSize: "14px",
-                          }}
-                        >
-                          {loadingAction === "sendContract" ? "Sending..." : "Send Contract"}
                         </button>
                         <button
                           onClick={() => setIsRequestOpen(true)}
@@ -870,10 +822,14 @@ export default function ExaminerDetail({ examiner }: Props) {
                   {status === "interview_completed" && (
                     <>
                       <button
-                        onClick={handleSendContract}
+                        onClick={() => {
+                          // Open fee structure modal first, then send contract after saving
+                          setPendingSendContract(true);
+                          setIsFeeStructureOpen(true);
+                        }}
                         disabled={loadingAction !== null}
                         className={cn(
-                          "px-4 py-3 rounded-full border border-green-600 text-green-600 bg-white hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          "px-4 py-3 rounded-full border border-cyan-500 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         )}
                         style={{
                           fontFamily: "Poppins, sans-serif",
@@ -902,7 +858,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                     </>
                   )}
 
-                  {/* CONTRACT_SENT: Review Signed Contract, Re-send Contract */}
+                  {/* CONTRACT_SENT: Review Signed Contract, Re-send Contract (for both applications and examiners) */}
                   {status === "contract_sent" && (
                     <>
                       <button
@@ -924,7 +880,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                             setIsContractReviewOpen(true);
                             setLoadingContract(true);
                             try {
-                              const result = await getExaminerContract(examiner.id);
+                              const result = await getExaminerContract(examiner.id, isApplication);
                               if (result.success && result.contractHtml) {
                                 setContractHtml(result.contractHtml);
                               } else {
@@ -937,10 +893,10 @@ export default function ExaminerDetail({ examiner }: Props) {
                               setLoadingContract(false);
                             }
                           } else {
-                            toast.info("Examiner has not signed contract yet");
+                            toast.info(isApplication ? "Applicant has not signed contract yet" : "Examiner has not signed contract yet");
                           }
                         }}
-                        title={examiner.contractSignedByExaminerAt ? "Review the signed contract" : "Examiner has not signed contract yet"}
+                        title={examiner.contractSignedByExaminerAt ? "Review the signed contract" : (isApplication ? "Applicant has not signed contract yet" : "Examiner has not signed contract yet")}
                       >
                         Review Signed Contract
                       </button>
@@ -981,43 +937,7 @@ export default function ExaminerDetail({ examiner }: Props) {
                     </button>
                   )}
 
-                  {/* APPROVED/ACTIVE: Suspend button */}
-                  {(status === "approved" || status === "active") && (
-                    <button
-                      className={cn(
-                        "px-4 py-3 rounded-full border border-orange-500 text-orange-600 bg-white hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      )}
-                      style={{
-                        fontFamily: "Poppins, sans-serif",
-                        fontWeight: 400,
-                        lineHeight: "100%",
-                        fontSize: "14px",
-                      }}
-                      disabled={loadingAction !== null}
-                      onClick={() => setIsSuspendOpen(true)}
-                    >
-                      {loadingAction === "suspend" ? "Suspending..." : "Suspend Examiner"}
-                    </button>
-                  )}
-
-                  {/* SUSPENDED: Reactivate button */}
-                  {status === "suspended" && (
-                    <button
-                      className={cn(
-                        "px-4 py-3 rounded-full border border-green-500 text-green-600 bg-white hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      )}
-                      style={{
-                        fontFamily: "Poppins, sans-serif",
-                        fontWeight: 400,
-                        lineHeight: "100%",
-                        fontSize: "14px",
-                      }}
-                      disabled={loadingAction !== null}
-                      onClick={handleReactivateExaminer}
-                    >
-                      {loadingAction === "reactivate" ? "Reactivating..." : "Reactivate Examiner"}
-                    </button>
-                  )}
+                  {/* Suspend/Reactivate removed - skipping for now */}
 
                     {/* Final states (REJECTED, WITHDRAWN): Read-only */}
                     {(status === "rejected" || status === "withdrawn") && (
@@ -1121,18 +1041,7 @@ export default function ExaminerDetail({ examiner }: Props) {
           maxLength={200}
         />
 
-        {/* Suspend Modal */}
-        <RejectModal
-          open={isSuspendOpen}
-          onClose={() => {
-            setIsSuspendOpen(false);
-            setIsSuspendSubmitted(false); // Reset submitted state when closing
-          }}
-          onSubmit={handleSuspendExaminer}
-          title="Reason for Suspension"
-          maxLength={200}
-          isSubmitted={isSuspendSubmitted}
-        />
+        {/* Suspend Modal removed - skipping for now */}
 
         {/* Fee Structure Modal */}
         <EditFeeStructureModal

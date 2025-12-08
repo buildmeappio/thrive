@@ -102,6 +102,10 @@ export const routes: Route[] = [
       //   label: "Benefits",
       //   href: "/dashboard/taxonomy/examinationTypeBenefit",
       // },
+      {
+        label: "Assessment Types",
+        href: "/dashboard/taxonomy/assessmentType",
+      },
       { label: "Languages", href: "/dashboard/taxonomy/language" },
       {
         label: "Organization Types",

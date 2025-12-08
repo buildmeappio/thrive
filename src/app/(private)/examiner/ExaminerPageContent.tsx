@@ -8,7 +8,8 @@ import { DashboardShell } from "@/layouts/dashboard";
 import { Cross, Funnel } from "lucide-react";
 
 interface ExaminerPageContentProps {
-  data: ExaminerData[];
+  examinersData: ExaminerData[];
+  applicationsData: ExaminerData[];
   specialties: string[];
   statuses: string[];
 }
@@ -29,13 +30,29 @@ interface FilterState {
   status: string;
 }
 
-export default function ExaminerPageContent({ data, specialties, statuses }: ExaminerPageContentProps) {
+export default function ExaminerPageContent({ examinersData, applicationsData, specialties, statuses }: ExaminerPageContentProps) {
+  const [activeTab, setActiveTab] = useState<"applications" | "examiners">("applications");
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({
     specialty: "all",
     status: "all"
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+
+  // Use the appropriate data based on active tab
+  const data = activeTab === "applications" ? applicationsData : examinersData;
+
+  // Filter statuses based on active tab - remove ACTIVE from applications tab
+  const filteredStatuses = activeTab === "applications" 
+    ? statuses.filter(status => status !== "ACTIVE")
+    : statuses;
+
+  // Reset status filter to "all" if it's set to "ACTIVE" when switching to applications tab
+  useEffect(() => {
+    if (activeTab === "applications" && filters.status === "ACTIVE") {
+      setFilters(prev => ({ ...prev, status: "all" }));
+    }
+  }, [activeTab, filters.status]);
 
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
     setFilters(prev => ({
@@ -53,7 +70,10 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
     });
   };
 
-  const hasActiveFilters = filters.specialty !== "all" || filters.status !== "all";
+  // For examiners, only check specialty filter (status filter is hidden)
+  const hasActiveFilters = activeTab === "examiners" 
+    ? filters.specialty !== "all"
+    : filters.specialty !== "all" || filters.status !== "all";
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -83,7 +103,8 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
     specialties,
     statuses,
     searchQuery,
-    filters
+    filters,
+    type: activeTab
   });
 
   return (
@@ -91,8 +112,32 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
       {/* Examiners Heading */}
       <div className="mb-4 sm:mb-6 dashboard-zoom-mobile">
         <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-          New Examiners
+          Examiners
         </h1>
+      </div>
+
+      {/* Tabs */}
+      <div className="mb-4 sm:mb-6 flex gap-2 border-b border-gray-200">
+        <button
+          onClick={() => setActiveTab("applications")}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === "applications"
+              ? "border-b-2 border-[#00A8FF] text-[#00A8FF]"
+              : "text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          Applications ({applicationsData.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("examiners")}
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === "examiners"
+              ? "border-b-2 border-[#00A8FF] text-[#00A8FF]"
+              : "text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          Examiners ({examinersData.length})
+        </button>
       </div>
 
       {/* Define SVG gradients */}
@@ -152,7 +197,7 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
                 </svg>
               </button>
               {activeDropdown === "specialty" && (
-                <div className="absolute top-full left-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <div className="absolute top-full right-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                   <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
                     <button
                       onClick={(e) => {
@@ -184,54 +229,56 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
               )}
             </div>
 
-             {/* Status Filter */}
-            <div className="relative filter-dropdown">
-              <button 
-                onClick={() => setActiveDropdown(activeDropdown === "status" ? null : "status")}
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  filters.status !== "all" 
-                    ? "border-[#00A8FF] text-[#00A8FF]" 
-                    : "border-gray-200 text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                 <Funnel className="w-3.5 h-3.5 sm:w-4 sm:h-4" stroke="url(#statusGradient)" />
-                <span>{filters.status !== "all" ? formatText(filters.status) : "Status"}</span>
-                <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {activeDropdown === "status" && (
-                <div className="absolute top-full right-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleFilterChange("status", "all");
-                      }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "all" ? "bg-gray-100 text-[#00A8FF]" : ""
-                      }`}
-                    >
-                      All Statuses
-                    </button>
-                    {statuses.map((status) => (
+             {/* Status Filter - Only show for applications, not examiners */}
+            {activeTab === "applications" && (
+              <div className="relative filter-dropdown">
+                <button 
+                  onClick={() => setActiveDropdown(activeDropdown === "status" ? null : "status")}
+                  className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
+                    filters.status !== "all" 
+                      ? "border-[#00A8FF] text-[#00A8FF]" 
+                      : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                   <Funnel className="w-3.5 h-3.5 sm:w-4 sm:h-4" stroke="url(#statusGradient)" />
+                  <span>{filters.status !== "all" ? formatText(filters.status) : "Status"}</span>
+                  <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {activeDropdown === "status" && (
+                  <div className="absolute top-full right-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                    <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
                       <button
-                        key={status}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleFilterChange("status", status);
+                          handleFilterChange("status", "all");
                         }}
                         className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          filters.status === status ? "bg-gray-100 text-[#00A8FF]" : ""
+                          filters.status === "all" ? "bg-gray-100 text-[#00A8FF]" : ""
                         }`}
                       >
-                        {formatText(status)}
+                        All Statuses
                       </button>
-                    ))}
+                      {filteredStatuses.map((status) => (
+                        <button
+                          key={status}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFilterChange("status", status);
+                          }}
+                          className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
+                            filters.status === status ? "bg-gray-100 text-[#00A8FF]" : ""
+                          }`}
+                        >
+                          {formatText(status)}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Clear Filters Button */}
             {hasActiveFilters && (

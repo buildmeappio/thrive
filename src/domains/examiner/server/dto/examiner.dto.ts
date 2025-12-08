@@ -1,4 +1,4 @@
-import { ExaminerProfile, Account, User, Documents, ExaminerLanguage, Language, ExaminerFeeStructure, Address } from "@prisma/client";
+import { ExaminerProfile, Account, User, Documents, ExaminerLanguage, Language, ExaminerFeeStructure, Address, ExaminerStatus } from "@prisma/client";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 
 type ExaminerWithRelations = ExaminerProfile & {
@@ -13,6 +13,9 @@ type ExaminerWithRelations = ExaminerProfile & {
   examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
   feeStructure: ExaminerFeeStructure[];
   contracts?: Array<any>; // Optional contracts relation
+  application?: {
+    status: ExaminerStatus;
+  } | null; // Linked application for status
 };
 
 export class ExaminerDto {
@@ -49,7 +52,7 @@ export class ExaminerDto {
       insurersOrClinics: examiner.insurersOrClinics || undefined,
       assessmentTypes: examiner.assessmentTypes || [],
       assessmentTypeOther: examiner.assessmentTypeOther || undefined,
-      experienceDetails: examiner.bio || "",
+      experienceDetails: examiner.experienceDetails || examiner.bio || "",
       redactedIMEReportUrl: undefined, // Will be set by handler with presigned URL
       insuranceProofUrl: undefined, // Will be set by handler with presigned URL
       signedNdaUrl: undefined, // Will be set by handler with presigned URL
@@ -57,7 +60,7 @@ export class ExaminerDto {
       agreeToTerms: examiner.agreeToTerms ?? false,
       contractSignedByExaminerAt: examiner.contractSignedByExaminerAt?.toISOString() || undefined,
       contractConfirmedByAdminAt: examiner.contractConfirmedByAdminAt?.toISOString() || undefined,
-      status: examiner.status,
+      status: (examiner.status || examiner.application?.status || "APPROVED") as ExaminerData["status"], // Prioritize ExaminerProfile status over application status (application is historical record)
       createdAt: examiner.createdAt.toISOString(),
       updatedAt: examiner.updatedAt.toISOString(),
       feeStructure: feeStructure ? {

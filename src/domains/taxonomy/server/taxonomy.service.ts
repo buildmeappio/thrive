@@ -18,6 +18,7 @@ const getPrismaModel = (type: TaxonomyType) => {
     maximumDistanceTravel: prisma.maximumDistanceTravel,
     yearsOfExperience: prisma.yearsOfExperience,
     configuration: prisma.configuration,
+    assessmentType: prisma.assessmentType,
   };
   return modelMap[type];
 };
@@ -400,6 +401,53 @@ const getFrequencyCounts = async (type: TaxonomyType, items: Array<{ id: string;
       case 'configuration': {
         // Configuration has no relations, so frequency is always 0
         // No need to query anything
+        break;
+      }
+
+      case 'assessmentType': {
+        // Count usage in ExaminerApplication and ExaminerProfile assessmentTypes arrays
+        const assessmentTypeIds = items.map(item => item.id);
+        
+        // Count in ExaminerApplication
+        const applications = await prisma.examinerApplication.findMany({
+          where: {
+            deletedAt: null,
+          },
+          select: {
+            assessmentTypeIds: true,
+          },
+        });
+
+        // Count in ExaminerProfile
+        const profiles = await prisma.examinerProfile.findMany({
+          where: {
+            deletedAt: null,
+          },
+          select: {
+            assessmentTypes: true,
+          },
+        });
+
+        // Count occurrences in both arrays
+        assessmentTypeIds.forEach(id => {
+          let count = 0;
+          
+          // Count in applications
+          applications.forEach(app => {
+            if (app.assessmentTypeIds.includes(id)) {
+              count++;
+            }
+          });
+          
+          // Count in profiles
+          profiles.forEach(profile => {
+            if (profile.assessmentTypes.includes(id)) {
+              count++;
+            }
+          });
+          
+          frequencyMap.set(id, count);
+        });
         break;
       }
 
