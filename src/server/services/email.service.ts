@@ -83,7 +83,12 @@ class EmailService {
     subject: string,
     templateName: string,
     data: Record<string, unknown> = {},
-    to?: string
+    to?: string,
+    attachments?: Array<{
+      filename: string;
+      content: Buffer;
+      contentType?: string;
+    }>
   ): Promise<{ success: true } | { success: false; error: string }> {
     try {
       const transporter = await this.createTransporter();
@@ -95,9 +100,14 @@ class EmailService {
         to: to,
         subject,
         html: htmlContent,
+        attachments: attachments?.map((att) => ({
+          filename: att.filename,
+          content: att.content,
+          contentType: att.contentType || "application/pdf",
+        })),
       });
 
-      log(`✅ Email sent to ${to}`);
+      log(`✅ Email sent to ${to}${attachments ? ` with ${attachments.length} attachment(s)` : ""}`);
       return { success: true };
     } catch (err) {
       error("❌ Error sending email:", err);

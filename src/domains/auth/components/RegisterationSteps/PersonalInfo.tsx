@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui";
 import { Mail, MapPin, User, PhoneCall, Languages } from "lucide-react";
-import { ContinueButton, ProgressIndicator } from "@/components";
+import { ContinueButton, ProgressIndicator, SaveAndContinueButton } from "@/components";
 import {
   useRegistrationStore,
   RegistrationData,
@@ -25,6 +25,8 @@ import { UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { provinces } from "@/constants/options";
 import getLanguages from "@/domains/auth/actions/getLanguages";
+import { getCitiesByProvince } from "@/utils/canadaData";
+import { useSaveApplicationProgress } from "@/domains/auth/hooks/useSaveApplicationProgress";
 
 const PersonalInfo: React.FC<RegStepProps> = ({
   onNext,
@@ -32,10 +34,14 @@ const PersonalInfo: React.FC<RegStepProps> = ({
   totalSteps,
 }) => {
   const { data, merge, isEditMode } = useRegistrationStore();
+  const { saveProgress, isSaving } = useSaveApplicationProgress();
   const [languages, setLanguages] = useState<
     { value: string; label: string }[]
   >([]);
   const [loadingLanguages, setLoadingLanguages] = useState(true);
+  const [cityOptions, setCityOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
 
   // Fetch languages from database
   useEffect(() => {
@@ -57,6 +63,14 @@ const PersonalInfo: React.FC<RegStepProps> = ({
     };
     fetchLanguages();
   }, []);
+
+  // Initialize city options if province is already selected (for edit mode)
+  useEffect(() => {
+    if (data.province) {
+      const cities = getCitiesByProvince(data.province, data.city);
+      setCityOptions(cities);
+    }
+  }, [data.province, data.city]);
 
   const form = useForm<Step1PersonalInfoInput>({
     schema: step1PersonalInfoSchema,
@@ -135,6 +149,155 @@ const PersonalInfo: React.FC<RegStepProps> = ({
     }
   };
 
+  // Watch all required fields to enable/disable continue button
+  const firstName = form.watch("firstName");
+  const lastName = form.watch("lastName");
+  const emailAddress = form.watch("emailAddress");
+  const phoneNumber = form.watch("phoneNumber");
+  const landlineNumber = form.watch("landlineNumber");
+  const city = form.watch("city");
+  const province = form.watch("province");
+  const languagesSpoken = form.watch("languagesSpoken");
+
+  // State to force re-render when autofill is detected
+  const [, setAutofillCheck] = useState(0);
+
+  // Update city options when province changes
+  useEffect(() => {
+    if (province) {
+      const currentCity = form.getValues("city");
+      const cities = getCitiesByProvince(province, currentCity);
+      setCityOptions(cities);
+
+      // Reset city if current city is not in the new province's cities
+      if (currentCity && !cities.some((c) => c.value === currentCity)) {
+        form.setValue("city", "");
+      }
+    } else {
+      setCityOptions([]);
+      form.setValue("city", "");
+    }
+  }, [province, form]);
+
+  // Detect autofill specifically for last name and other fields
+  useEffect(() => {
+    // Periodic check for autofill values (especially for lastName)
+    const checkAutofill = setInterval(() => {
+      const formValues = form.getValues();
+      const watchedValues = {
+        firstName,
+        lastName,
+        emailAddress,
+        phoneNumber,
+        landlineNumber,
+        city,
+        province,
+        languagesSpoken,
+      };
+
+      // Check if any form value differs from watched value (indicating autofill)
+      const hasAutofill =
+        (formValues.firstName &&
+          formValues.firstName !== watchedValues.firstName) ||
+        (formValues.lastName &&
+          formValues.lastName !== watchedValues.lastName) ||
+        (formValues.emailAddress &&
+          formValues.emailAddress !== watchedValues.emailAddress) ||
+        (formValues.phoneNumber &&
+          formValues.phoneNumber !== watchedValues.phoneNumber) ||
+        (formValues.landlineNumber &&
+          formValues.landlineNumber !== watchedValues.landlineNumber) ||
+        (formValues.city && formValues.city !== watchedValues.city) ||
+        (formValues.province && formValues.province !== watchedValues.province);
+
+      if (hasAutofill) {
+        form.trigger(); // Trigger validation to update form state
+        setAutofillCheck((prev) => prev + 1); // Force re-render
+      }
+    }, 300); // Check every 300ms
+
+    // Listen for input events on all input fields (autofill triggers these)
+    const handleInput = (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      if (
+        target &&
+        (target.id === "lastName" ||
+          target.id === "firstName" ||
+          target.id === "emailAddress")
+      ) {
+        setTimeout(() => {
+          form.trigger(target.id as "firstName" | "lastName" | "emailAddress");
+          setAutofillCheck((prev) => prev + 1);
+        }, 50);
+      }
+    };
+
+    // Listen for animationstart event (browsers use this for autofill)
+    const handleAutofill = (e: AnimationEvent) => {
+      if (
+        e.animationName === "onAutoFillStart" ||
+        e.animationName === "onAutoFillCancel"
+      ) {
+        setTimeout(() => {
+          form.trigger();
+          setAutofillCheck((prev) => prev + 1);
+        }, 100);
+      }
+    };
+
+    // Add event listeners
+    document.addEventListener("input", handleInput, true);
+    document.addEventListener(
+      "animationstart",
+      handleAutofill as EventListener,
+      true
+    );
+
+    return () => {
+      clearInterval(checkAutofill);
+      document.removeEventListener("input", handleInput, true);
+      document.removeEventListener(
+        "animationstart",
+        handleAutofill as EventListener,
+        true
+      );
+    };
+  }, [
+    form,
+    firstName,
+    lastName,
+    emailAddress,
+    phoneNumber,
+    landlineNumber,
+    city,
+    province,
+    languagesSpoken,
+  ]);
+
+  // Get current form values (including autofilled ones) - use getValues as fallback
+  const formValues = form.getValues();
+  const currentFirstName = firstName || formValues.firstName || "";
+  const currentLastName = lastName || formValues.lastName || "";
+  const currentEmailAddress = emailAddress || formValues.emailAddress || "";
+  const currentPhoneNumber = phoneNumber || formValues.phoneNumber || "";
+  const currentLandlineNumber =
+    landlineNumber || formValues.landlineNumber || "";
+  const currentCity = city || formValues.city || "";
+  const currentProvince = province || formValues.province || "";
+  const currentLanguagesSpoken =
+    languagesSpoken || formValues.languagesSpoken || [];
+
+  const isFormComplete =
+    currentFirstName?.trim().length > 0 &&
+    currentLastName?.trim().length > 0 &&
+    currentEmailAddress?.trim().length > 0 &&
+    currentPhoneNumber?.trim().length > 0 &&
+    currentLandlineNumber?.trim().length > 0 &&
+    currentCity?.trim().length > 0 &&
+    currentProvince?.trim().length > 0 &&
+    Array.isArray(currentLanguagesSpoken) &&
+    currentLanguagesSpoken.length > 0;
+
   return (
     <div
       className="mt-1 w-full rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
@@ -191,14 +354,8 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                 )}
               </FormField>
 
-              {/* Row 2: Email Address, City */}
-              <FormField
-                name="emailAddress"
-                label="Email Address"
-                required
-                hint={
-                  isEditMode ? "Email address cannot be changed" : undefined
-                }>
+              {/* Row 2: Email Address, Languages Spoken */}
+              <FormField name="emailAddress" label="Email Address" required>
                 {(field: UseFormRegisterReturn & { error?: boolean }) => (
                   <Input
                     {...field}
@@ -206,35 +363,9 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                     icon={Mail}
                     type="email"
                     placeholder="Enter your email address"
-                    disabled={isEditMode}
-                    className={
-                      isEditMode ? "bg-gray-100 cursor-not-allowed" : ""
-                    }
                   />
                 )}
               </FormField>
-
-              <FormField name="city" label="City" required>
-                {(field: UseFormRegisterReturn & { error?: boolean }) => (
-                  <Input
-                    {...field}
-                    id="city"
-                    icon={MapPin}
-                    placeholder="Enter your city"
-                    validationType="name"
-                  />
-                )}
-              </FormField>
-
-              {/* Row 3: Province, Languages Spoken */}
-              <FormDropdown
-                name="province"
-                label="Province"
-                required
-                options={provinces}
-                placeholder="Select Province"
-                icon={<MapPin size={16} color="#A4A4A4" strokeWidth={2} />}
-              />
 
               <FormDropdown
                 name="languagesSpoken"
@@ -247,6 +378,26 @@ const PersonalInfo: React.FC<RegStepProps> = ({
                 multiSelect={true}
                 icon={<Languages size={16} color="#A4A4A4" strokeWidth={2} />}
                 disabled={loadingLanguages}
+              />
+
+              {/* Row 3: Province, City */}
+              <FormDropdown
+                name="province"
+                label="Province"
+                required
+                options={provinces}
+                placeholder="Select Province"
+                icon={<MapPin size={16} color="#A4A4A4" strokeWidth={2} />}
+              />
+
+              <FormDropdown
+                name="city"
+                label="City"
+                required
+                options={cityOptions}
+                placeholder={province ? "Select City" : "Select Province first"}
+                icon={<MapPin size={16} color="#A4A4A4" strokeWidth={2} />}
+                disabled={!province || cityOptions.length === 0}
               />
 
               {/* Row 4: Work Number, Cell Number */}
@@ -268,13 +419,21 @@ const PersonalInfo: React.FC<RegStepProps> = ({
           </div>
 
           <div className="mt-3 flex flex-row justify-center gap-3 px-2 md:mt-5 md:justify-between md:gap-4 md:px-0">
-            <div className="hidden md:block" />
+            <SaveAndContinueButton
+              onClick={() => {
+                // Get current form values and save them along with store data
+                const currentValues = form.getValues();
+                saveProgress(currentValues as Partial<RegistrationData>);
+              }}
+              loading={isSaving}
+              disabled={isSaving || form.formState.isSubmitting}
+            />
             <ContinueButton
               onClick={form.handleSubmit(onSubmit)}
               isLastStep={currentStep === totalSteps}
               gradientFrom="#89D7FF"
               gradientTo="#00A8FF"
-              disabled={form.formState.isSubmitting}
+              disabled={!isFormComplete || form.formState.isSubmitting}
               loading={form.formState.isSubmitting}
             />
           </div>

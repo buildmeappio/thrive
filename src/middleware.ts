@@ -49,15 +49,6 @@ export default async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all private routes:
-     * - dashboard (and its sub-paths)
-     * - cases
-     * - billing
-     * - settings
-     * - onboarding
-     * - support
-     */
     "/dashboard",
     "/dashboard/:path*",
     "/appointments",
@@ -71,4 +62,4 @@ export const config = {
     "/support",
     "/support/:path*",
   ],
-};
+};  

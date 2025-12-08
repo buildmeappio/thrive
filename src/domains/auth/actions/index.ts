@@ -3,6 +3,7 @@ import resendOtp from "./resendOtp";
 import verifyOtp from "./verifyOtp";
 import createMedicalExaminer from "./createMedicalExaminer";
 import getLanguages from "./getLanguages";
+import getAssessmentTypes from "./getAssessmentTypes";
 import approveMedicalExaminer from "./approveMedicalExaminer";
 import verifyAccountToken from "./verifyAccountToken";
 import setPassword from "./setPassword";
@@ -10,9 +11,13 @@ import changePassword from "./changePassword";
 import forgotPassword from "./forgotPassword";
 import getExaminerProfileDetails from "./getExaminerProfileDetails";
 import updateMedicalExaminer from "./updateMedicalExaminer";
+import updateExaminerApplication from "./updateExaminerApplication";
 import getYearsOfExperience from "./getYearsOfExperience";
 import getMaxTravelDistances from "./getMaxTravelDistances";
 import sendRegistrationEmails from "./sendRegistrationEmails";
+import saveApplicationProgress from "./saveApplicationProgress";
+import sendResumeLink from "./sendResumeLink";
+import verifyResumeToken from "./verifyResumeToken";
 
 const authActions = {
   checkUserExists,
@@ -20,6 +25,7 @@ const authActions = {
   verifyOtp,
   createMedicalExaminer,
   getLanguages,
+  getAssessmentTypes,
   approveMedicalExaminer,
   verifyAccountToken,
   setPassword,
@@ -27,9 +33,13 @@ const authActions = {
   forgotPassword,
   getExaminerProfileDetails,
   updateMedicalExaminer,
+  updateExaminerApplication,
   getYearsOfExperience,
   getMaxTravelDistances,
   sendRegistrationEmails,
+  saveApplicationProgress,
+  sendResumeLink,
+  verifyResumeToken,
 };
 
 export default authActions;

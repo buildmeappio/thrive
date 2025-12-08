@@ -12,6 +12,11 @@ export function PasswordInput({
   const [show, setShow] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(value || "");
 
+  // Sync internal state with prop value
+  React.useEffect(() => {
+    setInputValue(value || "");
+  }, [value]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
     if (onChange) {

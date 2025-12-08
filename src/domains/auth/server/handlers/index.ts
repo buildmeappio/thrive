@@ -13,6 +13,11 @@ import getExaminerProfileDetails from "./getExaminerProfileDetails";
 import updateMedicalExaminer from "./updateMedicalExaminer";
 import getYearsOfExperience from "./getYearsOfExperience";
 import getMaxTravelDistances from "./getMaxTravelDistances";
+import getAssessmentTypes from "./getAssessmentTypes";
+import updateExaminerApplication from "./updateExaminerApplication";
+import saveApplicationProgress from "./saveApplicationProgress";
+import sendResumeLink from "./sendResumeLink";
+import verifyResumeToken from "./verifyResumeToken";
 
 const handlers = {
   checkUserExists,
@@ -28,8 +33,13 @@ const handlers = {
   getLanguages,
   getExaminerProfileDetails,
   updateMedicalExaminer,
+  updateExaminerApplication,
   getYearsOfExperience,
   getMaxTravelDistances,
+  getAssessmentTypes,
+  saveApplicationProgress,
+  sendResumeLink,
+  verifyResumeToken,
 };
 
 export default handlers;

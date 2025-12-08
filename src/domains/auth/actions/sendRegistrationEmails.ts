@@ -72,12 +72,7 @@ const sendRegistrationEmails = async (input: SendRegistrationEmailsInput) => {
     }
 
     // Documents list
-    const documentsProvided = [
-      "Medical License",
-      examinerData.imesCompleted && "Redacted IME Report (Optional)",
-    ]
-      .filter(Boolean)
-      .join(", ");
+    const documentsProvided = "Medical License";
 
     // Send email to Admin only (examiner already gets "application-received" email from createMedicalExaminer)
     await emailService.sendEmail(

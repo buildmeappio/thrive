@@ -22,7 +22,7 @@ const ContinueButton: React.FC<ContinueButtonProps> = ({
     <button
       type="submit"
       onClick={onClick}
-      className="flex h-[40px] w-[140px] cursor-pointer items-center justify-center rounded-[34px] px-3 py-2 text-sm text-white transition-all duration-300 ease-in-out hover:opacity-90 md:h-[45px] md:w-[182px] md:px-4 md:py-3 md:text-base"
+      className="flex h-[40px] w-[140px] cursor-pointer items-center justify-center rounded-[34px] px-3 py-2 text-sm text-white transition-all duration-300 ease-in-out hover:opacity-90 md:h-[45px] md:w-[182px] md:px-4 md:py-3 md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
       style={{
         backgroundImage: `linear-gradient(to left, ${gradientFrom}, ${gradientTo})`,
       }}

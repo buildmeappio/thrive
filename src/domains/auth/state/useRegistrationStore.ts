@@ -67,11 +67,9 @@ export type Step2MedicalCredentials = {
 };
 
 export type Step3IMEExperience = {
-  imesCompleted: string; // Number range or count
+  imesCompleted: string; // "yes" or "no"
   currentlyConductingIMEs: string; // "yes" or "no"
-  insurersOrClinics?: string; // Conditional field when yes
   assessmentTypes: string[]; // Multi-select checkboxes
-  assessmentTypeOther?: string; // When "Other" is selected
   redactedIMEReport?: DocumentFile; // Optional file upload
 };
 
@@ -135,13 +133,11 @@ export const initialData: RegistrationData = {
   licenseIssuingProvince: "",
   yearsOfIMEExperience: "",
   licenseExpiryDate: "",
-  medicalLicense: null,
+  medicalLicense: [],
   // Step 3
   imesCompleted: "",
   currentlyConductingIMEs: "",
-  insurersOrClinics: "",
   assessmentTypes: [],
-  assessmentTypeOther: "",
   redactedIMEReport: null,
   // Step 4
   experienceDetails: "",
@@ -178,6 +174,7 @@ type Store = {
   // Edit mode state
   isEditMode: boolean;
   examinerProfileId: string | null;
+  applicationId: string | null; // For ExaminerApplication updates
   setEditMode: (isEdit: boolean, profileId?: string) => void;
   loadExaminerData: (examinerData: any) => void;
 };
@@ -197,11 +194,31 @@ const createRegistrationStorage = () => {
         if (state?.state?.data) {
           // Remove File objects before storing
           const sanitizedData = { ...state.state.data };
-          if (
-            sanitizedData.medicalLicense &&
-            sanitizedData.medicalLicense instanceof File
-          ) {
-            sanitizedData.medicalLicense = null;
+          // Handle medicalLicense as single File, array of Files, or array of ExistingDocuments
+          if (sanitizedData.medicalLicense) {
+            if (sanitizedData.medicalLicense instanceof File) {
+              sanitizedData.medicalLicense = null;
+            } else if (Array.isArray(sanitizedData.medicalLicense)) {
+              // Keep serializable objects: ExistingDocument (plain objects with id)
+              // Filter out File instances which can't be serialized to JSON
+              const filtered = sanitizedData.medicalLicense.filter(
+                (item: any) => {
+                  // File instances can't be in parsed JSON, but check anyway during stringification
+                  if (item instanceof File) {
+                    return false;
+                  }
+
+                  // Keep plain objects (ExistingDocument objects)
+                  // These have been serialized to JSON already, so they're plain objects with properties
+                  if (item && typeof item === "object" && item.id) {
+                    return true;
+                  }
+
+                  return false;
+                }
+              );
+              sanitizedData.medicalLicense = filtered;
+            }
           }
           if (
             sanitizedData.cvResume &&
@@ -250,23 +267,49 @@ export const useRegistrationStore = create<Store>()(
       // Edit mode state
       isEditMode: false,
       examinerProfileId: null,
+      applicationId: null,
       setEditMode: (isEdit: boolean, profileId?: string) =>
         set({ isEditMode: isEdit, examinerProfileId: profileId || null }),
       loadExaminerData: (examinerData: any) => {
+        // Clear localStorage before loading to prevent stale data from overwriting
+        // This ensures fresh data from the server is used
+        try {
+          localStorage.removeItem("examiner-registration-storage");
+        } catch (e) {
+          console.warn("Failed to clear localStorage:", e);
+        }
+
+        // Check if this is ExaminerApplication (has email directly) or ExaminerProfile (has account.user)
+        const isApplication = examinerData.email && !examinerData.account;
+
         const mappedData: Partial<RegistrationData> = {
           // Step 1: Personal Info
-          firstName: examinerData.account?.user?.firstName || "",
-          lastName: examinerData.account?.user?.lastName || "",
-          emailAddress: examinerData.account?.user?.email || "",
-          phoneNumber: examinerData.account?.user?.phone || "",
+          firstName: isApplication
+            ? examinerData.firstName || ""
+            : examinerData.account?.user?.firstName || "",
+          lastName: isApplication
+            ? examinerData.lastName || ""
+            : examinerData.account?.user?.lastName || "",
+          emailAddress: isApplication
+            ? examinerData.email || ""
+            : examinerData.account?.user?.email || "",
+          phoneNumber: isApplication
+            ? examinerData.phone || ""
+            : examinerData.account?.user?.phone || "",
           landlineNumber: examinerData.landlineNumber || "",
           city: examinerData.address?.city || "",
-          province: examinerData.address?.province || "",
-          languagesSpoken:
-            examinerData.examinerLanguages?.map((l: any) => l.languageId) || [],
+          province:
+            examinerData.address?.province ||
+            examinerData.provinceOfResidence ||
+            "",
+          languagesSpoken: isApplication
+            ? examinerData.languagesSpoken || [] // Array of language IDs
+            : examinerData.examinerLanguages?.map((l: any) => l.languageId) ||
+              [],
 
           // Step 2: Address
-          address: examinerData.address?.address || "",
+          address:
+            examinerData.address?.address || examinerData.mailingAddress || "",
           street: examinerData.address?.street || "",
           suite: examinerData.address?.suite || "",
           postalCode: examinerData.address?.postalCode || "",
@@ -274,33 +317,39 @@ export const useRegistrationStore = create<Store>()(
           // Step 2: Medical Credentials
           medicalSpecialty: examinerData.specialties || [],
           licenseNumber: examinerData.licenseNumber || "",
-          licenseIssuingProvince: examinerData.licenseIssuingProvince || "",
+          licenseIssuingProvince:
+            examinerData.provinceOfLicensure ||
+            examinerData.licenseIssuingProvince ||
+            "",
           yearsOfIMEExperience: examinerData.yearsOfIMEExperience || "",
           licenseExpiryDate: examinerData.licenseExpiryDate
             ? new Date(examinerData.licenseExpiryDate)
                 .toISOString()
                 .split("T")[0]
             : "",
-          // Documents - store document info for display
-          medicalLicense: examinerData.medicalLicenseDocument
-            ? {
-                id: examinerData.medicalLicenseDocument.id,
-                name: examinerData.medicalLicenseDocument.name,
-                displayName:
-                  examinerData.medicalLicenseDocument.displayName ||
-                  examinerData.medicalLicenseDocument.name,
-                type: examinerData.medicalLicenseDocument.type,
-                size: examinerData.medicalLicenseDocument.size,
-                isExisting: true,
-              }
-            : null,
+          // Documents - store document info for display (support multiple documents)
+          medicalLicense:
+            examinerData.medicalLicenseDocuments &&
+            Array.isArray(examinerData.medicalLicenseDocuments) &&
+            examinerData.medicalLicenseDocuments.length > 0
+              ? examinerData.medicalLicenseDocuments.map((doc: any) => ({
+                  id: doc.id,
+                  name: doc.name,
+                  displayName: doc.displayName || doc.name,
+                  type: doc.type,
+                  size: doc.size,
+                  isExisting: true,
+                }))
+              : [],
 
           // Step 3: IME Experience
           imesCompleted: examinerData.imesCompleted || "",
-          currentlyConductingIMEs: examinerData.currentlyConductingIMEs ? "yes" : "no",
-          insurersOrClinics: examinerData.insurersOrClinics || "",
-          assessmentTypes: examinerData.assessmentTypes || [],
-          assessmentTypeOther: examinerData.assessmentTypeOther || "",
+          currentlyConductingIMEs: examinerData.currentlyConductingIMEs
+            ? "yes"
+            : "no",
+          assessmentTypes: isApplication
+            ? examinerData.assessmentTypeIds || [] // From ExaminerApplication
+            : examinerData.assessmentTypes || [], // From ExaminerProfile
           redactedIMEReport: examinerData.redactedIMEReportDocument
             ? {
                 id: examinerData.redactedIMEReportDocument.id,
@@ -315,40 +364,50 @@ export const useRegistrationStore = create<Store>()(
             : null,
 
           // Step 4: Experience Details
-          experienceDetails: examinerData.bio || "",
+          experienceDetails: isApplication
+            ? examinerData.experienceDetails || "" // From ExaminerApplication
+            : examinerData.bio || "", // From ExaminerProfile
 
           // Step 6: Legal
           consentBackgroundVerification:
             examinerData.isConsentToBackgroundVerification || false,
           agreeTermsConditions: examinerData.agreeToTerms || false,
 
-          // Step 7: Payment Details
-          IMEFee: examinerData.feeStructure?.[0]?.IMEFee
-            ? examinerData.feeStructure[0].IMEFee.toString()
-            : "",
+          // Step 7: Payment Details (only for ExaminerProfile, not in Application)
+          IMEFee:
+            !isApplication && examinerData.feeStructure?.[0]?.IMEFee
+              ? examinerData.feeStructure[0].IMEFee.toString()
+              : "",
 
-          recordReviewFee: examinerData.feeStructure?.[0]?.recordReviewFee
-            ? examinerData.feeStructure[0].recordReviewFee.toString()
-            : "",
-          hourlyRate: examinerData.feeStructure?.[0]?.hourlyRate
-            ? examinerData.feeStructure[0].hourlyRate.toString()
-            : "",
+          recordReviewFee:
+            !isApplication && examinerData.feeStructure?.[0]?.recordReviewFee
+              ? examinerData.feeStructure[0].recordReviewFee.toString()
+              : "",
+          hourlyRate:
+            !isApplication && examinerData.feeStructure?.[0]?.hourlyRate
+              ? examinerData.feeStructure[0].hourlyRate.toString()
+              : "",
 
-          cancellationFee: examinerData.feeStructure?.[0]?.cancellationFee
-            ? examinerData.feeStructure[0].cancellationFee.toString()
-            : "",
+          cancellationFee:
+            !isApplication && examinerData.feeStructure?.[0]?.cancellationFee
+              ? examinerData.feeStructure[0].cancellationFee.toString()
+              : "",
         };
 
-        set((state) => ({
-          data: { ...state.data, ...mappedData },
+        set(() => ({
+          data: { ...initialData, ...mappedData },
           isEditMode: true,
-          examinerProfileId: examinerData.id,
+          examinerProfileId: isApplication ? null : examinerData.id, // Applications don't have profileId yet
+          applicationId: isApplication ? examinerData.id : null, // Store applicationId for application updates
         }));
       },
     }),
     {
       name: "examiner-registration-storage",
       storage: createRegistrationStorage() as any,
+      onRehydrateStorage: () => () => {
+        // Rehydration completed
+      },
     }
   )
 );
@@ -389,9 +448,7 @@ export const selectStep2 = (d: RegistrationData): Step2MedicalCredentials => ({
 export const selectStep3 = (d: RegistrationData): Step3IMEExperience => ({
   imesCompleted: d.imesCompleted,
   currentlyConductingIMEs: d.currentlyConductingIMEs,
-  insurersOrClinics: d.insurersOrClinics,
   assessmentTypes: d.assessmentTypes || [],
-  assessmentTypeOther: d.assessmentTypeOther,
   redactedIMEReport: d.redactedIMEReport,
 });
 

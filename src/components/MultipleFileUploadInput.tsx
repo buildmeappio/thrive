@@ -1,10 +1,11 @@
 "use client";
 import React, { useRef, useState } from "react";
-import { Upload, File, X, Download } from "lucide-react";
+import { Upload, File, X, Eye } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { log } from "@/utils/logger";
 import { ExistingDocument, DocumentFile } from "./FileUploadInput";
+import { getExaminerDocumentPresignedUrlAction } from "@/domains/auth/server/actions/getExaminerDocumentPresignedUrl";
 
 interface MultipleFileUploadInputProps {
   name: string;
@@ -143,12 +144,27 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
     onChange(newFiles);
   };
 
-  const handleDownloadExisting =
-    (file: DocumentFile) => (event: React.MouseEvent) => {
+  const handlePreviewExisting =
+    (file: DocumentFile) => async (event: React.MouseEvent) => {
       event.stopPropagation();
       if (file && "isExisting" in file && file.isExisting) {
-        // TODO: Implement download functionality for existing documents
-        log("Download existing document:", file.id);
+        try {
+          log("Preview existing document:", file.id);
+
+          // Get presigned URL from S3
+          const result = await getExaminerDocumentPresignedUrlAction(file.name);
+
+          if (result.success && result.url) {
+            // Open the document in a new tab
+            window.open(result.url, "_blank");
+          } else {
+            console.error("Failed to get presigned URL:", result.error);
+            alert("Failed to preview document. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error previewing document:", error);
+          alert("Failed to preview document. Please try again.");
+        }
       }
     };
 
@@ -258,11 +274,11 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
                 {isExistingDocument(file) && (
                   <button
                     type="button"
-                    onClick={handleDownloadExisting(file)}
+                    onClick={handlePreviewExisting(file)}
                     className="p-1.5 rounded-full hover:bg-blue-100 text-blue-500 transition-colors"
                     disabled={disabled}
-                    title="Download existing document">
-                    <Download className="h-4 w-4" />
+                    title="Preview document">
+                    <Eye className="h-4 w-4" />
                   </button>
                 )}
                 <button

@@ -21,6 +21,8 @@ import { step6InitialValues } from "@/domains/auth/constants/initialValues";
 import { FormProvider } from "@/components/form";
 import { Controller } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
+import TermsAndConditionsModal from "./TermsAndConditionsModal";
+import PrivacyPolicyModal from "./PrivacyPolicyModal";
 
 const SubmitConfirmation: React.FC<RegStepProps> = ({
   onNext,
@@ -28,10 +30,12 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
   totalSteps,
   currentStep,
 }) => {
-  const { data, merge, isEditMode, examinerProfileId, reset } =
+  const { data, merge, isEditMode, examinerProfileId, applicationId, reset } =
     useRegistrationStore();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
   const form = useForm<Step6LegalInput>({
     schema: step6LegalSchema,
@@ -42,6 +46,16 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
     },
     mode: "onSubmit",
   });
+
+  // Watch checkboxes to enable/disable continue button
+  const agreeTermsConditions = form.watch("agreeTermsConditions");
+  const consentBackgroundVerification = form.watch(
+    "consentBackgroundVerification"
+  );
+
+  // Both checkboxes must be checked
+  const isFormComplete =
+    agreeTermsConditions === true && consentBackgroundVerification === true;
 
   // Reset form when store data changes
   useEffect(() => {
@@ -113,12 +127,26 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         return;
       }
 
-      // Process all medical license files
-      const medicalLicenseResults = await Promise.all(
-        medicalLicenseFiles.map((file) => processFile(file))
-      );
+      // Process all files in parallel (medical licenses + optional redacted report)
+      const allFilePromises = [
+        ...medicalLicenseFiles.map((file) => processFile(file)),
+        ...(submissionData.redactedIMEReport
+          ? [processFile(submissionData.redactedIMEReport)]
+          : []),
+      ];
 
-      // Check if all uploads succeeded
+      const allFileResults = await Promise.all(allFilePromises);
+
+      // Separate medical license results from redacted report result
+      const medicalLicenseResults = allFileResults.slice(
+        0,
+        medicalLicenseFiles.length
+      );
+      const redactedReportResult = submissionData.redactedIMEReport
+        ? allFileResults[medicalLicenseFiles.length]
+        : null;
+
+      // Check if all medical license uploads succeeded
       const failedUploads = medicalLicenseResults.filter((r) => !r.success);
       if (failedUploads.length > 0) {
         setErr("Failed to upload some medical license documents");
@@ -137,38 +165,36 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         return;
       }
 
-      // Process optional redacted IME report from Step 3
+      // Handle optional redacted IME report
       let redactedIMEReportDocumentId: string | undefined;
-      if (submissionData.redactedIMEReport) {
-        const redactedReportResult = await processFile(submissionData.redactedIMEReport);
-        if (redactedReportResult.success) {
-          redactedIMEReportDocumentId = redactedReportResult.document.id;
-        } else {
-          // Don't fail submission for optional document
-          console.warn("Failed to upload redacted IME report (optional):", redactedReportResult.error);
-        }
+      if (redactedReportResult && redactedReportResult.success) {
+        redactedIMEReportDocumentId = redactedReportResult.document.id;
+      } else if (redactedReportResult && !redactedReportResult.success) {
+        // Don't fail submission for optional document
+        console.warn(
+          "Failed to upload redacted IME report (optional):",
+          redactedReportResult.error
+        );
       }
 
       const payload: CreateMedicalExaminerInput = {
-        // step 1
+        // Step 1 - Personal Info
         firstName: submissionData.firstName,
         lastName: submissionData.lastName,
         email: submissionData.emailAddress,
         phone: submissionData.phoneNumber,
         landlineNumber: submissionData.landlineNumber,
+        languagesSpoken: submissionData.languagesSpoken || [],
 
-        // step 2 - Address
-        address: submissionData.address || "",
-        street: submissionData.street || "",
-        suite: submissionData.suite || "",
-        postalCode: submissionData.postalCode || "",
+        // Step 1 - Address (from PersonalInfo step - only city and province are collected)
+        address: "", // Not collected in current flow
+        street: "", // Not collected in current flow
+        suite: "", // Not collected in current flow
+        postalCode: "", // Not collected in current flow
         province: submissionData.province || "",
         city: submissionData.city || "",
 
-        // step 1 - Languages
-        languagesSpoken: submissionData.languagesSpoken || [],
-
-        // step 2 - Medical Credentials
+        // Step 2 - Medical Credentials
         specialties: submissionData.medicalSpecialty,
         licenseNumber: submissionData.licenseNumber,
         licenseIssuingProvince: submissionData.licenseIssuingProvince || "",
@@ -177,39 +203,38 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
           ? new Date(submissionData.licenseExpiryDate)
           : new Date(),
         medicalLicenseDocumentIds: medicalLicenseDocumentIds,
-        // resumeDocumentId removed - CV/Resume will be added in a different step later
 
-        // Step3 - IME Background & Experience
+        // Step 3 - IME Background & Experience
         imesCompleted: submissionData.imesCompleted || "",
-        currentlyConductingIMEs: submissionData.currentlyConductingIMEs === "yes",
-        ...(submissionData.insurersOrClinics && { insurersOrClinics: submissionData.insurersOrClinics }),
+        currentlyConductingIMEs:
+          submissionData.currentlyConductingIMEs === "yes",
         assessmentTypes: submissionData.assessmentTypes || [],
-        ...(submissionData.assessmentTypeOther && { assessmentTypeOther: submissionData.assessmentTypeOther }),
         ...(redactedIMEReportDocumentId && { redactedIMEReportDocumentId }),
 
-        // Step4
+        // Step 4 - Experience Details
         experienceDetails: submissionData.experienceDetails,
 
-        // Step7
+        // Step 6 - Legal Agreements
         agreeTermsConditions: submissionData.agreeTermsConditions,
-        consentBackgroundVerification: submissionData.consentBackgroundVerification,
-
-        // Step6 - Payment Details
-        // IMEFee: data.IMEFee,
-        // recordReviewFee: data.recordReviewFee,
-        // hourlyRate: data.hourlyRate,
-        // cancellationFee: data.cancellationFee,
+        consentBackgroundVerification:
+          submissionData.consentBackgroundVerification,
       };
 
       let result;
-      if (isEditMode && examinerProfileId) {
-        // Update existing examiner
+      if (isEditMode && applicationId) {
+        // Update existing examiner application
+        result = await authActions.updateExaminerApplication({
+          applicationId,
+          ...payload,
+        });
+      } else if (isEditMode && examinerProfileId) {
+        // Update existing examiner profile (legacy flow)
         result = await authActions.updateMedicalExaminer({
           examinerProfileId,
           ...payload,
         });
       } else {
-        // Create new examiner
+        // Create new examiner application
         result = await authActions.createMedicalExaminer(payload);
       }
 
@@ -221,12 +246,15 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         return;
       }
 
-      // Send registration confirmation emails (don't fail if emails fail)
-      try {
-        const profileId =
-          (result as any).examinerProfileId || examinerProfileId || "";
+      // Send registration confirmation emails asynchronously (don't block submission)
+      // For new applications, use applicationId; for updates, use applicationId or examinerProfileId
+      const profileId = isEditMode
+        ? applicationId || examinerProfileId || ""
+        : (result as any).applicationId || "";
 
-        await authActions.sendRegistrationEmails({
+      // Fire and forget - don't wait for email to complete
+      authActions
+        .sendRegistrationEmails({
           examinerData: {
             firstName: submissionData.firstName,
             lastName: submissionData.lastName,
@@ -237,12 +265,12 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
             imeExperience: submissionData.yearsOfIMEExperience,
             imesCompleted: submissionData.imesCompleted || "",
           },
-          examinerProfileId: profileId,
+          examinerProfileId: profileId, // For new applications, this will be applicationId
+        })
+        .catch((emailError) => {
+          // Log but don't fail the submission
+          console.error("Failed to send notification emails:", emailError);
         });
-      } catch (emailError) {
-        // Log but don't fail the submission
-        console.error("Failed to send notification emails:", emailError);
-      }
 
       // Clear localStorage after successful submission
       reset();
@@ -286,7 +314,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
             {err && (
               <div className="mt-4 mx-auto max-w-lg rounded-lg border border-red-200 bg-red-50 p-4">
                 <div className="flex items-start">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <svg
                       className="h-5 w-5 text-red-400"
                       xmlns="http://www.w3.org/2000/svg"
@@ -362,17 +390,25 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
                     />
                     <Label className="cursor-pointer text-xs font-medium text-gray-700 sm:text-sm">
                       Agree to{" "}
-                      <a
-                        href="#"
-                        className="text-[#00A8FF] underline decoration-[#00A8FF] hover:decoration-[#0088CC]">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsTermsModalOpen(true);
+                        }}
+                        className="text-[#00A8FF] cursor-pointer underline decoration-[#00A8FF] hover:decoration-[#0088CC]">
                         Terms & Conditions
-                      </a>{" "}
+                      </button>{" "}
                       and{" "}
-                      <a
-                        href="#"
-                        className="text-[#00A8FF] underline decoration-[#00A8FF] hover:decoration-[#0088CC]">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsPrivacyModalOpen(true);
+                        }}
+                        className="text-[#00A8FF] cursor-pointer underline decoration-[#00A8FF] hover:decoration-[#0088CC]">
                         Privacy Policy
-                      </a>
+                      </button>
                       <span className="text-red-500">*</span>
                     </Label>
                   </div>
@@ -407,10 +443,19 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
             gradientFrom="#89D7FF"
             gradientTo="#00A8FF"
             loading={loading}
-            disabled={form.formState.isSubmitting}
+            disabled={!isFormComplete || form.formState.isSubmitting || loading}
           />
         </div>
       </FormProvider>
+
+      <TermsAndConditionsModal
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+      />
+      <PrivacyPolicyModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+      />
     </div>
   );
 };

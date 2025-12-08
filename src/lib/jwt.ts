@@ -7,6 +7,7 @@ const getJwtSecret = (
     | "JWT_FORGET_PASSWORD_SECRET"
     | "JWT_EXAMINER_INFO_REQUEST_SECRET"
     | "JWT_CLAIMANT_APPROVE_SECRET"
+    | "JWT_RESUME_SECRET"
 ) => {
   const secret = process.env[name];
   if (!secret) {
@@ -80,9 +81,10 @@ export function verifyForgotPasswordToken(token: string): JwtPayload | null {
 export function signExaminerInfoToken(
   payload: {
     email: string;
-    userId: string;
-    accountId: string;
-    examinerId: string;
+    userId?: string; // Optional for new applications
+    accountId?: string; // Optional for new applications
+    examinerId?: string; // Optional for new applications
+    applicationId?: string; // For new applications (not yet converted to profile)
   },
   expiresIn: SignOptions["expiresIn"] = "7d"
 ): string {
@@ -131,5 +133,27 @@ export function verifyClaimantApproveToken(
     return jwt.verify(token, JWT_CLAIMANT_APPROVE_SECRET);
   } catch {
     throw new Error("Invalid or expired claimant approval token");
+  }
+}
+
+// ----- Resume Application Tokens -----
+export function signResumeToken(
+  payload: {
+    email: string;
+    applicationId: string;
+  },
+  expiresIn: SignOptions["expiresIn"] = "30d"
+): string {
+  const options: SignOptions = { expiresIn };
+  const JWT_RESUME_SECRET = getJwtSecret("JWT_RESUME_SECRET");
+  return jwt.sign(payload, JWT_RESUME_SECRET, options);
+}
+
+export function verifyResumeToken(token: string): JwtPayload | null {
+  try {
+    const JWT_RESUME_SECRET = getJwtSecret("JWT_RESUME_SECRET");
+    return jwt.verify(token, JWT_RESUME_SECRET) as JwtPayload;
+  } catch {
+    return null;
   }
 }

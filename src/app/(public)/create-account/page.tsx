@@ -26,12 +26,10 @@ const Page = async ({
     redirect("/create-account/success?error=invalid_token");
   }
 
-  let accountId: string;
-
-  // Step 2: Verify token and extract account data
+  // Step 2: Verify token and extract data (could be applicationId or userId/accountId)
+  let tokenData;
   try {
-    const tokenData = await authActions.verifyAccountToken({ token });
-    accountId = tokenData.data.user.accountId;
+    tokenData = await authActions.verifyAccountToken({ token });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "unknown";
 
@@ -43,52 +41,90 @@ const Page = async ({
       redirect("/create-account/success?error=token_used");
     }
 
+    if (errorMessage.includes("not approved")) {
+      redirect("/create-account/success?error=application_not_approved");
+    }
+
     redirect("/create-account/success?error=invalid_token");
   }
 
-  // Step 3: Get examiner profile using server action
-  const examinerProfile = await getExaminerProfileByAccountId(accountId);
+  // Step 3: Handle new application flow (applicationId exists)
+  if (tokenData.data.applicationId) {
+    // Check if profile already exists (account was already created)
+    if (tokenData.data.user && tokenData.data.user.accountId) {
+      // Profile exists, check if password is set
+      const examinerProfile = await getExaminerProfileByAccountId(
+        tokenData.data.user.accountId
+      );
 
-  // Step 4: Get latest contract if profile exists
-  let latestContract = null;
-  if (examinerProfile) {
-    latestContract = await getContractByExaminerProfileId(examinerProfile.id);
-  }
+      if (examinerProfile) {
+        const hasPassword =
+          examinerProfile.account.user.password !== null &&
+          examinerProfile.account.user.password.startsWith("$2b$");
 
-  if(!latestContract){
-    redirect("/create-account/success?error=no_contract_found");
-  } 
+        if (hasPassword) {
+          redirect("/create-account/success?error=account_already_created");
+        }
 
-  // Step 5: Handle case when examiner profile doesn't exist
-  if (!examinerProfile) {
-    const account = await getAccountById(accountId);
-
-    // If account exists and needs password, show password setup
-    if (account && !account.user.password) {
-      return <PasswordSetupUI token={token} />;
+        // Profile exists but no password - show password setup
+        return <PasswordSetupUI token={token} />;
+      }
     }
 
-    // Otherwise, profile not found error
-    redirect("/create-account/success?error=profile_not_found");
+    // Application approved but profile not created yet - show password setup
+    // setPassword will create User, Account, ExaminerProfile
+    return <PasswordSetupUI token={token} />;
   }
 
-  const hasPassword = examinerProfile.account.user.password !== null;
+  // Step 4: Legacy flow (userId/accountId exists)
+  if (tokenData.data.user && tokenData.data.user.accountId) {
+    const accountId = tokenData.data.user.accountId;
 
-  // Step 6: Check if account is already fully set up
-  if (
-    latestContract?.status === "SIGNED" &&
-    examinerProfile.status === "ACTIVE" &&
-    hasPassword
-  ) {
-    redirect("/create-account/success?error=account_already_created");
+    // Get examiner profile using server action
+    const examinerProfile = await getExaminerProfileByAccountId(accountId);
+
+    // Get latest contract if profile exists
+    let latestContract = null;
+    if (examinerProfile) {
+      latestContract = await getContractByExaminerProfileId(examinerProfile.id);
+    }
+
+    if (!latestContract) {
+      redirect("/create-account/success?error=no_contract_found");
+    }
+
+    // Handle case when examiner profile doesn't exist
+    if (!examinerProfile) {
+      const account = await getAccountById(accountId);
+
+      // If account exists and needs password, show password setup
+      if (account && !account.user.password) {
+        return <PasswordSetupUI token={token} />;
+      }
+
+      // Otherwise, profile not found error
+      redirect("/create-account/success?error=profile_not_found");
+    }
+
+    const hasPassword =
+      examinerProfile.account.user.password !== null &&
+      examinerProfile.account.user.password.startsWith("$2b$");
+
+    // Check if account is already fully set up
+    if (
+      latestContract?.status === "SIGNED" &&
+      examinerProfile.status === "ACTIVE" &&
+      hasPassword
+    ) {
+      redirect("/create-account/success?error=account_already_created");
+    }
+
+    // Show password setup
+    return <PasswordSetupUI token={token} />;
   }
 
-  // Step 7: Contract signing is now handled separately via email link
-  // No redirect to contract page - proceed directly to password setup
-  // Examiner signs contract from email → then admin confirms → then this page for password
-
-  // Step 8: Show password setup
-  return <PasswordSetupUI token={token} />;
+  // Invalid token format
+  redirect("/create-account/success?error=invalid_token");
 };
 
 const PasswordSetupUI = ({ token }: { token: string }) => (

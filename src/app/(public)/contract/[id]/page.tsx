@@ -51,15 +51,28 @@ const ContractSigningPage = async ({ params, searchParams }: PageProps) => {
 
   const contractData = contract.data as unknown as ContractType;
 
-  // Check if contract is already signed by examining the timestamp
-  const isAlreadySigned = contract.examinerProfile.contractSignedByExaminerAt !== null;
+  // Check if application exists (contracts are now signed at application level)
+  if (!contract.application) {
+    notFound();
+  }
+
+  // Check if contract is already signed by examining the timestamp on application
+  const isAlreadySigned = contract.application.contractSignedByExaminerAt !== null;
+
+  // Use applicationId for contract signing (contracts are signed at application level)
+  // signContractByExaminer will handle both applicationId and examinerProfileId
+  const signingId = contract.applicationId || contract.examinerProfileId;
+
+  if (!signingId) {
+    notFound();
+  }
 
   return (
     <ContractSigningView
       token={token}
       contractId={id}
-      examinerProfileId={contract.examinerProfileId}
-      examinerEmail={contract.examinerProfile.account.user.email}
+      examinerProfileId={signingId} // Can be applicationId or examinerProfileId
+      examinerEmail={contract.application.email}
       examinerName={contractData.examinerName}
       feeStructure={contractData.feeStructure}
       contractHtml={contract.contractHtml}
