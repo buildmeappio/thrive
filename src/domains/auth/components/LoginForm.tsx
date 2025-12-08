@@ -15,6 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import ErrorMessages from "@/constants/ErrorMessages";
 import { toast } from "sonner";
 import { checkSuspensionByEmail } from "@/app/actions/checkSuspensionByEmail";
+import { toFormikValidationSchema } from "zod-formik-adapter";
 
 const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +36,7 @@ const LoginForm = () => {
     }
   }, [router, searchParams]);
 
-  const handleSubmit = async (values: LoginInput) => {
+  const onSubmit = async (values: LoginInput) => {
     setIsLoading(true);
 
     try {
@@ -49,6 +50,7 @@ const LoginForm = () => {
         toast.error("Your account is suspended. Please contact administrator.", {
           position: "top-right",
         });
+        setIsLoading(false);
         return; // Early return prevents login attempt
       }
 
@@ -75,11 +77,12 @@ const LoginForm = () => {
   return (
     <Formik
       initialValues={loginInitialValues}
-      validationSchema={loginSchema}
-      onSubmit={handleSubmit}
+      validationSchema={toFormikValidationSchema(loginSchema)}
+      onSubmit={onSubmit}
       validateOnChange={false}
-      validateOnBlur={false}>
-      {({ values, errors, handleChange }) => (
+      validateOnBlur={false}
+      enableReinitialize>
+      {({ values, errors, handleChange, touched }) => (
         <Form>
           <div className="mb-6">
             <Label htmlFor="email" className="text-black">
@@ -87,6 +90,7 @@ const LoginForm = () => {
             </Label>
             <Input
               id="email"
+              name="email"
               type="email"
               value={values.email}
               onChange={handleChange}
@@ -103,6 +107,7 @@ const LoginForm = () => {
             </Label>
             <PasswordInput
               id="password"
+              name="password"
               placeholder="Enter your password"
               value={values.password}
               onChange={handleChange}
@@ -121,11 +126,17 @@ const LoginForm = () => {
           </div>
           <Button
             type="submit"
-            className="w-full bg-[#00A8FF] hover:bg-[#0097E5] text-white text-xl font-semibold py-7 px-3 rounded-full flex items-center justify-center gap-2"
+            className="w-full bg-[#00A8FF] hover:bg-[#0097E5] text-white text-xl font-semibold py-7 px-3 rounded-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isLoading}>
             {isLoading ? "Logging in..." : "Log In"}
             {!isLoading && <ArrowRight strokeWidth={3} color="white" />}
           </Button>
+          {/* Debug: Show validation errors if form was touched */}
+          {Object.keys(errors).length > 0 && Object.keys(touched).length > 0 && (
+            <div className="mt-2 text-xs text-red-500">
+              Please fix the errors above to continue.
+            </div>
+          )}
         </Form>
       )}
     </Formik>

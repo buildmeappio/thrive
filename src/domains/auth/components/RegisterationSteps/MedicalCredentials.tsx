@@ -75,7 +75,8 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
       medicalSpecialty: data.medicalSpecialty || [],
       yearsOfIMEExperience: data.yearsOfIMEExperience || "",
       // licenseExpiryDate: data.licenseExpiryDate,
-      medicalLicense: [],
+      // Don't set medicalLicense here - it's handled by VerificationDocuments component
+      medicalLicense: data.medicalLicense,
     },
     mode: "onSubmit",
   });
@@ -89,13 +90,15 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
       medicalSpecialty: data.medicalSpecialty || [],
       yearsOfIMEExperience: data.yearsOfIMEExperience || "",
       // licenseExpiryDate: data.licenseExpiryDate,
-      medicalLicense: [],
+      // Don't set medicalLicense here - it's handled by VerificationDocuments component
+      medicalLicense: data.medicalLicense,
     });
   }, [
     data.licenseNumber,
     data.licenseIssuingProvince,
     data.medicalSpecialty,
     data.yearsOfIMEExperience,
+    data.medicalLicense,
     form,
   ]);
 
@@ -103,6 +106,19 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
     merge(values as Partial<RegistrationData>);
     onNext();
   };
+
+  // Watch all required fields to enable/disable continue button
+  const medicalSpecialty = form.watch("medicalSpecialty");
+  const licenseNumber = form.watch("licenseNumber");
+  const licenseIssuingProvince = form.watch("licenseIssuingProvince");
+  const yearsOfIMEExperience = form.watch("yearsOfIMEExperience");
+
+  const isFormComplete =
+    Array.isArray(medicalSpecialty) &&
+    medicalSpecialty.length > 0 &&
+    licenseNumber?.trim().length > 0 &&
+    licenseIssuingProvince?.trim().length > 0 &&
+    yearsOfIMEExperience?.trim().length > 0;
 
   // Show loading state during hydration
   if (!isClient) {
@@ -209,7 +225,7 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
             isLastStep={currentStep === totalSteps}
             gradientFrom="#89D7FF"
             gradientTo="#00A8FF"
-            disabled={form.formState.isSubmitting}
+            disabled={!isFormComplete || form.formState.isSubmitting}
             loading={form.formState.isSubmitting}
           />
         </div>

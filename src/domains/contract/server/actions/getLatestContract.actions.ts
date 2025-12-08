@@ -34,6 +34,7 @@ export async function getLatestContract(id: string) {
             },
           },
         },
+        application: true, // Include application for contract signing
       },
     });
 

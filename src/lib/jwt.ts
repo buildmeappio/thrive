@@ -80,9 +80,10 @@ export function verifyForgotPasswordToken(token: string): JwtPayload | null {
 export function signExaminerInfoToken(
   payload: {
     email: string;
-    userId: string;
-    accountId: string;
-    examinerId: string;
+    userId?: string; // Optional for new applications
+    accountId?: string; // Optional for new applications
+    examinerId?: string; // Optional for new applications
+    applicationId?: string; // For new applications (not yet converted to profile)
   },
   expiresIn: SignOptions["expiresIn"] = "7d"
 ): string {

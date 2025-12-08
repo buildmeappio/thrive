@@ -1,11 +1,7 @@
 "use client";
 import React, { useEffect } from "react";
 import { Input } from "@/components/ui";
-import {
-  BackButton,
-  ContinueButton,
-  ProgressIndicator,
-} from "@/components";
+import { BackButton, ContinueButton, ProgressIndicator } from "@/components";
 import {
   step7PaymentDetailsSchema,
   Step7PaymentDetailsInput,
@@ -75,7 +71,7 @@ const PaymentDetails: React.FC<RegStepProps> = ({
       />
 
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="flex-grow space-y-6 pb-8 md:px-0">
+        <div className="grow space-y-6 pb-8 md:px-0">
           <div className="pt-1 md:pt-0">
             <h3 className="mt-4 mb-2 text-center text-[22px] font-normal text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
               Fee Structure
@@ -179,4 +175,3 @@ const PaymentDetails: React.FC<RegStepProps> = ({
 };
 
 export default PaymentDetails;
-

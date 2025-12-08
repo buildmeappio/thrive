@@ -3,8 +3,6 @@ import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { BackButton, ContinueButton, ProgressIndicator } from "@/components";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui";
 import {
   step3IMEExperienceSchema,
   Step3IMEExperienceInput,
@@ -14,35 +12,46 @@ import {
   useRegistrationStore,
   RegistrationData,
 } from "@/domains/auth/state/useRegistrationStore";
-import { FormProvider, FormField, FormDropdown } from "@/components/form";
-import { Controller, UseFormRegisterReturn } from "@/lib/form";
+import { FormProvider, FormDropdown } from "@/components/form";
+import { Controller } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
-import {
-  assessmentTypeOptions,
-  imeCompletionOptions,
-} from "@/domains/setting/constants/options";
+import authActions from "../../actions";
+import { RegStepProps } from "@/domains/auth/types/index";
 
-interface Step3IMEExperinceProps {
-  onNext: () => void;
-  onPrevious: () => void;
-  currentStep: number;
-  totalSteps: number;
-}
-
-// Add "Other" option to assessment types
-const assessmentTypeOptionsWithOther = [
-  ...assessmentTypeOptions,
-  { value: "other", label: "Other" },
-];
-
-const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
+const IMEExperince: React.FC<RegStepProps> = ({
   onNext,
   onPrevious,
   currentStep,
   totalSteps,
 }) => {
   const { data, merge } = useRegistrationStore();
-  const [showOtherField, setShowOtherField] = useState(false);
+  const [assessmentTypeOptions, setAssessmentTypeOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [loadingAssessmentTypes, setLoadingAssessmentTypes] = useState(true);
+
+  // Fetch assessment types from database
+  useEffect(() => {
+    const fetchAssessmentTypes = async () => {
+      try {
+        setLoadingAssessmentTypes(true);
+        const assessmentTypesData = await authActions.getAssessmentTypes();
+        const assessmentTypeOptionsData = assessmentTypesData.map(
+          (type: any) => ({
+            value: type.id,
+            label: type.name,
+          })
+        );
+        setAssessmentTypeOptions(assessmentTypeOptionsData);
+      } catch (error) {
+        console.error("Failed to fetch assessment types:", error);
+        setAssessmentTypeOptions([]);
+      } finally {
+        setLoadingAssessmentTypes(false);
+      }
+    };
+    fetchAssessmentTypes();
+  }, []);
 
   const form = useForm<Step3IMEExperienceInput>({
     schema: step3IMEExperienceSchema,
@@ -50,27 +59,18 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
       ...step3InitialValues,
       imesCompleted: data.imesCompleted || "",
       currentlyConductingIMEs: data.currentlyConductingIMEs || "",
-      insurersOrClinics: data.insurersOrClinics || "",
       assessmentTypes: data.assessmentTypes || [],
-      assessmentTypeOther: data.assessmentTypeOther || "",
-      redactedIMEReport: data.redactedIMEReport || null,
+      // redactedIMEReport removed - not collected in this step
     },
     mode: "onSubmit",
   });
 
-  // Watch for currentlyConductingIMEs and assessmentTypes changes
-  const currentlyConductingIMEs = form.watch("currentlyConductingIMEs");
-  const assessmentTypes = form.watch("assessmentTypes");
-
-  // Check if "other" is selected
-  useEffect(() => {
-    if (assessmentTypes && assessmentTypes.includes("other")) {
-      setShowOtherField(true);
-    } else {
-      setShowOtherField(false);
-      form.setValue("assessmentTypeOther", "");
-    }
-  }, [assessmentTypes, form]);
+  // Watch all required fields to enable/disable continue button
+  const [imesCompleted, currentlyConductingIMEs, assessmentTypes] = form.watch([
+    "imesCompleted",
+    "currentlyConductingIMEs",
+    "assessmentTypes",
+  ]);
 
   // Reset form when store data changes
   useEffect(() => {
@@ -78,18 +78,13 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
       ...step3InitialValues,
       imesCompleted: data.imesCompleted || "",
       currentlyConductingIMEs: data.currentlyConductingIMEs || "",
-      insurersOrClinics: data.insurersOrClinics || "",
       assessmentTypes: data.assessmentTypes || [],
-      assessmentTypeOther: data.assessmentTypeOther || "",
-      redactedIMEReport: data.redactedIMEReport || null,
+      // redactedIMEReport removed - not collected in this step
     });
   }, [
     data.imesCompleted,
     data.currentlyConductingIMEs,
-    data.insurersOrClinics,
     data.assessmentTypes,
-    data.assessmentTypeOther,
-    data.redactedIMEReport,
     form,
   ]);
 
@@ -97,6 +92,22 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
     merge(values as unknown as Partial<RegistrationData>);
     onNext();
   };
+
+  // Check if form is complete
+  const isFormComplete = React.useMemo(() => {
+    const imesValid =
+      imesCompleted &&
+      typeof imesCompleted === "string" &&
+      imesCompleted.trim().length > 0;
+    const conductingValid =
+      currentlyConductingIMEs &&
+      typeof currentlyConductingIMEs === "string" &&
+      currentlyConductingIMEs.trim().length > 0;
+    const assessmentValid =
+      Array.isArray(assessmentTypes) && assessmentTypes.length > 0;
+
+    return imesValid && conductingValid && assessmentValid;
+  }, [imesCompleted, currentlyConductingIMEs, assessmentTypes]);
 
   return (
     <div
@@ -120,25 +131,15 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
             <div className="mt-6 md:px-0 px-8 grid grid-cols-1 gap-x-12 gap-y-6 md:mt-8 md:grid-cols-2">
               {/* LEFT COLUMN */}
               <div className="space-y-6">
-                {/* How many IMEs have you completed? */}
-                <FormDropdown
-                  name="imesCompleted"
-                  label="How many IMEs have you completed?"
-                  options={imeCompletionOptions}
-                  required
-                  placeholder="Select range"
-                  icon={null}
-                />
-
-                {/* Are you currently conducting IMEs? */}
+                {/* Have you completed any IMEs? */}
                 <Controller
-                  name="currentlyConductingIMEs"
+                  name="imesCompleted"
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <div className="space-y-2">
-                      <Label className="text-black">
-                        Are you currently conducting IMEs for any insurer or
-                        clinic? <span className="text-red-500">*</span>
+                      <Label className="text-[16px] font-medium text-black">
+                        Have you completed any IMEs?{" "}
+                        <span className="text-red-500">*</span>
                       </Label>
                       <RadioGroup
                         value={field.value}
@@ -147,12 +148,12 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem
                             value="yes"
-                            id="conducting-yes"
+                            id="imes-completed-yes"
                             checkedColor="#00A8FF"
                             indicatorColor="#00A8FF"
                           />
                           <Label
-                            htmlFor="conducting-yes"
+                            htmlFor="imes-completed-yes"
                             className="cursor-pointer text-sm font-medium text-gray-700">
                             Yes
                           </Label>
@@ -160,12 +161,12 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem
                             value="no"
-                            id="conducting-no"
+                            id="imes-completed-no"
                             checkedColor="#00A8FF"
                             indicatorColor="#00A8FF"
                           />
                           <Label
-                            htmlFor="conducting-no"
+                            htmlFor="imes-completed-no"
                             className="cursor-pointer text-sm font-medium text-gray-700">
                             No
                           </Label>
@@ -187,42 +188,62 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                   )}
                 />
 
-                {/* Conditional: Which insurers or clinics? */}
-                {currentlyConductingIMEs === "yes" && (
-                  <Controller
-                    name="insurersOrClinics"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <div className="space-y-2">
-                        <Label className="text-black">
-                          Which insurers or clinics?{" "}
-                          <span className="text-red-500">*</span>
-                        </Label>
-                        <Textarea
-                          {...field}
-                          placeholder="List insurers or clinics..."
-                          className={`min-h-[100px] resize-none ${
-                            fieldState.error ? "ring-2 ring-red-500/30" : ""
-                          }`}
-                        />
-                        {fieldState.error &&
-                          (() => {
-                            const errorMsg = fieldState.error.message;
-                            const isRequiredError =
-                              errorMsg &&
-                              (errorMsg.toLowerCase() === "required" ||
-                                errorMsg
-                                  .toLowerCase()
-                                  .endsWith(" is required") ||
-                                errorMsg.toLowerCase() === "is required");
-                            return !isRequiredError ? (
-                              <p className="text-xs text-red-500">{errorMsg}</p>
-                            ) : null;
-                          })()}
-                      </div>
-                    )}
-                  />
-                )}
+                {/* Are you currently conducting IMEs? */}
+                <Controller
+                  name="currentlyConductingIMEs"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <div className="space-y-2">
+                      <Label className="text-[16px] font-medium text-black">
+                        Are you currently conducting IMEs?{" "}
+                        <span className="text-red-500">*</span>
+                      </Label>
+                      <RadioGroup
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        className="flex gap-4">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="yes"
+                            id="conducting-yes"
+                            checkedColor="#00A8FF"
+                            indicatorColor="#00A8FF"
+                          />
+                          <Label
+                            htmlFor="conducting-yes"
+                            className="cursor-pointer font-normal">
+                            Yes
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value="no"
+                            id="conducting-no"
+                            checkedColor="#00A8FF"
+                            indicatorColor="#00A8FF"
+                          />
+                          <Label
+                            htmlFor="conducting-no"
+                            className="cursor-pointer font-normal">
+                            No
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                      {fieldState.error &&
+                        (() => {
+                          const errorMsg = fieldState.error.message;
+                          const isRequiredError =
+                            errorMsg &&
+                            (errorMsg.toLowerCase() === "required" ||
+                              errorMsg.toLowerCase().endsWith(" is required") ||
+                              errorMsg.toLowerCase() === "is required");
+                          return !isRequiredError ? (
+                            <p className="text-xs text-red-500">{errorMsg}</p>
+                          ) : null;
+                        })()}
+                    </div>
+                  )}
+                />
               </div>
 
               {/* RIGHT COLUMN */}
@@ -231,27 +252,16 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
                 <FormDropdown
                   name="assessmentTypes"
                   label="Assessment Types"
-                  options={assessmentTypeOptionsWithOther}
+                  options={assessmentTypeOptions}
                   required
-                  placeholder="Multi-select (Disability, WSIB, MVA, etc.)"
                   multiSelect={true}
-                  icon={null}
+                  placeholder={
+                    loadingAssessmentTypes
+                      ? "Loading assessment types..."
+                      : "Multi-select (Disability, WSIB, MVA, etc.)"
+                  }
+                  disabled={loadingAssessmentTypes}
                 />
-
-                {/* Conditional: Other assessment type */}
-                {showOtherField && (
-                  <FormField
-                    name="assessmentTypeOther"
-                    label="Please specify other assessment type">
-                    {(field: UseFormRegisterReturn & { error?: boolean }) => (
-                      <Input
-                        {...field}
-                        id="assessmentTypeOther"
-                        placeholder="Specify other assessment type"
-                      />
-                    )}
-                  </FormField>
-                )}
               </div>
             </div>
           </div>
@@ -265,10 +275,11 @@ const IMEExperince: React.FC<Step3IMEExperinceProps> = ({
             iconColor="#00A8FF"
           />
           <ContinueButton
+            onClick={form.handleSubmit(onSubmit)}
             isLastStep={currentStep === totalSteps}
             gradientFrom="#89D7FF"
             gradientTo="#00A8FF"
-            disabled={form.formState.isSubmitting}
+            disabled={!isFormComplete || form.formState.isSubmitting}
             loading={form.formState.isSubmitting}
           />
         </div>

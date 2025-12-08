@@ -34,9 +34,6 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
     mode: "onSubmit",
   });
 
-  // Watch the field value for real-time updates
-  const experienceDetailsValue = form.watch("experienceDetails");
-
   // Reset form when store data changes
   useEffect(() => {
     form.reset({
@@ -49,6 +46,12 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
     merge(values as Partial<RegistrationData>);
     onNext();
   };
+
+  // Watch experienceDetails to enable/disable continue button and for character count
+  const experienceDetailsValue = form.watch("experienceDetails");
+
+  // Check if form has any value (validation for min 50 chars happens on submit)
+  const isFormComplete = experienceDetailsValue?.trim().length > 0;
 
   return (
     <div
@@ -78,7 +81,7 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
                     <Textarea
                       {...field}
                       id="experienceDetails"
-                      placeholder="Enter your experience details"
+                      placeholder="Enter your experience details (min. 50 characters)"
                       className={`min-h-[150px] w-full resize-none text-sm sm:text-base md:min-h-[200px] ${
                         fieldState.error ? "ring-2 ring-red-500/30" : ""
                       }`}
@@ -119,10 +122,11 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
             iconColor="#00A8FF"
           />
           <ContinueButton
+            onClick={form.handleSubmit(onSubmit)}
             isLastStep={currentStep === totalSteps}
             gradientFrom="#89D7FF"
             gradientTo="#00A8FF"
-            disabled={form.formState.isSubmitting}
+            disabled={!isFormComplete || form.formState.isSubmitting}
             loading={form.formState.isSubmitting}
           />
         </div>

@@ -62,4 +62,4 @@ export const config = {
     "/support",
     "/support/:path*",
   ],
-};
+};  

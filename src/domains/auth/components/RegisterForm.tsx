@@ -49,7 +49,12 @@ const RegisterForm: React.FC<{
   // Load examiner data if in edit mode
   useEffect(() => {
     if (examinerData) {
-      loadExaminerData(examinerData.examinerProfile);
+      // Check if it's an ExaminerApplication or ExaminerProfile
+      if (examinerData.examinerApplication) {
+        loadExaminerData(examinerData.examinerApplication);
+      } else if (examinerData.examinerProfile) {
+        loadExaminerData(examinerData.examinerProfile);
+      }
     }
   }, [examinerData, loadExaminerData]);
 
@@ -99,7 +104,7 @@ const RegisterForm: React.FC<{
         {showTitle && (
           <h2 className="md:ml-12 text-center text-3xl md:text-5xl font-semibold md:whitespace-nowrap">
             {isEditMode
-              ? "Let's update your profile information to join "
+              ? "Let's update your profile to join "
               : "Let's complete your profile to join "}
             <span className="text-[#00A8FF]">Thrive.</span>
           </h2>

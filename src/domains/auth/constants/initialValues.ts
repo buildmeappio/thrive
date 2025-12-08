@@ -42,10 +42,8 @@ export const step2InitialValues: Step2MedicalCredentialsInput = {
 export const step3InitialValues: Step3IMEExperienceInput = {
   imesCompleted: "",
   currentlyConductingIMEs: "",
-  insurersOrClinics: "",
   assessmentTypes: [],
-  assessmentTypeOther: "",
-  redactedIMEReport: null,
+  // redactedIMEReport removed - not collected in this step
 };
 
 export const step4InitialValues: Step4ExperienceDetailsInput = {

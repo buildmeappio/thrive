@@ -81,11 +81,17 @@ const ContractSigningView = ({
         throw new Error("Failed to sign contract");
       }
 
-      // 2. Notify admin that contract is signed (don't fail if notification fails)
+      // 2. Notify admin that contract is signed and send signed contract to examiner
       try {
-        await signContractByExaminer(examinerProfileId, examinerEmail);
+        // Pass base64 PDF string - server will convert to Buffer
+        await signContractByExaminer(
+          examinerProfileId,
+          examinerEmail,
+          contractId,
+          pdfBase64 // Pass base64 string, server will convert to Buffer
+        );
       } catch (notificationError) {
-        console.warn("Failed to send admin notification:", notificationError);
+        console.warn("Failed to send notification emails:", notificationError);
         // Continue anyway - signature was successful
       }
 
