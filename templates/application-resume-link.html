@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume Your Application</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+        text-align: center;
+      }
+
+      .header img {
+        width: 120px;
+      }
+
+      .body {
+        margin-top: 20px;
+        font-size: 16px;
+        color: #333333;
+      }
+
+      .body p {
+        margin-bottom: 20px;
+      }
+
+      .button-container {
+        text-align: center;
+        margin: 30px 0;
+      }
+
+      .button {
+        display: inline-block;
+        padding: 12px 30px;
+        background-color: #00a8ff;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .button:hover {
+        background-color: #0088cc;
+      }
+
+      .footer {
+        margin-top: 30px;
+        font-size: 14px;
+        color: #777777;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <img
+          src="https://assets.thriveassessmentcare.com/images/thriveLogo.png"
+          alt="Thrive Logo" />
+      </div>
+
+      <div class="body">
+        <p>Hi {{firstName}} {{lastName}},</p>
+        <p>
+          We've saved your application progress.
+        </p>
+        <p>
+          You can resume your application anytime using the secure link below:
+        </p>
+        <div class="button-container">
+          <a href="{{resumeLink}}" class="button">👉 Resume My Application</a>
+        </div>
+        <p>
+          This link will take you exactly where you left off. Your progress has been saved securely.
+        </p>
+        <p>
+          <strong>Note:</strong> This link will expire after 30 days for security purposes.
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>
+          If you have any questions or need assistance, feel free to contact us
+          at
+          <a href="mailto:support@thrivenetwork.ca">support@thrivenetwork.ca</a
+          >.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
+

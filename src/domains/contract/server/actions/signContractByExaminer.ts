@@ -15,7 +15,7 @@ export const signContractByExaminer = async (
   examinerProfileId: string, // Can be applicationId or examinerProfileId
   examinerEmail: string,
   contractId?: string,
-  signedPdfBase64?: string // Accept base64 string from client, convert to Buffer on server
+  _signedPdfBase64?: string // Accept base64 string from client, convert to Buffer on server
 ) => {
   try {
     // Check if this is an applicationId or examinerProfileId

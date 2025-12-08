@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui";
 import { Mail, MapPin, User, PhoneCall, Languages } from "lucide-react";
-import { ContinueButton, ProgressIndicator } from "@/components";
+import { ContinueButton, ProgressIndicator, SaveAndContinueButton } from "@/components";
 import {
   useRegistrationStore,
   RegistrationData,
@@ -26,6 +26,7 @@ import { useForm } from "@/hooks/use-form-hook";
 import { provinces } from "@/constants/options";
 import getLanguages from "@/domains/auth/actions/getLanguages";
 import { getCitiesByProvince } from "@/utils/canadaData";
+import { useSaveApplicationProgress } from "@/domains/auth/hooks/useSaveApplicationProgress";
 
 const PersonalInfo: React.FC<RegStepProps> = ({
   onNext,
@@ -33,6 +34,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
   totalSteps,
 }) => {
   const { data, merge, isEditMode } = useRegistrationStore();
+  const { saveProgress, isSaving } = useSaveApplicationProgress();
   const [languages, setLanguages] = useState<
     { value: string; label: string }[]
   >([]);
@@ -417,7 +419,15 @@ const PersonalInfo: React.FC<RegStepProps> = ({
           </div>
 
           <div className="mt-3 flex flex-row justify-center gap-3 px-2 md:mt-5 md:justify-between md:gap-4 md:px-0">
-            <div className="hidden md:block" />
+            <SaveAndContinueButton
+              onClick={() => {
+                // Get current form values and save them along with store data
+                const currentValues = form.getValues();
+                saveProgress(currentValues as Partial<RegistrationData>);
+              }}
+              loading={isSaving}
+              disabled={isSaving || form.formState.isSubmitting}
+            />
             <ContinueButton
               onClick={form.handleSubmit(onSubmit)}
               isLastStep={currentStep === totalSteps}

@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
-import { BackButton, ContinueButton, ProgressIndicator } from "@/components";
+import { BackButton, ContinueButton, ProgressIndicator, SaveAndContinueButton } from "@/components";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   step3IMEExperienceSchema,
@@ -17,6 +17,7 @@ import { Controller } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
 import authActions from "../../actions";
 import { RegStepProps } from "@/domains/auth/types/index";
+import { useSaveApplicationProgress } from "@/domains/auth/hooks/useSaveApplicationProgress";
 
 const IMEExperince: React.FC<RegStepProps> = ({
   onNext,
@@ -25,6 +26,7 @@ const IMEExperince: React.FC<RegStepProps> = ({
   totalSteps,
 }) => {
   const { data, merge } = useRegistrationStore();
+  const { saveProgress, isSaving } = useSaveApplicationProgress();
   const [assessmentTypeOptions, setAssessmentTypeOptions] = useState<
     { value: string; label: string }[]
   >([]);
@@ -274,14 +276,25 @@ const IMEExperince: React.FC<RegStepProps> = ({
             borderColor="#00A8FF"
             iconColor="#00A8FF"
           />
-          <ContinueButton
-            onClick={form.handleSubmit(onSubmit)}
-            isLastStep={currentStep === totalSteps}
-            gradientFrom="#89D7FF"
-            gradientTo="#00A8FF"
-            disabled={!isFormComplete || form.formState.isSubmitting}
-            loading={form.formState.isSubmitting}
-          />
+          <div className="flex items-center gap-4">
+            <SaveAndContinueButton
+              onClick={() => {
+                // Get current form values and save them along with store data
+                const currentValues = form.getValues();
+                saveProgress(currentValues as Partial<RegistrationData>);
+              }}
+              loading={isSaving}
+              disabled={isSaving || form.formState.isSubmitting}
+            />
+            <ContinueButton
+              onClick={form.handleSubmit(onSubmit)}
+              isLastStep={currentStep === totalSteps}
+              gradientFrom="#89D7FF"
+              gradientTo="#00A8FF"
+              disabled={!isFormComplete || form.formState.isSubmitting}
+              loading={form.formState.isSubmitting}
+            />
+          </div>
         </div>
       </FormProvider>
     </div>

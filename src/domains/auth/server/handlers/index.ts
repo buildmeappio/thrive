@@ -15,6 +15,9 @@ import getYearsOfExperience from "./getYearsOfExperience";
 import getMaxTravelDistances from "./getMaxTravelDistances";
 import getAssessmentTypes from "./getAssessmentTypes";
 import updateExaminerApplication from "./updateExaminerApplication";
+import saveApplicationProgress from "./saveApplicationProgress";
+import sendResumeLink from "./sendResumeLink";
+import verifyResumeToken from "./verifyResumeToken";
 
 const handlers = {
   checkUserExists,
@@ -34,6 +37,9 @@ const handlers = {
   getYearsOfExperience,
   getMaxTravelDistances,
   getAssessmentTypes,
+  saveApplicationProgress,
+  sendResumeLink,
+  verifyResumeToken,
 };
 
 export default handlers;

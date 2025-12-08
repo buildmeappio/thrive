@@ -21,6 +21,8 @@ import { step6InitialValues } from "@/domains/auth/constants/initialValues";
 import { FormProvider } from "@/components/form";
 import { Controller } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
+import TermsAndConditionsModal from "./TermsAndConditionsModal";
+import PrivacyPolicyModal from "./PrivacyPolicyModal";
 
 const SubmitConfirmation: React.FC<RegStepProps> = ({
   onNext,
@@ -32,6 +34,8 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
     useRegistrationStore();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
   const form = useForm<Step6LegalInput>({
     schema: step6LegalSchema,
@@ -386,17 +390,25 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
                     />
                     <Label className="cursor-pointer text-xs font-medium text-gray-700 sm:text-sm">
                       Agree to{" "}
-                      <a
-                        href="#"
-                        className="text-[#00A8FF] underline decoration-[#00A8FF] hover:decoration-[#0088CC]">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsTermsModalOpen(true);
+                        }}
+                        className="text-[#00A8FF] cursor-pointer underline decoration-[#00A8FF] hover:decoration-[#0088CC]">
                         Terms & Conditions
-                      </a>{" "}
+                      </button>{" "}
                       and{" "}
-                      <a
-                        href="#"
-                        className="text-[#00A8FF] underline decoration-[#00A8FF] hover:decoration-[#0088CC]">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsPrivacyModalOpen(true);
+                        }}
+                        className="text-[#00A8FF] cursor-pointer underline decoration-[#00A8FF] hover:decoration-[#0088CC]">
                         Privacy Policy
-                      </a>
+                      </button>
                       <span className="text-red-500">*</span>
                     </Label>
                   </div>
@@ -435,6 +447,15 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
           />
         </div>
       </FormProvider>
+
+      <TermsAndConditionsModal
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+      />
+      <PrivacyPolicyModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+      />
     </div>
   );
 };
