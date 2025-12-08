@@ -692,6 +692,13 @@ model ExaminerApplication {
   contractDeclinedByAdminAt    DateTime?      @map("contract_declined_by_admin_at") @db.Timestamptz()
   contractDeclineReason        String?        @map("contract_decline_reason") @db.Text
 
+  // Fee Structure (stored temporarily until examiner profile is created)
+  IMEFee            Decimal?  @map("ime_fee") @db.Decimal(10, 2)
+  recordReviewFee   Decimal?  @map("record_review_fee") @db.Decimal(10, 2)
+  hourlyRate        Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
+  cancellationFee   Decimal?  @map("cancellation_fee") @db.Decimal(10, 2)
+  paymentTerms      String?   @map("payment_terms") @db.Text
+
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
@@ -702,6 +709,7 @@ model ExaminerApplication {
   insuranceDocument         Documents?       @relation(name: "ExaminerApplicationInsuranceDocument", references: [id], fields: [insuranceDocumentId])
   redactedIMEReportDocument Documents?       @relation(name: "ExaminerApplicationRedactedIMEReportDocument", references: [id], fields: [redactedIMEReportDocumentId])
   examinerProfile           ExaminerProfile? @relation("ExaminerApplicationProfile")
+  contracts                 Contract[]       @relation("ApplicationContracts")
 
   @@index([email])
   @@index([status])
@@ -1089,7 +1097,8 @@ enum ContractStatus {
 
 model Contract {
   id                   String         @id @default(uuid()) @db.Uuid
-  examinerProfileId    String         @map("examiner_profile_id") @db.Uuid
+  examinerProfileId    String?        @map("examiner_profile_id") @db.Uuid
+  applicationId        String?        @map("application_id") @db.Uuid
   templateId           String         @map("template_id") @db.Uuid
   templateVersionId    String         @map("template_version_id") @db.Uuid
   status               ContractStatus @default(DRAFT) @map("status")
@@ -1114,7 +1123,8 @@ model Contract {
   createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt            DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
 
-  examinerProfile ExaminerProfile  @relation("ExaminerContracts", fields: [examinerProfileId], references: [id], onDelete: Cascade)
+  examinerProfile ExaminerProfile?  @relation("ExaminerContracts", fields: [examinerProfileId], references: [id], onDelete: Cascade)
+  application     ExaminerApplication? @relation("ApplicationContracts", fields: [applicationId], references: [id], onDelete: Cascade)
   template        DocumentTemplate @relation("TemplateContracts", fields: [templateId], references: [id])
   templateVersion TemplateVersion  @relation("VersionContracts", fields: [templateVersionId], references: [id])
   events          ContractEvent[]  @relation("ContractEvents")
