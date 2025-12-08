@@ -130,7 +130,7 @@ const getExaminerById = async (id: string) => {
     }
   }
 
-  // Map assessment types if they are UUIDs to examination type names
+  // Map assessment types if they are UUIDs to assessment type names
   if (examiner.assessmentTypes && examiner.assessmentTypes.length > 0) {
     const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
     const assessmentTypeIds = examiner.assessmentTypes.filter(id => 
@@ -140,14 +140,14 @@ const getExaminerById = async (id: string) => {
     if (assessmentTypeIds.length > 0) {
       try {
         const { default: prisma } = await import("@/lib/db");
-        const examTypes = await prisma.examinationType.findMany({
+        const assessmentTypes = await prisma.assessmentType.findMany({
           where: { 
             id: { in: assessmentTypeIds },
             deletedAt: null 
           },
         });
         
-        const typeMap = new Map(examTypes.map(t => [t.id, t.name]));
+        const typeMap = new Map(assessmentTypes.map(t => [t.id, t.name]));
         examinerData.assessmentTypes = examiner.assessmentTypes.map(id => 
           typeMap.get(id) || id
         );

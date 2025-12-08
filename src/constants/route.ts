@@ -1,7 +1,7 @@
 const URLS = Object.freeze({
   HOME: "/",
   LOGIN: "/login",
-  DASHBOARD: "/dashboard",
+  DASHBOARD: "/admin/dashboard",
   USERS: "/users",
   FORBIDDEN: "/forbidden",
   PASSWORD_FORGOT: "/password/forgot",

@@ -7,10 +7,31 @@ import logger from "@/utils/logger";
 
 const listAllExaminers = async () => {
   try {
-    // Get ALL examiners regardless of status (PENDING, ACCEPTED, REJECTED)
+    // Get only ACTIVE examiners (those with accounts and ACTIVE status)
+    // When examiner creates password, ExaminerProfile status is set to ACTIVE
     const examiners = await prisma.examinerProfile.findMany({
       where: {
         deletedAt: null,
+        account: {
+          deletedAt: null, // Only examiners with non-deleted accounts
+        },
+        OR: [
+          {
+            // Primary: Examiners with ACTIVE status (set when account is created)
+            status: 'ACTIVE',
+          },
+          {
+            // Fallback: Examiners with linked application that has ACTIVE status
+            application: {
+              status: 'ACTIVE',
+              deletedAt: null,
+            },
+          },
+          {
+            // Legacy: Examiners without linked application (they're active examiners)
+            applicationId: null,
+          },
+        ],
       },
       include: {
         account: {
@@ -36,6 +57,11 @@ const listAllExaminers = async () => {
             createdAt: "desc",
           },
           take: 1,
+        },
+        application: {
+          select: {
+            status: true,
+          },
         },
       },
       orderBy: { createdAt: "desc" },

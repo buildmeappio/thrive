@@ -264,4 +264,27 @@ export const TaxonomyConfigs: Record<TaxonomyType, TaxonomyConfig> = {
     displayFields: ['name', 'value'],
     searchFields: ['name'],
   },
+  assessmentType: {
+    name: 'Assessment Types',
+    singularName: 'Assessment Type',
+    tableName: 'assessmentType',
+    fields: [
+      {
+        name: 'name',
+        label: 'Name',
+        type: 'text',
+        required: true,
+        placeholder: 'Enter assessment type name',
+      },
+      {
+        name: 'description',
+        label: 'Description',
+        type: 'textarea',
+        required: false,
+        placeholder: 'Enter description (optional)',
+      },
+    ],
+    displayFields: ['name', 'description'],
+    searchFields: ['name', 'description'],
+  },
 };

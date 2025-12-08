@@ -5,8 +5,8 @@ import dashboardService from "../server/dashboard.service";
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { 
-  listRecentExaminers, 
-  getExaminerCount as getExaminerCountAction 
+  getExaminerCount as getExaminerCountAction,
+  listRecentApplications 
 } from "@/domains/examiner/actions";
 
 
@@ -28,7 +28,8 @@ export async function getExaminerCount(): Promise<number> {
 }
 
 export async function getExaminers(limit: number): Promise<ExaminerData[]> {
-  return listRecentExaminers(limit);
+  // Dashboard should show applications, not examiners
+  return listRecentApplications(limit);
 }
 
 export async function getWaitingCases(limit: number): Promise<CaseDetailDtoType[]> {

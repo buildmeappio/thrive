@@ -20,11 +20,13 @@ type Props = {
   statuses?: string[];
   searchQuery?: string;
   filters?: FilterState;
+  type?: "applications" | "examiners"; // To determine routing
 };
 
-const ActionButton = ({ id }: { id: string }) => {
+const ActionButton = ({ id, type }: { id: string; type?: "applications" | "examiners" }) => {
+  const href = type === "applications" ? `/examiner/application/${id}` : `/examiner/${id}`;
   return (
-    <Link href={`/examiner/${id}`} className="w-full h-full cursor-pointer">
+    <Link href={href} className="w-full h-full cursor-pointer">
       <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-1 w-[30px] h-[30px] flex items-center justify-center hover:opacity-80">
         <ArrowRight className="w-4 h-4 text-white" />
       </div>
@@ -70,129 +72,139 @@ const SortableHeader = ({ column, children }: { column: Column<ExaminerData, unk
   );
 };
 
-const columnsDef = [
-  {
-    accessorKey: "name",
-    header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
-      <SortableHeader column={column}>Name</SortableHeader>
-    ),
-    cell: ({ row }: { row: Row<ExaminerData> }) => {
-      const name = row.getValue("name") as string;
-      const capitalizedName = capitalizeWords(name);
-      return (
-        <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-          title={capitalizedName}
-        >
-          {capitalizedName}
-        </div>
-      );
+const getColumnsDef = (type?: "applications" | "examiners") => {
+  const baseColumns = [
+    {
+      accessorKey: "name",
+      header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+        <SortableHeader column={column}>Name</SortableHeader>
+      ),
+      cell: ({ row }: { row: Row<ExaminerData> }) => {
+        const name = row.getValue("name") as string;
+        const capitalizedName = capitalizeWords(name);
+        return (
+          <div 
+            className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+            title={capitalizedName}
+          >
+            {capitalizedName}
+          </div>
+        );
+      },
+      minSize: 150,
+      maxSize: 250,
+      size: 200,
     },
-    minSize: 150,
-    maxSize: 250,
-    size: 200,
-  },
-  {
-    accessorKey: "email",
-    header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
-      <SortableHeader column={column}>Email</SortableHeader>
-    ),
-    cell: ({ row }: { row: Row<ExaminerData> }) => {
-      const email = row.getValue("email") as string;
-      return (
-        <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-          title={email}
-        >
-          {email}
-        </div>
-      );
+    {
+      accessorKey: "email",
+      header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+        <SortableHeader column={column}>Email</SortableHeader>
+      ),
+      cell: ({ row }: { row: Row<ExaminerData> }) => {
+        const email = row.getValue("email") as string;
+        return (
+          <div 
+            className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+            title={email}
+          >
+            {email}
+          </div>
+        );
+      },
+      minSize: 180,
+      maxSize: 300,
+      size: 220,
     },
-    minSize: 180,
-    maxSize: 300,
-    size: 220,
-  },
-  {
-    accessorKey: "specialties",
-    header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
-      <SortableHeader column={column}>Specialties</SortableHeader>
-    ),
-    cell: ({ row }: { row: Row<ExaminerData> }) => {
-      const specialties = row.getValue("specialties") as string | string[];
-      const formattedText = Array.isArray(specialties)
-        ? specialties.map((specialty: string) => formatText(specialty)).join(", ")
-        : formatText(specialties);
-      
-      return (
-        <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-          title={formattedText}
-        >
-          {formattedText}
-        </div>
-      );
+    {
+      accessorKey: "specialties",
+      header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+        <SortableHeader column={column}>Specialties</SortableHeader>
+      ),
+      cell: ({ row }: { row: Row<ExaminerData> }) => {
+        const specialties = row.getValue("specialties") as string | string[];
+        const formattedText = Array.isArray(specialties)
+          ? specialties.map((specialty: string) => formatText(specialty)).join(", ")
+          : formatText(specialties);
+        
+        return (
+          <div 
+            className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+            title={formattedText}
+          >
+            {formattedText}
+          </div>
+        );
+      },
+      minSize: 150,
+      maxSize: 300,
+      size: 220,
     },
-    minSize: 150,
-    maxSize: 300,
-    size: 220,
-  },
-  {
-    accessorKey: "province",
-    header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
-      <SortableHeader column={column}>Province</SortableHeader>
-    ),
-    cell: ({ row }: { row: Row<ExaminerData> }) => {
-      const province = row.getValue("province") as string;
-      return (
-        <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-          title={province}
-        >
-          {province}
-        </div>
-      );
+    {
+      accessorKey: "province",
+      header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+        <SortableHeader column={column}>Province</SortableHeader>
+      ),
+      cell: ({ row }: { row: Row<ExaminerData> }) => {
+        const province = row.getValue("province") as string;
+        return (
+          <div 
+            className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+            title={province}
+          >
+            {province}
+          </div>
+        );
+      },
+      minSize: 100,
+      maxSize: 150,
+      size: 120,
     },
-    minSize: 100,
-    maxSize: 150,
-    size: 120,
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
-      <SortableHeader column={column}>Status</SortableHeader>
-    ),
-    cell: ({ row }: { row: Row<ExaminerData> }) => {
-      const status = row.getValue("status") as string;
-      const formattedStatus = formatText(status);
-      return (
-        <div 
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-          title={formattedStatus}
-        >
-          {formattedStatus}
-        </div>
-      );
-    },
-    minSize: 120,
-    maxSize: 180,
-    size: 150,
-  },
-  {
-    header: "",
+  ];
+
+  // Add status column only for applications
+  if (type === "applications") {
+    baseColumns.push({
+      accessorKey: "status",
+      header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+        <SortableHeader column={column}>Status</SortableHeader>
+      ),
+      cell: ({ row }: { row: Row<ExaminerData> }) => {
+        const status = row.getValue("status") as string;
+        const formattedStatus = formatText(status);
+        return (
+          <div 
+            className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+            title={formattedStatus}
+          >
+            {formattedStatus}
+          </div>
+        );
+      },
+      minSize: 120,
+      maxSize: 180,
+      size: 150,
+    });
+  }
+
+  // Add action column
+  baseColumns.push({
+    header: () => <></>,
     accessorKey: "id",
     cell: ({ row }: { row: Row<ExaminerData> }) => {
-      return <ActionButton id={row.original.id} />;
+      return <ActionButton id={row.original.id} type={type} />;
     },
     minSize: 60,
     maxSize: 60,
     size: 60,
-    enableSorting: false,
-  },
-];
+  });
 
-export default function ExaminerTableWithPagination({ data, searchQuery = "", filters }: Props) {
+  return baseColumns;
+};
+
+export default function ExaminerTableWithPagination({ data, searchQuery = "", filters, type }: Props) {
   const [query, setQuery] = useState(searchQuery);
   const [sorting, setSorting] = useState<SortingState>([]);
+  const columnsDef = getColumnsDef(type);
 
   // Update internal query when searchQuery prop changes
   useEffect(() => {
@@ -212,23 +224,27 @@ export default function ExaminerTableWithPagination({ data, searchQuery = "", fi
       });
     }
 
-    // Filter by status
-    if (filters?.status && filters.status !== "all") {
+    // Filter by status (only for applications, not examiners)
+    if (type !== "examiners" && filters?.status && filters.status !== "all") {
       result = result.filter((d) => d.status === filters.status);
     }
 
     // Filter by search query
     const q = query.trim().toLowerCase();
     if (q) {
-      result = result.filter((d) =>
-        [d.name, d.email, d.specialties, d.province, d.status]
+      result = result.filter((d) => {
+        // For examiners, exclude status from search; for applications, include it
+        const searchFields = type === "examiners"
+          ? [d.name, d.email, d.specialties, d.province]
+          : [d.name, d.email, d.specialties, d.province, d.status];
+        return searchFields
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q))
-      );
+          .some((v) => String(v).toLowerCase().includes(q));
+      });
     }
 
     return result;
-  }, [data, query, filters]);
+  }, [data, query, filters, type]);
 
   const table = useReactTable({
     data: filtered,

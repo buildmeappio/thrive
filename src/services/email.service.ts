@@ -73,10 +73,26 @@ class EmailService {
     template: string,
     data: Record<string, unknown>
   ): string {
-    return Object.entries(data).reduce((acc, [key, value]) => {
-      const regex = new RegExp(`{{${key}}}`, "g");
+    let result = template;
+    
+    // Handle Handlebars conditionals: {{#if variableName}}...{{/if}}
+    const ifBlockRegex = /\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g;
+    result = result.replace(ifBlockRegex, (match, variableName, content) => {
+      const value = data[variableName];
+      // If variable is truthy, include the content; otherwise, remove it
+      if (value && (value === true || value === "true" || String(value).toLowerCase() === "true")) {
+        return content;
+      }
+      return "";
+    });
+    
+    // Replace simple placeholders: {{variableName}}
+    result = Object.entries(data).reduce((acc, [key, value]) => {
+      const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
       return acc.replace(regex, String(value ?? ""));
-    }, template);
+    }, result);
+    
+    return result;
   }
 
   async sendEmail(
