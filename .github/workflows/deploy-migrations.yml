@@ -56,7 +56,7 @@ jobs:
               echo "environment=qa" >> $GITHUB_OUTPUT
               echo "run_seeders=true" >> $GITHUB_OUTPUT
             elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-              echo "environment=dev" >> $GITHUB_OUTPUT
+              echo "environment=develop" >> $GITHUB_OUTPUT
               echo "run_seeders=true" >> $GITHUB_OUTPUT
             else
               echo "environment=dev" >> $GITHUB_OUTPUT
