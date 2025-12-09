@@ -59,7 +59,7 @@ jobs:
               echo "environment=develop" >> $GITHUB_OUTPUT
               echo "run_seeders=true" >> $GITHUB_OUTPUT
             else
-              echo "environment=dev" >> $GITHUB_OUTPUT
+              echo "environment=develop" >> $GITHUB_OUTPUT
               echo "run_seeders=true" >> $GITHUB_OUTPUT
             fi
           fi
