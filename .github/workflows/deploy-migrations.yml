@@ -78,15 +78,18 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER || 'ec2-user' }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
           script: |
+            bash -l -c "
             cd ${{ secrets.APP_DIR }}
             # Remove existing .env file
             if [ -f .env ]; then
               rm .env
             fi
             # Create new .env file
-            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
-            echo "✅ Created .env file with DATABASE_URL"
+            echo 'DATABASE_URL=${{ secrets.DATABASE_URL }}' > .env
+            echo '✅ Created .env file with DATABASE_URL'
+            "
 
       - name: Run Migrations on EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -94,20 +97,28 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER || 'ec2-user' }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
           script: |
+            bash -l -c "
             cd ${{ secrets.APP_DIR }}
-            echo "📦 Current directory: $(pwd)"
-            echo "🔍 Checking Prisma installation..."
+            echo '📦 Current directory: \$(pwd)'
+            echo '🔍 Checking Node.js installation...'
+            which node || echo '⚠️  Node.js not found in PATH'
+            which npm || echo '⚠️  npm not found in PATH'
+            which npx || echo '⚠️  npx not found in PATH'
             
-            if [ ! -d "node_modules" ]; then
-              echo "📥 Installing dependencies..."
+            echo '🔍 Checking Prisma installation...'
+            
+            if [ ! -d 'node_modules' ]; then
+              echo '📥 Installing dependencies...'
               npm install
             fi
             
-            echo "🔄 Running Prisma migrations..."
+            echo '🔄 Running Prisma migrations...'
             npx prisma migrate deploy
             
-            echo "✅ Migrations completed successfully!"
+            echo '✅ Migrations completed successfully!'
+            "
 
   run-seeders:
     name: Run Database Seeders
@@ -126,18 +137,25 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER || 'ec2-user' }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
           script: |
+            bash -l -c "
             cd ${{ secrets.APP_DIR }}
-            echo "📦 Current directory: $(pwd)"
-            echo "🔍 Checking Prisma installation..."
+            echo '📦 Current directory: \$(pwd)'
+            echo '🔍 Checking Node.js installation...'
+            which node || echo '⚠️  Node.js not found in PATH'
+            which npm || echo '⚠️  npm not found in PATH'
             
-            if [ ! -d "node_modules" ]; then
-              echo "📥 Installing dependencies..."
+            echo '🔍 Checking Prisma installation...'
+            
+            if [ ! -d 'node_modules' ]; then
+              echo '📥 Installing dependencies...'
               npm install
             fi
             
-            echo "🌱 Running Prisma seeders..."
+            echo '🌱 Running Prisma seeders...'
             npm run seed
             
-            echo "✅ Seeders completed successfully!"
+            echo '✅ Seeders completed successfully!'
+            "
 
