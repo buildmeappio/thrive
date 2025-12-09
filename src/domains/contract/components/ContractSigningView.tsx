@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { signContract } from "../server/actions/signContract.actions";
 import { signContractByExaminer } from "../server/actions/signContractByExaminer";
 import { declineContractByExaminer } from "../server/actions/declineContractByExaminer";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 
 interface ContractSigningViewProps {
   token: string;
@@ -57,6 +59,285 @@ const ContractSigningView = ({
     setSignatureImage(null);
   };
 
+  // Generate PDF from HTML contract
+  const generatePdfFromHtml = async (): Promise<string> => {
+    const contractElement = document.getElementById("contract");
+    if (!contractElement) {
+      throw new Error("Contract element not found");
+    }
+
+    try {
+      // Store original scroll position and styles
+      const originalScrollTop = contractElement.scrollTop;
+      const originalOverflow = contractElement.style.overflow;
+      const originalHeight = contractElement.style.height;
+      const originalMaxHeight = contractElement.style.maxHeight;
+      
+      // Temporarily adjust styles to capture full content
+      contractElement.style.overflow = "visible";
+      contractElement.style.height = "auto";
+      contractElement.style.maxHeight = "none";
+      
+      // Scroll to top to ensure we capture from the beginning
+      contractElement.scrollTop = 0;
+      
+      // Wait a bit for rendering
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // Use html2canvas to capture the FULL contract as an image
+      // Using scale: 1.5 for balance between quality and file size
+      // This should keep PDF under 25MB limit while maintaining readability
+      const canvas = await html2canvas(contractElement, {
+        scale: 1.5, // Reduced from 2 to keep file size manageable
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        allowTaint: true,
+        removeContainer: false,
+        // Ensure we capture the full height
+        height: contractElement.scrollHeight,
+        width: contractElement.scrollWidth,
+      });
+
+      // Restore original styles
+      contractElement.style.overflow = originalOverflow;
+      contractElement.style.height = originalHeight;
+      contractElement.style.maxHeight = originalMaxHeight;
+      contractElement.scrollTop = originalScrollTop;
+
+      // PDF dimensions (A4 size in mm)
+      const pdfWidth = 210; // A4 width in mm
+      const pdfHeight = 297; // A4 height in mm
+      const margin = 10; // Margin in mm
+      const contentWidth = pdfWidth - (margin * 2);
+      const contentHeight = pdfHeight - (margin * 2);
+
+      // Calculate image dimensions to fit PDF width while maintaining aspect ratio
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * contentWidth) / canvas.width;
+
+      // Helper function to find safe break points (horizontal gaps/white space)
+      const findSafeBreakPoint = (startY: number, endY: number, canvas: HTMLCanvasElement): number => {
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return endY;
+        
+        const imageData = ctx.getImageData(0, startY, canvas.width, endY - startY);
+        const data = imageData.data;
+        const threshold = 245; // Consider pixels lighter than this as "white"
+        const minGapHeight = 20; // Minimum gap height to consider as a break point (in pixels)
+        const whitePixelRatio = 0.85; // At least 85% of pixels should be white
+        
+        let bestBreakY = endY;
+        let gapStart = -1;
+        let bestGapHeight = 0;
+        let bestGapY = endY;
+        
+        // Scan from bottom to top (near the end) to find gaps
+        const searchHeight = endY - startY;
+        for (let y = searchHeight - 1; y >= minGapHeight; y--) {
+          let whiteCount = 0;
+          
+          // Sample pixels across the width (check every 5th pixel for performance)
+          const sampleStep = 5;
+          for (let x = 0; x < canvas.width; x += sampleStep) {
+            const idx = (y * canvas.width + x) * 4;
+            const r = data[idx];
+            const g = data[idx + 1];
+            const b = data[idx + 2];
+            const brightness = (r + g + b) / 3;
+            
+            if (brightness >= threshold) {
+              whiteCount++;
+            }
+          }
+          
+          const whiteRatio = whiteCount / (canvas.width / sampleStep);
+          const isGapRow = whiteRatio >= whitePixelRatio;
+          
+          if (isGapRow) {
+            if (gapStart === -1) {
+              gapStart = y;
+            }
+            const gapHeight = gapStart - y + 1;
+            
+            // Track the best gap (largest and closest to end)
+            if (gapHeight >= minGapHeight) {
+              const gapY = startY + y;
+              // Prefer gaps closer to the end, but prioritize larger gaps
+              if (gapHeight > bestGapHeight || (gapHeight === bestGapHeight && gapY > bestGapY)) {
+                bestGapHeight = gapHeight;
+                bestGapY = gapY;
+                // Use the start of the gap as break point (top of the gap)
+                bestBreakY = gapY;
+              }
+            }
+          } else {
+            // Reset gap tracking when we hit non-gap content
+            gapStart = -1;
+          }
+        }
+        
+        return bestBreakY;
+      };
+
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      // Calculate page height in pixels
+      const pageHeightInPixels = contentHeight * (canvas.height / imgHeight);
+      
+      // Calculate how many pages we need
+      const totalPages = Math.ceil(imgHeight / contentHeight);
+      
+      console.log(`Generating PDF: ${totalPages} pages, image height: ${imgHeight}mm, content height per page: ${contentHeight}mm`);
+
+      // Add content to PDF, splitting across pages at safe break points
+      let currentY = 0;
+      for (let page = 0; page < totalPages; page++) {
+        if (page > 0) {
+          pdf.addPage();
+        }
+
+        // Calculate the ideal end position for this page
+        const idealEndY = Math.min(
+          currentY + pageHeightInPixels,
+          canvas.height
+        );
+        
+        // Find a safe break point near the ideal end position
+        // Look for break points within the last 30% of the page (but at least 100px from start)
+        const searchStartY = Math.max(
+          currentY + 100, // Ensure we have some content before looking for breaks
+          idealEndY - (pageHeightInPixels * 0.3)
+        );
+        const safeBreakY = findSafeBreakPoint(searchStartY, idealEndY, canvas);
+        
+        // Use the safe break point if it's reasonable (not too close to start, not too far from ideal)
+        const sourceY = currentY;
+        const minHeight = pageHeightInPixels * 0.7; // At least 70% of page height
+        const maxHeight = pageHeightInPixels * 1.1; // At most 110% of page height
+        
+        let actualEndY = idealEndY;
+        if (safeBreakY < idealEndY && safeBreakY > currentY + minHeight && safeBreakY <= currentY + maxHeight) {
+          actualEndY = safeBreakY;
+        }
+        
+        // For last page, use remaining content
+        if (page === totalPages - 1) {
+          actualEndY = canvas.height;
+        }
+        
+        const actualSourceHeight = actualEndY - sourceY;
+        
+        // Ensure we have at least some content
+        if (actualSourceHeight < 50 && page < totalPages - 1) {
+          // If the safe break is too close to start, use ideal end
+          const fallbackEndY = Math.min(currentY + pageHeightInPixels, canvas.height);
+          const fallbackHeight = fallbackEndY - sourceY;
+          
+          // Create a temporary canvas for this page's portion
+          const pageCanvas = document.createElement("canvas");
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = fallbackHeight;
+          const pageCtx = pageCanvas.getContext("2d");
+          
+          if (!pageCtx) {
+            throw new Error("Failed to get canvas context");
+          }
+          
+          // Fill with white background first
+          pageCtx.fillStyle = "#ffffff";
+          pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          
+          // Draw the portion of the original canvas for this page
+          pageCtx.drawImage(
+            canvas,
+            0, sourceY,
+            canvas.width, fallbackHeight,
+            0, 0,
+            pageCanvas.width, pageCanvas.height
+          );
+          
+          const pageImgData = pageCanvas.toDataURL("image/jpeg", 0.92);
+          const pageImgHeight = (fallbackHeight * imgWidth) / canvas.width;
+          
+          pdf.addImage(
+            pageImgData,
+            "JPEG",
+            margin,
+            margin,
+            imgWidth,
+            pageImgHeight
+          );
+          
+          currentY = fallbackEndY;
+          continue;
+        }
+        
+        // Create a temporary canvas for this page's portion
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = actualSourceHeight;
+        const pageCtx = pageCanvas.getContext("2d");
+        
+        if (!pageCtx) {
+          throw new Error("Failed to get canvas context");
+        }
+        
+        // Fill with white background first
+        pageCtx.fillStyle = "#ffffff";
+        pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+        
+        // Draw the portion of the original canvas for this page
+        pageCtx.drawImage(
+          canvas,
+          0, sourceY, // Source x, y (start from top of this page's portion)
+          canvas.width, actualSourceHeight, // Source width, height
+          0, 0, // Destination x, y
+          pageCanvas.width, pageCanvas.height // Destination width, height
+        );
+        
+        // Convert page canvas to image with compression
+        // Using 0.92 quality for JPEG to reduce file size while maintaining readability
+        // JPEG is better for text documents than PNG for file size
+        const pageImgData = pageCanvas.toDataURL("image/jpeg", 0.92);
+        
+        // Calculate the height this page's image should be in mm
+        const pageImgHeight = (actualSourceHeight * imgWidth) / canvas.width;
+        
+        // Add this page's image to PDF
+        pdf.addImage(
+          pageImgData,
+          "JPEG",
+          margin,
+          margin,
+          imgWidth,
+          pageImgHeight
+        );
+        
+        // Update currentY for next page
+        currentY = actualEndY;
+      }
+
+      // Convert PDF to base64
+      const pdfBase64 = pdf.output("datauristring").split(",")[1];
+      
+      // Check file size (Gmail limit is 25MB)
+      const pdfSizeBytes = (pdfBase64.length * 3) / 4; // Approximate size in bytes
+      const pdfSizeMB = pdfSizeBytes / (1024 * 1024);
+      
+      console.log(`PDF generated: ${pdfSizeMB.toFixed(2)} MB, ${totalPages} pages`);
+      
+      if (pdfSizeMB > 24) {
+        console.warn(`⚠️ PDF size (${pdfSizeMB.toFixed(2)} MB) is close to Gmail's 25MB limit`);
+      }
+      
+      return pdfBase64;
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      throw new Error("Failed to generate PDF from contract");
+    }
+  };
+
   const handleSign = async () => {
     if (isSigning) return;
     setIsSigning(true);
@@ -64,8 +345,10 @@ const ContractSigningView = ({
     try {
       const contractElement = document.getElementById("contract");
       const htmlContent = contractElement?.innerHTML || contractHtml;
-      const pdfBase64 = signatureImage?.split(",")[1] || "";
       const userAgent = navigator.userAgent;
+
+      // Generate PDF from the signed HTML contract
+      const pdfBase64 = await generatePdfFromHtml();
 
       // 1. Sign the contract (stores signature and updates status)
       const result = await signContract(
@@ -78,7 +361,7 @@ const ContractSigningView = ({
       );
 
       if (!result.success) {
-        throw new Error("Failed to sign contract");
+        throw new Error(result.error || "Failed to sign contract");
       }
 
       // 2. Notify admin that contract is signed and send signed contract to examiner
@@ -95,7 +378,9 @@ const ContractSigningView = ({
         // Continue anyway - signature was successful
       }
 
-      toast.success("Contract signed successfully!");
+      toast.success("Contract signed successfully!", {
+        position: "top-right",
+      });
       setSigned(true);
       // Don't redirect - show success message on same page
     } catch (error) {
