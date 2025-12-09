@@ -27,6 +27,9 @@ const serializeValue = (value: any): any => {
 
 const getExaminerById = async (id: string) => {
   const examiner = await examinerService.getExaminerById(id);
+  if (!examiner) {
+    throw new Error("Examiner not found");
+  }
   let examinerData = ExaminerDto.toExaminerData(examiner as any);
 
   // Map specialty IDs to exam type names

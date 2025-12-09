@@ -106,6 +106,7 @@ export default function Dashboard({
           <NewExaminers
             items={examinerRows}
             listHref="/examiner"
+            buildDetailHref={(id) => `/examiner/application/${id}`}
           />
           <NewCases
             items={caseRows}
