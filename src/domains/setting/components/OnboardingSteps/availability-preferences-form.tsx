@@ -16,9 +16,11 @@ import {
   convertAvailabilityToLocal,
 } from "@/utils/timeConversion";
 
+import { InitialFormData } from "@/types/components";
+
 interface AvailabilityPreferencesFormProps {
   examinerProfileId: string | null;
-  initialData: any;
+  initialData: InitialFormData;
   onComplete: () => void;
   onCancel?: () => void;
 }

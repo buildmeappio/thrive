@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       error instanceof Error
         ? error.message
         : ErrorMessages.FAILED_APPROVE_EXAMINER;
-    const statusCode = (error as any)?.statusCode || 500;
+    const statusCode = (error as { statusCode?: number })?.statusCode || 500;
 
     return NextResponse.json(
       {

@@ -3,6 +3,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { ExaminerData, MedicalLicenseDocument } from "@/types/components";
 
 type YearsOfExperience = {
   id: string;
@@ -176,7 +177,7 @@ type Store = {
   examinerProfileId: string | null;
   applicationId: string | null; // For ExaminerApplication updates
   setEditMode: (isEdit: boolean, profileId?: string) => void;
-  loadExaminerData: (examinerData: any) => void;
+  loadExaminerData: (examinerData: ExaminerData) => void;
 };
 
 // Custom storage to handle File objects
@@ -202,7 +203,7 @@ const createRegistrationStorage = () => {
               // Keep serializable objects: ExistingDocument (plain objects with id)
               // Filter out File instances which can't be serialized to JSON
               const filtered = sanitizedData.medicalLicense.filter(
-                (item: any) => {
+                (item: File | { id: string; [key: string]: unknown }) => {
                   // File instances can't be in parsed JSON, but check anyway during stringification
                   if (item instanceof File) {
                     return false;
@@ -210,7 +211,7 @@ const createRegistrationStorage = () => {
 
                   // Keep plain objects (ExistingDocument objects)
                   // These have been serialized to JSON already, so they're plain objects with properties
-                  if (item && typeof item === "object" && item.id) {
+                  if (item && typeof item === "object" && "id" in item && item.id) {
                     return true;
                   }
 
@@ -270,7 +271,7 @@ export const useRegistrationStore = create<Store>()(
       applicationId: null,
       setEditMode: (isEdit: boolean, profileId?: string) =>
         set({ isEditMode: isEdit, examinerProfileId: profileId || null }),
-      loadExaminerData: (examinerData: any) => {
+      loadExaminerData: (examinerData: ExaminerData) => {
         // Clear localStorage before loading to prevent stale data from overwriting
         // This ensures fresh data from the server is used
         try {
@@ -304,7 +305,7 @@ export const useRegistrationStore = create<Store>()(
             "",
           languagesSpoken: isApplication
             ? examinerData.languagesSpoken || [] // Array of language IDs
-            : examinerData.examinerLanguages?.map((l: any) => l.languageId) ||
+            : examinerData.examinerLanguages?.map((l: { languageId: string }) => l.languageId) ||
               [],
 
           // Step 2: Address
@@ -332,7 +333,7 @@ export const useRegistrationStore = create<Store>()(
             examinerData.medicalLicenseDocuments &&
             Array.isArray(examinerData.medicalLicenseDocuments) &&
             examinerData.medicalLicenseDocuments.length > 0
-              ? examinerData.medicalLicenseDocuments.map((doc: any) => ({
+              ? examinerData.medicalLicenseDocuments.map((doc: MedicalLicenseDocument) => ({
                   id: doc.id,
                   name: doc.name,
                   displayName: doc.displayName || doc.name,
@@ -404,7 +405,7 @@ export const useRegistrationStore = create<Store>()(
     }),
     {
       name: "examiner-registration-storage",
-      storage: createRegistrationStorage() as any,
+      storage: createRegistrationStorage(),
       onRehydrateStorage: () => () => {
         // Rehydration completed
       },

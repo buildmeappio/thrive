@@ -10,6 +10,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { revalidatePath } from "next/cache";
 import prisma from "./db";
 import { ENV } from "@/constants/variables";
+import { AppError } from "@/types/common";
 
 // For ECS: Don't pass credentials, let SDK use IAM role automatically
 // For local dev: Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in .env.local
@@ -190,18 +191,19 @@ const getFileFromS3 = async (
       data: buffer,
       contentType: response.ContentType || "application/octet-stream",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("S3 Get error:", error);
 
     // Handle specific S3 errors
-    if (error.name === "NoSuchKey") {
+    const s3Error = error as AppError & { name?: string };
+    if (s3Error.name === "NoSuchKey") {
       return {
         success: false,
         error: "File not found in S3",
       };
     }
 
-    if (error.name === "AccessDenied") {
+    if (s3Error.name === "AccessDenied") {
       return {
         success: false,
         error: "Access denied to S3 bucket",
@@ -210,7 +212,7 @@ const getFileFromS3 = async (
 
     return {
       success: false,
-      error: error.message || "Failed to get file from S3",
+      error: s3Error.message || "Failed to get file from S3",
     };
   }
 };
@@ -242,11 +244,12 @@ const getPresignedUrlFromS3 = async (
       success: true,
       url,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("S3 Presigned URL error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to generate presigned URL";
     return {
       success: false,
-      error: error.message || "Failed to generate presigned URL",
+      error: errorMessage,
     };
   }
 };

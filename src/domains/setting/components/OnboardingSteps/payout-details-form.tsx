@@ -19,9 +19,11 @@ import {
 } from "./PayoutTabs";
 import { toast } from "sonner";
 
+import { InitialFormData } from "@/types/components";
+
 interface PayoutDetailsFormProps {
   examinerProfileId: string | null;
-  initialData: any;
+  initialData: InitialFormData;
   onComplete: () => void;
   onCancel?: () => void;
 }
@@ -59,7 +61,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       return; // Don't collapse if already expanded
     }
     setExpandedSection(section);
-    form.setValue("payoutMethod", section as any);
+    form.setValue("payoutMethod", section as string);
   };
 
   const onSubmit = async (values: PayoutDetailsInput) => {

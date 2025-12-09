@@ -97,11 +97,13 @@ class GoogleDocsService {
   /**
    * Build document requests for batch update
    */
+import { GoogleDocsBatchUpdateRequest } from "@/types/google-docs";
+
   private buildDocumentRequests(
     reportData: ReportFormData,
     caseData: CaseOverviewData
-  ): any[] {
-    const requests: any[] = [];
+  ): GoogleDocsBatchUpdateRequest["requests"] {
+    const requests: GoogleDocsBatchUpdateRequest["requests"] = [];
     let index = 1;
 
     // Helper function to add text

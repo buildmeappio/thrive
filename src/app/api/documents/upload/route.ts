@@ -384,7 +384,7 @@ export async function POST(request: NextRequest) {
     log(
       `[${requestId}] 🚀 Starting upload process for ${files.length} file(s)...`
     );
-    const uploadedDocuments: any[] = [];
+    const uploadedDocuments: Array<{ id: string; name: string; type: string; size: number }> = [];
     const uploadErrors: string[] = [];
 
     for (let i = 0; i < files.length; i++) {

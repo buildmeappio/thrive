@@ -2,6 +2,7 @@
 import React from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import GoogleMapsInput from "@/components/GoogleMapsInput";
+import { GoogleMapsPlaceData } from "@/types/google-maps";
 
 interface FormGoogleMapsInputProps {
   name: string;
@@ -9,13 +10,7 @@ interface FormGoogleMapsInputProps {
   placeholder?: string;
   required?: boolean;
   className?: string;
-  onPlaceSelect?: (placeData: {
-    formattedAddress: string;
-    latitude: number;
-    longitude: number;
-    components: any;
-    raw: any;
-  }) => void;
+  onPlaceSelect?: (placeData: GoogleMapsPlaceData) => void;
   from?: string;
   province?: string; // Filter addresses by province
 }

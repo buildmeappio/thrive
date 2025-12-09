@@ -139,7 +139,7 @@ export default function PrepareReportForm({
       } else {
         throw new Error(result.message || "Failed to save draft");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       error("Error saving draft:", error);
       if (showToast) {
         toast.error(error.message || "Failed to save draft");
@@ -203,7 +203,7 @@ export default function PrepareReportForm({
         printReport(formData, caseData);
         toast.success("Report submitted (using fallback template)");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       error("Error preparing report for print:", error);
       toast.error(error.message || "Failed to prepare report");
     } finally {

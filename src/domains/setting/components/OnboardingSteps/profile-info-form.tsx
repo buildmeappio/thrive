@@ -26,9 +26,11 @@ import {
 } from "../../schemas/onboardingSteps.schema";
 import { toast } from "sonner";
 
+import { InitialFormData } from "@/types/components";
+
 interface ProfileInfoFormProps {
   examinerProfileId: string | null;
-  initialData: any;
+  initialData: InitialFormData;
   onComplete: () => void;
   onCancel?: () => void;
 }

@@ -9,7 +9,7 @@ export async function getReportAction(
   try {
     const result = await getReportHandler(input);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in getReport action:", error);
     return {
       success: false,

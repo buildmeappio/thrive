@@ -5,7 +5,7 @@ import getExaminerProfileHandler from "../handlers/getExaminerProfile";
 export const getExaminerProfileAction = async (accountId: string) => {
   try {
     return await getExaminerProfileHandler({ accountId });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false,
       data: null,

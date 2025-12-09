@@ -18,7 +18,7 @@ const getAllCases = async (
       success: true,
       data: result,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in getAllCases handler:", error);
     return {
       success: false,

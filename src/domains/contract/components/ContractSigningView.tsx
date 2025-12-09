@@ -199,8 +199,8 @@ const ContractSigningView = ({
       canvas.removeEventListener("mousedown", start);
       canvas.removeEventListener("mousemove", move);
       window.removeEventListener("mouseup", end);
-      canvas.removeEventListener("touchstart", start as any);
-      canvas.removeEventListener("touchmove", move as any);
+      canvas.removeEventListener("touchstart", start as EventListener);
+      canvas.removeEventListener("touchmove", move as EventListener);
       window.removeEventListener("touchend", end);
     };
   }, []);

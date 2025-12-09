@@ -10,7 +10,7 @@ export const getPayoutDetailsAction = async (
   try {
     const result = await getPayoutDetails(payload);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false,
       message: error.message || "Failed to fetch payout details",

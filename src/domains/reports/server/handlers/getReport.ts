@@ -27,7 +27,7 @@ const getReport = async (payload: GetReportInput): Promise<GetReportResponse> =>
       success: true,
       data: result,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in getReport handler:", error);
     return {
       success: false,

@@ -12,7 +12,7 @@ export const updateBookingStatusAction = async (
   try {
     const result = await updateBookingStatusHandler(input);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in updateBookingStatus action:", error);
     return {
       success: false,

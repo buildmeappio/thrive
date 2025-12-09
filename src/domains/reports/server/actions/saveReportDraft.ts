@@ -50,7 +50,7 @@ export async function saveReportDraftAction(
     });
 
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in saveReportDraft action:", error);
     return {
       success: false,

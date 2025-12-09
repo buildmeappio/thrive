@@ -5,6 +5,7 @@ import emailService from "@/server/services/email.service";
 import { ENV } from "@/constants/variables";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { convertHtmlToPdf } from "../utils/htmlToPdf";
+import { S3StreamChunk } from "@/types/api";
 
 /**
  * Action called after examiner signs the contract
@@ -126,10 +127,12 @@ export const signContractByExaminer = async (
             Key: s3Key,
           });
 
+import { S3StreamChunk } from "@/types/api";
+
           const s3Response = await s3Client.send(getObjectCommand);
           if (s3Response.Body) {
             const chunks: Uint8Array[] = [];
-            for await (const chunk of s3Response.Body as any) {
+            for await (const chunk of s3Response.Body as S3StreamChunk) {
               chunks.push(chunk);
             }
             const fileBuffer = Buffer.concat(chunks);
@@ -207,7 +210,7 @@ export const signContractByExaminer = async (
       success: true,
       message: "Contract signed successfully and admin notified",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in signContractByExaminer:", error);
     return {
       success: false,

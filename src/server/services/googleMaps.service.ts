@@ -7,11 +7,13 @@
 
 import { ENV } from "@/constants/variables";
 
+import { GoogleMapsAddressComponent } from "@/types/google-maps";
+
 interface GeocodeResult {
   formattedAddress: string;
   latitude: number;
   longitude: number;
-  addressComponents: any[];
+  addressComponents: GoogleMapsAddressComponent[];
   placeId: string;
 }
 
@@ -24,7 +26,7 @@ interface GeocodeResponse {
         lng: number;
       };
     };
-    address_components: any[];
+    address_components: GoogleMapsAddressComponent[];
     place_id: string;
   }>;
   status: string;
@@ -157,7 +159,7 @@ class GoogleMapsService {
 
       // Check if any address component has country: CA
       const hasCanada = result.addressComponents.some(
-        (component: any) =>
+        (component: GoogleMapsAddressComponent) =>
           component.types.includes("country") && component.short_name === "CA"
       );
 
@@ -180,7 +182,7 @@ class GoogleMapsService {
 
       // Find the administrative_area_level_1 (province/state)
       const provinceComponent = result.addressComponents.find(
-        (component: any) =>
+        (component: GoogleMapsAddressComponent) =>
           component.types.includes("administrative_area_level_1")
       );
 

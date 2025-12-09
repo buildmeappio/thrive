@@ -34,7 +34,7 @@ const updateBookingStatus = async (
           : "requested more info"
       } successfully`,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in updateBookingStatus handler:", error);
     return {
       success: false,

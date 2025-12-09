@@ -11,7 +11,7 @@ export const getCaseDetailsAction = async (
   try {
     const result = await getCaseDetailsHandler(input);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in getCaseDetails action:", error);
     return {
       success: false,

@@ -80,7 +80,7 @@ export const useSaveApplicationProgress = () => {
       ];
 
       // Prepare save payload
-      const savePayload: any = {
+      const savePayload: Record<string, unknown> = {
         email: storeData.emailAddress,
         firstName: storeData.firstName,
         lastName: storeData.lastName,
@@ -150,7 +150,7 @@ export const useSaveApplicationProgress = () => {
         description: "We've emailed you a secure link to resume your application anytime.",
         duration: 5000,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving progress:", error);
       toast.error("Failed to save progress", {
         description: error?.message || "Please try again later.",

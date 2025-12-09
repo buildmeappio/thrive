@@ -40,8 +40,10 @@ const verifyResumeTokenHandler = async (
       },
     });
 
+import { MedicalLicenseDocument } from "@/types/components";
+
     // Fetch medical license documents by IDs
-    let medicalLicenseDocuments: any[] = [];
+    let medicalLicenseDocuments: MedicalLicenseDocument[] = [];
     if (application?.medicalLicenseDocumentIds && application.medicalLicenseDocumentIds.length > 0) {
       medicalLicenseDocuments = await prisma.documents.findMany({
         where: {

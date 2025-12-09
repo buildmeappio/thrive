@@ -116,12 +116,11 @@ const ResumeApplicationContent = () => {
         // Use replace instead of push to avoid adding to history
         // This ensures the back button doesn't go back to the resume page
         router.replace("/register");
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error resuming application:", error);
+        const errorMessage = error instanceof Error ? error.message : "The resume link may be invalid or expired. Please start a new application.";
         toast.error("Failed to resume application", {
-          description:
-            error?.message ||
-            "The resume link may be invalid or expired. Please start a new application.",
+          description: errorMessage,
         });
         router.push("/register");
       } finally {

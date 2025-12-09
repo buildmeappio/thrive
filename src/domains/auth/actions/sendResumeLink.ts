@@ -7,7 +7,7 @@ const sendResumeLink = async (payload: SendResumeLinkInput) => {
   try {
     const result = await authHandlers.sendResumeLink(payload);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in sendResumeLink action:", error);
     return {
       success: false,

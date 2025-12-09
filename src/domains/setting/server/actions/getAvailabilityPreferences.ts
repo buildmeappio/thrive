@@ -11,7 +11,7 @@ export const getAvailabilityPreferencesAction = async () => {
       data: null,
       message: "Not implemented yet",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false as const,
       data: null,

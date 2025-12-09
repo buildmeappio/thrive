@@ -12,13 +12,15 @@ import {
 import { type ActivationStep, initializeActivationSteps } from "../constants";
 
 interface ActivationStepsProps {
+import { ProfileData, SpecialtyData, AvailabilityData, PayoutData, LanguageOption } from "@/types/components";
+
   initialActivationStep: string | null;
   examinerProfileId: string | null;
-  profileData: any;
-  specialtyData: any;
-  availabilityData: any;
-  payoutData: any;
-  languages: any[];
+  profileData: ProfileData;
+  specialtyData: SpecialtyData;
+  availabilityData: AvailabilityData;
+  payoutData: PayoutData;
+  languages: LanguageOption[];
 }
 
 const ActivationSteps: React.FC<ActivationStepsProps> = ({

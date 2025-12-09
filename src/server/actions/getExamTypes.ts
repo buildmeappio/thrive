@@ -7,7 +7,7 @@ const getExamTypesAction = async (): Promise<ExamTypesResponse> => {
   try {
     const result = await getExamTypes();
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in getExamTypes action:", error);
     return {
       success: false as const,

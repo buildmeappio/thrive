@@ -11,7 +11,7 @@ export const getDashboardBookingsAction = async (
   try {
     const result = await getDashboardBookingsHandler(input);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in getDashboardBookings action:", error);
     return {
       success: false,

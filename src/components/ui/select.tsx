@@ -61,7 +61,7 @@ const Select = ({
         if (label) return; // Already found
 
         if (React.isValidElement(child)) {
-          const props = child.props as any;
+          const props = child.props as { value?: string; children?: React.ReactNode; [key: string]: unknown };
           // Check if this is a SelectItem with matching value
           if (props.value === value) {
             label = typeof props.children === "string" ? props.children : value;

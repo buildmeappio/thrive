@@ -42,7 +42,7 @@ export async function signContractHandler(input: SignContractInput) {
     let htmlUpload: { key: string; sha256: string };
     try {
       htmlUpload = await uploadHtmlToS3(input.contractId, input.htmlContent);
-    } catch (s3Error: any) {
+    } catch (s3Error: unknown) {
       return {
         success: false,
         error: `Failed to upload HTML: ${s3Error.message}`,
@@ -55,7 +55,7 @@ export async function signContractHandler(input: SignContractInput) {
         signedHtmlKey: htmlUpload.key,
         signedHtmlSha256: htmlUpload.sha256,
       });
-    } catch (updateError: any) {
+    } catch (updateError: unknown) {
       return {
         success: false,
         error: `Failed to update contract status: ${updateError.message}`,
@@ -65,12 +65,12 @@ export async function signContractHandler(input: SignContractInput) {
     // Revalidate path
     try {
       revalidatePath(`/examiner/contract/${contract.id}`);
-    } catch (revalidateError: any) {
+    } catch (revalidateError: unknown) {
       console.warn("Revalidation failed", revalidateError);
     }
 
     return { success: true, htmlFileKey: htmlUpload.key };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in signContractHandler:", error);
     return {
       success: false,

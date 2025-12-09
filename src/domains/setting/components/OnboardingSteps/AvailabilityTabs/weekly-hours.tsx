@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, Path } from "react-hook-form";
 import { AvailabilityPreferencesInput } from "../../../schemas/onboardingSteps.schema";
 import { DayOfWeek, daysOptions, timeOptions } from "@/constants/options";
 
@@ -199,7 +199,7 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
         ? timeOptions[newStartIndex + 3]
         : timeOptions[timeOptions.length - 1];
 
-    form.setValue(`weeklyHours.${day}.timeSlots` as any, [
+    form.setValue(`weeklyHours.${day}.timeSlots` as Path<AvailabilityPreferencesInput>, [
       ...currentSlots,
       { startTime: newStartTime, endTime: newEndTime },
     ]);
@@ -208,18 +208,18 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
   const removeTimeSlot = (day: DayOfWeek, index: number) => {
     const currentSlots = weeklyHours[day].timeSlots;
     form.setValue(
-      `weeklyHours.${day}.timeSlots` as any,
+      `weeklyHours.${day}.timeSlots` as Path<AvailabilityPreferencesInput>,
       currentSlots.filter((_, i) => i !== index)
     );
   };
 
   const toggleDay = (day: DayOfWeek) => {
     const isEnabled = weeklyHours[day].enabled;
-    form.setValue(`weeklyHours.${day}.enabled` as any, !isEnabled);
+    form.setValue(`weeklyHours.${day}.enabled` as Path<AvailabilityPreferencesInput>, !isEnabled);
 
     // If enabling and no time slots exist, add a default one
     if (!isEnabled && weeklyHours[day].timeSlots.length === 0) {
-      form.setValue(`weeklyHours.${day}.timeSlots` as any, [
+      form.setValue(`weeklyHours.${day}.timeSlots` as Path<AvailabilityPreferencesInput>, [
         { startTime: "8:00 AM", endTime: "11:00 AM" },
       ]);
     }
@@ -306,14 +306,14 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                               form.setValue(
                                 `weeklyHours.${
                                   day.value as DayOfWeek
-                                }.timeSlots.${index}` as any,
+                                }.timeSlots.${index}` as Path<AvailabilityPreferencesInput>,
                                 { startTime: newStartTime, endTime: newEndTime }
                               );
                             } else {
                               form.setValue(
                                 `weeklyHours.${
                                   day.value as DayOfWeek
-                                }.timeSlots.${index}.startTime` as any,
+                                }.timeSlots.${index}.startTime` as Path<AvailabilityPreferencesInput>,
                                 newStartTime
                               );
                             }
@@ -357,14 +357,14 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                               form.setValue(
                                 `weeklyHours.${
                                   day.value as DayOfWeek
-                                }.timeSlots.${index}` as any,
+                                }.timeSlots.${index}` as Path<AvailabilityPreferencesInput>,
                                 { startTime: newStartTime, endTime: newEndTime }
                               );
                             } else {
                               form.setValue(
                                 `weeklyHours.${
                                   day.value as DayOfWeek
-                                }.timeSlots.${index}.endTime` as any,
+                                }.timeSlots.${index}.endTime` as Path<AvailabilityPreferencesInput>,
                                 newEndTime
                               );
                             }

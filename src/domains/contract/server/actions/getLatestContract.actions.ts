@@ -1,12 +1,13 @@
 import prisma from "@/lib/db";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { S3StreamChunk } from "@/types/api";
 
 // S3 client – AWS SDK will auto-resolve credentials from env vars or IAM role
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
 });
 
-async function streamToString(body: any): Promise<string> {
+async function streamToString(body: S3StreamChunk | null | undefined): Promise<string> {
   if (!body) return "";
   if (typeof body.transformToString === "function") {
     return body.transformToString();

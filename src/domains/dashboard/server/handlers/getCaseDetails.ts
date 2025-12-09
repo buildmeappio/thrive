@@ -23,7 +23,7 @@ const getCaseDetails = async (
       success: true,
       data: result,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in getCaseDetails handler:", error);
     return {
       success: false,

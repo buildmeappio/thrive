@@ -121,8 +121,10 @@ class ExaminerService {
         throw HttpError.notFound(ErrorMessages.EXAMINER_PROFILE_NOT_FOUND);
       }
 
+import { MedicalLicenseDocument } from "@/types/components";
+
       // Fetch medical license documents by IDs (support multiple documents)
-      let medicalLicenseDocuments: any[] = [];
+      let medicalLicenseDocuments: MedicalLicenseDocument[] = [];
       if (examinerProfile.medicalLicenseDocumentIds && examinerProfile.medicalLicenseDocumentIds.length > 0) {
         medicalLicenseDocuments = await prisma.documents.findMany({
           where: {

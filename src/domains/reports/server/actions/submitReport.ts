@@ -50,7 +50,7 @@ export async function submitReportAction(
     });
 
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in submitReport action:", error);
     return {
       success: false,

@@ -27,7 +27,7 @@ export const getExaminerDocumentPresignedUrlAction = async (
       success: true,
       url: result.url,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in getExaminerDocumentPresignedUrl action:", error);
     return {
       success: false,

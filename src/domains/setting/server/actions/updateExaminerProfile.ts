@@ -42,7 +42,7 @@ export const updateExaminerProfileAction = async (data: {
     };
 
     return await updateExaminerProfileHandler(updatedData);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false as const,
       data: null,

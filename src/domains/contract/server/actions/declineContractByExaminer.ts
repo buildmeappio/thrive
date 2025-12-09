@@ -105,7 +105,7 @@ export const declineContractByExaminer = async (
       success: true,
       message: "Contract declined successfully",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in declineContractByExaminer:", error);
     return {
       success: false,

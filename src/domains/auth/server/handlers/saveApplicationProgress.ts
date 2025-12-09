@@ -147,7 +147,7 @@ const saveApplicationProgress = async (
     }
 
     // Prepare update/create data
-    const applicationData: any = {
+    const applicationData: Record<string, unknown> = {
       // Personal Information (only update if provided)
       ...(payload.firstName !== undefined && { firstName: payload.firstName }),
       ...(payload.lastName !== undefined && { lastName: payload.lastName }),

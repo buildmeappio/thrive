@@ -49,7 +49,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
       try {
         setLoadingLanguages(true);
         const languagesData = await getLanguages();
-        const languageOptions = languagesData.map((lang: any) => ({
+        const languageOptions = languagesData.map((lang: { id: string; name: string }) => ({
           value: lang.id,
           label: lang.name,
         }));

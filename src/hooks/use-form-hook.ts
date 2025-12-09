@@ -1,9 +1,10 @@
 import { useForm as useRHFForm, zodResolver, z } from "@/lib/form";
 import type { UseFormProps, FieldValues } from "@/lib/form";
+import { ZodSchemaType } from "@/types/forms";
 
 interface UseFormOptions<TFieldValues extends FieldValues>
   extends Omit<UseFormProps<TFieldValues>, "resolver"> {
-  schema?: z.ZodType<TFieldValues, any, any>;
+  schema?: ZodSchemaType<TFieldValues>;
 }
 
 export function useForm<TFieldValues extends FieldValues>({

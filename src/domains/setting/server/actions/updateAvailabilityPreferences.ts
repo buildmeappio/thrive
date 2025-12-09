@@ -19,7 +19,7 @@ export const updateAvailabilityPreferencesAction = async () =>
         data: null,
         message: "Not implemented yet",
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false as const,
         data: null,

@@ -18,10 +18,12 @@ import { toast } from "sonner";
 import getExamTypesAction from "@/server/actions/getExamTypes";
 import { ExamTypesResponse, ExamType } from "@/server/types/examTypes";
 
+import { InitialFormData, LanguageOption } from "@/types/components";
+
 interface SpecialtyPreferencesFormProps {
   examinerProfileId: string | null;
-  initialData: any;
-  languages: any[];
+  initialData: InitialFormData;
+  languages: LanguageOption[];
   onComplete: () => void;
   onCancel?: () => void;
 }
@@ -39,7 +41,7 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
   >([]);
   const [loadingExamTypes, setLoadingExamTypes] = useState(true);
 
-  const languageOptions = languages.map((lang: any) => ({
+  const languageOptions = languages.map((lang: LanguageOption) => ({
     value: lang.id,
     label: lang.name,
   }));

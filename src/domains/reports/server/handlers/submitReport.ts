@@ -31,7 +31,7 @@ const submitReport = async (
       googleDocId: result.googleDocId,
       htmlContent: result.htmlContent,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in submitReport handler:", error);
     return {
       success: false,

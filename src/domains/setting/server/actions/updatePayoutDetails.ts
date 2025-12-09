@@ -10,7 +10,7 @@ export const updatePayoutDetailsAction = async (
   try {
     const result = await updatePayoutDetails(payload);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false,
       message: error.message || "Failed to update payout details",

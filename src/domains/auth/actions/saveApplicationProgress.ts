@@ -7,7 +7,7 @@ const saveApplicationProgress = async (payload: SaveApplicationProgressInput) =>
   try {
     const result = await authHandlers.saveApplicationProgress(payload);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in saveApplicationProgress action:", error);
     return {
       success: false,

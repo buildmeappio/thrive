@@ -7,7 +7,7 @@ const verifyResumeToken = async (payload: VerifyResumeTokenInput) => {
   try {
     const result = await authHandlers.verifyResumeToken(payload);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in verifyResumeToken action:", error);
     return {
       success: false,

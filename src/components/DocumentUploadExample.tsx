@@ -11,7 +11,7 @@ import { Upload, X, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 export default function DocumentUploadExample() {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState<any>(null);
+  const [uploadResult, setUploadResult] = useState<{ data: { documents: Array<{ id: string; name: string; type: string; size: number }> } } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -187,7 +187,7 @@ export default function DocumentUploadExample() {
                 Uploaded Documents:
               </h5>
               <div className="space-y-2">
-                {uploadResult.data.documents.map((doc: any) => (
+                {uploadResult.data.documents.map((doc: { id: string; name: string; type: string; size: number }) => (
                   <div
                     key={doc.id}
                     className="rounded border border-green-200 bg-white p-3">

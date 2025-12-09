@@ -97,7 +97,7 @@ const sendRegistrationEmails = async (input: SendRegistrationEmailsInput) => {
       success: true,
       message: "Registration emails sent successfully",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error sending registration emails:", error);
     // Don't fail the registration if emails fail
     return {

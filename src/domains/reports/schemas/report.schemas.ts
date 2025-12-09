@@ -18,7 +18,7 @@ export const uploadedDocumentSchema = z.object({
       "Only PDF, DOC, and DOCX files are allowed"
     ),
   url: z.string().optional(),
-  file: z.any().optional(),
+  file: z.instanceof(File).optional(),
 });
 
 export const dynamicSectionSchema = z.object({

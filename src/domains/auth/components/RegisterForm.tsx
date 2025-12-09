@@ -28,9 +28,11 @@ interface Step {
   component: React.ComponentType<RegStepProps>;
 }
 
+import { ExaminerData } from "@/types/components";
+
 const RegisterForm: React.FC<{
   yearsOfExperience: YearsOfExperience[];
-  examinerData?: any;
+  examinerData?: ExaminerData;
 }> = ({ yearsOfExperience, examinerData }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const { setYearsOfExperience, data, loadExaminerData, isEditMode } =

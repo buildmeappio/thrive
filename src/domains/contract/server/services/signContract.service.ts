@@ -45,7 +45,7 @@ export async function updateContractStatus(
   status: "SIGNED",
   options?: UpdateContractStatusOptions
 ) {
-  const data: any = { status, signedAt: new Date() };
+  const data: { status: string; signedAt: Date } = { status, signedAt: new Date() };
 
   if (options?.signedPdfBuffer) {
     const pdfKey = `signed-contracts/${contractId}/${crypto.randomUUID()}.pdf`;
