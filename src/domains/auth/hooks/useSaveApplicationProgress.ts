@@ -6,7 +6,7 @@ import { uploadFileToS3 } from "@/lib/s3";
 
 export const useSaveApplicationProgress = () => {
   const [isSaving, setIsSaving] = useState(false);
-  const { data, merge } = useRegistrationStore();
+  const { merge } = useRegistrationStore();
 
   const saveProgress = async (currentFormValues?: Partial<RegistrationData>) => {
     // If current form values are provided, merge them into the store first

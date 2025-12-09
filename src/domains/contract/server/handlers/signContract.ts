@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getLatestContractService } from "../services/getLatestContract.service";
 import {
   uploadHtmlToS3,
+  uploadPdfToS3,
   updateContractStatus,
 } from "../services/signContract.service";
 
@@ -39,21 +40,38 @@ export async function signContractHandler(input: SignContractInput) {
     // Convert base64 PDF to buffer
     const pdfBuffer = Buffer.from(input.pdfBase64, "base64");
 
+    // Upload HTML to S3 (required)
     let htmlUpload: { key: string; sha256: string };
+    let pdfUpload: { key: string; sha256: string } | null = null;
+    
     try {
       htmlUpload = await uploadHtmlToS3(input.contractId, input.htmlContent);
-    } catch (s3Error: any) {
+    } catch (htmlError: any) {
       return {
         success: false,
-        error: `Failed to upload HTML: ${s3Error.message}`,
+        error: `Failed to upload HTML: ${htmlError.message}`,
       };
+    }
+
+    // Try to upload PDF to S3 (optional - if it fails, we'll still proceed)
+    // The email will use the base64 PDF directly anyway
+    try {
+      pdfUpload = await uploadPdfToS3(input.contractId, pdfBuffer);
+      console.log("✅ PDF uploaded to S3 successfully");
+    } catch (pdfError: any) {
+      console.warn("⚠️ Failed to upload PDF to S3 (contract signing will still proceed):", pdfError.message);
+      console.warn("⚠️ Email will use base64 PDF directly instead");
+      // Continue without PDF upload - email will use base64 PDF
     }
 
     try {
       await updateContractStatus(contract.id, "SIGNED", {
-        signedPdfBuffer: pdfBuffer,
         signedHtmlKey: htmlUpload.key,
         signedHtmlSha256: htmlUpload.sha256,
+        ...(pdfUpload && {
+          signedPdfKey: pdfUpload.key,
+          signedPdfSha256: pdfUpload.sha256,
+        }),
       });
     } catch (updateError: any) {
       return {

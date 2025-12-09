@@ -100,11 +100,31 @@ class EmailService {
         to: to,
         subject,
         html: htmlContent,
-        attachments: attachments?.map((att) => ({
-          filename: att.filename,
-          content: att.content,
-          contentType: att.contentType || "application/pdf",
-        })),
+        attachments: attachments?.map((att) => {
+          // Ensure content is a Buffer
+          const content = Buffer.isBuffer(att.content) 
+            ? att.content 
+            : Buffer.from(att.content);
+          
+          // Validate PDF if it's a PDF attachment
+          if (att.contentType === "application/pdf" || att.filename.endsWith('.pdf')) {
+            if (content.length < 4) {
+              throw new Error(`Invalid PDF: file too small (${content.length} bytes)`);
+            }
+            const header = content.slice(0, 4).toString('ascii');
+            if (header !== '%PDF') {
+              log(`⚠️ Warning: PDF header mismatch. Expected '%PDF', got '${header}'`);
+            } else {
+              log(`✅ PDF attachment validated: ${att.filename}, size: ${content.length} bytes`);
+            }
+          }
+          
+          return {
+            filename: att.filename,
+            content: content,
+            contentType: att.contentType || "application/pdf",
+          };
+        }),
       });
 
       log(`✅ Email sent to ${to}${attachments ? ` with ${attachments.length} attachment(s)` : ""}`);
