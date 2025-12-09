@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/PasswordInput";
 import { signIn } from "next-auth/react";
 import { loginSchema, LoginInput } from "@/domains/auth/schemas/auth.schemas";
-import useRouter from "@/hooks/useRouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { URLS } from "@/constants/route";
@@ -14,8 +13,6 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 const LoginForm = () => {
-  const router = useRouter();
-
   const {
     register,
     handleSubmit,
@@ -36,7 +33,11 @@ const LoginForm = () => {
 
     if (res?.ok) {
       toast.success("Login successful");
-      router.replace(URLS.DASHBOARD);
+      // Use window.location for full page reload to ensure session cookie is read
+      // Small delay to ensure cookie is set before redirect
+      setTimeout(() => {
+        window.location.href = URLS.DASHBOARD;
+      }, 100);
       return;
     }
 

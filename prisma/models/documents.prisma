@@ -1,0 +1,23 @@
+model Documents {
+  id                                    String                @id @unique @default(uuid()) @db.Uuid
+  name                                  String                @map("name") @db.VarChar(255)
+  displayName                           String?               @map("display_name") @db.VarChar(255)
+  type                                  String                @map("type") @db.VarChar(255)
+  size                                  Int                   @map("size") @db.Integer
+  createdAt                             DateTime              @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt                             DateTime              @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt                             DateTime?             @map("deleted_at") @db.Timestamptz()
+  users                                 User[]                @relation("ProfilePhoto")
+  cases                                 CaseDocument[]        @relation("DocumentCases")
+  examinerResume                        ExaminerProfile[]     @relation(name: "ExaminerResumeDocument")
+  examinerNDA                           ExaminerProfile[]     @relation(name: "ExaminerNDADocument")
+  examinerInsurance                     ExaminerProfile[]     @relation(name: "ExaminerInsuranceDocument")
+  examinerRedactedIMEReports            ExaminerProfile[]     @relation(name: "ExaminerRedactedIMEReportDocument")
+  examinerApplicationResume             ExaminerApplication[] @relation(name: "ExaminerApplicationResumeDocument")
+  examinerApplicationNDA                ExaminerApplication[] @relation(name: "ExaminerApplicationNDADocument")
+  examinerApplicationInsurance          ExaminerApplication[] @relation(name: "ExaminerApplicationInsuranceDocument")
+  examinerApplicationRedactedIMEReports ExaminerApplication[] @relation(name: "ExaminerApplicationRedactedIMEReportDocument")
+  reportDocuments                       ReportDocument[]      @relation("ReportReferralDocuments")
+
+  @@map("documents")
+}

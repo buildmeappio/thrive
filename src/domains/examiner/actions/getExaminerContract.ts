@@ -22,15 +22,19 @@ async function streamToString(body: any): Promise<string> {
 }
 
 /**
- * Get the latest contract HTML for an examiner (for admin review)
+ * Get the latest contract HTML for an examiner or application (for admin review)
  */
-export async function getExaminerContract(examinerProfileId: string) {
+export async function getExaminerContract(id: string, isApplication: boolean = false) {
   try {
-    // Get the latest contract for this examiner
+    // Get the latest contract for this examiner or application
     const contract = await prisma.contract.findFirst({
-      where: {
-        examinerProfileId,
-      },
+      where: isApplication
+        ? {
+            applicationId: id,
+          }
+        : {
+            examinerProfileId: id,
+          },
       orderBy: {
         createdAt: "desc",
       },
