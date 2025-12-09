@@ -1,0 +1,15 @@
+model ContractEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  contractId String   @map("contract_id") @db.Uuid
+  eventType  String   @map("event_type") @db.VarChar(50)
+  actorRole  String?  @map("actor_role") @db.VarChar(50)
+  actorId    String?  @map("actor_id") @db.Uuid
+  at         DateTime @default(now()) @map("at") @db.Timestamptz()
+  meta       Json     @default("{}") @map("meta")
+
+  contract Contract @relation("ContractEvents", fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@index([eventType])
+  @@map("contract_events")
+}
