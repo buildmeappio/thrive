@@ -109,6 +109,7 @@ jobs:
               echo "📥 Installing dependencies..."
               npm install
             fi
+            git pull origin ${{ github.ref }}
             echo "🔄 Running Prisma migrations..."
             npx prisma migrate deploy
             echo "✅ Migrations completed successfully!"
@@ -144,6 +145,7 @@ jobs:
               echo "📥 Installing dependencies..."
               npm install
             fi
+            git pull origin ${{ github.ref }}
             echo "🌱 Running Prisma seeders..."
             npm run seed
             echo "✅ Seeders completed successfully!"
