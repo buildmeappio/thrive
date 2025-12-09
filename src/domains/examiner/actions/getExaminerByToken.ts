@@ -43,7 +43,7 @@ export async function getExaminerByToken(token: string) {
         licenseNumber: examiner.licenseNumber || "",
         provinceOfLicensure: examiner.provinceOfLicensure || "",
         licenseExpiryDate: examiner.licenseExpiryDate || null,
-        medicalLicenseDocumentId: examiner.medicalLicenseDocumentId || "",
+        medicalLicenseDocumentIds: examiner.medicalLicenseDocumentIds || [],
         resumeDocumentId: examiner.resumeDocumentId || "",
         // IME Experience
         yearsOfIMEExperience: examiner.yearsOfIMEExperience || "",

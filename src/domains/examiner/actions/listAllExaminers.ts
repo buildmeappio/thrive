@@ -19,10 +19,10 @@ const listAllExaminers = async () => {
           },
         },
         address: true,
-        medicalLicenseDocument: true,
         resumeDocument: true,
         ndaDocument: true,
         insuranceDocument: true,
+        redactedIMEReportDocument: true,
         examinerLanguages: {
           include: {
             language: true,
@@ -81,6 +81,43 @@ const listAllExaminers = async () => {
         }
       } catch (error) {
         logger.error("Failed to fetch years of experience:", error);
+      }
+    }
+
+    // Map assessment types if they are UUIDs
+    const assessmentTypeUuids = new Set<string>();
+    for (const examiner of validExaminers) {
+      if (examiner.assessmentTypes) {
+        examiner.assessmentTypes.forEach(typeId => {
+          if (uuidRegex.test(typeId.replace(/\s/g, ''))) {
+            assessmentTypeUuids.add(typeId);
+          }
+        });
+      }
+    }
+
+    if (assessmentTypeUuids.size > 0) {
+      try {
+        const examTypes = await prisma.examinationType.findMany({
+          where: { 
+            id: { in: Array.from(assessmentTypeUuids) },
+            deletedAt: null 
+          },
+        });
+        
+        const typeMap = new Map(examTypes.map(t => [t.id, t.name]));
+        
+        for (let i = 0; i < mappedData.length; i++) {
+          const examinerData = mappedData[i];
+          const originalExaminer = validExaminers[i];
+          if (originalExaminer.assessmentTypes && originalExaminer.assessmentTypes.length > 0) {
+            examinerData.assessmentTypes = originalExaminer.assessmentTypes.map(id => 
+              typeMap.get(id) || id
+            );
+          }
+        }
+      } catch (error) {
+        logger.error("Failed to map assessment types:", error);
       }
     }
 

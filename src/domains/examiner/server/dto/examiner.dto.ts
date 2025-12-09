@@ -6,10 +6,10 @@ type ExaminerWithRelations = ExaminerProfile & {
     user: User;
   };
   address: Address | null;
-  medicalLicenseDocument: Documents | null;
   resumeDocument: Documents | null;
   ndaDocument: Documents | null;
   insuranceDocument: Documents | null;
+  redactedIMEReportDocument: Documents | null;
   examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
   feeStructure: ExaminerFeeStructure[];
   contracts?: Array<any>; // Optional contracts relation
@@ -44,11 +44,19 @@ export class ExaminerDto {
       medicalLicenseUrls: undefined, // Will be set by handler with presigned URLs (for multiple licenses)
       languagesSpoken: examiner.examinerLanguages?.map((el) => el.language.name) || [],
       yearsOfIMEExperience: String(examiner.yearsOfIMEExperience || "0"),
+      imesCompleted: examiner.imesCompleted || undefined,
+      currentlyConductingIMEs: examiner.currentlyConductingIMEs || false,
+      insurersOrClinics: examiner.insurersOrClinics || undefined,
+      assessmentTypes: examiner.assessmentTypes || [],
+      assessmentTypeOther: examiner.assessmentTypeOther || undefined,
       experienceDetails: examiner.bio || "",
+      redactedIMEReportUrl: undefined, // Will be set by handler with presigned URL
       insuranceProofUrl: undefined, // Will be set by handler with presigned URL
       signedNdaUrl: undefined, // Will be set by handler with presigned URL
-      isForensicAssessmentTrained: examiner.isForensicAssessmentTrained || false,
-      agreeToTerms: examiner.agreeToTerms || false,
+      isForensicAssessmentTrained: examiner.isForensicAssessmentTrained ?? false,
+      agreeToTerms: examiner.agreeToTerms ?? false,
+      contractSignedByExaminerAt: examiner.contractSignedByExaminerAt?.toISOString() || undefined,
+      contractConfirmedByAdminAt: examiner.contractConfirmedByAdminAt?.toISOString() || undefined,
       status: examiner.status,
       createdAt: examiner.createdAt.toISOString(),
       updatedAt: examiner.updatedAt.toISOString(),

@@ -476,7 +476,6 @@ model Documents {
   deletedAt                  DateTime?         @map("deleted_at") @db.Timestamptz()
   users                      User[]            @relation("ProfilePhoto")
   cases                      CaseDocument[]    @relation("DocumentCases")
-  medicalLicenses            ExaminerProfile[] @relation(name: "ExaminerMedicalLicenseDocument")
   examinerResume             ExaminerProfile[] @relation(name: "ExaminerResumeDocument")
   examinerNDA                ExaminerProfile[] @relation(name: "ExaminerNDADocument")
   examinerInsurance          ExaminerProfile[] @relation(name: "ExaminerInsuranceDocument")
@@ -610,6 +609,16 @@ enum ExaminerStatus {
   REJECTED
   INFO_REQUESTED
   ACTIVE
+  SUBMITTED
+  IN_REVIEW
+  MORE_INFO_REQUESTED
+  INTERVIEW_SCHEDULED
+  INTERVIEW_COMPLETED
+  CONTRACT_SENT
+  CONTRACT_SIGNED
+  APPROVED
+  WITHDRAWN
+  SUSPENDED
 }
 
 model ExaminerLanguage {
@@ -639,7 +648,7 @@ model ExaminerProfile {
   assessmentTypes                   String[]       @map("assessment_types")
   provinceOfLicensure               String?        @map("province_of_licensure") @db.VarChar(255)
   licenseExpiryDate                 DateTime?      @map("license_expiry_date") @db.Date
-  medicalLicenseDocumentId          String         @map("medical_license_document_id") @db.Uuid
+  medicalLicenseDocumentIds         String[]       @map("medical_license_document_ids")
   resumeDocumentId                  String?        @map("resume_document_id") @db.Uuid
   NdaDocumentId                     String?        @map("nda_document_id") @db.Uuid
   insuranceDocumentId               String?        @map("insurance_document_id") @db.Uuid
@@ -675,13 +684,17 @@ model ExaminerProfile {
   rejectedBy                        String?        @map("rejected_by") @db.Uuid
   rejectedAt                        DateTime?      @map("rejected_at") @db.Timestamptz()
   rejectedReason                    String?        @map("rejected_reason") @db.Text
+  contractSignedByExaminerAt        DateTime?      @map("contract_signed_by_examiner_at") @db.Timestamptz()
+  contractConfirmedByAdminAt        DateTime?      @map("contract_confirmed_by_admin_at") @db.Timestamptz()
+  contractDeclinedByExaminerAt      DateTime?      @map("contract_declined_by_examiner_at") @db.Timestamptz()
+  contractDeclinedByAdminAt         DateTime?      @map("contract_declined_by_admin_at") @db.Timestamptz()
+  contractDeclineReason             String?        @map("contract_decline_reason") @db.Text
   createdAt                         DateTime       @default(now()) @db.Timestamptz()
   updatedAt                         DateTime       @updatedAt @db.Timestamptz()
   deletedAt                         DateTime?
 
   account                   Account                @relation(fields: [accountId], references: [id], onDelete: Cascade)
   address                   Address?               @relation("ExaminerAddress", fields: [addressId], references: [id])
-  medicalLicenseDocument    Documents              @relation(name: "ExaminerMedicalLicenseDocument", references: [id], fields: [medicalLicenseDocumentId])
   resumeDocument            Documents?             @relation(name: "ExaminerResumeDocument", references: [id], fields: [resumeDocumentId])
   ndaDocument               Documents?             @relation(name: "ExaminerNDADocument", references: [id], fields: [NdaDocumentId])
   insuranceDocument         Documents?             @relation(name: "ExaminerInsuranceDocument", references: [id], fields: [insuranceDocumentId])

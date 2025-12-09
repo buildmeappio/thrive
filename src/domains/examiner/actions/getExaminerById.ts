@@ -27,7 +27,7 @@ const serializeValue = (value: any): any => {
 
 const getExaminerById = async (id: string) => {
   const examiner = await examinerService.getExaminerById(id);
-  let examinerData = ExaminerDto.toExaminerData(examiner);
+  let examinerData = ExaminerDto.toExaminerData(examiner as any);
 
   // Map specialty IDs to exam type names
   const mappedData = await mapSpecialtyIdsToNames([examinerData]);
@@ -62,17 +62,35 @@ const getExaminerById = async (id: string) => {
     }
   }
 
-  if (examiner.medicalLicenseDocument) {
+  // Fetch multiple verification documents using IDs array
+  if (examiner.medicalLicenseDocumentIds && examiner.medicalLicenseDocumentIds.length > 0) {
     try {
-      examinerData.medicalLicenseUrl = await generatePresignedUrl(
-        `examiner/${examiner.medicalLicenseDocument.name}`,
-        3600
+      const { default: prisma } = await import("@/lib/db");
+      const documents = await prisma.documents.findMany({
+        where: {
+          id: { in: examiner.medicalLicenseDocumentIds },
+          deletedAt: null,
+        },
+      });
+
+      // Generate presigned URLs for all documents
+      const urls = await Promise.all(
+        documents.map(async (doc) => {
+          try {
+            return await generatePresignedUrl(`examiner/${doc.name}`, 3600);
+          } catch (error) {
+            logger.error(`Failed to generate presigned URL for document ${doc.id}:`, error);
+            return null;
+          }
+        })
       );
+
+      // Filter out any failed URLs and set both single and array
+      const validUrls = urls.filter((url): url is string => url !== null);
+      examinerData.medicalLicenseUrls = validUrls;
+      examinerData.medicalLicenseUrl = validUrls[0] || undefined; // Set first URL for backward compatibility
     } catch (error) {
-      logger.error(
-        `Failed to generate presigned URL for medical license:`,
-        error
-      );
+      logger.error("Failed to fetch verification documents:", error);
     }
   }
 
@@ -98,6 +116,44 @@ const getExaminerById = async (id: string) => {
       );
     } catch (error) {
       logger.error(`Failed to generate presigned URL for NDA:`, error);
+    }
+  }
+
+  if (examiner.redactedIMEReportDocument) {
+    try {
+      examinerData.redactedIMEReportUrl = await generatePresignedUrl(
+        `examiner/${examiner.redactedIMEReportDocument.name}`,
+        3600
+      );
+    } catch (error) {
+      logger.error(`Failed to generate presigned URL for redacted IME report:`, error);
+    }
+  }
+
+  // Map assessment types if they are UUIDs to examination type names
+  if (examiner.assessmentTypes && examiner.assessmentTypes.length > 0) {
+    const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+    const assessmentTypeIds = examiner.assessmentTypes.filter(id => 
+      uuidRegex.test(id.replace(/\s/g, ''))
+    );
+    
+    if (assessmentTypeIds.length > 0) {
+      try {
+        const { default: prisma } = await import("@/lib/db");
+        const examTypes = await prisma.examinationType.findMany({
+          where: { 
+            id: { in: assessmentTypeIds },
+            deletedAt: null 
+          },
+        });
+        
+        const typeMap = new Map(examTypes.map(t => [t.id, t.name]));
+        examinerData.assessmentTypes = examiner.assessmentTypes.map(id => 
+          typeMap.get(id) || id
+        );
+      } catch (error) {
+        logger.error("Failed to map assessment types:", error);
+      }
     }
   }
 

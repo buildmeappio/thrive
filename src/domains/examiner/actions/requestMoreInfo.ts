@@ -20,7 +20,6 @@ interface ExaminerWithRelations extends ExaminerProfile {
   account: Account & {
     user: User;
   };
-  medicalLicenseDocument: Documents | null;
   resumeDocument: Documents | null;
   ndaDocument: Documents | null;
   insuranceDocument: Documents | null;
@@ -45,12 +44,14 @@ const requestMoreInfo = async (
 
   // Update examiner status to INFO_REQUESTED
   const examiner = await examinerService.requestMoreInfoFromExaminer(
-    examinerId
+    examinerId,
+    message,
+    documentsRequired
   );
 
   // Send request for more info email
   try {
-    await sendRequestMoreInfoEmail(examiner, message, documentsRequired);
+    await sendRequestMoreInfoEmail(examiner as any, message, documentsRequired);
     logger.log("✓ Request more info email sent successfully");
   } catch (emailError) {
     logger.error("⚠️ Failed to send request email:", emailError);

@@ -130,6 +130,7 @@ class ContractService {
               user: true,
             },
           },
+          address: true,
           feeStructure: {
             where: {
               deletedAt: null,
@@ -146,6 +147,7 @@ class ContractService {
         return { success: false, error: "Examiner not found" };
       }
 
+      // Fee structure is required for contract creation
       if (!examiner.feeStructure || examiner.feeStructure.length === 0) {
         return {
           success: false,

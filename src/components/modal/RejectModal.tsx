@@ -7,6 +7,7 @@ type Props = {
   onSubmit: (internalNotes: string, messageToExaminer: string) => void;
   title?: string;
   maxLength?: number;
+  isSubmitted?: boolean; // Track if form was already submitted
 };
 
 export default function RejectModal({
@@ -15,12 +16,21 @@ export default function RejectModal({
   onSubmit,
   title = "Reason for Rejection",
   maxLength = 200,
+  isSubmitted = false,
 }: Props) {
   const [internalNotes, setInternalNotes] = useState("");
   const [messageToExaminer, setMessageToExaminer] = useState("");
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const firstTextRef = useRef<HTMLTextAreaElement>(null);
+
+  // Reset fields when modal opens fresh (not submitted)
+  useEffect(() => {
+    if (open && !isSubmitted) {
+      setInternalNotes("");
+      setMessageToExaminer("");
+    }
+  }, [open, isSubmitted]);
 
   useEffect(() => {
     if (!open) return;
@@ -46,11 +56,9 @@ export default function RejectModal({
   const canSend = messageToExaminer.trim().length > 0 && messageToExaminer.length <= maxLength;
 
   const handleSubmit = () => {
-    if (canSend) {
+    if (canSend && !isSubmitted) {
       onSubmit(internalNotes.trim(), messageToExaminer.trim());
-      // Reset form
-      setInternalNotes("");
-      setMessageToExaminer("");
+      // Don't reset - keep the text visible after submission
     }
   };
 
@@ -111,6 +119,7 @@ export default function RejectModal({
             value={internalNotes}
             onChange={(e) => setInternalNotes(e.target.value)}
             maxLength={maxLength}
+            disabled={isSubmitted}
             className="
               h-28 sm:h-[120px] w-full resize-none
               rounded-xl sm:rounded-[15px]
@@ -120,6 +129,7 @@ export default function RejectModal({
               placeholder:text-[#A4A4A4]
               font-poppins text-[14px] sm:text-[15px]
               focus:border-[#C62828] focus:ring-1 focus:ring-[#C62828]
+              disabled:cursor-not-allowed disabled:opacity-60
             "
             placeholder="Type here"
           />
@@ -141,6 +151,7 @@ export default function RejectModal({
             value={messageToExaminer}
             onChange={(e) => setMessageToExaminer(e.target.value)}
             maxLength={maxLength}
+            disabled={isSubmitted}
             className="
               h-28 sm:h-[120px] w-full resize-none
               rounded-xl sm:rounded-[15px]
@@ -150,6 +161,7 @@ export default function RejectModal({
               placeholder:text-[#A4A4A4]
               font-poppins text-[14px] sm:text-[15px]
               focus:border-[#C62828] focus:ring-1 focus:ring-[#C62828]
+              disabled:cursor-not-allowed disabled:opacity-60
             "
             placeholder="Type here"
           />
@@ -162,7 +174,7 @@ export default function RejectModal({
         <div className="mt-6 flex justify-end">
           <button
             type="button"
-            disabled={!canSend}
+            disabled={!canSend || isSubmitted}
             onClick={handleSubmit}
             className="
               h-10 sm:h-[46px]
@@ -174,7 +186,7 @@ export default function RejectModal({
               font-poppins text-[14px] sm:text-[16px] font-[500] tracking-[-0.02em]
             "
           >
-            Save & Send
+            {isSubmitted ? "Sent" : "Save & Send"}
           </button>
         </div>
       </div>

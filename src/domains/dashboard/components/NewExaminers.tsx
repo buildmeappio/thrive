@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { capitalizeWords } from "@/utils/text";
-import { formatDateShort } from "@/utils/date";
 import {
   Table,
   TableBody,
@@ -72,9 +71,6 @@ export default function NewExaminers({
           <TableHeader>
             <TableRow className="bg-[#F3F3F3] border-b-0 hover:bg-[#F3F3F3]">
               <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[140px] sm:min-w-0">
-                License Number
-              </TableHead>
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[140px] sm:min-w-0">
                 Name
               </TableHead>
               <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[160px] sm:min-w-0">
@@ -83,8 +79,8 @@ export default function NewExaminers({
               <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[120px] sm:min-w-0">
                 Province
               </TableHead>
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[140px] sm:min-w-0">
-                Date Received
+              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[220px] sm:min-w-0">
+                Received At
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -92,14 +88,27 @@ export default function NewExaminers({
             {rows.map((r) => {
               const href = buildDetailHref(r.id);
               
+              // Format: "Dec 4, 2024 at 2:30 PM"
+              const formatReceivedAt = (dateString: string) => {
+                const date = new Date(dateString);
+                const dateStr = date.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                });
+                const timeStr = date.toLocaleTimeString('en-US', {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true
+                });
+                return `${dateStr} at ${timeStr}`;
+              };
+              
               return (
                 <TableRow 
                   key={r.id}
                   className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
                 >
-                  <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#1A1A1A] font-mono tabular-nums font-poppins py-5 sm:py-3 min-w-[140px] sm:min-w-0">
-                    <span className="block">{r.licenseNumber || "N/A"}</span>
-                  </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#1A1A1A] font-poppins py-5 sm:py-3 min-w-[140px] sm:min-w-0">
                     <span className="block">{capitalizeWords(r.name)}</span>
                   </TableCell>
@@ -144,10 +153,10 @@ export default function NewExaminers({
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[120px] sm:min-w-0">
                     <span className="block">{r.province}</span>
                   </TableCell>
-                  <TableCell className="py-5 sm:py-3 min-w-[140px] sm:min-w-0">
+                  <TableCell className="py-5 sm:py-3 min-w-[220px] sm:min-w-0">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins min-w-0 flex-1">
-                        {formatDateShort(r.createdAt)}
+                        {formatReceivedAt(r.createdAt)}
                       </span>
                       <Link
                         href={href}

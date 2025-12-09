@@ -11,4 +11,12 @@ export { default as listExaminerSpecialties } from "./listExaminerSpecialties";
 export { default as listExaminerStatuses } from "./listExaminerStatuses";
 export { updateFeeStructure } from "./updateFeeStructure";
 export { sendContract } from "./sendContract";
+export { default as moveToReview } from "./moveToReview";
+export { default as scheduleInterview } from "./scheduleInterview";
+export { default as markInterviewCompleted } from "./markInterviewCompleted";
+export { default as markContractSigned } from "./markContractSigned";
+export { default as signContractByExaminer } from "./signContractByExaminer";
+export { default as getExaminerContract } from "./getExaminerContract";
+export { suspendExaminer } from "./suspendExaminer";
+export { reactivateExaminer } from "./reactivateExaminer";
 

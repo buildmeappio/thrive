@@ -19,7 +19,6 @@ interface ExaminerWithRelations extends ExaminerProfile {
   account: Account & {
     user: User;
   };
-  medicalLicenseDocument: Documents | null;
   resumeDocument: Documents | null;
   ndaDocument: Documents | null;
   insuranceDocument: Documents | null;
@@ -48,7 +47,7 @@ const rejectExaminer = async (
 
   // Send rejection email
   try {
-    await sendRejectionEmailToExaminer(examiner, messageToExaminer);
+    await sendRejectionEmailToExaminer(examiner as any, messageToExaminer);
     logger.log("✓ Rejection email sent successfully");
   } catch (emailError) {
     logger.error(

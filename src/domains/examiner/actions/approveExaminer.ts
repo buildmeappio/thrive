@@ -25,7 +25,6 @@ interface ExaminerWithRelations extends ExaminerProfile {
   account: Account & {
     user: User;
   };
-  medicalLicenseDocument: Documents | null;
   resumeDocument: Documents | null;
   ndaDocument: Documents | null;
   insuranceDocument: Documents | null;
@@ -65,7 +64,7 @@ const approveExaminer = async (examinerId: string) => {
 
   // Send approval email with token (don't fail approval if email fails)
   try {
-    await sendApprovalEmailToExaminer(examiner);
+    await sendApprovalEmailToExaminer(examiner as any);
     logger.log("✓ Approval email sent successfully");
   } catch (emailError) {
     logger.error(
