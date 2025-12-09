@@ -28,10 +28,10 @@
   "description": "",
   "dependencies": {
     "@prisma/adapter-pg": "^7.1.0",
-    "@prisma/client": "^6.15.0",
+    "@prisma/client": "^7.1.0",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.1",
-    "prisma": "^6.15.0"
+    "prisma": "^7.1.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
