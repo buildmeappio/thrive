@@ -1,0 +1,14 @@
+model ExaminationSecureLink {
+  id            String                      @id @unique @default(uuid()) @db.Uuid
+  examinationId String                      @map("examination_id") @db.Uuid
+  secureLinkId  String                      @map("secure_link_id") @db.Uuid
+  
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  examination Examination @relation("ExaminationSecureLink", fields: [examinationId], references: [id])
+  secureLink SecureLink @relation("SecureLinkExamination", fields: [secureLinkId], references: [id])
+
+  @@map("examination_secure_links")
+}

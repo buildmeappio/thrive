@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "generate": "prisma generate",
-    "migrate": "prisma migrate dev",
+    "migrate:create": "prisma migrate dev --create-only",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
     "studio": "prisma generate && prisma studio",
     "reset": "prisma migrate reset",
     "seed": "prisma db seed",
@@ -25,6 +27,7 @@
   "homepage": "https://github.com/thrive-org/prisma-db#readme",
   "description": "",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.1.0",
     "@prisma/client": "^6.15.0",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.1",

@@ -1,0 +1,17 @@
+
+model OrganizationManager {
+  id             String    @id @unique @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  accountId      String    @map("account_id") @db.Uuid
+  jobTitle       String?   @map("job_title") @db.VarChar(255)
+  departmentId   String?   @map("department_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz()
+
+  account      Account      @relation(name: "AccountManager", fields: [accountId], references: [id])
+  organization Organization @relation(name: "OrganizationManager", fields: [organizationId], references: [id])
+  department   Department?  @relation(name: "DepartmentManager", fields: [departmentId], references: [id])
+
+  @@map("organization_managers")
+}

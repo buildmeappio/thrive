@@ -1,0 +1,11 @@
+model OrganizationType {
+  id            String         @id @unique @default(uuid()) @db.Uuid
+  name          String         @map("name") @db.VarChar(255)
+  description   String?        @map("description") @db.Text
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt     DateTime?      @map("deleted_at") @db.Timestamptz()
+  organizations Organization[] @relation("OrganizationType")
+
+  @@map("organization_types")
+}

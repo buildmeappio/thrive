@@ -1,9 +1,8 @@
-import path from 'path';
+import * as path from 'path';
 import "dotenv/config";
-import type { PrismaConfig } from "prisma";
 
 export default {
-  schema: path.join("prisma", "schema.prisma"),
+  schema: path.join("prisma"),
   migrations: {
     path: path.join("src", "migrations"),
 		seed: 'tsx src/seed.ts'
@@ -14,4 +13,4 @@ export default {
   typedSql: {
     path: path.join("src", "queries"),
   },
-} satisfies PrismaConfig;
+};

@@ -1,0 +1,10 @@
+
+// Contract Instances - Immutable after 'sent'
+enum ContractStatus {
+  DRAFT
+  SENT
+  VIEWED
+  SIGNED
+  DECLINED
+  PENDING_SIGNATURE
+}
