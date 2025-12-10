@@ -13,7 +13,7 @@ import PhoneInput from "@/components/PhoneNumber";
 import { capitalizeWords } from "@/utils/text";
 import { provinceOptions } from "@/constants/options";
 import { TRANSPORTER_STATUSES } from "../types/TransporterData";
-import { TransporterFormHandler } from "../server";
+import { TransporterFormHandler } from "../server/handlers/transporterForm.handler";
 import {
   AvailabilityTabs,
   WeeklyHoursState,
@@ -26,7 +26,7 @@ import {
   formatOverrideDisplayDate,
 } from "@/components/availability";
 import { format } from "date-fns";
-import { saveTransporterAvailabilityAction } from "../server";
+import { saveTransporterAvailabilityAction } from "../server/actions/saveAvailability";
 import { useRouter } from "next/navigation";
 import { showDeleteConfirmation } from "@/components";
 import Link from "next/link";

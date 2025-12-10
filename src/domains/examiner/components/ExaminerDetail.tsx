@@ -103,18 +103,6 @@ enum ModalTypes {
   CONTRACT_REVIEW = "contractReview",
 }
 
-enum LoadingActionTypes {
-  APPROVE = "approve",
-  REJECT = "reject",
-  REQUEST = "request",
-  FEE_STRUCTURE = "feeStructure",
-  SEND_CONTRACT = "sendContract",
-  MOVE_TO_REVIEW = "moveToReview",
-  SCHEDULE_INTERVIEW = "scheduleInterview",
-  RESEND_INTERVIEW_SCHEDULING_LINK = "resendInterviewSchedulingLink",
-  
-}
-
 const useModalToggle = () => {
   const [modalState, setModalState] = useState<ModalTypes | null>(null);
 

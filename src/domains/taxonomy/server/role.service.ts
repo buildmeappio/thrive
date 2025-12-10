@@ -120,12 +120,3 @@ export const getRoleById = async (id: string) => {
   }
 };
 
-const roleService = {
-  createRole,
-  updateRole,
-  getRoles,
-  getRoleById,
-};
-
-export default roleService;
-

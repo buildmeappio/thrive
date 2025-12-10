@@ -133,22 +133,22 @@ const getExaminerById = async (id: string) => {
   // Map assessment types if they are UUIDs to assessment type names
   if (examiner.assessmentTypes && examiner.assessmentTypes.length > 0) {
     const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
-    const assessmentTypeIds = examiner.assessmentTypes.filter(id => 
+    const assessmentTypeIds = examiner.assessmentTypes.filter(id =>
       uuidRegex.test(id.replace(/\s/g, ''))
     );
-    
+
     if (assessmentTypeIds.length > 0) {
       try {
         const { default: prisma } = await import("@/lib/db");
         const assessmentTypes = await prisma.assessmentType.findMany({
-          where: { 
+          where: {
             id: { in: assessmentTypeIds },
-            deletedAt: null 
+            deletedAt: null
           },
         });
-        
+
         const typeMap = new Map(assessmentTypes.map(t => [t.id, t.name]));
-        examinerData.assessmentTypes = examiner.assessmentTypes.map(id => 
+        examinerData.assessmentTypes = examiner.assessmentTypes.map(id =>
           typeMap.get(id) || id
         );
       } catch (error) {

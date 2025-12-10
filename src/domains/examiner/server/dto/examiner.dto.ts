@@ -21,7 +21,7 @@ type ExaminerWithRelations = ExaminerProfile & {
 export class ExaminerDto {
   static toExaminerData(examiner: ExaminerWithRelations): ExaminerData {
     const feeStructure = examiner.feeStructure?.[0];
-    
+
     return {
       id: examiner.id,
       name: `${examiner.account.user.firstName} ${examiner.account.user.lastName}`.trim(),

@@ -47,7 +47,7 @@ const requestMoreInfo = async (
 
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
-  
+
   if (entityType === 'application') {
     // Update application status
     const application = await applicationService.requestMoreInfoFromApplication(

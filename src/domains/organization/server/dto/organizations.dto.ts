@@ -41,7 +41,7 @@ export class OrganizationDto {
     // Convert address object to formatted string
     const formatAddress = (address: OrganizationInputData['address']): string | null => {
       if (!address) return null;
-      
+
       const parts = [
         address.suite,
         address.street,
@@ -49,7 +49,7 @@ export class OrganizationDto {
         address.province,
         address.postalCode
       ].filter(Boolean);
-      
+
       return parts.length > 0 ? parts.join(', ') : address.address;
     };
 
@@ -60,8 +60,8 @@ export class OrganizationDto {
       status: data.status,
       typeName: data.type.name,
       address: formatAddress(data.address),
-      managerName: data.manager[0]?.account?.user ? 
-        `${data.manager[0].account.user.firstName} ${data.manager[0].account.user.lastName}` : 
+      managerName: data.manager[0]?.account?.user ?
+        `${data.manager[0].account.user.firstName} ${data.manager[0].account.user.lastName}` :
         undefined,
       managerEmail: data.manager[0]?.account?.user?.email,
       createdAt: data.createdAt.toISOString(),

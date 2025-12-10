@@ -1,5 +1,3 @@
-"use server";
-
 import getAvailability, { type GetAvailabilityInput } from "../handlers/getAvailability";
 
 export const getTransporterAvailabilityAction = async (input: GetAvailabilityInput) => {

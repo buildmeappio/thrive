@@ -16,28 +16,28 @@ declare module "@prisma/client" {
 
     interface UserUpdateInput {
       isLoginEnabled?:
-        | boolean
-        | PrismaClient.BoolFieldUpdateOperationsInput;
+      | boolean
+      | PrismaClient.BoolFieldUpdateOperationsInput;
       mustResetPassword?:
-        | boolean
-        | PrismaClient.BoolFieldUpdateOperationsInput;
+      | boolean
+      | PrismaClient.BoolFieldUpdateOperationsInput;
       temporaryPasswordIssuedAt?:
-        | Date
-        | string
-        | PrismaClient.NullableDateTimeFieldUpdateOperationsInput;
+      | Date
+      | string
+      | PrismaClient.NullableDateTimeFieldUpdateOperationsInput;
     }
 
     interface UserUncheckedUpdateInput {
       isLoginEnabled?:
-        | boolean
-        | PrismaClient.BoolFieldUpdateOperationsInput;
+      | boolean
+      | PrismaClient.BoolFieldUpdateOperationsInput;
       mustResetPassword?:
-        | boolean
-        | PrismaClient.BoolFieldUpdateOperationsInput;
+      | boolean
+      | PrismaClient.BoolFieldUpdateOperationsInput;
       temporaryPasswordIssuedAt?:
-        | Date
-        | string
-        | PrismaClient.NullableDateTimeFieldUpdateOperationsInput;
+      | Date
+      | string
+      | PrismaClient.NullableDateTimeFieldUpdateOperationsInput;
     }
   }
 }

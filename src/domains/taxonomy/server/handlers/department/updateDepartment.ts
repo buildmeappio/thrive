@@ -1,4 +1,4 @@
-import departmentService from '../../department.service';
+import * as departmentService from '../../department.service';
 import { UpdateDepartmentInput } from '../../../types/Department';
 
 const updateDepartment = async (id: string, data: UpdateDepartmentInput) => {

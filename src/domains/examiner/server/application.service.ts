@@ -15,10 +15,10 @@ export const getRecentApplications = async (limit?: number, status?: string | st
   return prisma.examinerApplication.findMany({
     where: {
       deletedAt: null,
-      ...(status && { 
-        status: Array.isArray(status) 
-          ? { in: status as any[] } 
-          : (status as any) 
+      ...(status && {
+        status: Array.isArray(status)
+          ? { in: status as any[] }
+          : (status as any)
       }),
     },
     include: includeRelations,
@@ -40,10 +40,10 @@ export const getApplicationCount = async (status?: string | string[]) => {
   return prisma.examinerApplication.count({
     where: {
       deletedAt: null,
-      ...(status && { 
-        status: Array.isArray(status) 
-          ? { in: status as any[] } 
-          : (status as any) 
+      ...(status && {
+        status: Array.isArray(status)
+          ? { in: status as any[] }
+          : (status as any)
       }),
     },
   });
@@ -152,7 +152,7 @@ export const createInterviewSchedulingLink = async (
 
   // Calculate expiration date
   const expiresAt = new Date(Date.now() + params.expiresInDays * 24 * 60 * 60 * 1000);
-  
+
   // Create SecureLink record
   const secureLink = await prisma.secureLink.create({
     data: {

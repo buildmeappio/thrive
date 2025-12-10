@@ -1,17 +1,17 @@
 import { PrismaClient, Prisma } from '@prisma/client';
-import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-// Create PostgreSQL connection pool
+// Create PostgreSQL connection adapter
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   throw new Error('DATABASE_URL environment variable is not set');
 }
 
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
+const adapter = new PrismaPg({
+  connectionString,
+});
 
 // Prisma Client configuration
 // For Prisma 7+, we need to provide an adapter for direct database connection
@@ -20,10 +20,10 @@ const prismaClientOptions: Prisma.PrismaClientOptions = {
   log:
     process.env.NODE_ENV === 'development'
       ? [
-          { level: 'query', emit: 'event' },
-          { level: 'error', emit: 'stdout' },
-          { level: 'warn', emit: 'stdout' },
-        ]
+        { level: 'query', emit: 'event' },
+        { level: 'error', emit: 'stdout' },
+        { level: 'warn', emit: 'stdout' },
+      ]
       : [{ level: 'error', emit: 'stdout' }],
   errorFormat: 'pretty',
 };

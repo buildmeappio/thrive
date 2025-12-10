@@ -1,4 +1,4 @@
-import languageService from '../../language.service';
+import * as languageService from '../../language.service';
 
 const getLanguageById = async (id: string) => {
   const result = await languageService.getLanguageById(id);

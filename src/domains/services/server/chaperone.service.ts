@@ -408,14 +408,3 @@ export const deleteChaperone = async (id: string) => {
     throw HttpError.internalServerError("Internal server error");
   }
 };
-
-const chaperoneService = {
-  createChaperone,
-  updateChaperone,
-  getChaperones,
-  getChaperoneById,
-  deleteChaperone,
-};
-
-export default chaperoneService;
-

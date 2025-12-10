@@ -1,4 +1,4 @@
-import claimTypeService from '../../claimType.service';
+import * as claimTypeService from '../../claimType.service';
 import { CreateClaimTypeInput } from '../../../types/ClaimType';
 
 const createClaimType = async (data: CreateClaimTypeInput) => {

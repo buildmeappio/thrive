@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PhoneInput from "@/components/PhoneNumber";
 import {
-  createTransporter,
   saveTransporterAvailabilityAction,
-} from "../server";
+} from "../server/actions/saveAvailability";
+import { createTransporter } from "../server/actions";
 import { toast } from "sonner";
 import { provinceOptions } from "@/constants/options";
 import { cn } from "@/lib/utils";
-import { TransporterFormHandler } from "../server";
+import { TransporterFormHandler } from "../server/handlers/transporterForm.handler";
 import {
   AvailabilityTabs,
   WeeklyHoursState,

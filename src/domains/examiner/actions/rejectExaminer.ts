@@ -43,7 +43,7 @@ const rejectExaminer = async (
 
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
-  
+
   if (entityType === 'application') {
     // Reject the application
     const application = await applicationService.rejectApplication(

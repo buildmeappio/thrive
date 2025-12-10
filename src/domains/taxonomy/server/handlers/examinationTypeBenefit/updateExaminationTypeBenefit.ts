@@ -1,4 +1,4 @@
-import examinationTypeBenefitService from '../../examinationTypeBenefit.service';
+import * as examinationTypeBenefitService from '../../examinationTypeBenefit.service';
 import { UpdateExaminationTypeBenefitInput } from '../../../types/ExaminationTypeBenefit';
 
 const updateExaminationTypeBenefit = async (id: string, data: UpdateExaminationTypeBenefitInput) => {

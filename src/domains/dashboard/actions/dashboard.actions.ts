@@ -1,7 +1,6 @@
-// src/domains/dashboard/actions/index.ts
 "use server";
 
-import dashboardService from "../server/dashboard.service";
+import * as dashboardService from "../server/dashboard.service";
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { 

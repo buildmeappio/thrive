@@ -53,7 +53,7 @@ const approveExaminer = async (id: string) => {
 
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
-  
+
   if (entityType === 'application') {
     // Approve the application
     const application = await applicationService.approveApplication(

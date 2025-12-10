@@ -23,9 +23,9 @@ const validTypes: TaxonomyType[] = [
 ];
 
 type PageProps = {
-  params: {
+  params: Promise<{
     type: string;
-  };
+  }>;
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

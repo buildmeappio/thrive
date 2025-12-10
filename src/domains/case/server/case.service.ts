@@ -1,3 +1,4 @@
+'use server';
 import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
 import { Examination, Prisma, SecureLinkStatus } from "@prisma/client";
@@ -310,4 +311,40 @@ class CaseService {
   }
 }
 
-export default new CaseService();
+const caseService = new CaseService();
+
+export async function getCaseTypes(typeNames: string[]) {
+  return await caseService.getCaseTypes(typeNames);
+}
+
+export async function doesCaseBelongToUser(exam: Examination, userId: string) {
+  return await caseService.doesCaseBelongToUser(exam, userId);
+}
+
+export async function getAssignTo(userId: string) {
+  return await caseService.getAssignTo(userId);
+}
+
+export async function getStatuses() {
+  return await caseService.getStatuses();
+}
+
+export async function convertFilterToWhere(filter?: ListCasesFilter) {
+  return await caseService.convertFilterToWhere(filter);
+}
+
+export async function listCases(assignToId?: string) {
+  return await caseService.listCases(assignToId);
+}
+
+export async function getCaseById(id: string) {
+  return await caseService.getCaseById(id);
+}
+
+export async function updateStatus(caseId: string, status: string) {
+  return await caseService.updateStatus(caseId, status);
+}
+
+export async function generateSecureLink(caseId: string) {
+  return await caseService.generateSecureLink(caseId);
+}

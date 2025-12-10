@@ -10,11 +10,11 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export default async function EditChaperonePage({ params }: PageProps) {
-  const { id } = params;
+  const { id } = await params;
   
   const response = await getChaperoneById(id);
   

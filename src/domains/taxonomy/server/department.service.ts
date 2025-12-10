@@ -120,12 +120,4 @@ export const getDepartmentById = async (id: string) => {
   }
 };
 
-const departmentService = {
-  createDepartment,
-  updateDepartment,
-  getDepartments,
-  getDepartmentById,
-};
-
-export default departmentService;
 

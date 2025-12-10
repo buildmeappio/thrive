@@ -122,13 +122,3 @@ export const getCaseStatusById = async (id: string) => {
     throw HttpError.internalServerError("Internal server error");
   }
 };
-
-const caseStatusService = {
-  createCaseStatus,
-  updateCaseStatus,
-  getCaseStatuses,
-  getCaseStatusById,
-};
-
-export default caseStatusService;
-

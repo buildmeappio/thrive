@@ -1,4 +1,4 @@
-import chaperoneService from "../chaperone.service";
+import * as chaperoneService from "../chaperone.service";
 
 const getChaperoneById = async (id: string) => {
   const result = await chaperoneService.getChaperoneById(id);
