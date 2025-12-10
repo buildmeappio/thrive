@@ -3,6 +3,9 @@ model ExaminerProfile {
   applicationId                     String?        @unique @map("application_id") @db.Uuid
   accountId                         String         @map("account_id") @db.Uuid
   addressId                         String?        @map("address_id") @db.Uuid
+  professionalTitle                 String?        @map("professional_title") @db.VarChar(100)
+  clinicName                        String?        @map("clinic_name") @db.VarChar(255)
+  clinicAddress                     String?        @map("clinic_address") @db.Text
   provinceOfResidence               String         @map("province_of_residence") @db.VarChar(255)
   mailingAddress                    String         @map("mailing_address") @db.Text
   specialties                       String[]       @map("specialties")
