@@ -1,5 +1,5 @@
 import { PrismaClient, Prisma } from "@prisma/client";
-import { Pool } from "pg";
+import { Pool, PoolConfig } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
@@ -10,7 +10,18 @@ if (!connectionString) {
   throw new Error("DATABASE_URL environment variable is not set");
 }
 
-const pool = new Pool({ connectionString });
+const config: PoolConfig = {
+  connectionString,
+};
+
+if (process.env.NODE_ENV === "production") {
+  const sslRequired = process.env.DATABASE_SSL_REQUIRED === "true";
+  config.ssl = {
+    rejectUnauthorized: sslRequired,
+  };
+}
+
+const pool = new Pool(config);
 const adapter = new PrismaPg(pool);
 
 // Prisma Client configuration
@@ -34,9 +45,9 @@ const prisma = globalForPrisma.prisma || new PrismaClient(prismaClientOptions);
 // Log queries in development
 if (process.env.NODE_ENV === "development") {
   prisma.$on("query" as never, (e: any) => {
-    console.log("Query: " + e.query);
-    console.log("Params: " + e.params);
-    console.log("Duration: " + e.duration + "ms");
+    // console.log("Query: " + e.query);
+    // console.log("Params: " + e.params);
+    // console.log("Duration: " + e.duration + "ms");
   });
 }
 
