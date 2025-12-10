@@ -33,7 +33,7 @@ const saveReportDraft = async (
     console.error("Error in saveReportDraft handler:", error);
     return {
       success: false,
-      message: error.message || "Failed to save report draft",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to save report draft",
     };
   }
 };

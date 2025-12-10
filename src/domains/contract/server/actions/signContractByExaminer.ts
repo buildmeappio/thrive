@@ -13,24 +13,27 @@ async function streamToBuffer(body: S3StreamChunk | null | undefined): Promise<B
   }
   
   // If it has transformToByteArray method (AWS SDK v3)
-  if (typeof (body as { transformToByteArray?: () => Promise<Uint8Array> }).transformToByteArray === "function") {
-    const bytes = await (body as { transformToByteArray: () => Promise<Uint8Array> }).transformToByteArray();
+  const bodyWithTransform = body as unknown as { transformToByteArray?: () => Promise<Uint8Array> };
+  if (typeof bodyWithTransform.transformToByteArray === "function") {
+    const bytes = await bodyWithTransform.transformToByteArray();
     return Buffer.from(bytes);
   }
   
   // If it's a Node.js stream
-  if (typeof (body as { on?: (event: string, callback: (chunk: Buffer) => void) => void }).on === "function") {
+  const bodyWithOn = body as unknown as { on?: (event: string, callback: (chunk: Buffer) => void) => void };
+  if (typeof bodyWithOn.on === "function") {
     return await new Promise<Buffer>((resolve, reject) => {
       const chunks: Buffer[] = [];
-      (body as { on: (event: string, callback: (chunk: Buffer) => void) => void }).on("data", (chunk: Buffer) => chunks.push(chunk));
-      (body as { on: (event: string, callback: (error: Error) => void) => void }).on("error", reject);
-      (body as { on: (event: string, callback: () => void) => void }).on("end", () => resolve(Buffer.concat(chunks)));
+      (body as unknown as { on: (event: string, callback: (chunk: Buffer) => void) => void }).on("data", (chunk: Buffer) => chunks.push(chunk));
+      (body as unknown as { on: (event: string, callback: (error: Error) => void) => void }).on("error", reject);
+      (body as unknown as { on: (event: string, callback: () => void) => void }).on("end", () => resolve(Buffer.concat(chunks)));
     });
   }
   
   // For ReadableStream (Web Streams API)
-  if ((body as { getReader?: () => ReadableStreamDefaultReader<Uint8Array> }).getReader) {
-    const reader = (body as { getReader: () => ReadableStreamDefaultReader<Uint8Array> }).getReader();
+  const bodyWithReader = body as unknown as { getReader?: () => ReadableStreamDefaultReader<Uint8Array> };
+  if (bodyWithReader.getReader) {
+    const reader = bodyWithReader.getReader();
     const chunks: Uint8Array[] = [];
     while (true) {
       const { done, value } = await reader.read();
@@ -42,10 +45,15 @@ async function streamToBuffer(body: S3StreamChunk | null | undefined): Promise<B
   
   // Fallback: try to read as async iterator
   const chunks: Uint8Array[] = [];
-  for await (const chunk of body as AsyncIterable<Uint8Array>) {
-    chunks.push(chunk instanceof Buffer ? chunk : Buffer.from(chunk));
+  try {
+    for await (const chunk of body as unknown as AsyncIterable<Uint8Array>) {
+      chunks.push(chunk instanceof Buffer ? chunk : Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
+  } catch {
+    // If all methods fail, throw an error
+    throw new Error("Unable to convert S3 stream to buffer: unsupported stream type");
   }
-  return Buffer.concat(chunks);
 }
 
 /**
@@ -180,7 +188,6 @@ export const signContractByExaminer = async (
         
         const contract = await prisma.contract.findUnique({
           where: { id: contractId },
-          select: { signedPdfS3Key: true },
         });
 
         if (contract?.signedPdfS3Key) {

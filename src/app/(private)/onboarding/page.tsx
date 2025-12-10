@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import OnboardingStepsWrapper from "@/domains/setting/components/onboarding-steps-wrapper";
+import OnboardingStepsWrapper from "@/domains/onboarding/components/onboarding-steps-wrapper";
 
 export const metadata: Metadata = {
   title: "Onboarding | Thrive - Examiner",

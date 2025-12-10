@@ -7,11 +7,15 @@ export const updateExaminerProfileAction = async (data: {
   examinerProfileId: string;
   firstName: string;
   lastName: string;
-  phoneNumber: string;
-  landlineNumber?: string;
   emailAddress: string;
-  provinceOfResidence: string;
-  mailingAddress: string;
+  phoneNumber?: string;
+  landlineNumber?: string;
+  provinceOfResidence?: string;
+  mailingAddress?: string;
+  professionalTitle?: string;
+  yearsOfExperience?: string;
+  clinicName?: string;
+  clinicAddress?: string;
   bio?: string;
   profilePhotoId?: string | null;
   profilePhoto?: File;
@@ -46,7 +50,7 @@ export const updateExaminerProfileAction = async (data: {
     return {
       success: false as const,
       data: null,
-      message: error.message || "Failed to update examiner profile",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to update examiner profile",
     };
   }
 };

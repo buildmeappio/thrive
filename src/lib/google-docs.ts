@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import { ENV } from "@/constants/variables";
-import { GoogleApiError, GoogleDocsElement, GoogleDocsParagraphElement, GoogleDocsBatchUpdateRequest } from "@/types/google-docs";
+import { GoogleApiError, GoogleDocsElement, GoogleDocsParagraphElement, GoogleDocsBatchUpdateRequest, GoogleDocsTableElement } from "@/types/google-docs";
 
 /**
  * Google Docs API service for contract generation
@@ -62,8 +62,6 @@ export async function copyTemplate(
     }
 
     return response.data.id;
-import { GoogleApiError } from "@/types/google-docs";
-
   } catch (error) {
     console.error("Error copying Google Doc template:", error);
     if (error instanceof Error) {
@@ -207,7 +205,7 @@ export async function insertImageAtPlaceholder(
           }
         }
         if (element.table) {
-          const tableElement = element as GoogleDocsElement & { table?: { tableRows?: Array<{ tableCells?: Array<{ content?: GoogleDocsElement[] }> }> }> };
+          const tableElement = element as GoogleDocsTableElement;
           for (const row of tableElement.table?.tableRows || []) {
             for (const cell of row.tableCells || []) {
               if (cell.content) {
@@ -238,7 +236,7 @@ export async function insertImageAtPlaceholder(
           el.startIndex === placeholderIndex
       );
 
-    if (!textContent) {
+    if (!textContent || !textContent.textRun?.content) {
       console.warn(
         `Could not find text content for placeholder "${placeholderText}"`
       );

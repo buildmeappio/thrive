@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import { MapPin } from "lucide-react";
 import { useGoogleMaps } from "@/lib/useGoogleMaps";
-import { GoogleMapsPlaceData, GoogleMapsAutocompleteOptions } from "@/types/google-maps";
+import { GoogleMapsPlaceData, GoogleMapsAutocompleteOptions, GoogleMapsAddressComponent } from "@/types/google-maps";
 
 interface GoogleMapsInputProps {
   value?: string;
@@ -106,11 +106,11 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
       // Remove ", Canada" from the end of the address
       formattedAddress = formattedAddress.replace(/, Canada$/i, "");
 
-      const placeData = {
+      const placeData: GoogleMapsPlaceData = {
         formattedAddress: formattedAddress,
         latitude: place.geometry.location?.lat() || 0,
         longitude: place.geometry.location?.lng() || 0,
-        components: place.address_components,
+        components: place.address_components as GoogleMapsAddressComponent[] | undefined,
         raw: place,
       };
 

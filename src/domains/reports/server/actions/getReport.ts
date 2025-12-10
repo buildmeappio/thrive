@@ -13,7 +13,7 @@ export async function getReportAction(
     console.error("Error in getReport action:", error);
     return {
       success: false,
-      message: error.message || "Failed to fetch report",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch report",
     };
   }
 }

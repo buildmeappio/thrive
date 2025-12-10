@@ -2,17 +2,9 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, PersistStorage } from "zustand/middleware";
 import { ExaminerData, MedicalLicenseDocument } from "@/types/components";
-
-type YearsOfExperience = {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-};
+import { YearsOfExperience } from "@/domains/auth/types";
 
 // Removed - not used in current flow
 // type MaximumDistanceTravel = {
@@ -181,17 +173,18 @@ type Store = {
 };
 
 // Custom storage to handle File objects
-const createRegistrationStorage = () => {
+const createRegistrationStorage = (): PersistStorage<Store> => {
   return {
     getItem: (name: string) => {
       const str = localStorage.getItem(name);
       if (!str) return null;
-      return str;
+      return JSON.parse(str);
     },
-    setItem: (name: string, value: string) => {
-      // Parse the state to exclude File objects (non-serializable)
+    setItem: (name: string, value: unknown): void => {
+      // Zustand passes the parsed state object, not a string
+      // We need to sanitize it to remove File objects before storing
       try {
-        const state = JSON.parse(value);
+        const state = value as { state?: { data?: Record<string, unknown> } };
         if (state?.state?.data) {
           // Remove File objects before storing
           const sanitizedData = { ...state.state.data };
@@ -243,7 +236,8 @@ const createRegistrationStorage = () => {
         }
         localStorage.setItem(name, JSON.stringify(state));
       } catch {
-        localStorage.setItem(name, value);
+        // Fallback: try to stringify the value as-is
+        localStorage.setItem(name, JSON.stringify(value));
       }
     },
     removeItem: (name: string) => {

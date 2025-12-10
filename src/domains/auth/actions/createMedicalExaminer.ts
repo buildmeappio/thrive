@@ -12,7 +12,7 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
     return {
       success: false,
       message:
-        error?.message ||
+        (error instanceof Error ? error.message : undefined) ||
         "Failed to create medical examiner profile. Please try again.",
     };
   }

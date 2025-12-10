@@ -60,12 +60,26 @@ const AvailabilityPreferencesForm: React.FC<
       // Convert local times to UTC before saving to database
       const utcValues = convertAvailabilityToUTC(values);
 
+      // Ensure weeklyHours is provided (required by the action)
+      if (!utcValues.weeklyHours) {
+        throw new Error("Weekly hours are required");
+      }
+
       const { saveAvailabilityAction } = await import("../../server/actions");
       const result = await saveAvailabilityAction({
         examinerProfileId,
         weeklyHours: utcValues.weeklyHours,
         overrideHours: utcValues.overrideHours,
-        bookingOptions: utcValues.bookingOptions,
+        bookingOptions: utcValues.bookingOptions as {
+          appointmentTypes: ("phone" | "video")[];
+          appointmentDuration: string;
+          buffer: string;
+          bookingWindow: number;
+          minimumNotice: {
+            value: number;
+            unit: "days" | "hours";
+          };
+        } | undefined,
         activationStep: "availability",
       });
 

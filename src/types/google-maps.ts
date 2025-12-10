@@ -18,7 +18,7 @@ export interface GoogleMapsPlaceData {
   formattedAddress: string;
   latitude: number;
   longitude: number;
-  components: GoogleMapsAddressComponent[];
+  components: GoogleMapsAddressComponent[] | undefined;
   raw: google.maps.places.PlaceResult;
 }
 

@@ -102,7 +102,7 @@ const sendRegistrationEmails = async (input: SendRegistrationEmailsInput) => {
     // Don't fail the registration if emails fail
     return {
       success: false,
-      message: error?.message || "Failed to send notification emails",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to send notification emails",
     };
   }
 };

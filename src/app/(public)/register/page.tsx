@@ -2,6 +2,7 @@ import { RegisterForm } from "@/domains/auth";
 import authActions from "@/domains/auth/actions/index";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { ExaminerProfileDetailsData } from "@/types/components";
 
 export const metadata: Metadata = {
   title: "Register | Thrive Examiner",
@@ -19,7 +20,7 @@ const Page = async ({
   const yearsOfExperience = await authActions.getYearsOfExperience();
 
   // If token exists, fetch examiner data and pass to RegisterForm
-  let examinerData = null;
+  let examinerData: ExaminerProfileDetailsData | undefined = undefined;
   if (token) {
     try {
       const result = await authActions.getExaminerProfileDetails(token);

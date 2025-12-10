@@ -1,7 +1,8 @@
 import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
-import { verifyResumeToken } from "@/lib/jwt";
 import ErrorMessages from "@/constants/ErrorMessages";
+import { MedicalLicenseDocument } from "@/types/components";
+import { SecureLinkStatus } from "@prisma/client";
 
 export type VerifyResumeTokenInput = {
   token: string;
@@ -15,32 +16,61 @@ const verifyResumeTokenHandler = async (
       throw HttpError.badRequest("Token is required");
     }
 
-    // Verify token
-    const decoded = verifyResumeToken(payload.token);
-    if (!decoded) {
-      throw HttpError.unauthorized("Invalid or expired resume token");
-    }
-
-    const { email, applicationId } = decoded as {
-      email: string;
-      applicationId: string;
-    };
-
-    if (!email || !applicationId) {
-      throw HttpError.unauthorized("Invalid token payload");
-    }
-
-    // Fetch application with all related data
-    const application = await prisma.examinerApplication.findUnique({
+    // Look up the token in the database
+    const secureLink = await prisma.secureLink.findFirst({
       where: {
-        id: applicationId,
+        token: payload.token,
       },
       include: {
-        address: true,
+        applicationSecureLink: {
+          include: {
+            application: {
+              include: {
+                address: true,
+              },
+            },
+          },
+        },
       },
     });
 
-import { MedicalLicenseDocument } from "@/types/components";
+    if (!secureLink) {
+      throw HttpError.unauthorized("Invalid resume token");
+    }
+
+    // Check if the link has expired (based on expiresAt date)
+    const now = new Date();
+    if (secureLink.expiresAt < now) {
+      // Update status to EXPIRED if not already
+      if (secureLink.status === SecureLinkStatus.PENDING) {
+        await prisma.secureLink.update({
+          where: { id: secureLink.id },
+          data: { status: SecureLinkStatus.EXPIRED },
+        });
+      }
+      throw HttpError.unauthorized("This resume link has expired (7 days)");
+    }
+
+    // Check if the link status is valid (PENDING)
+    if (secureLink.status === SecureLinkStatus.INVALID) {
+      throw HttpError.unauthorized("This resume link is no longer valid. A newer link has been generated.");
+    }
+
+    if (secureLink.status === SecureLinkStatus.EXPIRED) {
+      throw HttpError.unauthorized("This resume link has expired");
+    }
+
+    if (secureLink.status === SecureLinkStatus.SUBMITTED) {
+      throw HttpError.badRequest("This application has already been submitted");
+    }
+
+    // Get the application from the secure link
+    const applicationSecureLink = secureLink.applicationSecureLink[0];
+    if (!applicationSecureLink) {
+      throw HttpError.notFound("Application not found for this token");
+    }
+
+    const application = applicationSecureLink.application;
 
     // Fetch medical license documents by IDs
     let medicalLicenseDocuments: MedicalLicenseDocument[] = [];
@@ -63,11 +93,6 @@ import { MedicalLicenseDocument } from "@/types/components";
 
     if (!application) {
       throw HttpError.notFound("Application not found");
-    }
-
-    // Verify email matches
-    if (application.email !== email) {
-      throw HttpError.forbidden("Token email does not match application");
     }
 
     // Check if application is still in DRAFT status (can be resumed)

@@ -25,7 +25,7 @@ const getDashboardBookings = async (
     console.error("Error in getDashboardBookings handler:", error);
     return {
       success: false,
-      message: error.message || "Failed to fetch dashboard bookings",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch dashboard bookings",
     };
   }
 };

@@ -1,0 +1,46 @@
+model Contract {
+  id                   String         @id @default(uuid()) @db.Uuid
+  examinerProfileId    String?        @map("examiner_profile_id") @db.Uuid
+  applicationId        String?        @map("application_id") @db.Uuid
+  templateId           String         @map("template_id") @db.Uuid
+  templateVersionId    String         @map("template_version_id") @db.Uuid
+  status               ContractStatus @default(DRAFT) @map("status")
+  data                 Json           @map("data")
+  dataHash             String         @map("data_hash") @db.VarChar(64)
+  unsignedHtmlS3Key    String?        @map("unsigned_html_s3_key") @db.VarChar(500)
+  unsignedHtmlSha256   String?        @map("unsigned_html_sha256") @db.VarChar(64)
+  unsignedPdfS3Key     String?        @map("unsigned_pdf_s3_key") @db.VarChar(500)
+  unsignedPdfSha256    String?        @map("unsigned_pdf_sha256") @db.VarChar(64)
+  signedHtmlS3Key      String?        @map("signed_html_s3_key") @db.VarChar(500)
+  signedHtmlSha256     String?        @map("signed_html_sha256") @db.VarChar(64)
+  signedPdfS3Key       String?        @map("signed_pdf_s3_key") @db.VarChar(500)
+  signedPdfSha256      String?        @map("signed_pdf_sha256") @db.VarChar(64)
+  googleDocId          String?        @map("google_doc_id") @db.VarChar(500)
+  googleDocUrl         String?        @map("google_doc_url") @db.Text
+  driveHtmlId          String?        @map("drive_html_id") @db.VarChar(500)
+  sentAt               DateTime?      @map("sent_at") @db.Timestamptz()
+  viewedAt             DateTime?      @map("viewed_at") @db.Timestamptz()
+  signedAt             DateTime?      @map("signed_at") @db.Timestamptz()
+  declinedAt           DateTime?      @map("declined_at") @db.Timestamptz()
+  voidReason           String?        @map("void_reason") @db.Text
+  accessToken          String?        @map("access_token") @db.Text
+  accessTokenExpiresAt DateTime?      @map("access_token_expires_at") @db.Timestamptz()
+  signedByExaminer     Boolean        @default(false) @map("signed_by_examiner")
+  createdBy            String         @map("created_by") @db.Uuid
+  createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt            DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
+
+  examinerProfile ExaminerProfile?     @relation("ExaminerContracts", fields: [examinerProfileId], references: [id], onDelete: Cascade)
+  application     ExaminerApplication? @relation("ApplicationContracts", fields: [applicationId], references: [id], onDelete: Cascade)
+  template        DocumentTemplate     @relation("TemplateContracts", fields: [templateId], references: [id])
+  templateVersion TemplateVersion      @relation("VersionContracts", fields: [templateVersionId], references: [id])
+  events          ContractEvent[]      @relation("ContractEvents")
+
+  @@index([examinerProfileId])
+  @@index([status])
+  @@index([templateId])
+  @@index([googleDocId])
+  @@map("contracts")
+}
+
+// Contract Events - Full audit trail

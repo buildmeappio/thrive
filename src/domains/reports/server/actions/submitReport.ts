@@ -54,7 +54,7 @@ export async function submitReportAction(
     console.error("Error in submitReport action:", error);
     return {
       success: false,
-      message: error.message || "Failed to submit report",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to submit report",
     };
   }
 }

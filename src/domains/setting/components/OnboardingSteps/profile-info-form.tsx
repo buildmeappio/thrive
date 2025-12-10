@@ -1,30 +1,30 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui";
 import {
   Mail,
   // MapPin,
   User,
   CircleCheck,
-  PhoneCall,
+  Briefcase,
 } from "lucide-react";
 import ProfilePhotoUpload from "@/components/ProfilePhotoUpload";
 import {
   FormProvider,
   FormField,
   FormDropdown,
-  FormPhoneInput,
   FormGoogleMapsInput,
 } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
-import { provinces } from "@/constants/options";
+import { professionalTitleOptions } from "@/constants/options";
 import { updateExaminerProfileAction } from "../../server/actions";
 import {
   profileInfoSchema,
   ProfileInfoInput,
 } from "../../schemas/onboardingSteps.schema";
 import { toast } from "sonner";
+import authActions from "@/domains/auth/actions";
 
 import { InitialFormData } from "@/types/components";
 
@@ -43,18 +43,67 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
+  const [yearsOfExperienceOptions, setYearsOfExperienceOptions] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+  const [loadingYears, setLoadingYears] = useState(true);
 
-  const form = useForm<ProfileInfoInput>({
+  // Fetch years of experience options
+  useEffect(() => {
+    const fetchYearsOfExperience = async () => {
+      try {
+        setLoadingYears(true);
+        const years = await authActions.getYearsOfExperience();
+        const formattedYears = years.map((year) => ({
+          value: year.id,
+          label: year.name,
+        }));
+        setYearsOfExperienceOptions(formattedYears);
+      } catch (error) {
+        console.error("Failed to fetch years of experience:", error);
+        toast.error("Failed to load years of experience options");
+      } finally {
+        setLoadingYears(false);
+      }
+    };
+
+    fetchYearsOfExperience();
+  }, []);
+
+  const form = useForm({
     schema: profileInfoSchema,
     defaultValues: {
-      firstName: initialData?.firstName || "",
-      lastName: initialData?.lastName || "",
-      phoneNumber: initialData?.phoneNumber || "",
-      landlineNumber: initialData?.landlineNumber || "",
-      emailAddress: initialData?.emailAddress || "",
-      provinceOfResidence: initialData?.provinceOfResidence || "",
-      mailingAddress: initialData?.mailingAddress || "",
-      bio: initialData?.bio || "",
+      firstName:
+        (typeof initialData?.firstName === "string"
+          ? initialData.firstName
+          : undefined) || "",
+      lastName:
+        (typeof initialData?.lastName === "string"
+          ? initialData.lastName
+          : undefined) || "",
+      emailAddress:
+        (typeof initialData?.emailAddress === "string"
+          ? initialData.emailAddress
+          : undefined) || "",
+      professionalTitle:
+        (typeof initialData?.professionalTitle === "string"
+          ? initialData.professionalTitle
+          : undefined) || "",
+      yearsOfExperience:
+        (typeof initialData?.yearsOfExperience === "string"
+          ? initialData.yearsOfExperience
+          : undefined) || "",
+      clinicName:
+        (typeof initialData?.clinicName === "string"
+          ? initialData.clinicName
+          : undefined) || "",
+      clinicAddress:
+        (typeof initialData?.clinicAddress === "string"
+          ? initialData.clinicAddress
+          : undefined) || "",
+      bio:
+        (typeof initialData?.bio === "string" ? initialData.bio : undefined) ||
+        "",
     },
     mode: "onSubmit",
   });
@@ -74,7 +123,10 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       const result = await updateExaminerProfileAction({
         examinerProfileId,
         ...values,
-        profilePhotoId: initialData?.profilePhotoId || null,
+        profilePhotoId:
+          (typeof initialData?.profilePhotoId === "string"
+            ? initialData.profilePhotoId
+            : undefined) || null,
         profilePhoto: profilePhoto || undefined,
         activationStep: "profile", // Mark step 1 as completed
       });
@@ -97,9 +149,15 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   return (
     <div className="bg-white rounded-2xl px-8 py-4 shadow-sm">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 className="text-2xl font-medium">
-          Confirm or Complete Your Profile Info
-        </h2>
+        <div className="flex flex-col gap-2">
+          <h2 className="text-2xl font-medium">
+            Complete Your Professional Profile{" "}
+          </h2>
+          <p className="text-sm text-gray-500">
+            Provide basic information about yourself. This will be visible to
+            insurers referring IMEs.
+          </p>
+        </div>
         <Button
           type="submit"
           form="profile-form"
@@ -113,7 +171,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
 
       <FormProvider form={form} onSubmit={onSubmit} id="profile-form">
         <div className="space-y-6">
-          {/* First Row - First Name, Last Name, Phone Number */}
+          {/* First Row - First Name, Last Name, Email */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField name="firstName" label="First Name" required>
               {(field) => (
@@ -139,24 +197,6 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
               )}
             </FormField>
 
-            <FormPhoneInput
-              name="phoneNumber"
-              label="Phone Number"
-              required
-              className="bg-[#F9F9F9]"
-            />
-          </div>
-
-          {/* Second Row - Landline Number, Email, Province */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormPhoneInput
-              name="landlineNumber"
-              label="Landline Number"
-              className="bg-[#F9F9F9]"
-              required
-              icon={PhoneCall}
-            />
-
             <FormField name="emailAddress" label="Email Address" required>
               {(field) => (
                 <Input
@@ -169,22 +209,50 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
                 />
               )}
             </FormField>
-
-            <FormDropdown
-              name="provinceOfResidence"
-              label="Province of Residence"
-              required
-              options={provinces}
-              placeholder="Select Province"
-              from="profile-info-form"
-            />
           </div>
 
-          {/* Third Row - Mailing Address */}
+          {/* Second Row - Professional Title, Years of Experience, Clinic Name */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormDropdown
+              name="professionalTitle"
+              label="Professional Title"
+              required
+              options={professionalTitleOptions}
+              placeholder="Select Title"
+              from="profile-info-form"
+            />
+
+            <FormDropdown
+              name="yearsOfExperience"
+              label="Years of Experience"
+              required
+              options={yearsOfExperienceOptions}
+              placeholder={
+                loadingYears
+                  ? "Loading years..."
+                  : "Select Years"
+              }
+              from="profile-info-form"
+              disabled={loadingYears}
+            />
+
+            <FormField name="clinicName" label="Clinic Name" required>
+              {(field) => (
+                <Input
+                  {...field}
+                  placeholder="Precision Medical Clinic"
+                  icon={Briefcase}
+                  className="bg-[#F9F9F9]"
+                />
+              )}
+            </FormField>
+          </div>
+
+          {/* Third Row - Clinic Address */}
           <div className="grid grid-cols-1 gap-4">
             <FormGoogleMapsInput
-              name="mailingAddress"
-              label="Mailing Address"
+              name="clinicAddress"
+              label="Clinic Address"
               required
               from="profile-info-form"
             />
@@ -209,7 +277,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
               {(field) => (
                 <textarea
                   {...field}
-                  placeholder="I am Dr. Sarah Ahmed is a board-certified orthopedic surgeon..."
+                  placeholder="Your bio helps insurers understand your expertise. Keep it short and professional."
                   rows={6}
                   className="w-full px-4 py-3 rounded-lg bg-[#F9F9F9] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent resize-none"
                   disabled={loading}

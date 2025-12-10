@@ -85,3 +85,22 @@ export interface Step9PasswordProps {
   userId?: string;
   onNext: () => void;
 }
+
+/**
+ * Years of experience structure
+ */
+export type YearsOfExperience = {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+};
+
+/**
+ * Registration step component structure
+ */
+export interface RegistrationStep {
+  component: React.ComponentType<RegStepProps>;
+}

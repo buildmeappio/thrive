@@ -9,15 +9,28 @@ const s3Client = new S3Client({
 
 async function streamToString(body: S3StreamChunk | null | undefined): Promise<string> {
   if (!body) return "";
-  if (typeof body.transformToString === "function") {
-    return body.transformToString();
+  
+  // Check if it has transformToString method (AWS SDK v3)
+  if (typeof (body as { transformToString?: () => Promise<string> }).transformToString === "function") {
+    return await (body as { transformToString: () => Promise<string> }).transformToString();
   }
-  return await new Promise<string>((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    body.on("data", (chunk: Buffer) => chunks.push(chunk));
-    body.on("error", reject);
-    body.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
-  });
+  
+  // If it's a Node.js stream
+  if (typeof (body as { on?: (event: string, callback: (chunk: Buffer) => void) => void }).on === "function") {
+    return await new Promise<string>((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      (body as { on: (event: string, callback: (chunk: Buffer) => void) => void }).on("data", (chunk: Buffer) => chunks.push(chunk));
+      (body as { on: (event: string, callback: (error: Error) => void) => void }).on("error", reject);
+      (body as { on: (event: string, callback: () => void) => void }).on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
+    });
+  }
+  
+  // Fallback: try to convert Uint8Array or Buffer to string
+  if (body instanceof Uint8Array || Buffer.isBuffer(body)) {
+    return Buffer.from(body).toString("utf-8");
+  }
+  
+  return "";
 }
 
 export async function getLatestContract(id: string) {

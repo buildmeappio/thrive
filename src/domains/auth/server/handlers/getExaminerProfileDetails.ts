@@ -3,6 +3,7 @@ import { verifyExaminerInfoToken } from "@/lib/jwt";
 import { examinerService } from "../services";
 import ErrorMessages from "@/constants/ErrorMessages";
 import prisma from "@/lib/db";
+import { MedicalLicenseDocument } from "@/types/components";
 
 export type GetExaminerProfileDetailsInput = {
   token: string;
@@ -37,8 +38,6 @@ const getExaminerProfileDetails = async (
     if (!application) {
       throw HttpError.notFound("Examiner application not found");
     }
-
-import { MedicalLicenseDocument } from "@/types/components";
 
     // Fetch medical license documents by IDs
     let medicalLicenseDocuments: MedicalLicenseDocument[] = [];

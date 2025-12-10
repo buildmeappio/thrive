@@ -253,7 +253,7 @@ class ReportService {
       console.error("Error saving report draft:", error);
       return {
         success: false,
-        error: error.message || "Failed to save report draft",
+        error: (error instanceof Error ? error.message : undefined) || "Failed to save report draft",
       };
     }
   }
@@ -427,7 +427,7 @@ class ReportService {
       console.error("Error submitting report:", error);
       return {
         success: false,
-        error: error.message || "Failed to submit report",
+        error: (error instanceof Error ? error.message : undefined) || "Failed to submit report",
       };
     }
   }

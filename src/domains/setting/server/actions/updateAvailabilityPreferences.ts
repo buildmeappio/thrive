@@ -23,7 +23,7 @@ export const updateAvailabilityPreferencesAction = async () =>
       return {
         success: false as const,
         data: null,
-        message: error.message || "Failed to update availability preferences",
+        message: (error instanceof Error ? error.message : undefined) || "Failed to update availability preferences",
       };
     }
   };

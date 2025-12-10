@@ -37,11 +37,15 @@ class DashboardService {
     data: {
       firstName?: string;
       lastName?: string;
+      emailAddress?: string;
       phoneNumber?: string;
       landlineNumber?: string;
-      emailAddress?: string;
       provinceOfResidence?: string;
       mailingAddress?: string;
+      professionalTitle?: string;
+      yearsOfExperience?: string;
+      clinicName?: string;
+      clinicAddress?: string;
       bio?: string;
       profilePhotoId?: string | null;
       activationStep?: string;
@@ -61,8 +65,8 @@ class DashboardService {
     if (
       data.firstName ||
       data.lastName ||
-      data.phoneNumber ||
       data.emailAddress ||
+      data.phoneNumber !== undefined ||
       data.profilePhotoId !== undefined
     ) {
       await prisma.user.update({
@@ -70,8 +74,8 @@ class DashboardService {
         data: {
           ...(data.firstName && { firstName: data.firstName }),
           ...(data.lastName && { lastName: data.lastName }),
-          ...(data.phoneNumber && { phone: data.phoneNumber }),
           ...(data.emailAddress && { email: data.emailAddress }),
+          ...(data.phoneNumber !== undefined && { phone: data.phoneNumber }),
           ...(data.profilePhotoId !== undefined && {
             profilePhotoId: data.profilePhotoId,
           }),
@@ -83,14 +87,26 @@ class DashboardService {
     const updatedProfile = await prisma.examinerProfile.update({
       where: { id: examinerProfileId },
       data: {
+        ...(data.landlineNumber !== undefined && {
+          landlineNumber: data.landlineNumber,
+        }),
         ...(data.provinceOfResidence && {
           provinceOfResidence: data.provinceOfResidence,
         }),
         ...(data.mailingAddress && {
           mailingAddress: data.mailingAddress,
         }),
-        ...(data.landlineNumber !== undefined && {
-          landlineNumber: data.landlineNumber,
+        ...(data.professionalTitle && {
+          professionalTitle: data.professionalTitle,
+        }),
+        ...(data.yearsOfExperience && {
+          yearsOfIMEExperience: data.yearsOfExperience,
+        }),
+        ...(data.clinicName && {
+          clinicName: data.clinicName,
+        }),
+        ...(data.clinicAddress && {
+          clinicAddress: data.clinicAddress,
         }),
         ...(data.bio && {
           bio: data.bio,
@@ -177,11 +193,14 @@ class DashboardService {
     examinerProfileId: string,
     data: {
       payoutMethod?: "direct_deposit" | "cheque" | "interac";
+      legalName?: string;
+      sin?: string;
       transitNumber?: string;
       institutionNumber?: string;
       accountNumber?: string;
       chequeMailingAddress?: string;
       interacEmail?: string;
+      autodepositEnabled?: boolean;
       activationStep?: string;
     }
   ) {
@@ -194,6 +213,8 @@ class DashboardService {
     }
 
     // Update examiner profile
+    // Note: legalName, sin, and autodepositEnabled are not in the schema yet
+    // These fields may need to be added to the ExaminerProfile schema
     const updatedProfile = await prisma.examinerProfile.update({
       where: { id: examinerProfileId },
       data: {
@@ -216,6 +237,68 @@ class DashboardService {
         ...(data.activationStep && {
           activationStep: data.activationStep,
         }),
+        // TODO: Add these fields to the schema when they are added:
+        // legalName, sin, autodepositEnabled
+      },
+    });
+
+    return updatedProfile;
+  }
+
+  /**
+   * Update services & assessment types
+   */
+  async updateServicesAssessment(
+    examinerProfileId: string,
+    data: {
+      assessmentTypes?: string[];
+      acceptVirtualAssessments?: boolean;
+      acceptInPersonAssessments?: boolean;
+      travelToClaimants?: boolean;
+      travelRadius?: string;
+      assessmentTypeOther?: string;
+      activationStep?: string;
+    }
+  ) {
+    const examinerProfile = await prisma.examinerProfile.findUnique({
+      where: { id: examinerProfileId },
+    });
+
+    if (!examinerProfile) {
+      throw new Error("Examiner profile not found");
+    }
+
+    // Update examiner profile
+    const updatedProfile = await prisma.examinerProfile.update({
+      where: { id: examinerProfileId },
+      data: {
+        ...(data.assessmentTypes && { assessmentTypes: data.assessmentTypes }),
+        ...(data.acceptVirtualAssessments !== undefined && {
+          acceptVirtualAssessments: data.acceptVirtualAssessments,
+        }),
+        // Note: acceptInPersonAssessments is not in the database schema yet
+        // For now, we'll store it implicitly via acceptVirtualAssessments
+        // If both virtual and in-person are false, acceptVirtualAssessments will be false
+        // If either is true, we can set acceptVirtualAssessments accordingly
+        ...(data.travelToClaimants !== undefined && data.travelToClaimants && data.travelRadius && {
+          maxTravelDistance: data.travelRadius,
+        }),
+        ...(data.travelToClaimants !== undefined && !data.travelToClaimants && {
+          maxTravelDistance: null,
+        }),
+        ...(data.assessmentTypeOther !== undefined && {
+          assessmentTypeOther: data.assessmentTypeOther,
+        }),
+        ...(data.activationStep && {
+          activationStep: data.activationStep,
+        }),
+      },
+      include: {
+        account: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
 
@@ -241,6 +324,60 @@ class DashboardService {
       profilePhotoUrl,
       document: uploadResult.document,
     };
+  }
+
+  /**
+   * Update examiner documents
+   */
+  async updateDocuments(
+    examinerProfileId: string,
+    data: {
+      medicalLicenseDocumentIds?: string[];
+      governmentIdDocumentId?: string;
+      resumeDocumentId?: string;
+      insuranceDocumentId?: string;
+      specialtyCertificatesDocumentIds?: string[];
+      activationStep?: string;
+    }
+  ) {
+    const examinerProfile = await prisma.examinerProfile.findUnique({
+      where: { id: examinerProfileId },
+    });
+
+    if (!examinerProfile) {
+      throw new Error("Examiner profile not found");
+    }
+
+    // Note: governmentIdDocumentId and specialtyCertificatesDocumentIds
+    // may need to be added to the ExaminerProfile schema
+    const updatedProfile = await prisma.examinerProfile.update({
+      where: { id: examinerProfileId },
+      data: {
+        ...(data.medicalLicenseDocumentIds !== undefined && {
+          medicalLicenseDocumentIds: data.medicalLicenseDocumentIds,
+        }),
+        ...(data.resumeDocumentId !== undefined && {
+          resumeDocumentId: data.resumeDocumentId,
+        }),
+        ...(data.insuranceDocumentId !== undefined && {
+          insuranceDocumentId: data.insuranceDocumentId,
+        }),
+        ...(data.activationStep && {
+          activationStep: data.activationStep,
+        }),
+        // TODO: Add governmentIdDocumentId and specialtyCertificatesDocumentIds
+        // to the schema when these fields are added
+      },
+      include: {
+        account: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    return updatedProfile;
   }
 }
 

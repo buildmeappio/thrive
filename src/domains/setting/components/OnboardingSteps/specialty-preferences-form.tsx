@@ -77,11 +77,11 @@ const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
   const form = useForm<SpecialtyPreferencesInput>({
     schema: specialtyPreferencesSchema,
     defaultValues: {
-      specialty: initialData?.specialty || [],
-      assessmentTypes: initialData?.assessmentTypes || [],
-      preferredFormat: initialData?.preferredFormat || "",
-      regionsServed: initialData?.regionsServed || [],
-      languagesSpoken: initialData?.languagesSpoken || [],
+      specialty: (Array.isArray(initialData?.specialty) ? initialData.specialty : undefined) || [],
+      assessmentTypes: (Array.isArray(initialData?.assessmentTypes) ? initialData.assessmentTypes : undefined) || [],
+      preferredFormat: (typeof initialData?.preferredFormat === "string" ? initialData.preferredFormat : undefined) || "",
+      regionsServed: (Array.isArray(initialData?.regionsServed) ? initialData.regionsServed : undefined) || [],
+      languagesSpoken: (Array.isArray(initialData?.languagesSpoken) ? initialData.languagesSpoken : undefined) || [],
     },
     mode: "onSubmit",
   });

@@ -1,19 +1,25 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import authActions from "../actions";
-import { useRegistrationStore, RegistrationData } from "../state/useRegistrationStore";
+import {
+  useRegistrationStore,
+  RegistrationData,
+} from "../state/useRegistrationStore";
 import { uploadFileToS3 } from "@/lib/s3";
+import { SaveApplicationProgressInput } from "../server/handlers/saveApplicationProgress";
 
 export const useSaveApplicationProgress = () => {
   const [isSaving, setIsSaving] = useState(false);
   const { merge } = useRegistrationStore();
 
-  const saveProgress = async (currentFormValues?: Partial<RegistrationData>) => {
+  const saveProgress = async (
+    currentFormValues?: Partial<RegistrationData>
+  ) => {
     // If current form values are provided, merge them into the store first
     if (currentFormValues) {
       merge(currentFormValues);
     }
-    
+
     // Get the latest data from store (which now includes current form values if provided)
     const storeData = useRegistrationStore.getState().data;
     if (!storeData.emailAddress) {
@@ -35,13 +41,23 @@ export const useSaveApplicationProgress = () => {
           storeData.medicalLicense.forEach((file) => {
             if (file instanceof File) {
               medicalLicenseFiles.push(file);
-            } else if (file && typeof file === "object" && "isExisting" in file && file.isExisting) {
+            } else if (
+              file &&
+              typeof file === "object" &&
+              "isExisting" in file &&
+              file.isExisting
+            ) {
               existingMedicalLicenseDocumentIds.push(file.id);
             }
           });
         } else if (storeData.medicalLicense instanceof File) {
           medicalLicenseFiles.push(storeData.medicalLicense);
-        } else if (storeData.medicalLicense && typeof storeData.medicalLicense === "object" && "isExisting" in storeData.medicalLicense && storeData.medicalLicense.isExisting) {
+        } else if (
+          storeData.medicalLicense &&
+          typeof storeData.medicalLicense === "object" &&
+          "isExisting" in storeData.medicalLicense &&
+          storeData.medicalLicense.isExisting
+        ) {
           existingMedicalLicenseDocumentIds.push(storeData.medicalLicense.id);
         }
       }
@@ -50,7 +66,12 @@ export const useSaveApplicationProgress = () => {
       if (storeData.redactedIMEReport) {
         if (storeData.redactedIMEReport instanceof File) {
           redactedIMEReportFile = storeData.redactedIMEReport;
-        } else if (storeData.redactedIMEReport && typeof storeData.redactedIMEReport === "object" && "isExisting" in storeData.redactedIMEReport && storeData.redactedIMEReport.isExisting) {
+        } else if (
+          storeData.redactedIMEReport &&
+          typeof storeData.redactedIMEReport === "object" &&
+          "isExisting" in storeData.redactedIMEReport &&
+          storeData.redactedIMEReport.isExisting
+        ) {
           existingRedactedIMEReportDocumentId = storeData.redactedIMEReport.id;
         }
       }
@@ -58,7 +79,9 @@ export const useSaveApplicationProgress = () => {
       // Upload new files if any
       let uploadedMedicalLicenseIds: string[] = [];
       if (medicalLicenseFiles.length > 0) {
-        const uploadPromises = medicalLicenseFiles.map((file) => uploadFileToS3(file));
+        const uploadPromises = medicalLicenseFiles.map((file) =>
+          uploadFileToS3(file)
+        );
         const uploadResults = await Promise.all(uploadPromises);
         uploadedMedicalLicenseIds = uploadResults
           .filter((r) => r.success)
@@ -80,7 +103,7 @@ export const useSaveApplicationProgress = () => {
       ];
 
       // Prepare save payload
-      const savePayload: Record<string, unknown> = {
+      const savePayload: SaveApplicationProgressInput = {
         email: storeData.emailAddress,
         firstName: storeData.firstName,
         lastName: storeData.lastName,
@@ -102,7 +125,11 @@ export const useSaveApplicationProgress = () => {
         languagesSpoken: storeData.languagesSpoken,
         imesCompleted: storeData.imesCompleted,
         currentlyConductingIMEs:
-          storeData.currentlyConductingIMEs === "yes" ? true : storeData.currentlyConductingIMEs === "no" ? false : undefined,
+          storeData.currentlyConductingIMEs === "yes"
+            ? true
+            : storeData.currentlyConductingIMEs === "no"
+            ? false
+            : undefined,
         assessmentTypes: storeData.assessmentTypes,
         experienceDetails: storeData.experienceDetails,
         consentBackgroundVerification: storeData.consentBackgroundVerification,
@@ -115,10 +142,12 @@ export const useSaveApplicationProgress = () => {
       }
 
       if (uploadedRedactedReportId) {
-        savePayload.redactedIMEReport = null; // Will be handled by existingRedactedIMEReportDocumentId
-        savePayload.existingRedactedIMEReportDocumentId = uploadedRedactedReportId;
+        // Will be handled by existingRedactedIMEReportDocumentId
+        savePayload.existingRedactedIMEReportDocumentId =
+          uploadedRedactedReportId;
       } else if (existingRedactedIMEReportDocumentId) {
-        savePayload.existingRedactedIMEReportDocumentId = existingRedactedIMEReportDocumentId;
+        savePayload.existingRedactedIMEReportDocumentId =
+          existingRedactedIMEReportDocumentId;
       }
 
       // Save progress
@@ -128,17 +157,22 @@ export const useSaveApplicationProgress = () => {
         throw new Error(saveResult.message || "Failed to save progress");
       }
 
-      // Check if applicationId exists in the result
+      // Check if applicationId and token exist in the result
       if (!("applicationId" in saveResult) || !saveResult.applicationId) {
         throw new Error("Failed to get application ID from save result");
       }
 
-      // Send resume link email
+      if (!("token" in saveResult) || !saveResult.token) {
+        throw new Error("Failed to get token from save result");
+      }
+
+      // Send resume link email with the generated token
       const emailResult = await authActions.sendResumeLink({
         email: storeData.emailAddress,
         applicationId: saveResult.applicationId,
         firstName: storeData.firstName,
         lastName: storeData.lastName,
+        token: saveResult.token, // Pass the token from saveApplicationProgress
       });
 
       if (!emailResult.success) {
@@ -147,13 +181,16 @@ export const useSaveApplicationProgress = () => {
       }
 
       toast.success("Your progress has been saved!", {
-        description: "We've emailed you a secure link to resume your application anytime.",
+        description:
+          "We've emailed you a secure link to resume your application anytime.",
         duration: 5000,
       });
     } catch (error: unknown) {
       console.error("Error saving progress:", error);
       toast.error("Failed to save progress", {
-        description: error?.message || "Please try again later.",
+        description:
+          (error instanceof Error ? error.message : undefined) ||
+          "Please try again later.",
       });
     } finally {
       setIsSaving(false);
@@ -162,4 +199,3 @@ export const useSaveApplicationProgress = () => {
 
   return { saveProgress, isSaving };
 };
-

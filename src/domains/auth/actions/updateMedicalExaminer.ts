@@ -12,7 +12,7 @@ const updateMedicalExaminer = async (payload: UpdateMedicalExaminerInput) => {
     console.error("Error in updateMedicalExaminer action:", error);
     return {
       success: false,
-      message: error?.message || ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
+      message: (error instanceof Error ? error.message : undefined) || ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
     };
   }
 };

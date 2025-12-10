@@ -3,6 +3,7 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 import prisma from "@/lib/db";
+import { ContractStatus } from "@prisma/client";
 
 // S3 client – credentials auto-resolved from env or IAM role
 const s3Client = new S3Client({
@@ -85,7 +86,16 @@ export async function updateContractStatus(
   status: "SIGNED",
   options?: UpdateContractStatusOptions
 ) {
-  const data: { status: string; signedAt: Date } = { status, signedAt: new Date() };
+  const data: {
+    status: ContractStatus;
+    signedAt: Date;
+    signedPdfS3Key?: string;
+    signedPdfSha256?: string;
+    signedHtmlS3Key?: string;
+    signedHtmlSha256?: string;
+    unsignedHtmlS3Key?: string;
+    unsignedHtmlSha256?: string;
+  } = { status: status as ContractStatus, signedAt: new Date() };
 
   // Handle signed PDF upload if buffer is provided
   if (options?.signedPdfBuffer) {

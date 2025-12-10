@@ -54,7 +54,7 @@ export async function saveReportDraftAction(
     console.error("Error in saveReportDraft action:", error);
     return {
       success: false,
-      message: error.message || "Failed to save report draft",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to save report draft",
     };
   }
 }

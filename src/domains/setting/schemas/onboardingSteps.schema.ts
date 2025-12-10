@@ -87,16 +87,6 @@ export const profileInfoSchema = z.object({
           "Last name must contain at least one letter and cannot start/end with special characters",
       }
     ),
-  phoneNumber: z
-    .string()
-    .transform((val) => val.trim()) // Trim whitespace
-    .refine((val) => val.length > 0, {
-      message: "Phone number is required",
-    }),
-  landlineNumber: z
-    .string()
-    .optional()
-    .transform((val) => val?.trim() || ""), // Trim whitespace, default to empty string
   emailAddress: z
     .string()
     .transform((val) => val.trim()) // Trim whitespace
@@ -106,26 +96,41 @@ export const profileInfoSchema = z.object({
     .refine((val) => z.string().email().safeParse(val).success, {
       message: "Invalid email address",
     }),
-  provinceOfResidence: z
+  professionalTitle: z
     .string()
     .transform((val) => val.trim()) // Trim whitespace
     .refine((val) => val.length > 0, {
-      message: "Province is required",
+      message: "Professional title is required",
     }),
-  mailingAddress: z
+  yearsOfExperience: z
     .string()
     .transform((val) => val.trim()) // Trim whitespace
     .refine((val) => val.length > 0, {
-      message: "Mailing address is required",
+      message: "Years of experience is required",
+    }),
+  clinicName: z
+    .string()
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "Clinic name is required",
+    })
+    .refine((val) => val.length >= 2, {
+      message: "Clinic name must be at least 2 characters",
+    }),
+  clinicAddress: z
+    .string()
+    .transform((val) => val.trim()) // Trim whitespace
+    .refine((val) => val.length > 0, {
+      message: "Clinic address is required",
     })
     .refine((val) => val.length >= 10, {
-      message: "Mailing address must be at least 10 characters",
+      message: "Clinic address must be at least 10 characters",
     })
     .refine((val) => {
       const error = validateAddressField(val);
       return error === null;
     }, {
-      message: "Please enter a valid mailing address",
+      message: "Please enter a valid clinic address",
     }),
   profilePhoto: z.string().optional(),
   bio: z
@@ -303,3 +308,44 @@ export const payoutDetailsSchema = z
   );
 
 export type PayoutDetailsInput = z.infer<typeof payoutDetailsSchema>;
+
+// Schema for services & assessment types
+export const servicesAssessmentSchema = z
+  .object({
+    assessmentTypes: z
+      .array(z.string())
+      .min(1, { message: "Please select at least one assessment type" }),
+    acceptVirtualAssessments: z.boolean(),
+    acceptInPersonAssessments: z.boolean(),
+    travelToClaimants: z.boolean(),
+    travelRadius: z.string().optional(),
+    assessmentTypeOther: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.travelToClaimants && (!data.travelRadius || data.travelRadius.trim() === "")) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Travel radius is required when traveling to claimants",
+      path: ["travelRadius"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.assessmentTypes.includes("other") && (!data.assessmentTypeOther || data.assessmentTypeOther.trim() === "")) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Please specify the other assessment type",
+      path: ["assessmentTypeOther"],
+    }
+  );
+
+export type ServicesAssessmentInput = z.infer<
+  typeof servicesAssessmentSchema
+>;

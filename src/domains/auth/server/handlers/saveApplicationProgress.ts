@@ -1,8 +1,9 @@
 import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus, SecureLinkStatus } from "@prisma/client";
 import { uploadFileToS3 } from "@/lib/s3";
 import ErrorMessages from "@/constants/ErrorMessages";
+import { randomBytes } from "crypto";
 
 export type SaveApplicationProgressInput = {
   // step 1
@@ -257,10 +258,59 @@ const saveApplicationProgress = async (
       });
     }
 
+    // Invalidate all previous secure links for this application
+    const existingSecureLinks = await prisma.applicationSecureLink.findMany({
+      where: {
+        applicationId: application.id,
+      },
+      include: {
+        secureLink: true,
+      },
+    });
+
+    // Mark all previous secure links as INVALID
+    if (existingSecureLinks.length > 0) {
+      const secureLinkIds = existingSecureLinks.map((link) => link.secureLinkId);
+      await prisma.secureLink.updateMany({
+        where: {
+          id: { in: secureLinkIds },
+          status: SecureLinkStatus.PENDING,
+        },
+        data: {
+          status: SecureLinkStatus.INVALID,
+        },
+      });
+    }
+
+    // Generate a new secure token (cryptographically secure)
+    const token = randomBytes(32).toString("base64url");
+
+    // Create expiration date (7 days from now)
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    // Create new secure link
+    const secureLink = await prisma.secureLink.create({
+      data: {
+        token,
+        expiresAt,
+        status: SecureLinkStatus.PENDING,
+      },
+    });
+
+    // Link the secure link to the application
+    await prisma.applicationSecureLink.create({
+      data: {
+        applicationId: application.id,
+        secureLinkId: secureLink.id,
+      },
+    });
+
     return {
       success: true,
       message: "Application progress saved successfully",
       applicationId: application.id,
+      token, // Return token to be used in the resume link
     };
   } catch (error) {
     throw HttpError.fromError(

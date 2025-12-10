@@ -1,0 +1,13 @@
+model LegalRepresentative {
+  id                String   @id @unique @default(uuid()) @db.Uuid
+  companyName       String?  @map("company_name") @db.VarChar(255)
+  contactPersonName String?  @map("contact_person") @db.VarChar(255)
+  phoneNumber       String?  @map("phone_number") @db.VarChar(255)
+  faxNumber         String?  @map("fax_number") @db.VarChar(255)
+  addressId         String?  @map("address_id") @db.Uuid
+  address           Address? @relation("LegalRepresentativeAddress", fields: [addressId], references: [id])
+
+  examinations Examination[] @relation("ExaminationLegalRepresentative")
+
+  @@map("legal_representatives")
+}

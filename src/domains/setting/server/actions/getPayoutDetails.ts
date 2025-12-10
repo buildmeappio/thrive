@@ -13,7 +13,7 @@ export const getPayoutDetailsAction = async (
   } catch (error: unknown) {
     return {
       success: false,
-      message: error.message || "Failed to fetch payout details",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch payout details",
     };
   }
 };

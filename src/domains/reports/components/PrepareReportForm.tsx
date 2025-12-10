@@ -139,10 +139,10 @@ export default function PrepareReportForm({
       } else {
         throw new Error(result.message || "Failed to save draft");
       }
-    } catch (error: unknown) {
-      error("Error saving draft:", error);
+    } catch (err: unknown) {
+      error("Error saving draft:", err);
       if (showToast) {
-        toast.error(error.message || "Failed to save draft");
+        toast.error((err instanceof Error ? err.message : undefined) || "Failed to save draft");
       }
     } finally {
       setIsSaving(false);
@@ -203,9 +203,9 @@ export default function PrepareReportForm({
         printReport(formData, caseData);
         toast.success("Report submitted (using fallback template)");
       }
-    } catch (error: unknown) {
-      error("Error preparing report for print:", error);
-      toast.error(error.message || "Failed to prepare report");
+    } catch (err: unknown) {
+      error("Error preparing report for print:", err);
+      toast.error((err instanceof Error ? err.message : undefined) || "Failed to prepare report");
     } finally {
       setIsSubmitting(false);
     }

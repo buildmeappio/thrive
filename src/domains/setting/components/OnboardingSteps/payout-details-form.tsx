@@ -38,18 +38,25 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
   const { update } = useSession();
   const [loading, setLoading] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string>(
-    initialData?.payoutMethod || "direct_deposit"
+    (typeof initialData?.payoutMethod === "string" ? initialData.payoutMethod : undefined) || "direct_deposit"
   );
 
   const form = useForm<PayoutDetailsInput>({
     schema: payoutDetailsSchema,
     defaultValues: {
-      payoutMethod: initialData?.payoutMethod || "direct_deposit",
-      transitNumber: initialData?.transitNumber || "",
-      institutionNumber: initialData?.institutionNumber || "",
-      accountNumber: initialData?.accountNumber || "",
-      chequeMailingAddress: initialData?.chequeMailingAddress || "",
-      interacEmail: initialData?.interacEmail || "",
+      payoutMethod: (
+        typeof initialData?.payoutMethod === "string" &&
+        (initialData.payoutMethod === "direct_deposit" ||
+          initialData.payoutMethod === "cheque" ||
+          initialData.payoutMethod === "interac")
+          ? (initialData.payoutMethod as "direct_deposit" | "cheque" | "interac")
+          : "direct_deposit"
+      ),
+      transitNumber: (typeof initialData?.transitNumber === "string" ? initialData.transitNumber : undefined) || "",
+      institutionNumber: (typeof initialData?.institutionNumber === "string" ? initialData.institutionNumber : undefined) || "",
+      accountNumber: (typeof initialData?.accountNumber === "string" ? initialData.accountNumber : undefined) || "",
+      chequeMailingAddress: (typeof initialData?.chequeMailingAddress === "string" ? initialData.chequeMailingAddress : undefined) || "",
+      interacEmail: (typeof initialData?.interacEmail === "string" ? initialData.interacEmail : undefined) || "",
     },
     mode: "onSubmit",
   });
@@ -61,7 +68,10 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       return; // Don't collapse if already expanded
     }
     setExpandedSection(section);
-    form.setValue("payoutMethod", section as string);
+    if (section === "direct_deposit" || section === "cheque" || section === "interac") {
+      const validPayoutMethod: "direct_deposit" | "cheque" | "interac" = section;
+      form.setValue("payoutMethod", validPayoutMethod);
+    }
   };
 
   const onSubmit = async (values: PayoutDetailsInput) => {

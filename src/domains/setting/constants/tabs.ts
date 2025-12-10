@@ -12,19 +12,24 @@ export const ACTIVATION_STEPS: Omit<ActivationStep, "completed">[] = [
     order: 1,
   },
   {
+    id: "services",
+    title: "Services & Assessment Types",
+    order: 2,
+  },
+  {
     id: "specialty",
     title: "Choose Your Speciality & IME Preferences",
-    order: 2,
+    order: 3,
   },
   {
     id: "availability",
     title: "Set Your Availability",
-    order: 3,
+    order: 4,
   },
   {
     id: "payout",
     title: "Set Up Payment Details",
-    order: 4,
+    order: 5,
   },
 ];
 

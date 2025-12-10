@@ -12,7 +12,7 @@ const saveApplicationProgress = async (payload: SaveApplicationProgressInput) =>
     return {
       success: false,
       message:
-        error?.message ||
+        (error instanceof Error ? error.message : undefined) ||
         "Failed to save application progress. Please try again.",
     };
   }

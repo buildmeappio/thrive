@@ -31,7 +31,7 @@ const getReport = async (payload: GetReportInput): Promise<GetReportResponse> =>
     console.error("Error in getReport handler:", error);
     return {
       success: false,
-      message: error.message || "Failed to fetch report",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch report",
     };
   }
 };

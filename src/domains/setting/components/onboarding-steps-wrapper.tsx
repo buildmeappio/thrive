@@ -8,6 +8,8 @@ import {
 } from "@/domains/setting/server/actions";
 import { redirect } from "next/navigation";
 import getLanguages from "@/domains/auth/actions/getLanguages";
+import getAssessmentTypes from "@/domains/auth/actions/getAssessmentTypes";
+import type { LanguageOption } from "@/types/components";
 
 export const dynamic = "force-dynamic";
 
@@ -36,11 +38,13 @@ const OnboardingStepsWrapper = async () => {
     availabilityResult,
     payoutResult,
     languages,
+    assessmentTypes,
   ] = await Promise.all([
     getSpecialtyPreferencesAction(user.accountId),
     getAvailabilityAction({ examinerProfileId: examinerProfile.id }),
     getPayoutDetailsAction({ accountId: user.accountId }),
     getLanguages(),
+    getAssessmentTypes(),
   ]);
 
   const specialtyPreferences =
@@ -55,6 +59,14 @@ const OnboardingStepsWrapper = async () => {
 
   const payoutDetails =
     payoutResult.success && "data" in payoutResult ? payoutResult.data : null;
+
+  // Transform languages to match LanguageOption interface
+  const languageOptions: LanguageOption[] = languages.map((lang) => ({
+    id: lang.id,
+    name: lang.name,
+    value: lang.id,
+    label: lang.name,
+  }));
 
   return (
     <div className="min-h-screen bg-[#F4FBFF] px-6 md:px-12 lg:px-24 py-8">
@@ -72,10 +84,11 @@ const OnboardingStepsWrapper = async () => {
           initialActivationStep={examinerProfile.activationStep || null}
           examinerProfileId={examinerProfile.id}
           profileData={examinerProfile}
-          specialtyData={specialtyPreferences}
-          availabilityData={availability}
-          payoutData={payoutDetails}
-          languages={languages}
+          specialtyData={specialtyPreferences || {}}
+          availabilityData={availability || {}}
+          payoutData={payoutDetails || {}}
+          languages={languageOptions}
+          assessmentTypes={assessmentTypes}
         />
       </div>
     </div>

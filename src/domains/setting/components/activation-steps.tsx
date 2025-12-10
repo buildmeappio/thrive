@@ -5,15 +5,15 @@ import { Play, CircleCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   ProfileInfoForm,
+  ServicesAssessmentForm,
   SpecialtyPreferencesForm,
   AvailabilityPreferencesForm,
   PayoutDetailsForm,
 } from "./OnboardingSteps";
 import { type ActivationStep, initializeActivationSteps } from "../constants";
-
-interface ActivationStepsProps {
 import { ProfileData, SpecialtyData, AvailabilityData, PayoutData, LanguageOption } from "@/types/components";
 
+interface ActivationStepsProps {
   initialActivationStep: string | null;
   examinerProfileId: string | null;
   profileData: ProfileData;
@@ -21,6 +21,7 @@ import { ProfileData, SpecialtyData, AvailabilityData, PayoutData, LanguageOptio
   availabilityData: AvailabilityData;
   payoutData: PayoutData;
   languages: LanguageOption[];
+  assessmentTypes: Array<{ id: string; name: string; description: string | null }>;
 }
 
 const ActivationSteps: React.FC<ActivationStepsProps> = ({
@@ -31,6 +32,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
   availabilityData,
   payoutData,
   languages,
+  assessmentTypes,
 }) => {
   const router = useRouter();
   const [activeStep, setActiveStep] = useState<string | null>(null);
@@ -52,16 +54,25 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
         switch (profileData.activationStep) {
           case "profile":
             return { ...step, completed: step.id === "profile" };
+          case "services":
+            return {
+              ...step,
+              completed: step.id === "profile" || step.id === "services",
+            };
           case "specialty":
             return {
               ...step,
-              completed: step.id === "profile" || step.id === "specialty",
+              completed:
+                step.id === "profile" ||
+                step.id === "services" ||
+                step.id === "specialty",
             };
           case "availability":
             return {
               ...step,
               completed:
                 step.id === "profile" ||
+                step.id === "services" ||
                 step.id === "specialty" ||
                 step.id === "availability",
             };
@@ -75,7 +86,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
   }, [profileData?.activationStep]);
 
   // Check if all steps are completed and redirect to dashboard
-  // When activationStep is "payout", all 4 steps are complete in order
+  // When activationStep is "payout", all 5 steps are complete in order
   useEffect(() => {
     if (profileData?.activationStep === "payout") {
       router.push("/dashboard");
@@ -131,6 +142,25 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                   examinerProfileId={examinerProfileId}
                   initialData={profileData}
                   onComplete={() => handleStepComplete("profile")}
+                  onCancel={handleStepCancel}
+                />
+              );
+            }
+            if (step.id === "services") {
+              return (
+                <ServicesAssessmentForm
+                  key={step.id}
+                  examinerProfileId={examinerProfileId}
+                  initialData={{
+                    assessmentTypes: profileData.assessmentTypes || [],
+                    acceptVirtualAssessments: profileData.acceptVirtualAssessments ?? true,
+                    acceptInPersonAssessments: true, // Default to true since not stored in DB
+                    travelToClaimants: !!profileData.maxTravelDistance,
+                    travelRadius: profileData.maxTravelDistance || "",
+                    assessmentTypeOther: profileData.assessmentTypeOther || "",
+                  }}
+                  assessmentTypes={assessmentTypes}
+                  onComplete={() => handleStepComplete("services")}
                   onCancel={handleStepCancel}
                 />
               );

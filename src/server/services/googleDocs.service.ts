@@ -1,5 +1,6 @@
 import { google } from "googleapis";
 import { ReportFormData, CaseOverviewData } from "@/domains/reports/types";
+import { GoogleDocsBatchUpdateRequest } from "@/types/google-docs";
 
 // Initialize Google Docs API
 // You'll need to set up service account credentials in your environment variables:
@@ -97,8 +98,6 @@ class GoogleDocsService {
   /**
    * Build document requests for batch update
    */
-import { GoogleDocsBatchUpdateRequest } from "@/types/google-docs";
-
   private buildDocumentRequests(
     reportData: ReportFormData,
     caseData: CaseOverviewData

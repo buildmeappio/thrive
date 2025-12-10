@@ -13,7 +13,7 @@ export const updatePayoutDetailsAction = async (
   } catch (error: unknown) {
     return {
       success: false,
-      message: error.message || "Failed to update payout details",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to update payout details",
     };
   }
 };

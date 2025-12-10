@@ -6,33 +6,18 @@ import {
   VerificationDocuments,
   IMEExperince,
   ExperienceDetails,
-  // PaymentDetails,
   SubmitConfirmation,
   ThankYou,
 } from "./RegisterationSteps";
-import { RegStepProps } from "@/domains/auth/types/index";
 import { useRegistrationStore } from "@/domains/auth/state/useRegistrationStore";
 import { log } from "@/utils/logger";
 import { useGoogleMaps } from "@/lib/useGoogleMaps";
-
-type YearsOfExperience = {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-};
-
-interface Step {
-  component: React.ComponentType<RegStepProps>;
-}
-
-import { ExaminerData } from "@/types/components";
+import { ExaminerProfileDetailsData } from "@/types/components";
+import { YearsOfExperience, RegistrationStep } from "@/domains/auth/types";
 
 const RegisterForm: React.FC<{
   yearsOfExperience: YearsOfExperience[];
-  examinerData?: ExaminerData;
+  examinerData?: ExaminerProfileDetailsData;
 }> = ({ yearsOfExperience, examinerData }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const { setYearsOfExperience, data, loadExaminerData, isEditMode } =
@@ -60,7 +45,7 @@ const RegisterForm: React.FC<{
     }
   }, [examinerData, loadExaminerData]);
 
-  const steps: Step[] = [
+  const steps: RegistrationStep[] = [
     { component: PersonalInfo },
     { component: MedicalCredentials },
     { component: VerificationDocuments },

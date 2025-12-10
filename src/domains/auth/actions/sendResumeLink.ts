@@ -12,7 +12,7 @@ const sendResumeLink = async (payload: SendResumeLinkInput) => {
     return {
       success: false,
       message:
-        error?.message ||
+        (error instanceof Error ? error.message : undefined) ||
         "Failed to send resume link. Please try again.",
     };
   }

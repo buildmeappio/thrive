@@ -2,6 +2,7 @@ import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
 import ErrorMessages from "@/constants/ErrorMessages";
 import { ExaminerStatus } from "@prisma/client";
+import { MedicalLicenseDocument } from "@/types/components";
 
 class ExaminerService {
   async getExaminerProfileById(examinerProfileId: string) {
@@ -120,8 +121,6 @@ class ExaminerService {
       if (!examinerProfile) {
         throw HttpError.notFound(ErrorMessages.EXAMINER_PROFILE_NOT_FOUND);
       }
-
-import { MedicalLicenseDocument } from "@/types/components";
 
       // Fetch medical license documents by IDs (support multiple documents)
       let medicalLicenseDocuments: MedicalLicenseDocument[] = [];

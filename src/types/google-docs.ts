@@ -30,6 +30,19 @@ export interface GoogleDocsParagraphElement {
 }
 
 /**
+ * Google Docs table structure
+ */
+export interface GoogleDocsTableElement extends GoogleDocsElement {
+  table?: {
+    tableRows?: Array<{
+      tableCells?: Array<{
+        content?: GoogleDocsElement[];
+      }>;
+    }>;
+  };
+}
+
+/**
  * Google Docs batch update request
  */
 export interface GoogleDocsBatchUpdateRequest {

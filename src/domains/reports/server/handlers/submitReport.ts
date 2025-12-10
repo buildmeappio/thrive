@@ -35,7 +35,7 @@ const submitReport = async (
     console.error("Error in submitReport handler:", error);
     return {
       success: false,
-      message: error.message || "Failed to submit report",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to submit report",
     };
   }
 };

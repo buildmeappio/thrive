@@ -31,7 +31,7 @@ export const getExaminerDocumentPresignedUrlAction = async (
     console.error("Error in getExaminerDocumentPresignedUrl action:", error);
     return {
       success: false,
-      error: error.message || "Failed to generate presigned URL",
+      error: (error instanceof Error ? error.message : undefined) || "Failed to generate presigned URL",
     };
   }
 };

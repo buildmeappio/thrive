@@ -12,7 +12,7 @@ const verifyResumeToken = async (payload: VerifyResumeTokenInput) => {
     return {
       success: false,
       message:
-        error?.message ||
+        (error instanceof Error ? error.message : undefined) ||
         "Failed to verify resume token. The link may be invalid or expired.",
     };
   }

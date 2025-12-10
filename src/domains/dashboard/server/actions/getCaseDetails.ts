@@ -15,7 +15,7 @@ export const getCaseDetailsAction = async (
     console.error("Error in getCaseDetails action:", error);
     return {
       success: false,
-      message: error.message || "Failed to fetch case details",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch case details",
     };
   }
 };

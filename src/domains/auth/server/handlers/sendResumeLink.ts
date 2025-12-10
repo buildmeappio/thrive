@@ -1,15 +1,16 @@
 import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
 import { emailService } from "@/server";
-import { signResumeToken } from "@/lib/jwt";
 import { ENV } from "@/constants/variables";
 import ErrorMessages from "@/constants/ErrorMessages";
+import { SecureLinkStatus } from "@prisma/client";
 
 export type SendResumeLinkInput = {
   email: string;
   applicationId: string;
   firstName?: string;
   lastName?: string;
+  token?: string; // Optional: token from saveApplicationProgress
 };
 
 const sendResumeLink = async (payload: SendResumeLinkInput) => {
@@ -33,11 +34,29 @@ const sendResumeLink = async (payload: SendResumeLinkInput) => {
       throw HttpError.forbidden("Application does not belong to this email");
     }
 
-    // Generate resume token
-    const token = signResumeToken({
-      email: payload.email,
-      applicationId: payload.applicationId,
-    });
+    // Get the token - either from payload or fetch the latest PENDING secure link
+    let token = payload.token;
+
+    if (!token) {
+      // Fetch the latest PENDING secure link for this application
+      const applicationSecureLink = await prisma.applicationSecureLink.findFirst({
+        where: {
+          applicationId: payload.applicationId,
+        },
+        include: {
+          secureLink: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      if (!applicationSecureLink || applicationSecureLink.secureLink.status !== SecureLinkStatus.PENDING) {
+        throw HttpError.badRequest("No valid secure link found for this application");
+      }
+
+      token = applicationSecureLink.secureLink.token;
+    }
 
     // Create resume link
     const baseUrl = ENV.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? "";

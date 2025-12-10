@@ -15,7 +15,7 @@ export const getAvailabilityPreferencesAction = async () => {
     return {
       success: false as const,
       data: null,
-      message: error.message || "Failed to fetch availability preferences",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch availability preferences",
     };
   }
 };

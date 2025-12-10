@@ -15,7 +15,7 @@ export const getDashboardBookingsAction = async (
     console.error("Error in getDashboardBookings action:", error);
     return {
       success: false,
-      message: error.message || "Failed to fetch dashboard bookings",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch dashboard bookings",
     };
   }
 };

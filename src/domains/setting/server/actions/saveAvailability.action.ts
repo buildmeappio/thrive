@@ -11,7 +11,7 @@ export const saveAvailabilityAction = async (input: SaveAvailabilityInput) => {
   } catch (error: unknown) {
     return {
       success: false,
-      message: error.message || "Failed to save availability",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to save availability",
     };
   }
 };

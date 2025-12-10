@@ -9,7 +9,7 @@ export const getExaminerProfileAction = async (accountId: string) => {
     return {
       success: false,
       data: null,
-      message: error.message || "Failed to fetch examiner profile",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch examiner profile",
     };
   }
 };
