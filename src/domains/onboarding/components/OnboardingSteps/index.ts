@@ -4,3 +4,5 @@ export { default as SpecialtyPreferencesForm } from "./specialty-preferences-for
 export { default as AvailabilityPreferencesForm } from "./availability-preferences-form";
 export { default as PayoutDetailsForm } from "./payout-details-form";
 export { default as DocumentsUploadForm } from "./documents-upload-form";
+export { default as ComplianceForm } from "./compliance-form";
+export { default as NotificationsForm } from "./notifications-form";

@@ -5,7 +5,9 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { CircleCheck, Upload, FileText, Eye, X, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import { uploadDocuments } from "@/server/services/document.service";
+import { uploadDocumentAction, getDocumentByIdAction } from "../../server/actions";
+import { getExaminerDocumentPresignedUrlAction } from "@/domains/auth/server/actions/getExaminerDocumentPresignedUrl";
+import DocumentPreviewModal from "./DocumentPreviewModal";
 import type { DocumentsUploadFormProps } from "../../types";
 
 type DocumentType = 
@@ -17,8 +19,9 @@ type DocumentType =
 
 interface DocumentStatus {
   id?: string;
-  name?: string;
-  url?: string;
+  name?: string; // Document name (S3 filename) for fetching presigned URLs
+  url?: string; // CDN URL (if available)
+  fileType?: string; // File type (pdf, jpg, png, etc.) for preview
   uploaded: boolean;
   uploading: boolean;
   file?: File;
@@ -49,6 +52,9 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [activeDocumentType, setActiveDocumentType] = useState<DocumentType | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewFileName, setPreviewFileName] = useState<string>("");
+  const [previewFileType, setPreviewFileType] = useState<string>("");
 
   const [documents, setDocuments] = useState<Record<DocumentType, DocumentStatus>>({
     medicalLicense: {
@@ -106,6 +112,13 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
   }, [activeDocumentType]);
 
   const handleFileSelect = async (file: File, documentType: DocumentType) => {
+    // Prevent multiple simultaneous uploads for the same document type
+    const currentDoc = documents[documentType];
+    if (currentDoc.uploading) {
+      console.warn(`Upload already in progress for ${documentType}`);
+      return;
+    }
+
     // Validate file
     const maxSize = 10 * 1024 * 1024; // 10MB
     const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
@@ -131,20 +144,28 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
     }));
 
     try {
-      // Upload file
-      const result = await uploadDocuments(file);
+      // Upload file using server action
+      const result = await uploadDocumentAction(file);
       
-      if (result.success && result.data?.documents?.[0]) {
-        const uploadedDoc = result.data.documents[0];
-        
+      if (result.success && result.data) {
+        // Extract file type from original name or type
+        const fileType = file.type.includes("pdf") 
+          ? "pdf" 
+          : file.type.includes("jpeg") || file.type.includes("jpg")
+          ? "jpg"
+          : file.type.includes("png")
+          ? "png"
+          : file.name.toLowerCase().match(/\.(pdf|jpg|jpeg|png)$/)?.[1] || "pdf";
+
         setDocuments((prev) => ({
           ...prev,
           [documentType]: {
             uploaded: true,
             uploading: false,
-            id: uploadedDoc.id,
-            name: uploadedDoc.originalName,
-            url: uploadedDoc.url || undefined,
+            id: result.data.id,
+            name: result.data.name, // Store S3 filename for presigned URL generation
+            url: result.data.url, // CDN URL if available
+            fileType, // Store file type for preview
           },
         }));
 
@@ -183,12 +204,81 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
     fileInputRef.current?.click();
   };
 
-  const handleView = (url?: string) => {
-    if (url) {
-      window.open(url, "_blank");
-    } else {
-      toast.error("Document URL not available");
+  const handleView = async (doc: DocumentStatus, docType: DocumentType) => {
+    const docLabel = DOCUMENT_TYPES.find((d) => d.id === docType)?.label || "Document";
+    
+    // If we have a CDN URL, use it directly
+    if (doc.url) {
+      setPreviewFileName(docLabel);
+      setPreviewUrl(doc.url);
+      // Use stored file type or try to determine from document name
+      const fileType = doc.fileType || doc.name?.toLowerCase().match(/\.(pdf|jpg|jpeg|png)$/)?.[1] || "pdf";
+      setPreviewFileType(fileType);
+      return;
     }
+
+    // If we have a document name, fetch presigned URL
+    if (doc.name) {
+      try {
+        const result = await getExaminerDocumentPresignedUrlAction(doc.name);
+        if (result.success && result.url) {
+          setPreviewFileName(docLabel);
+          setPreviewUrl(result.url);
+          // Use stored file type or determine from document name
+          const fileType = doc.fileType || doc.name.toLowerCase().match(/\.(pdf|jpg|jpeg|png)$/)?.[1] || "pdf";
+          setPreviewFileType(fileType);
+        } else {
+          toast.error(result.error || "Failed to generate document URL");
+        }
+      } catch (error) {
+        toast.error("Failed to view document. Please try again.");
+        console.error("Error fetching presigned URL:", error);
+      }
+      return;
+    }
+
+    // If we have document ID but no name, fetch the document first to get the name
+    if (doc.id) {
+      try {
+        const docResult = await getDocumentByIdAction(doc.id);
+        if (docResult.success && docResult.data) {
+          // Now fetch the presigned URL using the document name
+          const urlResult = await getExaminerDocumentPresignedUrlAction(docResult.data.name);
+          if (urlResult.success && urlResult.url) {
+            setPreviewFileName(docLabel);
+            setPreviewUrl(urlResult.url);
+            // Determine file type from document name
+            const fileType = docResult.data.name.toLowerCase().match(/\.(pdf|jpg|jpeg|png)$/)?.[1] || "pdf";
+            setPreviewFileType(fileType);
+            // Update state to cache the name and file type for future views
+            setDocuments((prev) => ({
+              ...prev,
+              [docType]: {
+                ...prev[docType],
+                name: docResult.data!.name,
+                fileType,
+              },
+            }));
+          } else {
+            toast.error(urlResult.error || "Failed to generate document URL");
+          }
+        } else {
+          toast.error(docResult.error || "Document not found");
+        }
+      } catch (error) {
+        toast.error("Failed to view document. Please try again.");
+        console.error("Error fetching document:", error);
+      }
+      return;
+    }
+
+    toast.error("Document URL not available");
+  };
+
+  const closePreview = () => {
+    setPreviewUrl(null);
+    setPreviewFileName("");
+    setPreviewFileType("");
   };
 
   const handleSubmit = async () => {
@@ -230,9 +320,9 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
         // Update session to refresh JWT token with new activationStep
         await update();
         
-        // Redirect to dashboard after session is updated
-        router.push("/dashboard");
-        router.refresh();
+        // Don't redirect here - let the user continue to next step
+        // router.push("/dashboard");
+        // router.refresh();
       } else {
         toast.error(result.message || "Failed to save documents");
       }
@@ -335,7 +425,7 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
                             type="button"
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleView(doc.url)}
+                            onClick={() => handleView(doc, docType.id)}
                             className="text-sm text-[#00A8FF] hover:text-[#00A8FF]/80">
                             View
                           </Button>
@@ -369,6 +459,16 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
           </tbody>
         </table>
       </div>
+
+      {/* Document Preview Modal */}
+      {previewUrl && (
+        <DocumentPreviewModal
+          previewUrl={previewUrl}
+          previewFileName={previewFileName}
+          previewFileType={previewFileType}
+          onClose={closePreview}
+        />
+      )}
     </div>
   );
 };

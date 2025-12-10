@@ -9,6 +9,8 @@ import {
   AvailabilityPreferencesForm,
   PayoutDetailsForm,
   DocumentsUploadForm,
+  ComplianceForm,
+  NotificationsForm,
 } from "./OnboardingSteps";
 import { type ActivationStep, initializeActivationSteps } from "../constants";
 import type { ActivationStepsProps } from "../types";
@@ -65,6 +67,27 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                 step.id === "payout",
             };
           case "documents":
+            return {
+              ...step,
+              completed:
+                step.id === "profile" ||
+                step.id === "services" ||
+                step.id === "availability" ||
+                step.id === "payout" ||
+                step.id === "documents",
+            };
+          case "compliance":
+            return {
+              ...step,
+              completed:
+                step.id === "profile" ||
+                step.id === "services" ||
+                step.id === "availability" ||
+                step.id === "payout" ||
+                step.id === "documents" ||
+                step.id === "compliance",
+            };
+          case "notifications":
             return { ...step, completed: true }; // All steps completed
           default:
             return step;
@@ -74,9 +97,9 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
   }, [profileData?.activationStep]);
 
   // Check if all steps are completed and redirect to dashboard
-  // When activationStep is "documents", all 5 steps are complete in order
+  // When activationStep is "notifications", all 7 steps are complete in order
   useEffect(() => {
-    if (profileData?.activationStep === "documents") {
+    if (profileData?.activationStep === "notifications") {
       router.push("/dashboard");
     }
   }, [router, profileData?.activationStep]);
@@ -215,6 +238,62 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                       : [],
                   }}
                   onComplete={() => handleStepComplete("documents")}
+                  onCancel={handleStepCancel}
+                />
+              );
+            }
+            if (step.id === "compliance") {
+              return (
+                <ComplianceForm
+                  key={step.id}
+                  examinerProfileId={examinerProfileId}
+                  initialData={{
+                    phipaCompliance:
+                      typeof profileData.phipaCompliance === "boolean"
+                        ? profileData.phipaCompliance
+                        : false,
+                    pipedaCompliance:
+                      typeof profileData.pipedaCompliance === "boolean"
+                        ? profileData.pipedaCompliance
+                        : false,
+                    medicalLicenseActive:
+                      typeof profileData.medicalLicenseActive === "boolean"
+                        ? profileData.medicalLicenseActive
+                        : false,
+                  }}
+                  onComplete={() => handleStepComplete("compliance")}
+                  onCancel={handleStepCancel}
+                />
+              );
+            }
+            if (step.id === "notifications") {
+              return (
+                <NotificationsForm
+                  key={step.id}
+                  examinerProfileId={examinerProfileId}
+                  initialData={{
+                    emailNewIMEs:
+                      typeof profileData.emailNewIMEs === "boolean"
+                        ? profileData.emailNewIMEs
+                        : true,
+                    emailInterviewRequests:
+                      typeof profileData.emailInterviewRequests === "boolean"
+                        ? profileData.emailInterviewRequests
+                        : true,
+                    emailPaymentPayout:
+                      typeof profileData.emailPaymentPayout === "boolean"
+                        ? profileData.emailPaymentPayout
+                        : true,
+                    smsNotifications:
+                      typeof profileData.smsNotifications === "boolean"
+                        ? profileData.smsNotifications
+                        : false,
+                    emailMarketing:
+                      typeof profileData.emailMarketing === "boolean"
+                        ? profileData.emailMarketing
+                        : false,
+                  }}
+                  onComplete={() => handleStepComplete("notifications")}
                   onCancel={handleStepCancel}
                 />
               );

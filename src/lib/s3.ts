@@ -18,6 +18,14 @@ const s3Config: S3ClientConfig = {
   region: ENV.AWS_REGION!,
 };
 
+// Add credentials if available (for local development)
+if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
+  s3Config.credentials = {
+    accessKeyId: ENV.AWS_ACCESS_KEY_ID,
+    secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
+  };
+}
+
 const s3Client = new S3Client(s3Config);
 
 const createFileName = (file: File) => {
@@ -107,10 +115,26 @@ type UploadFileToS3Response =
 
 const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
   try {
+    // Validate AWS configuration before attempting upload
+    if (!ENV.AWS_REGION || !ENV.AWS_S3_BUCKET) {
+      return {
+        success: false,
+        error: "AWS configuration is missing. Please check AWS_REGION and AWS_S3_BUCKET_NAME environment variables.",
+      };
+    }
+
+    // Check if credentials are available (for local dev) or if we're using IAM role (for production)
+    if (!ENV.AWS_ACCESS_KEY_ID && !ENV.AWS_SECRET_ACCESS_KEY) {
+      console.warn("AWS credentials not found. Assuming IAM role authentication (production mode).");
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const uniqueFileName = createFileName(file);
     const key = createKey(file);
+
+    console.log(`Uploading file to S3: ${key} (Bucket: ${ENV.AWS_S3_BUCKET})`);
+
     const command = new PutObjectCommand({
       Bucket: ENV.AWS_S3_BUCKET!,
       Key: key,
@@ -121,14 +145,64 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
         uploadedAt: new Date().toISOString(),
       },
     });
+
+    // Upload to S3 first - only proceed if this succeeds
     await s3Client.send(command);
-    const document = await prisma.documents.create({
-      data: {
+    console.log(`✅ S3 upload successful: ${key}`);
+
+    // Check if document with this name already exists (idempotency check)
+    const existingDocument = await prisma.documents.findFirst({
+      where: {
         name: uniqueFileName,
-        size: file.size,
-        type: file.type,
+        deletedAt: null,
       },
     });
+
+    if (existingDocument) {
+      console.log(`Document with name ${uniqueFileName} already exists, returning existing record`);
+      return {
+        success: true,
+        document: {
+          id: existingDocument.id,
+          name: existingDocument.name,
+          size: existingDocument.size,
+          type: existingDocument.type,
+        },
+      };
+    }
+
+    // Only create database record if S3 upload succeeded and document doesn't exist
+    let document;
+    try {
+      document = await prisma.documents.create({
+        data: {
+          name: uniqueFileName,
+          size: file.size,
+          type: file.type,
+        },
+      });
+    } catch (dbError: unknown) {
+      // Handle unique constraint violation (if name has unique constraint)
+      const prismaError = dbError as { code?: string; meta?: { target?: string[] } };
+      if (prismaError.code === "P2002") {
+        // Unique constraint violation - try to find existing document
+        console.warn(`Unique constraint violation for ${uniqueFileName}, fetching existing document`);
+        const existingDoc = await prisma.documents.findFirst({
+          where: {
+            name: uniqueFileName,
+            deletedAt: null,
+          },
+        });
+        if (existingDoc) {
+          document = existingDoc;
+        } else {
+          throw dbError;
+        }
+      } else {
+        throw dbError;
+      }
+    }
+
     return {
       success: true,
       document: {
@@ -138,9 +212,39 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
         type: file.type,
       },
     };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("S3 Upload error:", error);
-    return { success: false, error: "Failed to upload file to S3" };
+    
+    // Handle specific AWS errors
+    const awsError = error as { name?: string; message?: string; Code?: string };
+    const errorName = awsError.name || awsError.Code;
+    
+    if (errorName === "AccessDenied" || errorName === "403") {
+      return {
+        success: false,
+        error: "Access denied to S3 bucket. Please check:\n1. AWS credentials are set (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)\n2. IAM user/role has 's3:PutObject' permission\n3. Bucket policy allows access",
+      };
+    }
+    
+    if (errorName === "InvalidAccessKeyId" || errorName === "SignatureDoesNotMatch") {
+      return {
+        success: false,
+        error: "Invalid AWS credentials. Please check AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your .env.local file.",
+      };
+    }
+
+    if (errorName === "NoSuchBucket") {
+      return {
+        success: false,
+        error: `S3 bucket not found: ${ENV.AWS_S3_BUCKET}. Please check AWS_S3_BUCKET_NAME environment variable.`,
+      };
+    }
+
+    const errorMessage = error instanceof Error ? error.message : "Failed to upload file to S3";
+    return { 
+      success: false, 
+      error: `S3 upload failed: ${errorMessage}` 
+    };
   }
 };
 
@@ -231,7 +335,22 @@ const getPresignedUrlFromS3 = async (
       };
     }
 
+    // Validate AWS configuration
+    if (!ENV.AWS_REGION || !ENV.AWS_S3_BUCKET) {
+      return {
+        success: false,
+        error: "AWS configuration is missing. Please check AWS_REGION and AWS_S3_BUCKET_NAME environment variables.",
+      };
+    }
+
+    // Log configuration status (without exposing secrets)
+    console.log(`Generating presigned URL for: ${filename}`);
+    console.log(`AWS Region: ${ENV.AWS_REGION}`);
+    console.log(`S3 Bucket: ${ENV.AWS_S3_BUCKET}`);
+    console.log(`Credentials configured: ${!!(ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY)}`);
+
     const key = `documents/examiner/${filename}`;
+    console.log(`S3 Key: ${key}`);
 
     const command = new GetObjectCommand({
       Bucket: ENV.AWS_S3_BUCKET!,
@@ -239,6 +358,7 @@ const getPresignedUrlFromS3 = async (
     });
 
     const url = await getSignedUrl(s3Client, command, { expiresIn });
+    console.log(`✅ Presigned URL generated successfully`);
 
     return {
       success: true,
@@ -246,10 +366,51 @@ const getPresignedUrlFromS3 = async (
     };
   } catch (error: unknown) {
     console.error("S3 Presigned URL error:", error);
+    
+    // Handle specific AWS errors
+    const awsError = error as { name?: string; message?: string; Code?: string; $metadata?: { httpStatusCode?: number } };
+    const errorName = awsError.name || awsError.Code;
+    const httpStatusCode = awsError.$metadata?.httpStatusCode;
+    
+    console.error(`AWS Error Details:`, {
+      name: errorName,
+      message: awsError.message,
+      httpStatusCode,
+      filename,
+    });
+    
+    if (errorName === "AccessDenied" || errorName === "403" || httpStatusCode === 403) {
+      return {
+        success: false,
+        error: "Access denied to S3 bucket. Please check:\n1. AWS credentials are set (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)\n2. IAM user/role has 's3:GetObject' permission\n3. Bucket policy allows access to the key\n4. The document exists in S3 at: documents/examiner/" + filename,
+      };
+    }
+    
+    if (errorName === "NoSuchKey" || errorName === "404" || httpStatusCode === 404) {
+      return {
+        success: false,
+        error: `Document not found in S3: ${filename}. The file may not have been uploaded successfully.`,
+      };
+    }
+
+    if (errorName === "InvalidAccessKeyId" || errorName === "SignatureDoesNotMatch") {
+      return {
+        success: false,
+        error: "Invalid AWS credentials. Please check AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your .env.local file.",
+      };
+    }
+
+    if (errorName === "CredentialsProviderError" || errorName === "NoCredentials") {
+      return {
+        success: false,
+        error: "AWS credentials not found. Please set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your .env.local file, or ensure IAM role is configured for production.",
+      };
+    }
+
     const errorMessage = error instanceof Error ? error.message : "Failed to generate presigned URL";
     return {
       success: false,
-      error: errorMessage,
+      error: `Failed to generate presigned URL: ${errorMessage}`,
     };
   }
 };

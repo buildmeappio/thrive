@@ -379,6 +379,94 @@ class DashboardService {
 
     return updatedProfile;
   }
+
+  /**
+   * Update compliance acknowledgments
+   */
+  async updateCompliance(
+    examinerProfileId: string,
+    data: {
+      phipaCompliance?: boolean;
+      pipedaCompliance?: boolean;
+      medicalLicenseActive?: boolean;
+      activationStep?: string;
+    }
+  ) {
+    const examinerProfile = await prisma.examinerProfile.findUnique({
+      where: { id: examinerProfileId },
+    });
+
+    if (!examinerProfile) {
+      throw new Error("Examiner profile not found");
+    }
+
+    // Note: phipaCompliance, pipedaCompliance, and medicalLicenseActive
+    // may need to be added to the ExaminerProfile schema
+    const updatedProfile = await prisma.examinerProfile.update({
+      where: { id: examinerProfileId },
+      data: {
+        ...(data.activationStep && {
+          activationStep: data.activationStep,
+        }),
+        // TODO: Add these fields to the schema when they are added:
+        // phipaCompliance, pipedaCompliance, medicalLicenseActive
+      },
+      include: {
+        account: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    return updatedProfile;
+  }
+
+  /**
+   * Update notification settings
+   */
+  async updateNotifications(
+    examinerProfileId: string,
+    data: {
+      emailNewIMEs?: boolean;
+      emailInterviewRequests?: boolean;
+      emailPaymentPayout?: boolean;
+      smsNotifications?: boolean;
+      emailMarketing?: boolean;
+      activationStep?: string;
+    }
+  ) {
+    const examinerProfile = await prisma.examinerProfile.findUnique({
+      where: { id: examinerProfileId },
+    });
+
+    if (!examinerProfile) {
+      throw new Error("Examiner profile not found");
+    }
+
+    // Note: notification settings may need to be added to the ExaminerProfile schema
+    // or stored in a separate UserPreferences/NotificationSettings table
+    const updatedProfile = await prisma.examinerProfile.update({
+      where: { id: examinerProfileId },
+      data: {
+        ...(data.activationStep && {
+          activationStep: data.activationStep,
+        }),
+        // TODO: Add notification fields to the schema when they are added:
+        // emailNewIMEs, emailInterviewRequests, emailPaymentPayout, smsNotifications, emailMarketing
+      },
+      include: {
+        account: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    return updatedProfile;
+  }
 }
 
 export const dashboardService = new DashboardService();

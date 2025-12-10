@@ -5,5 +5,8 @@ export type {
   SpecialtyPreferencesFormProps,
   AvailabilityPreferencesFormProps,
   PayoutDetailsFormProps,
+  DocumentsUploadFormProps,
+  ComplianceFormProps,
+  NotificationsFormProps,
 } from "./onboarding-forms.types";
 

@@ -22,6 +22,11 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
     professionalTitle?: string | null;
     clinicName?: string | null;
     clinicAddress?: string | null;
+    emailNewIMEs?: boolean | null;
+    emailInterviewRequests?: boolean | null;
+    emailPaymentPayout?: boolean | null;
+    smsNotifications?: boolean | null;
+    emailMarketing?: boolean | null;
   };
 
   // Get profile photo URL from Documents table if exists
@@ -62,6 +67,12 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
       acceptVirtualAssessments: profile.acceptVirtualAssessments ?? true,
       maxTravelDistance: profile.maxTravelDistance || null,
       assessmentTypeOther: profile.assessmentTypeOther || null,
+      // Notification settings - return null if not set, so form can use defaults
+      emailNewIMEs: profile.emailNewIMEs ?? null,
+      emailInterviewRequests: profile.emailInterviewRequests ?? null,
+      emailPaymentPayout: profile.emailPaymentPayout ?? null,
+      smsNotifications: profile.smsNotifications ?? null,
+      emailMarketing: profile.emailMarketing ?? null,
     },
   };
 };

@@ -79,9 +79,9 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
         // Update session to refresh JWT token with new activationStep
         await update();
         
-        // Redirect to dashboard after session is updated
-        router.push("/dashboard");
-        router.refresh();
+        // Don't redirect here - let the user continue to next step
+        // router.push("/dashboard");
+        // router.refresh();
       } else {
         toast.error(result.message || "Failed to update payout details");
       }

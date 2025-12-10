@@ -8,7 +8,7 @@ export interface ActivationStep {
 export const ACTIVATION_STEPS: Omit<ActivationStep, "completed">[] = [
   {
     id: "profile",
-    title: "Confirm or Complete Your Profile Info",
+    title: "Confirm or Complete Your Professional Profile",
     order: 1,
   },
   {
@@ -31,6 +31,16 @@ export const ACTIVATION_STEPS: Omit<ActivationStep, "completed">[] = [
     title: "Upload Required Documents",
     order: 5,
   },
+  {
+    id: "compliance",
+    title: "Privacy & Compliance Acknowledgments",
+    order: 6,
+  },
+  {
+    id: "notifications",
+    title: "Notification Settings",
+    order: 7,
+  },
 ];
 
 // Helper function to initialize steps with completed status
@@ -40,4 +50,3 @@ export const initializeActivationSteps = (): ActivationStep[] => {
     completed: false,
   }));
 };
-

@@ -69,3 +69,27 @@ export interface DocumentsUploadFormProps {
   onCancel?: () => void;
 }
 
+export interface ComplianceFormProps {
+  examinerProfileId: string | null;
+  initialData: {
+    phipaCompliance?: boolean;
+    pipedaCompliance?: boolean;
+    medicalLicenseActive?: boolean;
+  };
+  onComplete: () => void;
+  onCancel?: () => void;
+}
+
+export interface NotificationsFormProps {
+  examinerProfileId: string | null;
+  initialData: {
+    emailNewIMEs?: boolean;
+    emailInterviewRequests?: boolean;
+    emailPaymentPayout?: boolean;
+    smsNotifications?: boolean;
+    emailMarketing?: boolean;
+  };
+  onComplete: () => void;
+  onCancel?: () => void;
+}
+
