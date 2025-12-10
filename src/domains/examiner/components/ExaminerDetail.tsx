@@ -17,6 +17,7 @@ import {
   sendContract,
   moveToReview,
   scheduleInterview,
+  resendInterviewSchedulingLink,
   markInterviewCompleted,
   markContractSigned,
   getExaminerContract,
@@ -87,23 +88,85 @@ const mapStatus = {
   SUSPENDED: "suspended",
 } as const;
 
-type Props = { examiner: ExaminerData; isApplication?: boolean };
+type ExaminerDataWithStatus = Omit<ExaminerData, "status"> & {
+  status: keyof typeof mapStatus;
+};
 
-export default function ExaminerDetail({ examiner, isApplication = false }: Props) {
-  logger.log(examiner.feeStructure)
+type Props = { examiner: ExaminerDataWithStatus; isApplication?: boolean };
+
+type ExaminerDetailComponent = React.FC<Props>;
+
+enum ModalTypes {
+  REQUEST = "request",
+  REJECT = "reject",
+  FEE_STRUCTURE = "feeStructure",
+  CONTRACT_REVIEW = "contractReview",
+}
+
+enum LoadingActionTypes {
+  APPROVE = "approve",
+  REJECT = "reject",
+  REQUEST = "request",
+  FEE_STRUCTURE = "feeStructure",
+  SEND_CONTRACT = "sendContract",
+  MOVE_TO_REVIEW = "moveToReview",
+  SCHEDULE_INTERVIEW = "scheduleInterview",
+  RESEND_INTERVIEW_SCHEDULING_LINK = "resendInterviewSchedulingLink",
+  
+}
+
+const useModalToggle = () => {
+  const [modalState, setModalState] = useState<ModalTypes | null>(null);
+
+  return {
+    isRequestOpen: modalState === ModalTypes.REQUEST,
+    isRejectOpen: modalState === ModalTypes.REJECT,
+    isFeeStructureOpen: modalState === ModalTypes.FEE_STRUCTURE,
+    isContractReviewOpen: modalState === ModalTypes.CONTRACT_REVIEW,
+    openRequestModal: () => setModalState(ModalTypes.REQUEST),
+    openRejectModal: () => setModalState(ModalTypes.REJECT),
+    openFeeStructureModal: () => setModalState(ModalTypes.FEE_STRUCTURE),
+    openContractReviewModal: () => setModalState(ModalTypes.CONTRACT_REVIEW),
+    closeModal: () => setModalState(null),
+  };
+};
+
+
+const ExaminerDetail: ExaminerDetailComponent = (props) => {
+  const { examiner, isApplication = false } = props;
+
   const router = useRouter();
-  const [isRequestOpen, setIsRequestOpen] = useState(false);
-  const [isRejectOpen, setIsRejectOpen] = useState(false);
-  const [isFeeStructureOpen, setIsFeeStructureOpen] = useState(false);
-  const [isContractReviewOpen, setIsContractReviewOpen] = useState(false);
+
+  const {
+    isRequestOpen,
+    isRejectOpen,
+    isFeeStructureOpen,
+    isContractReviewOpen,
+    openRequestModal,
+    openRejectModal,
+    openFeeStructureModal,
+    openContractReviewModal,
+    closeModal,
+  } = useModalToggle();
+
   const [contractHtml, setContractHtml] = useState<string | null>(null);
   const [loadingContract, setLoadingContract] = useState(false);
   const [pendingSendContract, setPendingSendContract] = useState(false);
   const [status, setStatus] = useState<
-    (typeof mapStatus)[ExaminerData["status"]]
+    (typeof mapStatus)[keyof typeof mapStatus]
   >(mapStatus[examiner.status]);
   const [loadingAction, setLoadingAction] = useState<
-    "approve" | "reject" | "request" | "feeStructure" | "sendContract" | "moveToReview" | "scheduleInterview" | "markInterviewCompleted" | "markContractSigned" | null
+    | "approve"
+    | "reject"
+    | "request"
+    | "feeStructure"
+    | "sendContract"
+    | "moveToReview"
+    | "scheduleInterview"
+    | "resendInterviewSchedulingLink"
+    | "markInterviewCompleted"
+    | "markContractSigned"
+    | null
   >(null);
 
   // Automatically move to IN_REVIEW when admin opens a SUBMITTED/PENDING application
@@ -113,7 +176,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
       if (currentStatus === "submitted" || currentStatus === "pending") {
         // Update UI immediately
         setStatus("in_review");
-        
+
         // Update database in background
         try {
           await moveToReview(examiner.id);
@@ -130,12 +193,6 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
   }, []); // Run only once on mount - examiner.id and examiner.status are intentionally not included
 
   const handleApprove = async () => {
-    // Fee structure check commented out - fee structure section removed
-    // if (!examiner.feeStructure) {
-    //   toast.error("Please add the fee structure before approving the examiner.");
-    //   return;
-    // }
-
     setLoadingAction("approve");
     try {
       await approveExaminer(examiner.id);
@@ -151,7 +208,11 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
       setStatus("approved");
     } catch (error) {
       logger.error("Failed to approve:", error);
-      toast.error(`Failed to approve ${isApplication ? "application" : "examiner"}. Please try again.`);
+      toast.error(
+        `Failed to approve ${
+          isApplication ? "application" : "examiner"
+        }. Please try again.`
+      );
     } finally {
       setLoadingAction(null);
     }
@@ -174,10 +235,14 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
         );
       }
       setStatus("rejected");
-      setIsRejectOpen(false);
+      closeModal();
     } catch (error) {
       logger.error("Failed to reject:", error);
-      toast.error(`Failed to reject ${isApplication ? "application" : "examiner"}. Please try again.`);
+      toast.error(
+        `Failed to reject ${
+          isApplication ? "application" : "examiner"
+        }. Please try again.`
+      );
     } finally {
       setLoadingAction(null);
     }
@@ -197,7 +262,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
         toast.success("Request sent. An email has been sent to the examiner.");
       }
       setStatus("more_info_requested");
-      setIsRequestOpen(false);
+      closeModal();
     } catch (error) {
       logger.error("Failed to request more info:", error);
       toast.error("Failed to send request. Please try again.");
@@ -213,9 +278,9 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
     try {
       const result = await updateFeeStructure(examiner.id, data);
       if (result.success) {
-        setIsFeeStructureOpen(false);
+        closeModal();
         toast.success("Fee structure saved successfully.");
-        
+
         // If pending send contract, send it now after fee structure is saved
         if (pendingSendContract) {
           setPendingSendContract(false);
@@ -261,7 +326,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
       await rejectExaminer(examiner.id, "Contract declined by admin");
       setStatus("rejected");
       toast.success("Contract declined and application rejected.");
-      setIsContractReviewOpen(false);
+      closeModal();
       router.refresh();
     } catch (error) {
       logger.error("Failed to decline contract:", error);
@@ -276,7 +341,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
     if (!examiner.feeStructure) {
       // Open fee structure modal and set flag to send contract after
       setPendingSendContract(true);
-      setIsFeeStructureOpen(true);
+      openFeeStructureModal();
       toast.info("Please add the fee structure before sending contract.");
       return;
     }
@@ -295,6 +360,22 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
     } catch (error) {
       logger.error("Failed to schedule interview:", error);
       toast.error("Failed to schedule interview. Please try again.");
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleResendInterviewSchedulingLink = async () => {
+    setLoadingAction("resendInterviewSchedulingLink");
+    try {
+      await resendInterviewSchedulingLink(examiner.id);
+      toast.success("Interview scheduling link resent successfully.");
+      router.refresh();
+    } catch (error) {
+      logger.error("Failed to resend interview scheduling link:", error);
+      toast.error(
+        "Failed to resend interview scheduling link. Please try again."
+      );
     } finally {
       setLoadingAction(null);
     }
@@ -339,8 +420,18 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
           text: "Submitted",
           className: "border-blue-400 text-blue-700 bg-blue-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           ),
         };
@@ -349,8 +440,18 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
           text: "Info Requested",
           className: "border-blue-500 text-blue-700 bg-blue-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           ),
         };
@@ -366,8 +467,18 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
           text: "Submitted",
           className: "border-blue-400 text-blue-700 bg-blue-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           ),
         };
@@ -376,8 +487,18 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
           text: "In Review",
           className: "border-yellow-500 text-yellow-700 bg-yellow-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           ),
         };
@@ -386,8 +507,18 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
           text: "More Info Requested",
           className: "border-blue-500 text-blue-700 bg-blue-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           ),
         };
@@ -396,8 +527,18 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
           text: "Interview Scheduled",
           className: "border-purple-500 text-purple-700 bg-purple-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
           ),
         };
@@ -412,8 +553,18 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
           text: "Contract Sent",
           className: "border-cyan-500 text-cyan-700 bg-cyan-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
             </svg>
           ),
         };
@@ -422,8 +573,18 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
           text: "Contract Signed",
           className: "border-teal-500 text-teal-700 bg-teal-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+              />
             </svg>
           ),
         };
@@ -450,8 +611,18 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
           text: "Suspended",
           className: "border-orange-500 text-orange-700 bg-orange-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+              />
             </svg>
           ),
         };
@@ -460,8 +631,18 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
           text: "Submitted",
           className: "border-blue-400 text-blue-700 bg-blue-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           ),
         };
@@ -477,7 +658,8 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           <Link
             href="/examiner"
-            className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+            className="flex items-center gap-2 sm:gap-4 flex-shrink-0"
+          >
             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
@@ -585,7 +767,8 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
 
               {/* Section 3: Verification Documents */}
               <Section title="Verification Documents">
-                {examiner.medicalLicenseUrls && examiner.medicalLicenseUrls.length > 0 ? (
+                {examiner.medicalLicenseUrls &&
+                examiner.medicalLicenseUrls.length > 0 ? (
                   // Multiple documents - show each file with Preview/Download
                   <div className="max-h-[300px] overflow-y-auto space-y-2">
                     {examiner.medicalLicenseUrls.map((url, index) => (
@@ -624,12 +807,13 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
                 <FieldRow
                   label="Have you completed any IMEs?"
                   value={
-                    examiner.imesCompleted 
-                      ? (examiner.imesCompleted.toLowerCase() === "yes" 
-                          ? "Yes" 
-                          : examiner.imesCompleted.toLowerCase() === "no" 
-                          ? "No" 
-                          : examiner.imesCompleted.charAt(0).toUpperCase() + examiner.imesCompleted.slice(1).toLowerCase())
+                    examiner.imesCompleted
+                      ? examiner.imesCompleted.toLowerCase() === "yes"
+                        ? "Yes"
+                        : examiner.imesCompleted.toLowerCase() === "no"
+                        ? "No"
+                        : examiner.imesCompleted.charAt(0).toUpperCase() +
+                          examiner.imesCompleted.slice(1).toLowerCase()
                       : "-"
                   }
                   type="text"
@@ -642,13 +826,17 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
                 <FieldRow
                   label="Assessment Types"
                   value={
-                    examiner.assessmentTypes && examiner.assessmentTypes.length > 0
-                      ? examiner.assessmentTypes.map((type) => formatText(type)).join(", ")
+                    examiner.assessmentTypes &&
+                    examiner.assessmentTypes.length > 0
+                      ? examiner.assessmentTypes
+                          .map((type) => formatText(type))
+                          .join(", ")
                       : "-"
                   }
                   type="text"
                 />
-                {examiner.assessmentTypeOther && examiner.assessmentTypeOther.trim() !== "" ? (
+                {examiner.assessmentTypeOther &&
+                examiner.assessmentTypeOther.trim() !== "" ? (
                   <FieldRow
                     label="Other Assessment Type"
                     value={examiner.assessmentTypeOther}
@@ -656,7 +844,8 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
                   />
                 ) : null}
                 {/* Tell us about your experience */}
-                {examiner.experienceDetails && examiner.experienceDetails.trim() !== "" ? (
+                {examiner.experienceDetails &&
+                examiner.experienceDetails.trim() !== "" ? (
                   <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[169px] flex flex-col">
                     <h4 className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] mb-3">
                       Tell us about your experience
@@ -683,32 +872,40 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
               </Section>
 
               {/* Section 4: Fee Structure (visible if fee structure exists, for both applications and examiners after interview_scheduled) */}
-              {examiner.feeStructure && ["interview_scheduled", "interview_completed", "contract_sent", "contract_signed", "approved", "active"].includes(status) && (
-                <Section title="Fee Structure">
-                  <FieldRow
-                    label="IME Fee"
-                    value={`$${examiner.feeStructure.IMEFee || 0}`}
-                    type="text"
-                  />
-                  <FieldRow
-                    label="Record Review Fee"
-                    value={`$${examiner.feeStructure.recordReviewFee || 0}`}
-                    type="text"
-                  />
-                  {examiner.feeStructure.hourlyRate && (
+              {examiner.feeStructure &&
+                [
+                  "interview_scheduled",
+                  "interview_completed",
+                  "contract_sent",
+                  "contract_signed",
+                  "approved",
+                  "active",
+                ].includes(status) && (
+                  <Section title="Fee Structure">
                     <FieldRow
-                      label="Hourly Rate"
-                      value={`$${examiner.feeStructure.hourlyRate}`}
+                      label="IME Fee"
+                      value={`$${examiner.feeStructure.IMEFee || 0}`}
                       type="text"
                     />
-                  )}
-                  <FieldRow
-                    label="Cancellation Fee"
-                    value={`$${examiner.feeStructure.cancellationFee || 0}`}
-                    type="text"
-                  />
-                </Section>
-              )}
+                    <FieldRow
+                      label="Record Review Fee"
+                      value={`$${examiner.feeStructure.recordReviewFee || 0}`}
+                      type="text"
+                    />
+                    {examiner.feeStructure.hourlyRate && (
+                      <FieldRow
+                        label="Hourly Rate"
+                        value={`$${examiner.feeStructure.hourlyRate}`}
+                        type="text"
+                      />
+                    )}
+                    <FieldRow
+                      label="Cancellation Fee"
+                      value={`$${examiner.feeStructure.cancellationFee || 0}`}
+                      type="text"
+                    />
+                  </Section>
+                )}
 
               {/* Section 5: Consent */}
               <Section title="Consent">
@@ -726,247 +923,297 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
 
               {/* Section 6: Actions - Hidden when MORE_INFO_REQUESTED, INFO_REQUESTED, or ACTIVE */}
               {/* Hide actions for approved applications (they're now examiners) and active examiners */}
-              {status !== "more_info_requested" && status !== "info_requested" && status !== "active" && !(isApplication && status === "approved") && (
-                <Section title="Actions">
-                  <div className="flex flex-row flex-wrap gap-3">
-                    {/* SUBMITTED or PENDING: Auto-moved to IN_REVIEW (no button needed) */}
-                    
-                    {/* IN_REVIEW: Schedule Interview, Request More Info, Reject */}
-                    {status === "in_review" && (
-                      <>
-                        <button
-                          className={cn(
-                            "px-4 py-3 rounded-full border border-purple-500 text-purple-600 bg-white hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                          )}
-                          style={{
-                            fontFamily: "Poppins, sans-serif",
-                            fontWeight: 400,
-                            lineHeight: "100%",
-                            fontSize: "14px",
-                          }}
-                          disabled={loadingAction !== null}
-                          onClick={handleScheduleInterview}
-                        >
-                          {loadingAction === "scheduleInterview" ? "Scheduling..." : "Schedule Interview"}
-                        </button>
-                        <button
-                          onClick={() => setIsRequestOpen(true)}
-                          className={cn(
-                            "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                          )}
-                          style={{
-                            fontFamily: "Poppins, sans-serif",
-                            fontWeight: 400,
-                            lineHeight: "100%",
-                            fontSize: "14px",
-                          }}
-                          disabled={loadingAction !== null}
-                        >
-                          Request More Info
-                        </button>
-                        <button
-                          className={cn(
-                            "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                          )}
-                          style={{
-                            fontFamily: "Poppins, sans-serif",
-                            fontWeight: 400,
-                            lineHeight: "100%",
-                            fontSize: "14px",
-                          }}
-                          disabled={loadingAction !== null}
-                          onClick={() => setIsRejectOpen(true)}
-                        >
-                          Reject Application
-                        </button>
-                      </>
-                    )}
+              {status !== "more_info_requested" &&
+                status !== "info_requested" &&
+                status !== "active" &&
+                !(isApplication && status === "approved") && (
+                  <Section title="Actions">
+                    <div className="flex flex-row flex-wrap gap-3">
+                      {/* SUBMITTED or PENDING: Auto-moved to IN_REVIEW (no button needed) */}
 
-                    {/* INTERVIEW_SCHEDULED: Mark Interview Completed, Reject */}
-                  {status === "interview_scheduled" && (
-                    <>
-                      <button
-                        className={cn(
-                          "px-4 py-3 rounded-full border border-indigo-500 text-indigo-600 bg-white hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        )}
-                        style={{
-                          fontFamily: "Poppins, sans-serif",
-                          fontWeight: 400,
-                          lineHeight: "100%",
-                          fontSize: "14px",
-                        }}
-                        disabled={loadingAction !== null}
-                        onClick={handleMarkInterviewCompleted}
-                      >
-                        {loadingAction === "markInterviewCompleted" ? "Marking..." : "Interview Held"}
-                      </button>
-                      <button
-                        className={cn(
-                          "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                        )}
-                        style={{
-                          fontFamily: "Poppins, sans-serif",
-                          fontWeight: 400,
-                          lineHeight: "100%",
-                          fontSize: "14px",
-                        }}
-                        disabled={loadingAction !== null}
-                        onClick={() => setIsRejectOpen(true)}
-                      >
-                        Reject Application
-                      </button>
-                    </>
-                  )}
-
-                  {/* INTERVIEW_COMPLETED: Send Contract, Reject */}
-                  {status === "interview_completed" && (
-                    <>
-                      <button
-                        onClick={() => {
-                          // Open fee structure modal first, then send contract after saving
-                          setPendingSendContract(true);
-                          setIsFeeStructureOpen(true);
-                        }}
-                        disabled={loadingAction !== null}
-                        className={cn(
-                          "px-4 py-3 rounded-full border border-cyan-500 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        )}
-                        style={{
-                          fontFamily: "Poppins, sans-serif",
-                          fontWeight: 400,
-                          lineHeight: "100%",
-                          fontSize: "14px",
-                        }}
-                      >
-                        {loadingAction === "sendContract" ? "Sending..." : "Send Contract"}
-                      </button>
-                      <button
-                        className={cn(
-                          "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                        )}
-                        style={{
-                          fontFamily: "Poppins, sans-serif",
-                          fontWeight: 400,
-                          lineHeight: "100%",
-                          fontSize: "14px",
-                        }}
-                        disabled={loadingAction !== null}
-                        onClick={() => setIsRejectOpen(true)}
-                      >
-                        Reject Application
-                      </button>
-                    </>
-                  )}
-
-                  {/* CONTRACT_SENT: Review Signed Contract, Re-send Contract (for both applications and examiners) */}
-                  {status === "contract_sent" && (
-                    <>
-                      <button
-                        className={cn(
-                          "px-4 py-3 rounded-full border flex items-center gap-2 relative",
-                          examiner.contractSignedByExaminerAt
-                            ? "border-teal-500 text-teal-600 bg-white hover:bg-teal-50 cursor-pointer"
-                            : "border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed"
-                        )}
-                        style={{
-                          fontFamily: "Poppins, sans-serif",
-                          fontWeight: 400,
-                          lineHeight: "100%",
-                          fontSize: "14px",
-                        }}
-                        disabled={!examiner.contractSignedByExaminerAt || loadingAction !== null}
-                        onClick={async () => {
-                          if (examiner.contractSignedByExaminerAt) {
-                            setIsContractReviewOpen(true);
-                            setLoadingContract(true);
-                            try {
-                              const result = await getExaminerContract(examiner.id, isApplication);
-                              if (result.success && result.contractHtml) {
-                                setContractHtml(result.contractHtml);
-                              } else {
-                                toast.error("Failed to load contract");
-                              }
-                            } catch (error) {
-                              logger.error("Error loading contract:", error);
-                              toast.error("Failed to load contract");
-                            } finally {
-                              setLoadingContract(false);
-                            }
-                          } else {
-                            toast.info(isApplication ? "Applicant has not signed contract yet" : "Examiner has not signed contract yet");
-                          }
-                        }}
-                        title={examiner.contractSignedByExaminerAt ? "Review the signed contract" : (isApplication ? "Applicant has not signed contract yet" : "Examiner has not signed contract yet")}
-                      >
-                        Review Signed Contract
-                      </button>
-                      <button
-                        onClick={handleSendContract}
-                        disabled={loadingAction !== null}
-                        className={cn(
-                          "px-4 py-3 rounded-full border border-blue-600 text-blue-600 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        )}
-                        style={{
-                          fontFamily: "Poppins, sans-serif",
-                          fontWeight: 400,
-                          lineHeight: "100%",
-                          fontSize: "14px",
-                        }}
-                      >
-                        {loadingAction === "sendContract" ? "Re-sending..." : "Re-send Contract"}
-                      </button>
-                    </>
-                  )}
-
-                  {/* CONTRACT_SIGNED: Approve Application only */}
-                  {status === "contract_signed" && (
-                    <button
-                      className={cn(
-                        "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-white hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      {/* IN_REVIEW: Schedule Interview, Request More Info, Reject */}
+                      {status === "in_review" && (
+                        <>
+                          <button
+                            className={cn(
+                              "px-4 py-3 rounded-full border border-purple-500 text-purple-600 bg-white hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                            disabled={loadingAction !== null}
+                            onClick={handleScheduleInterview}
+                          >
+                            {loadingAction === "scheduleInterview"
+                              ? "Scheduling..."
+                              : "Schedule Interview"}
+                          </button>
+                          <button
+                            onClick={openRequestModal}
+                            className={cn(
+                              "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                            disabled={loadingAction !== null}
+                          >
+                            Request More Info
+                          </button>
+                          <button
+                            className={cn(
+                              "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                            disabled={loadingAction !== null}
+                            onClick={openRejectModal}
+                          >
+                            Reject Application
+                          </button>
+                        </>
                       )}
-                      style={{
-                        fontFamily: "Poppins, sans-serif",
-                        fontWeight: 500,
-                        lineHeight: "100%",
-                        fontSize: "14px",
-                      }}
-                      disabled={loadingAction !== null}
-                      onClick={handleApprove}
-                    >
-                      {loadingAction === "approve" ? "Approving..." : "Approve Application"}
-                    </button>
-                  )}
 
-                  {/* Suspend/Reactivate removed - skipping for now */}
+                      {/* INTERVIEW_SCHEDULED: Mark Interview Completed, Resend Link, Reject */}
+                      {status === "interview_scheduled" && (
+                        <>
+                          <button
+                            className={cn(
+                              "px-4 py-3 rounded-full border border-indigo-500 text-indigo-600 bg-white hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                            disabled={loadingAction !== null}
+                            onClick={handleMarkInterviewCompleted}
+                          >
+                            {loadingAction === "markInterviewCompleted"
+                              ? "Marking..."
+                              : "Interview Held"}
+                          </button>
+                          <button
+                            className={cn(
+                              "px-4 py-3 rounded-full border border-purple-500 text-purple-600 bg-white hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                            disabled={loadingAction !== null}
+                            onClick={handleResendInterviewSchedulingLink}
+                          >
+                            {loadingAction === "resendInterviewSchedulingLink"
+                              ? "Resending..."
+                              : "Resend Scheduling Link"}
+                          </button>
+                          <button
+                            className={cn(
+                              "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                            disabled={loadingAction !== null}
+                            onClick={openRejectModal}
+                          >
+                            Reject Application
+                          </button>
+                        </>
+                      )}
 
-                    {/* Final states (REJECTED, WITHDRAWN): Read-only */}
-                    {(status === "rejected" || status === "withdrawn") && (
-                      <button
-                        className={cn(
-                          "px-4 py-3 rounded-full flex items-center gap-2 cursor-default",
-                          status === "rejected" ? "text-white bg-red-700" :
-                          "border border-gray-500 text-gray-700 bg-gray-50"
-                        )}
-                        style={{
-                          fontFamily: "Poppins, sans-serif",
-                          fontWeight: 500,
-                          lineHeight: "100%",
-                          fontSize: "14px",
-                        }}
-                        disabled
-                      >
-                        {status === "rejected" && "Rejected"}
-                        {status === "withdrawn" && "Withdrawn"}
-                      </button>
-                    )}
-                  </div>
-                </Section>
-              )}
+                      {/* INTERVIEW_COMPLETED: Send Contract, Reject */}
+                      {status === "interview_completed" && (
+                        <>
+                          <button
+                            onClick={() => {
+                              // Open fee structure modal first, then send contract after saving
+                              setPendingSendContract(true);
+                              openFeeStructureModal();
+                            }}
+                            disabled={loadingAction !== null}
+                            className={cn(
+                              "px-4 py-3 rounded-full border border-cyan-500 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                          >
+                            {loadingAction === "sendContract"
+                              ? "Sending..."
+                              : "Send Contract"}
+                          </button>
+                          <button
+                            className={cn(
+                              "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                            disabled={loadingAction !== null}
+                            onClick={openRejectModal}
+                          >
+                            Reject Application
+                          </button>
+                        </>
+                      )}
+
+                      {/* CONTRACT_SENT: Review Signed Contract, Re-send Contract (for both applications and examiners) */}
+                      {status === "contract_sent" && (
+                        <>
+                          <button
+                            className={cn(
+                              "px-4 py-3 rounded-full border flex items-center gap-2 relative",
+                              examiner.contractSignedByExaminerAt
+                                ? "border-teal-500 text-teal-600 bg-white hover:bg-teal-50 cursor-pointer"
+                                : "border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed"
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                            disabled={
+                              !examiner.contractSignedByExaminerAt ||
+                              loadingAction !== null
+                            }
+                            onClick={async () => {
+                              if (examiner.contractSignedByExaminerAt) {
+                                openContractReviewModal();
+                                setLoadingContract(true);
+                                try {
+                                  const result = await getExaminerContract(
+                                    examiner.id,
+                                    isApplication
+                                  );
+                                  if (result.success && result.contractHtml) {
+                                    setContractHtml(result.contractHtml);
+                                  } else {
+                                    toast.error("Failed to load contract");
+                                  }
+                                } catch (error) {
+                                  logger.error(
+                                    "Error loading contract:",
+                                    error
+                                  );
+                                  toast.error("Failed to load contract");
+                                } finally {
+                                  setLoadingContract(false);
+                                }
+                              } else {
+                                toast.info(
+                                  isApplication
+                                    ? "Applicant has not signed contract yet"
+                                    : "Examiner has not signed contract yet"
+                                );
+                              }
+                            }}
+                            title={
+                              examiner.contractSignedByExaminerAt
+                                ? "Review the signed contract"
+                                : isApplication
+                                ? "Applicant has not signed contract yet"
+                                : "Examiner has not signed contract yet"
+                            }
+                          >
+                            Review Signed Contract
+                          </button>
+                          <button
+                            onClick={handleSendContract}
+                            disabled={loadingAction !== null}
+                            className={cn(
+                              "px-4 py-3 rounded-full border border-blue-600 text-blue-600 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                          >
+                            {loadingAction === "sendContract"
+                              ? "Re-sending..."
+                              : "Re-send Contract"}
+                          </button>
+                        </>
+                      )}
+
+                      {/* CONTRACT_SIGNED: Approve Application only */}
+                      {status === "contract_signed" && (
+                        <button
+                          className={cn(
+                            "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-white hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          )}
+                          style={{
+                            fontFamily: "Poppins, sans-serif",
+                            fontWeight: 500,
+                            lineHeight: "100%",
+                            fontSize: "14px",
+                          }}
+                          disabled={loadingAction !== null}
+                          onClick={handleApprove}
+                        >
+                          {loadingAction === "approve"
+                            ? "Approving..."
+                            : "Approve Application"}
+                        </button>
+                      )}
+
+                      {/* Suspend/Reactivate removed - skipping for now */}
+
+                      {/* Final states (REJECTED, WITHDRAWN): Read-only */}
+                      {(status === "rejected" || status === "withdrawn") && (
+                        <button
+                          className={cn(
+                            "px-4 py-3 rounded-full flex items-center gap-2 cursor-default",
+                            status === "rejected"
+                              ? "text-white bg-red-700"
+                              : "border border-gray-500 text-gray-700 bg-gray-50"
+                          )}
+                          style={{
+                            fontFamily: "Poppins, sans-serif",
+                            fontWeight: 500,
+                            lineHeight: "100%",
+                            fontSize: "14px",
+                          }}
+                          disabled
+                        >
+                          {status === "rejected" && "Rejected"}
+                          {status === "withdrawn" && "Withdrawn"}
+                        </button>
+                      )}
+                    </div>
+                  </Section>
+                )}
             </div>
           </div>
 
-            {/* Fee Structure Section - Commented Out */}
-            {/* 
+          {/* Fee Structure Section - Commented Out */}
+          {/* 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
               <Section
                 title="Fee Structure"
@@ -1027,7 +1274,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
         {/* Modals */}
         <RequestInfoModal
           open={isRequestOpen}
-          onClose={() => setIsRequestOpen(false)}
+          onClose={closeModal}
           onSubmit={handleRequestMoreInfoSubmit}
           title="Request More Info"
           maxLength={200}
@@ -1035,7 +1282,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
 
         <RejectModal
           open={isRejectOpen}
-          onClose={() => setIsRejectOpen(false)}
+          onClose={closeModal}
           onSubmit={handleRejectSubmit}
           title="Reason for Rejection"
           maxLength={200}
@@ -1047,7 +1294,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
         <EditFeeStructureModal
           open={isFeeStructureOpen}
           onClose={() => {
-            setIsFeeStructureOpen(false);
+            closeModal();
             setPendingSendContract(false);
           }}
           onSubmit={handleFeeStructureSubmit}
@@ -1062,7 +1309,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
         {isContractReviewOpen && (
           <div
             className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setIsContractReviewOpen(false)}
+            onClick={closeModal}
           >
             <div
               className="bg-white w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg relative flex flex-col"
@@ -1075,11 +1322,20 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
                     Review Signed Contract
                   </h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    Signed by {capitalizeWords(examiner.name)} on {examiner.contractSignedByExaminerAt ? new Date(examiner.contractSignedByExaminerAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                    Signed by {capitalizeWords(examiner.name)} on{" "}
+                    {examiner.contractSignedByExaminerAt
+                      ? new Date(
+                          examiner.contractSignedByExaminerAt
+                        ).toLocaleDateString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : "N/A"}
                   </p>
                 </div>
                 <button
-                  onClick={() => setIsContractReviewOpen(false)}
+                  onClick={closeModal}
                   className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
                   aria-label="Close"
                 >
@@ -1091,10 +1347,12 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
               <div className="flex-1 overflow-auto p-6">
                 {loadingContract ? (
                   <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-gray-600 font-poppins">Loading contract...</p>
+                    <p className="text-gray-600 font-poppins">
+                      Loading contract...
+                    </p>
                   </div>
                 ) : contractHtml ? (
-                  <div 
+                  <div
                     className="w-full h-full bg-white rounded-lg p-6 overflow-auto"
                     dangerouslySetInnerHTML={{ __html: contractHtml }}
                   />
@@ -1110,7 +1368,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
               {/* Footer with Actions */}
               <div className="flex items-center justify-between p-6 border-t border-gray-200">
                 <button
-                  onClick={() => setIsContractReviewOpen(false)}
+                  onClick={closeModal}
                   className="px-6 py-3 rounded-full border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-poppins text-sm font-medium"
                 >
                   Close
@@ -1123,19 +1381,23 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
                       "px-6 py-3 rounded-full border border-red-500 text-red-700 bg-white hover:bg-red-50 font-poppins text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     )}
                   >
-                    {loadingAction === "reject" ? "Declining..." : "Decline Contract"}
+                    {loadingAction === "reject"
+                      ? "Declining..."
+                      : "Decline Contract"}
                   </button>
                   <button
                     onClick={async () => {
                       await handleMarkContractSigned();
-                      setIsContractReviewOpen(false);
+                      closeModal();
                     }}
                     disabled={loadingAction !== null}
                     className={cn(
                       "px-6 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-poppins text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                     )}
                   >
-                    {loadingAction === "markContractSigned" ? "Confirming..." : "Confirm Contract"}
+                    {loadingAction === "markContractSigned"
+                      ? "Confirming..."
+                      : "Confirm Contract"}
                   </button>
                 </div>
               </div>
@@ -1145,4 +1407,6 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
       </div>
     </DashboardShell>
   );
-}
+};
+
+export default ExaminerDetail;

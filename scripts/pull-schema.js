@@ -228,11 +228,6 @@ async function main() {
   console.log('Collecting files...');
   const fileList = await collectFiles(SRC_PATH, DEST_PATH, token);
   
-  // Also add prisma.config.ts from the root
-  const prismaConfigPath = 'prisma.config.ts';
-  const prismaConfigDest = path.join(process.cwd(), 'prisma.config.ts');
-  fileList.push({ filePath: prismaConfigPath, destPath: prismaConfigDest });
-  
   if (fileList.length === 0) {
     console.log('No files found to download.');
     process.exit(1);

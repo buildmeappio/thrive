@@ -11,25 +11,33 @@ import {
 } from "@/emails/examiner-status-updates";
 import { checkEntityType } from "../utils/checkEntityType";
 import { signExaminerScheduleInterviewToken } from "@/lib/jwt";
+import { ExaminerStatus } from "@prisma/client";
 
-const scheduleInterview = async (id: string) => {
+const resendInterviewSchedulingLink = async (id: string) => {
   const user = await getCurrentUser();
   if (!user) {
-    throw HttpError.unauthorized("You must be logged in to schedule interview");
+    throw HttpError.unauthorized("You must be logged in to resend interview scheduling link");
   }
 
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
 
   if (entityType === "application") {
-    const application = await applicationService.scheduleApplicationInterview(
-      id
-    );
+    const application = await applicationService.getApplicationById(id);
+
+    if (!application) {
+      throw HttpError.notFound("Application not found");
+    }
+
+    // Check if application is in INTERVIEW_SCHEDULED status
+    if (application.status !== ExaminerStatus.INTERVIEW_SCHEDULED) {
+      throw HttpError.badRequest("Application must be in INTERVIEW_SCHEDULED status to resend the link");
+    }
 
     // Send notification email to applicant
     try {
       if (application.email && application.firstName && application.lastName) {
-        // Generate JWT token for interview scheduling link
+        // Generate new JWT token for interview scheduling link
         const jwtToken = signExaminerScheduleInterviewToken({
           email: application.email,
           applicationId: application.id,
@@ -38,7 +46,8 @@ const scheduleInterview = async (id: string) => {
         // Create scheduling link
         const scheduleInterviewLink = `${process.env.NEXT_PUBLIC_APP_URL}/examiner/schedule-interview?token=${jwtToken}`;
 
-        // Store the link in database using ApplicationSecureLink
+        // Store the new link in database using ApplicationSecureLink
+        // This creates a new SecureLink record for tracking purposes
         await applicationService.createInterviewSchedulingLink({
           applicationId: application.id,
           expiresInDays: 30,
@@ -57,13 +66,14 @@ const scheduleInterview = async (id: string) => {
           html: htmlTemplate,
         });
 
-        logger.log(`✅ Interview scheduled email sent to ${application.email}`);
+        logger.log(`✅ Interview scheduling link resent to ${application.email}`);
       }
     } catch (emailError) {
-      logger.error("Failed to send interview scheduled email:", emailError);
+      logger.error("Failed to resend interview scheduling link:", emailError);
+      throw emailError;
     }
 
-    return application;
+    return { success: true };
   } else if (entityType === "examiner") {
     throw HttpError.badRequest(
       "We no longer maintain examiner profile as a means to accept examiner applications"
@@ -73,4 +83,5 @@ const scheduleInterview = async (id: string) => {
   }
 };
 
-export default scheduleInterview;
+export default resendInterviewSchedulingLink;
+

@@ -17,7 +17,7 @@ import jwt, { SignOptions } from "jsonwebtoken";
 //   throw new Error("JWT_EXAMINER_INFO_REQUEST_SECRET must be defined in environment variables");
 // }
 
-const getJwtSecret = (name: 'JWT_SET_PASSWORD_SECRET' | 'JWT_EXAMINER_INFO_REQUEST_SECRET' | 'JWT_ORGANIZATION_INFO_REQUEST_SECRET' | 'JWT_CLAIMANT_APPROVE_SECRET' | 'NEXTAUTH_SECRET') => {
+const getJwtSecret = (name: 'JWT_SET_PASSWORD_SECRET' | 'JWT_EXAMINER_INFO_REQUEST_SECRET' | 'JWT_ORGANIZATION_INFO_REQUEST_SECRET' | 'JWT_CLAIMANT_APPROVE_SECRET' | 'JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET' | 'NEXTAUTH_SECRET') => {
   const secret = process.env[name];
   if (!secret) {
     throw new Error(`${name} secret must be defined in environment variables`);
@@ -215,5 +215,43 @@ export function verifyExaminerApplicationToken(token: string): { email: string; 
     };
   } catch {
     throw new Error("Invalid or expired application token");
+  }
+}
+
+/**
+ * Sign a token for examiner interview scheduling (uses JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET)
+ * @param payload - The data to encode in the token (should include email and applicationId)
+ * @param expiresIn - Token expiration time (default: 30 days)
+ * @returns Signed JWT token
+ */
+export function signExaminerScheduleInterviewToken(
+  payload: { email: string; applicationId: string },
+  expiresIn: SignOptions['expiresIn'] = '30d'
+): string {
+  const options: SignOptions = { expiresIn };
+  const JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET = getJwtSecret('JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET');
+  return jwt.sign(payload, JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET, options);
+}
+
+/**
+ * Verify and decode an examiner interview scheduling token (uses JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET)
+ * @param token - The JWT token to verify
+ * @returns Decoded token payload with email and applicationId
+ */
+export function verifyExaminerScheduleInterviewToken(token: string): { email: string; applicationId: string } {
+  try {
+    const JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET = getJwtSecret('JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET');
+    const decoded = jwt.verify(token, JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET) as jwt.JwtPayload;
+    
+    if (!decoded.email || !decoded.applicationId) {
+      throw new Error("Invalid interview scheduling token payload");
+    }
+    
+    return {
+      email: decoded.email as string,
+      applicationId: decoded.applicationId as string,
+    };
+  } catch {
+    throw new Error("Invalid or expired interview scheduling token");
   }
 }

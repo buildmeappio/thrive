@@ -3,12 +3,12 @@ import examinerService from "../server/examiner.service";
 import { ExaminerDto } from "../server/dto/examiner.dto";
 import { generatePresignedUrl } from "@/lib/s3";
 import { mapSpecialtyIdsToNames } from "../utils/mapSpecialtyIdsToNames";
-import { Decimal } from '@prisma/client/runtime/library';
 import logger from "@/utils/logger";
+import { Prisma } from "@prisma/client";
 
 // Helper function to serialize Decimals and other non-plain objects
 const serializeValue = (value: any): any => {
-  if (value instanceof Decimal) {
+  if (value instanceof Prisma.Decimal) {
     return Number(value);
   }
   if (value instanceof Date) {
