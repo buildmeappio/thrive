@@ -26,7 +26,6 @@ import {
 import { toast } from "sonner";
 import authActions from "@/domains/auth/actions";
 
-import { InitialFormData } from "@/types/components";
 import type { ProfileInfoFormProps } from "../../types";
 
 const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
