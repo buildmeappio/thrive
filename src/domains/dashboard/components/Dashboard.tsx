@@ -103,11 +103,13 @@ export default function Dashboard({
       <div className="w-full flex flex-col xl:flex-row gap-3 sm:gap-6">
         {/* Left: three stacked tables */}
         <div className="w-full xl:w-8/12 flex flex-col gap-3 sm:gap-6 min-w-0 dashboard-zoom-mobile">
-          <NewExaminers
-            items={examinerRows}
-            listHref="/examiner"
-            buildDetailHref={(id) => `/examiner/application/${id}`}
-          />
+          {examinerRows.length > 0 && (
+            <NewExaminers
+              items={examinerRows}
+              listHref="/examiner"
+              buildDetailHref={(id) => `/examiner/application/${id}`}
+            />
+          )}
           <NewCases
             items={caseRows}
             listHref="/cases"
