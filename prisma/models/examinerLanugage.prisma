@@ -1,0 +1,15 @@
+
+model ExaminerLanguage {
+  id                String   @id @default(uuid()) @db.Uuid
+  examinerProfileId String   @map("examiner_profile_id") @db.Uuid
+  languageId        String   @map("language_id") @db.Uuid
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  examinerProfile ExaminerProfile @relation(fields: [examinerProfileId], references: [id], onDelete: Cascade)
+  language        Language        @relation(fields: [languageId], references: [id], onDelete: Restrict)
+
+  @@unique([examinerProfileId, languageId])
+  @@index([languageId])
+  @@map("examiner_languages")
+}

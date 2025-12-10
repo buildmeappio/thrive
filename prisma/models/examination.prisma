@@ -1,0 +1,44 @@
+model Examination {
+  id                String             @id @unique @default(uuid()) @db.Uuid
+  caseNumber        String             @map("case_number") @db.VarChar(255)
+  caseId            String             @map("case_id") @db.Uuid
+  examinationTypeId String             @map("examination_type_id") @db.Uuid
+  dueDate           DateTime?          @map("due_date") @db.Timestamptz()
+  notes             String?            @map("notes") @db.Text
+  additionalNotes   String?            @map("additional_notes") @db.Text
+  urgencyLevel      UrgencyLevel?      @map("urgency_level")
+  examinerId        String?            @map("examiner_id") @db.Uuid
+  statusId          String             @map("status_id") @db.Uuid
+  preference        ClaimantPreference @map("preference")
+  supportPerson     Boolean            @default(false) @map("support_person")
+
+  assignToId String?   @map("assign_to_id") @db.Uuid
+  assignedAt DateTime? @map("assigned_at") @db.Timestamptz()
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz()
+
+  claimantId            String  @map("claimant_id") @db.Uuid
+  insuranceId           String? @map("insurance_id") @db.Uuid
+  legalRepresentativeId String? @map("legal_representative_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  case             Case                         @relation("ExaminationCases", fields: [caseId], references: [id])
+  examinationType  ExaminationType              @relation("ExaminationType", fields: [examinationTypeId], references: [id])
+  examiner         Account?                     @relation("ExaminerCases", fields: [examinerId], references: [id])
+  status           CaseStatus                   @relation("CaseStatus", fields: [statusId], references: [id])
+  assignTo         Account?                     @relation("AssignedCases", fields: [assignToId], references: [id])
+  secureLinks      ExaminationSecureLink[]      @relation("ExaminationSecureLink")
+  claimantBookings ClaimantBooking[]            @relation("ExaminationClaimantBooking")
+  services         ExaminationServices[]        @relation("ExaminationServices")
+  selectedBenefits ExaminationSelectedBenefit[] @relation("ExaminationSelectedBenefits")
+
+  claimant            Claimant             @relation("ExaminationClaimant", fields: [claimantId], references: [id])
+  insurance           Insurance?           @relation("ExaminationInsurance", fields: [insuranceId], references: [id])
+  legalRepresentative LegalRepresentative? @relation("ExaminationLegalRepresentative", fields: [legalRepresentativeId], references: [id])
+
+  @@index([caseId])
+  @@index([caseNumber])
+  @@map("examinations")
+}

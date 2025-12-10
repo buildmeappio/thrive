@@ -11,8 +11,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { URLS } from "@/constants/route";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const LoginForm = () => {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -30,17 +32,11 @@ const LoginForm = () => {
       email: values.email,
       password: values.password,
     });
-
-    if (res?.ok) {
+    if (res?.ok) {  
       toast.success("Login successful");
-      // Use window.location for full page reload to ensure session cookie is read
-      // Small delay to ensure cookie is set before redirect
-      setTimeout(() => {
-        window.location.href = URLS.DASHBOARD;
-      }, 100);
+      router.push('/dashboard');
       return;
     }
-
     const errorMessage =
       res?.error ?? "Invalid email or password. Please try again.";
     toast.error(errorMessage);

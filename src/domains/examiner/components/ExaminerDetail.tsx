@@ -70,6 +70,7 @@ const formatYearsOfExperience = (str: string): string => {
 };
 
 const mapStatus = {
+  DRAFT: "draft",
   PENDING: "pending",
   ACCEPTED: "approved",
   REJECTED: "rejected",
@@ -117,6 +118,15 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
   const [loadingAction, setLoadingAction] = useState<
     "approve" | "reject" | "request" | "feeStructure" | "sendContract" | "moveToReview" | "scheduleInterview" | "markInterviewCompleted" | "markContractSigned" | null
   >(null);
+
+  // Redirect if status is DRAFT - we only show from SUBMITTED onwards
+  useEffect(() => {
+    const currentStatus = mapStatus[examiner.status];
+    if (currentStatus === "draft") {
+      router.push("/examiner");
+      return;
+    }
+  }, [examiner.status, router]);
 
   // Automatically move to IN_REVIEW when admin opens a SUBMITTED/PENDING application
   useEffect(() => {
