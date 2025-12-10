@@ -1,11 +1,10 @@
 "use client";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { FormProvider, FormField } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
-import { CircleCheck, Shield, Lock } from "lucide-react";
+import { CircleCheck, Shield } from "lucide-react";
 import { updatePayoutDetailsAction } from "../../server/actions";
 import {
   payoutDetailsSchema,
@@ -20,7 +19,6 @@ import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
-import { InitialFormData } from "@/types/components";
 import type { PayoutDetailsFormProps } from "../../types";
 
 const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
@@ -29,7 +27,6 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
   onComplete,
   onCancel: _onCancel,
 }) => {
-  const router = useRouter();
   const { update } = useSession();
   const [loading, setLoading] = useState(false);
 

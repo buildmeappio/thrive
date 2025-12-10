@@ -9,14 +9,13 @@ import {
   AvailabilityPreferencesInput,
 } from "../../schemas/onboardingSteps.schema";
 import { availabilityInitialValues } from "../../constants";
-import { WeeklyHours, OverrideHours, BookingOptions } from "./AvailabilityTabs";
+import { WeeklyHours, BookingOptions } from "./AvailabilityTabs";
 import { toast } from "sonner";
 import {
   convertAvailabilityToUTC,
   convertAvailabilityToLocal,
 } from "@/utils/timeConversion";
 
-import { InitialFormData } from "@/types/components";
 import type { AvailabilityPreferencesFormProps } from "../../types";
 
 const AvailabilityPreferencesForm: React.FC<

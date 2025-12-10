@@ -1,9 +1,8 @@
 "use client";
 import React, { useState, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { CircleCheck, Upload, FileText, Eye, X, CheckCircle2 } from "lucide-react";
+import { CircleCheck, Upload, FileText, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadDocumentAction, getDocumentByIdAction } from "../../server/actions";
 import { getExaminerDocumentPresignedUrlAction } from "@/domains/auth/server/actions/getExaminerDocumentPresignedUrl";
@@ -46,7 +45,6 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
   onComplete,
   onCancel: _onCancel,
 }) => {
-  const router = useRouter();
   const { update } = useSession();
   const [loading, setLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -95,30 +93,7 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
     setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-
-    if (!activeDocumentType) {
-      toast.error("Please select a document type first");
-      return;
-    }
-
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      handleFileSelect(files[0], activeDocumentType);
-    }
-  }, [activeDocumentType]);
-
-  const handleFileSelect = async (file: File, documentType: DocumentType) => {
-    // Prevent multiple simultaneous uploads for the same document type
-    const currentDoc = documents[documentType];
-    if (currentDoc.uploading) {
-      console.warn(`Upload already in progress for ${documentType}`);
-      return;
-    }
-
+  const handleFileSelect = useCallback(async (file: File, documentType: DocumentType) => {
     // Validate file
     const maxSize = 10 * 1024 * 1024; // 10MB
     const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
@@ -171,7 +146,7 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
 
         toast.success(`${DOCUMENT_TYPES.find(d => d.id === documentType)?.label} uploaded successfully`);
       } else {
-        throw new Error(result.message || "Upload failed");
+        throw new Error(!result.success ? result.message : "Upload failed");
       }
     } catch (error) {
       toast.error(
@@ -186,7 +161,23 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
         },
       }));
     }
-  };
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (!activeDocumentType) {
+      toast.error("Please select a document type first");
+      return;
+    }
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      handleFileSelect(files[0], activeDocumentType);
+    }
+  }, [activeDocumentType, handleFileSelect]);
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

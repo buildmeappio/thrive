@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { CircleCheck } from "lucide-react";
@@ -15,7 +14,6 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
   onComplete,
   onCancel: _onCancel,
 }) => {
-  const router = useRouter();
   const { update } = useSession();
   const [loading, setLoading] = useState(false);
   const [agreements, setAgreements] = useState({

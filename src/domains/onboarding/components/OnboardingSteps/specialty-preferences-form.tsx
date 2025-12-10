@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import getExamTypesAction from "@/server/actions/getExamTypes";
 import { ExamTypesResponse, ExamType } from "@/server/types/examTypes";
 
-import { InitialFormData, LanguageOption } from "@/types/components";
+import { LanguageOption } from "@/types/components";
 import type { SpecialtyPreferencesFormProps } from "../../types";
 
 const SpecialtyPreferencesForm: React.FC<SpecialtyPreferencesFormProps> = ({
