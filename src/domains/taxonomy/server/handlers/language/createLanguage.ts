@@ -1,4 +1,4 @@
-import languageService from '../../language.service';
+import * as languageService from '../../language.service';
 import { CreateLanguageInput } from '../../../types/Language';
 
 const createLanguage = async (data: CreateLanguageInput) => {

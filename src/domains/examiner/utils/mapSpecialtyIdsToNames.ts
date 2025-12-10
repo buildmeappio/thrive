@@ -1,4 +1,4 @@
-import examinationTypeService from "@/domains/taxonomy/server/examinationType.service";
+import * as examinationTypeService from "@/domains/taxonomy/server/examinationType.service";
 import { ExaminerData } from "../types/ExaminerData";
 import logger from "@/utils/logger";
 

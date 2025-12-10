@@ -90,6 +90,8 @@ const mapStatus = {
 
 type Props = { examiner: ExaminerData; isApplication?: boolean };
 
+type ExaminerDetailComponent = React.FC<Props>;
+
 // Helper function to wrap icon in gradient circle with overlay
 const GradientIcon = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -102,8 +104,9 @@ const GradientIcon = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default function ExaminerDetail({ examiner, isApplication = false }: Props) {
-  logger.log(examiner.feeStructure)
+const ExaminerDetail: ExaminerDetailComponent = (props) => {
+  const { examiner, isApplication = false } = props;
+
   const router = useRouter();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
@@ -1187,4 +1190,6 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
       </div>
     </DashboardShell>
   );
-}
+};
+
+export default ExaminerDetail;

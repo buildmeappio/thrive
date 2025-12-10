@@ -125,13 +125,3 @@ export const getExaminationTypeById = async (id: string) => {
     throw HttpError.internalServerError("Internal server error");
   }
 };
-
-const examinationTypeService = {
-  createExaminationType,
-  updateExaminationType,
-  getExaminationTypes,
-  getExaminationTypeById,
-};
-
-export default examinationTypeService;
-

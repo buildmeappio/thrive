@@ -1,4 +1,4 @@
-import assessmentTypeService from '../../assessmentType.service';
+import * as assessmentTypeService from '../../assessmentType.service';
 import { CreateTaxonomyInput } from '../../../types/Taxonomy';
 
 const createAssessmentType = async (data: CreateTaxonomyInput) => {

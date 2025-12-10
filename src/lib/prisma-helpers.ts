@@ -20,11 +20,11 @@ export function handlePrismaError(error: unknown): never {
         throw new Error(`Database error: ${error.message}`);
     }
   }
-  
+
   if (error instanceof Prisma.PrismaClientValidationError) {
     throw new Error(`Validation error: ${error.message}`);
   }
-  
+
   // Re-throw unknown errors
   throw error;
 }

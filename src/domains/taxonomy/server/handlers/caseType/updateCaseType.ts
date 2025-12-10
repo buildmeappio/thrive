@@ -1,4 +1,4 @@
-import caseTypeService from '../../caseType.service';
+import * as caseTypeService from '../../caseType.service';
 import { UpdateCaseTypeInput } from '../../../types/CaseType';
 
 const updateCaseType = async (id: string, data: UpdateCaseTypeInput) => {

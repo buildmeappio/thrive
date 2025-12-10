@@ -1,4 +1,4 @@
-import taxonomyService from '../taxonomy.service';
+import * as taxonomyService from '../taxonomy.service';
 import { TaxonomyType } from '../../types/Taxonomy';
 import { HttpError } from '@/utils/httpError';
 import logger from "@/utils/logger";

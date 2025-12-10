@@ -1,4 +1,4 @@
-import caseStatusService from '../../caseStatus.service';
+import * as caseStatusService from '../../caseStatus.service';
 
 const getCaseStatuses = async () => {
   const result = await caseStatusService.getCaseStatuses();

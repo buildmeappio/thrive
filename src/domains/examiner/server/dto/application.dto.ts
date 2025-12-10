@@ -54,13 +54,13 @@ export class ApplicationDto {
       updatedAt: application.updatedAt.toISOString(),
       feeStructure: application.IMEFee !== null && application.recordReviewFee !== null && application.cancellationFee !== null && application.paymentTerms !== null
         ? {
-            id: application.id, // Use application ID as temporary ID
-            IMEFee: Number(application.IMEFee),
-            recordReviewFee: Number(application.recordReviewFee),
-            hourlyRate: application.hourlyRate ? Number(application.hourlyRate) : undefined,
-            cancellationFee: Number(application.cancellationFee),
-            paymentTerms: application.paymentTerms,
-          }
+          id: application.id, // Use application ID as temporary ID
+          IMEFee: Number(application.IMEFee),
+          recordReviewFee: Number(application.recordReviewFee),
+          hourlyRate: application.hourlyRate ? Number(application.hourlyRate) : undefined,
+          cancellationFee: Number(application.cancellationFee),
+          paymentTerms: application.paymentTerms,
+        }
         : undefined,
     };
   }

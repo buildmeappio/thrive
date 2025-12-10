@@ -122,13 +122,3 @@ export const getOrganizationTypeById = async (id: string) => {
     throw HttpError.internalServerError("Internal server error");
   }
 };
-
-const organizationTypeService = {
-  createOrganizationType,
-  updateOrganizationType,
-  getOrganizationTypes,
-  getOrganizationTypeById,
-};
-
-export default organizationTypeService;
-

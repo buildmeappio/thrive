@@ -1,8 +1,8 @@
-// domains/dashboard/service.ts
+"use server";
 import prisma from "@/lib/db";
 import { endOfMonth, startOfMonth, startOfDay, endOfDay, addDays, startOfWeek, endOfWeek } from "date-fns";
 import { CaseDetailDtoType } from "@/domains/case/types/CaseDetailDtoType";
-import { CaseDto } from "@/domains/case/server/dto/case.dto";
+import { toCaseDto } from "@/domains/case/server/dto/case.dto";
 
 class DashboardService {
     // New organizations "this month"
@@ -83,13 +83,13 @@ class DashboardService {
                     },
                 },
             },
-        orderBy: { createdAt: "desc" },
-        take: limit,
-    });
+            orderBy: { createdAt: "desc" },
+            take: limit,
+        });
 
-    return await CaseDto.toCaseDto(rows);
+        return await toCaseDto(rows);
 
-}
+    }
 
     // Waiting to be Scheduled cases for the dashboard table - filtered by "Waiting to be Scheduled" status
     async getWaitingCases(limit = 3): Promise<CaseDetailDtoType[]> {
@@ -145,14 +145,14 @@ class DashboardService {
                     },
                 },
             },
-        orderBy: { createdAt: "desc" },
-        take: limit,
-    });
+            orderBy: { createdAt: "desc" },
+            take: limit,
+        });
 
-    return await CaseDto.toCaseDto(rows);
-}
+        return await toCaseDto(rows);
+    }
 
-// Get count of cases waiting to be scheduled
+    // Get count of cases waiting to be scheduled
     async getWaitingToBeScheduledCount(): Promise<number> {
         const status = await prisma.caseStatus.findFirst({
             where: {
@@ -216,4 +216,28 @@ class DashboardService {
 }
 
 const dashboardService = new DashboardService();
-export default dashboardService;
+
+
+export async function getOrganizationCountThisMonth(): Promise<number> {
+    return await dashboardService.getOrganizationCountThisMonth();
+}
+
+export async function getActiveCaseCount(): Promise<number> {
+    return await dashboardService.getActiveCaseCount();
+}
+
+export async function getRecentCases(limit = 7): Promise<CaseDetailDtoType[]> {
+    return await dashboardService.getRecentCases(limit);
+}
+
+export async function getWaitingCases(limit = 3): Promise<CaseDetailDtoType[]> {
+    return await dashboardService.getWaitingCases(limit);
+}
+
+export async function getWaitingToBeScheduledCount(): Promise<number> {
+    return await dashboardService.getWaitingToBeScheduledCount();
+}
+
+export async function getDueCasesCount(period: "today" | "tomorrow" | "this-week"): Promise<number> {
+    return await dashboardService.getDueCasesCount(period);
+}

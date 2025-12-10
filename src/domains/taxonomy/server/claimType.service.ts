@@ -122,13 +122,3 @@ export const getClaimTypeById = async (id: string) => {
     throw HttpError.internalServerError("Internal server error");
   }
 };
-
-const claimTypeService = {
-  createClaimType,
-  updateClaimType,
-  getClaimTypes,
-  getClaimTypeById,
-};
-
-export default claimTypeService;
-

@@ -1,5 +1,5 @@
 import {
-  interpreterAvailabilityService,
+  saveCompleteAvailability ,
   type WeeklyHoursData,
   type OverrideHoursData,
 } from "../services/availability.service";
@@ -33,7 +33,7 @@ const saveAvailability = async (payload: SaveAvailabilityInput) => {
 
     const overrideHoursArray: OverrideHoursData[] = payload.overrideHours || [];
 
-    await interpreterAvailabilityService.saveCompleteAvailability(payload.interpreterId, {
+    await saveCompleteAvailability(payload.interpreterId, {
       weeklyHours: weeklyHoursArray,
       overrideHours: overrideHoursArray,
     });

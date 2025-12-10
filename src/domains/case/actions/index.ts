@@ -13,7 +13,7 @@ const caseActions = {
   getCaseStatuses,
   rejectCase,
   requestMoreInfo,
-  completeReview,
+  completeReview: completeReview,
 };
 
 export default caseActions;

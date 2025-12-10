@@ -1,4 +1,4 @@
-import claimTypeService from '../../claimType.service';
+import * as claimTypeService from '../../claimType.service';
 import { UpdateClaimTypeInput } from '../../../types/ClaimType';
 
 const updateClaimType = async (id: string, data: UpdateClaimTypeInput) => {

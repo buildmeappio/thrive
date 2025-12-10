@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export default async function ChaperoneDetailsPage({ params }: PageProps) {
