@@ -88,3 +88,18 @@ export const medicalSpecialtyOptions = [
   { value: "vascular-surgery", label: "Vascular Surgery" },
   { value: "other", label: "Other" },
 ];
+
+export const professionalTitleOptions = [
+  { value: "md", label: "MD (Doctor of Medicine)" },
+  { value: "mdcm", label: "MDCM (Doctor of Medicine and Master of Surgery)" },
+  { value: "do", label: "DO (Doctor of Osteopathic Medicine)" },
+  { value: "phd", label: "PhD (Doctor of Philosophy)" },
+  { value: "psyd", label: "PsyD (Doctor of Psychology)" },
+  { value: "dc", label: "DC (Doctor of Chiropractic)" },
+  { value: "ot", label: "OT (Occupational Therapist)" },
+  { value: "pt", label: "PT (Physiotherapist)" },
+  { value: "np", label: "NP (Nurse Practitioner)" },
+  { value: "rn", label: "RN (Registered Nurse)" },
+  { value: "rpn", label: "RPN (Registered Practical Nurse)" },
+  { value: "other", label: "Other" },
+];

@@ -11,11 +11,11 @@ export const getDashboardBookingsAction = async (
   try {
     const result = await getDashboardBookingsHandler(input);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in getDashboardBookings action:", error);
     return {
       success: false,
-      message: error.message || "Failed to fetch dashboard bookings",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch dashboard bookings",
     };
   }
 };

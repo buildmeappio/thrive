@@ -1,6 +1,6 @@
 import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus, SecureLinkStatus } from "@prisma/client";
 import { emailService } from "@/server";
 import ErrorMessages from "@/constants/ErrorMessages";
 
@@ -138,6 +138,26 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
         status: ExaminerStatus.SUBMITTED,
       },
     });
+
+    // Mark all secure links for this application as SUBMITTED
+    const applicationSecureLinks = await prisma.applicationSecureLink.findMany({
+      where: {
+        applicationId: examinerApplication.id,
+      },
+    });
+
+    if (applicationSecureLinks.length > 0) {
+      const secureLinkIds = applicationSecureLinks.map((link) => link.secureLinkId);
+      await prisma.secureLink.updateMany({
+        where: {
+          id: { in: secureLinkIds },
+        },
+        data: {
+          status: SecureLinkStatus.SUBMITTED,
+          submittedAt: new Date(),
+        },
+      });
+    }
 
     // Send confirmation email
     await emailService.sendEmail(

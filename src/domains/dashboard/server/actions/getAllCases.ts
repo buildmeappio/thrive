@@ -11,11 +11,11 @@ export const getAllCasesAction = async (
   try {
     const result = await getAllCasesHandler(input);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in getAllCases action:", error);
     return {
       success: false,
-      message: error.message || "Failed to fetch cases",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch cases",
     };
   }
 };

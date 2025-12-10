@@ -384,7 +384,16 @@ export async function POST(request: NextRequest) {
     log(
       `[${requestId}] 🚀 Starting upload process for ${files.length} file(s)...`
     );
-    const uploadedDocuments: any[] = [];
+    const uploadedDocuments: Array<{
+      id: string;
+      name: string;
+      originalName: string;
+      type: string;
+      size: number;
+      s3Key: string;
+      url?: string;
+      createdAt: Date;
+    }> = [];
     const uploadErrors: string[] = [];
 
     for (let i = 0; i < files.length; i++) {
@@ -440,7 +449,7 @@ export async function POST(request: NextRequest) {
           size: file.size,
           type: file.type,
           s3Key: s3Key,
-          url: cdnUrl,
+          url: cdnUrl || undefined,
           createdAt: document.createdAt,
         });
 

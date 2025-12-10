@@ -29,8 +29,8 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
 
   let isActivationComplete = false;
 
-  // Check if activation is complete (all 4 steps done)
-  if (examinerProfile?.activationStep === "payout") {
+  // Check if activation is complete (all 7 steps done)
+  if (examinerProfile?.activationStep === "notifications") {
     isActivationComplete = true;
   } else {
     isActivationComplete = false;
@@ -43,23 +43,23 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
 
   return (
     <SuspendedCheckWrapper>
-      <SidebarProvider>
-        <SearchProvider>
-          <Layout
-            isActivationComplete={isActivationComplete}
-            userName={userName}
-            userEmail={examinerProfile?.emailAddress || user.email || ""}>
-            <Suspense
-              fallback={
-                <div className="flex h-full w-full flex-1 items-center justify-center">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
-                </div>
-              }>
-              {children}
-            </Suspense>
-          </Layout>
-        </SearchProvider>
-      </SidebarProvider>
+    <SidebarProvider>
+      <SearchProvider>
+        <Layout
+          isActivationComplete={isActivationComplete}
+          userName={userName}
+          userEmail={examinerProfile?.emailAddress || user.email || ""}>
+          <Suspense
+            fallback={
+              <div className="flex h-full w-full flex-1 items-center justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
+              </div>
+            }>
+            {children}
+          </Suspense>
+        </Layout>
+      </SearchProvider>
+    </SidebarProvider>
     </SuspendedCheckWrapper>
   );
 };

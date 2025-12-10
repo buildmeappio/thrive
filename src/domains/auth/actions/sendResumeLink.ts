@@ -7,12 +7,12 @@ const sendResumeLink = async (payload: SendResumeLinkInput) => {
   try {
     const result = await authHandlers.sendResumeLink(payload);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in sendResumeLink action:", error);
     return {
       success: false,
       message:
-        error?.message ||
+        (error instanceof Error ? error.message : undefined) ||
         "Failed to send resume link. Please try again.",
     };
   }

@@ -134,8 +134,8 @@ export default function CasesTableWithPagination({
     if (!sorting.field) return filteredData;
 
     const sorted = [...filteredData].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number | Date | null;
+      let bValue: string | number | Date | null;
 
       switch (sorting.field) {
         case "caseNumber":

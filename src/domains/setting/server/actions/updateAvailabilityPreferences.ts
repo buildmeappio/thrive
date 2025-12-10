@@ -19,11 +19,11 @@ export const updateAvailabilityPreferencesAction = async () =>
         data: null,
         message: "Not implemented yet",
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         success: false as const,
         data: null,
-        message: error.message || "Failed to update availability preferences",
+        message: (error instanceof Error ? error.message : undefined) || "Failed to update availability preferences",
       };
     }
   };

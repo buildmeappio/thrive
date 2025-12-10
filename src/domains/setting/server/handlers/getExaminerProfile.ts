@@ -19,6 +19,14 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
   // Type assertion for new fields that might not be in generated types yet
   const profile = examinerProfile as typeof examinerProfile & {
     activationStep?: string | null;
+    professionalTitle?: string | null;
+    clinicName?: string | null;
+    clinicAddress?: string | null;
+    emailNewIMEs?: boolean | null;
+    emailInterviewRequests?: boolean | null;
+    emailPaymentPayout?: boolean | null;
+    smsNotifications?: boolean | null;
+    emailMarketing?: boolean | null;
   };
 
   // Get profile photo URL from Documents table if exists
@@ -42,15 +50,29 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
       id: profile.id,
       firstName: profile.account.user.firstName,
       lastName: profile.account.user.lastName,
+      emailAddress: profile.account.user.email,
       phoneNumber: profile.account.user.phone || "",
       landlineNumber: profile.landlineNumber || "",
-      emailAddress: profile.account.user.email,
       provinceOfResidence: profile.provinceOfResidence || "",
       mailingAddress: profile.mailingAddress || "",
+      professionalTitle: profile.professionalTitle || "",
+      yearsOfExperience: profile.yearsOfIMEExperience || "",
+      clinicName: profile.clinicName || "",
+      clinicAddress: profile.clinicAddress || "",
       bio: profile.bio || "",
       profilePhotoId: profile.account.user.profilePhotoId || null,
       profilePhotoUrl: profilePhotoUrl,
       activationStep: profile.activationStep || null,
+      assessmentTypes: profile.assessmentTypes || [],
+      acceptVirtualAssessments: profile.acceptVirtualAssessments ?? true,
+      maxTravelDistance: profile.maxTravelDistance || null,
+      assessmentTypeOther: profile.assessmentTypeOther || null,
+      // Notification settings - return null if not set, so form can use defaults
+      emailNewIMEs: profile.emailNewIMEs ?? null,
+      emailInterviewRequests: profile.emailInterviewRequests ?? null,
+      emailPaymentPayout: profile.emailPaymentPayout ?? null,
+      smsNotifications: profile.smsNotifications ?? null,
+      emailMarketing: profile.emailMarketing ?? null,
     },
   };
 };

@@ -17,8 +17,8 @@ export default async function middleware(request: NextRequest) {
   log("Middleware triggered for:", pathname);
   log("Token activationStep:", token?.activationStep);
 
-  // Check if user's activation is complete
-  const isActivationComplete = token?.activationStep === "payout";
+  // Check if user's activation is complete (all 7 steps done)
+  const isActivationComplete = token?.activationStep === "notifications";
 
   // Check if current path is a protected route
   const isProtectedRoute = protectedRoutes.some((route) =>

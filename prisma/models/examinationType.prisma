@@ -1,0 +1,13 @@
+model ExaminationType {
+  id           String                   @id @unique @default(uuid()) @db.Uuid
+  name         String                   @unique @map("name") @db.VarChar(255)
+  shortForm    String?                  @map("short_form") @db.VarChar(255)
+  description  String?                  @map("description") @db.Text
+  createdAt    DateTime                 @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime                 @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt    DateTime?                @map("deleted_at") @db.Timestamptz()
+  examinations Examination[]            @relation("ExaminationType")
+  benefits     ExaminationTypeBenefit[] @relation("ExaminationTypeBenefits")
+
+  @@map("examination_types")
+}

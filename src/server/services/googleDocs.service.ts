@@ -1,5 +1,6 @@
 import { google } from "googleapis";
 import { ReportFormData, CaseOverviewData } from "@/domains/reports/types";
+import { GoogleDocsBatchUpdateRequest } from "@/types/google-docs";
 
 // Initialize Google Docs API
 // You'll need to set up service account credentials in your environment variables:
@@ -100,8 +101,8 @@ class GoogleDocsService {
   private buildDocumentRequests(
     reportData: ReportFormData,
     caseData: CaseOverviewData
-  ): any[] {
-    const requests: any[] = [];
+  ): GoogleDocsBatchUpdateRequest["requests"] {
+    const requests: GoogleDocsBatchUpdateRequest["requests"] = [];
     let index = 1;
 
     // Helper function to add text

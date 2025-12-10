@@ -4,7 +4,57 @@ import prisma from "@/lib/db";
 import emailService from "@/server/services/email.service";
 import { ENV } from "@/constants/variables";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { convertHtmlToPdf } from "../utils/htmlToPdf";
+import { S3StreamChunk } from "@/types/api";
+
+// Helper function to convert S3 stream to Buffer
+async function streamToBuffer(body: S3StreamChunk | null | undefined): Promise<Buffer> {
+  if (!body) {
+    throw new Error("S3 response body is empty");
+  }
+  
+  // If it has transformToByteArray method (AWS SDK v3)
+  const bodyWithTransform = body as unknown as { transformToByteArray?: () => Promise<Uint8Array> };
+  if (typeof bodyWithTransform.transformToByteArray === "function") {
+    const bytes = await bodyWithTransform.transformToByteArray();
+    return Buffer.from(bytes);
+  }
+  
+  // If it's a Node.js stream
+  const bodyWithOn = body as unknown as { on?: (event: string, callback: (chunk: Buffer) => void) => void };
+  if (typeof bodyWithOn.on === "function") {
+    return await new Promise<Buffer>((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      (body as unknown as { on: (event: string, callback: (chunk: Buffer) => void) => void }).on("data", (chunk: Buffer) => chunks.push(chunk));
+      (body as unknown as { on: (event: string, callback: (error: Error) => void) => void }).on("error", reject);
+      (body as unknown as { on: (event: string, callback: () => void) => void }).on("end", () => resolve(Buffer.concat(chunks)));
+    });
+  }
+  
+  // For ReadableStream (Web Streams API)
+  const bodyWithReader = body as unknown as { getReader?: () => ReadableStreamDefaultReader<Uint8Array> };
+  if (bodyWithReader.getReader) {
+    const reader = bodyWithReader.getReader();
+    const chunks: Uint8Array[] = [];
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+    }
+    return Buffer.concat(chunks);
+  }
+  
+  // Fallback: try to read as async iterator
+  const chunks: Uint8Array[] = [];
+  try {
+    for await (const chunk of body as unknown as AsyncIterable<Uint8Array>) {
+      chunks.push(chunk instanceof Buffer ? chunk : Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
+  } catch {
+    // If all methods fail, throw an error
+    throw new Error("Unable to convert S3 stream to buffer: unsupported stream type");
+  }
+}
 
 /**
  * Action called after examiner signs the contract
@@ -104,19 +154,44 @@ export const signContractByExaminer = async (
     // Send signed contract as PDF attachment to examiner
     let contractPdfBuffer: Buffer | undefined;
     
-    // Fetch the signed contract HTML from S3 and convert to PDF
-    if (contractId) {
+    // Prefer using the base64 PDF directly (more reliable than S3 fetch)
+    // The base64 PDF is generated client-side and is guaranteed to be valid
+    if (_signedPdfBase64) {
+      try {
+        contractPdfBuffer = Buffer.from(_signedPdfBase64, "base64");
+        
+        // Validate PDF (should start with "%PDF")
+        if (contractPdfBuffer.length > 4) {
+          const pdfHeader = contractPdfBuffer.slice(0, 4).toString('ascii');
+          if (pdfHeader !== '%PDF') {
+            console.error("❌ Invalid PDF from base64 - header is:", pdfHeader, "Expected: %PDF");
+            // Don't throw, try S3 fallback instead
+            contractPdfBuffer = undefined;
+          } else {
+            console.log("✅ Using provided base64 PDF, size:", contractPdfBuffer.length, "bytes, header:", pdfHeader);
+          }
+        } else {
+          console.error("❌ PDF from base64 too small, size:", contractPdfBuffer.length);
+          contractPdfBuffer = undefined;
+        }
+      } catch (base64Error) {
+        console.error("❌ Error converting base64 PDF:", base64Error);
+        contractPdfBuffer = undefined;
+      }
+    }
+    
+    // Fallback: Try fetching from S3 if base64 PDF is not available or invalid
+    if (!contractPdfBuffer && contractId) {
       try {
         // Wait a bit for S3 upload to complete
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         const contract = await prisma.contract.findUnique({
           where: { id: contractId },
-          select: { signedHtmlS3Key: true },
         });
 
-        if (contract?.signedHtmlS3Key) {
-          const s3Key = contract.signedHtmlS3Key;
+        if (contract?.signedPdfS3Key) {
+          const s3Key = contract.signedPdfS3Key;
           const s3Client = new S3Client({
             region: process.env.AWS_REGION,
           });
@@ -128,45 +203,34 @@ export const signContractByExaminer = async (
 
           const s3Response = await s3Client.send(getObjectCommand);
           if (s3Response.Body) {
-            const chunks: Uint8Array[] = [];
-            for await (const chunk of s3Response.Body as any) {
-              chunks.push(chunk);
-            }
-            const fileBuffer = Buffer.concat(chunks);
-            
-            // Check if file is already PDF or HTML
-            const isPdf = s3Key.endsWith('.pdf');
-            const isHtml = s3Key.endsWith('.html');
-            
-            if (isPdf) {
-              // Already PDF, use as is
-              contractPdfBuffer = fileBuffer;
-              console.log("✅ Contract PDF fetched from S3, size:", contractPdfBuffer.length);
-            } else if (isHtml) {
-              // Convert HTML to PDF
-              console.log("📄 Converting HTML contract to PDF...");
-              const htmlContent = fileBuffer.toString('utf-8');
-              contractPdfBuffer = await convertHtmlToPdf(htmlContent);
-              console.log("✅ Contract HTML converted to PDF, size:", contractPdfBuffer.length);
-            } else {
-              // Try to parse as HTML
-              try {
-                const htmlContent = fileBuffer.toString('utf-8');
-                contractPdfBuffer = await convertHtmlToPdf(htmlContent);
-                console.log("✅ Contract converted to PDF, size:", contractPdfBuffer.length);
-              } catch (convertError) {
-                console.error("❌ Error converting contract to PDF:", convertError);
+            try {
+              // Convert S3 stream to buffer using helper function
+              const s3Buffer = await streamToBuffer(s3Response.Body);
+              
+              // Validate PDF (should start with "%PDF")
+              if (s3Buffer.length > 4) {
+                const pdfHeader = s3Buffer.slice(0, 4).toString('ascii');
+                if (pdfHeader === '%PDF') {
+                  contractPdfBuffer = s3Buffer;
+                  console.log("✅ Contract PDF fetched from S3, size:", contractPdfBuffer.length, "bytes, header:", pdfHeader);
+                } else {
+                  console.error("❌ Invalid PDF file in S3 - header is:", pdfHeader, "Expected: %PDF");
+                  console.warn("⚠️ S3 file appears to be corrupted or wrong format, skipping S3 fallback");
+                }
+              } else {
+                console.error("❌ PDF file in S3 too small, size:", s3Buffer.length);
               }
+            } catch (bufferError) {
+              console.error("❌ Error converting S3 stream to buffer:", bufferError);
             }
           } else {
             console.warn("⚠️ S3 response body is empty for key:", s3Key);
           }
         } else {
-          console.warn("⚠️ Contract signedHtmlS3Key not found for contractId:", contractId);
+          console.warn("⚠️ Contract signedPdfS3Key not found for contractId:", contractId);
         }
       } catch (s3Error) {
-        console.error("❌ Error fetching contract from S3:", s3Error);
-        // Continue without attachment if fetch fails
+        console.error("❌ Error fetching contract PDF from S3:", s3Error);
       }
     }
 
@@ -207,11 +271,11 @@ export const signContractByExaminer = async (
       success: true,
       message: "Contract signed successfully and admin notified",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in signContractByExaminer:", error);
     return {
       success: false,
-      message: error?.message || "Failed to update contract signature status",
+      message: error instanceof Error ? error.message : "Failed to update contract signature status",
     };
   }
 };

@@ -2,12 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import { MapPin } from "lucide-react";
 import { useGoogleMaps } from "@/lib/useGoogleMaps";
-
-declare global {
-  interface Window {
-    google: any;
-  }
-}
+import { GoogleMapsPlaceData, GoogleMapsAutocompleteOptions, GoogleMapsAddressComponent } from "@/types/google-maps";
 
 interface GoogleMapsInputProps {
   value?: string;
@@ -17,13 +12,7 @@ interface GoogleMapsInputProps {
   required?: boolean;
   className?: string;
   error?: string;
-  onPlaceSelect?: (placeData: {
-    formattedAddress: string;
-    latitude: number;
-    longitude: number;
-    components: any;
-    raw: any;
-  }) => void;
+  onPlaceSelect?: (placeData: GoogleMapsPlaceData) => void;
   from?: string;
   province?: string; // Filter addresses by province
 }
@@ -67,7 +56,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
 
     try {
       // Initialize Google Maps Autocomplete for Canada only
-      const autocompleteOptions: any = {
+      const autocompleteOptions: GoogleMapsAutocompleteOptions = {
         fields: ["address_components", "formatted_address", "geometry", "name"],
         types: ["address"],
         componentRestrictions: { country: "CA" }, // Restrict to Canada only
@@ -117,11 +106,11 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
       // Remove ", Canada" from the end of the address
       formattedAddress = formattedAddress.replace(/, Canada$/i, "");
 
-      const placeData = {
+      const placeData: GoogleMapsPlaceData = {
         formattedAddress: formattedAddress,
         latitude: place.geometry.location?.lat() || 0,
         longitude: place.geometry.location?.lng() || 0,
-        components: place.address_components,
+        components: place.address_components as GoogleMapsAddressComponent[] | undefined,
         raw: place,
       };
 

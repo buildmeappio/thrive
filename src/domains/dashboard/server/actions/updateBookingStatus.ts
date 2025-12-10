@@ -12,11 +12,11 @@ export const updateBookingStatusAction = async (
   try {
     const result = await updateBookingStatusHandler(input);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in updateBookingStatus action:", error);
     return {
       success: false,
-      message: error.message || "Failed to update booking status",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to update booking status",
     };
   }
 };

@@ -23,11 +23,11 @@ const getCaseDetails = async (
       success: true,
       data: result,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in getCaseDetails handler:", error);
     return {
       success: false,
-      message: error.message || "Failed to fetch case details",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch case details",
     };
   }
 };

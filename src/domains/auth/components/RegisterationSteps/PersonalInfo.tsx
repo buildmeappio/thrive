@@ -2,7 +2,11 @@
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui";
 import { Mail, MapPin, User, PhoneCall, Languages } from "lucide-react";
-import { ContinueButton, ProgressIndicator, SaveAndContinueButton } from "@/components";
+import {
+  ContinueButton,
+  ProgressIndicator,
+  SaveAndContinueButton,
+} from "@/components";
 import {
   useRegistrationStore,
   RegistrationData,
@@ -49,10 +53,12 @@ const PersonalInfo: React.FC<RegStepProps> = ({
       try {
         setLoadingLanguages(true);
         const languagesData = await getLanguages();
-        const languageOptions = languagesData.map((lang: any) => ({
-          value: lang.id,
-          label: lang.name,
-        }));
+        const languageOptions = languagesData.map(
+          (lang: { id: string; name: string }) => ({
+            value: lang.id,
+            label: lang.name,
+          })
+        );
         setLanguages(languageOptions);
       } catch (error) {
         console.error("Failed to fetch languages:", error);
@@ -309,7 +315,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
         gradientTo="#00A8FF"
       />
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="space-y-2 pb-3 md:px-0">
+        <div className="space-y-4 pb-6 md:px-0">
           <div className="pt-0 md:pt-0">
             <h3 className="mt-2 mb-0 text-center text-[22px] font-medium text-[#140047] md:mt-5 md:mb-0 md:text-[28px]">
               Enter Your Personal Details
@@ -418,7 +424,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
             </div>
           </div>
 
-          <div className="mt-3 flex flex-row justify-center gap-3 px-2 md:mt-5 md:justify-between md:gap-4 md:px-0">
+          <div className="mt-3 flex flex-row justify-center gap-3 px-2 md:mt-5 md:justify-end md:gap-4 md:px-0">
             <SaveAndContinueButton
               onClick={() => {
                 // Get current form values and save them along with store data

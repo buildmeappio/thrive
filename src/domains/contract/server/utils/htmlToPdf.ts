@@ -7,10 +7,10 @@
 export async function convertHtmlToPdf(htmlContent: string): Promise<Buffer> {
   try {
     // Dynamic import to avoid loading puppeteer if not installed
-    let puppeteer: any;
+    let puppeteer: typeof import("puppeteer") | null = null;
     try {
       puppeteer = await import("puppeteer");
-    } catch (_importError) {
+    } catch {
       throw new Error(
         "Puppeteer is not installed. Please install it by running: npm install puppeteer"
       );

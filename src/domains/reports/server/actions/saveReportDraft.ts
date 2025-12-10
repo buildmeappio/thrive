@@ -50,11 +50,11 @@ export async function saveReportDraftAction(
     });
 
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in saveReportDraft action:", error);
     return {
       success: false,
-      message: error.message || "Failed to save report draft",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to save report draft",
     };
   }
 }

@@ -39,7 +39,7 @@ const IMEExperince: React.FC<RegStepProps> = ({
         setLoadingAssessmentTypes(true);
         const assessmentTypesData = await authActions.getAssessmentTypes();
         const assessmentTypeOptionsData = assessmentTypesData.map(
-          (type: any) => ({
+          (type: { id: string; name: string }) => ({
             value: type.id,
             label: type.name,
           })

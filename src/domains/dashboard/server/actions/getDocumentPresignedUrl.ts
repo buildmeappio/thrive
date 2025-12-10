@@ -36,11 +36,11 @@ export const getDocumentPresignedUrlAction = async (
       success: true,
       url,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in getDocumentPresignedUrl action:", error);
     return {
       success: false,
-      error: error.message || "Failed to generate presigned URL",
+      error: (error instanceof Error ? error.message : undefined) || "Failed to generate presigned URL",
     };
   }
 };

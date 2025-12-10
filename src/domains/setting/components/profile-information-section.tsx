@@ -194,14 +194,14 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormPhoneInput
               name="phoneNumber"
-              label="Phone Number"
+              label="Cell Phone"
               required
               className="bg-[#F9F9F9]"
             />
 
             <FormPhoneInput
               name="landlineNumber"
-              label="Landline Number"
+              label="Work Phone"
               className="bg-[#F9F9F9]"
               icon={PhoneCall}
             />

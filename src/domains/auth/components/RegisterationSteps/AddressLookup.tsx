@@ -21,6 +21,7 @@ import {
 import { UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { provinces } from "@/constants/options";
+import { GoogleMapsPlaceData, GoogleMapsAddressComponent } from "@/types/google-maps";
 
 const AddressLookup: React.FC<RegStepProps> = ({
   onNext,
@@ -72,19 +73,13 @@ const AddressLookup: React.FC<RegStepProps> = ({
   ]);
 
   // Handle place selection from Google Maps
-  const handlePlaceSelect = (placeData: {
-    formattedAddress: string;
-    latitude: number;
-    longitude: number;
-    components: any[];
-    raw: any;
-  }) => {
+  const handlePlaceSelect = (placeData: GoogleMapsPlaceData) => {
     const components = placeData.components || [];
 
     // Extract address components from Google Places API response
     const extractComponent = (type: string, shortName = false) => {
       const component = components.find(
-        (comp: any) => comp.types && comp.types.includes(type)
+        (comp: GoogleMapsAddressComponent) => comp.types && comp.types.includes(type)
       );
       return component
         ? shortName

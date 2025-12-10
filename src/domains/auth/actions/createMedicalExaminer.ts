@@ -7,12 +7,12 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
   try {
     const result = await authHandlers.createMedicalExaminer(payload);
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in createMedicalExaminer action:", error);
     return {
       success: false,
       message:
-        error?.message ||
+        (error instanceof Error ? error.message : undefined) ||
         "Failed to create medical examiner profile. Please try again.",
     };
   }

@@ -250,7 +250,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
       // For new applications, use applicationId; for updates, use applicationId or examinerProfileId
       const profileId = isEditMode
         ? applicationId || examinerProfileId || ""
-        : (result as any).applicationId || "";
+        : (result as { applicationId?: string }).applicationId || "";
 
       // Fire and forget - don't wait for email to complete
       authActions

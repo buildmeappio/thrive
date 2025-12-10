@@ -31,11 +31,11 @@ const submitReport = async (
       googleDocId: result.googleDocId,
       htmlContent: result.htmlContent,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in submitReport handler:", error);
     return {
       success: false,
-      message: error.message || "Failed to submit report",
+      message: (error instanceof Error ? error.message : undefined) || "Failed to submit report",
     };
   }
 };

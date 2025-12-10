@@ -135,19 +135,22 @@ export function convertTimeSlotToLocal(
   };
 }
 
+import { WeeklyHours, TimeSlot, AvailabilityPreferences } from "@/types/time";
+
 /**
  * Convert weekly hours data from local to UTC
  * @param weeklyHours - Weekly hours object with time slots in local format
  * @returns Weekly hours object with time slots in UTC format
  */
-export function convertWeeklyHoursToUTC(weeklyHours: any): any {
-  const converted: any = {};
+export function convertWeeklyHoursToUTC(weeklyHours: WeeklyHours): WeeklyHours {
+  const converted: WeeklyHours = {} as WeeklyHours;
 
   for (const day in weeklyHours) {
-    if (weeklyHours[day]) {
-      converted[day] = {
-        enabled: weeklyHours[day].enabled,
-        timeSlots: weeklyHours[day].timeSlots.map((slot: any) =>
+    if (weeklyHours[day as keyof WeeklyHours]) {
+      const dayData = weeklyHours[day as keyof WeeklyHours];
+      converted[day as keyof WeeklyHours] = {
+        enabled: dayData.enabled,
+        timeSlots: dayData.timeSlots.map((slot: TimeSlot) =>
           convertTimeSlotToUTC(slot)
         ),
       };
@@ -162,14 +165,15 @@ export function convertWeeklyHoursToUTC(weeklyHours: any): any {
  * @param weeklyHours - Weekly hours object with time slots in UTC format
  * @returns Weekly hours object with time slots in local format
  */
-export function convertWeeklyHoursToLocal(weeklyHours: any): any {
-  const converted: any = {};
+export function convertWeeklyHoursToLocal(weeklyHours: WeeklyHours): WeeklyHours {
+  const converted: WeeklyHours = {} as WeeklyHours;
 
   for (const day in weeklyHours) {
-    if (weeklyHours[day]) {
-      converted[day] = {
-        enabled: weeklyHours[day].enabled,
-        timeSlots: weeklyHours[day].timeSlots.map((slot: any) =>
+    if (weeklyHours[day as keyof WeeklyHours]) {
+      const dayData = weeklyHours[day as keyof WeeklyHours];
+      converted[day as keyof WeeklyHours] = {
+        enabled: dayData.enabled,
+        timeSlots: dayData.timeSlots.map((slot: TimeSlot) =>
           convertTimeSlotToLocal(slot)
         ),
       };
@@ -212,7 +216,7 @@ export function convertOverrideHoursToLocal(
  * @param data - Availability preferences with time slots in local format
  * @returns Availability preferences with time slots in UTC format
  */
-export function convertAvailabilityToUTC(data: any): any {
+export function convertAvailabilityToUTC(data: AvailabilityPreferences): AvailabilityPreferences {
   return {
     ...data,
     weeklyHours: data.weeklyHours ? convertWeeklyHoursToUTC(data.weeklyHours) : undefined,
@@ -225,7 +229,7 @@ export function convertAvailabilityToUTC(data: any): any {
  * @param data - Availability preferences with time slots in UTC format
  * @returns Availability preferences with time slots in local format
  */
-export function convertAvailabilityToLocal(data: any): any {
+export function convertAvailabilityToLocal(data: AvailabilityPreferences): AvailabilityPreferences {
   return {
     ...data,
     weeklyHours: data.weeklyHours ? convertWeeklyHoursToLocal(data.weeklyHours) : undefined,

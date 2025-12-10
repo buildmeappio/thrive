@@ -140,17 +140,19 @@ PhoneInput.displayName = "PhoneInput";
 
 export default PhoneInput;
 
+import { PhoneDigits, PhoneWithCountryCode, ParsedPhoneNumber } from "@/types/phone";
+
 export const validateCanadianPhoneNumber = (
   value: string | undefined
 ): boolean => {
   if (!value) return false;
 
   try {
-    const digits: any = value.replace(/\D/g, "");
+    const digits: PhoneDigits = value.replace(/\D/g, "");
 
     if (digits.length !== 10) return false;
 
-    const phoneWithCountryCode: any = `+1${digits}`;
+    const phoneWithCountryCode: PhoneWithCountryCode = `+1${digits}`;
 
     return isValidPhoneNumber(phoneWithCountryCode, "CA");
   } catch {
@@ -160,9 +162,9 @@ export const validateCanadianPhoneNumber = (
 
 export const getE164PhoneNumber = (value: string): string | null => {
   try {
-    const digits: any = value.replace(/\D/g, "");
+    const digits: PhoneDigits = value.replace(/\D/g, "");
     if (digits.length === 10) {
-      const phoneNumber: any = parsePhoneNumber(`+1${digits}`, "CA");
+      const phoneNumber: ParsedPhoneNumber = parsePhoneNumber(`+1${digits}`, "CA");
       return phoneNumber?.format("E.164") || null;
     }
     return null;

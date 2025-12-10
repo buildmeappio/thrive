@@ -1,5 +1,6 @@
 import { google } from "googleapis";
 import { ENV } from "@/constants/variables";
+import { GoogleApiError, GoogleDocsElement, GoogleDocsParagraphElement, GoogleDocsBatchUpdateRequest, GoogleDocsTableElement } from "@/types/google-docs";
 
 /**
  * Google Docs API service for contract generation
@@ -64,9 +65,10 @@ export async function copyTemplate(
   } catch (error) {
     console.error("Error copying Google Doc template:", error);
     if (error instanceof Error) {
+      const apiError = error as GoogleApiError;
       if (
         error.message.includes("File not found") ||
-        (error as any).code === 404
+        apiError.code === 404
       ) {
         throw new Error(
           `Template not found. Please verify GOOGLE_REPORT_TEMPLATE_ID is correct.`
@@ -74,7 +76,7 @@ export async function copyTemplate(
       }
       if (
         error.message.includes("insufficient permissions") ||
-        (error as any).code === 403
+        apiError.code === 403
       ) {
         throw new Error(
           `Insufficient permissions to copy template. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
@@ -130,9 +132,10 @@ export async function replacePlaceholders(
   } catch (error) {
     console.error("Error replacing placeholders:", error);
     if (error instanceof Error) {
+      const apiError = error as GoogleApiError;
       if (
         error.message.includes("File not found") ||
-        (error as any).code === 404
+        apiError.code === 404
       ) {
         throw new Error(
           `Document not found. Please verify the document ID is correct.`
@@ -140,7 +143,7 @@ export async function replacePlaceholders(
       }
       if (
         error.message.includes("insufficient permissions") ||
-        (error as any).code === 403
+        apiError.code === 403
       ) {
         throw new Error(
           `Insufficient permissions to update document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
@@ -186,22 +189,24 @@ export async function insertImageAtPlaceholder(
     let placeholderIndex: number | null = null;
     let placeholderEndIndex: number | null = null;
 
-    const findPlaceholder = (content: any[]): void => {
+    const findPlaceholder = (content: GoogleDocsElement[]): void => {
       for (const element of content) {
         if (element.paragraph && element.paragraph.elements) {
           for (const paragraphElement of element.paragraph.elements) {
             if (paragraphElement.textRun && paragraphElement.textRun.content) {
               const text = paragraphElement.textRun.content;
               if (text.includes(placeholderText)) {
-                placeholderIndex = paragraphElement.startIndex || 0;
-                placeholderEndIndex = paragraphElement.endIndex || 0;
+                const elementWithIndex = paragraphElement as GoogleDocsParagraphElement & { startIndex?: number; endIndex?: number };
+                placeholderIndex = elementWithIndex.startIndex || 0;
+                placeholderEndIndex = elementWithIndex.endIndex || 0;
                 return;
               }
             }
           }
         }
         if (element.table) {
-          for (const row of element.table.tableRows || []) {
+          const tableElement = element as GoogleDocsTableElement;
+          for (const row of tableElement.table?.tableRows || []) {
             for (const cell of row.tableCells || []) {
               if (cell.content) {
                 findPlaceholder(cell.content);
@@ -213,7 +218,7 @@ export async function insertImageAtPlaceholder(
       }
     };
 
-    findPlaceholder(doc.data.body.content);
+    findPlaceholder(doc.data.body.content as GoogleDocsElement[]);
 
     if (placeholderIndex === null || placeholderEndIndex === null) {
       console.warn(
@@ -223,15 +228,15 @@ export async function insertImageAtPlaceholder(
     }
 
     // Calculate actual text boundaries within the element
-    const textContent = doc.data.body.content
-      .flatMap((element: any) => element.paragraph?.elements || [])
+    const textContent = (doc.data.body.content as GoogleDocsElement[])
+      .flatMap((element: GoogleDocsElement) => element.paragraph?.elements || [])
       .find(
-        (el: any) =>
+        (el: GoogleDocsParagraphElement) =>
           el.textRun?.content?.includes(placeholderText) &&
           el.startIndex === placeholderIndex
       );
 
-    if (!textContent) {
+    if (!textContent || !textContent.textRun?.content) {
       console.warn(
         `Could not find text content for placeholder "${placeholderText}"`
       );
@@ -244,7 +249,7 @@ export async function insertImageAtPlaceholder(
     const actualEndIndex = actualStartIndex + placeholderText.length;
 
     // Build requests to replace the placeholder with an image
-    const requests: any[] = [
+    const requests: GoogleDocsBatchUpdateRequest["requests"] = [
       // Delete the placeholder text
       {
         deleteContentRange: {
@@ -313,9 +318,10 @@ export async function exportAsHTML(documentId: string): Promise<string> {
   } catch (error) {
     console.error("Error exporting HTML:", error);
     if (error instanceof Error) {
+      const apiError = error as GoogleApiError;
       if (
         error.message.includes("File not found") ||
-        (error as any).code === 404
+        apiError.code === 404
       ) {
         throw new Error(
           `Document not found. Please verify the document ID is correct.`
@@ -323,7 +329,7 @@ export async function exportAsHTML(documentId: string): Promise<string> {
       }
       if (
         error.message.includes("insufficient permissions") ||
-        (error as any).code === 403
+        apiError.code === 403
       ) {
         throw new Error(
           `Insufficient permissions to export document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`

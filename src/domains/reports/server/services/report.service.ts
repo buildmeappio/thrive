@@ -249,11 +249,11 @@ class ReportService {
       });
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving report draft:", error);
       return {
         success: false,
-        error: error.message || "Failed to save report draft",
+        error: (error instanceof Error ? error.message : undefined) || "Failed to save report draft",
       };
     }
   }
@@ -345,7 +345,7 @@ class ReportService {
         const result = await generateReportFromTemplate(reportDocData);
         googleDocId = result.documentId;
         htmlContent = result.htmlContent;
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error generating Google Doc:", error);
         // Continue with submission even if Google Doc generation fails
         // You can decide to fail here instead if Google Doc is critical
@@ -423,11 +423,11 @@ class ReportService {
         googleDocId,
         htmlContent,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error submitting report:", error);
       return {
         success: false,
-        error: error.message || "Failed to submit report",
+        error: (error instanceof Error ? error.message : undefined) || "Failed to submit report",
       };
     }
   }

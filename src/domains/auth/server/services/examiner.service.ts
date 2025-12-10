@@ -2,6 +2,7 @@ import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
 import ErrorMessages from "@/constants/ErrorMessages";
 import { ExaminerStatus } from "@prisma/client";
+import { MedicalLicenseDocument } from "@/types/components";
 
 class ExaminerService {
   async getExaminerProfileById(examinerProfileId: string) {
@@ -122,7 +123,7 @@ class ExaminerService {
       }
 
       // Fetch medical license documents by IDs (support multiple documents)
-      let medicalLicenseDocuments: any[] = [];
+      let medicalLicenseDocuments: MedicalLicenseDocument[] = [];
       if (examinerProfile.medicalLicenseDocumentIds && examinerProfile.medicalLicenseDocumentIds.length > 0) {
         medicalLicenseDocuments = await prisma.documents.findMany({
           where: {

@@ -3,6 +3,7 @@ import { verifyExaminerInfoToken } from "@/lib/jwt";
 import { examinerService } from "../services";
 import ErrorMessages from "@/constants/ErrorMessages";
 import prisma from "@/lib/db";
+import { MedicalLicenseDocument } from "@/types/components";
 
 export type GetExaminerProfileDetailsInput = {
   token: string;
@@ -39,7 +40,7 @@ const getExaminerProfileDetails = async (
     }
 
     // Fetch medical license documents by IDs
-    let medicalLicenseDocuments: any[] = [];
+    let medicalLicenseDocuments: MedicalLicenseDocument[] = [];
     if (application.medicalLicenseDocumentIds && application.medicalLicenseDocumentIds.length > 0) {
       medicalLicenseDocuments = await prisma.documents.findMany({
         where: {

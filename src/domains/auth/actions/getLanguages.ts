@@ -14,7 +14,7 @@ const getLanguages = async () => {
   try {
     const languages = await authHandlers.getLanguages();
     // Only include languages where the name is NOT a uuid
-    return languages.filter((lang: any) => lang.name && !isUuid(lang.name));
+    return languages.filter((lang: { name: string; [key: string]: unknown }) => lang.name && !isUuid(lang.name));
   } catch (error) {
     console.error(error);
     throw new Error(ErrorMessages.LANGUAGES_NOT_FOUND);
