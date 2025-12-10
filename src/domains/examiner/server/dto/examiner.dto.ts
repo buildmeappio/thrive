@@ -11,7 +11,7 @@ type ExaminerWithRelations = ExaminerProfile & {
   insuranceDocument: Documents | null;
   redactedIMEReportDocument: Documents | null;
   examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
-  feeStructure: ExaminerFeeStructure[];
+  feeStructure: ExaminerFeeStructure[] | null;
   contracts?: Array<any>; // Optional contracts relation
   application?: {
     status: ExaminerStatus;

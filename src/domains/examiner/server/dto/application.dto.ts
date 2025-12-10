@@ -49,7 +49,7 @@ export class ApplicationDto {
       agreeToTerms: application.agreeToTerms ?? false,
       contractSignedByExaminerAt: application.contractSignedByExaminerAt?.toISOString() || undefined,
       contractConfirmedByAdminAt: application.contractConfirmedByAdminAt?.toISOString() || undefined,
-      status: application.status,
+      status: application.status as ExaminerData["status"], // Cast ExaminerStatus to ServerStatus (DRAFT is filtered out in queries)
       createdAt: application.createdAt.toISOString(),
       updatedAt: application.updatedAt.toISOString(),
       feeStructure: application.IMEFee !== null && application.recordReviewFee !== null && application.cancellationFee !== null && application.paymentTerms !== null

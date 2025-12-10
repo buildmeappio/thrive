@@ -166,9 +166,9 @@ class ContractService {
         },
       };
 
-      // 4. Create Google Doc, merge placeholders, and export HTML
+      // 4. Create Google Doc, merge placeholders, and export HTML and PDF
       logger.log("📄 Creating contract from Google Doc template...");
-      const { documentId, htmlContent, driveHtmlId } = await createContractDocument(
+      const { documentId, htmlContent, pdfContent, driveHtmlId } = await createContractDocument(
         template.currentVersion.googleDocTemplateId,
         template.currentVersion.googleDocFolderId,
         googleDocsContractData,
@@ -193,11 +193,17 @@ class ContractService {
       // 6. Calculate hashes - convert HTML string to Buffer for hashing
       const htmlBuffer = Buffer.from(htmlContent, 'utf-8');
       const htmlHash = sha256Buffer(htmlBuffer);
+      const pdfHash = sha256Buffer(pdfContent);
       const dataHash = hashContractData("", contractData);
 
-      // 7. Upload unsigned HTML to S3
-      const fileName = `application/${applicationId}/unsigned_${Date.now()}.html`;
-      const s3Key = await uploadToS3(htmlBuffer, fileName, "text/html", "contracts");
+      // 7. Upload unsigned HTML and PDF to S3
+      const timestamp = Date.now();
+      const htmlFileName = `application/${applicationId}/unsigned_${timestamp}.html`;
+      const pdfFileName = `application/${applicationId}/unsigned_${timestamp}.pdf`;
+      const [htmlS3Key, pdfS3Key] = await Promise.all([
+        uploadToS3(htmlBuffer, htmlFileName, "text/html", "contracts"),
+        uploadToS3(pdfContent, pdfFileName, "application/pdf", "contracts"),
+      ]);
 
       // 8. Create contract record to get ID for JWT token
       const tempContract = await prisma.contract.create({
@@ -228,15 +234,19 @@ class ContractService {
       logger.log("googleDocUrl", googleDocUrl);
       logger.log("documentId", documentId);
       logger.log("driveHtmlId", driveHtmlId);
-      logger.log("s3Key", s3Key);
+      logger.log("htmlS3Key", htmlS3Key);
+      logger.log("pdfS3Key", pdfS3Key);
       logger.log("htmlHash", htmlHash);
+      logger.log("pdfHash", pdfHash);
       logger.log("accessToken", accessToken);
 
       const contract = await prisma.contract.update({
         where: { id: tempContract.id },
         data: {
-          unsignedHtmlS3Key: s3Key,
+          unsignedHtmlS3Key: htmlS3Key,
           unsignedHtmlSha256: htmlHash,
+          unsignedPdfS3Key: pdfS3Key,
+          unsignedPdfSha256: pdfHash,
           googleDocId: documentId,
           googleDocUrl: googleDocUrl,
           driveHtmlId: driveHtmlId || null,
@@ -255,8 +265,10 @@ class ContractService {
           actorRole: "admin",
           actorId: createdBy,
           meta: {
-            s3Key,
+            htmlS3Key,
+            pdfS3Key,
             htmlHash,
+            pdfHash,
             googleDocId: documentId,
             driveHtmlId: driveHtmlId,
             applicationId: applicationId,
@@ -272,7 +284,8 @@ class ContractService {
           actorId: createdBy,
           meta: {
             sentTo: examinerEmail,
-            s3Key,
+            htmlS3Key,
+            pdfS3Key,
             googleDocId: documentId,
             applicationId: applicationId,
           },
@@ -281,7 +294,8 @@ class ContractService {
 
       logger.log(`✅ Contract created and sent successfully for application: ${contract.id}`);
       logger.log(`   Google Doc ID: ${documentId}`);
-      logger.log(`   S3 Key: ${s3Key}`);
+      logger.log(`   HTML S3 Key: ${htmlS3Key}`);
+      logger.log(`   PDF S3 Key: ${pdfS3Key}`);
 
       return {
         success: true,
@@ -289,7 +303,7 @@ class ContractService {
         documentId: documentId,
         s3: {
           bucket: ENV.AWS_S3_BUCKET || "",
-          key: s3Key,
+          key: htmlS3Key,
         },
         driveHtmlId: driveHtmlId || undefined,
       };
@@ -380,9 +394,9 @@ class ContractService {
         },
       };
 
-      // 4. Create Google Doc, merge placeholders, and export HTML
+      // 4. Create Google Doc, merge placeholders, and export HTML and PDF
       logger.log("📄 Creating contract from Google Doc template...");
-      const { documentId, htmlContent, driveHtmlId } = await createContractDocument(
+      const { documentId, htmlContent, pdfContent, driveHtmlId } = await createContractDocument(
         template.currentVersion.googleDocTemplateId,
         template.currentVersion.googleDocFolderId,
         googleDocsContractData,
@@ -407,11 +421,17 @@ class ContractService {
       // 6. Calculate hashes - convert HTML string to Buffer for hashing
       const htmlBuffer = Buffer.from(htmlContent, 'utf-8');
       const htmlHash = sha256Buffer(htmlBuffer);
+      const pdfHash = sha256Buffer(pdfContent);
       const dataHash = hashContractData("", contractData);
 
-      // 7. Upload unsigned HTML to S3
-      const fileName = `${examinerProfileId}/unsigned_${Date.now()}.html`;
-      const s3Key = await uploadToS3(htmlBuffer, fileName, "text/html", "contracts");
+      // 7. Upload unsigned HTML and PDF to S3
+      const timestamp = Date.now();
+      const htmlFileName = `${examinerProfileId}/unsigned_${timestamp}.html`;
+      const pdfFileName = `${examinerProfileId}/unsigned_${timestamp}.pdf`;
+      const [htmlS3Key, pdfS3Key] = await Promise.all([
+        uploadToS3(htmlBuffer, htmlFileName, "text/html", "contracts"),
+        uploadToS3(pdfContent, pdfFileName, "application/pdf", "contracts"),
+      ]);
 
       // 8. Create contract record to get ID for JWT token
       const tempContract = await prisma.contract.create({
@@ -441,8 +461,10 @@ class ContractService {
       logger.log("googleDocUrl", googleDocUrl);
       logger.log("documentId", documentId);
       logger.log("driveHtmlId", driveHtmlId);
-      logger.log("s3Key", s3Key);
+      logger.log("htmlS3Key", htmlS3Key);
+      logger.log("pdfS3Key", pdfS3Key);
       logger.log("htmlHash", htmlHash);
+      logger.log("pdfHash", pdfHash);
       logger.log("accessToken", accessToken);
       logger.log("expiresAt", expiresAt);
       logger.log("tempContract", tempContract);
@@ -450,8 +472,10 @@ class ContractService {
         where: { id: tempContract.id },
         data: {
           status: "SENT",
-          unsignedHtmlS3Key: s3Key, // Storage for HTML contract
+          unsignedHtmlS3Key: htmlS3Key, // Storage for HTML contract
           unsignedHtmlSha256: htmlHash, // SHA for HTML contract
+          unsignedPdfS3Key: pdfS3Key, // Storage for PDF contract
+          unsignedPdfSha256: pdfHash, // SHA for PDF contract
           googleDocId: documentId,
           googleDocUrl: googleDocUrl,
           driveHtmlId: driveHtmlId || null, // Storage for Drive HTML export (optional)
@@ -469,8 +493,10 @@ class ContractService {
           actorRole: "admin",
           actorId: createdBy,
           meta: {
-            s3Key,
+            htmlS3Key,
+            pdfS3Key,
             htmlHash,
+            pdfHash,
             googleDocId: documentId,
             driveHtmlId: driveHtmlId,
           },
@@ -485,7 +511,8 @@ class ContractService {
           actorId: createdBy,
           meta: {
             sentTo: examinerEmail,
-            s3Key,
+            htmlS3Key,
+            pdfS3Key,
             googleDocId: documentId,
           },
         },
@@ -493,7 +520,8 @@ class ContractService {
 
       logger.log(`✅ Contract created and sent successfully: ${contract.id}`);
       logger.log(`   Google Doc ID: ${documentId}`);
-      logger.log(`   S3 Key: ${s3Key}`);
+      logger.log(`   HTML S3 Key: ${htmlS3Key}`);
+      logger.log(`   PDF S3 Key: ${pdfS3Key}`);
 
       return {
         success: true,
@@ -501,7 +529,7 @@ class ContractService {
         documentId,
         s3: {
           bucket: ENV.AWS_S3_BUCKET || "",
-          key: s3Key,
+          key: htmlS3Key,
         },
         driveHtmlId: driveHtmlId,
       };
