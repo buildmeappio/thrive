@@ -16,8 +16,8 @@ export async function GET() {
         const healthStatus = {
             status: 'healthy',
             timestamp: new Date().toISOString(),
-            service: 'organization-web',
-            basePath: '/organization',
+            service: 'admin-web',
+            basePath: '/admin',
             environment: process.env.NODE_ENV || 'development',
             uptime: typeof process !== 'undefined' && process.uptime ? process.uptime() : undefined,
             database: 'connected',
