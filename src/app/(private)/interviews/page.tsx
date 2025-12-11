@@ -12,8 +12,8 @@ export const dynamic = "force-dynamic";
 const Page = async () => {
   const interviews = await interviewActions.getInterviews();
   
-  // Get unique statuses from the data
-  const statusNames = Array.from(new Set(interviews.map(i => i.status)));
+  // Always show all three interview statuses in the filter
+  const statusNames = ["AVAILABLE", "BOOKED", "CANCELLED"];
 
   return <InterviewPageContent data={interviews} statuses={statusNames} />;
 };
