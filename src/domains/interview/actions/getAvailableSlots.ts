@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/db";
 import { startOfDay, endOfDay, addDays, addMinutes } from "date-fns";
+import configurationService from "@/server/services/configuration.service";
 
 /**
  * Get available time slots for a specific date
@@ -11,6 +12,9 @@ export const getAvailableSlots = async (
   date: Date
 ) => {
   try {
+    // Get interview settings for working hours
+    const interviewSettings = await configurationService.getInterviewSettings();
+    
     const dayStart = startOfDay(date);
     const dayEnd = endOfDay(date);
 
@@ -38,16 +42,29 @@ export const getAvailableSlots = async (
       },
     });
 
-    // Generate time suggestions in 15-minute increments
+    // Calculate working hours for the selected date in UTC
+    // Convert UTC minutes to actual time for the selected date
+    const startWorkingTime = new Date(dayStart);
+    const startHours = Math.floor(interviewSettings.startWorkingHourUTC / 60);
+    const startMins = interviewSettings.startWorkingHourUTC % 60;
+    startWorkingTime.setUTCHours(startHours, startMins, 0, 0);
+
+    const endWorkingTime = new Date(dayStart);
+    const endHours = Math.floor(interviewSettings.endWorkingHourUTC / 60);
+    const endMins = interviewSettings.endWorkingHourUTC % 60;
+    endWorkingTime.setUTCHours(endHours, endMins, 0, 0);
+
+    // Generate time suggestions in 15-minute increments within working hours
     const timeSuggestions: Array<{
       startTime: Date;
       isAvailable: boolean;
       conflictReason?: string;
     }> = [];
 
-    let currentTime = new Date(dayStart);
-    const maxTime = new Date(dayEnd);
-    maxTime.setHours(23, 45, 0, 0); // Last possible slot start time (11:45 PM)
+    let currentTime = new Date(startWorkingTime);
+    // Last possible slot start time (end time - 15 minutes to allow for minimum slot)
+    const maxTime = new Date(endWorkingTime);
+    maxTime.setMinutes(maxTime.getMinutes() - 15);
 
     while (currentTime <= maxTime) {
       // Check if this time conflicts with any booked slots
