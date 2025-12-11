@@ -17,11 +17,9 @@ const config: PoolConfig = {
 // Only enable SSL when explicitly requested; some DBs don't support TLS.
 if (process.env.NODE_ENV === "production") {
   const sslRequired = process.env.DATABASE_SSL_REQUIRED === "true";
-  if (sslRequired) {
-    config.ssl = {
-      rejectUnauthorized: true,
-    };
-  }
+  config.ssl = {
+    rejectUnauthorized: sslRequired,
+  };
 }
 
 const pool = new Pool(config);
