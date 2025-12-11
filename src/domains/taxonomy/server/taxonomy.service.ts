@@ -728,15 +728,3 @@ export const deleteTaxonomy = async (type: TaxonomyType, id: string) => {
     throw HttpError.internalServerError("Internal server error");
   }
 };
-
-const taxonomyService = {
-  createTaxonomy,
-  updateTaxonomy,
-  getTaxonomies,
-  getTaxonomyById,
-  getExaminationTypes,
-  deleteTaxonomy,
-};
-
-export default taxonomyService;
-

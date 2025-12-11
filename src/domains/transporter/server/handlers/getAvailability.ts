@@ -1,4 +1,4 @@
-import { transporterAvailabilityService } from "../services/availability.service";
+import { getCompleteAvailability } from "../services/availability.service";
 import { HttpError } from "@/utils/httpError";
 import { convertUTCToLocal } from "@/utils/timezone";
 import logger from "@/utils/logger";
@@ -28,7 +28,7 @@ type OverrideHoursWithTimeSlots = {
 const getAvailability = async (payload: GetAvailabilityInput) => {
   try {
     const availability =
-      await transporterAvailabilityService.getCompleteAvailability(
+      await getCompleteAvailability(
         payload.transporterId
       );
 

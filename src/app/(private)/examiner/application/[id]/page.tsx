@@ -9,8 +9,14 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
     logger.log("Fetching application with ID:", id);
     const application = await getApplicationById(id);
-    logger.log("Successfully fetched application:", application?.id);
-    return <ExaminerDetail examiner={application} isApplication={true} />;
+
+    const { status, ...data } = application;
+    if (!data || status === 'DRAFT') {
+      return notFound();
+    }
+
+    logger.log("Successfully fetched application:", data.id);
+    return <ExaminerDetail examiner={{ ...data, status }} isApplication={true} />;
   } catch (error) {
     logger.error("Error in application detail page:", error);
     

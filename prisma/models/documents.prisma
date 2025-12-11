@@ -12,6 +12,7 @@ model Documents {
   examinerResume                        ExaminerProfile[]     @relation(name: "ExaminerResumeDocument")
   examinerNDA                           ExaminerProfile[]     @relation(name: "ExaminerNDADocument")
   examinerInsurance                     ExaminerProfile[]     @relation(name: "ExaminerInsuranceDocument")
+  examinerGovernmentId                  ExaminerProfile[]     @relation(name: "ExaminerGovernmentIdDocument")
   examinerRedactedIMEReports            ExaminerProfile[]     @relation(name: "ExaminerRedactedIMEReportDocument")
   examinerApplicationResume             ExaminerApplication[] @relation(name: "ExaminerApplicationResumeDocument")
   examinerApplicationNDA                ExaminerApplication[] @relation(name: "ExaminerApplicationNDADocument")

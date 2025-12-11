@@ -1,5 +1,5 @@
 import GoogleProvider from "next-auth/providers/google";
-import authService from "@/domains/auth/server/auth.service";
+import * as authService from "@/domains/auth/server/auth.service";
 
 export const google = GoogleProvider({
   clientId: process.env.OAUTH_CLIENT_ID || "",

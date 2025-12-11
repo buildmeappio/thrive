@@ -1,5 +1,5 @@
-import organizationsService from "../organizations.service";
+import * as OrganizationsService from "../organizations.service";
 
 export default async function getOrganizationById(id: string) {
-  return organizationsService.getOrganizationById(id);
+  return OrganizationsService.getOrganizationById(id);
 }

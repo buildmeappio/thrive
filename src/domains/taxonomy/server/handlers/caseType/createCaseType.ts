@@ -1,4 +1,4 @@
-import caseTypeService from '../../caseType.service';
+import * as caseTypeService from '../../caseType.service';
 import { CreateCaseTypeInput } from '../../../types/CaseType';
 
 const createCaseType = async (data: CreateCaseTypeInput) => {

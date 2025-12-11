@@ -1,4 +1,4 @@
-import assessmentTypeService from '../../assessmentType.service';
+import * as assessmentTypeService from '../../assessmentType.service';
 import { UpdateTaxonomyInput } from '../../../types/Taxonomy';
 
 const updateAssessmentType = async (id: string, data: UpdateTaxonomyInput) => {

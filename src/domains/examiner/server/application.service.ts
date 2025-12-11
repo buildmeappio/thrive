@@ -1,5 +1,7 @@
 import prisma from "@/lib/db";
-import { ExaminerStatus } from "@prisma/client";
+import { HttpError } from "@/utils/httpError";
+import logger from "@/utils/logger";
+import { ExaminerStatus, SecureLinkStatus } from "@prisma/client";
 
 const includeRelations = {
   address: true,
@@ -13,10 +15,10 @@ export const getRecentApplications = async (limit?: number, status?: string | st
   return prisma.examinerApplication.findMany({
     where: {
       deletedAt: null,
-      ...(status && { 
-        status: Array.isArray(status) 
-          ? { in: status as any[] } 
-          : (status as any) 
+      ...(status && {
+        status: Array.isArray(status)
+          ? { in: status as any[] }
+          : (status as any)
       }),
     },
     include: includeRelations,
@@ -38,10 +40,10 @@ export const getApplicationCount = async (status?: string | string[]) => {
   return prisma.examinerApplication.count({
     where: {
       deletedAt: null,
-      ...(status && { 
-        status: Array.isArray(status) 
-          ? { in: status as any[] } 
-          : (status as any) 
+      ...(status && {
+        status: Array.isArray(status)
+          ? { in: status as any[] }
+          : (status as any)
       }),
     },
   });
@@ -116,6 +118,85 @@ export const markApplicationInterviewCompleted = async (id: string) => {
   });
 };
 
+type CreateInterviewSchedulingLinkParams = {
+  applicationId: string;
+  expiresInDays: number;
+  token: string;
+};
+
+export const invalidateAllInterviewSchedulingLinks = async (applicationId: string) => {
+  try {
+    const secureLinks = await prisma.secureLink.updateMany({
+      where: {
+        applicationSecureLink: {
+          some: {
+            applicationId,
+          },
+        },
+      },
+      data: {
+        status: SecureLinkStatus.INVALID,
+      },
+    });
+    return secureLinks;
+  } catch (error) {
+    logger.error(`Failed to invalidate all interview scheduling links for application ${applicationId}: ${error}`);
+    throw HttpError.fromError(error, `Failed to invalidate all interview scheduling links for application ${applicationId}`);
+  }
+}
+
+export const createInterviewSchedulingLink = async (
+  params: CreateInterviewSchedulingLinkParams
+) => {
+  await invalidateAllInterviewSchedulingLinks(params.applicationId);
+
+  // Calculate expiration date
+  const expiresAt = new Date(Date.now() + params.expiresInDays * 24 * 60 * 60 * 1000);
+
+  // Create SecureLink record
+  const secureLink = await prisma.secureLink.create({
+    data: {
+      token: params.token,
+      expiresAt,
+      status: "PENDING",
+    },
+  });
+
+  // Create ApplicationSecureLink to link application to SecureLink
+  const applicationSecureLink = await prisma.applicationSecureLink.create({
+    data: {
+      applicationId: params.applicationId,
+      secureLinkId: secureLink.id,
+    },
+  });
+
+  return {
+    secureLink,
+    applicationSecureLink,
+  };
+};
+
+export const getInterviewSchedulingLink = async (applicationId: string) => {
+  // Find the most recent non-deleted ApplicationSecureLink for this application
+  const applicationSecureLink = await prisma.applicationSecureLink.findFirst({
+    where: {
+      applicationId,
+      deletedAt: null,
+      secureLink: {
+        deletedAt: null,
+      },
+    },
+    include: {
+      secureLink: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return applicationSecureLink;
+};
+
 // Default export for backward compatibility
 const applicationService = {
   getRecentApplications,
@@ -127,6 +208,8 @@ const applicationService = {
   moveApplicationToReview,
   scheduleApplicationInterview,
   markApplicationInterviewCompleted,
+  createInterviewSchedulingLink,
+  getInterviewSchedulingLink,
 };
 
 export default applicationService;

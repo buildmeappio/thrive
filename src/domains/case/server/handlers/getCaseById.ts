@@ -1,12 +1,13 @@
-import caseService from "../case.service";
-import { CaseDto } from "../dto/case.dto";
+'use server';
+import * as CaseService from "../case.service";
+import { toCaseDetailDto } from "../dto/case.dto";
 import { generatePresignedUrl } from "@/lib/s3";
 import logger from "@/utils/logger";
 
 const getCaseById = async (id: string, userId: string) => {
-  const casee = await caseService.getCaseById(id);
-  await caseService.doesCaseBelongToUser(casee, userId);
-  const caseDetails = await CaseDto.toCaseDetailDto(casee);
+  const casee = await CaseService.getCaseById(id);
+  await CaseService.doesCaseBelongToUser(casee, userId);
+  const caseDetails = await toCaseDetailDto(casee);
 
   // Generate presigned URLs for each document
   if (caseDetails.case.documents && caseDetails.case.documents.length > 0) {

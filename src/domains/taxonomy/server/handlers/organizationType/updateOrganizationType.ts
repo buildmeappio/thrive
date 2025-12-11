@@ -1,4 +1,4 @@
-import organizationTypeService from '../../organizationType.service';
+import * as organizationTypeService from '../../organizationType.service';
 import { UpdateOrganizationTypeInput } from '../../../types/OrganizationType';
 
 const updateOrganizationType = async (id: string, data: UpdateOrganizationTypeInput) => {

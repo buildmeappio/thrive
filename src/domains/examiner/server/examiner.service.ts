@@ -29,10 +29,10 @@ export const getRecentExaminers = async (limit?: number, status?: string | strin
   return prisma.examinerProfile.findMany({
     where: {
       deletedAt: null,
-      ...(status && { 
-        status: Array.isArray(status) 
-          ? { in: status as any[] } 
-          : (status as any) 
+      ...(status && {
+        status: Array.isArray(status)
+          ? { in: status as any[] }
+          : (status as any)
       }),
     },
     include: includeRelations,
@@ -160,8 +160,8 @@ export const getExaminerCountThisMonth = async (status: string | string[]) => {
 
   return prisma.examinerProfile.count({
     where: {
-      status: Array.isArray(status) 
-        ? { in: status as any[] } 
+      status: Array.isArray(status)
+        ? { in: status as any[] }
         : (status as any),
       createdAt: {
         gte: startOfMonth,

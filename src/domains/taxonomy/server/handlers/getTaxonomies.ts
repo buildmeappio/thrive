@@ -1,5 +1,5 @@
-import taxonomyService from '../taxonomy.service';
-import assessmentTypeService from '../assessmentType.service';
+import * as taxonomyService from '../taxonomy.service';
+import * as assessmentTypeService from '../assessmentType.service';
 import { TaxonomyType } from '../../types/Taxonomy';
 
 const getTaxonomies = async (type: TaxonomyType) => {

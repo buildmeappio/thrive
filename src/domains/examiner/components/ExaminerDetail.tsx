@@ -70,6 +70,7 @@ const formatYearsOfExperience = (str: string): string => {
 };
 
 const mapStatus = {
+  DRAFT: "draft",
   PENDING: "pending",
   ACCEPTED: "approved",
   REJECTED: "rejected",
@@ -89,8 +90,23 @@ const mapStatus = {
 
 type Props = { examiner: ExaminerData; isApplication?: boolean };
 
-export default function ExaminerDetail({ examiner, isApplication = false }: Props) {
-  logger.log(examiner.feeStructure)
+type ExaminerDetailComponent = React.FC<Props>;
+
+// Helper function to wrap icon in gradient circle with overlay
+const GradientIcon = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div className="relative w-5 h-5 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 rounded-full" style={{ backgroundColor: "#00E1B8", opacity: 0.5 }}></div>
+      <div className="relative z-10 text-white flex items-center justify-center">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+const ExaminerDetail: ExaminerDetailComponent = (props) => {
+  const { examiner, isApplication = false } = props;
+
   const router = useRouter();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
@@ -105,6 +121,15 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
   const [loadingAction, setLoadingAction] = useState<
     "approve" | "reject" | "request" | "feeStructure" | "sendContract" | "moveToReview" | "scheduleInterview" | "markInterviewCompleted" | "markContractSigned" | null
   >(null);
+
+  // Redirect if status is DRAFT - we only show from SUBMITTED onwards
+  useEffect(() => {
+    const currentStatus = mapStatus[examiner.status];
+    if (currentStatus === "draft") {
+      router.push("/examiner");
+      return;
+    }
+  }, [examiner.status, router]);
 
   // Automatically move to IN_REVIEW when admin opens a SUBMITTED/PENDING application
   useEffect(() => {
@@ -337,132 +362,149 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
       case "pending":
         return {
           text: "Submitted",
-          className: "border-blue-400 text-blue-700 bg-blue-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <GradientIcon>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </GradientIcon>
           ),
         };
       case "info_requested":
         return {
           text: "Info Requested",
-          className: "border-blue-500 text-blue-700 bg-blue-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <GradientIcon>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </GradientIcon>
           ),
         };
       case "active":
         return {
           text: "Active",
-          className: "border-green-500 text-green-700 bg-green-50",
-          icon: <Check className="w-4 h-4" />,
+          icon: (
+            <GradientIcon>
+              <Check className="w-3 h-3" />
+            </GradientIcon>
+          ),
         };
       // New statuses
       case "submitted":
         return {
           text: "Submitted",
-          className: "border-blue-400 text-blue-700 bg-blue-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <GradientIcon>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </GradientIcon>
           ),
         };
       case "in_review":
         return {
           text: "In Review",
-          className: "border-yellow-500 text-yellow-700 bg-yellow-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <GradientIcon>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </GradientIcon>
           ),
         };
       case "more_info_requested":
         return {
           text: "More Info Requested",
-          className: "border-blue-500 text-blue-700 bg-blue-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <GradientIcon>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </GradientIcon>
           ),
         };
       case "interview_scheduled":
         return {
           text: "Interview Scheduled",
-          className: "border-purple-500 text-purple-700 bg-purple-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+            <GradientIcon>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </GradientIcon>
           ),
         };
       case "interview_completed":
         return {
           text: "Interview Completed",
-          className: "border-indigo-500 text-indigo-700 bg-indigo-50",
-          icon: <Check className="w-4 h-4" />,
+          icon: (
+            <GradientIcon>
+              <Check className="w-3 h-3" />
+            </GradientIcon>
+          ),
         };
       case "contract_sent":
         return {
           text: "Contract Sent",
-          className: "border-cyan-500 text-cyan-700 bg-cyan-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+            <GradientIcon>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </GradientIcon>
           ),
         };
       case "contract_signed":
         return {
           text: "Contract Signed",
-          className: "border-teal-500 text-teal-700 bg-teal-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
+            <GradientIcon>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            </GradientIcon>
           ),
         };
       case "approved":
         return {
           text: "Approved",
-          className: "border-green-500 text-green-700 bg-green-50",
-          icon: <Check className="w-4 h-4" />,
+          icon: (
+            <GradientIcon>
+              <Check className="w-3 h-3" />
+            </GradientIcon>
+          ),
         };
       case "rejected":
         return {
           text: "Rejected",
-          className: "border-red-500 text-red-700 bg-red-50",
           icon: null,
         };
       case "withdrawn":
         return {
           text: "Withdrawn",
-          className: "border-gray-500 text-gray-700 bg-gray-50",
           icon: null,
         };
       case "suspended":
         return {
           text: "Suspended",
-          className: "border-orange-500 text-orange-700 bg-orange-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-            </svg>
+            <GradientIcon>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              </svg>
+            </GradientIcon>
           ),
         };
       default:
         return {
           text: "Submitted",
-          className: "border-blue-400 text-blue-700 bg-blue-50",
           icon: (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <GradientIcon>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </GradientIcon>
           ),
         };
     }
@@ -491,18 +533,21 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
           </Link>
         </div>
         <div
-          className={cn(
-            "px-4 py-2 rounded-full border-2 flex items-center gap-2 w-fit",
-            statusBadge.className
-          )}
-          style={{
-            fontFamily: "Poppins, sans-serif",
-            fontWeight: 600,
-            fontSize: "14px",
-          }}
+          className="px-[2px] py-[2px] rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] w-fit"
         >
-          {statusBadge.icon}
-          {statusBadge.text}
+          <div
+            className="px-4 py-2 rounded-full flex items-center gap-2"
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontWeight: 600,
+              fontSize: "14px",
+              color: "#004766",
+              backgroundColor: "#E0F7F4",
+            }}
+          >
+            {statusBadge.icon}
+            <span style={{ color: "#004766" }}>{statusBadge.text}</span>
+          </div>
         </div>
       </div>
 
@@ -736,7 +781,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
                       <>
                         <button
                           className={cn(
-                            "px-4 py-3 rounded-full border border-purple-500 text-purple-600 bg-white hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                           )}
                           style={{
                             fontFamily: "Poppins, sans-serif",
@@ -787,7 +832,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
                     <>
                       <button
                         className={cn(
-                          "px-4 py-3 rounded-full border border-indigo-500 text-indigo-600 bg-white hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                         )}
                         style={{
                           fontFamily: "Poppins, sans-serif",
@@ -802,7 +847,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
                       </button>
                       <button
                         className={cn(
-                          "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                          "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         )}
                         style={{
                           fontFamily: "Poppins, sans-serif",
@@ -829,7 +874,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
                         }}
                         disabled={loadingAction !== null}
                         className={cn(
-                          "px-4 py-3 rounded-full border border-cyan-500 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                         )}
                         style={{
                           fontFamily: "Poppins, sans-serif",
@@ -842,7 +887,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
                       </button>
                       <button
                         className={cn(
-                          "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                          "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         )}
                         style={{
                           fontFamily: "Poppins, sans-serif",
@@ -863,9 +908,9 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
                     <>
                       <button
                         className={cn(
-                          "px-4 py-3 rounded-full border flex items-center gap-2 relative",
+                          "px-4 py-3 rounded-full flex items-center gap-2 relative",
                           examiner.contractSignedByExaminerAt
-                            ? "border-teal-500 text-teal-600 bg-white hover:bg-teal-50 cursor-pointer"
+                            ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 cursor-pointer"
                             : "border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed"
                         )}
                         style={{
@@ -922,7 +967,7 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
                   {status === "contract_signed" && (
                     <button
                       className={cn(
-                        "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-white hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                       )}
                       style={{
                         fontFamily: "Poppins, sans-serif",
@@ -1145,4 +1190,6 @@ export default function ExaminerDetail({ examiner, isApplication = false }: Prop
       </div>
     </DashboardShell>
   );
-}
+};
+
+export default ExaminerDetail;

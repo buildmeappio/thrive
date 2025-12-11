@@ -1,3 +1,4 @@
+'use server';
 import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
 import { redirect } from "next/navigation";

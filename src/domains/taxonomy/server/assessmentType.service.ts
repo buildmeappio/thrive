@@ -165,13 +165,3 @@ export const getAssessmentTypeById = async (id: string) => {
     throw HttpError.internalServerError("Internal server error");
   }
 };
-
-const assessmentTypeService = {
-  createAssessmentType,
-  updateAssessmentType,
-  getAssessmentTypes,
-  getAssessmentTypeById,
-};
-
-export default assessmentTypeService;
-

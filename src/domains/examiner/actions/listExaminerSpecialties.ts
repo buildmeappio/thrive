@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/db";
-import examinationTypeService from "@/domains/taxonomy/server/examinationType.service";
+import * as examinationTypeService from "@/domains/taxonomy/server/examinationType.service";
 import logger from "@/utils/logger";
 
 export default async function listExaminerSpecialties(): Promise<string[]> {

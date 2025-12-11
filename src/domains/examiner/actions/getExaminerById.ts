@@ -3,12 +3,12 @@ import examinerService from "../server/examiner.service";
 import { ExaminerDto } from "../server/dto/examiner.dto";
 import { generatePresignedUrl } from "@/lib/s3";
 import { mapSpecialtyIdsToNames } from "../utils/mapSpecialtyIdsToNames";
-import { Decimal } from '@prisma/client/runtime/library';
 import logger from "@/utils/logger";
+import { Prisma } from "@prisma/client";
 
 // Helper function to serialize Decimals and other non-plain objects
 const serializeValue = (value: any): any => {
-  if (value instanceof Decimal) {
+  if (value instanceof Prisma.Decimal) {
     return Number(value);
   }
   if (value instanceof Date) {
@@ -27,6 +27,9 @@ const serializeValue = (value: any): any => {
 
 const getExaminerById = async (id: string) => {
   const examiner = await examinerService.getExaminerById(id);
+  if (!examiner) {
+    throw new Error("Examiner not found");
+  }
   let examinerData = ExaminerDto.toExaminerData(examiner as any);
 
   // Map specialty IDs to exam type names
@@ -133,22 +136,22 @@ const getExaminerById = async (id: string) => {
   // Map assessment types if they are UUIDs to assessment type names
   if (examiner.assessmentTypes && examiner.assessmentTypes.length > 0) {
     const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
-    const assessmentTypeIds = examiner.assessmentTypes.filter(id => 
+    const assessmentTypeIds = examiner.assessmentTypes.filter(id =>
       uuidRegex.test(id.replace(/\s/g, ''))
     );
-    
+
     if (assessmentTypeIds.length > 0) {
       try {
         const { default: prisma } = await import("@/lib/db");
         const assessmentTypes = await prisma.assessmentType.findMany({
-          where: { 
+          where: {
             id: { in: assessmentTypeIds },
-            deletedAt: null 
+            deletedAt: null
           },
         });
-        
+
         const typeMap = new Map(assessmentTypes.map(t => [t.id, t.name]));
-        examinerData.assessmentTypes = examiner.assessmentTypes.map(id => 
+        examinerData.assessmentTypes = examiner.assessmentTypes.map(id =>
           typeMap.get(id) || id
         );
       } catch (error) {

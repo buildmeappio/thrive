@@ -1,4 +1,4 @@
-import taxonomyService from '../taxonomy.service';
+import * as taxonomyService from '../taxonomy.service';
 import { TaxonomyType } from '../../types/Taxonomy';
 
 const getTaxonomyById = async (type: TaxonomyType, id: string) => {

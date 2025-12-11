@@ -1,6 +1,6 @@
 "use server";
 
-import authService from "@/domains/auth/server/auth.service";
+import * as authService from "@/domains/auth/server/auth.service";
 import { signAccountToken } from "@/lib/jwt";
 import { ENV } from "@/constants/variables";
 import logger from "@/utils/logger";

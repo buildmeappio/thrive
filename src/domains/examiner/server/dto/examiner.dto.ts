@@ -11,7 +11,7 @@ type ExaminerWithRelations = ExaminerProfile & {
   insuranceDocument: Documents | null;
   redactedIMEReportDocument: Documents | null;
   examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
-  feeStructure: ExaminerFeeStructure[];
+  feeStructure: ExaminerFeeStructure[] | null;
   contracts?: Array<any>; // Optional contracts relation
   application?: {
     status: ExaminerStatus;
@@ -21,7 +21,7 @@ type ExaminerWithRelations = ExaminerProfile & {
 export class ExaminerDto {
   static toExaminerData(examiner: ExaminerWithRelations): ExaminerData {
     const feeStructure = examiner.feeStructure?.[0];
-    
+
     return {
       id: examiner.id,
       name: `${examiner.account.user.firstName} ${examiner.account.user.lastName}`.trim(),

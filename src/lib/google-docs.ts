@@ -193,6 +193,55 @@ export async function exportAsHTML(documentId: string): Promise<string> {
 }
 
 /**
+ * Export a Google Doc as PDF
+ * @param documentId - The ID of the Google Doc to export
+ * @returns Buffer containing the PDF data
+ */
+export async function exportAsPDF(documentId: string): Promise<Buffer> {
+  try {
+    const auth = getGoogleDocsAuth();
+    const drive = google.drive({ version: "v3", auth });
+
+    const response = await drive.files.export(
+      {
+        fileId: documentId,
+        mimeType: "application/pdf",
+      },
+      { responseType: "arraybuffer" }
+    );
+
+    if (!response.data) {
+      throw new Error("Failed to export PDF: No data returned");
+    }
+
+    // Convert ArrayBuffer to Buffer
+    const pdfBuffer = Buffer.from(response.data as ArrayBuffer);
+
+    return pdfBuffer;
+  } catch (error) {
+    logger.error("Error exporting PDF:", error);
+    if (error instanceof Error) {
+      if (error.message.includes("File not found") || (error as any).code === 404) {
+        throw new Error(
+          `Document not found. Please verify the document ID is correct.`
+        );
+      }
+      if (
+        error.message.includes("insufficient permissions") ||
+        (error as any).code === 403
+      ) {
+        throw new Error(
+          `Insufficient permissions to export document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
+        );
+      }
+    }
+    throw new Error(
+      `Failed to export PDF: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+/**
  * Format date as "January 15, 2025"
  */
 function formatContractDate(date: Date | string): string {
@@ -310,13 +359,13 @@ export async function generateContractFromTemplate(
 }
 
 /**
- * Copy template to Drive folder, merge placeholders, export HTML, and optionally save HTML to Drive
+ * Copy template to Drive folder, merge placeholders, export HTML and PDF, and optionally save HTML to Drive
  * This is for the acceptExaminer use case where we want to persist the document
  * @param templateId - Google Doc template ID
  * @param folderId - Drive folder ID to save the document
  * @param data - Contract data to merge
  * @param saveHtmlToDrive - Whether to also save the HTML to Drive (default: false)
- * @returns Object with documentId, HTML content, and optional Drive HTML ID
+ * @returns Object with documentId, HTML content, PDF buffer, and optional Drive HTML ID
  */
 export async function createContractDocument(
   templateId: string,
@@ -326,6 +375,7 @@ export async function createContractDocument(
 ): Promise<{
   documentId: string;
   htmlContent: string;
+  pdfContent: Buffer;
   driveHtmlId?: string;
 }> {
   if (!ENV.GOOGLE_CONTRACTS_FOLDER_ID) {
@@ -348,8 +398,11 @@ export async function createContractDocument(
     // Replace placeholders
     await replacePlaceholders(documentId, placeholders);
 
-    // Export as HTML
-    const htmlContent = await exportAsHTML(documentId);
+    // Export as HTML and PDF in parallel
+    const [htmlContent, pdfContent] = await Promise.all([
+      exportAsHTML(documentId),
+      exportAsPDF(documentId),
+    ]);
 
     let driveHtmlId: string | undefined;
 
@@ -376,6 +429,7 @@ export async function createContractDocument(
     return {
       documentId,
       htmlContent,
+      pdfContent,
       driveHtmlId,
     };
   } catch (error) {

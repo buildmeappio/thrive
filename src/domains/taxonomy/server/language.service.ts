@@ -1,3 +1,4 @@
+"use server";
 import prisma from '@/lib/db';
 import { HttpError } from '@/utils/httpError';
 import { CreateLanguageInput, UpdateLanguageInput, LanguageData } from '../types/Language';
@@ -119,13 +120,3 @@ export const getLanguageById = async (id: string) => {
     throw HttpError.internalServerError("Internal server error");
   }
 };
-
-const languageService = {
-  createLanguage,
-  updateLanguage,
-  getLanguages,
-  getLanguageById,
-};
-
-export default languageService;
-
