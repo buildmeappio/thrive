@@ -130,15 +130,15 @@ const IMEExperince: React.FC<RegStepProps> = ({
             </h3>
 
             {/* Two-Column Layout */}
-            <div className="mt-6 md:px-0 px-8 grid grid-cols-1 gap-x-12 gap-y-6 md:mt-8 md:grid-cols-2">
-              {/* LEFT COLUMN */}
-              <div className="space-y-6">
+            <div className="mt-6 md:px-0 px-8 flex flex-col gap-y-6 md:mt-8 w-full">
+              {/* First  Row */}
+              <div className="space-y-6 flex flex-row w-[100%] justify-between">
                 {/* Have you completed any IMEs? */}
                 <Controller
                   name="imesCompleted"
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <div className="space-y-2">
+                    <div className="space-y-2 w-full">
                       <Label className="text-[16px] font-medium text-black">
                         Have you completed any IMEs?{" "}
                         <span className="text-red-500">*</span>
@@ -195,7 +195,7 @@ const IMEExperince: React.FC<RegStepProps> = ({
                   name="currentlyConductingIMEs"
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <div className="space-y-2">
+                    <div className="space-y-2 w-full">
                       <Label className="text-[16px] font-medium text-black">
                         Are you currently conducting IMEs?{" "}
                         <span className="text-red-500">*</span>
@@ -248,13 +248,14 @@ const IMEExperince: React.FC<RegStepProps> = ({
                 />
               </div>
 
-              {/* RIGHT COLUMN */}
-              <div className="space-y-6">
+              {/* Second Row */}
+              <div className="space-y-6 flex flex-row w-[45%] justify-between">
                 {/* Assessment Types */}
                 <FormDropdown
                   name="assessmentTypes"
                   label="Assessment Types"
                   options={assessmentTypeOptions}
+                  className="w-full"
                   required
                   multiSelect={true}
                   placeholder={

@@ -8,6 +8,7 @@ const getJwtSecret = (
     | "JWT_EXAMINER_INFO_REQUEST_SECRET"
     | "JWT_CLAIMANT_APPROVE_SECRET"
     | "JWT_RESUME_SECRET"
+    | "JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET"
 ) => {
   const secret = process.env[name];
   if (!secret) {
@@ -155,5 +156,47 @@ export function verifyResumeToken(token: string): JwtPayload | null {
     return jwt.verify(token, JWT_RESUME_SECRET) as JwtPayload;
   } catch {
     return null;
+  }
+}
+
+// ----- Interview Scheduling Tokens -----
+/**
+ * Sign an examiner interview scheduling token (uses JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET)
+ * @param payload - Token payload with email and applicationId
+ * @param expiresIn - Token expiration time (default: 30d)
+ * @returns Signed JWT token
+ */
+export function signExaminerScheduleInterviewToken(
+  payload: {
+    email: string;
+    applicationId: string;
+  },
+  expiresIn: SignOptions["expiresIn"] = "30d"
+): string {
+  const options: SignOptions = { expiresIn };
+  const JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET = getJwtSecret("JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET");
+  return jwt.sign(payload, JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET, options);
+}
+
+/**
+ * Verify and decode an examiner interview scheduling token (uses JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET)
+ * @param token - The JWT token to verify
+ * @returns Decoded token payload with email and applicationId
+ */
+export function verifyExaminerScheduleInterviewToken(token: string): { email: string; applicationId: string } {
+  try {
+    const JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET = getJwtSecret("JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET");
+    const decoded = jwt.verify(token, JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET) as JwtPayload;
+
+    if (!decoded.email || !decoded.applicationId) {
+      throw new Error("Invalid interview scheduling token payload");
+    }
+
+    return {
+      email: decoded.email as string,
+      applicationId: decoded.applicationId as string,
+    };
+  } catch {
+    throw new Error("Invalid or expired interview scheduling token");
   }
 }

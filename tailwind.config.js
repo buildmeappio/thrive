@@ -110,6 +110,9 @@ module.exports = {
         "fade-in": "fadeIn 0.5s ease-in-out",
         "slide-up": "slideUp 0.3s ease-out",
         "pulse-soft": "pulseSoft 2s infinite",
+        "slide-in-right": "slideInRight 0.4s ease-out",
+        "slide-in-left": "slideInLeft 0.4s ease-out",
+        "scale-in": "scaleIn 0.3s ease-out",
       },
       keyframes: {
         fadeIn: {
@@ -123,6 +126,18 @@ module.exports = {
         pulseSoft: {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.7" },
+        },
+        slideInRight: {
+          "0%": { transform: "translateX(20px)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
+        slideInLeft: {
+          "0%": { transform: "translateX(-20px)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
+        scaleIn: {
+          "0%": { transform: "scale(0.95)", opacity: "0" },
+          "100%": { transform: "scale(1)", opacity: "1" },
         },
       },
     },
