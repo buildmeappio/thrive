@@ -11,8 +11,6 @@ import { rescheduleInterviewSlot } from "../actions/rescheduleInterviewSlot";
 import { Loader2, CheckCircle2, XCircle, Clock, Calendar as CalendarIcon, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const DURATION_OPTIONS = [30, 45, 60]; // minutes only
-
 interface InterviewCalendarProps {
   token: string;
   applicationId: string;
@@ -23,6 +21,14 @@ interface InterviewCalendarProps {
     startTime: Date | string;
     endTime: Date | string;
   };
+  interviewSettings: {
+    minDaysAhead: number;
+    maxDaysAhead: number;
+    durationOptions: number[];
+    startWorkingHourUTC: number;
+    totalWorkingHours: number;
+    endWorkingHourUTC: number;
+  };
 }
 
 const InterviewCalendar = ({
@@ -31,11 +37,12 @@ const InterviewCalendar = ({
   firstName: _firstName,
   lastName: _lastName,
   bookedSlot: initialBookedSlot,
+  interviewSettings,
 }: InterviewCalendarProps) => {
   const router = useRouter();
   const today = new Date();
   const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setDate(tomorrow.getDate() + interviewSettings.minDaysAhead);
   
   // Initialize from booked slot if available
   const getInitialState = () => {
@@ -60,7 +67,7 @@ const InterviewCalendar = ({
     return {
       date: startOfDay(tomorrow),
       time: null as Date | null,
-      duration: 30,
+      duration: interviewSettings.durationOptions[0] || 30,
     };
   };
 
@@ -130,30 +137,38 @@ const InterviewCalendar = ({
     fetchSlots();
   }, [selectedDate, isInitializing]);
 
-  // Generate time slots dynamically based on selected duration
+  // Generate time slots dynamically based on selected duration and working hours
   const generateTimeSlots = React.useMemo(() => {
     if (!selectedDate) return [];
 
     const slots: Date[] = [];
-    const dayStart = new Date(selectedDate);
-    dayStart.setHours(0, 0, 0, 0);
+    const dayStart = startOfDay(selectedDate);
     
-    const dayEnd = new Date(selectedDate);
-    dayEnd.setHours(23, 59, 59, 999);
+    // Calculate working hours for the selected date
+    // Convert UTC minutes to local time for the selected date
+    const startWorkingTime = new Date(dayStart);
+    const startHours = Math.floor(interviewSettings.startWorkingHourUTC / 60);
+    const startMins = interviewSettings.startWorkingHourUTC % 60;
+    startWorkingTime.setUTCHours(startHours, startMins, 0, 0);
 
-    let currentTime = new Date(dayStart);
-    // Start from 12 AM
-    currentTime.setHours(0, 0, 0, 0);
+    const endWorkingTime = new Date(dayStart);
+    const endHours = Math.floor(interviewSettings.endWorkingHourUTC / 60);
+    const endMins = interviewSettings.endWorkingHourUTC % 60;
+    endWorkingTime.setUTCHours(endHours, endMins, 0, 0);
 
-    // Generate slots until 11:59 PM
-    while (currentTime.getHours() <= 23 && currentTime.getMinutes() <= 59) {
+    // Generate slots within working hours
+    let currentTime = new Date(startWorkingTime);
+    const maxTime = new Date(endWorkingTime);
+    maxTime.setMinutes(maxTime.getMinutes() - selectedDuration); // Ensure last slot fits
+
+    while (currentTime <= maxTime) {
       const slotTime = new Date(currentTime);
       slots.push(slotTime);
       currentTime = addMinutes(currentTime, selectedDuration);
     }
 
     return slots;
-  }, [selectedDate, selectedDuration]);
+  }, [selectedDate, selectedDuration, interviewSettings]);
 
   // Check if a time slot conflicts with existing bookings
   const isTimeAvailable = (time: Date, duration: number): boolean => {
@@ -197,11 +212,11 @@ const InterviewCalendar = ({
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
       const dayStart = startOfDay(date);
-      // Only allow dates from tomorrow onwards
-      const tomorrow = startOfDay(new Date());
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      // Only allow dates from minDaysAhead onwards
+      const minDate = startOfDay(new Date());
+      minDate.setDate(minDate.getDate() + interviewSettings.minDaysAhead);
       
-      if (dayStart >= tomorrow) {
+      if (dayStart >= minDate) {
         setSelectedDate(dayStart);
         // Preserve selectedTime if it's on the same date and we have a booked slot
         if (initialBookedSlot && selectedTime) {
@@ -271,14 +286,14 @@ const InterviewCalendar = ({
     }
   };
 
-  // Get disabled dates (past dates and dates beyond 6 months)
+  // Get disabled dates (past dates and dates beyond maxDaysAhead)
   const getDisabledDates = (date: Date) => {
-    const tomorrow = startOfDay(new Date());
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const sixMonthsLater = new Date();
-    sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
+    const minDate = startOfDay(new Date());
+    minDate.setDate(minDate.getDate() + interviewSettings.minDaysAhead);
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + interviewSettings.maxDaysAhead);
     
-    return date < tomorrow || date > sixMonthsLater;
+    return date < minDate || date > maxDate;
   };
 
   // Confirmation State
@@ -395,7 +410,7 @@ const InterviewCalendar = ({
               <div>
                 <p className="text-sm font-semibold text-gray-700 mb-4">Select Duration</p>
                 <div className="md:space-y-3 flex flex-row md:flex-col space-x-4">
-                  {DURATION_OPTIONS.map((duration) => {
+                  {interviewSettings.durationOptions.map((duration) => {
                     const isSelected = selectedDuration === duration;
                     return (
                       <button

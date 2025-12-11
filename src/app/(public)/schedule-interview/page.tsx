@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { verifyInterviewToken } from "@/domains/interview/actions/verifyInterviewToken";
 import InterviewCalendar from "@/domains/interview/components/InterviewCalendar";
+import configurationService from "@/server/services/configuration.service";
 
 interface PageProps {
   searchParams: Promise<{ token?: string }>;
@@ -28,6 +29,9 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
     notFound();
   }
 
+  // Fetch interview settings
+  const interviewSettings = await configurationService.getInterviewSettings();
+
   return (
     <div className="flex flex-col bg-gradient-to-br from-[#F4FBFF] via-[#F0F9FF] to-[#EBF8FF]">
       <main role="main" className="flex-1 py-6">
@@ -52,6 +56,7 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
             firstName={applicationData.firstName ?? ""}
             lastName={applicationData.lastName ?? ""}
             bookedSlot={applicationData.alreadyBooked && applicationData.bookedSlot ? applicationData.bookedSlot : undefined}
+            interviewSettings={interviewSettings}
           />
         </div>
       </main>
