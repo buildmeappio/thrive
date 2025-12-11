@@ -20,7 +20,10 @@ const Error = ({ error, reset }: ErrorProps) => {
     error.message.toLowerCase().includes('database') ||
     error.message.toLowerCase().includes('connection') ||
     error.message.toLowerCase().includes('prisma') ||
-    error.message.toLowerCase().includes('fetch');
+    error.message.toLowerCase().includes('fetch') ||
+    error.message.toLowerCase().includes('denied access') ||
+    error.message.toLowerCase().includes('permission denied') ||
+    error.message.toLowerCase().includes('authentication failed');
 
   return (
     <>
