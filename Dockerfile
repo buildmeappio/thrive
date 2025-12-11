@@ -55,7 +55,7 @@
   
   WORKDIR /app
   ENV NODE_ENV=production
-  
+
   # Install minimal runtime dependencies with retry logic for hash mismatch issues
   RUN for i in 1 2 3; do \
     rm -rf /var/lib/apt/lists/* && \
