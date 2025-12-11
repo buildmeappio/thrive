@@ -142,28 +142,42 @@ const InterviewCalendar = ({
     if (!selectedDate) return [];
 
     const slots: Date[] = [];
-    const dayStart = startOfDay(selectedDate);
     
-    // Calculate working hours for the selected date
-    // Convert UTC minutes to local time for the selected date
-    const startWorkingTime = new Date(dayStart);
+    // Get the selected date components in local timezone
+    const year = selectedDate.getFullYear();
+    const month = selectedDate.getMonth();
+    const day = selectedDate.getDate();
+    
+    // Create UTC date for the selected day at midnight UTC
+    const dayStartUTC = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+    
+    // Apply UTC working hours to the UTC date
     const startHours = Math.floor(interviewSettings.startWorkingHourUTC / 60);
     const startMins = interviewSettings.startWorkingHourUTC % 60;
-    startWorkingTime.setUTCHours(startHours, startMins, 0, 0);
+    const startWorkingTimeUTC = new Date(dayStartUTC);
+    startWorkingTimeUTC.setUTCHours(startHours, startMins, 0, 0);
 
-    const endWorkingTime = new Date(dayStart);
     const endHours = Math.floor(interviewSettings.endWorkingHourUTC / 60);
     const endMins = interviewSettings.endWorkingHourUTC % 60;
-    endWorkingTime.setUTCHours(endHours, endMins, 0, 0);
+    const endWorkingTimeUTC = new Date(dayStartUTC);
+    endWorkingTimeUTC.setUTCHours(endHours, endMins, 0, 0);
 
-    // Generate slots within working hours
-    let currentTime = new Date(startWorkingTime);
-    const maxTime = new Date(endWorkingTime);
+    // Filter slots to only include those that fall on the selected date in local time
+    // This ensures that if UTC time converts to previous/next day in local time, we exclude it
+    let currentTime = new Date(startWorkingTimeUTC);
+    const maxTime = new Date(endWorkingTimeUTC);
     maxTime.setMinutes(maxTime.getMinutes() - selectedDuration); // Ensure last slot fits
 
     while (currentTime <= maxTime) {
       const slotTime = new Date(currentTime);
-      slots.push(slotTime);
+      // Only include slots that are on the selected date in local time
+      const slotLocalDate = startOfDay(slotTime);
+      const selectedLocalDate = startOfDay(selectedDate);
+      
+      if (slotLocalDate.getTime() === selectedLocalDate.getTime()) {
+        slots.push(slotTime);
+      }
+      
       currentTime = addMinutes(currentTime, selectedDuration);
     }
 
@@ -271,6 +285,35 @@ const InterviewCalendar = ({
         } else {
           setBookingError(errorMessage);
         }
+        
+        // Refresh slots to show newly booked slots by other examiners
+        if (selectedDate) {
+          try {
+            const refreshResult = await getAvailableSlots(selectedDate);
+            if (refreshResult.success) {
+              setExistingSlots(
+                refreshResult.existingSlots.map((slot: {
+                  id: string;
+                  startTime: Date | string;
+                  endTime: Date | string;
+                  duration: number;
+                  status: string;
+                  isBooked: boolean;
+                }) => ({
+                  ...slot,
+                  startTime: typeof slot.startTime === 'string' 
+                    ? new Date(slot.startTime) 
+                    : slot.startTime,
+                  endTime: typeof slot.endTime === 'string' 
+                    ? new Date(slot.endTime) 
+                    : slot.endTime,
+                }))
+              );
+            }
+          } catch (refreshError) {
+            console.error("Failed to refresh slots:", refreshError);
+          }
+        }
       }
     } catch (error: any) {
       const errorMessage = error.message || "Failed to book slot";
@@ -280,6 +323,35 @@ const InterviewCalendar = ({
         setBookingError("This time slot conflicts with an existing booking. Please select another time.");
       } else {
         setBookingError(errorMessage);
+      }
+      
+      // Refresh slots to show newly booked slots by other examiners
+      if (selectedDate) {
+        try {
+          const refreshResult = await getAvailableSlots(selectedDate);
+          if (refreshResult.success) {
+            setExistingSlots(
+              refreshResult.existingSlots.map((slot: {
+                id: string;
+                startTime: Date | string;
+                endTime: Date | string;
+                duration: number;
+                status: string;
+                isBooked: boolean;
+              }) => ({
+                ...slot,
+                startTime: typeof slot.startTime === 'string' 
+                  ? new Date(slot.startTime) 
+                  : slot.startTime,
+                endTime: typeof slot.endTime === 'string' 
+                  ? new Date(slot.endTime) 
+                  : slot.endTime,
+              }))
+            );
+          }
+        } catch (refreshError) {
+          console.error("Failed to refresh slots:", refreshError);
+        }
       }
     } finally {
       setBooking(false);
@@ -575,10 +647,19 @@ const InterviewCalendar = ({
                           const slotEnd = new Date(slot.endTime);
                           const endTime = addMinutes(time, selectedDuration);
                           
+                          // Check for any overlap or exact match
+                          // Time slots conflict if:
+                          // 1. Selected time starts during existing slot
+                          // 2. Selected time ends during existing slot
+                          // 3. Selected time completely contains existing slot
+                          // 4. Existing slot completely contains selected time
+                          // 5. Exact start time match
                           return (
-                            (time >= slotStart && time < slotEnd) ||
-                            (endTime > slotStart && endTime <= slotEnd) ||
-                            (time <= slotStart && endTime >= slotEnd)
+                            (time.getTime() === slotStart.getTime()) || // Exact start time match
+                            (time >= slotStart && time < slotEnd) || // Starts during existing slot
+                            (endTime > slotStart && endTime <= slotEnd) || // Ends during existing slot
+                            (time <= slotStart && endTime >= slotEnd) || // Completely contains existing slot
+                            (time < slotStart && endTime > slotStart) // Overlaps with existing slot
                           );
                         });
 
@@ -603,10 +684,12 @@ const InterviewCalendar = ({
                             )}
                             title={conflictingSlot ? "This time slot is already booked" : isPastTime ? "This time has passed" : ""}
                           >
-                            <span className="flex items-center justify-between">
+                            <span className="flex items-center justify-between w-full">
                               <span>{format(time, "h:mm a")}</span>
                               {conflictingSlot && (
-                                <span className="text-xs opacity-75">Booked</span>
+                                <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded">
+                                  Booked
+                                </span>
                               )}
                             </span>
                           </button>
