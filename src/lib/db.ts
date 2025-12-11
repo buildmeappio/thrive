@@ -42,21 +42,25 @@ pool.on("error", (err) => {
   console.error("Unexpected error on idle database client", err);
 });
 
-// Test connection on startup in development
-if (process.env.NODE_ENV === "development") {
-  pool.connect()
-    .then((client) => {
-      console.log("✅ Database connection successful");
-      client.release();
-    })
-    .catch((err) => {
-      console.error("❌ Database connection failed:", err.message);
-      console.error("Check your DATABASE_URL configuration:");
-      console.error("- Verify username and password are correct");
-      console.error("- Verify database name exists and user has access");
-      console.error("- Verify host and port are correct");
-      console.error("- Check if SSL is required (set DATABASE_SSL_REQUIRED=true/false)");
-    });
+// Test connection lazily at runtime (not during build)
+// Only run in development and when not in build phase
+if (process.env.NODE_ENV === "development" && typeof window === "undefined" && !process.env.NEXT_PHASE) {
+  // Use setImmediate to defer execution until after module initialization
+  setImmediate(() => {
+    pool.connect()
+      .then((client) => {
+        console.log("✅ Database connection successful");
+        client.release();
+      })
+      .catch((err) => {
+        console.error("❌ Database connection failed:", err.message);
+        console.error("Check your DATABASE_URL configuration:");
+        console.error("- Verify username and password are correct");
+        console.error("- Verify database name exists and user has access");
+        console.error("- Verify host and port are correct");
+        console.error("- Check if SSL is required (set DATABASE_SSL_REQUIRED=true/false)");
+      });
+  });
 }
 
 const adapter = new PrismaPg(pool);
@@ -81,10 +85,10 @@ const prisma = globalForPrisma.prisma || new PrismaClient(prismaClientOptions);
 
 // Log queries in development
 if (process.env.NODE_ENV === "development") {
-  prisma.$on("query" as never, (e: any) => {
-    // console.log("Query: " + e.query);
-    // console.log("Params: " + e.params);
-    // console.log("Duration: " + e.duration + "ms");
+  prisma.$on("query" as never, (_e: any) => {
+    // console.log("Query: " + _e.query);
+    // console.log("Params: " + _e.params);
+    // console.log("Duration: " + _e.duration + "ms");
   });
 }
 
