@@ -7,10 +7,10 @@ export type Environment = "local" | "dev" | "staging" | "prod";
 
 /**
  * Gets the current environment based on NEXT_PUBLIC_APP_URL
- * 
+ *
  * @param appUrl - Optional app URL. If not provided, uses NEXT_PUBLIC_APP_URL from env
  * @returns The detected environment: 'local', 'dev', 'staging', or 'prod'
- * 
+ *
  * @example
  * ```ts
  * const env = getEnvironment(); // Uses NEXT_PUBLIC_APP_URL from env
@@ -75,4 +75,3 @@ export function isDevelopmentOrLocal(): boolean {
   const env = getEnvironment();
   return env === "dev" || env === "local";
 }
-
