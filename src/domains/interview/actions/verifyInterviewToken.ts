@@ -3,6 +3,7 @@
 import { verifyExaminerScheduleInterviewToken } from "@/lib/jwt";
 import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
+import { ExaminerStatus } from "@prisma/client";
 
 export const verifyInterviewToken = async (token: string) => {
   try {
@@ -36,6 +37,13 @@ export const verifyInterviewToken = async (token: string) => {
     // Verify email matches
     if (application.email !== email) {
       throw HttpError.unauthorized("Invalid token for this application");
+    }
+
+    // Check if interview is already completed
+    if (application.status === ExaminerStatus.INTERVIEW_COMPLETED) {
+      throw HttpError.forbidden(
+        "Interview scheduling is no longer available. Your interview has already been completed.",
+      );
     }
 
     // Check if already booked
