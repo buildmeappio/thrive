@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Download, Eye, FileText, Funnel, X } from "lucide-react";
+import { Download, Eye, FileText } from "lucide-react";
 import { Invoice } from "../types";
 import InvoiceDetailModal from "./InvoiceDetailModal";
 
@@ -64,9 +64,6 @@ export default function InvoiceTable({
   invoices,
   searchQuery,
   statusFilter,
-  onSearchChange,
-  onStatusFilterChange,
-  onClearFilters,
 }: InvoiceTableProps) {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,24 +104,6 @@ export default function InvoiceTable({
       return matchesSearch && matchesStatus;
     });
   }, [invoices, searchQuery, statusFilter]);
-
-  const handleStatusChange = (value: string) => {
-    onStatusFilterChange(value);
-    setIsStatusDropdownOpen(false);
-  };
-
-  const getStatusLabel = () => {
-    switch (statusFilter) {
-      case "paid":
-        return "Paid";
-      case "pending":
-        return "Pending";
-      case "overdue":
-        return "Overdue";
-      default:
-        return "Status";
-    }
-  };
 
   const handleViewInvoice = (invoice: Invoice) => {
     setSelectedInvoice(invoice);

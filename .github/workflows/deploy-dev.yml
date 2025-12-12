@@ -267,7 +267,7 @@ jobs:
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
             
             # Create .env file based on env-example structure with all environment variables from GitHub secrets
-            cat > $DEPLOY_PATH/.env << EOF
+            sudo cat > $DEPLOY_PATH/.env << EOF
             DATABASE_URL="${{ secrets.DATABASE_URL }}"
             DATABASE_SSL_REQUIRED="${{ secrets.DATABASE_SSL_REQUIRED }}"
             

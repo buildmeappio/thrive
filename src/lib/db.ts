@@ -53,7 +53,7 @@ const prisma = globalForPrisma.prisma || new PrismaClient(prismaClientOptions);
 
 // Log queries in development
 if (process.env.NODE_ENV === "development") {
-  prisma.$on("query" as never, (e: any) => {
+  prisma.$on("query" as never, () => {
     // console.log("Query: " + e.query);
     // console.log("Params: " + e.params);
     // console.log("Duration: " + e.duration + "ms");
