@@ -27,9 +27,14 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Check build
+        env:
+          NEXT_PUBLIC_CDN_URL: ${{ secrets.NEXT_PUBLIC_CDN_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL: ${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}
+          NODE_OPTIONS: "--max-old-space-size=4096"
         run: |
           npm run db:generate
-          NODE_OPTIONS="--max-old-space-size=4096" npm run build
+          npm run build
       - name: Check linting
         run: npm run lint:check
       - name: Format code
