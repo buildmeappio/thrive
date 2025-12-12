@@ -73,7 +73,6 @@ jobs:
           EOF
 
       - name: Check build
-        env:
         run: |
           npm run db:generate
           npm run build
