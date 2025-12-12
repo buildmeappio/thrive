@@ -1,14 +1,24 @@
 "use server";
 
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, S3ClientConfig } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 import prisma from "@/lib/db";
 import { ContractStatus } from "@prisma/client";
+import { ENV } from "@/constants/variables";
 
 // S3 client – credentials auto-resolved from env or IAM role
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
-});
+const s3Config: S3ClientConfig = {
+  region: ENV.AWS_REGION!,
+};
+
+// Add credentials if available (for local development)
+if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
+  s3Config.credentials = {
+    accessKeyId: ENV.AWS_ACCESS_KEY_ID,
+    secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
+  };
+}
+const s3Client = new S3Client(s3Config);
 
 // Upload HTML content to S3
 export async function uploadHtmlToS3(contractId: string, htmlContent: string) {

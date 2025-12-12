@@ -1,11 +1,21 @@
 import prisma from "@/lib/db";
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
 import { S3StreamChunk } from "@/types/api";
+import { ENV } from "@/constants/variables";
 
 // S3 client – AWS SDK will auto-resolve credentials from env vars or IAM role
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
-});
+const s3Config: S3ClientConfig = {
+  region: ENV.AWS_REGION!,
+};
+
+// Add credentials if available (for local development)
+if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
+  s3Config.credentials = {
+    accessKeyId: ENV.AWS_ACCESS_KEY_ID,
+    secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
+  };
+}
+const s3Client = new S3Client(s3Config);
 
 async function streamToString(
   body: S3StreamChunk | null | undefined,
