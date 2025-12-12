@@ -4,7 +4,7 @@ import prisma from "@/lib/db";
 
 export const getDocumentByIdAction = async (
   documentId: string,
-): Promise<{ success: boolean; data?: { name: string }; error?: string }> => {
+): Promise<{ success: boolean; data?: { name: string; displayName: string; size: number }; error?: string }> => {
   try {
     if (!documentId) {
       return {
@@ -15,7 +15,7 @@ export const getDocumentByIdAction = async (
 
     const document = await prisma.documents.findUnique({
       where: { id: documentId },
-      select: { name: true },
+      select: { name: true, displayName: true, size: true },
     });
 
     if (!document) {
@@ -27,7 +27,11 @@ export const getDocumentByIdAction = async (
 
     return {
       success: true,
-      data: { name: document.name },
+      data: { 
+        name: document.name, 
+        displayName: document.displayName || document.name,
+        size: document.size 
+      },
     };
   } catch (error: unknown) {
     console.error("Error fetching document:", error);

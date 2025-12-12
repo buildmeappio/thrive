@@ -28,7 +28,7 @@ export const ACTIVATION_STEPS: Omit<ActivationStep, "completed">[] = [
   },
   {
     id: "documents",
-    title: "Upload Required Documents",
+    title: "Upload Verification Documents",
     order: 5,
   },
   {
