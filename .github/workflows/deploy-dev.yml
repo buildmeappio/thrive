@@ -40,13 +40,40 @@ jobs:
       - name: Format code
         run: npm run format:check
       
+      - name: Create .env file from secrets
+        run: |
+          cat <<EOF > .env
+          ENVIRONMENT=development
+          NEXT_PUBLIC_ENVIRONMENT=development
+          NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
+          NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL=${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}
+          AWS_S3_REGION=${{ secrets.AWS_S3_REGION }}
+          AWS_S3_ACCESS_KEY_ID=${{ secrets.AWS_S3_ACCESS_KEY_ID }}
+          AWS_S3_SECRET_ACCESS_KEY=${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
+          AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
+          NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
+          JWT_SET_PASSWORD_SECRET=${{ secrets.JWT_SET_PASSWORD_SECRET }}
+          JWT_EXAMINER_INFO_REQUEST_SECRET=${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}
+          JWT_ORGANIZATION_INFO_REQUEST_SECRET=${{ secrets.JWT_ORGANIZATION_INFO_REQUEST_SECRET }}
+          JWT_CLAIMANT_APPROVE_SECRET=${{ secrets.JWT_CLAIMANT_APPROVE_SECRET }}
+          JWT_RESUME_SECRET=${{ secrets.JWT_RESUME_SECRET }}
+          JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET=${{ secrets.JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET }}
+          DOCS_REFRESH_TOKEN=${{ secrets.DOCS_REFRESH_TOKEN }}
+          GOOGLE_CONTRACT_TEMPLATE_ID=${{ secrets.GOOGLE_CONTRACT_TEMPLATE_ID }}
+          GOOGLE_CONTRACTS_FOLDER_ID=${{ secrets.GOOGLE_CONTRACTS_FOLDER_ID }}
+          EMAIL_REPLY_TO=${{ secrets.EMAIL_REPLY_TO }}
+          NODE_TLS_REJECT_UNAUTHORIZED=${{ secrets.NODE_TLS_REJECT_UNAUTHORIZED || 0 }}
+          OAUTH_USERNAME=${{ secrets.OAUTH_USERNAME }}
+          OAUTH_CLIENT_ID=${{ secrets.OAUTH_CLIENT_ID }}
+          OAUTH_CLIENT_SECRET=${{ secrets.OAUTH_CLIENT_SECRET }}
+          OAUTH_REFRESH_TOKEN=${{ secrets.OAUTH_REFRESH_TOKEN }}
+          EOF
+
       - name: Check build
         env:
-          NEXT_PUBLIC_CDN_URL: ${{ secrets.NEXT_PUBLIC_CDN_URL }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
-          NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL: ${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          NODE_OPTIONS: "--max-old-space-size=4096"
         run: |
           npm run db:generate
           npm run build
