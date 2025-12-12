@@ -1,7 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
-import { BackButton, ContinueButton, ProgressIndicator, SaveAndContinueButton } from "@/components";
+import {
+  BackButton,
+  ContinueButton,
+  ProgressIndicator,
+  SaveAndContinueButton,
+} from "@/components";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   step3IMEExperienceSchema,
@@ -42,7 +47,7 @@ const IMEExperince: React.FC<RegStepProps> = ({
           (type: { id: string; name: string }) => ({
             value: type.id,
             label: type.name,
-          })
+          }),
         );
         setAssessmentTypeOptions(assessmentTypeOptionsData);
       } catch (error) {
@@ -114,7 +119,8 @@ const IMEExperince: React.FC<RegStepProps> = ({
   return (
     <div
       className="mt-4 flex w-full flex-col rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+    >
       <ProgressIndicator
         currentStep={currentStep}
         totalSteps={totalSteps}
@@ -146,7 +152,8 @@ const IMEExperince: React.FC<RegStepProps> = ({
                       <RadioGroup
                         value={field.value}
                         onValueChange={field.onChange}
-                        className="flex flex-row flex-wrap gap-x-4 gap-y-2 pt-2 sm:gap-x-6">
+                        className="flex flex-row flex-wrap gap-x-4 gap-y-2 pt-2 sm:gap-x-6"
+                      >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem
                             value="yes"
@@ -156,7 +163,8 @@ const IMEExperince: React.FC<RegStepProps> = ({
                           />
                           <Label
                             htmlFor="imes-completed-yes"
-                            className="cursor-pointer text-sm font-medium text-gray-700">
+                            className="cursor-pointer text-sm font-medium text-gray-700"
+                          >
                             Yes
                           </Label>
                         </div>
@@ -169,7 +177,8 @@ const IMEExperince: React.FC<RegStepProps> = ({
                           />
                           <Label
                             htmlFor="imes-completed-no"
-                            className="cursor-pointer text-sm font-medium text-gray-700">
+                            className="cursor-pointer text-sm font-medium text-gray-700"
+                          >
                             No
                           </Label>
                         </div>
@@ -203,7 +212,8 @@ const IMEExperince: React.FC<RegStepProps> = ({
                       <RadioGroup
                         value={field.value}
                         onValueChange={field.onChange}
-                        className="flex gap-4">
+                        className="flex gap-4"
+                      >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem
                             value="yes"
@@ -213,7 +223,8 @@ const IMEExperince: React.FC<RegStepProps> = ({
                           />
                           <Label
                             htmlFor="conducting-yes"
-                            className="cursor-pointer font-normal">
+                            className="cursor-pointer font-normal"
+                          >
                             Yes
                           </Label>
                         </div>
@@ -226,7 +237,8 @@ const IMEExperince: React.FC<RegStepProps> = ({
                           />
                           <Label
                             htmlFor="conducting-no"
-                            className="cursor-pointer font-normal">
+                            className="cursor-pointer font-normal"
+                          >
                             No
                           </Label>
                         </div>

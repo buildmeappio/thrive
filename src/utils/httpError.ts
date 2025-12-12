@@ -5,7 +5,11 @@ class HttpError extends Error {
     this.statusCode = statusCode;
   }
 
-  static fromError(error: HttpError | Error | unknown, message: string, statusCode: number) {
+  static fromError(
+    error: HttpError | Error | unknown,
+    message: string,
+    statusCode: number,
+  ) {
     if (error instanceof HttpError) {
       return new HttpError(error.message, error.statusCode);
     } else if (error instanceof Error) {

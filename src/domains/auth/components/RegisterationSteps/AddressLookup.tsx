@@ -21,7 +21,10 @@ import {
 import { UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { provinces } from "@/constants/options";
-import { GoogleMapsPlaceData, GoogleMapsAddressComponent } from "@/types/google-maps";
+import {
+  GoogleMapsPlaceData,
+  GoogleMapsAddressComponent,
+} from "@/types/google-maps";
 
 const AddressLookup: React.FC<RegStepProps> = ({
   onNext,
@@ -79,7 +82,8 @@ const AddressLookup: React.FC<RegStepProps> = ({
     // Extract address components from Google Places API response
     const extractComponent = (type: string, shortName = false) => {
       const component = components.find(
-        (comp: GoogleMapsAddressComponent) => comp.types && comp.types.includes(type)
+        (comp: GoogleMapsAddressComponent) =>
+          comp.types && comp.types.includes(type),
       );
       return component
         ? shortName
@@ -150,7 +154,8 @@ const AddressLookup: React.FC<RegStepProps> = ({
   return (
     <div
       className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+    >
       <ProgressIndicator
         currentStep={currentStep}
         totalSteps={totalSteps}

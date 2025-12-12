@@ -1,8 +1,8 @@
-import { 
-  verifyPasswordToken, 
+import {
+  verifyPasswordToken,
   signPasswordToken,
   signForgotPasswordToken,
-  verifyForgotPasswordToken
+  verifyForgotPasswordToken,
 } from "@/lib/jwt";
 import HttpError from "@/utils/httpError";
 import { JwtPayload } from "jsonwebtoken";
@@ -43,7 +43,7 @@ class TokenService {
       throw HttpError.fromError(
         error,
         ErrorMessages.FAILED_TOKEN_GENERATION,
-        500
+        500,
       );
     }
   }
@@ -60,7 +60,7 @@ class TokenService {
       throw HttpError.fromError(
         error,
         ErrorMessages.FAILED_TOKEN_GENERATION,
-        500
+        500,
       );
     }
   }

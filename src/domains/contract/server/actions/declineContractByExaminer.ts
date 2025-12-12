@@ -12,7 +12,7 @@ import { ENV } from "@/constants/variables";
 export const declineContractByExaminer = async (
   examinerProfileId: string, // Can be applicationId or examinerProfileId
   examinerEmail: string,
-  declineReason: string
+  declineReason: string,
 ) => {
   try {
     // Check if this is an applicationId or examinerProfileId
@@ -47,11 +47,14 @@ export const declineContractByExaminer = async (
         if (!str) return str;
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
       };
-      
+
       const firstName = capitalizeFirstLetter(application.firstName || "");
       const lastName = capitalizeFirstLetter(application.lastName || "");
       examinerName = `Dr. ${firstName} ${lastName}`;
-      examinerProvince = application.address?.province || application.provinceOfResidence || "Not specified";
+      examinerProvince =
+        application.address?.province ||
+        application.provinceOfResidence ||
+        "Not specified";
       adminReviewUrl = `${ENV.NEXT_PUBLIC_APP_URL}/admin/examiner/${examinerProfileId}`;
     } else {
       // Fallback: try as examinerProfileId (for backward compatibility)
@@ -76,9 +79,13 @@ export const declineContractByExaminer = async (
         if (!str) return str;
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
       };
-      
-      const firstName = capitalizeFirstLetter(examinerProfile.account.user.firstName);
-      const lastName = capitalizeFirstLetter(examinerProfile.account.user.lastName);
+
+      const firstName = capitalizeFirstLetter(
+        examinerProfile.account.user.firstName,
+      );
+      const lastName = capitalizeFirstLetter(
+        examinerProfile.account.user.lastName,
+      );
       examinerName = `Dr. ${firstName} ${lastName}`;
       examinerProvince = examinerProfile.address?.province || "Not specified";
       adminReviewUrl = `${ENV.NEXT_PUBLIC_APP_URL}/admin/examiner/${examinerProfileId}`;
@@ -98,7 +105,7 @@ export const declineContractByExaminer = async (
         declineReason,
         reviewUrl: adminReviewUrl,
       },
-      adminEmail
+      adminEmail,
     );
 
     return {
@@ -109,8 +116,9 @@ export const declineContractByExaminer = async (
     console.error("Error in declineContractByExaminer:", error);
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to decline contract",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to decline contract",
     };
   }
 };
-

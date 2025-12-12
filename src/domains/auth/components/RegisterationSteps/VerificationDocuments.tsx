@@ -31,7 +31,7 @@ const VerificationDocuments: React.FC<RegStepProps> = ({
   const { saveProgress, isSaving } = useSaveApplicationProgress();
   // Use selector to directly subscribe to medicalLicense changes
   const medicalLicense = useRegistrationStore(
-    (state) => state.data.medicalLicense
+    (state) => state.data.medicalLicense,
   );
 
   const form = useForm<VerificationDocumentsInput>({
@@ -40,8 +40,8 @@ const VerificationDocuments: React.FC<RegStepProps> = ({
       medicalLicense: Array.isArray(medicalLicense)
         ? medicalLicense
         : medicalLicense
-        ? [medicalLicense]
-        : [],
+          ? [medicalLicense]
+          : [],
     },
     mode: "onSubmit",
   });
@@ -51,8 +51,8 @@ const VerificationDocuments: React.FC<RegStepProps> = ({
     const medicalLicenseValue = Array.isArray(medicalLicense)
       ? medicalLicense
       : medicalLicense
-      ? [medicalLicense]
-      : [];
+        ? [medicalLicense]
+        : [];
 
     form.reset({
       medicalLicense: medicalLicenseValue,
@@ -72,7 +72,8 @@ const VerificationDocuments: React.FC<RegStepProps> = ({
   return (
     <div
       className="mt-4 flex w-full flex-col rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+    >
       <ProgressIndicator
         currentStep={currentStep}
         totalSteps={totalSteps}
@@ -104,8 +105,8 @@ const VerificationDocuments: React.FC<RegStepProps> = ({
                         Array.isArray(field.value)
                           ? field.value
                           : field.value
-                          ? [field.value]
-                          : []
+                            ? [field.value]
+                            : []
                       }
                       onChange={(files) => {
                         field.onChange(files);

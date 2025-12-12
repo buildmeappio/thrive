@@ -26,4 +26,3 @@ export type RecordObject = Record<string, unknown>;
  * Generic array type
  */
 export type UnknownArray = unknown[];
-

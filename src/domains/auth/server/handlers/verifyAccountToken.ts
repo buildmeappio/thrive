@@ -22,7 +22,7 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
       log("Token contains applicationId - verifying application", {
         applicationId: tokenData.applicationId,
       });
-      
+
       // Get examiner application
       const application = await prisma.examinerApplication.findUnique({
         where: {
@@ -31,21 +31,24 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
       });
 
       if (!application) {
-        log("Application not found for applicationId:", tokenData.applicationId);
+        log(
+          "Application not found for applicationId:",
+          tokenData.applicationId,
+        );
         throw HttpError.notFound("Examiner application not found");
       }
 
       log("Application found with status:", application.status);
 
       // Check if application is approved (can be ACCEPTED or APPROVED)
-      const isApproved = 
-        application.status === ExaminerStatus.ACCEPTED || 
+      const isApproved =
+        application.status === ExaminerStatus.ACCEPTED ||
         application.status === ExaminerStatus.APPROVED;
-      
+
       if (!isApproved) {
         log("Application is not approved. Current status:", application.status);
         throw HttpError.badRequest(
-          `Application is not approved. Current status: ${application.status}. Please contact support if you believe this is an error.`
+          `Application is not approved. Current status: ${application.status}. Please contact support if you believe this is an error.`,
         );
       }
 
@@ -76,7 +79,7 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
         if (isValidPasswordHash) {
           log("User already has password set - token already used");
           throw HttpError.unauthorized(
-            "Token has already been used. Please log in with your existing password."
+            "Token has already been used. Please log in with your existing password.",
           );
         }
 
@@ -112,7 +115,7 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
     // Legacy flow: userId and accountId (for existing users)
     if (tokenData.userId && tokenData.accountId) {
       log("Token contains userId/accountId - verifying user");
-      
+
       // Check if user exists
       const user = await userService.getUserById(tokenData.userId);
       log("User found:", !!user);
@@ -126,7 +129,7 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
       if (isValidPasswordHash) {
         log("User already has password set - token already used");
         throw HttpError.unauthorized(
-          "Token has already been used. Please log in with your existing password."
+          "Token has already been used. Please log in with your existing password.",
         );
       }
 
@@ -148,7 +151,7 @@ const verifyAccountToken = async (payload: VerifyAccountTokenInput) => {
     throw HttpError.fromError(
       err,
       ErrorMessages.FAILED_TOKEN_VERIFICATION,
-      401
+      401,
     );
   }
 };

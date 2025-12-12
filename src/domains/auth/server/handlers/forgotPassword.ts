@@ -24,19 +24,19 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
 
     // Filter to only medical examiner accounts
     const examinerAccounts = user.accounts.filter(
-      (account) => account.role.name === Roles.MEDICAL_EXAMINER
+      (account) => account.role.name === Roles.MEDICAL_EXAMINER,
     );
 
     if (examinerAccounts.length === 0) {
       log(
-        `[ForgotPassword] User found but no medical examiner account for: ${email}`
+        `[ForgotPassword] User found but no medical examiner account for: ${email}`,
       );
       log(
         `[ForgotPassword] User has ${
           user.accounts.length
         } account(s) with roles: ${user.accounts
           .map((acc) => acc.role.name)
-          .join(", ")}`
+          .join(", ")}`,
       );
       // For security, don't reveal if email exists or not
       return {
@@ -47,7 +47,7 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
     }
 
     log(
-      `[ForgotPassword] User found: ${user.id}, email in DB: ${user.email}, sending email to: ${user.email}`
+      `[ForgotPassword] User found: ${user.id}, email in DB: ${user.email}, sending email to: ${user.email}`,
     );
   } catch {
     // User not found - same behavior as login
@@ -78,7 +78,7 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
 
   if (!examinerProfile) {
     log(
-      `[ForgotPassword] No examiner profile found for account: ${account.id}`
+      `[ForgotPassword] No examiner profile found for account: ${account.id}`,
     );
     return {
       success: true,
@@ -109,7 +109,7 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
       {
         resetLink,
       },
-      user.email
+      user.email,
     );
 
     if (!result.success) {
@@ -121,7 +121,7 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
   } catch (err) {
     error(
       `[ForgotPassword] ❌ Error sending password reset email to ${user.email}:`,
-      err
+      err,
     );
     // Log the full error details
     if (error instanceof Error) {
@@ -129,7 +129,7 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
       error(`[ForgotPassword] Error stack: ${error.stack}`);
     }
     throw HttpError.internalServerError(
-      "Failed to send password reset email. Please try again later."
+      "Failed to send password reset email. Please try again later.",
     );
   }
 

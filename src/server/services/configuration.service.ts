@@ -58,7 +58,7 @@ export async function getAvailabilitySettings(): Promise<{
 
     // Get UTC minutes from database
     const startOfWorkingMinutesUTC = configMap.get(
-      CONFIG_KEYS.START_WORKING_HOUR
+      CONFIG_KEYS.START_WORKING_HOUR,
     );
 
     // Build settings object with database values or fallback to defaults
@@ -72,18 +72,18 @@ export async function getAvailabilitySettings(): Promise<{
 
     console.log(
       "[Configuration Service] Loaded availability settings:",
-      settings
+      settings,
     );
     console.log(
       "[Configuration Service] UTC minutes:",
-      startOfWorkingMinutesUTC
+      startOfWorkingMinutesUTC,
     );
 
     return settings;
   } catch (error) {
     console.error(
       "[Configuration Service] Error fetching configuration, using fallback:",
-      error
+      error,
     );
     return {
       noOfDaysForWindow: 30,
@@ -100,7 +100,7 @@ export async function getAvailabilitySettings(): Promise<{
  * Supports both comma-separated string and single number
  */
 function parseSlotDurationOptions(
-  slotDuration: number | string | null
+  slotDuration: number | string | null,
 ): number[] {
   // Default fallback
   const defaultOptions = [30, 45, 60];
@@ -204,7 +204,7 @@ export async function getInterviewSettings(): Promise<{
   } catch (error) {
     console.error(
       "[Configuration Service] Error fetching interview configuration, using fallback:",
-      error
+      error,
     );
     return {
       minDaysAhead: 1,
@@ -236,7 +236,7 @@ export async function getConfigValue(key: string): Promise<number | null> {
   } catch (error) {
     console.error(
       `[Configuration Service] Error fetching config key "${key}":`,
-      error
+      error,
     );
     return null;
   }

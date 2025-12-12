@@ -63,10 +63,12 @@ const AvailabilityPreferencesForm: React.FC<
         examinerProfileId,
         weeklyHours: utcValues.weeklyHours,
         overrideHours: utcValues.overrideHours,
-        bookingOptions: utcValues.bookingOptions as {
-          maxIMEsPerWeek: string;
-          minimumNotice: string;
-        } | undefined,
+        bookingOptions: utcValues.bookingOptions as
+          | {
+              maxIMEsPerWeek: string;
+              minimumNotice: string;
+            }
+          | undefined,
         activationStep: "availability",
       });
 
@@ -78,7 +80,7 @@ const AvailabilityPreferencesForm: React.FC<
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -94,7 +96,8 @@ const AvailabilityPreferencesForm: React.FC<
           form="availability-form"
           variant="outline"
           className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
-          disabled={loading}>
+          disabled={loading}
+        >
           <span>Mark as Complete</span>
           <CircleCheck className="w-5 h-5 text-gray-700" />
         </Button>
@@ -110,7 +113,8 @@ const AvailabilityPreferencesForm: React.FC<
               activeTab === "weeklyHours"
                 ? "text-black font-bold"
                 : "text-gray-500 hover:text-gray-700"
-            }`}>
+            }`}
+          >
             Weekly Hours
             {activeTab === "weeklyHours" && (
               <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
@@ -136,7 +140,8 @@ const AvailabilityPreferencesForm: React.FC<
               activeTab === "bookingOptions"
                 ? "text-black font-bold"
                 : "text-gray-500 hover:text-gray-700"
-            }`}>
+            }`}
+          >
             Additional Preferences
             {activeTab === "bookingOptions" && (
               <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>

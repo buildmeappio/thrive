@@ -7,7 +7,7 @@ import { SaveReportDraftResponse } from "../../types";
 import { uploadFileToS3 } from "@/lib/s3";
 
 export async function saveReportDraftAction(
-  input: SaveReportDraftInput
+  input: SaveReportDraftInput,
 ): Promise<SaveReportDraftResponse> {
   try {
     // Upload any new documents first
@@ -29,13 +29,13 @@ export async function saveReportDraftAction(
           } else {
             // Upload failed, return error
             throw new Error(
-              `Failed to upload document ${doc.file.name}: ${uploadResult.error}`
+              `Failed to upload document ${doc.file.name}: ${uploadResult.error}`,
             );
           }
         }
         // Document already exists, return as-is
         return doc;
-      })
+      }),
     );
 
     // Update report data with uploaded documents
@@ -54,10 +54,11 @@ export async function saveReportDraftAction(
     console.error("Error in saveReportDraft action:", error);
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to save report draft",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to save report draft",
     };
   }
 }
 
 export default saveReportDraftAction;
-

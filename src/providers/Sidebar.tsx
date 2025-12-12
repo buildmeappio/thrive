@@ -41,7 +41,8 @@ const SidebarProvider: React.FC<SidebarProviderProps> = ({ children }) => {
         toggleSidebar,
         closeSidebar,
         openSidebar,
-      }}>
+      }}
+    >
       {children}
     </SidebarContext.Provider>
   );

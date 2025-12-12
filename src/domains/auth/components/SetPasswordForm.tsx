@@ -18,9 +18,9 @@ type Step9PasswordProps = {
   isPasswordReset?: boolean;
 };
 
-const SetPasswordForm: React.FC<Step9PasswordProps> = ({ 
+const SetPasswordForm: React.FC<Step9PasswordProps> = ({
   token,
-  isPasswordReset = false
+  isPasswordReset = false,
 }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -79,7 +79,8 @@ const SetPasswordForm: React.FC<Step9PasswordProps> = ({
               <div className="space-y-3 md:space-y-2">
                 <Label
                   htmlFor="password"
-                  className="text-base text-black md:text-base">
+                  className="text-base text-black md:text-base"
+                >
                   Password<span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
@@ -99,7 +100,8 @@ const SetPasswordForm: React.FC<Step9PasswordProps> = ({
               <div className="space-y-3 md:space-y-2">
                 <Label
                   htmlFor="confirmPassword"
-                  className="text-base text-black md:text-base">
+                  className="text-base text-black md:text-base"
+                >
                   Confirm Password<span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">

@@ -66,8 +66,8 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
       if (file.size > maxSize) {
         errors.push(
           `${file.name}: File size exceeds maximum of ${formatFileSize(
-            maxSize
-          )}`
+            maxSize,
+          )}`,
         );
       } else {
         // Check file type
@@ -78,7 +78,7 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
         ];
         if (!allowedTypes.includes(file.type)) {
           errors.push(
-            `${file.name}: Invalid file type. Only PDF, DOC, and DOCX are allowed.`
+            `${file.name}: Invalid file type. Only PDF, DOC, and DOCX are allowed.`,
           );
         } else {
           validFiles.push(file);
@@ -210,14 +210,15 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
             : "border-[#D1D5DB] bg-[#F2F5F6]",
           "hover:border-[#00A8FF] hover:bg-[#E8EBEC] focus-within:ring-2 focus-within:ring-[#00A8FF]/30 focus-within:ring-offset-0",
           disabled && "cursor-not-allowed opacity-50",
-          error && "ring-2 ring-red-500/30 border-red-300"
-        )}>
+          error && "ring-2 ring-red-500/30 border-red-300",
+        )}
+      >
         {showIcon && (
           <div className="flex items-center justify-center">
             <Upload
               className={cn(
                 "h-8 w-8 transition-colors",
-                isDragging ? "text-[#00A8FF]" : "text-[#A4A4A4]"
+                isDragging ? "text-[#00A8FF]" : "text-[#A4A4A4]",
               )}
               strokeWidth={2}
             />
@@ -231,14 +232,15 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
               isDragging
                 ? "text-[#00A8FF]"
                 : hasFiles
-                ? "text-[#333]"
-                : "text-[#9EA9AA]"
-            )}>
+                  ? "text-[#333]"
+                  : "text-[#9EA9AA]",
+            )}
+          >
             {isDragging
               ? "Drop files here"
               : hasFiles
-              ? `${files.length} file(s) selected`
-              : `${placeholder} or drag and drop`}
+                ? `${files.length} file(s) selected`
+                : `${placeholder} or drag and drop`}
           </span>
         </div>
       </div>
@@ -249,7 +251,8 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
           {files.map((file: DocumentFile, index: number) => (
             <div
               key={index}
-              className="flex items-center gap-2 rounded-[10px] bg-[#F8F9FA] border border-[#E8EBEC] p-2 transition-all hover:bg-[#F2F5F6] flex-shrink-0">
+              className="flex items-center gap-2 rounded-[10px] bg-[#F8F9FA] border border-[#E8EBEC] p-2 transition-all hover:bg-[#F2F5F6] flex-shrink-0"
+            >
               <File className="h-5 w-5 text-[#00A8FF] flex-shrink-0" />
 
               <div className="flex-1 min-w-0">
@@ -277,7 +280,8 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
                     onClick={handlePreviewExisting(file)}
                     className="p-1.5 rounded-full hover:bg-blue-100 text-blue-500 transition-colors"
                     disabled={disabled}
-                    title="Preview document">
+                    title="Preview document"
+                  >
                     <Eye className="h-4 w-4" />
                   </button>
                 )}
@@ -290,7 +294,8 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
                     isExistingDocument(file)
                       ? "Remove and upload new file"
                       : "Remove file"
-                  }>
+                  }
+                >
                   <X className="h-4 w-4" />
                 </button>
               </div>

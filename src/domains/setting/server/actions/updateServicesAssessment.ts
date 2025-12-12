@@ -18,8 +18,9 @@ export const updateServicesAssessmentAction = async (data: {
     return {
       success: false as const,
       data: null,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to update services assessment",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to update services assessment",
     };
   }
 };
-

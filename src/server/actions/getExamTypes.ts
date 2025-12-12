@@ -12,7 +12,8 @@ const getExamTypesAction = async (): Promise<ExamTypesResponse> => {
     return {
       success: false as const,
       message:
-        (error instanceof Error ? error.message : undefined) || "Failed to fetch exam types. Please try again.",
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to fetch exam types. Please try again.",
     };
   }
 };

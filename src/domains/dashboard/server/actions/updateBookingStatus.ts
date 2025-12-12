@@ -7,7 +7,7 @@ import {
 } from "../../types";
 
 export const updateBookingStatusAction = async (
-  input: UpdateBookingStatusInput
+  input: UpdateBookingStatusInput,
 ): Promise<UpdateBookingStatusResponse> => {
   try {
     const result = await updateBookingStatusHandler(input);
@@ -16,7 +16,9 @@ export const updateBookingStatusAction = async (
     console.error("Error in updateBookingStatus action:", error);
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to update booking status",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to update booking status",
     };
   }
 };

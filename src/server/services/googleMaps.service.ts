@@ -41,7 +41,7 @@ class GoogleMapsService {
     this.apiKey = ENV.GOOGLE_PLACES_API_KEY || "";
     if (!this.apiKey) {
       console.warn(
-        "GOOGLE_PLACES_API_KEY is not set. Geocoding features will not work."
+        "GOOGLE_PLACES_API_KEY is not set. Geocoding features will not work.",
       );
     }
   }
@@ -103,7 +103,7 @@ class GoogleMapsService {
    */
   async reverseGeocode(
     latitude: number,
-    longitude: number
+    longitude: number,
   ): Promise<GeocodeResult | null> {
     if (!this.apiKey) {
       throw new Error("Google Maps API key is not configured");
@@ -160,7 +160,7 @@ class GoogleMapsService {
       // Check if any address component has country: CA
       const hasCanada = result.addressComponents.some(
         (component: GoogleMapsAddressComponent) =>
-          component.types.includes("country") && component.short_name === "CA"
+          component.types.includes("country") && component.short_name === "CA",
       );
 
       return hasCanada;
@@ -183,7 +183,7 @@ class GoogleMapsService {
       // Find the administrative_area_level_1 (province/state)
       const provinceComponent = result.addressComponents.find(
         (component: GoogleMapsAddressComponent) =>
-          component.types.includes("administrative_area_level_1")
+          component.types.includes("administrative_area_level_1"),
       );
 
       return provinceComponent?.short_name || null;
@@ -206,7 +206,7 @@ class GoogleMapsService {
     lat1: number,
     lon1: number,
     lat2: number,
-    lon2: number
+    lon2: number,
   ): number {
     const R = 6371; // Earth's radius in kilometers
     const dLat = this.toRad(lat2 - lat1);

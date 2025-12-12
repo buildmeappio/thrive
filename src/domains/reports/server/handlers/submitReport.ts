@@ -3,7 +3,7 @@ import HttpError from "@/utils/httpError";
 import { SubmitReportInput, SubmitReportResponse } from "../../types";
 
 const submitReport = async (
-  payload: SubmitReportInput
+  payload: SubmitReportInput,
 ): Promise<SubmitReportResponse> => {
   try {
     const { bookingId, reportData } = payload;
@@ -35,11 +35,12 @@ const submitReport = async (
     console.error("Error in submitReport handler:", error);
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to submit report",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to submit report",
     };
   }
 };
 
 export default submitReport;
 export type { SubmitReportInput };
-

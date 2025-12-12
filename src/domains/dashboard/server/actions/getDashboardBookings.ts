@@ -6,7 +6,7 @@ import getDashboardBookingsHandler, {
 import { GetDashboardBookingsResponse } from "../../types";
 
 export const getDashboardBookingsAction = async (
-  input: GetDashboardBookingsInput
+  input: GetDashboardBookingsInput,
 ): Promise<GetDashboardBookingsResponse> => {
   try {
     const result = await getDashboardBookingsHandler(input);
@@ -15,7 +15,9 @@ export const getDashboardBookingsAction = async (
     console.error("Error in getDashboardBookings action:", error);
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch dashboard bookings",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to fetch dashboard bookings",
     };
   }
 };

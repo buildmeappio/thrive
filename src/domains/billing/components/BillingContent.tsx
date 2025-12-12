@@ -96,7 +96,8 @@ export default function BillingContent({
                 className="h-4 w-4 sm:h-5 sm:w-5"
                 fill="none"
                 stroke="url(#searchGradient)"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -127,7 +128,8 @@ export default function BillingContent({
                 statusFilter !== "all"
                   ? "border-[#00A8FF] text-[#00A8FF]"
                   : "border-gray-200 text-gray-700 hover:bg-gray-50"
-              }`}>
+              }`}
+            >
               <Funnel
                 className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                 stroke="url(#statusGradient)"
@@ -139,7 +141,8 @@ export default function BillingContent({
                 }`}
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -160,7 +163,8 @@ export default function BillingContent({
                     }}
                     className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
                       statusFilter === "all" ? "bg-gray-100 text-[#00A8FF]" : ""
-                    }`}>
+                    }`}
+                  >
                     All Status
                   </button>
                   <button
@@ -172,7 +176,8 @@ export default function BillingContent({
                       statusFilter === "paid"
                         ? "bg-gray-100 text-[#00A8FF]"
                         : ""
-                    }`}>
+                    }`}
+                  >
                     Paid
                   </button>
                   <button
@@ -184,7 +189,8 @@ export default function BillingContent({
                       statusFilter === "pending"
                         ? "bg-gray-100 text-[#00A8FF]"
                         : ""
-                    }`}>
+                    }`}
+                  >
                     Pending
                   </button>
                   <button
@@ -196,7 +202,8 @@ export default function BillingContent({
                       statusFilter === "overdue"
                         ? "bg-gray-100 text-[#00A8FF]"
                         : ""
-                    }`}>
+                    }`}
+                  >
                     Overdue
                   </button>
                 </div>
@@ -208,12 +215,14 @@ export default function BillingContent({
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap">
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
+            >
               <svg
                 className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -241,4 +250,3 @@ export default function BillingContent({
     </>
   );
 }
-

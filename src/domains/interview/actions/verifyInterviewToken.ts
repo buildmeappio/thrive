@@ -7,7 +7,8 @@ import HttpError from "@/utils/httpError";
 export const verifyInterviewToken = async (token: string) => {
   try {
     // Verify the JWT token
-    const { email, applicationId } = verifyExaminerScheduleInterviewToken(token);
+    const { email, applicationId } =
+      verifyExaminerScheduleInterviewToken(token);
 
     // Fetch application details
     const application = await prisma.examinerApplication.findUnique({
@@ -71,4 +72,3 @@ export const verifyInterviewToken = async (token: string) => {
     throw HttpError.badRequest(error.message || "Invalid or expired token");
   }
 };
-

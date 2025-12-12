@@ -41,7 +41,8 @@ export default function CaseDetails({
             <button
               onClick={() => router.back()}
               className="flex items-center cursor-pointer justify-center w-12 h-12 rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
-              aria-label="Go back">
+              aria-label="Go back"
+            >
               <ArrowLeft className="h-5 w-5 text-[#00A8FF]" />
             </button>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
@@ -56,7 +57,8 @@ export default function CaseDetails({
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                strokeWidth={3}>
+                strokeWidth={3}
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -83,7 +85,8 @@ export default function CaseDetails({
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                strokeWidth={3}>
+                strokeWidth={3}
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -126,7 +129,8 @@ export default function CaseDetails({
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                strokeWidth={3}>
+                strokeWidth={3}
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -145,7 +149,8 @@ export default function CaseDetails({
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                strokeWidth={3}>
+                strokeWidth={3}
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -165,7 +170,8 @@ export default function CaseDetails({
             type="single"
             collapsible
             className="w-full"
-            defaultValue="claimant">
+            defaultValue="claimant"
+          >
             <ClaimantDetailsSection claimant={data.claimant} />
 
             {data.insurance && (
@@ -195,7 +201,8 @@ export default function CaseDetails({
               onClick={() => {
                 router.push(`/appointments/${data.bookingId}/prepare-report`);
               }}
-              className="h-[48px] cursor-pointer px-6 rounded-[20px] bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] text-white font-medium hover:opacity-90 transition-opacity">
+              className="h-[48px] cursor-pointer px-6 rounded-[20px] bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] text-white font-medium hover:opacity-90 transition-opacity"
+            >
               Continue Draft
             </Button>
           </div>
@@ -205,7 +212,8 @@ export default function CaseDetails({
               onClick={() => {
                 router.push(`/appointments/${data.bookingId}/prepare-report`);
               }}
-              className="h-[48px] cursor-pointer px-6 rounded-[20px] bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] text-white font-medium hover:opacity-90 transition-opacity">
+              className="h-[48px] cursor-pointer px-6 rounded-[20px] bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] text-white font-medium hover:opacity-90 transition-opacity"
+            >
               Update Report
             </Button>
           </div>
@@ -217,7 +225,8 @@ export default function CaseDetails({
               onClick={() => {
                 router.push(`/appointments/${data.bookingId}/prepare-report`);
               }}
-              className="h-[48px] cursor-pointer px-6 rounded-[20px] bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] text-white font-medium hover:opacity-90 transition-opacity">
+              className="h-[48px] cursor-pointer px-6 rounded-[20px] bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] text-white font-medium hover:opacity-90 transition-opacity"
+            >
               Review Report
             </Button>
           </div>
@@ -228,7 +237,8 @@ export default function CaseDetails({
               onClick={() => {
                 router.push(`/appointments/${data.bookingId}/prepare-report`);
               }}
-              className="h-[48px] cursor-pointer px-6 rounded-[20px] bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] text-white font-medium hover:opacity-90 transition-opacity">
+              className="h-[48px] cursor-pointer px-6 rounded-[20px] bg-gradient-to-r from-[#01F4C8] to-[#00A8FF] text-white font-medium hover:opacity-90 transition-opacity"
+            >
               Prepare Report
             </Button>
           </div>
@@ -238,13 +248,15 @@ export default function CaseDetails({
               onClick={() => handleAction("ACCEPT")}
               disabled={isLoading}
               variant="outline"
-              className="h-[48px] cursor-pointer px-6 rounded-[20px] border-2 border-[#00A8FF] bg-white text-[#00A8FF] font-medium hover:bg-[#F0F8FF] transition-colors">
+              className="h-[48px] cursor-pointer px-6 rounded-[20px] border-2 border-[#00A8FF] bg-white text-[#00A8FF] font-medium hover:bg-[#F0F8FF] transition-colors"
+            >
               Accept Case
             </Button>
             <Button
               onClick={() => setIsDeclineModalOpen(true)}
               disabled={isLoading || data.status === "DECLINE"}
-              className="h-[48px] cursor-pointer px-6 rounded-[20px] bg-[#DC2626] text-white font-medium hover:bg-[#B91C1C] transition-colors">
+              className="h-[48px] cursor-pointer px-6 rounded-[20px] bg-[#DC2626] text-white font-medium hover:bg-[#B91C1C] transition-colors"
+            >
               Decline Offer
             </Button>
           </div>

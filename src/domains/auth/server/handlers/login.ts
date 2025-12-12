@@ -5,7 +5,7 @@ import ErrorMessages from "@/constants/ErrorMessages";
 
 const login = async (
   email: string,
-  password: string
+  password: string,
 ): Promise<{
   id: string;
   email: string;
@@ -25,7 +25,7 @@ const login = async (
   // Verify password
   const passwordMatch = await authService.verifyPassword(
     password,
-    user.password!
+    user.password!,
   );
 
   if (!passwordMatch) {

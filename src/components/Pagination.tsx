@@ -1,6 +1,12 @@
 "use client";
 
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +43,10 @@ export default function Pagination({
   // windowed page numbers: current ±2
   const start = Math.max(0, pageIndex - 2);
   const end = Math.min(totalPages - 1, pageIndex + 2);
-  const pages = Array.from({ length: Math.max(0, end - start + 1) }, (_, i) => start + i);
+  const pages = Array.from(
+    { length: Math.max(0, end - start + 1) },
+    (_, i) => start + i,
+  );
 
   const from = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
   const to = Math.min(totalRows, (pageIndex + 1) * pageSize);
@@ -47,7 +56,8 @@ export default function Pagination({
       {/* left: range + size */}
       <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
         <span className="text-[16px] font-poppins text-[#4D4D4D] whitespace-nowrap">
-          Showing <span className="font-semibold text-black">{from}</span>–<span className="font-semibold text-black">{to}</span> of{" "}
+          Showing <span className="font-semibold text-black">{from}</span>–
+          <span className="font-semibold text-black">{to}</span> of{" "}
           <span className="font-semibold text-black">{totalRows}</span>
         </span>
         <div className="hidden sm:flex items-center gap-2">
@@ -81,7 +91,7 @@ export default function Pagination({
             "flex items-center gap-1 text-sm font-medium transition-colors",
             canPreviousPage
               ? "text-gray-600 hover:text-gray-800"
-              : "text-gray-400 cursor-not-allowed"
+              : "text-gray-400 cursor-not-allowed",
           )}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -112,7 +122,7 @@ export default function Pagination({
             "flex items-center gap-1 text-sm font-medium transition-colors",
             canNextPage
               ? "text-gray-600 hover:text-gray-800"
-              : "text-gray-400 cursor-not-allowed"
+              : "text-gray-400 cursor-not-allowed",
           )}
         >
           Next
@@ -140,7 +150,7 @@ function PagePill({
         "h-9 min-w-9 px-3 rounded-lg text-sm font-medium transition border",
         active
           ? "text-white border-transparent bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
-          : "text-black bg-white border border-gray-200 hover:bg-gray-50"
+          : "text-black bg-white border border-gray-200 hover:bg-gray-50",
       )}
     >
       {children}

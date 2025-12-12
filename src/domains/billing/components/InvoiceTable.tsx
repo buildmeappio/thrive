@@ -53,7 +53,8 @@ const getStatusBadge = (status: Invoice["status"]) => {
 
   return (
     <span
-      className={`inline-block w-[80px] text-center px-3 py-1.5 rounded-full text-[13px] sm:text-[12px] font-medium ${styles[status]}`}>
+      className={`inline-block w-[80px] text-center px-3 py-1.5 rounded-full text-[13px] sm:text-[12px] font-medium ${styles[status]}`}
+    >
       {labels[status]}
     </span>
   );
@@ -95,7 +96,9 @@ export default function InvoiceTable({
   const filteredInvoices = useMemo(() => {
     return invoices.filter((invoice) => {
       const matchesSearch =
-        invoice.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        invoice.invoiceNumber
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
         invoice.caseNumber.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesStatus =
@@ -138,12 +141,14 @@ export default function InvoiceTable({
     <>
       <section
         className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
-        aria-labelledby="invoices-heading">
+        aria-labelledby="invoices-heading"
+      >
         {/* Header */}
         <div className="mb-4">
           <h3
             id="invoices-heading"
-            className="font-degular font-[600] text-[26px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black">
+            className="font-degular font-[600] text-[26px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black"
+          >
             Invoices
           </h3>
         </div>
@@ -190,11 +195,13 @@ export default function InvoiceTable({
                 {filteredInvoices.map((invoice) => (
                   <TableRow
                     key={invoice.id}
-                    className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]">
+                    className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
+                  >
                     <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
                       <div
                         className="text-[16px] leading-normal truncate"
-                        title={invoice.invoiceNumber}>
+                        title={invoice.invoiceNumber}
+                      >
                         {invoice.invoiceNumber}
                       </div>
                     </TableCell>
@@ -206,7 +213,8 @@ export default function InvoiceTable({
                     <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
                       <div
                         className="text-[16px] leading-normal truncate"
-                        title={invoice.caseNumber}>
+                        title={invoice.caseNumber}
+                      >
                         {invoice.caseNumber}
                       </div>
                     </TableCell>
@@ -223,13 +231,15 @@ export default function InvoiceTable({
                         <button
                           onClick={() => handleViewInvoice(invoice)}
                           className="p-2 rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] text-[#00A8FF] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
-                          title="View Invoice">
+                          title="View Invoice"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDownloadInvoice(invoice)}
                           className="p-2 rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] text-[#00A8FF] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
-                          title="Download Invoice">
+                          title="Download Invoice"
+                        >
                           <Download className="w-4 h-4" />
                         </button>
                       </div>
@@ -264,4 +274,3 @@ export default function InvoiceTable({
     </>
   );
 }
-

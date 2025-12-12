@@ -13,7 +13,7 @@ export const useSaveApplicationProgress = () => {
   const { merge } = useRegistrationStore();
 
   const saveProgress = async (
-    currentFormValues?: Partial<RegistrationData>
+    currentFormValues?: Partial<RegistrationData>,
   ) => {
     // If current form values are provided, merge them into the store first
     if (currentFormValues) {
@@ -80,7 +80,7 @@ export const useSaveApplicationProgress = () => {
       let uploadedMedicalLicenseIds: string[] = [];
       if (medicalLicenseFiles.length > 0) {
         const uploadPromises = medicalLicenseFiles.map((file) =>
-          uploadFileToS3(file)
+          uploadFileToS3(file),
         );
         const uploadResults = await Promise.all(uploadPromises);
         uploadedMedicalLicenseIds = uploadResults
@@ -128,8 +128,8 @@ export const useSaveApplicationProgress = () => {
           storeData.currentlyConductingIMEs === "yes"
             ? true
             : storeData.currentlyConductingIMEs === "no"
-            ? false
-            : undefined,
+              ? false
+              : undefined,
         assessmentTypes: storeData.assessmentTypes,
         experienceDetails: storeData.experienceDetails,
         consentBackgroundVerification: storeData.consentBackgroundVerification,

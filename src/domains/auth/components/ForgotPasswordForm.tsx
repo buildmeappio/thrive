@@ -28,7 +28,9 @@ const ForgotPasswordForm: React.FC = () => {
 
       if (result.success) {
         // Redirect to email sent page with email in query
-        router.push(`/password/email-sent?email=${encodeURIComponent(values.email)}`);
+        router.push(
+          `/password/email-sent?email=${encodeURIComponent(values.email)}`,
+        );
       } else {
         toast.error(result.message || "Failed to send reset email");
       }
@@ -46,7 +48,8 @@ const ForgotPasswordForm: React.FC = () => {
         validationSchema={forgotPasswordSchema}
         onSubmit={handleSubmit}
         validateOnChange={false}
-        validateOnBlur={false}>
+        validateOnBlur={false}
+      >
         {({ values, errors, handleChange }) => (
           <Form>
             <div className="mb-3">
@@ -70,7 +73,8 @@ const ForgotPasswordForm: React.FC = () => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-full bg-[#00A8FF] hover:bg-[#0096E6] text-white h-11 text-base font-semibold">
+              className="w-full rounded-full bg-[#00A8FF] hover:bg-[#0096E6] text-white h-11 text-base font-semibold"
+            >
               {isLoading ? "Sending..." : "Send Reset Link"}
             </Button>
 
@@ -78,7 +82,8 @@ const ForgotPasswordForm: React.FC = () => {
               type="button"
               variant="outline"
               onClick={() => router.push(URLS.LOGIN)}
-              className="mt-4 w-full rounded-full border-2 border-[#00A8FF] text-[#00A8FF] hover:bg-[#E6F7FF] h-11 text-base font-semibold flex items-center justify-center gap-2">
+              className="mt-4 w-full rounded-full border-2 border-[#00A8FF] text-[#00A8FF] hover:bg-[#E6F7FF] h-11 text-base font-semibold flex items-center justify-center gap-2"
+            >
               <ArrowLeft className="w-4 h-4" />
               Back to Login
             </Button>
@@ -90,4 +95,3 @@ const ForgotPasswordForm: React.FC = () => {
 };
 
 export default ForgotPasswordForm;
-

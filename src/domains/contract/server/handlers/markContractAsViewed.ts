@@ -8,7 +8,7 @@ import {
 
 export async function markContractAsViewedHandler(
   contractId: string,
-  accountId: string
+  accountId: string,
 ) {
   try {
     const contract = await getLatestContractService(contractId);

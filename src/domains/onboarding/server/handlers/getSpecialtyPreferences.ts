@@ -7,10 +7,10 @@ export type GetSpecialtyPreferencesInput = {
 };
 
 const getSpecialtyPreferences = async (
-  payload: GetSpecialtyPreferencesInput
+  payload: GetSpecialtyPreferencesInput,
 ) => {
   const examinerProfile = await dashboardService.getExaminerProfileByAccountId(
-    payload.accountId
+    payload.accountId,
   );
 
   if (!examinerProfile) {
@@ -19,7 +19,7 @@ const getSpecialtyPreferences = async (
 
   // Get language IDs from examinerLanguages
   const languageIds = examinerProfile.examinerLanguages.map(
-    (el) => el.languageId
+    (el) => el.languageId,
   );
 
   // Type assertion for new fields that might not be in generated types yet
@@ -45,4 +45,3 @@ const getSpecialtyPreferences = async (
 };
 
 export default getSpecialtyPreferences;
-

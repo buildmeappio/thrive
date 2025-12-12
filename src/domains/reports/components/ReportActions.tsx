@@ -18,7 +18,8 @@ export default function ReportActions({
         onClick={onSaveDraft}
         disabled={isSaving}
         variant="outline"
-        className="h-[48px] px-8 rounded-[24px] cursor-pointer border-2 border-[#00A8FF] bg-white text-[#00A8FF] font-medium hover:bg-[#F0F8FF] transition-colors font-poppins">
+        className="h-[48px] px-8 rounded-[24px] cursor-pointer border-2 border-[#00A8FF] bg-white text-[#00A8FF] font-medium hover:bg-[#F0F8FF] transition-colors font-poppins"
+      >
         {isSaving ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -32,7 +33,8 @@ export default function ReportActions({
       <Button
         onClick={onPrint}
         disabled={isSubmitting}
-        className="h-[48px] px-8 rounded-[24px] cursor-pointer bg-[#00A8FF] hover:bg-[#00A8FF]/90 text-white font-medium font-poppins">
+        className="h-[48px] px-8 rounded-[24px] cursor-pointer bg-[#00A8FF] hover:bg-[#00A8FF]/90 text-white font-medium font-poppins"
+      >
         {isSubmitting ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />

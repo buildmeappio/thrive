@@ -22,7 +22,7 @@ export default async function middleware(request: NextRequest) {
 
   // Check if current path is a protected route
   const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   // Check if user is trying to access onboarding
@@ -62,4 +62,4 @@ export const config = {
     "/support",
     "/support/:path*",
   ],
-};  
+};

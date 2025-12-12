@@ -1,7 +1,7 @@
 import { CaseDetailsData } from "../types";
 
 export const formatAddress = (
-  address: CaseDetailsData["claimant"]["address"]
+  address: CaseDetailsData["claimant"]["address"],
 ): string => {
   if (!address) return "N/A";
   // Use the full address field if available, otherwise build from parts

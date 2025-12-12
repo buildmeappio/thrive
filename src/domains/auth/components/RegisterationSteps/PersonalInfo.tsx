@@ -57,7 +57,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
           (lang: { id: string; name: string }) => ({
             value: lang.id,
             label: lang.name,
-          })
+          }),
         );
         setLanguages(languageOptions);
       } catch (error) {
@@ -118,7 +118,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
         keepTouched: false,
         keepIsValid: false,
         keepSubmitCount: hasBeenSubmitted,
-      }
+      },
     );
   }, [
     data.firstName,
@@ -137,7 +137,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
       // Skip email validation in edit mode since the user already exists
       if (!isEditMode) {
         const { exists } = await authActions.checkUserExists(
-          values.emailAddress
+          values.emailAddress,
         );
         if (exists) {
           form.setError("emailAddress", {
@@ -256,7 +256,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
     document.addEventListener(
       "animationstart",
       handleAutofill as EventListener,
-      true
+      true,
     );
 
     return () => {
@@ -265,7 +265,7 @@ const PersonalInfo: React.FC<RegStepProps> = ({
       document.removeEventListener(
         "animationstart",
         handleAutofill as EventListener,
-        true
+        true,
       );
     };
   }, [
@@ -307,7 +307,8 @@ const PersonalInfo: React.FC<RegStepProps> = ({
   return (
     <div
       className="mt-1 w-full rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+    >
       <ProgressIndicator
         currentStep={currentStep}
         totalSteps={totalSteps}

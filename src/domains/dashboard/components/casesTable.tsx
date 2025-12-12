@@ -3,7 +3,11 @@
 
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { formatDateShort, formatAppointmentDate, formatAppointmentTime } from "@/utils/date";
+import {
+  formatDateShort,
+  formatAppointmentDate,
+  formatAppointmentTime,
+} from "@/utils/date";
 import { truncateText, getFirstName } from "@/utils/text";
 import {
   Table,
@@ -24,18 +28,21 @@ export default function NewCaseOffers({
   return (
     <section
       className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
-      aria-labelledby="new-case-offers-heading">
+      aria-labelledby="new-case-offers-heading"
+    >
       {/* Title + CTA */}
       <div className="flex items-center justify-between gap-2 sm:gap-3">
         <h3
           id="new-case-offers-heading"
-          className="font-degular font-[600] text-[26px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black">
+          className="font-degular font-[600] text-[26px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black"
+        >
           {title}
         </h3>
 
         <Link
           href={listHref}
-          className="h-[40px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 sm:px-4 text-white text-[15px] sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0">
+          className="h-[40px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 sm:px-4 text-white text-[15px] sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0"
+        >
           View All
         </Link>
       </div>
@@ -70,32 +77,40 @@ export default function NewCaseOffers({
                 return (
                   <TableRow
                     key={r.id}
-                    className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]">
+                    className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
+                  >
                     <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">
                       <div
                         className="text-[16px] leading-normal truncate"
-                        title={r.caseNumber}>
+                        title={r.caseNumber}
+                      >
                         {truncateText(r.caseNumber, 25)}
                       </div>
                     </TableCell>
                     <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">
                       <div
                         className="text-[16px] leading-normal truncate"
-                        title={r.claimant}>
+                        title={r.claimant}
+                      >
                         {getFirstName(r.claimant)}
                       </div>
                     </TableCell>
                     <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">
                       <div
                         className="text-[16px] leading-normal truncate"
-                        title={r.claimType}>
+                        title={r.claimType}
+                      >
                         {truncateText(r.claimType, 20)}
                       </div>
                     </TableCell>
                     <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[25%]">
                       <div className="text-[16px] leading-normal">
-                        <div className="whitespace-nowrap">{formatAppointmentDate(r.appointment)}</div>
-                        <div className="whitespace-nowrap text-[14px] text-[#6B6B6B]">{formatAppointmentTime(r.appointment)}</div>
+                        <div className="whitespace-nowrap">
+                          {formatAppointmentDate(r.appointment)}
+                        </div>
+                        <div className="whitespace-nowrap text-[14px] text-[#6B6B6B]">
+                          {formatAppointmentTime(r.appointment)}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="py-5 sm:py-3 overflow-hidden align-middle w-[21%]">
@@ -106,7 +121,8 @@ export default function NewCaseOffers({
                         <Link
                           href={href}
                           aria-label={`Open ${r.claimant}`}
-                          className="flex-shrink-0 grid h-7 w-7 sm:h-5 sm:w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]">
+                          className="flex-shrink-0 grid h-7 w-7 sm:h-5 sm:w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
+                        >
                           <ChevronRight className="h-5 w-5 sm:h-3.5 sm:w-3.5 text-[#00A8FF]" />
                         </Link>
                       </div>
@@ -118,7 +134,8 @@ export default function NewCaseOffers({
               <TableRow>
                 <TableCell
                   colSpan={5}
-                  className="text-center py-12 text-[17px] sm:text-[14px] text-[#5B5B5B] font-poppins">
+                  className="text-center py-12 text-[17px] sm:text-[14px] text-[#5B5B5B] font-poppins"
+                >
                   No data available
                 </TableCell>
               </TableRow>

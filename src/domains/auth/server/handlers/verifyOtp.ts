@@ -1,7 +1,7 @@
-'use server';
+"use server";
 
-import { cookies } from 'next/headers';
-import authService from '../auth.service';
+import { cookies } from "next/headers";
+import authService from "../auth.service";
 
 type VerifyOtpResult = {
   success: boolean;
@@ -9,18 +9,21 @@ type VerifyOtpResult = {
   message?: string;
 };
 
-const verifyOtp = async (otp: string, email: string): Promise<VerifyOtpResult> => {
+const verifyOtp = async (
+  otp: string,
+  email: string,
+): Promise<VerifyOtpResult> => {
   const cookieStore = await cookies();
-  const token = cookieStore.get('otp_token')?.value;
+  const token = cookieStore.get("otp_token")?.value;
 
-  const result = await authService.verifyOtp(otp, email, token || '');
+  const result = await authService.verifyOtp(otp, email, token || "");
 
   if (result.success && result.passwordToken) {
-    cookieStore.set('password_token', result.passwordToken, {
+    cookieStore.set("password_token", result.passwordToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
       maxAge: 60 * 15,
     });
   }

@@ -19,4 +19,3 @@ const sendResumeLink = async (payload: SendResumeLinkInput) => {
 };
 
 export default sendResumeLink;
-

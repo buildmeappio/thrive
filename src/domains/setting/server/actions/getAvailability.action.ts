@@ -11,7 +11,9 @@ export const getAvailabilityAction = async (input: GetAvailabilityInput) => {
   } catch (error: unknown) {
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch availability",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to fetch availability",
     };
   }
 };

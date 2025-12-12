@@ -100,7 +100,8 @@ export default function CasesPageContent({
                   className="h-4 w-4 sm:h-5 sm:w-5"
                   fill="none"
                   stroke="url(#searchGradient)"
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -126,14 +127,15 @@ export default function CasesPageContent({
               <button
                 onClick={() =>
                   setActiveDropdown(
-                    activeDropdown === "status" ? null : "status"
+                    activeDropdown === "status" ? null : "status",
                   )
                 }
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
                   filters.status !== "all"
                     ? "border-[#00A8FF] text-[#00A8FF]"
                     : "border-gray-200 text-gray-700 hover:bg-gray-50"
-                }`}>
+                }`}
+              >
                 <Funnel
                   className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                   stroke="url(#statusGradient)"
@@ -142,16 +144,16 @@ export default function CasesPageContent({
                   {filters.status === "pending"
                     ? "Pending Review"
                     : filters.status === "reportPending"
-                    ? "Report Pending"
-                    : filters.status === "reportDraft"
-                    ? "Report Draft"
-                    : filters.status === "reportSubmitted"
-                    ? "Report Submitted"
-                    : filters.status === "reportApproved"
-                    ? "Report Approved"
-                    : filters.status === "reportRejected"
-                    ? "Report Rejected"
-                    : "Status"}
+                      ? "Report Pending"
+                      : filters.status === "reportDraft"
+                        ? "Report Draft"
+                        : filters.status === "reportSubmitted"
+                          ? "Report Submitted"
+                          : filters.status === "reportApproved"
+                            ? "Report Approved"
+                            : filters.status === "reportRejected"
+                              ? "Report Rejected"
+                              : "Status"}
                 </span>
                 <svg
                   className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${
@@ -159,7 +161,8 @@ export default function CasesPageContent({
                   }`}
                   fill="none"
                   stroke="currentColor"
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -181,7 +184,8 @@ export default function CasesPageContent({
                         filters.status === "all"
                           ? "bg-gray-100 text-[#00A8FF]"
                           : ""
-                      }`}>
+                      }`}
+                    >
                       All Statuses
                     </button>
                     <button
@@ -193,7 +197,8 @@ export default function CasesPageContent({
                         filters.status === "pending"
                           ? "bg-gray-100 text-[#00A8FF]"
                           : ""
-                      }`}>
+                      }`}
+                    >
                       Pending Review
                     </button>
                     <button
@@ -205,7 +210,8 @@ export default function CasesPageContent({
                         filters.status === "reportPending"
                           ? "bg-gray-100 text-[#00A8FF]"
                           : ""
-                      }`}>
+                      }`}
+                    >
                       Report Pending
                     </button>
                     <button
@@ -217,7 +223,8 @@ export default function CasesPageContent({
                         filters.status === "reportDraft"
                           ? "bg-gray-100 text-[#00A8FF]"
                           : ""
-                      }`}>
+                      }`}
+                    >
                       Report Draft
                     </button>
                     <button
@@ -229,7 +236,8 @@ export default function CasesPageContent({
                         filters.status === "reportSubmitted"
                           ? "bg-gray-100 text-[#00A8FF]"
                           : ""
-                      }`}>
+                      }`}
+                    >
                       Report Submitted
                     </button>
                     <button
@@ -241,7 +249,8 @@ export default function CasesPageContent({
                         filters.status === "reportApproved"
                           ? "bg-gray-100 text-[#00A8FF]"
                           : ""
-                      }`}>
+                      }`}
+                    >
                       Report Approved
                     </button>
                     <button
@@ -253,7 +262,8 @@ export default function CasesPageContent({
                         filters.status === "reportRejected"
                           ? "bg-gray-100 text-[#00A8FF]"
                           : ""
-                      }`}>
+                      }`}
+                    >
                       Report Rejected
                     </button>
                   </div>
@@ -265,12 +275,14 @@ export default function CasesPageContent({
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap">
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
+              >
                 <svg
                   className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                   fill="none"
                   stroke="currentColor"
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

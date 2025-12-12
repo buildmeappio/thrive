@@ -40,7 +40,7 @@ const updateExaminerProfile = async (payload: UpdateExaminerProfileInput) => {
         bio: payload.bio,
         profilePhotoId: payload.profilePhotoId,
         activationStep: payload.activationStep,
-      }
+      },
     );
 
     return {
@@ -62,7 +62,7 @@ const updateExaminerProfile = async (payload: UpdateExaminerProfileInput) => {
   } catch (error) {
     console.error("Error updating examiner profile:", error);
     throw HttpError.internalServerError(
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE
+      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
     );
   }
 };

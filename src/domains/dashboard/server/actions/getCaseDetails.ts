@@ -6,7 +6,7 @@ import getCaseDetailsHandler, {
 import { GetCaseDetailsResponse } from "../../types";
 
 export const getCaseDetailsAction = async (
-  input: GetCaseDetailsInput
+  input: GetCaseDetailsInput,
 ): Promise<GetCaseDetailsResponse> => {
   try {
     const result = await getCaseDetailsHandler(input);
@@ -15,7 +15,9 @@ export const getCaseDetailsAction = async (
     console.error("Error in getCaseDetails action:", error);
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch case details",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to fetch case details",
     };
   }
 };

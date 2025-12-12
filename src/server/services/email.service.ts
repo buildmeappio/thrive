@@ -71,7 +71,7 @@ class EmailService {
 
   private replacePlaceholders(
     template: string,
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
   ): string {
     return Object.entries(data).reduce((acc, [key, value]) => {
       const regex = new RegExp(`{{${key}}}`, "g");
@@ -88,7 +88,7 @@ class EmailService {
       filename: string;
       content: Buffer;
       contentType?: string;
-    }>
+    }>,
   ): Promise<{ success: true } | { success: false; error: string }> {
     try {
       const transporter = await this.createTransporter();
@@ -102,23 +102,32 @@ class EmailService {
         html: htmlContent,
         attachments: attachments?.map((att) => {
           // Ensure content is a Buffer
-          const content = Buffer.isBuffer(att.content) 
-            ? att.content 
+          const content = Buffer.isBuffer(att.content)
+            ? att.content
             : Buffer.from(att.content);
-          
+
           // Validate PDF if it's a PDF attachment
-          if (att.contentType === "application/pdf" || att.filename.endsWith('.pdf')) {
+          if (
+            att.contentType === "application/pdf" ||
+            att.filename.endsWith(".pdf")
+          ) {
             if (content.length < 4) {
-              throw new Error(`Invalid PDF: file too small (${content.length} bytes)`);
+              throw new Error(
+                `Invalid PDF: file too small (${content.length} bytes)`,
+              );
             }
-            const header = content.slice(0, 4).toString('ascii');
-            if (header !== '%PDF') {
-              log(`⚠️ Warning: PDF header mismatch. Expected '%PDF', got '${header}'`);
+            const header = content.slice(0, 4).toString("ascii");
+            if (header !== "%PDF") {
+              log(
+                `⚠️ Warning: PDF header mismatch. Expected '%PDF', got '${header}'`,
+              );
             } else {
-              log(`✅ PDF attachment validated: ${att.filename}, size: ${content.length} bytes`);
+              log(
+                `✅ PDF attachment validated: ${att.filename}, size: ${content.length} bytes`,
+              );
             }
           }
-          
+
           return {
             filename: att.filename,
             content: content,
@@ -127,7 +136,9 @@ class EmailService {
         }),
       });
 
-      log(`✅ Email sent to ${to}${attachments ? ` with ${attachments.length} attachment(s)` : ""}`);
+      log(
+        `✅ Email sent to ${to}${attachments ? ` with ${attachments.length} attachment(s)` : ""}`,
+      );
       return { success: true };
     } catch (err) {
       error("❌ Error sending email:", err);

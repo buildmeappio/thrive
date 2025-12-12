@@ -74,7 +74,8 @@ export default function RequestMoreInfoModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
-      onMouseDown={onBackdrop}>
+      onMouseDown={onBackdrop}
+    >
       <div
         ref={panelRef}
         className="
@@ -86,14 +87,21 @@ export default function RequestMoreInfoModal({
           max-h-[calc(100vh-1.5rem)] sm:max-h-[85vh]
           overflow-y-auto
         "
-        onMouseDown={(e) => e.stopPropagation()}>
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         {/* Close */}
         <button
           aria-label="Close"
           onClick={onClose}
           disabled={isLoading}
-          className="absolute right-4 top-4 sm:right-5 sm:top-5 grid h-8 w-8 sm:h-[32px] sm:w-[32px] place-items-center rounded-full bg-[#00A8FF] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40 disabled:opacity-50">
-          <svg width="16" height="16" viewBox="0 0 24 24" className="text-white">
+          className="absolute right-4 top-4 sm:right-5 sm:top-5 grid h-8 w-8 sm:h-[32px] sm:w-[32px] place-items-center rounded-full bg-[#00A8FF] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40 disabled:opacity-50"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            className="text-white"
+          >
             <path
               fill="currentColor"
               d="M18.3 5.7a1 1 0 0 0-1.4-1.4L12 9.17 7.1 4.3A1 1 0 0 0 5.7 5.7L10.6 10.6 5.7 15.5a1 1 0 1 0 1.4 1.4L12 12.03l4.9 4.87a1 1 0 0 0 1.4-1.4l-4.9-4.87 4.9-4.93Z"
@@ -104,7 +112,8 @@ export default function RequestMoreInfoModal({
         {/* Title */}
         <h2
           id={titleId}
-          className="font-[600] text-xl sm:text-[28px] leading-[1.2] tracking-[-0.02em] text-[#00A8FF] font-degular pr-10">
+          className="font-[600] text-xl sm:text-[28px] leading-[1.2] tracking-[-0.02em] text-[#00A8FF] font-degular pr-10"
+        >
           {title}
         </h2>
 
@@ -112,7 +121,8 @@ export default function RequestMoreInfoModal({
         <div className="mt-5">
           <label
             htmlFor="message-to-organization"
-            className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2">
+            className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
+          >
             Write Text Here
           </label>
           <div className="relative">
@@ -158,7 +168,8 @@ export default function RequestMoreInfoModal({
               disabled:cursor-not-allowed disabled:opacity-50
               hover:opacity-90
               font-poppins text-[14px] sm:text-[16px] font-[500] tracking-[-0.02em]
-            ">
+            "
+          >
             {isLoading ? "Sending..." : "Send"}
           </button>
         </div>
@@ -166,4 +177,3 @@ export default function RequestMoreInfoModal({
     </div>
   );
 }
-

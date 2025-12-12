@@ -12,7 +12,8 @@ import type { UploadDocumentResponse } from "@/server/services/document.service"
 export default function DocumentUploadExample() {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState<UploadDocumentResponse | null>(null);
+  const [uploadResult, setUploadResult] =
+    useState<UploadDocumentResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -77,7 +78,8 @@ export default function DocumentUploadExample() {
       <div className="space-y-2">
         <label
           htmlFor="file-upload"
-          className="block text-sm font-medium text-gray-700">
+          className="block text-sm font-medium text-gray-700"
+        >
           Select Files
         </label>
         <input
@@ -105,7 +107,8 @@ export default function DocumentUploadExample() {
             {files.map((file, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between rounded-md border bg-gray-50 p-3">
+                className="flex items-center justify-between rounded-md border bg-gray-50 p-3"
+              >
                 <div className="flex items-center space-x-3">
                   <Upload className="h-5 w-5 text-gray-400" />
                   <div>
@@ -121,7 +124,8 @@ export default function DocumentUploadExample() {
                 <button
                   onClick={() => handleRemoveFile(index)}
                   disabled={uploading}
-                  className="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600 disabled:opacity-50">
+                  className="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600 disabled:opacity-50"
+                >
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -134,7 +138,8 @@ export default function DocumentUploadExample() {
       <Button
         onClick={handleUpload}
         disabled={files.length === 0 || uploading}
-        className="w-full">
+        className="w-full"
+      >
         {uploading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -191,7 +196,8 @@ export default function DocumentUploadExample() {
                 {uploadResult.data.documents.map((doc) => (
                   <div
                     key={doc.id}
-                    className="rounded border border-green-200 bg-white p-3">
+                    className="rounded border border-green-200 bg-white p-3"
+                  >
                     <p className="text-sm font-medium text-gray-900">
                       {doc.originalName}
                     </p>
@@ -201,7 +207,8 @@ export default function DocumentUploadExample() {
                         href={doc.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-1 inline-block text-xs text-blue-600 hover:underline">
+                        className="mt-1 inline-block text-xs text-blue-600 hover:underline"
+                      >
                         View Document
                       </a>
                     )}

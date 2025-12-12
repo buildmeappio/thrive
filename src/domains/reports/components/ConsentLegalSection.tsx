@@ -21,9 +21,8 @@ export default function ConsentLegalSection() {
                 ? "bg-[#00A8FF] border-[#00A8FF]"
                 : "border-gray-300 group-hover:border-[#00A8FF]"
             }`}
-            onClick={() =>
-              updateField("consentFormSigned", !consentFormSigned)
-            }>
+            onClick={() => updateField("consentFormSigned", !consentFormSigned)}
+          >
             {consentFormSigned && <Check className="w-4 h-4 text-white" />}
           </div>
           <span className="text-base text-gray-800 font-poppins">
@@ -40,7 +39,8 @@ export default function ConsentLegalSection() {
             }`}
             onClick={() =>
               updateField("latRuleAcknowledgment", !latRuleAcknowledgment)
-            }>
+            }
+          >
             {latRuleAcknowledgment && <Check className="w-4 h-4 text-white" />}
           </div>
           <span className="text-base text-gray-800 font-poppins">

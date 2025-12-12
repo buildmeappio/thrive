@@ -23,9 +23,10 @@ const updateDocuments = async (payload: UpdateDocumentsInput) => {
         governmentIdDocumentId: payload.governmentIdDocumentId,
         resumeDocumentId: payload.resumeDocumentId,
         insuranceDocumentId: payload.insuranceDocumentId,
-        specialtyCertificatesDocumentIds: payload.specialtyCertificatesDocumentIds,
+        specialtyCertificatesDocumentIds:
+          payload.specialtyCertificatesDocumentIds,
         activationStep: payload.activationStep,
-      }
+      },
     );
 
     return {
@@ -38,10 +39,9 @@ const updateDocuments = async (payload: UpdateDocumentsInput) => {
   } catch (error) {
     console.error("Error updating documents:", error);
     throw HttpError.internalServerError(
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE
+      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
     );
   }
 };
 
 export default updateDocuments;
-

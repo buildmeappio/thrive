@@ -7,13 +7,13 @@ const checkUserExists = async (email: string) => {
   try {
     // Get medical examiner role
     const medicalExaminerRole = await roleService.getRoleByName(
-      Roles.MEDICAL_EXAMINER
+      Roles.MEDICAL_EXAMINER,
     );
 
     // Find user with account for this role
     const user = await userService.getUserWithAccountByRole(
       email,
-      medicalExaminerRole.id
+      medicalExaminerRole.id,
     );
 
     if (!user || user.accounts.length === 0) {
@@ -30,7 +30,7 @@ const checkUserExists = async (email: string) => {
     throw HttpError.fromError(
       error,
       ErrorMessages.FAILED_CHECK_USER_EXISTS,
-      500
+      500,
     );
   }
 };

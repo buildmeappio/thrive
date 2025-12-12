@@ -26,7 +26,8 @@ const BackButton: React.FC<BackButtonProps> = ({
       style={{
         borderColor: borderColor,
         backgroundColor: "transparent",
-      }}>
+      }}
+    >
       <ArrowLeft
         className="h-3.5 w-3.5 transition-colors duration-300 ease-in-out md:mr-2 md:h-4 md:w-4"
         style={{ color: disabled ? "#555555" : iconColor }}

@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 export function useAutoPersist(
   values: unknown,
   save: (patch: unknown) => void,
-  debounceMs = 120
+  debounceMs = 120,
 ) {
   const t = useRef<number | null>(null);
   useEffect(() => {

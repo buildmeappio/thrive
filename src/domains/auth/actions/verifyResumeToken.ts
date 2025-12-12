@@ -19,4 +19,3 @@ const verifyResumeToken = async (payload: VerifyResumeTokenInput) => {
 };
 
 export default verifyResumeToken;
-

@@ -54,4 +54,3 @@ const CaseDetailsPage = async ({ params }: CaseDetailsPageProps) => {
 };
 
 export default CaseDetailsPage;
-

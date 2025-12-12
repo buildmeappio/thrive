@@ -4,7 +4,7 @@ import authHandlers from "../server/handlers";
 import { UpdateExaminerApplicationInput } from "../server/handlers/updateExaminerApplication";
 
 const updateExaminerApplication = async (
-  input: UpdateExaminerApplicationInput
+  input: UpdateExaminerApplicationInput,
 ) => {
   try {
     const result = await authHandlers.updateExaminerApplication(input);
@@ -20,4 +20,3 @@ const updateExaminerApplication = async (
 };
 
 export default updateExaminerApplication;
-

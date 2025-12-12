@@ -18,7 +18,8 @@ const Shell = ({ children }: ShellProps) => {
               <div className="flex h-full w-full flex-1 items-center justify-center">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
               </div>
-            }>
+            }
+          >
             {children}
           </Suspense>
         </div>

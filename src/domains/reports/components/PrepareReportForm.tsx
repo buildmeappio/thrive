@@ -142,7 +142,10 @@ export default function PrepareReportForm({
     } catch (err: unknown) {
       error("Error saving draft:", err);
       if (showToast) {
-        toast.error((err instanceof Error ? err.message : undefined) || "Failed to save draft");
+        toast.error(
+          (err instanceof Error ? err.message : undefined) ||
+            "Failed to save draft",
+        );
       }
     } finally {
       setIsSaving(false);
@@ -205,7 +208,10 @@ export default function PrepareReportForm({
       }
     } catch (err: unknown) {
       error("Error preparing report for print:", err);
-      toast.error((err instanceof Error ? err.message : undefined) || "Failed to prepare report");
+      toast.error(
+        (err instanceof Error ? err.message : undefined) ||
+          "Failed to prepare report",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -231,7 +237,8 @@ export default function PrepareReportForm({
             <button
               onClick={() => router.back()}
               className="flex items-center cursor-pointer justify-center w-12 h-12 rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
-              aria-label="Go back">
+              aria-label="Go back"
+            >
               <ArrowLeft className="h-5 w-5 text-[#00A8FF]" />
             </button>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-black">

@@ -10,7 +10,7 @@ export type GetExaminerProfileDetailsInput = {
 };
 
 const getExaminerProfileDetails = async (
-  payload: GetExaminerProfileDetailsInput
+  payload: GetExaminerProfileDetailsInput,
 ) => {
   // Verify token
   const decoded = verifyExaminerInfoToken(payload.token);
@@ -41,7 +41,10 @@ const getExaminerProfileDetails = async (
 
     // Fetch medical license documents by IDs
     let medicalLicenseDocuments: MedicalLicenseDocument[] = [];
-    if (application.medicalLicenseDocumentIds && application.medicalLicenseDocumentIds.length > 0) {
+    if (
+      application.medicalLicenseDocumentIds &&
+      application.medicalLicenseDocumentIds.length > 0
+    ) {
       medicalLicenseDocuments = await prisma.documents.findMany({
         where: {
           id: {
@@ -70,13 +73,14 @@ const getExaminerProfileDetails = async (
   const examinerId = decoded.examinerId as string;
 
   if (!examinerId) {
-    throw HttpError.unauthorized("Invalid token: missing examinerId or applicationId");
+    throw HttpError.unauthorized(
+      "Invalid token: missing examinerId or applicationId",
+    );
   }
 
   // Fetch examiner profile with all details
-  const examinerProfile = await examinerService.getExaminerProfileWithDetails(
-    examinerId
-  );
+  const examinerProfile =
+    await examinerService.getExaminerProfileWithDetails(examinerId);
 
   return {
     success: true,

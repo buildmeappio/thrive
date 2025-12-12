@@ -41,4 +41,3 @@ declare global {
     google: typeof google;
   }
 }
-

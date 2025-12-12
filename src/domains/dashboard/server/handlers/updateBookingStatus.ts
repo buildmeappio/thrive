@@ -6,14 +6,14 @@ import {
 } from "../../types";
 
 const updateBookingStatus = async (
-  payload: UpdateBookingStatusInput
+  payload: UpdateBookingStatusInput,
 ): Promise<UpdateBookingStatusResponse> => {
   try {
     const { bookingId, examinerProfileId, status, message } = payload;
 
     if (!bookingId || !examinerProfileId || !status) {
       throw HttpError.badRequest(
-        "Booking ID, Examiner Profile ID, and Status are required"
+        "Booking ID, Examiner Profile ID, and Status are required",
       );
     }
 
@@ -21,7 +21,7 @@ const updateBookingStatus = async (
       bookingId,
       examinerProfileId,
       status,
-      message
+      message,
     );
 
     return {
@@ -30,15 +30,17 @@ const updateBookingStatus = async (
         status === "ACCEPT"
           ? "accepted"
           : status === "DECLINE"
-          ? "declined"
-          : "requested more info"
+            ? "declined"
+            : "requested more info"
       } successfully`,
     };
   } catch (error: unknown) {
     console.error("Error in updateBookingStatus handler:", error);
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to update booking status",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to update booking status",
     };
   }
 };

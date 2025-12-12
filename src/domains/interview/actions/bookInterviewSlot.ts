@@ -1,7 +1,10 @@
 "use server";
 
 import prisma from "@/lib/db";
-import { verifyExaminerScheduleInterviewToken, signExaminerScheduleInterviewToken } from "@/lib/jwt";
+import {
+  verifyExaminerScheduleInterviewToken,
+  signExaminerScheduleInterviewToken,
+} from "@/lib/jwt";
 import HttpError from "@/utils/httpError";
 import { addMinutes, format } from "date-fns";
 import emailService from "@/server/services/email.service";
@@ -10,16 +13,19 @@ import { ENV } from "@/constants/variables";
 export const bookInterviewSlot = async (
   token: string,
   startTime: Date,
-  durationMinutes: number
+  durationMinutes: number,
 ) => {
   try {
     // Validate duration (must be divisible by 15 and at least 15 minutes)
     if (durationMinutes < 15 || durationMinutes % 15 !== 0) {
-      throw HttpError.badRequest("Slot duration must be at least 15 minutes and divisible by 15");
+      throw HttpError.badRequest(
+        "Slot duration must be at least 15 minutes and divisible by 15",
+      );
     }
 
     // Verify token
-    const { email, applicationId } = verifyExaminerScheduleInterviewToken(token);
+    const { email, applicationId } =
+      verifyExaminerScheduleInterviewToken(token);
 
     // Verify application exists and email matches
     const application = await prisma.examinerApplication.findUnique({
@@ -36,9 +42,10 @@ export const bookInterviewSlot = async (
     }
 
     // Check if already booked
-    // @ts-ignore - Prisma client will have this after generate
     if (application.interviewSlot) {
-      throw HttpError.badRequest("Application already has a booked interview slot");
+      throw HttpError.badRequest(
+        "Application already has a booked interview slot",
+      );
     }
 
     const endTime = addMinutes(startTime, durationMinutes);
@@ -46,7 +53,6 @@ export const bookInterviewSlot = async (
     // Book the slot using transaction (creates slot dynamically if needed)
     const result = await prisma.$transaction(async (tx) => {
       // Check for conflicts with existing booked slots
-      // @ts-ignore - Prisma client will have this after generate
       const conflictingSlots = await tx.interviewSlot.findMany({
         where: {
           deletedAt: null,
@@ -85,11 +91,12 @@ export const bookInterviewSlot = async (
       });
 
       if (conflictingSlots.length > 0) {
-        throw HttpError.badRequest("Selected time slot conflicts with an existing booking");
+        throw HttpError.badRequest(
+          "Selected time slot conflicts with an existing booking",
+        );
       }
 
       // Check if exact slot exists
-      // @ts-ignore - Prisma client will have this after generate
       const existingSlot = await tx.interviewSlot.findFirst({
         where: {
           startTime: startTime,
@@ -103,7 +110,6 @@ export const bookInterviewSlot = async (
           throw HttpError.badRequest("This time slot is already booked");
         }
         // Update existing available slot
-        // @ts-ignore - Prisma client will have this after generate
         const updatedSlot = await tx.interviewSlot.update({
           where: { id: existingSlot.id },
           data: {
@@ -115,7 +121,6 @@ export const bookInterviewSlot = async (
       }
 
       // Create new slot and book it dynamically
-      // @ts-ignore - Prisma client will have this after generate
       const newSlot = await tx.interviewSlot.create({
         data: {
           startTime: startTime,
@@ -131,8 +136,12 @@ export const bookInterviewSlot = async (
 
     // Send email notifications (don't fail booking if emails fail)
     try {
-      const adminEmail = ENV.ADMIN_NOTIFICATION_EMAIL || "admin@thrivenetwork.ca";
-      const rescheduleToken = signExaminerScheduleInterviewToken({ email, applicationId });
+      const adminEmail =
+        ENV.ADMIN_NOTIFICATION_EMAIL || "admin@thrivenetwork.ca";
+      const rescheduleToken = signExaminerScheduleInterviewToken({
+        email,
+        applicationId,
+      });
       const rescheduleLink = `${ENV.NEXT_PUBLIC_APP_URL}/schedule-interview?token=${rescheduleToken}`;
 
       const interviewDate = format(result.startTime, "EEEE, MMMM d, yyyy");
@@ -152,7 +161,7 @@ export const bookInterviewSlot = async (
           interviewTime,
           duration: result.duration,
         },
-        adminEmail
+        adminEmail,
       );
 
       // Send email to examiner
@@ -169,10 +178,13 @@ export const bookInterviewSlot = async (
           duration: result.duration,
           rescheduleLink,
         },
-        email
+        email,
       );
     } catch (emailError) {
-      console.error("Failed to send interview confirmation emails:", emailError);
+      console.error(
+        "Failed to send interview confirmation emails:",
+        emailError,
+      );
       // Don't fail the booking if emails fail
     }
 

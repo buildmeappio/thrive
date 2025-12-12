@@ -48,4 +48,3 @@ const PasswordResetUI = ({ token }: { token: string }) => (
 );
 
 export default ResetPasswordPage;
-

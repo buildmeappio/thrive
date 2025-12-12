@@ -7,9 +7,10 @@ type SuspendedCheckWrapperProps = {
   children: ReactNode;
 };
 
-export function SuspendedCheckWrapper({ children }: SuspendedCheckWrapperProps) {
+export function SuspendedCheckWrapper({
+  children,
+}: SuspendedCheckWrapperProps) {
   useSuspendedCheck(); // Auto-checks and logs out if suspended
-  
+
   return <>{children}</>;
 }
-

@@ -25,7 +25,7 @@ const profileSchema = z.object({
     .min(1, "First name is required")
     .regex(
       /^[a-zA-Z\s'.-]+$/,
-      "First name can only contain letters, spaces, apostrophes, hyphens, and periods"
+      "First name can only contain letters, spaces, apostrophes, hyphens, and periods",
     )
     .refine(
       (val) => {
@@ -47,14 +47,14 @@ const profileSchema = z.object({
       {
         message:
           "First name must contain at least one letter and cannot start/end with special characters",
-      }
+      },
     ),
   lastName: z
     .string()
     .min(1, "Last name is required")
     .regex(
       /^[a-zA-Z\s'.-]+$/,
-      "Last name can only contain letters, spaces, apostrophes, hyphens, and periods"
+      "Last name can only contain letters, spaces, apostrophes, hyphens, and periods",
     )
     .refine(
       (val) => {
@@ -76,7 +76,7 @@ const profileSchema = z.object({
       {
         message:
           "Last name must contain at least one letter and cannot start/end with special characters",
-      }
+      },
     ),
   emailAddress: z.string().email("Invalid email address"),
   phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
@@ -146,7 +146,7 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -212,7 +212,8 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
             <FormField
               name="emailAddress"
               label="Email Address"
-              hint="Email cannot be changed">
+              hint="Email cannot be changed"
+            >
               {(field: UseFormRegisterReturn & { error?: boolean }) => (
                 <Input
                   {...field}
@@ -252,13 +253,15 @@ const ProfileInformationSection: React.FC<ProfileInformationSectionProps> = ({
             variant="outline"
             onClick={handleCancel}
             disabled={loading}
-            className="px-6 rounded-[20px] border-gray-300 text-gray-700 hover:bg-gray-50">
+            className="px-6 rounded-[20px] border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={loading}
-            className="px-6 rounded-[20px] bg-[#00A8FF] hover:bg-[#0096E6] text-white">
+            className="px-6 rounded-[20px] bg-[#00A8FF] hover:bg-[#0096E6] text-white"
+          >
             {loading ? "Saving..." : "Save Changes"}
           </Button>
         </div>

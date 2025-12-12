@@ -30,7 +30,7 @@ const setPassword = async (payload: SetPasswordInput) => {
     `[SetPassword] ${
       payload.isPasswordReset ? "Password reset" : "Account creation"
     } - Token data:`,
-    tokenData
+    tokenData,
   );
 
   // Validate passwords match
@@ -43,7 +43,9 @@ const setPassword = async (payload: SetPasswordInput) => {
 
   // If applicationId exists, create User, Account, ExaminerProfile from application
   if (tokenData.applicationId) {
-    log(`[SetPassword] Creating account from application: ${tokenData.applicationId}`);
+    log(
+      `[SetPassword] Creating account from application: ${tokenData.applicationId}`,
+    );
 
     // Get examiner application with all related data
     const application = await prisma.examinerApplication.findUnique({
@@ -64,13 +66,13 @@ const setPassword = async (payload: SetPasswordInput) => {
     }
 
     // Check if application is approved (can be ACCEPTED or APPROVED)
-    const isApproved = 
-      application.status === ExaminerStatus.ACCEPTED || 
+    const isApproved =
+      application.status === ExaminerStatus.ACCEPTED ||
       application.status === ExaminerStatus.APPROVED;
-    
+
     if (!isApproved) {
       throw HttpError.badRequest(
-        `Application is not approved. Current status: ${application.status}`
+        `Application is not approved. Current status: ${application.status}`,
       );
     }
 
@@ -243,7 +245,9 @@ const setPassword = async (payload: SetPasswordInput) => {
 
     // Note: AvailabilityProvider will be created during onboarding when examiner adds their availability
 
-    log(`[SetPassword] Successfully created account and profile from application`);
+    log(
+      `[SetPassword] Successfully created account and profile from application`,
+    );
 
     return {
       success: true,
@@ -254,12 +258,14 @@ const setPassword = async (payload: SetPasswordInput) => {
 
   // Legacy flow: userId and accountId (for existing users or password reset)
   if (tokenData.userId && tokenData.accountId) {
-    log(`[SetPassword] Updating password for existing user: ${tokenData.userId}`);
+    log(
+      `[SetPassword] Updating password for existing user: ${tokenData.userId}`,
+    );
 
     // Update user password
     const user = await userService.updateUserPassword(
       tokenData.userId,
-      hashedPassword
+      hashedPassword,
     );
 
     // Verify account

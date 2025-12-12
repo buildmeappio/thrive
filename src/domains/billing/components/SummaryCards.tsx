@@ -50,10 +50,12 @@ export default function SummaryCards({ summary }: SummaryCardsProps) {
         return (
           <div
             key={index}
-            className="bg-white rounded-[28px] shadow-sm border border-gray-100 p-6 sm:p-8 hover:shadow-md transition-shadow">
+            className="bg-white rounded-[28px] shadow-sm border border-gray-100 p-6 sm:p-8 hover:shadow-md transition-shadow"
+          >
             <div className="flex items-center gap-4 mb-4">
               <div
-                className={`flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r ${card.gradient}`}>
+                className={`flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r ${card.gradient}`}
+              >
                 <IconComponent className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
@@ -69,4 +71,3 @@ export default function SummaryCards({ summary }: SummaryCardsProps) {
     </div>
   );
 }
-

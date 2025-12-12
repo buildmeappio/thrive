@@ -7,7 +7,7 @@ import { SubmitReportResponse } from "../../types";
 import { uploadFileToS3 } from "@/lib/s3";
 
 export async function submitReportAction(
-  input: SubmitReportInput
+  input: SubmitReportInput,
 ): Promise<SubmitReportResponse> {
   try {
     // Upload any new documents first
@@ -29,13 +29,13 @@ export async function submitReportAction(
           } else {
             // Upload failed, return error
             throw new Error(
-              `Failed to upload document ${doc.file.name}: ${uploadResult.error}`
+              `Failed to upload document ${doc.file.name}: ${uploadResult.error}`,
             );
           }
         }
         // Document already exists, return as-is
         return doc;
-      })
+      }),
     );
 
     // Update report data with uploaded documents
@@ -54,10 +54,11 @@ export async function submitReportAction(
     console.error("Error in submitReport action:", error);
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to submit report",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to submit report",
     };
   }
 }
 
 export default submitReportAction;
-

@@ -27,12 +27,10 @@ export const step1PersonalInfoSchema = z.object({
     .refine((val) => !/^\s+$/.test(val), {
       message: "First name cannot contain only spaces",
     })
-    .refine(
-      (val) => /^[a-zA-Z\s'.-]+$/.test(val),
-      {
-        message: "First name can only contain letters, spaces, apostrophes, hyphens, and periods",
-      }
-    )
+    .refine((val) => /^[a-zA-Z\s'.-]+$/.test(val), {
+      message:
+        "First name can only contain letters, spaces, apostrophes, hyphens, and periods",
+    })
     .refine(
       (val) => {
         // Must contain at least one letter
@@ -52,7 +50,7 @@ export const step1PersonalInfoSchema = z.object({
       {
         message:
           "First name must contain at least one letter and cannot start/end with special characters",
-      }
+      },
     ),
   lastName: z
     .string()
@@ -69,12 +67,10 @@ export const step1PersonalInfoSchema = z.object({
     .refine((val) => !/^\s+$/.test(val), {
       message: "Last name cannot contain only spaces",
     })
-    .refine(
-      (val) => /^[a-zA-Z\s'.-]+$/.test(val),
-      {
-        message: "Last name can only contain letters, spaces, apostrophes, hyphens, and periods",
-      }
-    )
+    .refine((val) => /^[a-zA-Z\s'.-]+$/.test(val), {
+      message:
+        "Last name can only contain letters, spaces, apostrophes, hyphens, and periods",
+    })
     .refine(
       (val) => {
         // Must contain at least one letter
@@ -94,7 +90,7 @@ export const step1PersonalInfoSchema = z.object({
       {
         message:
           "Last name must contain at least one letter and cannot start/end with special characters",
-      }
+      },
     ),
   phoneNumber: z
     .string()
@@ -121,7 +117,7 @@ export const step1PersonalInfoSchema = z.object({
           return false;
         }
       },
-      { message: "Please enter a valid phone number" }
+      { message: "Please enter a valid phone number" },
     ),
   landlineNumber: z
     .string()
@@ -145,7 +141,7 @@ export const step1PersonalInfoSchema = z.object({
           return false;
         }
       },
-      { message: "Please enter a valid landline number" }
+      { message: "Please enter a valid landline number" },
     ),
 
   emailAddress: z
@@ -164,9 +160,7 @@ export const step1PersonalInfoSchema = z.object({
     .refine((val) => val.length <= 100, {
       message: "City must be less than 100 characters",
     }),
-  province: z
-    .string()
-    .min(1, { message: "Province is required" }),
+  province: z.string().min(1, { message: "Province is required" }),
   languagesSpoken: z
     .array(z.string())
     .min(1, { message: "At least one language must be selected" }),
@@ -199,10 +193,7 @@ export const step2AddressSchema = z.object({
     .transform((val) => val.trim())
     .optional()
     .default(""),
-  province: z
-    .string()
-    .optional()
-    .default(""),
+  province: z.string().optional().default(""),
   city: z
     .string()
     .transform((val) => val.trim())
@@ -228,12 +219,15 @@ export const step2MedicalCredentialsSchema = z.object({
     .refine((val) => !/^\s+$/.test(val), {
       message: "Medical license number cannot contain only spaces",
     })
-    .refine((val) => {
-      const error = validateLicenseField(val);
-      return error === null;
-    }, {
-      message: "Please enter a valid medical license number",
-    }),
+    .refine(
+      (val) => {
+        const error = validateLicenseField(val);
+        return error === null;
+      },
+      {
+        message: "Please enter a valid medical license number",
+      },
+    ),
   licenseIssuingProvince: z
     .string()
     .min(1, { message: "License issuing province is required" }),
@@ -255,7 +249,7 @@ export const step2MedicalCredentialsSchema = z.object({
         if (!val || val === "" || (Array.isArray(val) && val.length === 0)) {
           return true; // Optional, so empty is valid
         }
-        
+
         const allowedTypes = [
           "application/pdf",
           "application/msword",
@@ -292,7 +286,7 @@ export const step2MedicalCredentialsSchema = z.object({
       },
       {
         message: "Medical documents must be PDF, DOC, or DOCX files",
-      }
+      },
     ),
 });
 
@@ -303,20 +297,23 @@ export type Step2MedicalCredentialsInput = z.infer<
 export const verificationDocumentsSchema = z.object({
   medicalLicense: z
     .any()
-    .refine((val) => {
-      // Check if it's an array
-      if (Array.isArray(val)) {
-        return val.length > 0;
-      }
-      // Backward compatibility: allow single file
-      return val !== null && val !== undefined && val !== "";
-    }, {
-      message: "At least one medical document is required",
-    })
+    .refine(
+      (val) => {
+        // Check if it's an array
+        if (Array.isArray(val)) {
+          return val.length > 0;
+        }
+        // Backward compatibility: allow single file
+        return val !== null && val !== undefined && val !== "";
+      },
+      {
+        message: "At least one medical document is required",
+      },
+    )
     .refine(
       (val) => {
         if (!val || val === "") return false;
-        
+
         const allowedTypes = [
           "application/pdf",
           "application/msword",
@@ -353,7 +350,7 @@ export const verificationDocumentsSchema = z.object({
       },
       {
         message: "Medical documents must be PDF, DOC, or DOCX files",
-      }
+      },
     ),
 });
 
@@ -361,19 +358,18 @@ export type VerificationDocumentsInput = z.infer<
   typeof verificationDocumentsSchema
 >;
 
-export const step3IMEExperienceSchema = z
-  .object({
-    imesCompleted: z
-      .string()
-      .min(1, { message: "Please specify if you have completed any IMEs" }),
-    currentlyConductingIMEs: z
-      .string()
-      .min(1, { message: "Please specify if you are currently conducting IMEs" }),
-    assessmentTypes: z
-      .array(z.string())
-      .min(1, { message: "Please select at least one assessment type" }),
-    // redactedIMEReport removed - not collected in this step
-  });
+export const step3IMEExperienceSchema = z.object({
+  imesCompleted: z
+    .string()
+    .min(1, { message: "Please specify if you have completed any IMEs" }),
+  currentlyConductingIMEs: z
+    .string()
+    .min(1, { message: "Please specify if you are currently conducting IMEs" }),
+  assessmentTypes: z
+    .array(z.string())
+    .min(1, { message: "Please select at least one assessment type" }),
+  // redactedIMEReport removed - not collected in this step
+});
 
 export type Step3IMEExperienceInput = z.infer<typeof step3IMEExperienceSchema>;
 
@@ -391,7 +387,6 @@ export const step4ExperienceDetailsSchema = z.object({
 export type Step4ExperienceDetailsInput = z.infer<
   typeof step4ExperienceDetailsSchema
 >;
-
 
 export const step6LegalSchema = z.object({
   // signedNDA: z.any().refine((val) => val !== null, {
@@ -419,7 +414,7 @@ export const step7PaymentDetailsSchema = z.object({
         const num = parseFloat(val);
         return !isNaN(num) && num >= 0;
       },
-      { message: "Please enter a valid fee amount" }
+      { message: "Please enter a valid fee amount" },
     ),
   recordReviewFee: z
     .string()
@@ -429,7 +424,7 @@ export const step7PaymentDetailsSchema = z.object({
         const num = parseFloat(val);
         return !isNaN(num) && num >= 0;
       },
-      { message: "Please enter a valid fee amount" }
+      { message: "Please enter a valid fee amount" },
     ),
   hourlyRate: z
     .string()
@@ -440,7 +435,7 @@ export const step7PaymentDetailsSchema = z.object({
         const num = parseFloat(val);
         return !isNaN(num) && num >= 0;
       },
-      { message: "Please enter a valid hourly rate" }
+      { message: "Please enter a valid hourly rate" },
     ),
   cancellationFee: z
     .string()
@@ -450,7 +445,7 @@ export const step7PaymentDetailsSchema = z.object({
         const num = parseFloat(val);
         return !isNaN(num) && num >= 0;
       },
-      { message: "Please enter a valid fee amount" }
+      { message: "Please enter a valid fee amount" },
     ),
 });
 

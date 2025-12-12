@@ -8,9 +8,7 @@ export type VerifyResumeTokenInput = {
   token: string;
 };
 
-const verifyResumeTokenHandler = async (
-  payload: VerifyResumeTokenInput
-) => {
+const verifyResumeTokenHandler = async (payload: VerifyResumeTokenInput) => {
   try {
     if (!payload.token) {
       throw HttpError.badRequest("Token is required");
@@ -53,7 +51,9 @@ const verifyResumeTokenHandler = async (
 
     // Check if the link status is valid (PENDING)
     if (secureLink.status === SecureLinkStatus.INVALID) {
-      throw HttpError.unauthorized("This resume link is no longer valid. A newer link has been generated.");
+      throw HttpError.unauthorized(
+        "This resume link is no longer valid. A newer link has been generated.",
+      );
     }
 
     if (secureLink.status === SecureLinkStatus.EXPIRED) {
@@ -74,7 +74,10 @@ const verifyResumeTokenHandler = async (
 
     // Fetch medical license documents by IDs
     let medicalLicenseDocuments: MedicalLicenseDocument[] = [];
-    if (application?.medicalLicenseDocumentIds && application.medicalLicenseDocumentIds.length > 0) {
+    if (
+      application?.medicalLicenseDocumentIds &&
+      application.medicalLicenseDocumentIds.length > 0
+    ) {
       medicalLicenseDocuments = await prisma.documents.findMany({
         where: {
           id: {
@@ -97,13 +100,8 @@ const verifyResumeTokenHandler = async (
 
     // Check if application is still in DRAFT status (can be resumed)
     // Allow DRAFT and SUBMITTED statuses to be resumed
-    if (
-      application.status !== "DRAFT" &&
-      application.status !== "SUBMITTED"
-    ) {
-      throw HttpError.badRequest(
-        "This application can no longer be resumed"
-      );
+    if (application.status !== "DRAFT" && application.status !== "SUBMITTED") {
+      throw HttpError.badRequest("This application can no longer be resumed");
     }
 
     return {
@@ -143,13 +141,8 @@ const verifyResumeTokenHandler = async (
     if (error instanceof HttpError) {
       throw error;
     }
-    throw HttpError.fromError(
-      error,
-      ErrorMessages.REGISTRATION_FAILED,
-      500
-    );
+    throw HttpError.fromError(error, ErrorMessages.REGISTRATION_FAILED, 500);
   }
 };
 
 export default verifyResumeTokenHandler;
-

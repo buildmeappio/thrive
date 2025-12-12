@@ -3,7 +3,7 @@ import HttpError from "@/utils/httpError";
 import { SaveReportDraftInput, SaveReportDraftResponse } from "../../types";
 
 const saveReportDraft = async (
-  payload: SaveReportDraftInput
+  payload: SaveReportDraftInput,
 ): Promise<SaveReportDraftResponse> => {
   try {
     const { bookingId, reportData } = payload;
@@ -33,11 +33,12 @@ const saveReportDraft = async (
     console.error("Error in saveReportDraft handler:", error);
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to save report draft",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to save report draft",
     };
   }
 };
 
 export default saveReportDraft;
 export type { SaveReportDraftInput };
-

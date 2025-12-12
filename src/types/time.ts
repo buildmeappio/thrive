@@ -51,4 +51,3 @@ export interface AvailabilityPreferences {
   overrideHours?: OverrideHours[];
   bookingOptions?: Record<string, unknown>;
 }
-

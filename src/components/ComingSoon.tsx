@@ -17,8 +17,9 @@ const ComingSoon: React.FC<ComingSoonProps> = ({
     <div
       className={cn(
         "flex flex-col items-center justify-center min-h-[400px] w-full",
-        className
-      )}>
+        className,
+      )}
+    >
       <div className="flex flex-col items-center gap-6 max-w-md text-center px-4">
         {/* Icon */}
         <div className="flex items-center justify-center w-20 h-20 rounded-full bg-muted border-2 border-border">

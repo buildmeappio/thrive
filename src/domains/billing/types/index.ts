@@ -25,4 +25,3 @@ export interface BillingSummary {
   pendingPayments: number;
   paidThisMonth: number;
 }
-

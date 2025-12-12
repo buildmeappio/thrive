@@ -3,7 +3,7 @@
 import { profilePhotoService } from "@/server";
 
 export const getProfilePhotoUrlAction = async (
-  profilePhotoId: string | null | undefined
+  profilePhotoId: string | null | undefined,
 ): Promise<string | null> => {
   if (!profilePhotoId) {
     return null;

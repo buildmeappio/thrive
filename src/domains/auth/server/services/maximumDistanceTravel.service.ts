@@ -19,7 +19,7 @@ class MaximumDistanceTravelService {
       throw HttpError.fromError(
         error,
         ErrorMessages.MAX_TRAVEL_DISTANCES_NOT_FOUND,
-        500
+        500,
       );
     }
   }

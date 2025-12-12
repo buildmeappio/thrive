@@ -22,7 +22,8 @@ export default function TermsAndConditionsModal({
           <h2 className="text-xl font-bold">📄 Terms & Conditions</h2>
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 rounded-lg p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
+            className="absolute right-4 top-4 rounded-lg p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          >
             <XIcon className="h-5 w-5" />
           </button>
         </div>
@@ -184,7 +185,8 @@ export default function TermsAndConditionsModal({
                   📩{" "}
                   <a
                     href="mailto:info@thriveassessmentcare.com"
-                    className="text-[#00A8FF] underline hover:decoration-[#0088CC]">
+                    className="text-[#00A8FF] underline hover:decoration-[#0088CC]"
+                  >
                     info@thriveassessmentcare.com
                   </a>
                 </p>

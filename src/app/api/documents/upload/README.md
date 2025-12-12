@@ -24,11 +24,13 @@ GET  /api/documents/upload (API info)
 ## Supported File Types
 
 ### Documents
+
 - PDF (`.pdf`)
 - Word (`.doc`, `.docx`)
 - Excel (`.xls`, `.xlsx`)
 
 ### Images
+
 - JPEG/JPG (`.jpg`, `.jpeg`)
 - PNG (`.png`)
 - GIF (`.gif`)
@@ -46,12 +48,12 @@ GET  /api/documents/upload (API info)
 
 ```typescript
 const formData = new FormData();
-formData.append('files', file1);
-formData.append('files', file2);
-formData.append('userId', 'user-123'); // Optional
+formData.append("files", file1);
+formData.append("files", file2);
+formData.append("userId", "user-123"); // Optional
 
-const response = await fetch('/api/documents/upload', {
-  method: 'POST',
+const response = await fetch("/api/documents/upload", {
+  method: "POST",
   body: formData,
 });
 
@@ -61,19 +63,22 @@ const result = await response.json();
 ### Using the Service (Easier)
 
 ```typescript
-import { documentService } from '@/services';
+import { documentService } from "@/services";
 
 // Single file
-const result = await documentService.uploadDocuments(file, 'user-123');
+const result = await documentService.uploadDocuments(file, "user-123");
 
 // Multiple files
-const result = await documentService.uploadDocuments([file1, file2], 'user-123');
+const result = await documentService.uploadDocuments(
+  [file1, file2],
+  "user-123",
+);
 ```
 
 ### Using React Component
 
 ```tsx
-import DocumentUploadExample from '@/components/DocumentUploadExample';
+import DocumentUploadExample from "@/components/DocumentUploadExample";
 
 export default function MyPage() {
   return <DocumentUploadExample />;
@@ -113,7 +118,11 @@ export default function MyPage() {
   "success": true,
   "message": "1 of 2 file(s) uploaded successfully",
   "data": {
-    "documents": [{ /* uploaded document */ }],
+    "documents": [
+      {
+        /* uploaded document */
+      }
+    ],
     "totalUploaded": 1,
     "totalFailed": 1
   },
@@ -140,17 +149,18 @@ export default function MyPage() {
 
 ### Common Errors
 
-| Error Code | Description | Solution |
-|------------|-------------|----------|
-| 400 | No files provided | Include at least one file in the request |
-| 400 | File validation failed | Check file type and size |
-| 400 | Too many files | Reduce number of files to 10 or less |
-| 500 | S3 configuration error | Check AWS environment variables |
-| 500 | Upload failed | Check S3 permissions and network |
+| Error Code | Description            | Solution                                 |
+| ---------- | ---------------------- | ---------------------------------------- |
+| 400        | No files provided      | Include at least one file in the request |
+| 400        | File validation failed | Check file type and size                 |
+| 400        | Too many files         | Reduce number of files to 10 or less     |
+| 500        | S3 configuration error | Check AWS environment variables          |
+| 500        | Upload failed          | Check S3 permissions and network         |
 
 ### Validation Errors
 
 The API validates:
+
 1. **File presence**: At least one file must be provided
 2. **File count**: Maximum 10 files per request
 3. **File size**: Each file must be ≤10MB
@@ -198,19 +208,19 @@ s3://your-bucket/
 ```typescript
 async function uploadSingleFile(file: File) {
   const formData = new FormData();
-  formData.append('files', file);
+  formData.append("files", file);
 
-  const response = await fetch('/api/documents/upload', {
-    method: 'POST',
+  const response = await fetch("/api/documents/upload", {
+    method: "POST",
     body: formData,
   });
 
   const result = await response.json();
-  
+
   if (result.success) {
-    console.log('Uploaded:', result.data.documents[0]);
+    console.log("Uploaded:", result.data.documents[0]);
   } else {
-    console.error('Errors:', result.errors);
+    console.error("Errors:", result.errors);
   }
 }
 ```
@@ -220,15 +230,15 @@ async function uploadSingleFile(file: File) {
 ```typescript
 async function uploadMultipleFiles(files: File[], userId: string) {
   const formData = new FormData();
-  
-  files.forEach(file => {
-    formData.append('files', file);
-  });
-  
-  formData.append('userId', userId);
 
-  const response = await fetch('/api/documents/upload', {
-    method: 'POST',
+  files.forEach((file) => {
+    formData.append("files", file);
+  });
+
+  formData.append("userId", userId);
+
+  const response = await fetch("/api/documents/upload", {
+    method: "POST",
     body: formData,
   });
 
@@ -239,22 +249,22 @@ async function uploadMultipleFiles(files: File[], userId: string) {
 ### Example 3: Using the Service Helper
 
 ```typescript
-import { documentService } from '@/services';
+import { documentService } from "@/services";
 
 async function handleUpload(files: File[]) {
   try {
-    const result = await documentService.uploadDocuments(files, 'user-123');
-    
+    const result = await documentService.uploadDocuments(files, "user-123");
+
     if (result.success) {
       console.log(`Uploaded ${result.data?.totalUploaded} files`);
-      result.data?.documents.forEach(doc => {
+      result.data?.documents.forEach((doc) => {
         console.log(`- ${doc.originalName} (${doc.id})`);
       });
     } else {
-      console.error('Upload failed:', result.errors);
+      console.error("Upload failed:", result.errors);
     }
   } catch (error) {
-    console.error('Network error:', error);
+    console.error("Network error:", error);
   }
 }
 ```
@@ -299,21 +309,24 @@ curl http://localhost:3000/api/documents/upload
 ## Troubleshooting
 
 ### Upload Fails Silently
+
 - Check browser console for errors
 - Verify file size is within limits
 - Ensure correct form-data key name ("files")
 
 ### "S3 bucket is not configured" Error
+
 - Verify `AWS_S3_BUCKET_NAME` environment variable is set
 - Restart the application after adding env vars
 
 ### "Failed to initialize S3 client" Error
+
 - Check AWS credentials are correctly set
 - Verify AWS region is valid
 - Ensure IAM user has S3 permissions
 
 ### Files Upload but Don't Save to Database
+
 - Check Prisma schema has `documents` model
 - Verify database connection
 - Check server logs for database errors
-

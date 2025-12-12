@@ -56,7 +56,7 @@ class AvailabilityService {
    */
   async saveWeeklyHours(
     availabilityProviderId: string,
-    weeklyHoursData: WeeklyHoursData[]
+    weeklyHoursData: WeeklyHoursData[],
   ) {
     // Delete all existing weekly hours for this provider
     await prisma.providerWeeklyHours.deleteMany({
@@ -120,7 +120,7 @@ class AvailabilityService {
    */
   async saveOverrideHours(
     availabilityProviderId: string,
-    overrideHoursData: OverrideHoursData[]
+    overrideHoursData: OverrideHoursData[],
   ) {
     // Delete all existing override hours for this provider
     await prisma.providerOverrideHours.deleteMany({
@@ -134,7 +134,7 @@ class AvailabilityService {
       const dateObj = new Date(
         parseInt(year),
         parseInt(month) - 1,
-        parseInt(day)
+        parseInt(day),
       );
 
       const overrideHour = await prisma.providerOverrideHours.create({
@@ -194,12 +194,11 @@ class AvailabilityService {
     data: {
       weeklyHours: WeeklyHoursData[];
       overrideHours?: OverrideHoursData[];
-    }
+    },
   ) {
     // Get availability provider ID
-    const availabilityProviderId = await this.getAvailabilityProviderId(
-      examinerProfileId
-    );
+    const availabilityProviderId =
+      await this.getAvailabilityProviderId(examinerProfileId);
 
     // Save weekly hours
     await this.saveWeeklyHours(availabilityProviderId, data.weeklyHours);
@@ -220,9 +219,8 @@ class AvailabilityService {
    */
   async getCompleteAvailability(examinerProfileId: string) {
     // Get availability provider ID
-    const availabilityProviderId = await this.getAvailabilityProviderId(
-      examinerProfileId
-    );
+    const availabilityProviderId =
+      await this.getAvailabilityProviderId(examinerProfileId);
 
     const [weeklyHours, overrideHours] = await Promise.all([
       this.getWeeklyHours(availabilityProviderId),

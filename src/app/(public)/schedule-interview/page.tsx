@@ -39,14 +39,19 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
           {/* Header Section */}
           <div className="mb-4 md:mb-6 text-center">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 tracking-tight">
-              {applicationData.alreadyBooked ? "Manage Your Interview" : "Schedule Your Interview"}
+              {applicationData.alreadyBooked
+                ? "Manage Your Interview"
+                : "Schedule Your Interview"}
             </h1>
             <p className="text-base text-gray-600">
-              Hello <span className="font-semibold text-gray-900">{applicationData.firstName} {applicationData.lastName}</span>, 
-              {applicationData.alreadyBooked 
+              Hello{" "}
+              <span className="font-semibold text-gray-900">
+                {applicationData.firstName} {applicationData.lastName}
+              </span>
+              ,
+              {applicationData.alreadyBooked
                 ? " you can view or reschedule your interview below."
-                : " please select your preferred interview time slot below."
-              }
+                : " please select your preferred interview time slot below."}
             </p>
           </div>
 
@@ -55,7 +60,11 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
             applicationId={applicationData.id}
             firstName={applicationData.firstName ?? ""}
             lastName={applicationData.lastName ?? ""}
-            bookedSlot={applicationData.alreadyBooked && applicationData.bookedSlot ? applicationData.bookedSlot : undefined}
+            bookedSlot={
+              applicationData.alreadyBooked && applicationData.bookedSlot
+                ? applicationData.bookedSlot
+                : undefined
+            }
             interviewSettings={interviewSettings}
           />
         </div>
@@ -65,4 +74,3 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
 };
 
 export default ScheduleInterviewPage;
-

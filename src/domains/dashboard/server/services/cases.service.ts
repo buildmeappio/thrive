@@ -55,7 +55,7 @@ class CasesService {
       const company = booking.examination.case.organization?.name || "N/A";
 
       const benefitsList = booking.examination.selectedBenefits.map(
-        (sb) => sb.benefit.benefit
+        (sb) => sb.benefit.benefit,
       );
       const benefits =
         benefitsList.length > 0 ? benefitsList.join(", ") : "N/A";

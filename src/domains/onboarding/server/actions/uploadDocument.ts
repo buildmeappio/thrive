@@ -20,12 +20,17 @@ export type UploadDocumentResponse =
     };
 
 export const uploadDocumentAction = async (
-  file: File
+  file: File,
 ): Promise<UploadDocumentResponse> => {
   try {
     // Validate file
     const maxSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/jpg",
+    ];
 
     if (file.size > maxSize) {
       return {
@@ -76,4 +81,3 @@ export const uploadDocumentAction = async (
     };
   }
 };
-

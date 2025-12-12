@@ -6,4 +6,3 @@ const getAssessmentTypes = async () => {
 };
 
 export default getAssessmentTypes;
-

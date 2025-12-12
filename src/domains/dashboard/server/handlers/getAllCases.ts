@@ -3,7 +3,7 @@ import HttpError from "@/utils/httpError";
 import { GetAllCasesInput, GetAllCasesResponse } from "../../types";
 
 const getAllCases = async (
-  payload: GetAllCasesInput
+  payload: GetAllCasesInput,
 ): Promise<GetAllCasesResponse> => {
   try {
     const { examinerProfileId } = payload;
@@ -22,7 +22,9 @@ const getAllCases = async (
     console.error("Error in getAllCases handler:", error);
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch cases",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to fetch cases",
     };
   }
 };

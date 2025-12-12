@@ -27,7 +27,10 @@ export async function checkSuspensionByEmail(email: string) {
     });
 
     console.log("checkSuspensionByEmail: User found:", !!user);
-    console.log("checkSuspensionByEmail: Accounts:", user?.accounts?.length || 0);
+    console.log(
+      "checkSuspensionByEmail: Accounts:",
+      user?.accounts?.length || 0,
+    );
 
     if (!user || !user.accounts || user.accounts.length === 0) {
       console.log("checkSuspensionByEmail: No user or accounts found");
@@ -38,7 +41,10 @@ export async function checkSuspensionByEmail(email: string) {
     const examinerProfile = user.accounts[0]?.examinerProfiles?.[0];
     const isSuspended = examinerProfile?.status === "SUSPENDED";
 
-    console.log("checkSuspensionByEmail: Examiner profile status:", examinerProfile?.status);
+    console.log(
+      "checkSuspensionByEmail: Examiner profile status:",
+      examinerProfile?.status,
+    );
     console.log("checkSuspensionByEmail: Is suspended:", isSuspended);
 
     return {
@@ -50,4 +56,3 @@ export async function checkSuspensionByEmail(email: string) {
     return { isSuspended: false };
   }
 }
-

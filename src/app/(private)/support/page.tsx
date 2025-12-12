@@ -46,7 +46,8 @@ const SupportPage = () => {
             </p>
             <a
               href="mailto:support@thrivenetwork.ca"
-              className="inline-flex items-center gap-2 text-sm sm:text-base font-medium text-[#00A8FF] hover:text-[#01F4C8] transition-colors">
+              className="inline-flex items-center gap-2 text-sm sm:text-base font-medium text-[#00A8FF] hover:text-[#01F4C8] transition-colors"
+            >
               <Mail className="w-4 h-4" />
               support@thrivenetwork.ca
             </a>
@@ -101,7 +102,8 @@ const SupportPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <a
               href="#"
-              className="flex items-center gap-3 p-4 rounded-2xl border border-gray-200 hover:border-[#00A8FF] hover:bg-[#00A8FF]/5 transition-all group">
+              className="flex items-center gap-3 p-4 rounded-2xl border border-gray-200 hover:border-[#00A8FF] hover:bg-[#00A8FF]/5 transition-all group"
+            >
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gradient-to-r group-hover:from-[#00A8FF] group-hover:to-[#01F4C8] transition-all">
                 <HelpCircle className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
               </div>
@@ -117,7 +119,8 @@ const SupportPage = () => {
 
             <a
               href="#"
-              className="flex items-center gap-3 p-4 rounded-2xl border border-gray-200 hover:border-[#00A8FF] hover:bg-[#00A8FF]/5 transition-all group">
+              className="flex items-center gap-3 p-4 rounded-2xl border border-gray-200 hover:border-[#00A8FF] hover:bg-[#00A8FF]/5 transition-all group"
+            >
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gradient-to-r group-hover:from-[#00A8FF] group-hover:to-[#01F4C8] transition-all">
                 <BookOpen className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
               </div>
@@ -133,7 +136,8 @@ const SupportPage = () => {
 
             <a
               href="#"
-              className="flex items-center gap-3 p-4 rounded-2xl border border-gray-200 hover:border-[#00A8FF] hover:bg-[#00A8FF]/5 transition-all group">
+              className="flex items-center gap-3 p-4 rounded-2xl border border-gray-200 hover:border-[#00A8FF] hover:bg-[#00A8FF]/5 transition-all group"
+            >
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gradient-to-r group-hover:from-[#00A8FF] group-hover:to-[#01F4C8] transition-all">
                 <Phone className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
               </div>
@@ -149,7 +153,8 @@ const SupportPage = () => {
 
             <a
               href="#"
-              className="flex items-center gap-3 p-4 rounded-2xl border border-gray-200 hover:border-[#00A8FF] hover:bg-[#00A8FF]/5 transition-all group">
+              className="flex items-center gap-3 p-4 rounded-2xl border border-gray-200 hover:border-[#00A8FF] hover:bg-[#00A8FF]/5 transition-all group"
+            >
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gradient-to-r group-hover:from-[#00A8FF] group-hover:to-[#01F4C8] transition-all">
                 <MessageCircle className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
               </div>

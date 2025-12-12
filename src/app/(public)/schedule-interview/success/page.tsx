@@ -36,13 +36,17 @@ const ScheduleInterviewSuccessPage = async ({ searchParams }: PageProps) => {
   }
 
   const bookedSlot = applicationData.bookedSlot;
-  const startTime = typeof bookedSlot.startTime === 'string' 
-    ? new Date(bookedSlot.startTime) 
-    : bookedSlot.startTime;
-  const endTime = typeof bookedSlot.endTime === 'string' 
-    ? new Date(bookedSlot.endTime) 
-    : bookedSlot.endTime;
-  const duration = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
+  const startTime =
+    typeof bookedSlot.startTime === "string"
+      ? new Date(bookedSlot.startTime)
+      : bookedSlot.startTime;
+  const endTime =
+    typeof bookedSlot.endTime === "string"
+      ? new Date(bookedSlot.endTime)
+      : bookedSlot.endTime;
+  const duration = Math.round(
+    (endTime.getTime() - startTime.getTime()) / (1000 * 60),
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-[#F4FBFF] via-[#F0F9FF] to-[#EBF8FF]">
@@ -57,10 +61,12 @@ const ScheduleInterviewSuccessPage = async ({ searchParams }: PageProps) => {
                 </div>
               </div>
               <h2 className="text-2xl md:text-3xl font-bold mb-2">
-                Interview {applicationData.alreadyBooked ? "Rescheduled" : "Confirmed"}!
+                Interview{" "}
+                {applicationData.alreadyBooked ? "Rescheduled" : "Confirmed"}!
               </h2>
               <p className="text-green-50 text-sm md:text-base">
-                Your interview has been successfully {applicationData.alreadyBooked ? "rescheduled" : "scheduled"}
+                Your interview has been successfully{" "}
+                {applicationData.alreadyBooked ? "rescheduled" : "scheduled"}
               </p>
             </div>
 
@@ -72,12 +78,15 @@ const ScheduleInterviewSuccessPage = async ({ searchParams }: PageProps) => {
                     <CalendarIcon className="h-5 w-5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Date & Time</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      Date & Time
+                    </p>
                     <p className="font-semibold text-gray-900 text-lg mb-1">
                       {format(startTime, "EEEE, MMMM d, yyyy")}
                     </p>
                     <p className="text-gray-700">
-                      {format(startTime, "h:mm a")} - {format(endTime, "h:mm a")}
+                      {format(startTime, "h:mm a")} -{" "}
+                      {format(endTime, "h:mm a")}
                     </p>
                   </div>
                 </div>
@@ -87,12 +96,15 @@ const ScheduleInterviewSuccessPage = async ({ searchParams }: PageProps) => {
                     <Clock className="h-5 w-5" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Duration</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      Duration
+                    </p>
                     <p className="font-semibold text-gray-900">
                       {duration} minutes
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone}
+                      Timezone:{" "}
+                      {Intl.DateTimeFormat().resolvedOptions().timeZone}
                     </p>
                   </div>
                 </div>
@@ -100,7 +112,9 @@ const ScheduleInterviewSuccessPage = async ({ searchParams }: PageProps) => {
 
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                 <p className="text-sm text-blue-900">
-                  <span className="font-semibold">Next Steps:</span> You will receive a confirmation email with the interview details and any preparation materials needed.
+                  <span className="font-semibold">Next Steps:</span> You will
+                  receive a confirmation email with the interview details and
+                  any preparation materials needed.
                 </p>
               </div>
 

@@ -49,7 +49,7 @@ class DashboardService {
       bio?: string;
       profilePhotoId?: string | null;
       activationStep?: string;
-    }
+    },
   ) {
     // Update user data
     const examinerProfile = await prisma.examinerProfile.findUnique({
@@ -139,7 +139,7 @@ class DashboardService {
       acceptVirtualAssessments?: boolean;
       languagesSpoken?: string[];
       activationStep?: string;
-    }
+    },
   ) {
     const examinerProfile = await prisma.examinerProfile.findUnique({
       where: { id: examinerProfileId },
@@ -202,7 +202,7 @@ class DashboardService {
       interacEmail?: string;
       autodepositEnabled?: boolean;
       activationStep?: string;
-    }
+    },
   ) {
     const examinerProfile = await prisma.examinerProfile.findUnique({
       where: { id: examinerProfileId },
@@ -258,7 +258,7 @@ class DashboardService {
       travelRadius?: string;
       assessmentTypeOther?: string;
       activationStep?: string;
-    }
+    },
   ) {
     const examinerProfile = await prisma.examinerProfile.findUnique({
       where: { id: examinerProfileId },
@@ -280,12 +280,15 @@ class DashboardService {
         // For now, we'll store it implicitly via acceptVirtualAssessments
         // If both virtual and in-person are false, acceptVirtualAssessments will be false
         // If either is true, we can set acceptVirtualAssessments accordingly
-        ...(data.travelToClaimants !== undefined && data.travelToClaimants && data.travelRadius && {
-          maxTravelDistance: data.travelRadius,
-        }),
-        ...(data.travelToClaimants !== undefined && !data.travelToClaimants && {
-          maxTravelDistance: null,
-        }),
+        ...(data.travelToClaimants !== undefined &&
+          data.travelToClaimants &&
+          data.travelRadius && {
+            maxTravelDistance: data.travelRadius,
+          }),
+        ...(data.travelToClaimants !== undefined &&
+          !data.travelToClaimants && {
+            maxTravelDistance: null,
+          }),
         ...(data.assessmentTypeOther !== undefined && {
           assessmentTypeOther: data.assessmentTypeOther,
         }),
@@ -338,7 +341,7 @@ class DashboardService {
       insuranceDocumentId?: string;
       specialtyCertificatesDocumentIds?: string[];
       activationStep?: string;
-    }
+    },
   ) {
     const examinerProfile = await prisma.examinerProfile.findUnique({
       where: { id: examinerProfileId },
@@ -390,7 +393,7 @@ class DashboardService {
       pipedaCompliance?: boolean;
       medicalLicenseActive?: boolean;
       activationStep?: string;
-    }
+    },
   ) {
     const examinerProfile = await prisma.examinerProfile.findUnique({
       where: { id: examinerProfileId },
@@ -435,7 +438,7 @@ class DashboardService {
       smsNotifications?: boolean;
       emailMarketing?: boolean;
       activationStep?: string;
-    }
+    },
   ) {
     const examinerProfile = await prisma.examinerProfile.findUnique({
       where: { id: examinerProfileId },

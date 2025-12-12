@@ -8,13 +8,11 @@ import configurationService from "@/server/services/configuration.service";
  * Get available time slots for a specific date
  * Returns time suggestions in 15-minute increments and existing booked slots
  */
-export const getAvailableSlots = async (
-  date: Date
-) => {
+export const getAvailableSlots = async (date: Date) => {
   try {
     // Get interview settings for working hours
     const interviewSettings = await configurationService.getInterviewSettings();
-    
+
     const dayStart = startOfDay(date);
     const dayEnd = endOfDay(date);
 
@@ -79,7 +77,10 @@ export const getAvailableSlots = async (
       timeSuggestions.push({
         startTime: new Date(currentTime),
         isAvailable: conflicts.length === 0,
-        conflictReason: conflicts.length > 0 ? "Time conflicts with existing booking" : undefined,
+        conflictReason:
+          conflicts.length > 0
+            ? "Time conflicts with existing booking"
+            : undefined,
       });
 
       // Move to next 15-minute increment

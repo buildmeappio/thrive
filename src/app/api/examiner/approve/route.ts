@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
           success: false,
           message: "Application ID is required",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
         success: false,
         message: errorMessage,
       },
-      { status: statusCode }
+      { status: statusCode },
     );
   }
 }

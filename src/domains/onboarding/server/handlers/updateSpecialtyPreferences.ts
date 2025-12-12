@@ -13,7 +13,7 @@ export type UpdateSpecialtyPreferencesInput = {
 };
 
 const updateSpecialtyPreferences = async (
-  payload: UpdateSpecialtyPreferencesInput
+  payload: UpdateSpecialtyPreferencesInput,
 ) => {
   try {
     // Map preferredFormat to acceptVirtualAssessments boolean
@@ -35,7 +35,7 @@ const updateSpecialtyPreferences = async (
         acceptVirtualAssessments,
         languagesSpoken: payload.languagesSpoken,
         activationStep: payload.activationStep,
-      }
+      },
     );
 
     return {
@@ -48,10 +48,9 @@ const updateSpecialtyPreferences = async (
   } catch (error) {
     console.error("Error updating specialty preferences:", error);
     throw HttpError.internalServerError(
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE
+      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
     );
   }
 };
 
 export default updateSpecialtyPreferences;
-

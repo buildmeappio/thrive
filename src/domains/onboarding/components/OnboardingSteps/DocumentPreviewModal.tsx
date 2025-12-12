@@ -21,12 +21,15 @@ export default function DocumentPreviewModal({
       return previewFileType.toLowerCase();
     }
     // Try to extract from URL (for presigned URLs, this might not work)
-    const urlMatch = previewUrl.toLowerCase().match(/\.(pdf|jpg|jpeg|png|gif|webp|bmp)$/i);
+    const urlMatch = previewUrl
+      .toLowerCase()
+      .match(/\.(pdf|jpg|jpeg|png|gif|webp|bmp)$/i);
     return urlMatch ? urlMatch[1] : null;
   };
 
   const fileType = getFileType();
-  const isImage = fileType && ["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(fileType);
+  const isImage =
+    fileType && ["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(fileType);
   const isPdf = fileType === "pdf";
 
   return (
@@ -34,10 +37,12 @@ export default function DocumentPreviewModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4"
       role="dialog"
       aria-modal="true"
-      onClick={onClose}>
+      onClick={onClose}
+    >
       <div
         className="relative w-full max-w-6xl h-[90vh] bg-white rounded-2xl shadow-xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}>
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 truncate pr-4">
@@ -45,12 +50,14 @@ export default function DocumentPreviewModal({
           </h3>
           <button
             onClick={onClose}
-            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+            className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          >
             <svg
               width="20"
               height="20"
               viewBox="0 0 24 24"
-              className="text-gray-600">
+              className="text-gray-600"
+            >
               <path
                 fill="currentColor"
                 d="M18.3 5.7a1 1 0 0 0-1.4-1.4L12 9.17 7.1 4.3A1 1 0 0 0 5.7 5.7L10.6 10.6 5.7 15.5a1 1 0 1 0 1.4 1.4L12 12.03l4.9 4.87a1 1 0 0 0 1.4-1.4l-4.9-4.87 4.9-4.93Z"
@@ -97,7 +104,8 @@ export default function DocumentPreviewModal({
                 download={previewFileName}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#00A8FF] underline">
+                className="text-[#00A8FF] underline"
+              >
                 Download to view
               </a>
             </div>
@@ -107,4 +115,3 @@ export default function DocumentPreviewModal({
     </div>
   );
 }
-

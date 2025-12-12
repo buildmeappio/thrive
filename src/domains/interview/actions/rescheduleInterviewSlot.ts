@@ -1,7 +1,10 @@
 "use server";
 
 import prisma from "@/lib/db";
-import { verifyExaminerScheduleInterviewToken, signExaminerScheduleInterviewToken } from "@/lib/jwt";
+import {
+  verifyExaminerScheduleInterviewToken,
+  signExaminerScheduleInterviewToken,
+} from "@/lib/jwt";
 import HttpError from "@/utils/httpError";
 import { addMinutes, format } from "date-fns";
 import emailService from "@/server/services/email.service";
@@ -10,16 +13,19 @@ import { ENV } from "@/constants/variables";
 export const rescheduleInterviewSlot = async (
   token: string,
   startTime: Date,
-  durationMinutes: number
+  durationMinutes: number,
 ) => {
   try {
     // Validate duration (must be divisible by 15 and at least 15 minutes)
     if (durationMinutes < 15 || durationMinutes % 15 !== 0) {
-      throw HttpError.badRequest("Slot duration must be at least 15 minutes and divisible by 15");
+      throw HttpError.badRequest(
+        "Slot duration must be at least 15 minutes and divisible by 15",
+      );
     }
 
     // Verify token
-    const { email, applicationId } = verifyExaminerScheduleInterviewToken(token);
+    const { email, applicationId } =
+      verifyExaminerScheduleInterviewToken(token);
 
     // Verify application exists and email matches
     const application = await prisma.examinerApplication.findUnique({
@@ -84,7 +90,9 @@ export const rescheduleInterviewSlot = async (
       });
 
       if (conflictingSlots.length > 0) {
-        throw HttpError.badRequest("Selected time slot conflicts with an existing booking");
+        throw HttpError.badRequest(
+          "Selected time slot conflicts with an existing booking",
+        );
       }
 
       // Delete the old slot
@@ -136,8 +144,12 @@ export const rescheduleInterviewSlot = async (
 
     // Send email notifications (don't fail rescheduling if emails fail)
     try {
-      const adminEmail = ENV.ADMIN_NOTIFICATION_EMAIL || "admin@thrivenetwork.ca";
-      const rescheduleToken = signExaminerScheduleInterviewToken({ email, applicationId });
+      const adminEmail =
+        ENV.ADMIN_NOTIFICATION_EMAIL || "admin@thrivenetwork.ca";
+      const rescheduleToken = signExaminerScheduleInterviewToken({
+        email,
+        applicationId,
+      });
       const rescheduleLink = `${ENV.NEXT_PUBLIC_APP_URL}/examiner/schedule-interview?token=${rescheduleToken}`;
 
       const interviewDate = format(result.startTime, "EEEE, MMMM d, yyyy");
@@ -157,7 +169,7 @@ export const rescheduleInterviewSlot = async (
           interviewTime,
           duration: result.duration,
         },
-        adminEmail
+        adminEmail,
       );
 
       // Send email to examiner
@@ -174,10 +186,13 @@ export const rescheduleInterviewSlot = async (
           duration: result.duration,
           rescheduleLink,
         },
-        email
+        email,
       );
     } catch (emailError) {
-      console.error("Failed to send interview reschedule confirmation emails:", emailError);
+      console.error(
+        "Failed to send interview reschedule confirmation emails:",
+        emailError,
+      );
       // Don't fail the rescheduling if emails fail
     }
 

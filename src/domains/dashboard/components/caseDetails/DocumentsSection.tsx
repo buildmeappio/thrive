@@ -31,7 +31,8 @@ export default function DocumentsSection({
             {documents.map((doc) => (
               <div
                 key={doc.id}
-                className="flex items-center justify-between p-3 bg-[#F9F9F9] rounded-lg">
+                className="flex items-center justify-between p-3 bg-[#F9F9F9] rounded-lg"
+              >
                 <div className="flex-1 min-w-0">
                   <p className="text-base font-medium text-[#1A1A1A] font-poppins truncate">
                     {doc.displayName || doc.name}
@@ -45,14 +46,16 @@ export default function DocumentsSection({
                     onClick={() =>
                       onPreview(doc.name, doc.displayName || doc.name)
                     }
-                    className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] cursor-pointer leading-tight text-[#4E4E4E] underline">
+                    className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] cursor-pointer leading-tight text-[#4E4E4E] underline"
+                  >
                     Preview
                   </button>
                   <button
                     onClick={() =>
                       onDownload(doc.name, doc.displayName || doc.name)
                     }
-                    className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] cursor-pointer leading-tight text-[#000080] underline">
+                    className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] cursor-pointer leading-tight text-[#000080] underline"
+                  >
                     Download
                   </button>
                 </div>

@@ -9,4 +9,3 @@ export type {
   ComplianceFormProps,
   NotificationsFormProps,
 } from "./onboarding-forms.types";
-

@@ -21,7 +21,7 @@ const changePassword = async (payload: ChangePasswordInput) => {
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
   if (!passwordRegex.test(payload.newPassword)) {
     throw HttpError.badRequest(
-      "Password must be at least 6 characters with one uppercase letter, one lowercase letter, and one number"
+      "Password must be at least 6 characters with one uppercase letter, one lowercase letter, and one number",
     );
   }
 
@@ -37,14 +37,17 @@ const changePassword = async (payload: ChangePasswordInput) => {
   // Verify current password
   const isPasswordValid = await bcrypt.compare(
     payload.currentPassword,
-    user.password
+    user.password,
   );
 
   if (!isPasswordValid) {
     throw HttpError.badRequest("Current password is incorrect");
   }
 
-  const isSamePassword = await bcrypt.compare(payload.newPassword, user.password);
+  const isSamePassword = await bcrypt.compare(
+    payload.newPassword,
+    user.password,
+  );
 
   if (isSamePassword) {
     throw HttpError.badRequest(ErrorMessages.NEW_PASSWORD_SAME);
@@ -63,4 +66,3 @@ const changePassword = async (payload: ChangePasswordInput) => {
 };
 
 export default changePassword;
-

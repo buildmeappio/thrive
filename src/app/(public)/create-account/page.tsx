@@ -7,7 +7,7 @@ import { Metadata } from "next";
 import { getExaminerProfileByAccountId } from "@/domains/contract/server/actions/getExaminerProfileByAccountId.actions";
 import { getContractByExaminerProfileId } from "@/domains/contract/server/actions/getContractByExaminerProfileId.actions";
 import { getAccountById } from "@/domains/contract/server/actions/getAccountById.actions";
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Create Account | Thrive Examiner",
@@ -54,7 +54,7 @@ const Page = async ({
     if (tokenData.data.user && tokenData.data.user.accountId) {
       // Profile exists, check if password is set
       const examinerProfile = await getExaminerProfileByAccountId(
-        tokenData.data.user.accountId
+        tokenData.data.user.accountId,
       );
 
       if (examinerProfile) {
