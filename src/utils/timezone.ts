@@ -10,24 +10,24 @@ import logger from "@/utils/logger";
 export function convertTimeToUTC(
   timeString: string,
   timezone?: string,
-  referenceDate?: Date
+  referenceDate?: Date,
 ): string {
   try {
     const trimmedTime = timeString.trim();
     let hours = 0;
     let minutes = 0;
-    
+
     // Parse 12-hour format (e.g., "8:00 AM", "2:30 PM")
     const time12HourMatch = trimmedTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
     if (time12HourMatch) {
       hours = parseInt(time12HourMatch[1], 10);
       minutes = parseInt(time12HourMatch[2], 10);
       const period = time12HourMatch[3].toUpperCase();
-      
+
       // Convert to 24-hour format
-      if (period === 'PM' && hours !== 12) {
+      if (period === "PM" && hours !== 12) {
         hours += 12;
-      } else if (period === 'AM' && hours === 12) {
+      } else if (period === "AM" && hours === 12) {
         hours = 0;
       }
     } else {
@@ -38,29 +38,31 @@ export function convertTimeToUTC(
         minutes = parseInt(time24HourMatch[2], 10);
       } else {
         // If parsing fails, return original
-        console.warn(`Failed to parse time string: ${timeString}, returning as-is`);
+        console.warn(
+          `Failed to parse time string: ${timeString}, returning as-is`,
+        );
         return trimmedTime;
       }
     }
-    
+
     // Validate hours and minutes
     if (hours < 0 || hours >= 24 || minutes < 0 || minutes >= 60) {
       console.warn(`Invalid time values: ${hours}:${minutes}, returning as-is`);
       return trimmedTime;
     }
-    
+
     // Create date object with reference date and parsed time in local timezone
     const refDate = referenceDate || new Date();
     const localDate = new Date(refDate);
     localDate.setHours(hours, minutes, 0, 0);
-    
+
     // Get UTC equivalent
     // The setHours() method sets time in local timezone, so getUTCHours() gives us UTC
     const utcHours = localDate.getUTCHours();
     const utcMinutes = localDate.getUTCMinutes();
-    
+
     // Format as HH:mm
-    return `${utcHours.toString().padStart(2, '0')}:${utcMinutes.toString().padStart(2, '0')}`;
+    return `${utcHours.toString().padStart(2, "0")}:${utcMinutes.toString().padStart(2, "0")}`;
   } catch (error) {
     logger.error(`Error converting time to UTC: ${error}`);
     return timeString;
@@ -77,7 +79,7 @@ export function convertTimeToUTC(
 export function convertUTCToLocal(
   utcTimeString: string,
   timezone?: string,
-  referenceDate?: Date
+  referenceDate?: Date,
 ): string {
   try {
     const trimmedTime = utcTimeString.trim();
@@ -90,7 +92,9 @@ export function convertUTCToLocal(
     // Parse UTC time string (HH:mm format)
     const timeMatch = trimmedTime.match(/^(\d{1,2}):(\d{2})$/);
     if (!timeMatch) {
-      console.warn(`Failed to parse UTC time string: ${utcTimeString}, returning as-is`);
+      console.warn(
+        `Failed to parse UTC time string: ${utcTimeString}, returning as-is`,
+      );
       return trimmedTime;
     }
 
@@ -98,8 +102,17 @@ export function convertUTCToLocal(
     const minutes = parseInt(timeMatch[2], 10);
 
     // Validate hours and minutes
-    if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours >= 24 || minutes < 0 || minutes >= 60) {
-      console.warn(`Invalid UTC time values: ${hours}:${minutes}, returning as-is`);
+    if (
+      isNaN(hours) ||
+      isNaN(minutes) ||
+      hours < 0 ||
+      hours >= 24 ||
+      minutes < 0 ||
+      minutes >= 60
+    ) {
+      console.warn(
+        `Invalid UTC time values: ${hours}:${minutes}, returning as-is`,
+      );
       return trimmedTime;
     }
 
@@ -112,10 +125,11 @@ export function convertUTCToLocal(
     const localMinutes = utcDate.getMinutes();
 
     // Format as 12-hour with AM/PM
-    const period = localHours >= 12 ? 'PM' : 'AM';
-    const displayHours = localHours === 0 ? 12 : localHours > 12 ? localHours - 12 : localHours;
+    const period = localHours >= 12 ? "PM" : "AM";
+    const displayHours =
+      localHours === 0 ? 12 : localHours > 12 ? localHours - 12 : localHours;
 
-    return `${displayHours}:${localMinutes.toString().padStart(2, '0')} ${period}`;
+    return `${displayHours}:${localMinutes.toString().padStart(2, "0")} ${period}`;
   } catch (error) {
     logger.error(`Error converting UTC to local: ${error}`);
     return utcTimeString;
@@ -130,7 +144,7 @@ export function convertUTCToLocal(
  */
 export function convertUTCMinutesToLocal(
   utcMinutes: number,
-  referenceDate?: Date
+  referenceDate?: Date,
 ): string {
   try {
     // Validate input
@@ -153,10 +167,11 @@ export function convertUTCMinutesToLocal(
     const localMinutes = utcDate.getMinutes();
 
     // Format as 12-hour with AM/PM
-    const period = localHours >= 12 ? 'PM' : 'AM';
-    const displayHours = localHours === 0 ? 12 : localHours > 12 ? localHours - 12 : localHours;
+    const period = localHours >= 12 ? "PM" : "AM";
+    const displayHours =
+      localHours === 0 ? 12 : localHours > 12 ? localHours - 12 : localHours;
 
-    return `${displayHours}:${localMinutes.toString().padStart(2, '0')} ${period}`;
+    return `${displayHours}:${localMinutes.toString().padStart(2, "0")} ${period}`;
   } catch (error) {
     logger.error(`Error converting UTC minutes to local: ${error}`);
     return String(utcMinutes);
@@ -172,7 +187,7 @@ export function convertUTCMinutesToLocal(
  */
 export function convertLocalTimeToUTCMinutes(
   timeString: string,
-  referenceDate?: Date
+  referenceDate?: Date,
 ): number {
   try {
     const trimmedTime = timeString.trim();
@@ -187,9 +202,9 @@ export function convertLocalTimeToUTCMinutes(
       const period = time12HourMatch[3].toUpperCase();
 
       // Convert to 24-hour format
-      if (period === 'PM' && hours !== 12) {
+      if (period === "PM" && hours !== 12) {
         hours += 12;
-      } else if (period === 'AM' && hours === 12) {
+      } else if (period === "AM" && hours === 12) {
         hours = 0;
       }
     } else {
@@ -224,4 +239,3 @@ export function convertLocalTimeToUTCMinutes(
     throw error;
   }
 }
-

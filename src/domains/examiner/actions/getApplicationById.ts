@@ -20,10 +20,14 @@ const getApplicationById = async (id: string): Promise<ExaminerData> => {
     const applicationData = ApplicationDto.toApplicationData(application);
     const [mappedData] = await mapSpecialtyIdsToNames([applicationData]);
 
-    const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
 
     // Map years of IME experience if it's a UUID
-    if (application.yearsOfIMEExperience && uuidRegex.test(application.yearsOfIMEExperience.replace(/\s/g, ''))) {
+    if (
+      application.yearsOfIMEExperience &&
+      uuidRegex.test(application.yearsOfIMEExperience.replace(/\s/g, ""))
+    ) {
       try {
         const yearsOfExperience = await prisma.yearsOfExperience.findUnique({
           where: { id: application.yearsOfIMEExperience },
@@ -37,23 +41,26 @@ const getApplicationById = async (id: string): Promise<ExaminerData> => {
     }
 
     // Map assessment types if they are UUIDs
-    if (application.assessmentTypeIds && application.assessmentTypeIds.length > 0) {
-      const assessmentTypeUuids = application.assessmentTypeIds.filter(id => 
-        uuidRegex.test(id.replace(/\s/g, ''))
+    if (
+      application.assessmentTypeIds &&
+      application.assessmentTypeIds.length > 0
+    ) {
+      const assessmentTypeUuids = application.assessmentTypeIds.filter((id) =>
+        uuidRegex.test(id.replace(/\s/g, "")),
       );
-      
+
       if (assessmentTypeUuids.length > 0) {
         try {
           const assessmentTypes = await prisma.assessmentType.findMany({
-            where: { 
+            where: {
               id: { in: assessmentTypeUuids },
-              deletedAt: null 
+              deletedAt: null,
             },
           });
-          
-          const typeMap = new Map(assessmentTypes.map(t => [t.id, t.name]));
-          mappedData.assessmentTypes = application.assessmentTypeIds.map(id => 
-            typeMap.get(id) || id
+
+          const typeMap = new Map(assessmentTypes.map((t) => [t.id, t.name]));
+          mappedData.assessmentTypes = application.assessmentTypeIds.map(
+            (id) => typeMap.get(id) || id,
           );
         } catch (error) {
           logger.error("Failed to map assessment types:", error);
@@ -63,22 +70,22 @@ const getApplicationById = async (id: string): Promise<ExaminerData> => {
 
     // Map languages if they are UUIDs
     if (application.languagesSpoken && application.languagesSpoken.length > 0) {
-      const languageUuids = application.languagesSpoken.filter(lang => 
-        uuidRegex.test(lang.replace(/\s/g, ''))
+      const languageUuids = application.languagesSpoken.filter((lang) =>
+        uuidRegex.test(lang.replace(/\s/g, "")),
       );
-      
+
       if (languageUuids.length > 0) {
         try {
           const languages = await prisma.language.findMany({
-            where: { 
+            where: {
               id: { in: languageUuids },
-              deletedAt: null 
+              deletedAt: null,
             },
           });
-          
-          const languageMap = new Map(languages.map(l => [l.id, l.name]));
-          mappedData.languagesSpoken = application.languagesSpoken.map(id => 
-            languageMap.get(id) || id
+
+          const languageMap = new Map(languages.map((l) => [l.id, l.name]));
+          mappedData.languagesSpoken = application.languagesSpoken.map(
+            (id) => languageMap.get(id) || id,
           );
         } catch (error) {
           logger.error("Failed to map languages:", error);
@@ -87,7 +94,10 @@ const getApplicationById = async (id: string): Promise<ExaminerData> => {
     }
 
     // Fetch multiple verification documents using IDs array
-    if (application.medicalLicenseDocumentIds && application.medicalLicenseDocumentIds.length > 0) {
+    if (
+      application.medicalLicenseDocumentIds &&
+      application.medicalLicenseDocumentIds.length > 0
+    ) {
       try {
         const documents = await prisma.documents.findMany({
           where: {
@@ -102,10 +112,13 @@ const getApplicationById = async (id: string): Promise<ExaminerData> => {
             try {
               return await generatePresignedUrl(`examiner/${doc.name}`, 3600);
             } catch (error) {
-              logger.error(`Failed to generate presigned URL for document ${doc.id}:`, error);
+              logger.error(
+                `Failed to generate presigned URL for document ${doc.id}:`,
+                error,
+              );
               return null;
             }
-          })
+          }),
         );
 
         // Filter out any failed URLs and set both single and array
@@ -125,4 +138,3 @@ const getApplicationById = async (id: string): Promise<ExaminerData> => {
 };
 
 export default getApplicationById;
-

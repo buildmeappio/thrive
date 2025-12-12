@@ -44,18 +44,21 @@ export default function WaitingCases({
   return (
     <section
       className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
-      aria-labelledby="waiting-cases-heading">
+      aria-labelledby="waiting-cases-heading"
+    >
       {/* Title + CTA */}
       <div className="flex items-center justify-between gap-2 sm:gap-3">
         <h3
           id="waiting-cases-heading"
-          className="font-degular font-[600] text-[26px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black">
+          className="font-degular font-[600] text-[26px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black"
+        >
           {title}
         </h3>
 
         <Link
           href={listHref}
-          className="h-[40px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 sm:px-4 text-white text-[15px] sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0">
+          className="h-[40px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 sm:px-4 text-white text-[15px] sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0"
+        >
           View All
         </Link>
       </div>
@@ -94,7 +97,8 @@ export default function WaitingCases({
               return (
                 <TableRow
                   key={r.id}
-                  className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]">
+                  className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
+                >
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#1A1A1A] font-mono tabular-nums font-poppins py-5 sm:py-3 min-w-[140px] sm:min-w-0">
                     <span className="block">{r.caseNumber}</span>
                   </TableCell>
@@ -123,7 +127,8 @@ export default function WaitingCases({
                       <Link
                         href={href}
                         aria-label={`Open ${r.caseNumber}`}
-                        className="flex-shrink-0 grid h-7 w-7 sm:h-5 sm:w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]">
+                        className="flex-shrink-0 grid h-7 w-7 sm:h-5 sm:w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
+                      >
                         <ChevronRight className="h-5 w-5 sm:h-3.5 sm:w-3.5 text-[#00A8FF]" />
                       </Link>
                     </div>

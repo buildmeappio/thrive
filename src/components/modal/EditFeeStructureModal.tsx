@@ -19,16 +19,22 @@ export default function EditFeeStructureModal({
   isLoading = false,
 }: Props) {
   const [IMEFee, setIMEFee] = useState(
-    initialData?.IMEFee ? Math.floor(initialData.IMEFee).toString() : ""
+    initialData?.IMEFee ? Math.floor(initialData.IMEFee).toString() : "",
   );
   const [recordReviewFee, setRecordReviewFee] = useState(
-    initialData?.recordReviewFee ? Math.floor(initialData.recordReviewFee).toString() : ""
+    initialData?.recordReviewFee
+      ? Math.floor(initialData.recordReviewFee).toString()
+      : "",
   );
   const [hourlyRate, setHourlyRate] = useState(
-    initialData?.hourlyRate ? Math.floor(initialData.hourlyRate).toString() : ""
+    initialData?.hourlyRate
+      ? Math.floor(initialData.hourlyRate).toString()
+      : "",
   );
   const [cancellationFee, setCancellationFee] = useState(
-    initialData?.cancellationFee ? Math.floor(initialData.cancellationFee).toString() : ""
+    initialData?.cancellationFee
+      ? Math.floor(initialData.cancellationFee).toString()
+      : "",
   );
 
   // Helper function to sanitize input to only allow positive integers
@@ -41,7 +47,7 @@ export default function EditFeeStructureModal({
   // Handler for positive integer input
   const handleIntegerChange = (
     value: string,
-    setter: (value: string) => void
+    setter: (value: string) => void,
   ) => {
     const sanitized = sanitizePositiveInteger(value);
     setter(sanitized);
@@ -51,38 +57,70 @@ export default function EditFeeStructureModal({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Allow: backspace, delete, tab, escape, enter, and arrow keys
     if (
-      ["Backspace", "Delete", "Tab", "Escape", "Enter", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(
-        e.key
-      )
+      [
+        "Backspace",
+        "Delete",
+        "Tab",
+        "Escape",
+        "Enter",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "ArrowDown",
+      ].includes(e.key)
     ) {
       return;
     }
     // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-    if ((e.ctrlKey || e.metaKey) && ["a", "c", "v", "x"].includes(e.key.toLowerCase())) {
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      ["a", "c", "v", "x"].includes(e.key.toLowerCase())
+    ) {
       return;
     }
     // Prevent: negative sign, decimal point, and any non-numeric character
-    if (e.key === "-" || e.key === "." || e.key === "," || isNaN(Number(e.key))) {
+    if (
+      e.key === "-" ||
+      e.key === "." ||
+      e.key === "," ||
+      isNaN(Number(e.key))
+    ) {
       e.preventDefault();
     }
   };
-  
+
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (initialData) {
-      setIMEFee(initialData.IMEFee ? Math.floor(initialData.IMEFee).toString() : "");
-      setRecordReviewFee(initialData.recordReviewFee ? Math.floor(initialData.recordReviewFee).toString() : "");
-      setHourlyRate(initialData.hourlyRate ? Math.floor(initialData.hourlyRate).toString() : "");
-      setCancellationFee(initialData.cancellationFee ? Math.floor(initialData.cancellationFee).toString() : "");
+      setIMEFee(
+        initialData.IMEFee ? Math.floor(initialData.IMEFee).toString() : "",
+      );
+      setRecordReviewFee(
+        initialData.recordReviewFee
+          ? Math.floor(initialData.recordReviewFee).toString()
+          : "",
+      );
+      setHourlyRate(
+        initialData.hourlyRate
+          ? Math.floor(initialData.hourlyRate).toString()
+          : "",
+      );
+      setCancellationFee(
+        initialData.cancellationFee
+          ? Math.floor(initialData.cancellationFee).toString()
+          : "",
+      );
     }
   }, [initialData]);
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("keydown", onKey);
     const t = setTimeout(() => firstInputRef.current?.focus(), 0);
     const { overflow } = document.body.style;
@@ -95,12 +133,13 @@ export default function EditFeeStructureModal({
   }, [open, onClose]);
 
   const onBackdrop = (e: React.MouseEvent) => {
-    if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
+    if (panelRef.current && !panelRef.current.contains(e.target as Node))
+      onClose();
   };
 
   if (!open) return null;
 
-  const canSubmit = 
+  const canSubmit =
     IMEFee.trim().length > 0 &&
     recordReviewFee.trim().length > 0 &&
     cancellationFee.trim().length > 0;
@@ -110,7 +149,9 @@ export default function EditFeeStructureModal({
       onSubmit({
         IMEFee: parseInt(IMEFee, 10) || 0,
         recordReviewFee: parseInt(recordReviewFee, 10) || 0,
-        hourlyRate: hourlyRate ? parseInt(hourlyRate, 10) || undefined : undefined,
+        hourlyRate: hourlyRate
+          ? parseInt(hourlyRate, 10) || undefined
+          : undefined,
         cancellationFee: parseInt(cancellationFee, 10) || 0,
         paymentTerms: initialData?.paymentTerms || "N/A",
       } as Omit<ExaminerFeeStructure, "id">);
@@ -144,7 +185,12 @@ export default function EditFeeStructureModal({
           onClick={onClose}
           className="absolute right-4 top-4 sm:right-5 sm:top-5 grid h-8 w-8 sm:h-[32px] sm:w-[32px] place-items-center rounded-full bg-[#000093] focus:outline-none focus:ring-2 focus:ring-[#000093]/40"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" className="text-white">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            className="text-white"
+          >
             <path
               fill="currentColor"
               d="M18.3 5.7a1 1 0 0 0-1.4-1.4L12 9.17 7.1 4.3A1 1 0 0 0 5.7 5.7L10.6 10.6 5.7 15.5a1 1 0 1 0 1.4 1.4L12 12.03l4.9 4.87a1 1 0 0 0 1.4-1.4l-4.9-4.87 4.9-4.93Z"
@@ -205,7 +251,9 @@ export default function EditFeeStructureModal({
               type="number"
               min="0"
               value={recordReviewFee}
-              onChange={(e) => handleIntegerChange(e.target.value, setRecordReviewFee)}
+              onChange={(e) =>
+                handleIntegerChange(e.target.value, setRecordReviewFee)
+              }
               onKeyDown={handleKeyDown}
               className="
                 h-12 w-full
@@ -234,7 +282,9 @@ export default function EditFeeStructureModal({
               type="number"
               min="0"
               value={hourlyRate}
-              onChange={(e) => handleIntegerChange(e.target.value, setHourlyRate)}
+              onChange={(e) =>
+                handleIntegerChange(e.target.value, setHourlyRate)
+              }
               onKeyDown={handleKeyDown}
               className="
                 h-12 w-full
@@ -263,7 +313,9 @@ export default function EditFeeStructureModal({
               type="number"
               min="0"
               value={cancellationFee}
-              onChange={(e) => handleIntegerChange(e.target.value, setCancellationFee)}
+              onChange={(e) =>
+                handleIntegerChange(e.target.value, setCancellationFee)
+              }
               onKeyDown={handleKeyDown}
               className="
                 h-12 w-full
@@ -320,4 +372,3 @@ export default function EditFeeStructureModal({
     </div>
   );
 }
-

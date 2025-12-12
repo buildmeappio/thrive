@@ -9,4 +9,3 @@ const getReportById = async (id: string) => {
 };
 
 export default getReportById;
-

@@ -16,21 +16,24 @@ import { checkEntityType } from "../utils/checkEntityType";
 const markInterviewCompleted = async (id: string) => {
   const user = await getCurrentUser();
   if (!user) {
-    throw HttpError.unauthorized("You must be logged in to update interview status");
+    throw HttpError.unauthorized(
+      "You must be logged in to update interview status",
+    );
   }
 
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
-  
-  if (entityType === 'application') {
-    const application = await applicationService.markApplicationInterviewCompleted(id);
-    
+
+  if (entityType === "application") {
+    const application =
+      await applicationService.markApplicationInterviewCompleted(id);
+
     // Send notification email to applicant
     try {
       if (application.email && application.firstName && application.lastName) {
-        const htmlTemplate = generateExaminerInterviewCompletedEmail({ 
-          firstName: application.firstName, 
-          lastName: application.lastName 
+        const htmlTemplate = generateExaminerInterviewCompletedEmail({
+          firstName: application.firstName,
+          lastName: application.lastName,
         });
 
         await sendMail({
@@ -46,7 +49,7 @@ const markInterviewCompleted = async (id: string) => {
     }
 
     return application;
-  } else if (entityType === 'examiner') {
+  } else if (entityType === "examiner") {
     const examiner = await examinerService.markInterviewCompleted(id);
 
     // Send notification email to examiner
@@ -67,7 +70,10 @@ const markInterviewCompleted = async (id: string) => {
         const lastName = examinerWithUser.account.user.lastName;
         const email = examinerWithUser.account.user.email;
 
-        const htmlTemplate = generateExaminerInterviewCompletedEmail({ firstName, lastName });
+        const htmlTemplate = generateExaminerInterviewCompletedEmail({
+          firstName,
+          lastName,
+        });
 
         await sendMail({
           to: email,
@@ -88,4 +94,3 @@ const markInterviewCompleted = async (id: string) => {
 };
 
 export default markInterviewCompleted;
-

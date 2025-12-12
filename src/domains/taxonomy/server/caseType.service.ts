@@ -1,6 +1,10 @@
-import prisma from '@/lib/db';
-import { HttpError } from '@/utils/httpError';
-import { CreateCaseTypeInput, UpdateCaseTypeInput, CaseTypeData } from '../types/CaseType';
+import prisma from "@/lib/db";
+import { HttpError } from "@/utils/httpError";
+import {
+  CreateCaseTypeInput,
+  UpdateCaseTypeInput,
+  CaseTypeData,
+} from "../types/CaseType";
 
 export const createCaseType = async (data: CreateCaseTypeInput) => {
   try {
@@ -13,7 +17,7 @@ export const createCaseType = async (data: CreateCaseTypeInput) => {
     });
 
     if (existingCaseType) {
-      throw HttpError.badRequest('A case type with this name already exists');
+      throw HttpError.badRequest("A case type with this name already exists");
     }
 
     const caseType = await prisma.caseType.create({
@@ -43,7 +47,7 @@ export const updateCaseType = async (id: string, data: UpdateCaseTypeInput) => {
     });
 
     if (!existingCaseType) {
-      throw HttpError.notFound('Case type not found');
+      throw HttpError.notFound("Case type not found");
     }
 
     // If name is being updated, check if it's already in use
@@ -57,13 +61,15 @@ export const updateCaseType = async (id: string, data: UpdateCaseTypeInput) => {
       });
 
       if (nameExists) {
-        throw HttpError.badRequest('A case type with this name already exists');
+        throw HttpError.badRequest("A case type with this name already exists");
       }
     }
 
-    const updateData: Partial<{ name: string; description: string | null }> = {};
+    const updateData: Partial<{ name: string; description: string | null }> =
+      {};
     if (data.name !== undefined) updateData.name = data.name;
-    if (data.description !== undefined) updateData.description = data.description || null;
+    if (data.description !== undefined)
+      updateData.description = data.description || null;
 
     const caseType = await prisma.caseType.update({
       where: { id },
@@ -86,11 +92,11 @@ export const getCaseTypes = async (): Promise<CaseTypeData[]> => {
         deletedAt: null,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
-    return caseTypes.map(caseType => ({
+    return caseTypes.map((caseType) => ({
       id: caseType.id,
       name: caseType.name,
       description: caseType.description,
@@ -111,7 +117,7 @@ export const getCaseTypeById = async (id: string) => {
     });
 
     if (!caseType) {
-      throw HttpError.notFound('Case type not found');
+      throw HttpError.notFound("Case type not found");
     }
 
     return caseType;

@@ -25,8 +25,10 @@ export function sha256Buffer(buffer: Buffer): string {
  * @param contractData - Contract data object
  * @returns SHA-256 hash
  */
-export function hashContractData(templateBody: string, contractData: Record<string, any>): string {
+export function hashContractData(
+  templateBody: string,
+  contractData: Record<string, any>,
+): string {
   const combined = templateBody + JSON.stringify(contractData);
   return sha256(combined);
 }
-

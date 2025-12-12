@@ -10,7 +10,9 @@ type ApplicationWithRelations = ExaminerApplication & {
 };
 
 export class ApplicationDto {
-  static toApplicationData(application: ApplicationWithRelations): ExaminerData {
+  static toApplicationData(
+    application: ApplicationWithRelations,
+  ): ExaminerData {
     return {
       id: application.id,
       name: `${application.firstName || ""} ${application.lastName || ""}`.trim(),
@@ -45,28 +47,38 @@ export class ApplicationDto {
       redactedIMEReportUrl: undefined, // Will be set by handler with presigned URL
       insuranceProofUrl: undefined, // Will be set by handler with presigned URL
       signedNdaUrl: undefined, // Will be set by handler with presigned URL
-      isForensicAssessmentTrained: application.isForensicAssessmentTrained ?? false,
+      isForensicAssessmentTrained:
+        application.isForensicAssessmentTrained ?? false,
       agreeToTerms: application.agreeToTerms ?? false,
-      contractSignedByExaminerAt: application.contractSignedByExaminerAt?.toISOString() || undefined,
-      contractConfirmedByAdminAt: application.contractConfirmedByAdminAt?.toISOString() || undefined,
+      contractSignedByExaminerAt:
+        application.contractSignedByExaminerAt?.toISOString() || undefined,
+      contractConfirmedByAdminAt:
+        application.contractConfirmedByAdminAt?.toISOString() || undefined,
       status: application.status as ExaminerData["status"], // Cast ExaminerStatus to ServerStatus (DRAFT is filtered out in queries)
       createdAt: application.createdAt.toISOString(),
       updatedAt: application.updatedAt.toISOString(),
-      feeStructure: application.IMEFee !== null && application.recordReviewFee !== null && application.cancellationFee !== null && application.paymentTerms !== null
-        ? {
-          id: application.id, // Use application ID as temporary ID
-          IMEFee: Number(application.IMEFee),
-          recordReviewFee: Number(application.recordReviewFee),
-          hourlyRate: application.hourlyRate ? Number(application.hourlyRate) : undefined,
-          cancellationFee: Number(application.cancellationFee),
-          paymentTerms: application.paymentTerms,
-        }
-        : undefined,
+      feeStructure:
+        application.IMEFee !== null &&
+        application.recordReviewFee !== null &&
+        application.cancellationFee !== null &&
+        application.paymentTerms !== null
+          ? {
+              id: application.id, // Use application ID as temporary ID
+              IMEFee: Number(application.IMEFee),
+              recordReviewFee: Number(application.recordReviewFee),
+              hourlyRate: application.hourlyRate
+                ? Number(application.hourlyRate)
+                : undefined,
+              cancellationFee: Number(application.cancellationFee),
+              paymentTerms: application.paymentTerms,
+            }
+          : undefined,
     };
   }
 
-  static toApplicationDataList(applications: ApplicationWithRelations[]): ExaminerData[] {
+  static toApplicationDataList(
+    applications: ApplicationWithRelations[],
+  ): ExaminerData[] {
     return applications.map((a) => this.toApplicationData(a));
   }
 }
-

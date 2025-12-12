@@ -17,4 +17,3 @@ export type CreateLanguageInput = {
 };
 
 export type UpdateLanguageInput = Partial<CreateLanguageInput>;
-

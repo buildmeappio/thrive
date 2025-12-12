@@ -19,4 +19,3 @@ export const listUsers = async (): Promise<UserTableRow[]> => {
 };
 
 export default listUsers;
-

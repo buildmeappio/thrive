@@ -1,8 +1,22 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender, type Row, type Table as TanStackTable } from "@tanstack/react-table";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  flexRender,
+  type Row,
+  type Table as TanStackTable,
+} from "@tanstack/react-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import Pagination from "@/components/Pagination";
 import { cn } from "@/lib/utils";
@@ -35,9 +49,9 @@ const ActionButton = ({ id }: { id: string }) => {
 // Utility function to capitalize first letter of each word
 const capitalizeWords = (text: string): string => {
   return text
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 };
 
 const columnsDef = [
@@ -47,7 +61,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<ExaminerData> }) => {
       const name = row.getValue("name") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={name}
         >
@@ -62,7 +76,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<ExaminerData> }) => {
       const email = row.getValue("email") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={email}
         >
@@ -77,10 +91,12 @@ const columnsDef = [
     cell: ({ row }: { row: Row<ExaminerData> }) => {
       const specialties = row.getValue("specialties") as string | string[];
       const displayText = Array.isArray(specialties)
-        ? specialties.map((specialty: string) => capitalizeWords(specialty)).join(", ")
+        ? specialties
+            .map((specialty: string) => capitalizeWords(specialty))
+            .join(", ")
         : capitalizeWords(specialties);
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={displayText}
         >
@@ -95,7 +111,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<ExaminerData> }) => {
       const province = row.getValue("province") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={province}
         >
@@ -109,9 +125,10 @@ const columnsDef = [
     header: "Status",
     cell: ({ row }: { row: Row<ExaminerData> }) => {
       const status = row.getValue("status") as string;
-      const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+      const formattedStatus =
+        status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={formattedStatus}
         >
@@ -131,7 +148,11 @@ const columnsDef = [
 ];
 
 // Combined component that handles both table and pagination with shared state
-export default function ExaminerTableWrapper({ data, searchQuery = "", filters }: Props) {
+export default function ExaminerTableWrapper({
+  data,
+  searchQuery = "",
+  filters,
+}: Props) {
   const [query, setQuery] = useState(searchQuery);
 
   // Update internal query when searchQuery prop changes
@@ -163,7 +184,7 @@ export default function ExaminerTableWrapper({ data, searchQuery = "", filters }
       result = result.filter((d) =>
         [d.name, d.email, d.specialties, d.province, d.status]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q))
+          .some((v) => String(v).toLowerCase().includes(q)),
       );
     }
 
@@ -189,7 +210,10 @@ export default function ExaminerTableWrapper({ data, searchQuery = "", filters }
         <Table className="min-w-[900px] border-0">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
+              <TableRow
+                className="bg-[#F3F3F3] border-b-0"
+                key={headerGroup.id}
+              >
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
@@ -197,15 +221,15 @@ export default function ExaminerTableWrapper({ data, searchQuery = "", filters }
                       "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap",
                       header.index === 0 && "rounded-l-2xl",
                       header.index === headerGroup.headers.length - 1 &&
-                      "rounded-r-2xl w-[60px]"
+                        "rounded-r-2xl w-[60px]",
                     )}
                   >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -222,7 +246,10 @@ export default function ExaminerTableWrapper({ data, searchQuery = "", filters }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="px-6 py-3">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -245,6 +272,10 @@ export default function ExaminerTableWrapper({ data, searchQuery = "", filters }
 }
 
 // Export pagination separately - now it receives the table instance
-export function ExaminerPagination({ table }: { table: TanStackTable<ExaminerData> }) {
+export function ExaminerPagination({
+  table,
+}: {
+  table: TanStackTable<ExaminerData>;
+}) {
   return <Pagination table={table} />;
 }

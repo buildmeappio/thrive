@@ -11,7 +11,10 @@ type CompleteTemporaryPasswordInput = {
 
 export const completeTemporaryPassword = async ({
   password,
-}: CompleteTemporaryPasswordInput): Promise<{ success: boolean; error?: string }> => {
+}: CompleteTemporaryPasswordInput): Promise<{
+  success: boolean;
+  error?: string;
+}> => {
   try {
     // Use dynamic import to avoid circular dependency
     const { authOptions } = await import("../nextauth/options");
@@ -40,4 +43,3 @@ export const completeTemporaryPassword = async ({
     };
   }
 };
-

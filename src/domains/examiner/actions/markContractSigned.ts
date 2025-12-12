@@ -17,13 +17,15 @@ import { revalidatePath } from "next/cache";
 const markContractSigned = async (id: string) => {
   const user = await getCurrentUser();
   if (!user) {
-    throw HttpError.unauthorized("You must be logged in to update contract status");
+    throw HttpError.unauthorized(
+      "You must be logged in to update contract status",
+    );
   }
 
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
 
-  if (entityType === 'application') {
+  if (entityType === "application") {
     // Update application status
     const application = await prisma.examinerApplication.update({
       where: { id },
@@ -39,7 +41,10 @@ const markContractSigned = async (id: string) => {
       const lastName = application.lastName || "";
       const email = application.email;
 
-      const htmlTemplate = generateExaminerContractSignedEmail({ firstName, lastName });
+      const htmlTemplate = generateExaminerContractSignedEmail({
+        firstName,
+        lastName,
+      });
 
       await sendMail({
         to: email,
@@ -54,7 +59,7 @@ const markContractSigned = async (id: string) => {
 
     revalidatePath(`/examiner/application/${id}`);
     return application;
-  } else if (entityType === 'examiner') {
+  } else if (entityType === "examiner") {
     // Handle examiner (existing logic)
     const examiner = await examinerService.markContractSigned(id);
 
@@ -76,7 +81,10 @@ const markContractSigned = async (id: string) => {
         const lastName = examinerWithUser.account.user.lastName;
         const email = examinerWithUser.account.user.email;
 
-        const htmlTemplate = generateExaminerContractSignedEmail({ firstName, lastName });
+        const htmlTemplate = generateExaminerContractSignedEmail({
+          firstName,
+          lastName,
+        });
 
         await sendMail({
           to: email,
@@ -98,4 +106,3 @@ const markContractSigned = async (id: string) => {
 };
 
 export default markContractSigned;
-

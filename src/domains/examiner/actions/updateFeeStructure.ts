@@ -15,13 +15,13 @@ export type UpdateFeeStructureData = {
 
 export async function updateFeeStructure(
   id: string,
-  data: UpdateFeeStructureData
+  data: UpdateFeeStructureData,
 ) {
   try {
     // Check if it's an application or examiner
     const entityType = await checkEntityType(id);
 
-    if (entityType === 'application') {
+    if (entityType === "application") {
       // Store fee structure in ExaminerApplication
       const application = await prisma.examinerApplication.update({
         where: { id },
@@ -47,7 +47,7 @@ export async function updateFeeStructure(
           paymentTerms: application.paymentTerms,
         },
       };
-    } else if (entityType === 'examiner') {
+    } else if (entityType === "examiner") {
       // Check if fee structure exists for this examiner
       const existingFeeStructure = await prisma.examinerFeeStructure.findFirst({
         where: {
@@ -106,8 +106,10 @@ export async function updateFeeStructure(
     logger.error("Error updating fee structure:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update fee structure",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to update fee structure",
     };
   }
 }
-

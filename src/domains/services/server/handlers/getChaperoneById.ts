@@ -6,4 +6,3 @@ const getChaperoneById = async (id: string) => {
 };
 
 export default getChaperoneById;
-

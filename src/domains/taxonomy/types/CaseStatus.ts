@@ -20,4 +20,3 @@ export type CreateCaseStatusInput = {
 };
 
 export type UpdateCaseStatusInput = Partial<CreateCaseStatusInput>;
-

@@ -1,5 +1,5 @@
-import * as examinationTypeService from '../../examinationType.service';
-import { CreateExaminationTypeInput } from '../../../types/ExaminationType';
+import * as examinationTypeService from "../../examinationType.service";
+import { CreateExaminationTypeInput } from "../../../types/ExaminationType";
 
 const createExaminationType = async (data: CreateExaminationTypeInput) => {
   const result = await examinationTypeService.createExaminationType(data);
@@ -7,4 +7,3 @@ const createExaminationType = async (data: CreateExaminationTypeInput) => {
 };
 
 export default createExaminationType;
-

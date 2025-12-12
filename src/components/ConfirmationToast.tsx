@@ -54,8 +54,8 @@ export const showConfirmationToast = ({
     type === "error"
       ? toast.error
       : type === "warning"
-      ? toast.warning
-      : toast.info;
+        ? toast.warning
+        : toast.info;
 
   return toastFunction(title, {
     description,
@@ -83,7 +83,7 @@ export const showConfirmationToast = ({
 export const showDeleteConfirmation = (
   itemName: string,
   onDelete: () => void | Promise<void>,
-  options?: Partial<ConfirmationToastProps>
+  options?: Partial<ConfirmationToastProps>,
 ) => {
   return showConfirmationToast({
     title: `Delete "${itemName}"?`,
@@ -99,7 +99,7 @@ export const showWarningConfirmation = (
   title: string,
   description: string,
   onConfirm: () => void | Promise<void>,
-  options?: Partial<ConfirmationToastProps>
+  options?: Partial<ConfirmationToastProps>,
 ) => {
   return showConfirmationToast({
     title,
@@ -115,7 +115,7 @@ export const showInfoConfirmation = (
   title: string,
   description: string,
   onConfirm: () => void | Promise<void>,
-  options?: Partial<ConfirmationToastProps>
+  options?: Partial<ConfirmationToastProps>,
 ) => {
   return showConfirmationToast({
     title,

@@ -3,4 +3,3 @@ export type UserLoginFlags = {
   mustResetPassword: boolean;
   temporaryPasswordIssuedAt: Date | null;
 };
-

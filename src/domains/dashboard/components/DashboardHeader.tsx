@@ -34,11 +34,10 @@ export default function DashboardHeader() {
         aria-label="Refresh dashboard data"
         title="Refresh data"
       >
-        <RefreshCw 
-          className={`w-5 h-5 sm:w-6 sm:h-6 text-white ${isRefreshing ? 'animate-spin' : ''}`}
+        <RefreshCw
+          className={`w-5 h-5 sm:w-6 sm:h-6 text-white ${isRefreshing ? "animate-spin" : ""}`}
         />
       </button>
     </div>
   );
 }
-

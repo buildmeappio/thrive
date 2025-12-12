@@ -16,10 +16,12 @@ type PasswordResetTokenPayload = {
   isUsed?: boolean;
 };
 
-export const verifyPasswordResetToken = async (token: string): Promise<PasswordResetTokenPayload> => {
+export const verifyPasswordResetToken = async (
+  token: string,
+): Promise<PasswordResetTokenPayload> => {
   try {
     const decoded = verifyAccountToken(token);
-    
+
     // If decoded is a string, throw error
     if (typeof decoded === "string") {
       throw new Error("Invalid token format");
@@ -33,7 +35,12 @@ export const verifyPasswordResetToken = async (token: string): Promise<PasswordR
     }
 
     // Validate required fields
-    if (!payload.email || !payload.userId || !payload.accountId || !payload.role) {
+    if (
+      !payload.email ||
+      !payload.userId ||
+      !payload.accountId ||
+      !payload.role
+    ) {
       throw new Error("Missing required token fields");
     }
 
@@ -66,13 +73,15 @@ export const verifyPasswordResetToken = async (token: string): Promise<PasswordR
     };
   } catch (error) {
     logger.error("Error verifying password reset token:", error);
-    
+
     // Preserve the specific error message
-    if (error instanceof Error && error.message === "This password reset link has already been used") {
+    if (
+      error instanceof Error &&
+      error.message === "This password reset link has already been used"
+    ) {
       throw error;
     }
-    
+
     throw new Error("Invalid or expired password reset token");
   }
 };
-

@@ -1,5 +1,5 @@
-import prisma from '@/lib/db';
-import { HttpError } from '@/utils/httpError';
+import prisma from "@/lib/db";
+import { HttpError } from "@/utils/httpError";
 
 export type CreateAssessmentTypeInput = {
   name: string;
@@ -26,7 +26,9 @@ export const createAssessmentType = async (data: CreateAssessmentTypeInput) => {
     });
 
     if (existingAssessmentType) {
-      throw HttpError.badRequest('An assessment type with this name already exists');
+      throw HttpError.badRequest(
+        "An assessment type with this name already exists",
+      );
     }
 
     const assessmentType = await prisma.assessmentType.create({
@@ -45,7 +47,10 @@ export const createAssessmentType = async (data: CreateAssessmentTypeInput) => {
   }
 };
 
-export const updateAssessmentType = async (id: string, data: UpdateAssessmentTypeInput) => {
+export const updateAssessmentType = async (
+  id: string,
+  data: UpdateAssessmentTypeInput,
+) => {
   try {
     // Check if assessment type exists
     const existingAssessmentType = await prisma.assessmentType.findFirst({
@@ -56,7 +61,7 @@ export const updateAssessmentType = async (id: string, data: UpdateAssessmentTyp
     });
 
     if (!existingAssessmentType) {
-      throw HttpError.notFound('Assessment type not found');
+      throw HttpError.notFound("Assessment type not found");
     }
 
     // If name is being updated, check if it's already in use
@@ -70,13 +75,17 @@ export const updateAssessmentType = async (id: string, data: UpdateAssessmentTyp
       });
 
       if (nameExists) {
-        throw HttpError.badRequest('An assessment type with this name already exists');
+        throw HttpError.badRequest(
+          "An assessment type with this name already exists",
+        );
       }
     }
 
-    const updateData: Partial<{ name: string; description: string | null }> = {};
+    const updateData: Partial<{ name: string; description: string | null }> =
+      {};
     if (data.name !== undefined) updateData.name = data.name;
-    if (data.description !== undefined) updateData.description = data.description || null;
+    if (data.description !== undefined)
+      updateData.description = data.description || null;
 
     const assessmentType = await prisma.assessmentType.update({
       where: { id },
@@ -99,7 +108,7 @@ export const getAssessmentTypes = async (): Promise<AssessmentTypeData[]> => {
         deletedAt: null,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
@@ -135,7 +144,7 @@ export const getAssessmentTypes = async (): Promise<AssessmentTypeData[]> => {
           createdAt: assessmentType.createdAt.toISOString(),
           frequency,
         };
-      })
+      }),
     );
 
     return assessmentTypesWithFrequency;
@@ -154,7 +163,7 @@ export const getAssessmentTypeById = async (id: string) => {
     });
 
     if (!assessmentType) {
-      throw HttpError.notFound('Assessment type not found');
+      throw HttpError.notFound("Assessment type not found");
     }
 
     return assessmentType;

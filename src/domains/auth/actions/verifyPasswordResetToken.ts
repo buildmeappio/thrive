@@ -15,4 +15,3 @@ const verifyPasswordResetTokenAction = async (token: string) => {
 };
 
 export default verifyPasswordResetTokenAction;
-

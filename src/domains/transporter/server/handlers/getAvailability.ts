@@ -27,10 +27,7 @@ type OverrideHoursWithTimeSlots = {
 
 const getAvailability = async (payload: GetAvailabilityInput) => {
   try {
-    const availability =
-      await getCompleteAvailability(
-        payload.transporterId
-      );
+    const availability = await getCompleteAvailability(payload.transporterId);
 
     // If no data exists, return null to indicate no availability is set
     if (!availability.hasData) {
@@ -73,11 +70,15 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
         return {
           date: `${month}-${day}-${year}`,
           timeSlots: override.timeSlots.map((slot) => ({
-            startTime: convertUTCToLocal(slot.startTime, undefined, override.date),
+            startTime: convertUTCToLocal(
+              slot.startTime,
+              undefined,
+              override.date,
+            ),
             endTime: convertUTCToLocal(slot.endTime, undefined, override.date),
           })),
         };
-      }
+      },
     );
 
     return {
@@ -90,7 +91,7 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
   } catch (error) {
     logger.error("Error fetching transporter availability:", error);
     throw HttpError.internalServerError(
-      "Failed to fetch transporter availability"
+      "Failed to fetch transporter availability",
     );
   }
 };

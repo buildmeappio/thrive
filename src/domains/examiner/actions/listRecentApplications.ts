@@ -7,7 +7,9 @@ import { HttpError } from "@/utils/httpError";
 import { mapSpecialtyIdsToNames } from "../utils/mapSpecialtyIdsToNames";
 import logger from "@/utils/logger";
 
-const listRecentApplications = async (limit: number = 7): Promise<ExaminerData[]> => {
+const listRecentApplications = async (
+  limit: number = 7,
+): Promise<ExaminerData[]> => {
   try {
     // Get applications with status SUBMITTED or PENDING
     const applications = await applicationService.getRecentApplications(limit, [
@@ -28,4 +30,3 @@ const listRecentApplications = async (limit: number = 7): Promise<ExaminerData[]
 };
 
 export default listRecentApplications;
-

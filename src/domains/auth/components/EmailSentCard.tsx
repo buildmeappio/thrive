@@ -27,9 +27,9 @@ const EmailSentCard = ({ email }: EmailSentCardProps) => {
     try {
       const formData = new FormData();
       formData.append("email", email);
-      
+
       const result = await authActions.forgotPassword(formData);
-      
+
       if (result.success) {
         toast.success("Reset link sent! Check your inbox.");
       } else {
@@ -47,7 +47,10 @@ const EmailSentCard = ({ email }: EmailSentCardProps) => {
     <div className="rounded-2xl sm:rounded-3xl border border-[#E9EDEE] bg-white p-5 sm:p-8 md:p-10 lg:p-12 shadow-xs text-center">
       {/* Email Icon */}
       <div className="mx-auto mb-4 sm:mb-6 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#00A8FF]/10 to-[#01F4C8]/10">
-        <Mail className="h-8 w-8 sm:h-10 sm:w-10 text-[#00A8FF]" strokeWidth={2} />
+        <Mail
+          className="h-8 w-8 sm:h-10 sm:w-10 text-[#00A8FF]"
+          strokeWidth={2}
+        />
       </div>
 
       {/* Title */}
@@ -86,8 +89,7 @@ const EmailSentCard = ({ email }: EmailSentCardProps) => {
 
       {/* Footer Note */}
       <p className="mt-6 sm:mt-8 text-xs sm:text-sm text-[#718096] leading-relaxed px-2">
-        Didn&apos;t receive the email? Check your spam folder or try
-        resending.
+        Didn&apos;t receive the email? Check your spam folder or try resending.
       </p>
     </div>
   );

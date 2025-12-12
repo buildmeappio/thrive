@@ -94,10 +94,10 @@ export default function TransporterDetail({
   });
   const hasAvailability = initialAvailability !== null;
   const [weeklyHours, setWeeklyHours] = useState<WeeklyHoursState>(
-    initialAvailability?.weeklyHours || getDefaultWeeklyHours()
+    initialAvailability?.weeklyHours || getDefaultWeeklyHours(),
   );
   const [overrideHours, setOverrideHours] = useState<OverrideHoursState>(
-    initialAvailability?.overrideHours || []
+    initialAvailability?.overrideHours || [],
   );
 
   const handleSave = async () => {
@@ -180,7 +180,7 @@ export default function TransporterDetail({
     setFormData((prev) => {
       const existingAreas = prev.serviceAreas || [];
       const existingProvince = existingAreas.find(
-        (area) => area.province === province
+        (area) => area.province === province,
       );
 
       if (existingProvince) {
@@ -188,7 +188,7 @@ export default function TransporterDetail({
         return {
           ...prev,
           serviceAreas: existingAreas.filter(
-            (area) => area.province !== province
+            (area) => area.province !== province,
           ),
         };
       } else {
@@ -204,37 +204,37 @@ export default function TransporterDetail({
   // Validation handlers
   const handleCompanyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const sanitizedValue = TransporterFormHandler.handleCompanyNameChange(
-      e.target.value
+      e.target.value,
     );
     setFormData((prev) => ({ ...prev, companyName: sanitizedValue }));
   };
 
   const handleCompanyNameBlur = () => {
     const trimmedValue = TransporterFormHandler.handleCompanyNameBlur(
-      formData.companyName
+      formData.companyName,
     );
     setFormData((prev) => ({ ...prev, companyName: trimmedValue }));
   };
 
   const handleContactPersonChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const sanitizedValue = TransporterFormHandler.handleContactPersonChange(
-      e.target.value
+      e.target.value,
     );
     setFormData((prev) => ({ ...prev, contactPerson: sanitizedValue }));
   };
 
   const handleContactPersonBlur = () => {
     const trimmedValue = TransporterFormHandler.handleContactPersonBlur(
-      formData.contactPerson
+      formData.contactPerson,
     );
     setFormData((prev) => ({ ...prev, contactPerson: trimmedValue }));
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const sanitizedValue = TransporterFormHandler.handleEmailChange(
-      e.target.value
+      e.target.value,
     );
     setFormData((prev) => ({ ...prev, email: sanitizedValue }));
   };
@@ -256,7 +256,8 @@ export default function TransporterDetail({
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           <Link
             href="/transporter"
-            className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+            className="flex items-center gap-2 sm:gap-4 flex-shrink-0"
+          >
             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
@@ -271,13 +272,15 @@ export default function TransporterDetail({
               <button
                 onClick={handleSave}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-green-600 shadow-sm text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex-1 sm:flex-initial">
+                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-green-600 shadow-sm text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex-1 sm:flex-initial"
+              >
                 <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 {isLoading ? "Saving..." : "Save"}
               </button>
               <button
                 onClick={handleCancel}
-                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-gray-500 shadow-sm text-white rounded-lg hover:bg-gray-600 flex-1 sm:flex-initial">
+                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-gray-500 shadow-sm text-white rounded-lg hover:bg-gray-600 flex-1 sm:flex-initial"
+              >
                 <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 Cancel
               </button>
@@ -286,16 +289,20 @@ export default function TransporterDetail({
             <div className="flex gap-2 w-full sm:w-auto">
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-600 hover:bg-blue-100 transition-colors text-sm sm:text-base flex-1 sm:flex-initial">
+                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-600 hover:bg-blue-100 transition-colors text-sm sm:text-base flex-1 sm:flex-initial"
+              >
                 <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span className="text-sm font-medium">Edit</span>
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base flex-1 sm:flex-initial">
+                className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base flex-1 sm:flex-initial"
+              >
                 <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="text-sm font-medium">{isDeleting ? "Deleting..." : "Delete"}</span>
+                <span className="text-sm font-medium">
+                  {isDeleting ? "Deleting..." : "Delete"}
+                </span>
               </button>
             </div>
           )}
@@ -324,15 +331,15 @@ export default function TransporterDetail({
                         className={cn(
                           "w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all",
                           TransporterFormHandler.isOnlySpaces(
-                            formData.companyName
+                            formData.companyName,
                           )
                             ? "border-red-300 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-[#00A8FF]"
+                            : "border-gray-300 focus:ring-[#00A8FF]",
                         )}
                         placeholder="Enter company name (alphabets only, max 25)"
                       />
                       {TransporterFormHandler.isOnlySpaces(
-                        formData.companyName
+                        formData.companyName,
                       ) && (
                         <p className="text-xs text-red-500 mt-1">
                           Company name cannot be only spaces
@@ -355,15 +362,15 @@ export default function TransporterDetail({
                         className={cn(
                           "w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all",
                           TransporterFormHandler.isOnlySpaces(
-                            formData.contactPerson
+                            formData.contactPerson,
                           )
                             ? "border-red-300 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-[#00A8FF]"
+                            : "border-gray-300 focus:ring-[#00A8FF]",
                         )}
                         placeholder="Enter contact person name (alphabets only, max 25)"
                       />
                       {TransporterFormHandler.isOnlySpaces(
-                        formData.contactPerson
+                        formData.contactPerson,
                       ) && (
                         <p className="text-xs text-red-500 mt-1">
                           Contact person cannot be only spaces
@@ -387,13 +394,13 @@ export default function TransporterDetail({
                           formData.email &&
                             !TransporterFormHandler.isValidEmail(formData.email)
                             ? "border-red-300 focus:ring-red-500"
-                            : "border-gray-300 focus:ring-[#00A8FF]"
+                            : "border-gray-300 focus:ring-[#00A8FF]",
                         )}
                         placeholder="Enter email address"
                       />
                       {formData.email &&
                         !TransporterFormHandler.isValidEmail(
-                          formData.email
+                          formData.email,
                         ) && (
                           <p className="text-xs text-red-500 mt-1">
                             Please enter a valid email address
@@ -421,8 +428,12 @@ export default function TransporterDetail({
             <AvailabilityTabs
               weeklyHours={weeklyStateToArray(weeklyHours)}
               overrideHours={overrideStateToArray(overrideHours)}
-              onWeeklyHoursChange={(updated) => setWeeklyHours(weeklyArrayToState(updated))}
-              onOverrideHoursChange={(updated) => setOverrideHours(overrideArrayToState(updated))}
+              onWeeklyHoursChange={(updated) =>
+                setWeeklyHours(weeklyArrayToState(updated))
+              }
+              onOverrideHoursChange={(updated) =>
+                setOverrideHours(overrideArrayToState(updated))
+              }
               disabled={!isEditing}
             />
 
@@ -437,11 +448,12 @@ export default function TransporterDetail({
                     {provinceOptions.map((option) => (
                       <label
                         key={option.value}
-                        className="flex items-center space-x-2 cursor-pointer min-w-0">
+                        className="flex items-center space-x-2 cursor-pointer min-w-0"
+                      >
                         <input
                           type="checkbox"
                           checked={formData.serviceAreas.some(
-                            (area) => area.province === option.value
+                            (area) => area.province === option.value,
                           )}
                           onChange={() => toggleProvince(option.value)}
                           className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
@@ -461,10 +473,11 @@ export default function TransporterDetail({
                         {formData.serviceAreas.map((area) => (
                           <span
                             key={area.province}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                            className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
+                          >
                             {
                               provinceOptions.find(
-                                (p) => p.value === area.province
+                                (p) => p.value === area.province,
                               )?.label
                             }
                           </span>
@@ -490,7 +503,8 @@ export default function TransporterDetail({
                       status: e.target.value as any,
                     }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
                   {TRANSPORTER_STATUSES.map((status) => (
                     <option key={status.value} value={status.value}>
                       {status.label}
@@ -505,126 +519,207 @@ export default function TransporterDetail({
         <>
           {/* View Mode: Two column layout */}
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px] gap-6 lg:gap-8 bg-white rounded-lg p-6">
-          {/* Left Column - Basic Information */}
-          <div className="space-y-6 min-w-0 w-full">
-            <Section title="Basic Information">
-              <div className="space-y-4">
-                <FieldRow
-                  label="Company Name"
-                  type="text"
-                  value={capitalizeWords(transporter.companyName)}
-                />
-                <FieldRow
-                  label="Contact Person"
-                  type="text"
-                  value={capitalizeWords(transporter.contactPerson)}
-                />
-                <FieldRow
-                  label="Email"
-                  type="text"
-                  value={transporter.email}
-                />
-                <FieldRow
-                  label="Phone"
-                  type="text"
-                  value={formatPhoneNumber(transporter.phone)}
-                />
-              </div>
-            </Section>
-          </div>
-
-          {/* Right Column - Service Provinces */}
-          <div className="space-y-6 min-w-0 w-full max-w-full">
-            <Section title="Service Provinces">
-              <div className="space-y-2">
-                {(transporter.serviceAreas || []).length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {(transporter.serviceAreas || []).map((area) => (
-                      <span
-                        key={area.province}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                        {provinceOptions.find((p) => p.value === area.province)
-                          ?.label || area.province}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-sm">No provinces selected</p>
-                )}
-              </div>
-            </Section>
-
-            {/* Status Management - Bottom Right */}
-            <Section title="Status Management">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">
-                  Current Status:
-                </span>
-                <span
-                  className={cn(
-                    "px-3 py-1 rounded-full text-sm font-medium",
-                    mapStatus[transporter.status] === "active" &&
-                      "bg-green-100 text-green-800",
-                    mapStatus[transporter.status] === "suspended" &&
-                      "bg-red-100 text-red-800"
-                  )}>
-                  {transporter.status === "ACTIVE" && "Active"}
-                  {transporter.status === "SUSPENDED" && "Suspended"}
-                </span>
-              </div>
-            </Section>
-          </div>
-        </div>
-
-        {/* Availability - Separate Card in View Mode */}
-        {hasAvailability && (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-6">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-xl font-semibold text-black font-poppins">
-                Availability
-              </h2>
+            {/* Left Column - Basic Information */}
+            <div className="space-y-6 min-w-0 w-full">
+              <Section title="Basic Information">
+                <div className="space-y-4">
+                  <FieldRow
+                    label="Company Name"
+                    type="text"
+                    value={capitalizeWords(transporter.companyName)}
+                  />
+                  <FieldRow
+                    label="Contact Person"
+                    type="text"
+                    value={capitalizeWords(transporter.contactPerson)}
+                  />
+                  <FieldRow
+                    label="Email"
+                    type="text"
+                    value={transporter.email}
+                  />
+                  <FieldRow
+                    label="Phone"
+                    type="text"
+                    value={formatPhoneNumber(transporter.phone)}
+                  />
+                </div>
+              </Section>
             </div>
-            <div className="p-6">
-              {(() => {
-                const weeklyHoursArray = weeklyStateToArray(weeklyHours);
-                const overrideHoursArray = overrideStateToArray(overrideHours);
-                const hasWeeklyHours = weeklyHoursArray.filter((wh) => wh.enabled).length > 0;
-                const hasOverrideHours = overrideHoursArray.length > 0;
 
-                return (
-                  <>
-                    {/* Weekly Hours */}
-                    {hasWeeklyHours && (
-                      <div className="mb-8">
-                        <div className="flex items-center gap-2 mb-4">
-                          <div className="w-1 h-6 bg-gradient-to-b from-[#00A8FF] to-[#01F4C8] rounded-full"></div>
-                          <h3 className="text-lg font-semibold text-gray-900 font-poppins">
-                            Weekly Schedule
-                          </h3>
+            {/* Right Column - Service Provinces */}
+            <div className="space-y-6 min-w-0 w-full max-w-full">
+              <Section title="Service Provinces">
+                <div className="space-y-2">
+                  {(transporter.serviceAreas || []).length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {(transporter.serviceAreas || []).map((area) => (
+                        <span
+                          key={area.province}
+                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                        >
+                          {provinceOptions.find(
+                            (p) => p.value === area.province,
+                          )?.label || area.province}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm">
+                      No provinces selected
+                    </p>
+                  )}
+                </div>
+              </Section>
+
+              {/* Status Management - Bottom Right */}
+              <Section title="Status Management">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">
+                    Current Status:
+                  </span>
+                  <span
+                    className={cn(
+                      "px-3 py-1 rounded-full text-sm font-medium",
+                      mapStatus[transporter.status] === "active" &&
+                        "bg-green-100 text-green-800",
+                      mapStatus[transporter.status] === "suspended" &&
+                        "bg-red-100 text-red-800",
+                    )}
+                  >
+                    {transporter.status === "ACTIVE" && "Active"}
+                    {transporter.status === "SUSPENDED" && "Suspended"}
+                  </span>
+                </div>
+              </Section>
+            </div>
+          </div>
+
+          {/* Availability - Separate Card in View Mode */}
+          {hasAvailability && (
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-6">
+              <div className="p-6 border-b border-gray-100">
+                <h2 className="text-xl font-semibold text-black font-poppins">
+                  Availability
+                </h2>
+              </div>
+              <div className="p-6">
+                {(() => {
+                  const weeklyHoursArray = weeklyStateToArray(weeklyHours);
+                  const overrideHoursArray =
+                    overrideStateToArray(overrideHours);
+                  const hasWeeklyHours =
+                    weeklyHoursArray.filter((wh) => wh.enabled).length > 0;
+                  const hasOverrideHours = overrideHoursArray.length > 0;
+
+                  return (
+                    <>
+                      {/* Weekly Hours */}
+                      {hasWeeklyHours && (
+                        <div className="mb-8">
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-1 h-6 bg-gradient-to-b from-[#00A8FF] to-[#01F4C8] rounded-full"></div>
+                            <h3 className="text-lg font-semibold text-gray-900 font-poppins">
+                              Weekly Schedule
+                            </h3>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {weeklyHoursArray
+                              .filter((wh) => wh.enabled)
+                              .map((wh) => (
+                                <div
+                                  key={wh.id || wh.dayOfWeek}
+                                  className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100 hover:shadow-md transition-shadow"
+                                >
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <div className="w-2 h-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full"></div>
+                                    <p className="font-poppins font-semibold text-gray-900 text-base">
+                                      {wh.dayOfWeek.charAt(0) +
+                                        wh.dayOfWeek.slice(1).toLowerCase()}
+                                    </p>
+                                  </div>
+                                  <div className="space-y-2">
+                                    {wh.timeSlots.map((slot, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="flex items-center gap-2 bg-white/70 rounded-lg px-3 py-2"
+                                      >
+                                        <svg
+                                          className="w-4 h-4 text-[#00A8FF]"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                          />
+                                        </svg>
+                                        <p className="text-sm text-gray-700 font-poppins font-medium">
+                                          {slot.startTime} - {slot.endTime}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {weeklyHoursArray
-                            .filter((wh) => wh.enabled)
-                            .map((wh) => (
+                      )}
+
+                      {/* Override Hours */}
+                      {hasOverrideHours && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-1 h-6 bg-gradient-to-b from-[#FF6B6B] to-[#FFA500] rounded-full"></div>
+                            <h3 className="text-lg font-semibold text-gray-900 font-poppins">
+                              Special Dates
+                            </h3>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {overrideHoursArray.map((oh) => (
                               <div
-                                key={wh.id || wh.dayOfWeek}
-                                className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100 hover:shadow-md transition-shadow"
+                                key={oh.id || oh.date}
+                                className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-orange-100 hover:shadow-md transition-shadow"
                               >
                                 <div className="flex items-center gap-2 mb-3">
-                                  <div className="w-2 h-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full"></div>
+                                  <svg
+                                    className="w-5 h-5 text-orange-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
+                                  </svg>
                                   <p className="font-poppins font-semibold text-gray-900 text-base">
-                                    {wh.dayOfWeek.charAt(0) +
-                                      wh.dayOfWeek.slice(1).toLowerCase()}
+                                    {(() => {
+                                      const localDate = overrideDateToLocalDate(
+                                        oh.date,
+                                      );
+                                      return localDate
+                                        ? format(
+                                            localDate,
+                                            "EEEE, MMM dd, yyyy",
+                                          )
+                                        : formatOverrideDisplayDate(oh.date);
+                                    })()}
                                   </p>
                                 </div>
                                 <div className="space-y-2">
-                                  {wh.timeSlots.map((slot, idx) => (
+                                  {oh.timeSlots.map((slot, idx) => (
                                     <div
                                       key={idx}
                                       className="flex items-center gap-2 bg-white/70 rounded-lg px-3 py-2"
                                     >
                                       <svg
-                                        className="w-4 h-4 text-[#00A8FF]"
+                                        className="w-4 h-4 text-orange-500"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -644,108 +739,39 @@ export default function TransporterDetail({
                                 </div>
                               </div>
                             ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Override Hours */}
-                    {hasOverrideHours && (
-                      <div>
-                        <div className="flex items-center gap-2 mb-4">
-                          <div className="w-1 h-6 bg-gradient-to-b from-[#FF6B6B] to-[#FFA500] rounded-full"></div>
-                          <h3 className="text-lg font-semibold text-gray-900 font-poppins">
-                            Special Dates
-                          </h3>
+                      {!hasWeeklyHours && !hasOverrideHours && (
+                        <div className="text-center py-12">
+                          <svg
+                            className="w-16 h-16 mx-auto text-gray-300 mb-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <p className="text-gray-500 font-poppins text-lg">
+                            No availability set
+                          </p>
+                          <p className="text-gray-400 font-poppins text-sm mt-1">
+                            Schedule has not been configured yet
+                          </p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {overrideHoursArray.map((oh) => (
-                            <div
-                              key={oh.id || oh.date}
-                              className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-orange-100 hover:shadow-md transition-shadow"
-                            >
-                              <div className="flex items-center gap-2 mb-3">
-                                <svg
-                                  className="w-5 h-5 text-orange-500"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                  />
-                                </svg>
-                                <p className="font-poppins font-semibold text-gray-900 text-base">
-                                  {(() => {
-                                    const localDate = overrideDateToLocalDate(oh.date);
-                                    return localDate
-                                      ? format(localDate, "EEEE, MMM dd, yyyy")
-                                      : formatOverrideDisplayDate(oh.date);
-                                  })()}
-                                </p>
-                              </div>
-                              <div className="space-y-2">
-                                {oh.timeSlots.map((slot, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="flex items-center gap-2 bg-white/70 rounded-lg px-3 py-2"
-                                  >
-                                    <svg
-                                      className="w-4 h-4 text-orange-500"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                      />
-                                    </svg>
-                                    <p className="text-sm text-gray-700 font-poppins font-medium">
-                                      {slot.startTime} - {slot.endTime}
-                                    </p>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {!hasWeeklyHours && !hasOverrideHours && (
-                      <div className="text-center py-12">
-                        <svg
-                          className="w-16 h-16 mx-auto text-gray-300 mb-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                        <p className="text-gray-500 font-poppins text-lg">
-                          No availability set
-                        </p>
-                        <p className="text-gray-400 font-poppins text-sm mt-1">
-                          Schedule has not been configured yet
-                        </p>
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
             </div>
-          </div>
-        )}
+          )}
         </>
       )}
     </div>

@@ -4,13 +4,13 @@ import { convertTimeToUTC } from "@/utils/timezone";
 
 export type WeeklyHoursData = {
   dayOfWeek:
-  | "MONDAY"
-  | "TUESDAY"
-  | "WEDNESDAY"
-  | "THURSDAY"
-  | "FRIDAY"
-  | "SATURDAY"
-  | "SUNDAY";
+    | "MONDAY"
+    | "TUESDAY"
+    | "WEDNESDAY"
+    | "THURSDAY"
+    | "FRIDAY"
+    | "SATURDAY"
+    | "SUNDAY";
   enabled: boolean;
   timeSlots: { startTime: string; endTime: string }[];
 };
@@ -20,10 +20,9 @@ export type OverrideHoursData = {
   timeSlots: { startTime: string; endTime: string }[];
 };
 
-
-
-
-export async function getAvailabilityProviderId(transporterId: string): Promise<string> {
+export async function getAvailabilityProviderId(
+  transporterId: string,
+): Promise<string> {
   let availabilityProvider = await prisma.availabilityProvider.findFirst({
     where: {
       providerType: "TRANSPORTER",
@@ -43,7 +42,7 @@ export async function getAvailabilityProviderId(transporterId: string): Promise<
 
 export async function saveWeeklyHours(
   availabilityProviderId: string,
-  weeklyHoursData: WeeklyHoursData[]
+  weeklyHoursData: WeeklyHoursData[],
 ) {
   await prisma.providerWeeklyHours.deleteMany({
     where: { availabilityProviderId },
@@ -90,7 +89,7 @@ export async function getWeeklyHours(availabilityProviderId: string) {
 
 export async function saveOverrideHours(
   availabilityProviderId: string,
-  overrideHoursData: OverrideHoursData[]
+  overrideHoursData: OverrideHoursData[],
 ) {
   await prisma.providerOverrideHours.deleteMany({
     where: { availabilityProviderId },
@@ -99,7 +98,7 @@ export async function saveOverrideHours(
   const createPromises = overrideHoursData.map(async (overrideData) => {
     const [month, day, year] = overrideData.date.split("-");
     const dateObj = new Date(
-      Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day))
+      Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)),
     );
 
     const overrideHour = await prisma.providerOverrideHours.create({
@@ -142,11 +141,9 @@ export async function saveCompleteAvailability(
   data: {
     weeklyHours: WeeklyHoursData[];
     overrideHours?: OverrideHoursData[];
-  }
+  },
 ) {
-  const availabilityProviderId = await getAvailabilityProviderId(
-    transporterId
-  );
+  const availabilityProviderId = await getAvailabilityProviderId(transporterId);
   await saveWeeklyHours(availabilityProviderId, data.weeklyHours);
   if (data.overrideHours && data.overrideHours.length > 0) {
     await saveOverrideHours(availabilityProviderId, data.overrideHours);

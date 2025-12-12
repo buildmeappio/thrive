@@ -6,12 +6,12 @@ import getOrganizationTypes from "./getOrganizationTypes";
 import requestMoreInfoOrganization from "./requestMoreInfoOrganization";
 
 const handlers = {
-    getOrganizationById,
-    getOrganizations,
-    approveOrganization,
-    rejectOrganization,
-    getOrganizationTypes,
-    requestMoreInfoOrganization
-}
+  getOrganizationById,
+  getOrganizations,
+  approveOrganization,
+  rejectOrganization,
+  getOrganizationTypes,
+  requestMoreInfoOrganization,
+};
 
 export default handlers;

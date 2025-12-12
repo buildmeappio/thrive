@@ -25,14 +25,17 @@ const includeRelations = {
   },
 };
 
-export const getRecentExaminers = async (limit?: number, status?: string | string[]) => {
+export const getRecentExaminers = async (
+  limit?: number,
+  status?: string | string[],
+) => {
   return prisma.examinerProfile.findMany({
     where: {
       deletedAt: null,
       ...(status && {
         status: Array.isArray(status)
           ? { in: status as any[] }
-          : (status as any)
+          : (status as any),
       }),
     },
     include: includeRelations,
@@ -60,7 +63,11 @@ export const approveExaminer = async (id: string, _accountId?: string) => {
   });
 };
 
-export const rejectExaminer = async (id: string, accountId?: string, rejectionReason?: string) => {
+export const rejectExaminer = async (
+  id: string,
+  accountId?: string,
+  rejectionReason?: string,
+) => {
   return prisma.examinerProfile.update({
     where: { id },
     data: {
@@ -74,7 +81,7 @@ export const rejectExaminer = async (id: string, accountId?: string, rejectionRe
 export const requestMoreInfoFromExaminer = async (
   id: string,
   _message: string,
-  _documentsRequired: boolean
+  _documentsRequired: boolean,
 ) => {
   // Note: message and documentsRequired are sent via email but not stored in DB
   // as these fields don't exist in the schema
@@ -130,7 +137,10 @@ export const markContractSigned = async (id: string) => {
 };
 
 // Suspend and reactivate methods
-export const suspendExaminer = async (id: string, suspensionReason?: string) => {
+export const suspendExaminer = async (
+  id: string,
+  suspensionReason?: string,
+) => {
   return prisma.examinerProfile.update({
     where: { id },
     data: {
@@ -160,9 +170,7 @@ export const getExaminerCountThisMonth = async (status: string | string[]) => {
 
   return prisma.examinerProfile.count({
     where: {
-      status: Array.isArray(status)
-        ? { in: status as any[] }
-        : (status as any),
+      status: Array.isArray(status) ? { in: status as any[] } : (status as any),
       createdAt: {
         gte: startOfMonth,
       },
@@ -174,7 +182,7 @@ export const getExaminerCountThisMonth = async (status: string | string[]) => {
 // Copy data from ExaminerApplication to ExaminerProfile when account is created
 export const createProfileFromApplication = async (
   applicationId: string,
-  accountId: string
+  accountId: string,
 ) => {
   // Get the application with all relations
   const application = await prisma.examinerApplication.findUnique({
@@ -196,8 +204,13 @@ export const createProfileFromApplication = async (
   // Validate that the application is APPROVED or CONTRACT_SIGNED before allowing account creation
   // CONTRACT_SIGNED: Contract has been signed, waiting for admin approval
   // APPROVED: Application has been approved, ready for account creation
-  if (application.status !== ExaminerStatus.APPROVED && application.status !== ExaminerStatus.CONTRACT_SIGNED) {
-    throw new Error(`Application is not approved. Current status: ${application.status}. Application must be APPROVED or CONTRACT_SIGNED to create account.`);
+  if (
+    application.status !== ExaminerStatus.APPROVED &&
+    application.status !== ExaminerStatus.CONTRACT_SIGNED
+  ) {
+    throw new Error(
+      `Application is not approved. Current status: ${application.status}. Application must be APPROVED or CONTRACT_SIGNED to create account.`,
+    );
   }
 
   // Check if profile already exists
@@ -243,7 +256,8 @@ export const createProfileFromApplication = async (
         redactedIMEReportDocumentId: application.redactedIMEReportDocumentId,
         bio: application.experienceDetails || "",
         experienceDetails: application.experienceDetails || "",
-        isConsentToBackgroundVerification: application.isConsentToBackgroundVerification,
+        isConsentToBackgroundVerification:
+          application.isConsentToBackgroundVerification,
         agreeToTerms: application.agreeToTerms,
         status: ExaminerStatus.ACTIVE, // Set to ACTIVE when account is created
       },
@@ -251,7 +265,12 @@ export const createProfileFromApplication = async (
     });
 
     // Create fee structure from application fee structure if it exists
-    if (application.IMEFee !== null && application.recordReviewFee !== null && application.cancellationFee !== null && application.paymentTerms !== null) {
+    if (
+      application.IMEFee !== null &&
+      application.recordReviewFee !== null &&
+      application.cancellationFee !== null &&
+      application.paymentTerms !== null
+    ) {
       await tx.examinerFeeStructure.create({
         data: {
           examinerProfileId: createdProfile.id,

@@ -21,16 +21,16 @@ const moveToReview = async (id: string) => {
 
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
-  
-  if (entityType === 'application') {
+
+  if (entityType === "application") {
     const application = await applicationService.moveApplicationToReview(id);
-    
+
     // Send notification email to applicant
     try {
       if (application.email && application.firstName && application.lastName) {
-        const htmlTemplate = generateExaminerInReviewEmail({ 
-          firstName: application.firstName, 
-          lastName: application.lastName 
+        const htmlTemplate = generateExaminerInReviewEmail({
+          firstName: application.firstName,
+          lastName: application.lastName,
         });
 
         await sendMail({
@@ -46,7 +46,7 @@ const moveToReview = async (id: string) => {
     }
 
     return application;
-  } else if (entityType === 'examiner') {
+  } else if (entityType === "examiner") {
     const examiner = await examinerService.moveToReview(id);
 
     // Send notification email to examiner
@@ -67,7 +67,10 @@ const moveToReview = async (id: string) => {
         const lastName = examinerWithUser.account.user.lastName;
         const email = examinerWithUser.account.user.email;
 
-        const htmlTemplate = generateExaminerInReviewEmail({ firstName, lastName });
+        const htmlTemplate = generateExaminerInReviewEmail({
+          firstName,
+          lastName,
+        });
 
         await sendMail({
           to: email,
@@ -88,4 +91,3 @@ const moveToReview = async (id: string) => {
 };
 
 export default moveToReview;
-

@@ -18,4 +18,3 @@ export type UpdateBenefitInput = {
   benefit?: string;
   description?: string | null;
 };
-

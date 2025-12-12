@@ -22,10 +22,10 @@ export type ExaminerRow = {
 };
 
 type Props = {
-  items: ExaminerData[];                 // rows to show
-  listHref: string;                     // e.g. "/examiners"
+  items: ExaminerData[]; // rows to show
+  listHref: string; // e.g. "/examiners"
   buildDetailHref?: (id: string) => string; // defaults to `${listHref}/${id}`
-  visibleCount?: number;                // optional slice on dashboard
+  visibleCount?: number; // optional slice on dashboard
   subtitle?: string;
 };
 
@@ -87,25 +87,25 @@ export default function NewExaminers({
           <TableBody>
             {rows.map((r) => {
               const href = buildDetailHref(r.id);
-              
+
               // Format: "Dec 4, 2024 at 2:30 PM"
               const formatReceivedAt = (dateString: string) => {
                 const date = new Date(dateString);
-                const dateStr = date.toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric'
+                const dateStr = date.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
                 });
-                const timeStr = date.toLocaleTimeString('en-US', {
-                  hour: 'numeric',
-                  minute: '2-digit',
-                  hour12: true
+                const timeStr = date.toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
                 });
                 return `${dateStr} at ${timeStr}`;
               };
-              
+
               return (
-                <TableRow 
+                <TableRow
                   key={r.id}
                   className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
                 >
@@ -113,40 +113,75 @@ export default function NewExaminers({
                     <span className="block">{capitalizeWords(r.name)}</span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[160px] sm:min-w-0">
-                    <span className="block max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap" title={(() => {
-                      const specialties = r.specialties as string | string[] | undefined;
-                      if (Array.isArray(specialties)) {
-                        return specialties.map(specialty => 
-                          specialty.split('-').map(word => 
-                            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                          ).join(' ')
-                        ).join(", ");
-                      } else if (typeof specialties === 'string') {
-                        return specialties.split('-').map(word => 
-                          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                        ).join(' ');
-                      } else {
-                        return '-';
-                      }
-                    })()}>
-                      {(() => {
-                        const specialties = r.specialties as string | string[] | undefined;
-                        let formattedText = '';
+                    <span
+                      className="block max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap"
+                      title={(() => {
+                        const specialties = r.specialties as
+                          | string
+                          | string[]
+                          | undefined;
                         if (Array.isArray(specialties)) {
-                          formattedText = specialties.map(specialty => 
-                            specialty.split('-').map(word => 
-                              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                            ).join(' ')
-                          ).join(", ");
-                        } else if (typeof specialties === 'string') {
-                          formattedText = specialties.split('-').map(word => 
-                            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                          ).join(' ');
+                          return specialties
+                            .map((specialty) =>
+                              specialty
+                                .split("-")
+                                .map(
+                                  (word) =>
+                                    word.charAt(0).toUpperCase() +
+                                    word.slice(1).toLowerCase(),
+                                )
+                                .join(" "),
+                            )
+                            .join(", ");
+                        } else if (typeof specialties === "string") {
+                          return specialties
+                            .split("-")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() +
+                                word.slice(1).toLowerCase(),
+                            )
+                            .join(" ");
                         } else {
-                          return '-';
+                          return "-";
+                        }
+                      })()}
+                    >
+                      {(() => {
+                        const specialties = r.specialties as
+                          | string
+                          | string[]
+                          | undefined;
+                        let formattedText = "";
+                        if (Array.isArray(specialties)) {
+                          formattedText = specialties
+                            .map((specialty) =>
+                              specialty
+                                .split("-")
+                                .map(
+                                  (word) =>
+                                    word.charAt(0).toUpperCase() +
+                                    word.slice(1).toLowerCase(),
+                                )
+                                .join(" "),
+                            )
+                            .join(", ");
+                        } else if (typeof specialties === "string") {
+                          formattedText = specialties
+                            .split("-")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() +
+                                word.slice(1).toLowerCase(),
+                            )
+                            .join(" ");
+                        } else {
+                          return "-";
                         }
                         // Truncate if longer than 40 characters
-                        return formattedText.length > 40 ? formattedText.substring(0, 40) + '...' : formattedText;
+                        return formattedText.length > 40
+                          ? formattedText.substring(0, 40) + "..."
+                          : formattedText;
                       })()}
                     </span>
                   </TableCell>

@@ -76,7 +76,8 @@ const ChaperoneForm: React.FC<ChaperoneFormProps> = ({
     if (!cleanFirstName || !/^[A-Za-z][A-Za-z\s]*$/.test(cleanFirstName)) {
       setError("firstName", {
         type: "manual",
-        message: "First name must start with a letter and contain only letters/spaces",
+        message:
+          "First name must start with a letter and contain only letters/spaces",
       });
       return;
     }
@@ -84,7 +85,8 @@ const ChaperoneForm: React.FC<ChaperoneFormProps> = ({
     if (!cleanLastName || !/^[A-Za-z][A-Za-z\s]*$/.test(cleanLastName)) {
       setError("lastName", {
         type: "manual",
-        message: "Last name must start with a letter and contain only letters/spaces",
+        message:
+          "Last name must start with a letter and contain only letters/spaces",
       });
       return;
     }
@@ -220,7 +222,11 @@ const ChaperoneForm: React.FC<ChaperoneFormProps> = ({
       </div>
 
       <div className="flex justify-end gap-4 pt-4">
-        <Button type="submit" disabled={isSubmitting} className="min-w-[120px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-md">
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="min-w-[120px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-md"
+        >
           {isSubmitting ? "Saving..." : mode === "create" ? "Create" : "Update"}
         </Button>
       </div>

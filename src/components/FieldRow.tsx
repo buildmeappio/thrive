@@ -24,7 +24,7 @@ const FieldRow = ({
   const fileUrl =
     documentUrl ||
     `https://public-thrive-assets.s3.eu-north-1.amazonaws.com/documents/${encodeURIComponent(
-      fileName
+      fileName,
     )}`;
 
   return (
@@ -47,7 +47,8 @@ const FieldRow = ({
               href={valueHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight tracking-[-0.03em] text-[#000080] underline break-words">
+              className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight tracking-[-0.03em] text-[#000080] underline break-words"
+            >
               {value as string}
             </a>
           ) : type === "document" ? (
@@ -55,7 +56,8 @@ const FieldRow = ({
               <div className="flex items-center justify-start sm:justify-end gap-3">
                 <button
                   onClick={() => setIsPreviewOpen(true)}
-                  className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight text-[#4E4E4E] underline">
+                  className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight text-[#4E4E4E] underline"
+                >
                   Preview
                 </button>
                 <a
@@ -63,7 +65,8 @@ const FieldRow = ({
                   download
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight text-[#000080] underline">
+                  className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight text-[#000080] underline"
+                >
                   Download
                 </a>
               </div>
@@ -84,10 +87,12 @@ const FieldRow = ({
       {isPreviewOpen && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setIsPreviewOpen(false)}>
+          onClick={() => setIsPreviewOpen(false)}
+        >
           <div
             className="bg-white w-full max-w-6xl h-[90vh] rounded-lg shadow-lg relative flex flex-col"
-            onClick={(e) => e.stopPropagation()}>
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 truncate flex-1 pr-4">
@@ -99,13 +104,15 @@ const FieldRow = ({
                   download
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-lg hover:opacity-90 transition-opacity">
+                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-lg hover:opacity-90 transition-opacity"
+                >
                   Download
                 </a>
                 <button
                   onClick={() => setIsPreviewOpen(false)}
                   className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
-                  aria-label="Close">
+                  aria-label="Close"
+                >
                   ✕
                 </button>
               </div>

@@ -75,7 +75,8 @@ export default function WeeklyHours({ value, onChange, disabled }: Props) {
         return (
           <div
             key={day.value}
-            className="flex flex-col sm:flex-row items-start gap-2 sm:gap-4">
+            className="flex flex-col sm:flex-row items-start gap-2 sm:gap-4"
+          >
             <div className="flex items-center min-w-0 sm:min-w-[120px] pt-2 flex-shrink-0">
               <input
                 type="checkbox"
@@ -89,7 +90,8 @@ export default function WeeklyHours({ value, onChange, disabled }: Props) {
                 htmlFor={day.value}
                 className={`ml-2 text-sm font-medium whitespace-nowrap ${
                   dayData.enabled ? "text-gray-900" : "text-gray-400"
-                }`}>
+                }`}
+              >
                 {day.label}
               </label>
             </div>
@@ -99,7 +101,8 @@ export default function WeeklyHours({ value, onChange, disabled }: Props) {
                   <div
                     key={index}
                     className="grid gap-2 items-center w-full"
-                    style={{ gridTemplateColumns: "1fr 1fr auto" }}>
+                    style={{ gridTemplateColumns: "1fr 1fr auto" }}
+                  >
                     <div className="min-w-0 w-full">
                       <Select
                         value={slot.startTime}
@@ -109,12 +112,13 @@ export default function WeeklyHours({ value, onChange, disabled }: Props) {
                             [key]: {
                               ...dayData,
                               timeSlots: dayData.timeSlots.map((s, i) =>
-                                i === index ? { ...s, startTime: val } : s
+                                i === index ? { ...s, startTime: val } : s,
                               ),
                             },
                           })
                         }
-                        disabled={disabled || !dayData.enabled}>
+                        disabled={disabled || !dayData.enabled}
+                      >
                         <SelectTrigger className="w-full px-4 py-2 h-auto border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] disabled:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
                           <SelectValue />
                         </SelectTrigger>
@@ -136,12 +140,13 @@ export default function WeeklyHours({ value, onChange, disabled }: Props) {
                             [key]: {
                               ...dayData,
                               timeSlots: dayData.timeSlots.map((s, i) =>
-                                i === index ? { ...s, endTime: val } : s
+                                i === index ? { ...s, endTime: val } : s,
                               ),
                             },
                           })
                         }
-                        disabled={disabled || !dayData.enabled}>
+                        disabled={disabled || !dayData.enabled}
+                      >
                         <SelectTrigger className="w-full px-4 py-2 h-auto border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] disabled:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
                           <SelectValue />
                         </SelectTrigger>
@@ -160,7 +165,8 @@ export default function WeeklyHours({ value, onChange, disabled }: Props) {
                         onClick={() => addTimeSlot(key)}
                         disabled={disabled || !dayData.enabled}
                         className="p-2 text-[#00A8FF] hover:text-[#0097E5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Add time slot">
+                        title="Add time slot"
+                      >
                         +
                       </button>
                     ) : (
@@ -169,7 +175,8 @@ export default function WeeklyHours({ value, onChange, disabled }: Props) {
                         onClick={() => removeTimeSlot(key, index)}
                         disabled={disabled || !dayData.enabled}
                         className="p-2 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Remove time slot">
+                        title="Remove time slot"
+                      >
                         ×
                       </button>
                     )}

@@ -24,18 +24,18 @@ import Link from "next/link";
 const formatText = (str: string): string => {
   if (!str) return str;
   return str
-    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
-    .split(' ')
-    .filter(word => word.length > 0)  // Remove empty strings
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+    .replace(/[-_]/g, " ") // Replace - and _ with spaces
+    .split(" ")
+    .filter((word) => word.length > 0) // Remove empty strings
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 };
 
-const mapStatus = { 
-  PENDING: "pending", 
-  ACCEPTED: "approved", 
+const mapStatus = {
+  PENDING: "pending",
+  ACCEPTED: "approved",
   REJECTED: "rejected",
-  INFO_REQUESTED: "info_requested"
+  INFO_REQUESTED: "info_requested",
 } as const;
 
 type OrganizationDetailProps = {
@@ -46,17 +46,27 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
   const router = useRouter();
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
-  
+
   // Determine the current organization status from database
-  const getCurrentStatus = (): "pending" | "approved" | "rejected" | "info_requested" => {
+  const getCurrentStatus = ():
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "info_requested" => {
     const dbStatus = organization.status;
     return mapStatus[dbStatus as keyof typeof mapStatus] || "pending";
   };
-  
-  const [status, setStatus] = useState<"pending" | "approved" | "rejected" | "info_requested">(getCurrentStatus());
-  const [loadingAction, setLoadingAction] = useState<"approve" | "reject" | "request" | null>(null);
 
-  const type = organization.type?.name ? formatText(organization.type.name) : "-";
+  const [status, setStatus] = useState<
+    "pending" | "approved" | "rejected" | "info_requested"
+  >(getCurrentStatus());
+  const [loadingAction, setLoadingAction] = useState<
+    "approve" | "reject" | "request" | null
+  >(null);
+
+  const type = organization.type?.name
+    ? formatText(organization.type.name)
+    : "-";
 
   const handleRequestSubmit = async (messageToOrganization: string) => {
     // Check if manager email exists before proceeding
@@ -68,10 +78,15 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
 
     setLoadingAction("request");
     try {
-      await organizationActions.requestMoreInfo(organization.id, messageToOrganization);
+      await organizationActions.requestMoreInfo(
+        organization.id,
+        messageToOrganization,
+      );
       setIsRequestOpen(false);
       setStatus("info_requested");
-      toast.success("Request sent. An email has been sent to the organization.");
+      toast.success(
+        "Request sent. An email has been sent to the organization.",
+      );
       router.refresh();
     } catch (error) {
       logger.error("Failed to request more info:", error);
@@ -93,7 +108,9 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
     try {
       await organizationActions.approveOrganization(organization.id);
       setStatus("approved");
-      toast.success("Organization approved successfully! An email has been sent to the organization.");
+      toast.success(
+        "Organization approved successfully! An email has been sent to the organization.",
+      );
       router.refresh();
     } catch (error) {
       logger.error("Failed to approve organization:", error);
@@ -113,10 +130,15 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
 
     setLoadingAction("reject");
     try {
-      await organizationActions.rejectOrganization(organization.id, messageToOrganization);
+      await organizationActions.rejectOrganization(
+        organization.id,
+        messageToOrganization,
+      );
       setIsRejectOpen(false);
       setStatus("rejected");
-      toast.success("Organization rejected. An email has been sent to the organization.");
+      toast.success(
+        "Organization rejected. An email has been sent to the organization.",
+      );
       router.refresh();
     } catch (error) {
       logger.error("Failed to reject organization:", error);
@@ -132,7 +154,8 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
       <div className="mb-6 flex items-center gap-2 sm:gap-4 flex-shrink-0">
         <Link
           href="/organization"
-          className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          className="flex items-center gap-2 sm:gap-4 flex-shrink-0"
+        >
           <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
             <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
           </div>
@@ -149,10 +172,22 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
             {/* Left Column - Organization Details */}
             <div className="flex flex-col gap-6 lg:gap-10">
               <Section title="Organization Details">
-                <FieldRow label="Organization Name" value={capitalizeWords(organization.name)} type="text" />
+                <FieldRow
+                  label="Organization Name"
+                  value={capitalizeWords(organization.name)}
+                  type="text"
+                />
                 <FieldRow label="Organization Type" value={type} type="text" />
-                <FieldRow label="Address Lookup" value={organization.address?.address || "-"} type="text" />
-                <FieldRow label="Organization Website" value={organization.website || "-"} type="text" />
+                <FieldRow
+                  label="Address Lookup"
+                  value={organization.address?.address || "-"}
+                  type="text"
+                />
+                <FieldRow
+                  label="Organization Website"
+                  value={organization.website || "-"}
+                  type="text"
+                />
               </Section>
             </div>
 
@@ -163,14 +198,19 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                   label="Full Name"
                   value={
                     organization.manager?.[0]?.account?.user
-                      ? capitalizeWords(`${organization.manager?.[0]?.account?.user.firstName ?? ""} ${organization.manager?.[0]?.account?.user.lastName ?? ""}`.trim() || "-")
+                      ? capitalizeWords(
+                          `${organization.manager?.[0]?.account?.user.firstName ?? ""} ${organization.manager?.[0]?.account?.user.lastName ?? ""}`.trim() ||
+                            "-",
+                        )
                       : "-"
                   }
                   type="text"
                 />
                 <FieldRow
                   label="Phone Number"
-                  value={formatPhoneNumber(organization.manager?.[0]?.account?.user?.phone)}
+                  value={formatPhoneNumber(
+                    organization.manager?.[0]?.account?.user?.phone,
+                  )}
                   type="text"
                 />
                 <FieldRow
@@ -185,7 +225,11 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                 />
                 <FieldRow
                   label="Department"
-                  value={organization.manager?.[0]?.department?.name ? formatText(organization.manager[0].department.name) : "-"}
+                  value={
+                    organization.manager?.[0]?.department?.name
+                      ? formatText(organization.manager[0].department.name)
+                      : "-"
+                  }
                   type="text"
                 />
               </Section>
@@ -197,9 +241,14 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
             {status === "approved" ? (
               <button
                 className={cn(
-                  "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-green-50 flex items-center gap-2 cursor-default"
+                  "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-green-50 flex items-center gap-2 cursor-default",
                 )}
-                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: 500,
+                  lineHeight: "100%",
+                  fontSize: "14px",
+                }}
                 disabled
               >
                 <Check className="w-4 h-4" />
@@ -208,9 +257,14 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
             ) : status === "rejected" ? (
               <button
                 className={cn(
-                  "px-4 py-3 rounded-full text-white bg-red-700 flex items-center gap-2 cursor-default"
+                  "px-4 py-3 rounded-full text-white bg-red-700 flex items-center gap-2 cursor-default",
                 )}
-                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: 500,
+                  lineHeight: "100%",
+                  fontSize: "14px",
+                }}
                 disabled
               >
                 Rejected
@@ -218,13 +272,28 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
             ) : status === "info_requested" ? (
               <button
                 className={cn(
-                  "px-4 py-3 rounded-full border border-blue-500 text-blue-700 bg-blue-50 flex items-center gap-2 cursor-default"
+                  "px-4 py-3 rounded-full border border-blue-500 text-blue-700 bg-blue-50 flex items-center gap-2 cursor-default",
                 )}
-                style={{ fontFamily: "Poppins, sans-serif", fontWeight: 500, lineHeight: "100%", fontSize: "14px" }}
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: 500,
+                  lineHeight: "100%",
+                  fontSize: "14px",
+                }}
                 disabled
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
                 More Information Required
               </button>
@@ -232,9 +301,14 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
               <>
                 <button
                   className={cn(
-                    "px-4 py-3 rounded-full border border-cyan-400 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    "px-4 py-3 rounded-full border border-cyan-400 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed",
                   )}
-                  style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                  style={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 400,
+                    lineHeight: "100%",
+                    fontSize: "14px",
+                  }}
                   disabled={loadingAction !== null}
                   onClick={handleApprove}
                 >
@@ -244,19 +318,31 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                 <button
                   onClick={() => setIsRequestOpen(true)}
                   className={cn(
-                    "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed",
                   )}
-                  style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                  style={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 400,
+                    lineHeight: "100%",
+                    fontSize: "14px",
+                  }}
                   disabled={loadingAction !== null}
                 >
-                  {loadingAction === "request" ? "Requesting..." : "Request More Info"}
+                  {loadingAction === "request"
+                    ? "Requesting..."
+                    : "Request More Info"}
                 </button>
 
                 <button
                   className={cn(
-                    "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                    "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed",
                   )}
-                  style={{ fontFamily: "Poppins, sans-serif", fontWeight: 400, lineHeight: "100%", fontSize: "14px" }}
+                  style={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontWeight: 400,
+                    lineHeight: "100%",
+                    fontSize: "14px",
+                  }}
                   disabled={loadingAction !== null}
                   onClick={() => setIsRejectOpen(true)}
                 >

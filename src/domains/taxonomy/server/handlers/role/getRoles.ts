@@ -1,4 +1,4 @@
-import * as roleService from '../../role.service';
+import * as roleService from "../../role.service";
 
 const getRoles = async () => {
   const result = await roleService.getRoles();
@@ -6,4 +6,3 @@ const getRoles = async () => {
 };
 
 export default getRoles;
-

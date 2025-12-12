@@ -26,7 +26,7 @@ export async function sendContract(id: string) {
     // Check if it's an application or examiner
     const entityType = await checkEntityType(id);
 
-    if (entityType === 'application') {
+    if (entityType === "application") {
       // Handle application
       const application = await prisma.examinerApplication.findUnique({
         where: { id },
@@ -37,8 +37,15 @@ export async function sendContract(id: string) {
       }
 
       // Check if fee structure exists
-      if (!application.IMEFee || !application.recordReviewFee || !application.cancellationFee || !application.paymentTerms) {
-        throw new Error("Fee structure not found. Please add fee structure before sending contract.");
+      if (
+        !application.IMEFee ||
+        !application.recordReviewFee ||
+        !application.cancellationFee ||
+        !application.paymentTerms
+      ) {
+        throw new Error(
+          "Fee structure not found. Please add fee structure before sending contract.",
+        );
       }
 
       const firstName = application.firstName || "";
@@ -47,16 +54,20 @@ export async function sendContract(id: string) {
 
       // Create contract record using contract service
       logger.log("📄 Creating contract for application...");
-      const contractResult = await contractService.createAndSendContractForApplication(
-        id,
-        user.accountId
-      );
+      const contractResult =
+        await contractService.createAndSendContractForApplication(
+          id,
+          user.accountId,
+        );
 
       if (!contractResult.success) {
         throw new Error(contractResult.error || "Failed to create contract");
       }
 
-      logger.log("✅ Contract created successfully:", contractResult.contractId);
+      logger.log(
+        "✅ Contract created successfully:",
+        contractResult.contractId,
+      );
 
       // Generate JWT token for contract signing (using application token)
       logger.log("🔐 Generating contract signing token...");
@@ -100,7 +111,7 @@ export async function sendContract(id: string) {
         success: true,
         message: "Contract signing link sent successfully",
       };
-    } else if (entityType === 'examiner') {
+    } else if (entityType === "examiner") {
       // Handle examiner (existing logic)
       const examiner = await prisma.examinerProfile.findUnique({
         where: { id },
@@ -127,14 +138,17 @@ export async function sendContract(id: string) {
       logger.log("📄 Creating contract for examiner...");
       const contractResult = await contractService.createAndSendContract(
         id,
-        user.accountId
+        user.accountId,
       );
 
       if (!contractResult.success) {
         throw new Error(contractResult.error || "Failed to create contract");
       }
 
-      logger.log("✅ Contract created successfully:", contractResult.contractId);
+      logger.log(
+        "✅ Contract created successfully:",
+        contractResult.contractId,
+      );
 
       // Generate JWT token for contract signing
       logger.log("🔐 Generating contract signing token...");

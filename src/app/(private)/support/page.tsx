@@ -1,6 +1,13 @@
 import { Metadata } from "next";
 import { DashboardShell } from "@/layouts/dashboard";
-import { Mail, MessageCircle, BookOpen, HelpCircle, Phone, Clock } from "lucide-react";
+import {
+  Mail,
+  MessageCircle,
+  BookOpen,
+  HelpCircle,
+  Phone,
+  Clock,
+} from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Support | Thrive Admin",
@@ -30,10 +37,13 @@ const Page = () => {
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]">
                 <MessageCircle className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Contact Support</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+                Contact Support
+              </h3>
             </div>
             <p className="text-sm sm:text-base text-gray-600 mb-4">
-              Reach out to our support team for assistance with any questions or issues.
+              Reach out to our support team for assistance with any questions or
+              issues.
             </p>
             <a
               href="mailto:support@thrivenetwork.ca"
@@ -50,10 +60,13 @@ const Page = () => {
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Help Center</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+                Help Center
+              </h3>
             </div>
             <p className="text-sm sm:text-base text-gray-600 mb-4">
-              Browse our knowledge base for guides, tutorials, and frequently asked questions.
+              Browse our knowledge base for guides, tutorials, and frequently
+              asked questions.
             </p>
             <button className="inline-flex items-center gap-2 text-sm sm:text-base font-medium text-[#00A8FF] hover:text-[#01F4C8] transition-colors">
               <HelpCircle className="w-4 h-4" />
@@ -67,13 +80,16 @@ const Page = () => {
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]">
                 <Clock className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Support Hours</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+                Support Hours
+              </h3>
             </div>
             <p className="text-sm sm:text-base text-gray-600 mb-4">
               Our support team is available to help you during business hours.
             </p>
             <div className="text-sm sm:text-base font-medium text-gray-900">
-              Monday - Friday<br />
+              Monday - Friday
+              <br />
               9:00 AM - 5:00 PM EST
             </div>
           </div>
@@ -81,7 +97,9 @@ const Page = () => {
 
         {/* Quick Links Section */}
         <div className="bg-white rounded-[28px] shadow-sm border border-gray-100 p-6 sm:p-8">
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">Quick Links</h2>
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">
+            Quick Links
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <a
               href="#"
@@ -94,7 +112,9 @@ const Page = () => {
                 <h4 className="font-semibold text-gray-900 group-hover:text-[#00A8FF] transition-colors">
                   FAQ
                 </h4>
-                <p className="text-sm text-gray-600">Frequently asked questions</p>
+                <p className="text-sm text-gray-600">
+                  Frequently asked questions
+                </p>
               </div>
             </a>
 
@@ -109,7 +129,9 @@ const Page = () => {
                 <h4 className="font-semibold text-gray-900 group-hover:text-[#00A8FF] transition-colors">
                   User Guide
                 </h4>
-                <p className="text-sm text-gray-600">Learn how to use the platform</p>
+                <p className="text-sm text-gray-600">
+                  Learn how to use the platform
+                </p>
               </div>
             </a>
 
@@ -124,7 +146,9 @@ const Page = () => {
                 <h4 className="font-semibold text-gray-900 group-hover:text-[#00A8FF] transition-colors">
                   Phone Support
                 </h4>
-                <p className="text-sm text-gray-600">Call us for immediate assistance</p>
+                <p className="text-sm text-gray-600">
+                  Call us for immediate assistance
+                </p>
               </div>
             </a>
 
@@ -139,7 +163,9 @@ const Page = () => {
                 <h4 className="font-semibold text-gray-900 group-hover:text-[#00A8FF] transition-colors">
                   Live Chat
                 </h4>
-                <p className="text-sm text-gray-600">Chat with our support team</p>
+                <p className="text-sm text-gray-600">
+                  Chat with our support team
+                </p>
               </div>
             </a>
           </div>

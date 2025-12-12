@@ -7,10 +7,9 @@ type CompleteTemporaryPasswordInput = {
 };
 
 export const completeTemporaryPasswordAction = async (
-  data: CompleteTemporaryPasswordInput
+  data: CompleteTemporaryPasswordInput,
 ) => {
   return completeTemporaryPassword(data);
 };
 
 export default completeTemporaryPasswordAction;
-

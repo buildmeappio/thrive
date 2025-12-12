@@ -32,12 +32,12 @@ interface ExaminerWithRelations extends ExaminerProfile {
 const requestMoreInfo = async (
   id: string,
   message: string,
-  documentsRequired: boolean = false
+  documentsRequired: boolean = false,
 ) => {
   const user = await getCurrentUser();
   if (!user) {
     throw HttpError.unauthorized(
-      "You must be logged in to request more information"
+      "You must be logged in to request more information",
     );
   }
 
@@ -48,17 +48,21 @@ const requestMoreInfo = async (
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
 
-  if (entityType === 'application') {
+  if (entityType === "application") {
     // Update application status
     const application = await applicationService.requestMoreInfoFromApplication(
       id,
       message,
-      documentsRequired
+      documentsRequired,
     );
 
     // Send request for more info email
     try {
-      await sendRequestMoreInfoEmailToApplicant(application as any, message, documentsRequired);
+      await sendRequestMoreInfoEmailToApplicant(
+        application as any,
+        message,
+        documentsRequired,
+      );
       logger.log("✓ Request more info email sent successfully");
     } catch (emailError) {
       logger.error("⚠️ Failed to send request email:", emailError);
@@ -70,17 +74,21 @@ const requestMoreInfo = async (
     revalidatePath("/examiner");
 
     return application;
-  } else if (entityType === 'examiner') {
+  } else if (entityType === "examiner") {
     // Update examiner status to INFO_REQUESTED
     const examiner = await examinerService.requestMoreInfoFromExaminer(
       id,
       message,
-      documentsRequired
+      documentsRequired,
     );
 
     // Send request for more info email
     try {
-      await sendRequestMoreInfoEmail(examiner as any, message, documentsRequired);
+      await sendRequestMoreInfoEmail(
+        examiner as any,
+        message,
+        documentsRequired,
+      );
       logger.log("✓ Request more info email sent successfully");
     } catch (emailError) {
       logger.error("⚠️ Failed to send request email:", emailError);
@@ -100,7 +108,7 @@ const requestMoreInfo = async (
 async function sendRequestMoreInfoEmailToApplicant(
   application: ExaminerApplication,
   requestMessage: string,
-  documentsRequired: boolean = false
+  documentsRequired: boolean = false,
 ) {
   const userEmail = application.email;
   const firstName = application.firstName;
@@ -134,7 +142,7 @@ async function sendRequestMoreInfoEmailToApplicant(
         process.env.NEXT_PUBLIC_APP_URL ||
         "",
     },
-    userEmail
+    userEmail,
   );
 
   if (!result.success) {
@@ -145,7 +153,7 @@ async function sendRequestMoreInfoEmailToApplicant(
 async function sendRequestMoreInfoEmail(
   examiner: ExaminerWithRelations,
   requestMessage: string,
-  documentsRequired: boolean = false
+  documentsRequired: boolean = false,
 ) {
   const userEmail = examiner.account?.user?.email;
   const firstName = examiner.account?.user?.firstName;
@@ -190,7 +198,7 @@ async function sendRequestMoreInfoEmail(
         process.env.NEXT_PUBLIC_APP_URL ||
         "",
     },
-    userEmail
+    userEmail,
   );
 
   if (!result.success) {

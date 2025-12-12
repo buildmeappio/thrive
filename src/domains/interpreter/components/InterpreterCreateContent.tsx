@@ -4,9 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardShell } from "@/layouts/dashboard";
 import InterpreterForm from "./InterpreterForm";
-import { createInterpreter, saveInterpreterAvailabilityAction } from "../actions";
+import {
+  createInterpreter,
+  saveInterpreterAvailabilityAction,
+} from "../actions";
 import { toast } from "sonner";
-import { InterpreterFormData, isErrorWithMessage } from "../types/interpreterForm.types";
+import {
+  InterpreterFormData,
+  isErrorWithMessage,
+} from "../types/interpreterForm.types";
 import logger from "@/utils/logger";
 
 export default function InterpreterCreateContent() {
@@ -32,7 +38,7 @@ export default function InterpreterCreateContent() {
         toast.error(errorMessage);
         return;
       }
-      
+
       // Save availability after interpreter is created
       if (result.interpreter?.id) {
         await saveInterpreterAvailabilityAction({
@@ -41,7 +47,7 @@ export default function InterpreterCreateContent() {
           overrideHours: data.overrideHours,
         });
       }
-      
+
       toast.success("Interpreter added successfully!");
       router.push("/interpreter");
     } catch (error) {
@@ -85,4 +91,3 @@ export default function InterpreterCreateContent() {
     </DashboardShell>
   );
 }
-

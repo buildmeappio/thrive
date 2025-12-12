@@ -11,7 +11,7 @@ const schema = z.object({
 type RequestPasswordResetInput = z.infer<typeof schema>;
 
 export const requestPasswordReset = async (
-  rawInput: RequestPasswordResetInput
+  rawInput: RequestPasswordResetInput,
 ): Promise<{ success: boolean; error?: string }> => {
   try {
     const input = schema.parse(rawInput);
@@ -30,4 +30,3 @@ export const requestPasswordReset = async (
 };
 
 export default requestPasswordReset;
-

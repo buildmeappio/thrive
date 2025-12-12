@@ -1,7 +1,17 @@
 "use server";
 
-import { createBenefit, updateBenefit, getBenefits, getBenefitById, deleteBenefit } from "./server/benefit.service";
-import { CreateBenefitInput, UpdateBenefitInput, BenefitData } from "./types/Benefit";
+import {
+  createBenefit,
+  updateBenefit,
+  getBenefits,
+  getBenefitById,
+  deleteBenefit,
+} from "./server/benefit.service";
+import {
+  CreateBenefitInput,
+  UpdateBenefitInput,
+  BenefitData,
+} from "./types/Benefit";
 import { getExaminationTypes } from "@/domains/taxonomy/server/taxonomy.service";
 
 export const createBenefitAction = async (data: CreateBenefitInput) => {
@@ -11,31 +21,41 @@ export const createBenefitAction = async (data: CreateBenefitInput) => {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to create benefit",
+      error:
+        error instanceof Error ? error.message : "Failed to create benefit",
     };
   }
 };
 
-export const updateBenefitAction = async (id: string, data: UpdateBenefitInput) => {
+export const updateBenefitAction = async (
+  id: string,
+  data: UpdateBenefitInput,
+) => {
   try {
     const result = await updateBenefit(id, data);
     return { success: true, data: result };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update benefit",
+      error:
+        error instanceof Error ? error.message : "Failed to update benefit",
     };
   }
 };
 
-export const getBenefitsAction = async (): Promise<{ success: boolean; data?: BenefitData[]; error?: string }> => {
+export const getBenefitsAction = async (): Promise<{
+  success: boolean;
+  data?: BenefitData[];
+  error?: string;
+}> => {
   try {
     const benefits = await getBenefits();
     return { success: true, data: benefits };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to fetch benefits",
+      error:
+        error instanceof Error ? error.message : "Failed to fetch benefits",
     };
   }
 };
@@ -59,7 +79,8 @@ export const deleteBenefitAction = async (id: string) => {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete benefit",
+      error:
+        error instanceof Error ? error.message : "Failed to delete benefit",
     };
   }
 };
@@ -71,8 +92,10 @@ export const getExaminationTypesAction = async () => {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to fetch examination types",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch examination types",
     };
   }
 };
-

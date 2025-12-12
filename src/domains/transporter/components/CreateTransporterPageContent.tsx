@@ -6,9 +6,7 @@ import Section from "@/components/Section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PhoneInput from "@/components/PhoneNumber";
-import {
-  saveTransporterAvailabilityAction,
-} from "../server/actions/saveAvailability";
+import { saveTransporterAvailabilityAction } from "../server/actions/saveAvailability";
 import { createTransporter } from "../server/actions";
 import { toast } from "sonner";
 import { provinceOptions } from "@/constants/options";
@@ -107,7 +105,7 @@ export default function CreateTransporterPageContent() {
     setFormData((prev) => {
       const existingAreas = prev.serviceAreas || [];
       const existingProvince = existingAreas.find(
-        (area) => area.province === province
+        (area) => area.province === province,
       );
 
       if (existingProvince) {
@@ -115,7 +113,7 @@ export default function CreateTransporterPageContent() {
         return {
           ...prev,
           serviceAreas: existingAreas.filter(
-            (area) => area.province !== province
+            (area) => area.province !== province,
           ),
         };
       } else {
@@ -131,37 +129,37 @@ export default function CreateTransporterPageContent() {
   // Input handlers using the form handler service
   const handleCompanyNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const sanitizedValue = TransporterFormHandler.handleCompanyNameChange(
-      e.target.value
+      e.target.value,
     );
     setFormData((prev) => ({ ...prev, companyName: sanitizedValue }));
   };
 
   const handleCompanyNameBlur = () => {
     const trimmedValue = TransporterFormHandler.handleCompanyNameBlur(
-      formData.companyName
+      formData.companyName,
     );
     setFormData((prev) => ({ ...prev, companyName: trimmedValue }));
   };
 
   const handleContactPersonChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const sanitizedValue = TransporterFormHandler.handleContactPersonChange(
-      e.target.value
+      e.target.value,
     );
     setFormData((prev) => ({ ...prev, contactPerson: sanitizedValue }));
   };
 
   const handleContactPersonBlur = () => {
     const trimmedValue = TransporterFormHandler.handleContactPersonBlur(
-      formData.contactPerson
+      formData.contactPerson,
     );
     setFormData((prev) => ({ ...prev, contactPerson: trimmedValue }));
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const sanitizedValue = TransporterFormHandler.handleEmailChange(
-      e.target.value
+      e.target.value,
     );
     setFormData((prev) => ({ ...prev, email: sanitizedValue }));
   };
@@ -210,7 +208,7 @@ export default function CreateTransporterPageContent() {
                   className={cn(
                     TransporterFormHandler.isOnlySpaces(formData.companyName)
                       ? "border-red-300 focus:ring-red-500"
-                      : ""
+                      : "",
                   )}
                   placeholder="Enter company name (alphabets only, max 25)"
                   required
@@ -233,13 +231,13 @@ export default function CreateTransporterPageContent() {
                   className={cn(
                     TransporterFormHandler.isOnlySpaces(formData.contactPerson)
                       ? "border-red-300 focus:ring-red-500"
-                      : ""
+                      : "",
                   )}
                   placeholder="Enter contact person name (alphabets only, max 25)"
                   required
                 />
                 {TransporterFormHandler.isOnlySpaces(
-                  formData.contactPerson
+                  formData.contactPerson,
                 ) && (
                   <p className="text-xs text-red-500 mt-1">
                     Contact person cannot be only spaces
@@ -259,7 +257,7 @@ export default function CreateTransporterPageContent() {
                     formData.email &&
                       !TransporterFormHandler.isValidEmail(formData.email)
                       ? "border-red-300 focus:ring-red-500"
-                      : ""
+                      : "",
                   )}
                   placeholder="Enter email address"
                   required
@@ -283,7 +281,7 @@ export default function CreateTransporterPageContent() {
                     formData.phone &&
                       !TransporterFormHandler.isValidPhone(formData.phone)
                       ? "border-red-300 focus:ring-red-500"
-                      : ""
+                      : "",
                   )}
                 />
                 {formData.phone &&
@@ -309,11 +307,12 @@ export default function CreateTransporterPageContent() {
                   {provinceOptions.map((option) => (
                     <label
                       key={option.value}
-                      className="flex items-center space-x-2 cursor-pointer">
+                      className="flex items-center space-x-2 cursor-pointer"
+                    >
                       <input
                         type="checkbox"
                         checked={formData.serviceAreas.some(
-                          (area) => area.province === option.value
+                          (area) => area.province === option.value,
                         )}
                         onChange={() => toggleProvince(option.value)}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -331,10 +330,11 @@ export default function CreateTransporterPageContent() {
                       {formData.serviceAreas.map((area) => (
                         <span
                           key={area.province}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                          className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
+                        >
                           {
                             provinceOptions.find(
-                              (p) => p.value === area.province
+                              (p) => p.value === area.province,
                             )?.label
                           }
                         </span>
@@ -352,8 +352,12 @@ export default function CreateTransporterPageContent() {
           <AvailabilityTabs
             weeklyHours={weeklyStateToArray(weeklyHours)}
             overrideHours={overrideStateToArray(overrideHours)}
-            onWeeklyHoursChange={(updated) => setWeeklyHours(weeklyArrayToState(updated))}
-            onOverrideHoursChange={(updated) => setOverrideHours(overrideArrayToState(updated))}
+            onWeeklyHoursChange={(updated) =>
+              setWeeklyHours(weeklyArrayToState(updated))
+            }
+            onOverrideHoursChange={(updated) =>
+              setOverrideHours(overrideArrayToState(updated))
+            }
             disabled={isLoading}
           />
         </div>
@@ -364,13 +368,15 @@ export default function CreateTransporterPageContent() {
             type="button"
             variant="outline"
             onClick={() => router.back()}
-            className="w-full sm:w-auto px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base">
+            className="w-full sm:w-auto px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base"
+          >
             Cancel
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="w-full sm:w-auto px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white shadow-sm hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80">
+            className="w-full sm:w-auto px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white shadow-sm hover:from-[#00A8FF]/80 hover:to-[#01F4C8]/80"
+          >
             {isLoading ? "Creating..." : "Create Transporter"}
           </Button>
         </div>

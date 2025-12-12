@@ -106,7 +106,7 @@ export async function updateReportContent(
       content: string;
       order: number;
     }>;
-  }
+  },
 ) {
   try {
     // Update referral questions response if provided
@@ -135,9 +135,7 @@ export async function updateReportContent(
         .filter((id): id is string => id !== undefined);
 
       // Soft delete sections that are not in the incoming data
-      const idsToDelete = existingIds.filter(
-        (id) => !incomingIds.includes(id)
-      );
+      const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
       if (idsToDelete.length > 0) {
         await prisma.reportDynamicSection.updateMany({
           where: {

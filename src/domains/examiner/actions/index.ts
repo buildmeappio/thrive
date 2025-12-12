@@ -25,4 +25,3 @@ export { default as listAllApplications } from "./listAllApplications";
 export { default as listRecentApplications } from "./listRecentApplications";
 export { default as getApplicationCount } from "./getApplicationCount";
 export { default as getApplicationById } from "./getApplicationById";
-

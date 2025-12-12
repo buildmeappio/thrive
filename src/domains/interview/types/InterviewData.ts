@@ -9,4 +9,3 @@ export type InterviewData = {
   createdAt: string;
   updatedAt: string;
 };
-

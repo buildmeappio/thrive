@@ -5,4 +5,3 @@ const interviewActions = {
 };
 
 export default interviewActions;
-

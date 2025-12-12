@@ -16,4 +16,3 @@ const updateInterpreter = async (id: string, data: UpdateInterpreterInput) => {
 };
 
 export default updateInterpreter;
-

@@ -24,7 +24,7 @@ type ChaperoneFormPageProps = {
   mode: "create" | "edit";
   chaperone?: ChaperoneWithAvailability;
   onSubmit: (
-    data: CreateChaperoneInput | UpdateChaperoneInput
+    data: CreateChaperoneInput | UpdateChaperoneInput,
   ) => Promise<void>;
 };
 
@@ -64,18 +64,18 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
 
     return defaults.map((defaultDay) => {
       const existingDay = chaperone.availability!.weeklyHours!.find(
-        (wh) => wh.dayOfWeek === defaultDay.dayOfWeek
+        (wh) => wh.dayOfWeek === defaultDay.dayOfWeek,
       );
       return existingDay || defaultDay;
     });
   };
 
   const [weeklyHours, setWeeklyHours] = useState<WeeklyHours[]>(
-    initializeWeeklyHours()
+    initializeWeeklyHours(),
   );
 
   const [overrideHours, setOverrideHours] = useState<OverrideHours[]>(
-    chaperone?.availability?.overrideHours || []
+    chaperone?.availability?.overrideHours || [],
   );
 
   const {
@@ -109,13 +109,13 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
 
   // Helper function to convert time string to minutes since midnight
   const timeToMinutes = (timeStr: string): number => {
-    const [time, period] = timeStr.split(' ');
-    const [hours, minutes] = time.split(':').map(Number);
-    
+    const [time, period] = timeStr.split(" ");
+    const [hours, minutes] = time.split(":").map(Number);
+
     let hour24 = hours;
-    if (period === 'PM' && hours !== 12) hour24 += 12;
-    if (period === 'AM' && hours === 12) hour24 = 0;
-    
+    if (period === "PM" && hours !== 12) hour24 += 12;
+    if (period === "AM" && hours === 12) hour24 = 0;
+
     return hour24 * 60 + minutes;
   };
 
@@ -145,9 +145,11 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
           const otherEndMinutes = timeToMinutes(otherSlot.endTime);
 
           const hasOverlap =
-            (startMinutes >= otherStartMinutes && startMinutes < otherEndMinutes) ||
+            (startMinutes >= otherStartMinutes &&
+              startMinutes < otherEndMinutes) ||
             (endMinutes > otherStartMinutes && endMinutes <= otherEndMinutes) ||
-            (startMinutes <= otherStartMinutes && endMinutes >= otherEndMinutes);
+            (startMinutes <= otherStartMinutes &&
+              endMinutes >= otherEndMinutes);
 
           if (hasOverlap) {
             return {
@@ -181,9 +183,11 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
           const otherEndMinutes = timeToMinutes(otherSlot.endTime);
 
           const hasOverlap =
-            (startMinutes >= otherStartMinutes && startMinutes < otherEndMinutes) ||
+            (startMinutes >= otherStartMinutes &&
+              startMinutes < otherEndMinutes) ||
             (endMinutes > otherStartMinutes && endMinutes <= otherEndMinutes) ||
-            (startMinutes <= otherStartMinutes && endMinutes >= otherEndMinutes);
+            (startMinutes <= otherStartMinutes &&
+              endMinutes >= otherEndMinutes);
 
           if (hasOverlap) {
             return {
@@ -216,7 +220,8 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
       if (!/^[A-Za-z][A-Za-z\s]*$/.test(cleanFirstName)) {
         setError("firstName", {
           type: "manual",
-          message: "First name must start with a letter and contain only letters and spaces",
+          message:
+            "First name must start with a letter and contain only letters and spaces",
         });
         return;
       }
@@ -233,7 +238,8 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
       if (!/^[A-Za-z][A-Za-z\s]*$/.test(cleanLastName)) {
         setError("lastName", {
           type: "manual",
-          message: "Last name must start with a letter and contain only letters and spaces",
+          message:
+            "Last name must start with a letter and contain only letters and spaces",
         });
         return;
       }
@@ -241,7 +247,10 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
       // Validate time slots before submission
       const validation = validateTimeSlots();
       if (!validation.isValid) {
-        toast.error(validation.errorMessage || 'Please fix time slot errors before submitting');
+        toast.error(
+          validation.errorMessage ||
+            "Please fix time slot errors before submitting",
+        );
         return;
       }
 
@@ -249,7 +258,7 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
 
       // Filter only enabled days for weekly hours
       const enabledWeeklyHours = weeklyHours.filter(
-        (wh) => wh.enabled && wh.timeSlots.length > 0
+        (wh) => wh.enabled && wh.timeSlots.length > 0,
       );
 
       const submitData: CreateChaperoneInput | UpdateChaperoneInput = {
@@ -313,12 +322,16 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                   {...register("firstName", {
                     onChange: (event) => {
                       const sanitized = sanitizeNameInput(event.target.value);
-                      setValue("firstName", sanitized, { shouldValidate: true });
+                      setValue("firstName", sanitized, {
+                        shouldValidate: true,
+                      });
                     },
                     onBlur: (event) => {
                       const trimmedValue = event.target.value.trim();
                       if (trimmedValue !== event.target.value) {
-                        setValue("firstName", trimmedValue, { shouldValidate: true });
+                        setValue("firstName", trimmedValue, {
+                          shouldValidate: true,
+                        });
                       }
                     },
                   })}
@@ -357,7 +370,9 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                     onBlur: (event) => {
                       const trimmedValue = event.target.value.trim();
                       if (trimmedValue !== event.target.value) {
-                        setValue("lastName", trimmedValue, { shouldValidate: true });
+                        setValue("lastName", trimmedValue, {
+                          shouldValidate: true,
+                        });
                       }
                     },
                   })}
@@ -402,7 +417,9 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
                 <PhoneInput
                   name="phone"
                   value={phone || ""}
-                  onChange={(e) => setValue("phone", e.target.value, { shouldValidate: true })}
+                  onChange={(e) =>
+                    setValue("phone", e.target.value, { shouldValidate: true })
+                  }
                   disabled={isSubmitting}
                 />
                 {errors.phone && (
@@ -506,8 +523,8 @@ const ChaperoneFormPage: React.FC<ChaperoneFormPageProps> = ({
             {isSubmitting
               ? "Saving..."
               : mode === "create"
-              ? "Create Chaperone"
-              : "Update Chaperone"}
+                ? "Create Chaperone"
+                : "Update Chaperone"}
           </Button>
         </div>
       </form>

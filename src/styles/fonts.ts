@@ -46,21 +46,21 @@ export const degular = localFont({
 export const poppins = localFont({
   src: [
     {
-      path: '../assets/fonts/poppins/Poppins-Regular.ttf',
-      weight: '400',
-      style: 'normal',
+      path: "../assets/fonts/poppins/Poppins-Regular.ttf",
+      weight: "400",
+      style: "normal",
     },
     {
-      path: '../assets/fonts/poppins/Poppins-Medium.ttf',
-      weight: '500',
-      style: 'normal',
+      path: "../assets/fonts/poppins/Poppins-Medium.ttf",
+      weight: "500",
+      style: "normal",
     },
     {
-      path: '../assets/fonts/poppins/Poppins-Bold.ttf',
-      weight: '700',
-      style: 'normal',
+      path: "../assets/fonts/poppins/Poppins-Bold.ttf",
+      weight: "700",
+      style: "normal",
     },
   ],
-  variable: '--font-poppins',
-  display: 'swap',
+  variable: "--font-poppins",
+  display: "swap",
 });

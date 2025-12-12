@@ -1,8 +1,21 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender, type Row } from "@tanstack/react-table";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  flexRender,
+  type Row,
+} from "@tanstack/react-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { InterpreterData } from "@/domains/interpreter/types/InterpreterData";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
@@ -61,9 +74,13 @@ const columnsDef = [
     header: "Languages",
     cell: ({ row }: { row: Row<InterpreterData> }) => {
       const languages = row.original.languages;
-      const displayText = languages.length > 2
-        ? `${languages.slice(0, 2).map(l => l.name).join(", ")} +${languages.length - 2}`
-        : languages.map(l => l.name).join(", ");
+      const displayText =
+        languages.length > 2
+          ? `${languages
+              .slice(0, 2)
+              .map((l) => l.name)
+              .join(", ")} +${languages.length - 2}`
+          : languages.map((l) => l.name).join(", ");
       return (
         <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
           {displayText || "None"}
@@ -90,7 +107,11 @@ const columnsDef = [
   },
 ];
 
-export default function InterpreterTableWrapper({ data, searchQuery = "", filters }: Props) {
+export default function InterpreterTableWrapper({
+  data,
+  searchQuery = "",
+  filters,
+}: Props) {
   const [query, setQuery] = useState(searchQuery);
 
   useEffect(() => {
@@ -102,8 +123,8 @@ export default function InterpreterTableWrapper({ data, searchQuery = "", filter
 
     // Filter by language
     if (filters?.languageId && filters.languageId !== "all") {
-      result = result.filter((d) => 
-        d.languages.some(lang => lang.id === filters.languageId)
+      result = result.filter((d) =>
+        d.languages.some((lang) => lang.id === filters.languageId),
       );
     }
 
@@ -116,10 +137,10 @@ export default function InterpreterTableWrapper({ data, searchQuery = "", filter
           d.contactPerson,
           d.email,
           d.phone,
-          ...d.languages.map(l => l.name)
+          ...d.languages.map((l) => l.name),
         ]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q))
+          .some((v) => String(v).toLowerCase().includes(q)),
       );
     }
 
@@ -150,15 +171,15 @@ export default function InterpreterTableWrapper({ data, searchQuery = "", filter
                     "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap",
                     header.index === 0 && "rounded-l-2xl",
                     header.index === headerGroup.headers.length - 1 &&
-                    "rounded-r-2xl w-[60px]"
+                      "rounded-r-2xl w-[60px]",
                   )}
                 >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                 </TableHead>
               ))}
             </TableRow>
@@ -195,4 +216,3 @@ export default function InterpreterTableWrapper({ data, searchQuery = "", filter
     </div>
   );
 }
-

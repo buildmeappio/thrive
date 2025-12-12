@@ -1,12 +1,12 @@
-import { DashboardShell } from '@/layouts/dashboard';
-import EditChaperoneClient from './EditChaperoneClient';
-import { getChaperoneById } from '@/domains/services/actions';
-import { notFound } from 'next/navigation';
-import { Metadata } from "next"
+import { DashboardShell } from "@/layouts/dashboard";
+import EditChaperoneClient from "./EditChaperoneClient";
+import { getChaperoneById } from "@/domains/services/actions";
+import { notFound } from "next/navigation";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Edit Chaperone | Dashboard',
-  description: 'Edit chaperone details in your dashboard.',
+  title: "Edit Chaperone | Dashboard",
+  description: "Edit chaperone details in your dashboard.",
 };
 
 type PageProps = {
@@ -15,9 +15,9 @@ type PageProps = {
 
 export default async function EditChaperonePage({ params }: PageProps) {
   const { id } = await params;
-  
+
   const response = await getChaperoneById(id);
-  
+
   if (!response.success || !response.result) {
     notFound();
   }
@@ -28,4 +28,3 @@ export default async function EditChaperonePage({ params }: PageProps) {
     </DashboardShell>
   );
 }
-

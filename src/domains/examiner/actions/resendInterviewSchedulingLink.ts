@@ -16,7 +16,9 @@ import { ExaminerStatus } from "@prisma/client";
 const resendInterviewSchedulingLink = async (id: string) => {
   const user = await getCurrentUser();
   if (!user) {
-    throw HttpError.unauthorized("You must be logged in to resend interview scheduling link");
+    throw HttpError.unauthorized(
+      "You must be logged in to resend interview scheduling link",
+    );
   }
 
   // Check if it's an application or examiner
@@ -31,7 +33,9 @@ const resendInterviewSchedulingLink = async (id: string) => {
 
     // Check if application is in INTERVIEW_SCHEDULED status
     if (application.status !== ExaminerStatus.INTERVIEW_SCHEDULED) {
-      throw HttpError.badRequest("Application must be in INTERVIEW_SCHEDULED status to resend the link");
+      throw HttpError.badRequest(
+        "Application must be in INTERVIEW_SCHEDULED status to resend the link",
+      );
     }
 
     // Send notification email to applicant
@@ -66,7 +70,9 @@ const resendInterviewSchedulingLink = async (id: string) => {
           html: htmlTemplate,
         });
 
-        logger.log(`✅ Interview scheduling link resent to ${application.email}`);
+        logger.log(
+          `✅ Interview scheduling link resent to ${application.email}`,
+        );
       }
     } catch (emailError) {
       logger.error("Failed to resend interview scheduling link:", emailError);
@@ -76,7 +82,7 @@ const resendInterviewSchedulingLink = async (id: string) => {
     return { success: true };
   } else if (entityType === "examiner") {
     throw HttpError.badRequest(
-      "We no longer maintain examiner profile as a means to accept examiner applications"
+      "We no longer maintain examiner profile as a means to accept examiner applications",
     );
   } else {
     throw HttpError.notFound("Application or examiner not found");
@@ -84,4 +90,3 @@ const resendInterviewSchedulingLink = async (id: string) => {
 };
 
 export default resendInterviewSchedulingLink;
-

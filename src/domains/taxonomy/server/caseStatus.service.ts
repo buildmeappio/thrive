@@ -1,6 +1,10 @@
-import { HttpError } from '@/utils/httpError';
-import { CreateCaseStatusInput, UpdateCaseStatusInput, CaseStatusData } from '../types/CaseStatus';
-import prisma from '@/lib/db';
+import { HttpError } from "@/utils/httpError";
+import {
+  CreateCaseStatusInput,
+  UpdateCaseStatusInput,
+  CaseStatusData,
+} from "../types/CaseStatus";
+import prisma from "@/lib/db";
 
 export const createCaseStatus = async (data: CreateCaseStatusInput) => {
   try {
@@ -13,7 +17,7 @@ export const createCaseStatus = async (data: CreateCaseStatusInput) => {
     });
 
     if (existingCaseStatus) {
-      throw HttpError.badRequest('A case status with this name already exists');
+      throw HttpError.badRequest("A case status with this name already exists");
     }
 
     const caseStatus = await prisma.caseStatus.create({
@@ -32,7 +36,10 @@ export const createCaseStatus = async (data: CreateCaseStatusInput) => {
   }
 };
 
-export const updateCaseStatus = async (id: string, data: UpdateCaseStatusInput) => {
+export const updateCaseStatus = async (
+  id: string,
+  data: UpdateCaseStatusInput,
+) => {
   try {
     // Check if case status exists
     const existingCaseStatus = await prisma.caseStatus.findFirst({
@@ -43,7 +50,7 @@ export const updateCaseStatus = async (id: string, data: UpdateCaseStatusInput) 
     });
 
     if (!existingCaseStatus) {
-      throw HttpError.notFound('Case status not found');
+      throw HttpError.notFound("Case status not found");
     }
 
     // If name is being updated, check if it's already in use
@@ -57,13 +64,17 @@ export const updateCaseStatus = async (id: string, data: UpdateCaseStatusInput) 
       });
 
       if (nameExists) {
-        throw HttpError.badRequest('A case status with this name already exists');
+        throw HttpError.badRequest(
+          "A case status with this name already exists",
+        );
       }
     }
 
-    const updateData: Partial<{ name: string; description: string | null }> = {};
+    const updateData: Partial<{ name: string; description: string | null }> =
+      {};
     if (data.name !== undefined) updateData.name = data.name;
-    if (data.description !== undefined) updateData.description = data.description || null;
+    if (data.description !== undefined)
+      updateData.description = data.description || null;
 
     const caseStatus = await prisma.caseStatus.update({
       where: { id },
@@ -86,11 +97,11 @@ export const getCaseStatuses = async (): Promise<CaseStatusData[]> => {
         deletedAt: null,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
-    return caseStatuses.map(caseStatus => ({
+    return caseStatuses.map((caseStatus) => ({
       id: caseStatus.id,
       name: caseStatus.name,
       description: caseStatus.description,
@@ -111,7 +122,7 @@ export const getCaseStatusById = async (id: string) => {
     });
 
     if (!caseStatus) {
-      throw HttpError.notFound('Case status not found');
+      throw HttpError.notFound("Case status not found");
     }
 
     return caseStatus;

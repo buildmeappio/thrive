@@ -15,8 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CreateBenefitInput, UpdateBenefitInput, BenefitData } from "../types/Benefit";
-import { createBenefitAction, updateBenefitAction, getExaminationTypesAction } from "../actions";
+import {
+  CreateBenefitInput,
+  UpdateBenefitInput,
+  BenefitData,
+} from "../types/Benefit";
+import {
+  createBenefitAction,
+  updateBenefitAction,
+  getExaminationTypesAction,
+} from "../actions";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -35,41 +43,43 @@ type FormData = {
 // Validation function for alphabets only with spaces between words
 const validateAlphabetsOnly = (value: string | undefined): string | true => {
   if (!value) return true; // Allow empty for optional fields
-  
+
   const trimmed = value.trim();
-  
+
   // Check if first character is a letter
   if (trimmed.length > 0 && !/^[a-zA-Z]/.test(trimmed)) {
     return "First character must be a letter";
   }
-  
+
   // Check if value starts with a space
   if (value.startsWith(" ")) {
     return "Cannot start with a space";
   }
-  
+
   // Check if value ends with a space
   if (value.endsWith(" ")) {
     return "Cannot end with a space";
   }
-  
+
   // Check if contains only letters and spaces (no numbers or special characters)
   if (!/^[a-zA-Z\s]+$/.test(value)) {
     return "Only letters and spaces are allowed";
   }
-  
+
   // Check for consecutive spaces (more than one space)
   if (/\s{2,}/.test(value)) {
     return "Multiple consecutive spaces are not allowed";
   }
-  
+
   return true;
 };
 
 export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [examinationTypes, setExaminationTypes] = useState<{ label: string; value: string }[]>([]);
+  const [examinationTypes, setExaminationTypes] = useState<
+    { label: string; value: string }[]
+  >([]);
   const [isLoadingTypes, setIsLoadingTypes] = useState(true);
 
   const {
@@ -89,18 +99,18 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
   // Helper function to sanitize input (remove invalid characters, prevent leading/trailing spaces)
   const sanitizeInput = (value: string): string => {
     if (!value) return "";
-    
+
     // Remove non-letter/non-space characters
-    let cleaned = value.replace(/[^a-zA-Z\s]/g, '');
-    
+    let cleaned = value.replace(/[^a-zA-Z\s]/g, "");
+
     // Replace multiple spaces with single space
-    cleaned = cleaned.replace(/\s{2,}/g, ' ');
-    
+    cleaned = cleaned.replace(/\s{2,}/g, " ");
+
     // Remove leading space
-    if (cleaned.startsWith(' ')) {
+    if (cleaned.startsWith(" ")) {
       cleaned = cleaned.trimStart();
     }
-    
+
     return cleaned;
   };
 
@@ -196,7 +206,9 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
             {mode === "create" ? (
               "Add New Benefit"
             ) : (
-              <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">{benefit?.benefit || "Benefit"}</span>
+              <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
+                {benefit?.benefit || "Benefit"}
+              </span>
             )}
           </h1>
         </div>
@@ -207,7 +219,10 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Select Exam Type */}
           <div className="space-y-2">
-            <Label htmlFor="examinationTypeId" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="examinationTypeId"
+              className="text-sm font-medium text-gray-700"
+            >
               Select Exam Type: <span className="text-red-500">*</span>
             </Label>
             <Select
@@ -219,7 +234,7 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
                 id="examinationTypeId"
                 className={cn(
                   "h-10 rounded-lg border-none bg-[#F2F5F6] text-[#333] focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none",
-                  errors.examinationTypeId && "ring-2 ring-red-500/30"
+                  errors.examinationTypeId && "ring-2 ring-red-500/30",
                 )}
               >
                 <SelectValue placeholder="Select examination type" />
@@ -233,13 +248,18 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
               </SelectContent>
             </Select>
             {errors.examinationTypeId && (
-              <p className="text-sm text-red-500">{errors.examinationTypeId.message}</p>
+              <p className="text-sm text-red-500">
+                {errors.examinationTypeId.message}
+              </p>
             )}
           </div>
 
           {/* Benefit Name */}
           <div className="space-y-2">
-            <Label htmlFor="benefit" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="benefit"
+              className="text-sm font-medium text-gray-700"
+            >
               Benefit Name: <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -264,7 +284,7 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
               disabled={isSubmitting}
               className={cn(
                 "rounded-lg border-none bg-[#F2F5F6] text-[#333] focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none",
-                errors.benefit && "ring-2 ring-red-500/30"
+                errors.benefit && "ring-2 ring-red-500/30",
               )}
             />
             {errors.benefit && (
@@ -274,7 +294,10 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
 
           {/* Description (Optional) */}
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="description"
+              className="text-sm font-medium text-gray-700"
+            >
               Description: (Optional)
             </Label>
             <Textarea
@@ -298,11 +321,13 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
               rows={4}
               className={cn(
                 "border-none bg-[#F2F5F6] rounded-lg text-[#333] focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none resize-none",
-                errors.description && "ring-2 ring-red-500/30"
+                errors.description && "ring-2 ring-red-500/30",
               )}
             />
             {errors.description && (
-              <p className="text-sm text-red-500">{errors.description.message}</p>
+              <p className="text-sm text-red-500">
+                {errors.description.message}
+              </p>
             )}
           </div>
 
@@ -313,7 +338,11 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
               disabled={isSubmitting || isLoadingTypes}
               className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white rounded-full px-6 py-2 hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              {isSubmitting ? "Saving..." : mode === "create" ? "Save Benefit" : "Update Benefit"}
+              {isSubmitting
+                ? "Saving..."
+                : mode === "create"
+                  ? "Save Benefit"
+                  : "Update Benefit"}
             </Button>
           </div>
         </form>
@@ -321,4 +350,3 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
     </div>
   );
 }
-

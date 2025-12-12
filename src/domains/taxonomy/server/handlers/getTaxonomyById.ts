@@ -1,5 +1,5 @@
-import * as taxonomyService from '../taxonomy.service';
-import { TaxonomyType } from '../../types/Taxonomy';
+import * as taxonomyService from "../taxonomy.service";
+import { TaxonomyType } from "../../types/Taxonomy";
 
 const getTaxonomyById = async (type: TaxonomyType, id: string) => {
   const result = await taxonomyService.getTaxonomyById(type, id);
@@ -7,4 +7,3 @@ const getTaxonomyById = async (type: TaxonomyType, id: string) => {
 };
 
 export default getTaxonomyById;
-

@@ -7,7 +7,10 @@ import { ENV } from "@/constants/variables";
 import logger from "@/utils/logger";
 import { HttpError } from "@/utils/httpError";
 
-export const suspendExaminer = async (id: string, suspensionReason?: string) => {
+export const suspendExaminer = async (
+  id: string,
+  suspensionReason?: string,
+) => {
   try {
     const result = await examinerService.suspendExaminer(id, suspensionReason);
 
@@ -42,12 +45,16 @@ export const suspendExaminer = async (id: string, suspensionReason?: string) => 
               <p style="margin: 5px 0 0 0; color: #856404;">Your access to the platform has been temporarily restricted.</p>
             </div>
             
-            ${suspensionReason ? `
+            ${
+              suspensionReason
+                ? `
             <div style="background-color: #f9f9f9; padding: 15px; margin: 20px 0; border-radius: 5px;">
               <p style="margin: 0; font-weight: 600; color: #333333;">Reason:</p>
               <p style="margin: 5px 0 0 0; color: #666666;">${suspensionReason}</p>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
             
             <p>If you believe this is a mistake or have any questions, please contact us immediately.</p>
           </div>
@@ -86,4 +93,3 @@ export const suspendExaminer = async (id: string, suspensionReason?: string) => 
     };
   }
 };
-

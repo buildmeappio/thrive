@@ -1,8 +1,22 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender, type Row, type Table as TanStackTable } from "@tanstack/react-table";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  flexRender,
+  type Row,
+  type Table as TanStackTable,
+} from "@tanstack/react-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { CaseData } from "@/domains/case/types/CaseData";
 import Pagination from "@/components/Pagination";
 import { cn } from "@/lib/utils";
@@ -46,7 +60,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<CaseData> }) => {
       const caseNumber = row.getValue("number") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={caseNumber}
         >
@@ -61,7 +75,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<CaseData> }) => {
       const organization = row.getValue("organization") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={organization}
         >
@@ -76,7 +90,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<CaseData> }) => {
       const caseType = row.getValue("caseType") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={caseType}
         >
@@ -91,7 +105,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<CaseData> }) => {
       const dateText = formatDateShort(row.getValue("submittedAt"));
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={dateText}
         >
@@ -104,9 +118,11 @@ const columnsDef = [
     accessorKey: "dueDate",
     header: "Due Date",
     cell: ({ row }: { row: Row<CaseData> }) => {
-      const dueDateText = row.getValue("dueDate") ? formatDateShort(row.getValue("dueDate")) : "N/A";
+      const dueDateText = row.getValue("dueDate")
+        ? formatDateShort(row.getValue("dueDate"))
+        : "N/A";
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={dueDateText}
         >
@@ -121,7 +137,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<CaseData> }) => {
       const status = row.getValue("status") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={status}
         >
@@ -136,7 +152,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<CaseData> }) => {
       const urgencyLevel = row.getValue("urgencyLevel") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={urgencyLevel}
         >
@@ -156,7 +172,11 @@ const columnsDef = [
 ];
 
 // Combined component that handles both table and pagination with shared state
-export default function CaseTableWrapper({ data, searchQuery = "", filters }: Props) {
+export default function CaseTableWrapper({
+  data,
+  searchQuery = "",
+  filters,
+}: Props) {
   const [query, setQuery] = useState(searchQuery);
 
   // Update internal query when searchQuery prop changes
@@ -210,7 +230,7 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
       result = result.filter((d) =>
         [d.number, d.organization, d.caseType, d.status, d.urgencyLevel]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q))
+          .some((v) => String(v).toLowerCase().includes(q)),
       );
     }
 
@@ -236,7 +256,10 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
         <Table className="min-w-[1000px] border-0">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
+              <TableRow
+                className="bg-[#F3F3F3] border-b-0"
+                key={headerGroup.id}
+              >
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
@@ -244,15 +267,15 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
                       "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap",
                       header.index === 0 && "rounded-l-2xl",
                       header.index === headerGroup.headers.length - 1 &&
-                      "rounded-r-2xl w-[60px]"
+                        "rounded-r-2xl w-[60px]",
                     )}
                   >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -269,7 +292,10 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="px-6 py-3">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -287,7 +313,7 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
           </TableBody>
         </Table>
       </div>
-      
+
       {/* Pagination */}
       <div className="px-3 sm:px-6 mt-4 overflow-x-hidden">
         <Pagination table={table} />

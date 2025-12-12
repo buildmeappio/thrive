@@ -1,12 +1,19 @@
-'use server';
+"use server";
 
-import { taxonomyHandlers } from './server';
-import { getCurrentUser } from '../auth/server/session';
-import { redirect } from 'next/navigation';
-import { CreateTaxonomyInput, UpdateTaxonomyInput, TaxonomyType } from './types/Taxonomy';
-import { URLS } from '@/constants/route';
+import { taxonomyHandlers } from "./server";
+import { getCurrentUser } from "../auth/server/session";
+import { redirect } from "next/navigation";
+import {
+  CreateTaxonomyInput,
+  UpdateTaxonomyInput,
+  TaxonomyType,
+} from "./types/Taxonomy";
+import { URLS } from "@/constants/route";
 
-export const createTaxonomy = async (type: TaxonomyType, data: CreateTaxonomyInput) => {
+export const createTaxonomy = async (
+  type: TaxonomyType,
+  data: CreateTaxonomyInput,
+) => {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -17,7 +24,11 @@ export const createTaxonomy = async (type: TaxonomyType, data: CreateTaxonomyInp
   return result;
 };
 
-export const updateTaxonomy = async (type: TaxonomyType, id: string, data: UpdateTaxonomyInput) => {
+export const updateTaxonomy = async (
+  type: TaxonomyType,
+  id: string,
+  data: UpdateTaxonomyInput,
+) => {
   const user = await getCurrentUser();
 
   if (!user) {

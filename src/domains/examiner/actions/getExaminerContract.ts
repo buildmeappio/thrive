@@ -24,7 +24,10 @@ async function streamToString(body: any): Promise<string> {
 /**
  * Get the latest contract HTML for an examiner or application (for admin review)
  */
-export async function getExaminerContract(id: string, isApplication: boolean = false) {
+export async function getExaminerContract(
+  id: string,
+  isApplication: boolean = false,
+) {
   try {
     // Get the latest contract for this examiner or application
     const contract = await prisma.contract.findFirst({
@@ -50,7 +53,7 @@ export async function getExaminerContract(id: string, isApplication: boolean = f
     // Fetch HTML content from S3 (use signed if available, otherwise unsigned)
     let contractHtml: string | null = null;
     const htmlKey = contract.signedHtmlS3Key || contract.unsignedHtmlS3Key;
-    
+
     if (htmlKey) {
       try {
         const htmlCommand = new GetObjectCommand({
@@ -75,10 +78,10 @@ export async function getExaminerContract(id: string, isApplication: boolean = f
     logger.error("Error fetching examiner contract:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to fetch contract",
+      error:
+        error instanceof Error ? error.message : "Failed to fetch contract",
     };
   }
 }
 
 export default getExaminerContract;
-

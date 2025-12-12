@@ -80,8 +80,8 @@ export default function OverrideHours({
                 { startTime: newStartTime, endTime: newEndTime },
               ],
             }
-          : oh
-      )
+          : oh,
+      ),
     );
   };
 
@@ -90,18 +90,18 @@ export default function OverrideHours({
       value.map((oh) =>
         oh.date === dateStr
           ? { ...oh, timeSlots: oh.timeSlots.filter((_, i) => i !== slotIndex) }
-          : oh
-      )
+          : oh,
+      ),
     );
   };
 
   const previousMonth = () =>
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1),
     );
   const nextMonth = () =>
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1),
     );
 
   const today = new Date();
@@ -112,7 +112,7 @@ export default function OverrideHours({
     const todayStart = new Date(
       today.getFullYear(),
       today.getMonth(),
-      today.getDate()
+      today.getDate(),
     );
     return date < todayStart;
   };
@@ -148,7 +148,8 @@ export default function OverrideHours({
               isCurrentMonth || disabled
                 ? "cursor-not-allowed opacity-40"
                 : "bg-[#E8F1FF] hover:bg-[#d0e3ff]"
-            }`}>
+            }`}
+          >
             ‹
           </button>
           <h3 className="text-lg font-medium text-gray-900">
@@ -163,7 +164,8 @@ export default function OverrideHours({
             disabled={disabled}
             className={`p-1.5 rounded-full cursor-pointer bg-[#E8F1FF] hover:bg-[#d0e3ff] transition-colors ${
               disabled ? "opacity-40 cursor-not-allowed" : ""
-            }`}>
+            }`}
+          >
             ›
           </button>
         </div>
@@ -184,7 +186,7 @@ export default function OverrideHours({
               const date = new Date(
                 currentMonth.getFullYear(),
                 currentMonth.getMonth(),
-                day
+                day,
               );
               const dateStr = formatDate(date);
               const isSelected = selectedSet.has(dateStr);
@@ -204,20 +206,21 @@ export default function OverrideHours({
                     isPast || disabled
                       ? "text-gray-300 cursor-not-allowed"
                       : isSelected
-                      ? "bg-[#00A8FF] font-bold text-white"
-                      : isToday
-                      ? "bg-[#00A8FF] font-bold text-white"
-                      : isWeekday
-                      ? "bg-[#E8F1FF] text-[#00A8FF] font-semibold hover:bg-[#d0e3ff]"
-                      : "text-gray-700 hover:bg-blue-50"
-                  }`}>
+                        ? "bg-[#00A8FF] font-bold text-white"
+                        : isToday
+                          ? "bg-[#00A8FF] font-bold text-white"
+                          : isWeekday
+                            ? "bg-[#E8F1FF] text-[#00A8FF] font-semibold hover:bg-[#d0e3ff]"
+                            : "text-gray-700 hover:bg-blue-50"
+                  }`}
+                >
                   {isToday && !isSelected && (
                     <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full" />
                   )}
                   {day}
                 </button>
               );
-            })
+            }),
           )}
         </div>
       </div>
@@ -225,7 +228,8 @@ export default function OverrideHours({
       <div
         className={`flex-1 min-w-0 ${
           disabled ? "" : "overflow-y-auto max-h-[500px]"
-        }`}>
+        }`}
+      >
         {value.map((override) => (
           <div key={override.date} className="mb-6">
             <div className="space-y-2">
@@ -233,7 +237,8 @@ export default function OverrideHours({
                 <div
                   key={slotIndex}
                   className="grid gap-2 items-center w-full"
-                  style={{ gridTemplateColumns: "auto 1fr 1fr auto" }}>
+                  style={{ gridTemplateColumns: "auto 1fr 1fr auto" }}
+                >
                   {slotIndex === 0 ? (
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <input
@@ -268,14 +273,15 @@ export default function OverrideHours({
                                   timeSlots: oh.timeSlots.map((s, i) =>
                                     i === slotIndex
                                       ? { ...s, startTime: val }
-                                      : s
+                                      : s,
                                   ),
                                 }
-                              : oh
-                          )
+                              : oh,
+                          ),
                         )
                       }
-                      disabled={disabled}>
+                      disabled={disabled}
+                    >
                       <SelectTrigger className="w-full px-4 py-2 h-auto border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] disabled:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
                         <SelectValue />
                       </SelectTrigger>
@@ -299,14 +305,17 @@ export default function OverrideHours({
                               ? {
                                   ...oh,
                                   timeSlots: oh.timeSlots.map((s, i) =>
-                                    i === slotIndex ? { ...s, endTime: val } : s
+                                    i === slotIndex
+                                      ? { ...s, endTime: val }
+                                      : s,
                                   ),
                                 }
-                              : oh
-                          )
+                              : oh,
+                          ),
                         )
                       }
-                      disabled={disabled}>
+                      disabled={disabled}
+                    >
                       <SelectTrigger className="w-full px-4 py-2 h-auto border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#00A8FF] disabled:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
                         <SelectValue />
                       </SelectTrigger>
@@ -327,7 +336,8 @@ export default function OverrideHours({
                       className={`p-2 text-[#00A8FF] hover:text-[#0097E5] transition-colors ${
                         disabled ? "opacity-50 cursor-not-allowed" : ""
                       }`}
-                      title="Add time slot">
+                      title="Add time slot"
+                    >
                       +
                     </button>
                   ) : (
@@ -340,7 +350,8 @@ export default function OverrideHours({
                       className={`p-2 text-gray-400 hover:text-red-500 transition-colors ${
                         disabled ? "opacity-50 cursor-not-allowed" : ""
                       }`}
-                      title="Remove time slot">
+                      title="Remove time slot"
+                    >
                       ×
                     </button>
                   )}

@@ -46,19 +46,17 @@ interface ApplicationWithRelations extends ExaminerApplication {
 const approveExaminer = async (id: string) => {
   const user = await getCurrentUser();
   if (!user) {
-    throw HttpError.unauthorized(
-      "You must be logged in to approve"
-    );
+    throw HttpError.unauthorized("You must be logged in to approve");
   }
 
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
 
-  if (entityType === 'application') {
+  if (entityType === "application") {
     // Approve the application
     const application = await applicationService.approveApplication(
       id,
-      user.accountId
+      user.accountId,
     );
 
     // Send approval email with application token (don't fail approval if email fails)
@@ -68,33 +66,39 @@ const approveExaminer = async (id: string) => {
     } catch (emailError) {
       logger.error(
         "⚠️ Failed to send approval email (but approval succeeded):",
-        emailError
+        emailError,
       );
     }
 
     return application;
-  } else if (entityType === 'examiner') {
+  } else if (entityType === "examiner") {
     // Approve the examiner
-    const examiner = await examinerService.approveExaminer(
-      id,
-      user.accountId
-    );
+    const examiner = await examinerService.approveExaminer(id, user.accountId);
 
     // Generate and upload contract to S3 (don't fail approval if this fails)
     try {
       logger.log("📄 Generating contract for examiner...");
       const contractResult = await contractService.createAndSendContract(
         id,
-        user.accountId
+        user.accountId,
       );
 
       if (contractResult.success) {
-        logger.log("✅ Contract generated and uploaded successfully:", contractResult.contractId);
+        logger.log(
+          "✅ Contract generated and uploaded successfully:",
+          contractResult.contractId,
+        );
       } else {
-        logger.error("⚠️ Failed to generate contract (but approval succeeded):", contractResult.error);
+        logger.error(
+          "⚠️ Failed to generate contract (but approval succeeded):",
+          contractResult.error,
+        );
       }
     } catch (contractError) {
-      logger.error("⚠️ Failed to generate contract (but approval succeeded):", contractError);
+      logger.error(
+        "⚠️ Failed to generate contract (but approval succeeded):",
+        contractError,
+      );
     }
 
     // Send approval email with token (don't fail approval if email fails)
@@ -104,7 +108,7 @@ const approveExaminer = async (id: string) => {
     } catch (emailError) {
       logger.error(
         "⚠️ Failed to send approval email (but approval succeeded):",
-        emailError
+        emailError,
       );
     }
 
@@ -114,7 +118,9 @@ const approveExaminer = async (id: string) => {
   }
 };
 
-async function sendApprovalEmailToApplicant(application: ApplicationWithRelations) {
+async function sendApprovalEmailToApplicant(
+  application: ApplicationWithRelations,
+) {
   const userEmail = application.email;
   const firstName = application.firstName;
   const lastName = application.lastName;

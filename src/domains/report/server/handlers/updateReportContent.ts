@@ -12,7 +12,7 @@ const updateReportContent = async (
       content: string;
       order: number;
     }>;
-  }
+  },
 ) => {
   const report = await ReportService.updateReportContent(id, data);
   const reportDetails = await ReportDto.toReportDetailDto(report);
@@ -20,4 +20,3 @@ const updateReportContent = async (
 };
 
 export default updateReportContent;
-

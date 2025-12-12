@@ -1,4 +1,4 @@
-'use server'
+"use server";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import * as CaseService from "../server/case.service";
 import { HttpError } from "@/utils/httpError";
@@ -29,7 +29,7 @@ const readyForAppointment = async (caseId: string) => {
 
     const updatedItem = await CaseService.updateStatus(
       caseId,
-      CaseStatus.READY_TO_APPOINTMENT
+      CaseStatus.READY_TO_APPOINTMENT,
     );
 
     const link = await CaseService.generateSecureLink(updatedItem.id);
@@ -79,6 +79,6 @@ const readyForAppointmentEmailHtml = (link: string) => {
     </div>
   </div>
   `;
-}
+};
 
 export default readyForAppointment;

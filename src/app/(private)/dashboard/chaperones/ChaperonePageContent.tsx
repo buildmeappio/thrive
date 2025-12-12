@@ -28,8 +28,9 @@ export default function ChaperonesPageContent({
 
     // Apply gender filter
     if (genderFilter !== "all") {
-      filtered = filtered.filter((chaperone) => 
-        chaperone.gender?.toLowerCase() === genderFilter.toLowerCase()
+      filtered = filtered.filter(
+        (chaperone) =>
+          chaperone.gender?.toLowerCase() === genderFilter.toLowerCase(),
       );
     }
 
@@ -96,10 +97,22 @@ export default function ChaperonesPageContent({
           onClick={handleAddClick}
           className="flex items-center gap-1 sm:gap-2 lg:gap-3 px-2 sm:px-4 lg:px-6 py-1 sm:py-2 lg:py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 transition-opacity"
         >
-          <svg className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          <svg
+            className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
           </svg>
-          <span className="text-xs sm:text-sm lg:text-base font-medium">Add Chaperone</span>
+          <span className="text-xs sm:text-sm lg:text-base font-medium">
+            Add Chaperone
+          </span>
         </button>
       </div>
 
@@ -176,12 +189,14 @@ export default function ChaperonesPageContent({
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap">
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
+              >
                 <svg
                   className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                   fill="none"
                   stroke="currentColor"
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

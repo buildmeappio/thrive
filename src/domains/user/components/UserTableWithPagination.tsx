@@ -53,13 +53,14 @@ const createColumns = (
   currentUserId: string | null | undefined,
   onToggleStatus: (id: string, enabled: boolean) => void,
   onEditUser: (user: UserTableRow) => void,
-  onDeleteUser: (user: UserTableRow) => void
+  onDeleteUser: (user: UserTableRow) => void,
 ): ColumnDef<UserTableRow, unknown>[] => [
   {
     id: "name",
     header: "Name",
     cell: ({ row }: { row: Row<UserTableRow> }) => {
-      const fullName = `${row.original.firstName} ${row.original.lastName}`.trim();
+      const fullName =
+        `${row.original.firstName} ${row.original.lastName}`.trim();
       return (
         <p className={textCellClass} title={fullName}>
           {truncateText(fullName, 30)}
@@ -85,7 +86,9 @@ const createColumns = (
       const role = row.getValue("role") as string;
       const formattedRole = role
         .split("_")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+        )
         .join(" ");
       return (
         <p className={textCellClass} title={formattedRole}>
@@ -120,7 +123,7 @@ const createColumns = (
               enabled
                 ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]"
                 : "bg-gray-300",
-              isToggling && "cursor-not-allowed opacity-60"
+              isToggling && "cursor-not-allowed opacity-60",
             )}
             onClick={() => onToggleStatus(row.original.id, !enabled)}
             disabled={isToggling}
@@ -129,14 +132,19 @@ const createColumns = (
             <span
               className={cn(
                 "inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform",
-                enabled ? "translate-x-6" : "translate-x-1"
+                enabled ? "translate-x-6" : "translate-x-1",
               )}
             />
           </button>
         </div>
       );
     },
-    meta: { minSize: 110, maxSize: 130, size: 110, align: "center" } as ColumnMeta,
+    meta: {
+      minSize: 110,
+      maxSize: 130,
+      size: 110,
+      align: "center",
+    } as ColumnMeta,
   },
   {
     id: "actions",
@@ -160,25 +168,34 @@ const createColumns = (
             disabled={isCurrentUser}
             className={cn(
               "flex-shrink-0",
-              isCurrentUser ? "cursor-not-allowed" : "cursor-pointer"
+              isCurrentUser ? "cursor-not-allowed" : "cursor-pointer",
             )}
           >
-            <div className={cn(
-              "flex h-[30px] w-[40px] items-center justify-center rounded-full p-0 transition-opacity",
-              isCurrentUser
-                ? "bg-gray-200 opacity-50"
-                : "bg-red-50 hover:opacity-80"
-            )}>
-              <Trash2 className={cn(
-                "h-4 w-4",
-                isCurrentUser ? "text-gray-400" : "text-red-600"
-              )} />
+            <div
+              className={cn(
+                "flex h-[30px] w-[40px] items-center justify-center rounded-full p-0 transition-opacity",
+                isCurrentUser
+                  ? "bg-gray-200 opacity-50"
+                  : "bg-red-50 hover:opacity-80",
+              )}
+            >
+              <Trash2
+                className={cn(
+                  "h-4 w-4",
+                  isCurrentUser ? "text-gray-400" : "text-red-600",
+                )}
+              />
             </div>
           </button>
         </div>
       );
     },
-    meta: { minSize: 110, maxSize: 130, size: 110, align: "right" } as ColumnMeta,
+    meta: {
+      minSize: 110,
+      maxSize: 130,
+      size: 110,
+      align: "right",
+    } as ColumnMeta,
   },
 ];
 
@@ -200,7 +217,7 @@ export default function UserTableWithPagination({
       filtered = filtered.filter((user) =>
         [user.firstName, user.lastName, user.email]
           .filter(Boolean)
-          .some((value) => value.toLowerCase().includes(term))
+          .some((value) => value.toLowerCase().includes(term)),
       );
     }
 
@@ -208,8 +225,15 @@ export default function UserTableWithPagination({
   }, [data, searchQuery]);
 
   const columns = useMemo(
-    () => createColumns(togglingUserId, currentUserId, onToggleStatus, onEditUser, onDeleteUser),
-    [togglingUserId, currentUserId, onToggleStatus, onEditUser, onDeleteUser]
+    () =>
+      createColumns(
+        togglingUserId,
+        currentUserId,
+        onToggleStatus,
+        onEditUser,
+        onDeleteUser,
+      ),
+    [togglingUserId, currentUserId, onToggleStatus, onEditUser, onDeleteUser],
   );
 
   const table = useReactTable({
@@ -240,31 +264,35 @@ export default function UserTableWithPagination({
                   const isStatusColumn = header.column.id === "status";
                   const isActionsColumn = header.column.id === "actions";
                   return (
-                      <TableHead
-                        key={header.id}
-                        style={{
-                          minWidth: meta.minSize ? `${meta.minSize}px` : undefined,
-                          maxWidth: meta.maxSize ? `${meta.maxSize}px` : undefined,
-                          width: meta.size ? `${meta.size}px` : undefined,
-                        }}
-                        className={cn(
-                          "py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
-                          // Responsive padding: less on mobile for Status and Actions columns
-                          isStatusColumn || isActionsColumn
-                            ? "px-2 sm:px-4 md:px-6"
-                            : "px-4 sm:px-5 md:px-6",
-                          index === 0 && "rounded-l-2xl",
-                          index === headerGroup.headers.length - 1 &&
-                            "rounded-r-2xl",
-                          meta.align === "center" && "text-center",
-                          meta.align === "right" && "text-right"
-                        )}
-                      >
+                    <TableHead
+                      key={header.id}
+                      style={{
+                        minWidth: meta.minSize
+                          ? `${meta.minSize}px`
+                          : undefined,
+                        maxWidth: meta.maxSize
+                          ? `${meta.maxSize}px`
+                          : undefined,
+                        width: meta.size ? `${meta.size}px` : undefined,
+                      }}
+                      className={cn(
+                        "py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
+                        // Responsive padding: less on mobile for Status and Actions columns
+                        isStatusColumn || isActionsColumn
+                          ? "px-2 sm:px-4 md:px-6"
+                          : "px-4 sm:px-5 md:px-6",
+                        index === 0 && "rounded-l-2xl",
+                        index === headerGroup.headers.length - 1 &&
+                          "rounded-r-2xl",
+                        meta.align === "center" && "text-center",
+                        meta.align === "right" && "text-right",
+                      )}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -278,42 +306,42 @@ export default function UserTableWithPagination({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                      className="bg-white border-0 border-b"
+                  className="bg-white border-0 border-b"
                 >
-                    {row.getVisibleCells().map((cell) => {
-                      const column = cell.column.columnDef;
-                      const meta = (column.meta as ColumnMeta) || {};
-                      const isStatusColumn = cell.column.id === "status";
-                      const isActionsColumn = cell.column.id === "actions";
-                      return (
-                        <TableCell
-                          key={cell.id}
-                          style={{
-                            minWidth: meta.minSize
-                              ? `${meta.minSize}px`
-                              : undefined,
-                            maxWidth: meta.maxSize
-                              ? `${meta.maxSize}px`
-                              : undefined,
-                            width: meta.size ? `${meta.size}px` : undefined,
-                          }}
-                          className={cn(
-                            "py-3 overflow-hidden align-middle",
-                            // Responsive padding: less on mobile for Status and Actions columns
-                            isStatusColumn || isActionsColumn
-                              ? "px-2 sm:px-4 md:px-6"
-                              : "px-4 sm:px-5 md:px-6",
-                            meta.align === "center" && "text-center",
-                            meta.align === "right" && "text-right"
-                          )}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      );
-                    })}
+                  {row.getVisibleCells().map((cell) => {
+                    const column = cell.column.columnDef;
+                    const meta = (column.meta as ColumnMeta) || {};
+                    const isStatusColumn = cell.column.id === "status";
+                    const isActionsColumn = cell.column.id === "actions";
+                    return (
+                      <TableCell
+                        key={cell.id}
+                        style={{
+                          minWidth: meta.minSize
+                            ? `${meta.minSize}px`
+                            : undefined,
+                          maxWidth: meta.maxSize
+                            ? `${meta.maxSize}px`
+                            : undefined,
+                          width: meta.size ? `${meta.size}px` : undefined,
+                        }}
+                        className={cn(
+                          "py-3 overflow-hidden align-middle",
+                          // Responsive padding: less on mobile for Status and Actions columns
+                          isStatusColumn || isActionsColumn
+                            ? "px-2 sm:px-4 md:px-6"
+                            : "px-4 sm:px-5 md:px-6",
+                          meta.align === "center" && "text-center",
+                          meta.align === "right" && "text-right",
+                        )}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))
             ) : (
@@ -332,4 +360,3 @@ export default function UserTableWithPagination({
     ),
   };
 }
-

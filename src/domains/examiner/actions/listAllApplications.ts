@@ -15,15 +15,15 @@ const listAllApplications = async () => {
         deletedAt: null,
         status: {
           in: [
-            'SUBMITTED',
-            'PENDING',
-            'IN_REVIEW',
-            'MORE_INFO_REQUESTED',
-            'INTERVIEW_SCHEDULED',
-            'INTERVIEW_COMPLETED',
-            'CONTRACT_SENT',
-            'CONTRACT_SIGNED',
-            'APPROVED',
+            "SUBMITTED",
+            "PENDING",
+            "IN_REVIEW",
+            "MORE_INFO_REQUESTED",
+            "INTERVIEW_SCHEDULED",
+            "INTERVIEW_COMPLETED",
+            "CONTRACT_SENT",
+            "CONTRACT_SIGNED",
+            "APPROVED",
           ],
         },
         // Keep all applications including APPROVED as records, even if they have examiner profiles
@@ -44,28 +44,42 @@ const listAllApplications = async () => {
     const mappedData = await mapSpecialtyIdsToNames(applicationsData);
 
     // If any yearsOfIMEExperience looks like a UUID, fetch the actual names from the taxonomy table
-    const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
     const yearsUuids = new Set<string>();
-    
+
     for (const application of applications) {
-      if (application.yearsOfIMEExperience && uuidRegex.test(application.yearsOfIMEExperience.replace(/\s/g, ''))) {
+      if (
+        application.yearsOfIMEExperience &&
+        uuidRegex.test(application.yearsOfIMEExperience.replace(/\s/g, ""))
+      ) {
         yearsUuids.add(application.yearsOfIMEExperience);
       }
     }
 
     if (yearsUuids.size > 0) {
       try {
-        const yearsOfExperienceRecords = await prisma.yearsOfExperience.findMany({
-          where: { id: { in: Array.from(yearsUuids) } },
-        });
-        
-        const yearsMap = new Map(yearsOfExperienceRecords.map(y => [y.id, y.name]));
-        
+        const yearsOfExperienceRecords =
+          await prisma.yearsOfExperience.findMany({
+            where: { id: { in: Array.from(yearsUuids) } },
+          });
+
+        const yearsMap = new Map(
+          yearsOfExperienceRecords.map((y) => [y.id, y.name]),
+        );
+
         for (let i = 0; i < mappedData.length; i++) {
           const applicationData = mappedData[i];
           const originalApplication = applications[i];
-          if (originalApplication.yearsOfIMEExperience && uuidRegex.test(originalApplication.yearsOfIMEExperience.replace(/\s/g, ''))) {
-            const yearName = yearsMap.get(originalApplication.yearsOfIMEExperience);
+          if (
+            originalApplication.yearsOfIMEExperience &&
+            uuidRegex.test(
+              originalApplication.yearsOfIMEExperience.replace(/\s/g, ""),
+            )
+          ) {
+            const yearName = yearsMap.get(
+              originalApplication.yearsOfIMEExperience,
+            );
             if (yearName) {
               applicationData.yearsOfIMEExperience = yearName;
             }
@@ -80,8 +94,8 @@ const listAllApplications = async () => {
     const assessmentTypeUuids = new Set<string>();
     for (const application of applications) {
       if (application.assessmentTypeIds) {
-        application.assessmentTypeIds.forEach(typeId => {
-          if (uuidRegex.test(typeId.replace(/\s/g, ''))) {
+        application.assessmentTypeIds.forEach((typeId) => {
+          if (uuidRegex.test(typeId.replace(/\s/g, ""))) {
             assessmentTypeUuids.add(typeId);
           }
         });
@@ -91,21 +105,25 @@ const listAllApplications = async () => {
     if (assessmentTypeUuids.size > 0) {
       try {
         const assessmentTypes = await prisma.assessmentType.findMany({
-          where: { 
+          where: {
             id: { in: Array.from(assessmentTypeUuids) },
-            deletedAt: null 
+            deletedAt: null,
           },
         });
-        
-        const typeMap = new Map(assessmentTypes.map(t => [t.id, t.name]));
-        
+
+        const typeMap = new Map(assessmentTypes.map((t) => [t.id, t.name]));
+
         for (let i = 0; i < mappedData.length; i++) {
           const applicationData = mappedData[i];
           const originalApplication = applications[i];
-          if (originalApplication.assessmentTypeIds && originalApplication.assessmentTypeIds.length > 0) {
-            applicationData.assessmentTypes = originalApplication.assessmentTypeIds.map(id => 
-              typeMap.get(id) || id
-            );
+          if (
+            originalApplication.assessmentTypeIds &&
+            originalApplication.assessmentTypeIds.length > 0
+          ) {
+            applicationData.assessmentTypes =
+              originalApplication.assessmentTypeIds.map(
+                (id) => typeMap.get(id) || id,
+              );
           }
         }
       } catch (error) {
@@ -121,4 +139,3 @@ const listAllApplications = async () => {
 };
 
 export default listAllApplications;
-
