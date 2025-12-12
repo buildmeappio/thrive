@@ -8,6 +8,7 @@ import {
   GoogleMapsAutocompleteOptions,
   GoogleMapsAddressComponent,
 } from "@/types/google-maps";
+import { ENV } from "@/constants/variables";
 
 interface GoogleMapsInputProps {
   value?: string;
@@ -43,7 +44,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
   const autoCompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { isLoaded, hasError } = useGoogleMaps();
-  const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
+  const API_KEY = ENV.GOOGLE_PLACES_API_KEY;
 
   useEffect(() => {
     // Ensure Google Maps API is fully loaded
@@ -56,7 +57,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
     // Clean up existing instance if province changed
     if (autoCompleteRef.current) {
       window.google?.maps?.event?.clearInstanceListeners(
-        autoCompleteRef.current,
+        autoCompleteRef.current
       );
       autoCompleteRef.current = null;
     }
@@ -71,13 +72,13 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
 
       autoCompleteRef.current = new window.google.maps.places.Autocomplete(
         inputRef.current,
-        autocompleteOptions,
+        autocompleteOptions
       );
 
       // Add place changed listener
       const placeChangedListener = autoCompleteRef.current?.addListener(
         "place_changed",
-        handlePlaceSelect,
+        handlePlaceSelect
       );
 
       // Cleanup listeners on unmount
@@ -87,7 +88,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
         }
         if (autoCompleteRef.current) {
           window.google?.maps?.event?.clearInstanceListeners(
-            autoCompleteRef.current,
+            autoCompleteRef.current
           );
         }
       };
