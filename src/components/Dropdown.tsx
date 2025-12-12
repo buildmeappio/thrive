@@ -44,7 +44,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   const uniqueOptions = React.useMemo(() => {
     const seen = new Set<string>();
     return options.filter((o) =>
-      seen.has(o.value) ? false : (seen.add(o.value), true)
+      seen.has(o.value) ? false : (seen.add(o.value), true),
     );
   }, [options]);
 
@@ -129,7 +129,8 @@ const Dropdown: React.FC<DropdownProps> = ({
           <Select
             value={typeof value === "string" ? value || undefined : undefined}
             onValueChange={handleSingleSelectChange}
-            name={id}>
+            name={id}
+          >
             <SelectTrigger
               id={id}
               disabled={disabled}
@@ -140,7 +141,8 @@ const Dropdown: React.FC<DropdownProps> = ({
               } text-[14px] leading-[120%] font-normal tracking-[0.5%] hover:bg-opacity-80 transition-colors focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 ${
                 error ? "ring-2 ring-red-500/30" : ""
               }`}
-              aria-required={required}>
+              aria-required={required}
+            >
               {icon && (
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
                   {icon}
@@ -171,7 +173,8 @@ const Dropdown: React.FC<DropdownProps> = ({
                 error ? "ring-2 ring-red-500/30" : ""
               }`}
               onClick={() => setOpen((o) => !o)}
-              tabIndex={0}>
+              tabIndex={0}
+            >
               {icon && (
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
                   {icon}
@@ -188,7 +191,8 @@ const Dropdown: React.FC<DropdownProps> = ({
                   scrollbarWidth: "none",
                   msOverflowStyle: "none",
                   overflowX: "auto",
-                }}>
+                }}
+              >
                 {displayValue || placeholder}
               </span>
               <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -214,7 +218,8 @@ const Dropdown: React.FC<DropdownProps> = ({
                         e.preventDefault();
                         e.stopPropagation();
                         handleMultiSelectChange(option.value);
-                      }}>
+                      }}
+                    >
                       <Checkbox
                         checked={selectedValues.includes(option.value)}
                         onCheckedChange={() => {}}
@@ -230,7 +235,9 @@ const Dropdown: React.FC<DropdownProps> = ({
           </div>
         )}
       </div>
-      {error && error.trim() && error.trim() !== " " && <p className="text-xs text-red-500">{error}</p>}
+      {error && error.trim() && error.trim() !== " " && (
+        <p className="text-xs text-red-500">{error}</p>
+      )}
     </div>
   );
 };

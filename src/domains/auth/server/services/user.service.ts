@@ -75,7 +75,7 @@ class UserService {
       throw HttpError.fromError(
         error,
         ErrorMessages.FAILED_CHECK_USER_EXISTS,
-        500
+        500,
       );
     }
   }
@@ -100,7 +100,7 @@ class UserService {
       throw HttpError.fromError(
         error,
         ErrorMessages.FAILED_FETCH_USER_WITH_ACCOUNT,
-        500
+        500,
       );
     }
   }
@@ -134,7 +134,7 @@ class UserService {
       throw HttpError.fromError(
         error,
         ErrorMessages.FAILED_FETCH_USER_WITH_ACCOUNTS,
-        500
+        500,
       );
     }
   }
@@ -163,7 +163,7 @@ class UserService {
       throw HttpError.fromError(
         error,
         ErrorMessages.FAILED_UPDATE_PASSWORD,
-        500
+        500,
       );
     }
   }

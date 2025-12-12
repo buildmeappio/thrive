@@ -17,8 +17,9 @@ export const updateDocumentsAction = async (data: {
     return {
       success: false as const,
       data: null,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to update documents",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to update documents",
     };
   }
 };
-

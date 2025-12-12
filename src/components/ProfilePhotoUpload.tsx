@@ -23,7 +23,7 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
 }) => {
   // Only set preview if currentPhotoUrl is a valid string
   const [preview, setPreview] = useState<string | null>(
-    currentPhotoUrl && currentPhotoUrl.trim() !== "" ? currentPhotoUrl : null
+    currentPhotoUrl && currentPhotoUrl.trim() !== "" ? currentPhotoUrl : null,
   );
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -144,7 +144,8 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={handleClick}>
+        onClick={handleClick}
+      >
         {/* Hidden file input */}
         <input
           ref={fileInputRef}

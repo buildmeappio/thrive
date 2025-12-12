@@ -266,7 +266,7 @@ const majorCitiesByProvince: { [key: string]: string[] } = {
  */
 export const getCitiesByProvince = (
   provinceName: string,
-  includeExistingCity?: string
+  includeExistingCity?: string,
 ): { value: string; label: string }[] => {
   if (!provinceName) return [];
 
@@ -278,7 +278,11 @@ export const getCitiesByProvince = (
 
   // If there's an existing city that's not in the major cities list, add it
   const citiesSet = new Set(majorCities);
-  if (includeExistingCity && includeExistingCity.trim() && !citiesSet.has(includeExistingCity)) {
+  if (
+    includeExistingCity &&
+    includeExistingCity.trim() &&
+    !citiesSet.has(includeExistingCity)
+  ) {
     citiesSet.add(includeExistingCity);
   }
 
@@ -326,7 +330,6 @@ export const getProvinceOptions = (): { value: string; label: string }[] => {
 
   // Combine and sort alphabetically
   return [...provinceOptions, ...territoryOptions].sort((a, b) =>
-    a.label.localeCompare(b.label)
+    a.label.localeCompare(b.label),
   );
 };
-

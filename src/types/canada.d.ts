@@ -3,4 +3,3 @@ declare module "canada" {
   export const provinces: { [code: string]: string }; // { "AB": "ALBERTA", "BC": "BRITISH COLUMBIA", ... }
   export const territories: { [code: string]: string }; // { "NT": "NORTHWEST TERRITORIES", ... }
 }
-

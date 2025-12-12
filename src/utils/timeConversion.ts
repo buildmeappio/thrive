@@ -11,7 +11,7 @@
  */
 export function convertTimeToUTC(
   timeString: string,
-  referenceDate?: Date
+  referenceDate?: Date,
 ): string {
   try {
     const trimmedTime = timeString.trim();
@@ -39,7 +39,9 @@ export function convertTimeToUTC(
         minutes = parseInt(time24HourMatch[2], 10);
       } else {
         // If parsing fails, return original
-        console.warn(`Failed to parse time string: ${timeString}, returning as-is`);
+        console.warn(
+          `Failed to parse time string: ${timeString}, returning as-is`,
+        );
         return trimmedTime;
       }
     }
@@ -75,7 +77,7 @@ export function convertTimeToUTC(
  */
 export function convertUTCToLocal(
   utcTimeString: string,
-  referenceDate?: Date
+  referenceDate?: Date,
 ): string {
   try {
     const [hours, minutes] = utcTimeString.split(":").map(Number);
@@ -111,7 +113,7 @@ export function convertUTCToLocal(
  */
 export function convertTimeSlotToUTC(
   slot: { startTime: string; endTime: string },
-  referenceDate?: Date
+  referenceDate?: Date,
 ): { startTime: string; endTime: string } {
   return {
     startTime: convertTimeToUTC(slot.startTime, referenceDate),
@@ -127,7 +129,7 @@ export function convertTimeSlotToUTC(
  */
 export function convertTimeSlotToLocal(
   slot: { startTime: string; endTime: string },
-  referenceDate?: Date
+  referenceDate?: Date,
 ): { startTime: string; endTime: string } {
   return {
     startTime: convertUTCToLocal(slot.startTime, referenceDate),
@@ -151,7 +153,7 @@ export function convertWeeklyHoursToUTC(weeklyHours: WeeklyHours): WeeklyHours {
       converted[day as keyof WeeklyHours] = {
         enabled: dayData.enabled,
         timeSlots: dayData.timeSlots.map((slot: TimeSlot) =>
-          convertTimeSlotToUTC(slot)
+          convertTimeSlotToUTC(slot),
         ),
       };
     }
@@ -165,7 +167,9 @@ export function convertWeeklyHoursToUTC(weeklyHours: WeeklyHours): WeeklyHours {
  * @param weeklyHours - Weekly hours object with time slots in UTC format
  * @returns Weekly hours object with time slots in local format
  */
-export function convertWeeklyHoursToLocal(weeklyHours: WeeklyHours): WeeklyHours {
+export function convertWeeklyHoursToLocal(
+  weeklyHours: WeeklyHours,
+): WeeklyHours {
   const converted: WeeklyHours = {} as WeeklyHours;
 
   for (const day in weeklyHours) {
@@ -174,7 +178,7 @@ export function convertWeeklyHoursToLocal(weeklyHours: WeeklyHours): WeeklyHours
       converted[day as keyof WeeklyHours] = {
         enabled: dayData.enabled,
         timeSlots: dayData.timeSlots.map((slot: TimeSlot) =>
-          convertTimeSlotToLocal(slot)
+          convertTimeSlotToLocal(slot),
         ),
       };
     }
@@ -189,8 +193,14 @@ export function convertWeeklyHoursToLocal(weeklyHours: WeeklyHours): WeeklyHours
  * @returns Array of override hours with time slots in UTC format
  */
 export function convertOverrideHoursToUTC(
-  overrideHours: Array<{ date: string; timeSlots: Array<{ startTime: string; endTime: string }> }>
-): Array<{ date: string; timeSlots: Array<{ startTime: string; endTime: string }> }> {
+  overrideHours: Array<{
+    date: string;
+    timeSlots: Array<{ startTime: string; endTime: string }>;
+  }>,
+): Array<{
+  date: string;
+  timeSlots: Array<{ startTime: string; endTime: string }>;
+}> {
   return overrideHours.map((override) => ({
     date: override.date,
     timeSlots: override.timeSlots.map((slot) => convertTimeSlotToUTC(slot)),
@@ -203,8 +213,14 @@ export function convertOverrideHoursToUTC(
  * @returns Array of override hours with time slots in local format
  */
 export function convertOverrideHoursToLocal(
-  overrideHours: Array<{ date: string; timeSlots: Array<{ startTime: string; endTime: string }> }>
-): Array<{ date: string; timeSlots: Array<{ startTime: string; endTime: string }> }> {
+  overrideHours: Array<{
+    date: string;
+    timeSlots: Array<{ startTime: string; endTime: string }>;
+  }>,
+): Array<{
+  date: string;
+  timeSlots: Array<{ startTime: string; endTime: string }>;
+}> {
   return overrideHours.map((override) => ({
     date: override.date,
     timeSlots: override.timeSlots.map((slot) => convertTimeSlotToLocal(slot)),
@@ -216,11 +232,17 @@ export function convertOverrideHoursToLocal(
  * @param data - Availability preferences with time slots in local format
  * @returns Availability preferences with time slots in UTC format
  */
-export function convertAvailabilityToUTC(data: AvailabilityPreferences): AvailabilityPreferences {
+export function convertAvailabilityToUTC(
+  data: AvailabilityPreferences,
+): AvailabilityPreferences {
   return {
     ...data,
-    weeklyHours: data.weeklyHours ? convertWeeklyHoursToUTC(data.weeklyHours) : undefined,
-    overrideHours: data.overrideHours ? convertOverrideHoursToUTC(data.overrideHours) : undefined,
+    weeklyHours: data.weeklyHours
+      ? convertWeeklyHoursToUTC(data.weeklyHours)
+      : undefined,
+    overrideHours: data.overrideHours
+      ? convertOverrideHoursToUTC(data.overrideHours)
+      : undefined,
   };
 }
 
@@ -229,10 +251,16 @@ export function convertAvailabilityToUTC(data: AvailabilityPreferences): Availab
  * @param data - Availability preferences with time slots in UTC format
  * @returns Availability preferences with time slots in local format
  */
-export function convertAvailabilityToLocal(data: AvailabilityPreferences): AvailabilityPreferences {
+export function convertAvailabilityToLocal(
+  data: AvailabilityPreferences,
+): AvailabilityPreferences {
   return {
     ...data,
-    weeklyHours: data.weeklyHours ? convertWeeklyHoursToLocal(data.weeklyHours) : undefined,
-    overrideHours: data.overrideHours ? convertOverrideHoursToLocal(data.overrideHours) : undefined,
+    weeklyHours: data.weeklyHours
+      ? convertWeeklyHoursToLocal(data.weeklyHours)
+      : undefined,
+    overrideHours: data.overrideHours
+      ? convertOverrideHoursToLocal(data.overrideHours)
+      : undefined,
   };
 }

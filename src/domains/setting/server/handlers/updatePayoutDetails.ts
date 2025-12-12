@@ -25,7 +25,7 @@ const updatePayoutDetails = async (payload: UpdatePayoutDetailsInput) => {
         chequeMailingAddress: payload.chequeMailingAddress,
         interacEmail: payload.interacEmail,
         activationStep: payload.activationStep,
-      }
+      },
     );
 
     return {
@@ -38,7 +38,7 @@ const updatePayoutDetails = async (payload: UpdatePayoutDetailsInput) => {
   } catch (error) {
     console.error("Error updating payout details:", error);
     throw HttpError.internalServerError(
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE
+      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
     );
   }
 };

@@ -12,10 +12,10 @@ export async function convertHtmlToPdf(htmlContent: string): Promise<Buffer> {
       puppeteer = await import("puppeteer");
     } catch {
       throw new Error(
-        "Puppeteer is not installed. Please install it by running: npm install puppeteer"
+        "Puppeteer is not installed. Please install it by running: npm install puppeteer",
       );
     }
-    
+
     const browser = await puppeteer.launch({
       headless: true,
       args: [
@@ -29,7 +29,7 @@ export async function convertHtmlToPdf(htmlContent: string): Promise<Buffer> {
 
     try {
       const page = await browser.newPage();
-      
+
       // Set content with proper encoding
       await page.setContent(htmlContent, {
         waitUntil: "networkidle0",
@@ -53,7 +53,8 @@ export async function convertHtmlToPdf(htmlContent: string): Promise<Buffer> {
     }
   } catch (error) {
     console.error("Error converting HTML to PDF:", error);
-    throw new Error(`Failed to convert HTML to PDF: ${error instanceof Error ? error.message : "Unknown error"}`);
+    throw new Error(
+      `Failed to convert HTML to PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 }
-

@@ -18,4 +18,3 @@ export type PhoneWithCountryCode = string;
  * Parsed phone number object
  */
 export type ParsedPhoneNumber = PhoneNumber | null;
-

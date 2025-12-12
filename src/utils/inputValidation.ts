@@ -46,9 +46,13 @@ export function sanitizeTextInput(text: string): string {
  */
 export function isValidCharacter(
   char: string,
-  validationType: InputValidationType
+  validationType: InputValidationType,
 ): boolean {
-  if (validationType === "none" || validationType === "email" || validationType === "phone") {
+  if (
+    validationType === "none" ||
+    validationType === "email" ||
+    validationType === "phone"
+  ) {
     return true;
   }
 
@@ -66,9 +70,13 @@ export function isValidCharacter(
  */
 export function filterInputValue(
   value: string,
-  validationType: InputValidationType
+  validationType: InputValidationType,
 ): string {
-  if (validationType === "none" || validationType === "email" || validationType === "phone") {
+  if (
+    validationType === "none" ||
+    validationType === "email" ||
+    validationType === "phone"
+  ) {
     return value;
   }
 
@@ -89,7 +97,7 @@ export function filterInputValue(
  */
 export function handleKeyPress(
   e: React.KeyboardEvent<HTMLInputElement>,
-  validationType: InputValidationType
+  validationType: InputValidationType,
 ): void {
   // Allow control keys (backspace, delete, arrows, tab, etc.)
   const controlKeys = [
@@ -219,7 +227,7 @@ export function validateAddressField(value: string): string | null {
  */
 export function handleInputChange(
   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  validationType: InputValidationType
+  validationType: InputValidationType,
 ): string {
   const filteredValue = filterInputValue(e.target.value, validationType);
 
@@ -240,9 +248,14 @@ export function handleInputChange(
  */
 export function validateInputValue(
   value: string,
-  validationType: InputValidationType
+  validationType: InputValidationType,
 ): string | null {
-  if (validationType === "none" || validationType === "email" || validationType === "phone" || validationType === "text") {
+  if (
+    validationType === "none" ||
+    validationType === "email" ||
+    validationType === "phone" ||
+    validationType === "text"
+  ) {
     return null;
   }
 
@@ -268,11 +281,10 @@ export function validateInputValue(
  */
 export function sanitizeOnBlur(
   value: string,
-  validationType: InputValidationType
+  validationType: InputValidationType,
 ): string {
   if (validationType === "text") {
     return sanitizeTextInput(value);
   }
   return value;
 }
-

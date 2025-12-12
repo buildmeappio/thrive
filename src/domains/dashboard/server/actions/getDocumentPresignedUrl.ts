@@ -1,9 +1,6 @@
 "use server";
 
-import {
-  S3Client,
-  GetObjectCommand,
-} from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { ENV } from "@/constants/variables";
 
@@ -12,7 +9,7 @@ const s3Client = new S3Client({
 });
 
 export const getDocumentPresignedUrlAction = async (
-  documentName: string
+  documentName: string,
 ): Promise<{ success: boolean; url?: string; error?: string }> => {
   try {
     if (!documentName) {
@@ -40,8 +37,9 @@ export const getDocumentPresignedUrlAction = async (
     console.error("Error in getDocumentPresignedUrl action:", error);
     return {
       success: false,
-      error: (error instanceof Error ? error.message : undefined) || "Failed to generate presigned URL",
+      error:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to generate presigned URL",
     };
   }
 };
-

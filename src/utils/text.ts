@@ -9,7 +9,7 @@ export function capitalizeWords(str: string | null | undefined): string {
 // Utility function to truncate text with ellipsis
 export function truncateText(
   text: string | null | undefined,
-  maxLength: number = 28
+  maxLength: number = 28,
 ): string {
   if (!text) return "N/A";
   if (text.length <= maxLength) return text;

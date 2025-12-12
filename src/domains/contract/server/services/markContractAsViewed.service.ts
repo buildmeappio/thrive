@@ -12,7 +12,7 @@ export async function markContractAsViewedService(contractId: string) {
 
 export async function createContractViewedEvent(
   contractId: string,
-  accountId: string
+  accountId: string,
 ) {
   return await prisma.contractEvent.create({
     data: {

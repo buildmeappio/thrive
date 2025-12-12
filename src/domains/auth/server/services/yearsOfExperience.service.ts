@@ -17,7 +17,8 @@ class YearsOfExperienceService {
       return years;
     } catch (error) {
       // Check if it's a database permission/connection error
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       const isDatabaseError =
         errorMessage.toLowerCase().includes("denied access") ||
         errorMessage.toLowerCase().includes("permission denied") ||
@@ -32,14 +33,14 @@ class YearsOfExperienceService {
         throw HttpError.fromError(
           error,
           "Database connection error. Please check your database configuration and permissions.",
-          503
+          503,
         );
       }
 
       throw HttpError.fromError(
         error,
         ErrorMessages.YEARS_OF_EXPERIENCE_NOT_FOUND,
-        500
+        500,
       );
     }
   }

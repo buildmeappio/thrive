@@ -38,14 +38,16 @@ const SuccessPageContent = () => {
           className="min-h-[350px] rounded-[20px] bg-white px-1 py-5 md:min-h-[400px] md:px-[50px] md:py-0"
           style={{
             boxShadow: "0px 0px 36.35px 0px #00000008",
-          }}>
+          }}
+        >
           <div className="-mb-6 pt-1 pb-1 md:mb-0">
             <div className="flex items-center justify-center p-4">
               <div className="flex w-full flex-col items-center justify-center p-6 text-center md:p-8">
                 <div
                   className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full ${
                     isError ? "bg-red-500" : "bg-[#00A8FF]"
-                  }`}>
+                  }`}
+                >
                   {isError ? (
                     <AlertCircle
                       className="h-8 w-8 text-white"
@@ -75,7 +77,8 @@ const SuccessPageContent = () => {
                     isError
                       ? "bg-red-500 hover:bg-red-600"
                       : "bg-[#00A8FF] hover:bg-[#0088cc]"
-                  }`}>
+                  }`}
+                >
                   {isError ? "Back to Login" : "Continue"}
                   <ArrowRight
                     color="white"

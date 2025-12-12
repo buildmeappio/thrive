@@ -53,12 +53,12 @@ const updateMedicalExaminer = async (payload: UpdateMedicalExaminerInput) => {
     // Update examiner profile
     const updatedProfile = await examinerService.updateExaminerProfile(
       payload.examinerProfileId,
-      payload
+      payload,
     );
 
     // Get examiner details for email
     const examinerDetails = await examinerService.getExaminerProfileWithDetails(
-      payload.examinerProfileId
+      payload.examinerProfileId,
     );
 
     // Send update confirmation email
@@ -69,7 +69,7 @@ const updateMedicalExaminer = async (payload: UpdateMedicalExaminerInput) => {
         firstName: examinerDetails.account.user.firstName,
         lastName: examinerDetails.account.user.lastName,
       },
-      examinerDetails.account.user.email
+      examinerDetails.account.user.email,
     );
 
     return {
@@ -84,7 +84,7 @@ const updateMedicalExaminer = async (payload: UpdateMedicalExaminerInput) => {
     throw HttpError.fromError(
       error,
       ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
-      500
+      500,
     );
   }
 };

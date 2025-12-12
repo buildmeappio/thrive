@@ -7,4 +7,3 @@ export {
   AvailabilityPreferencesForm,
   PayoutDetailsForm,
 } from "./components/OnboardingSteps";
-

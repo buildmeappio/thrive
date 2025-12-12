@@ -57,7 +57,8 @@ const ContractSigningPage = async ({ params, searchParams }: PageProps) => {
   }
 
   // Check if contract is already signed by examining the timestamp on application
-  const isAlreadySigned = contract.application.contractSignedByExaminerAt !== null;
+  const isAlreadySigned =
+    contract.application.contractSignedByExaminerAt !== null;
 
   // Use applicationId for contract signing (contracts are signed at application level)
   // signContractByExaminer will handle both applicationId and examinerProfileId

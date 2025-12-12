@@ -15,7 +15,7 @@ export const uploadedDocumentSchema = z.object({
     .string()
     .refine(
       (type) => ACCEPTED_FILE_TYPES.includes(type),
-      "Only PDF, DOC, and DOCX files are allowed"
+      "Only PDF, DOC, and DOCX files are allowed",
     ),
   url: z.string().optional(),
   file: z.instanceof(File).optional(),

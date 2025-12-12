@@ -15,11 +15,15 @@ interface ReportState extends ReportFormData {
   // Actions
   updateField: <K extends keyof ReportFormData>(
     field: K,
-    value: ReportFormData[K]
+    value: ReportFormData[K],
   ) => void;
   addDynamicSection: () => void;
   removeDynamicSection: (id: string) => void;
-  updateDynamicSection: (id: string, field: keyof DynamicSection, value: string) => void;
+  updateDynamicSection: (
+    id: string,
+    field: keyof DynamicSection,
+    value: string,
+  ) => void;
   addDocumentToSection: (sectionId: string, document: UploadedDocument) => void;
   removeDocumentFromSection: (sectionId: string, documentId: string) => void;
   setSignature: (signature: SignatureData) => void;
@@ -71,7 +75,7 @@ export const useReportStore = create<ReportState>()(
       removeDynamicSection: (id) => {
         set((state) => ({
           dynamicSections: state.dynamicSections.filter(
-            (section) => section.id !== id
+            (section) => section.id !== id,
           ),
         }));
       },
@@ -79,7 +83,7 @@ export const useReportStore = create<ReportState>()(
       updateDynamicSection: (id, field, value) => {
         set((state) => ({
           dynamicSections: state.dynamicSections.map((section) =>
-            section.id === id ? { ...section, [field]: value } : section
+            section.id === id ? { ...section, [field]: value } : section,
           ),
         }));
       },
@@ -89,7 +93,7 @@ export const useReportStore = create<ReportState>()(
           dynamicSections: state.dynamicSections.map((section) =>
             section.id === sectionId
               ? { ...section, documents: [...section.documents, document] }
-              : section
+              : section,
           ),
         }));
       },
@@ -101,10 +105,10 @@ export const useReportStore = create<ReportState>()(
               ? {
                   ...section,
                   documents: section.documents.filter(
-                    (doc) => doc.id !== documentId
+                    (doc) => doc.id !== documentId,
                   ),
                 }
-              : section
+              : section,
           ),
         }));
       },
@@ -126,7 +130,7 @@ export const useReportStore = create<ReportState>()(
       removeDocument: (id) => {
         set((state) => ({
           referralDocuments: state.referralDocuments.filter(
-            (doc) => doc.id !== id
+            (doc) => doc.id !== id,
           ),
         }));
       },
@@ -161,6 +165,6 @@ export const useReportStore = create<ReportState>()(
         signature: state.signature,
         confirmationChecked: state.confirmationChecked,
       }),
-    }
-  )
+    },
+  ),
 );

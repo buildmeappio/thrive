@@ -26,11 +26,13 @@ const PayoutSection: React.FC<PayoutSectionProps> = ({
         onClick={onToggle}
         className={`w-full flex items-center justify-between p-3 text-left transition-colors ${
           isActive ? "bg-[#E8F1FF]" : "bg-[#F9F9F9] hover:bg-gray-100"
-        }`}>
+        }`}
+      >
         <span
           className={`text-base font-medium ${
             isActive ? "text-[#00A8FF]" : "text-gray-700"
-          }`}>
+          }`}
+        >
           {title}
         </span>
         <ChevronDown

@@ -5,7 +5,7 @@ import updatePayoutDetails, {
 } from "../handlers/updatePayoutDetails";
 
 export const updatePayoutDetailsAction = async (
-  payload: UpdatePayoutDetailsInput
+  payload: UpdatePayoutDetailsInput,
 ) => {
   try {
     const result = await updatePayoutDetails(payload);
@@ -13,8 +13,9 @@ export const updatePayoutDetailsAction = async (
   } catch (error: unknown) {
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to update payout details",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to update payout details",
     };
   }
 };
-

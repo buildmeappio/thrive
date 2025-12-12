@@ -20,7 +20,20 @@ interface PhoneInputProps {
 }
 
 const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ name, value, onChange, onBlur, disabled, className, icon, placeholder, error }, ref) => {
+  (
+    {
+      name,
+      value,
+      onChange,
+      onBlur,
+      disabled,
+      className,
+      icon,
+      placeholder,
+      error,
+    },
+    ref,
+  ) => {
     // Remove +1 prefix from value if present (for display)
     const displayValue = value ? value.replace(/^\+1\s*/, "") : "";
 
@@ -72,17 +85,17 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
       e.preventDefault();
       const pastedText = e.clipboardData.getData("text");
-      
+
       // Extract digits from pasted text
       const digitsOnly = pastedText.replace(/\D/g, "");
-      
+
       if (digitsOnly.length > 10) {
         // Take only first 10 digits
         const tenDigits = digitsOnly.slice(0, 10);
         const formatter = new AsYouType("CA");
         formatter.input(`+1${tenDigits}`);
         const formatted = formatter.getNumber()?.formatNational() || "";
-        
+
         // Create synthetic event to trigger onChange
         const input = e.currentTarget;
         const syntheticEvent = {
@@ -93,14 +106,14 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
             value: formatted,
           },
         } as React.ChangeEvent<HTMLInputElement>;
-        
+
         onChange(syntheticEvent);
       } else if (digitsOnly.length > 0) {
         // Format the pasted digits
         const formatter = new AsYouType("CA");
         formatter.input(`+1${digitsOnly}`);
         const formatted = formatter.getNumber()?.formatNational() || "";
-        
+
         // Create synthetic event to trigger onChange
         const input = e.currentTarget;
         const syntheticEvent = {
@@ -111,7 +124,7 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
             value: formatted,
           },
         } as React.ChangeEvent<HTMLInputElement>;
-        
+
         onChange(syntheticEvent);
       }
     };
@@ -133,17 +146,21 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         error={error}
       />
     );
-  }
+  },
 );
 
 PhoneInput.displayName = "PhoneInput";
 
 export default PhoneInput;
 
-import { PhoneDigits, PhoneWithCountryCode, ParsedPhoneNumber } from "@/types/phone";
+import {
+  PhoneDigits,
+  PhoneWithCountryCode,
+  ParsedPhoneNumber,
+} from "@/types/phone";
 
 export const validateCanadianPhoneNumber = (
-  value: string | undefined
+  value: string | undefined,
 ): boolean => {
   if (!value) return false;
 
@@ -164,7 +181,10 @@ export const getE164PhoneNumber = (value: string): string | null => {
   try {
     const digits: PhoneDigits = value.replace(/\D/g, "");
     if (digits.length === 10) {
-      const phoneNumber: ParsedPhoneNumber = parsePhoneNumber(`+1${digits}`, "CA");
+      const phoneNumber: ParsedPhoneNumber = parsePhoneNumber(
+        `+1${digits}`,
+        "CA",
+      );
       return phoneNumber?.format("E.164") || null;
     }
     return null;

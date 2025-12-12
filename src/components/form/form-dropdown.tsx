@@ -37,13 +37,13 @@ const FormDropdown = <TFieldValues extends FieldValues>({
   const error = errors[name];
   const errorMessage = error?.message as string | undefined;
   const hasError = !!error;
-  
+
   // Only show error message for validation errors, not simple "required" errors
-  const isRequiredError = errorMessage && (
-    errorMessage.toLowerCase() === "required" ||
-    errorMessage.toLowerCase().endsWith(" is required") ||
-    errorMessage.toLowerCase() === "is required"
-  );
+  const isRequiredError =
+    errorMessage &&
+    (errorMessage.toLowerCase() === "required" ||
+      errorMessage.toLowerCase().endsWith(" is required") ||
+      errorMessage.toLowerCase() === "is required");
   const showErrorMessage = errorMessage && !isRequiredError;
 
   return (
@@ -72,7 +72,9 @@ const FormDropdown = <TFieldValues extends FieldValues>({
           />
         )}
       />
-      {showErrorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
+      {showErrorMessage && (
+        <p className="text-xs text-red-500">{errorMessage}</p>
+      )}
     </div>
   );
 };

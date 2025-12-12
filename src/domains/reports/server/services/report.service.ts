@@ -13,7 +13,7 @@ class ReportService {
    * Get booking data for report preparation
    */
   async getBookingDataForReport(
-    bookingId: string
+    bookingId: string,
   ): Promise<CaseOverviewData | null> {
     try {
       const booking = await prisma.claimantBooking.findUnique({
@@ -69,7 +69,8 @@ class ReportService {
         : undefined;
 
       // Get professional title from the examination type (medical specialty for this specific case)
-      const professionalTitle = booking.examination.examinationType?.name || undefined;
+      const professionalTitle =
+        booking.examination.examinationType?.name || undefined;
 
       const caseData: CaseOverviewData = {
         requestDateTime: booking.createdAt,
@@ -123,7 +124,7 @@ class ReportService {
           title: section.title,
           content: section.content,
           documents: [], // Can be extended if needed
-        })
+        }),
       );
 
       const referralDocuments: UploadedDocument[] =
@@ -166,7 +167,7 @@ class ReportService {
    */
   async saveReportDraft(
     bookingId: string,
-    reportData: ReportFormData
+    reportData: ReportFormData,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       // Validate booking exists
@@ -253,7 +254,9 @@ class ReportService {
       console.error("Error saving report draft:", error);
       return {
         success: false,
-        error: (error instanceof Error ? error.message : undefined) || "Failed to save report draft",
+        error:
+          (error instanceof Error ? error.message : undefined) ||
+          "Failed to save report draft",
       };
     }
   }
@@ -263,7 +266,7 @@ class ReportService {
    */
   async submitReport(
     bookingId: string,
-    reportData: ReportFormData
+    reportData: ReportFormData,
   ): Promise<{
     success: boolean;
     error?: string;
@@ -427,7 +430,9 @@ class ReportService {
       console.error("Error submitting report:", error);
       return {
         success: false,
-        error: (error instanceof Error ? error.message : undefined) || "Failed to submit report",
+        error:
+          (error instanceof Error ? error.message : undefined) ||
+          "Failed to submit report",
       };
     }
   }

@@ -5,7 +5,7 @@ import { format } from "date-fns";
  * Example: "Apr 18, 2025"
  */
 export function formatDateShort(
-  date: Date | string | null | undefined
+  date: Date | string | null | undefined,
 ): string {
   if (!date) return "N/A";
   try {
@@ -20,9 +20,7 @@ export function formatDateShort(
  * Formats a date and time together: "MMM dd, yyyy h:mma"
  * Example: "Apr 18, 2025 11:30pm"
  */
-export function formatDateTime(
-  date: Date | string | null | undefined
-): string {
+export function formatDateTime(date: Date | string | null | undefined): string {
   if (!date) return "N/A";
   try {
     const dateObj = typeof date === "string" ? new Date(date) : date;
@@ -37,7 +35,7 @@ export function formatDateTime(
  * Example: "Nov 18, 2025"
  */
 export function formatAppointmentDate(
-  date: Date | string | null | undefined
+  date: Date | string | null | undefined,
 ): string {
   if (!date) return "N/A";
   try {
@@ -53,7 +51,7 @@ export function formatAppointmentDate(
  * Example: "8:00 AM"
  */
 export function formatAppointmentTime(
-  date: Date | string | null | undefined
+  date: Date | string | null | undefined,
 ): string {
   if (!date) return "N/A";
   try {

@@ -17,7 +17,9 @@ export const updateSpecialtyPreferencesAction = async (data: {
     return {
       success: false as const,
       data: null,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to update specialty preferences",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to update specialty preferences",
     };
   }
 };

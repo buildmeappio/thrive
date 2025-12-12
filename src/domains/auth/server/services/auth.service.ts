@@ -11,7 +11,7 @@ class AuthService {
       throw HttpError.fromError(
         error,
         ErrorMessages.FAILED_PASSWORD_VERIFICATION,
-        500
+        500,
       );
     }
   }

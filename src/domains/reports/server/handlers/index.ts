@@ -7,4 +7,3 @@ export {
   default as submitReportHandler,
   type SubmitReportInput,
 } from "./submitReport";
-

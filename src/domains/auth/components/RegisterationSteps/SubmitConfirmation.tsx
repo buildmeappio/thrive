@@ -50,7 +50,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
   // Watch checkboxes to enable/disable continue button
   const agreeTermsConditions = form.watch("agreeTermsConditions");
   const consentBackgroundVerification = form.watch(
-    "consentBackgroundVerification"
+    "consentBackgroundVerification",
   );
 
   // Both checkboxes must be checked
@@ -118,8 +118,8 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
       const medicalLicenseFiles = Array.isArray(submissionData.medicalLicense)
         ? submissionData.medicalLicense
         : submissionData.medicalLicense
-        ? [submissionData.medicalLicense]
-        : [];
+          ? [submissionData.medicalLicense]
+          : [];
 
       if (medicalLicenseFiles.length === 0) {
         setErr("Please upload at least one medical license document");
@@ -140,7 +140,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
       // Separate medical license results from redacted report result
       const medicalLicenseResults = allFileResults.slice(
         0,
-        medicalLicenseFiles.length
+        medicalLicenseFiles.length,
       );
       const redactedReportResult = submissionData.redactedIMEReport
         ? allFileResults[medicalLicenseFiles.length]
@@ -173,7 +173,7 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
         // Don't fail submission for optional document
         console.warn(
           "Failed to upload redacted IME report (optional):",
-          redactedReportResult.error
+          redactedReportResult.error,
         );
       }
 
@@ -290,7 +290,8 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
   return (
     <div
       className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+    >
       <ProgressIndicator
         currentStep={currentStep}
         totalSteps={totalSteps}
@@ -319,7 +320,8 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
                       className="h-5 w-5 text-red-400"
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
-                      fill="currentColor">
+                      fill="currentColor"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -396,7 +398,8 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
                           e.preventDefault();
                           setIsTermsModalOpen(true);
                         }}
-                        className="text-[#00A8FF] cursor-pointer underline decoration-[#00A8FF] hover:decoration-[#0088CC]">
+                        className="text-[#00A8FF] cursor-pointer underline decoration-[#00A8FF] hover:decoration-[#0088CC]"
+                      >
                         Terms & Conditions
                       </button>{" "}
                       and{" "}
@@ -406,7 +409,8 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
                           e.preventDefault();
                           setIsPrivacyModalOpen(true);
                         }}
-                        className="text-[#00A8FF] cursor-pointer underline decoration-[#00A8FF] hover:decoration-[#0088CC]">
+                        className="text-[#00A8FF] cursor-pointer underline decoration-[#00A8FF] hover:decoration-[#0088CC]"
+                      >
                         Privacy Policy
                       </button>
                       <span className="text-red-500">*</span>

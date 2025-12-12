@@ -34,7 +34,8 @@ const Header: React.FC<HeaderProps> = ({
           <Button
             variant="ghost"
             onClick={toggleSidebar}
-            className="p-2 hover:bg-gray-100">
+            className="p-2 hover:bg-gray-100"
+          >
             <Menu className="h-8 w-8" />
           </Button>
         </div>
@@ -58,7 +59,8 @@ const Header: React.FC<HeaderProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              className="flex items-center gap-2 cursor-pointer bg-gray-100 rounded-full hover:bg-gray-100">
+              className="flex items-center gap-2 cursor-pointer bg-gray-100 rounded-full hover:bg-gray-100"
+            >
               <HelpCircle className="h-4 w-4 text-[#000093]" />
               <span className="hidden sm:inline">Help</span>
             </Button>

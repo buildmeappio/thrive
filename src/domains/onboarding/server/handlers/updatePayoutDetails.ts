@@ -31,7 +31,7 @@ const updatePayoutDetails = async (payload: UpdatePayoutDetailsInput) => {
         interacEmail: payload.interacEmail,
         autodepositEnabled: payload.autodepositEnabled,
         activationStep: payload.activationStep,
-      }
+      },
     );
 
     return {
@@ -44,10 +44,9 @@ const updatePayoutDetails = async (payload: UpdatePayoutDetailsInput) => {
   } catch (error) {
     console.error("Error updating payout details:", error);
     throw HttpError.internalServerError(
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE
+      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
     );
   }
 };
 
 export default updatePayoutDetails;
-

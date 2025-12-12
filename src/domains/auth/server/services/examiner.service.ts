@@ -29,7 +29,7 @@ class ExaminerService {
       throw HttpError.fromError(
         error,
         ErrorMessages.FAILED_FETCH_EXAMINER_PROFILE,
-        500
+        500,
       );
     }
   }
@@ -37,7 +37,7 @@ class ExaminerService {
   async updateExaminerStatus(
     examinerProfileId: string,
     status: ExaminerStatus,
-    approvedBy?: string
+    approvedBy?: string,
   ) {
     try {
       const updateData: {
@@ -70,7 +70,7 @@ class ExaminerService {
       throw HttpError.fromError(
         error,
         ErrorMessages.FAILED_UPDATE_EXAMINER_STATUS,
-        500
+        500,
       );
     }
   }
@@ -82,7 +82,7 @@ class ExaminerService {
       }
       if (status === ExaminerStatus.REJECTED) {
         throw HttpError.badRequest(
-          ErrorMessages.CANNOT_APPROVE_REJECTED_EXAMINER
+          ErrorMessages.CANNOT_APPROVE_REJECTED_EXAMINER,
         );
       }
     } else if (action === "reject") {
@@ -124,7 +124,10 @@ class ExaminerService {
 
       // Fetch medical license documents by IDs (support multiple documents)
       let medicalLicenseDocuments: MedicalLicenseDocument[] = [];
-      if (examinerProfile.medicalLicenseDocumentIds && examinerProfile.medicalLicenseDocumentIds.length > 0) {
+      if (
+        examinerProfile.medicalLicenseDocumentIds &&
+        examinerProfile.medicalLicenseDocumentIds.length > 0
+      ) {
         medicalLicenseDocuments = await prisma.documents.findMany({
           where: {
             id: {
@@ -143,7 +146,7 @@ class ExaminerService {
       throw HttpError.fromError(
         error,
         ErrorMessages.FAILED_FETCH_EXAMINER_PROFILE,
-        500
+        500,
       );
     }
   }
@@ -181,7 +184,6 @@ class ExaminerService {
       // Step 4: Experience Details
       experienceDetails?: string;
 
-
       // Step 6: Legal
       signedNDADocumentId?: string;
       insuranceProofDocumentId?: string;
@@ -193,7 +195,7 @@ class ExaminerService {
       // recordReviewFee?: string;
       // hourlyRate?: string;
       // cancellationFee?: string;
-    }
+    },
   ) {
     try {
       const examinerProfile = await prisma.examinerProfile.findUnique({
@@ -382,7 +384,7 @@ class ExaminerService {
       throw HttpError.fromError(
         error,
         ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
-        500
+        500,
       );
     }
   }

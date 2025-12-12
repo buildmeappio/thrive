@@ -57,7 +57,8 @@ export default function DynamicReportSection({
         />
         <button
           onClick={() => removeDynamicSection(id)}
-          className="p-2 hover:bg-red-50 rounded-full transition-colors">
+          className="p-2 hover:bg-red-50 rounded-full transition-colors"
+        >
           <Trash2 className="w-5 h-5 text-red-500" />
         </button>
       </div>
@@ -72,7 +73,8 @@ export default function DynamicReportSection({
       <div className="mt-4">
         <label
           htmlFor={`file-upload-${id}`}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 rounded-full cursor-pointer hover:bg-gray-50 transition-colors">
+          className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-gray-300 rounded-full cursor-pointer hover:bg-gray-50 transition-colors"
+        >
           <Upload className="w-4 h-4 text-gray-600" />
           <span className="text-sm font-medium text-gray-700 font-poppins">
             Upload
@@ -93,7 +95,8 @@ export default function DynamicReportSection({
           {documents.map((doc) => (
             <div
               key={doc.id}
-              className="flex items-center justify-between p-3 bg-[#F8F8F8] rounded-lg">
+              className="flex items-center justify-between p-3 bg-[#F8F8F8] rounded-lg"
+            >
               <div className="flex items-center gap-3 flex-1">
                 <div className="w-8 h-8 bg-[#E6F6FF] rounded flex items-center justify-center">
                   <span className="text-xs font-bold text-[#00A8FF]">
@@ -111,7 +114,8 @@ export default function DynamicReportSection({
               </div>
               <button
                 onClick={() => removeDocumentFromSection(id, doc.id)}
-                className="p-1 hover:bg-red-50 rounded-full transition-colors">
+                className="p-1 hover:bg-red-50 rounded-full transition-colors"
+              >
                 <X className="w-4 h-4 text-red-500" />
               </button>
             </div>

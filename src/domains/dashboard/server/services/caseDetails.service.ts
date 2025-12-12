@@ -11,7 +11,7 @@ class CaseDetailsService {
    */
   async getCaseDetails(
     bookingId: string,
-    examinerProfileId: string
+    examinerProfileId: string,
   ): Promise<CaseDetailsData> {
     const booking = await prisma.claimantBooking.findFirst({
       where: {
@@ -194,7 +194,7 @@ class CaseDetailsService {
       | "REQUEST_MORE_INFO"
       | "DISCARDED"
       | "REPORT_SUBMITTED",
-    message?: string
+    message?: string,
   ): Promise<void> {
     const booking = await prisma.claimantBooking.findFirst({
       where: {
@@ -290,7 +290,7 @@ class CaseDetailsService {
                 caseId: examination.caseId,
                 examinationId: examination.id,
               },
-              "30d"
+              "30d",
             );
 
             emailData.appointmentLink = `${ENV.NEXT_PUBLIC_APP_URL}${ENV.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL}?token=${jwtToken}`;
@@ -303,7 +303,7 @@ class CaseDetailsService {
           subject,
           templateName,
           emailData,
-          claimant.emailAddress
+          claimant.emailAddress,
         );
       }
     }

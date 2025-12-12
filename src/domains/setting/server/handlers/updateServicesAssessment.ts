@@ -14,7 +14,7 @@ export type UpdateServicesAssessmentInput = {
 };
 
 const updateServicesAssessment = async (
-  payload: UpdateServicesAssessmentInput
+  payload: UpdateServicesAssessmentInput,
 ) => {
   try {
     const updatedProfile = await dashboardService.updateServicesAssessment(
@@ -27,7 +27,7 @@ const updateServicesAssessment = async (
         travelRadius: payload.travelRadius,
         assessmentTypeOther: payload.assessmentTypeOther,
         activationStep: payload.activationStep,
-      }
+      },
     );
 
     return {
@@ -40,10 +40,9 @@ const updateServicesAssessment = async (
   } catch (error) {
     console.error("Error updating services assessment:", error);
     throw HttpError.internalServerError(
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE
+      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
     );
   }
 };
 
 export default updateServicesAssessment;
-

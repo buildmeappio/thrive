@@ -21,7 +21,7 @@ export async function uploadHtmlToS3(contractId: string, htmlContent: string) {
       Key: key,
       Body: buffer,
       ContentType: "text/html; charset=utf-8",
-    })
+    }),
   );
 
   const sha256 = crypto.createHash("sha256").update(buffer).digest("hex");
@@ -38,15 +38,22 @@ export async function uploadPdfToS3(contractId: string, pdfBuffer: Buffer) {
   if (pdfBuffer.length < 4) {
     throw new Error("PDF buffer is too small");
   }
-  
-  const header = pdfBuffer.slice(0, 4).toString('ascii');
-  if (header !== '%PDF') {
+
+  const header = pdfBuffer.slice(0, 4).toString("ascii");
+  if (header !== "%PDF") {
     // Check if it's a PNG (common mistake - signature image instead of PDF)
-    const pngHeader = pdfBuffer.slice(0, 8).toString('ascii');
-    if (pngHeader === '\x89PNG\r\n\x1a\n' || pdfBuffer.slice(0, 4).toString('hex') === '89504e47') {
-      throw new Error("Invalid PDF: Received PNG image instead of PDF. The client should generate a PDF from the HTML contract, not send the signature image.");
+    const pngHeader = pdfBuffer.slice(0, 8).toString("ascii");
+    if (
+      pngHeader === "\x89PNG\r\n\x1a\n" ||
+      pdfBuffer.slice(0, 4).toString("hex") === "89504e47"
+    ) {
+      throw new Error(
+        "Invalid PDF: Received PNG image instead of PDF. The client should generate a PDF from the HTML contract, not send the signature image.",
+      );
     }
-    throw new Error(`Invalid PDF format. Header: "${header}" (expected: "%PDF"). File might be corrupted or wrong format.`);
+    throw new Error(
+      `Invalid PDF format. Header: "${header}" (expected: "%PDF"). File might be corrupted or wrong format.`,
+    );
   }
 
   const key = `signed-contracts/${contractId}/${crypto.randomUUID()}.pdf`;
@@ -57,12 +64,14 @@ export async function uploadPdfToS3(contractId: string, pdfBuffer: Buffer) {
       Key: key,
       Body: pdfBuffer,
       ContentType: "application/pdf",
-    })
+    }),
   );
 
   const sha256 = crypto.createHash("sha256").update(pdfBuffer).digest("hex");
 
-  console.log(`✅ PDF uploaded to S3: ${key}, size: ${pdfBuffer.length} bytes, header: ${header}`);
+  console.log(
+    `✅ PDF uploaded to S3: ${key}, size: ${pdfBuffer.length} bytes, header: ${header}`,
+  );
 
   return {
     key,
@@ -84,7 +93,7 @@ interface UpdateContractStatusOptions {
 export async function updateContractStatus(
   contractId: string,
   status: "SIGNED",
-  options?: UpdateContractStatusOptions
+  options?: UpdateContractStatusOptions,
 ) {
   const data: {
     status: ContractStatus;

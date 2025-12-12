@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface ProgressIndicatorProps {
   currentStep: number;
@@ -10,8 +10,8 @@ interface ProgressIndicatorProps {
 const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   currentStep,
   totalSteps,
-  gradientFrom = '#89D7FF',
-  gradientTo = '#00A8FF',
+  gradientFrom = "#89D7FF",
+  gradientTo = "#00A8FF",
 }) => {
   const progressPercent = (currentStep / totalSteps) * 100;
 

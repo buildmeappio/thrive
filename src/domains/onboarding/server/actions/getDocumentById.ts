@@ -3,7 +3,7 @@
 import prisma from "@/lib/db";
 
 export const getDocumentByIdAction = async (
-  documentId: string
+  documentId: string,
 ): Promise<{ success: boolean; data?: { name: string }; error?: string }> => {
   try {
     if (!documentId) {
@@ -33,8 +33,9 @@ export const getDocumentByIdAction = async (
     console.error("Error fetching document:", error);
     return {
       success: false,
-      error: (error instanceof Error ? error.message : undefined) || "Failed to fetch document",
+      error:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to fetch document",
     };
   }
 };
-

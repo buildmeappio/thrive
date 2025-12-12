@@ -26,7 +26,8 @@ const ContinueButton: React.FC<ContinueButtonProps> = ({
       style={{
         backgroundImage: `linear-gradient(to left, ${gradientFrom}, ${gradientTo})`,
       }}
-      disabled={disabled}>
+      disabled={disabled}
+    >
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : (

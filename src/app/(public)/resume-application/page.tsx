@@ -12,7 +12,9 @@ const ResumeApplicationContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<{ title: string; message: string } | null>(null);
+  const [error, setError] = useState<{ title: string; message: string } | null>(
+    null,
+  );
   const { loadExaminerData, setEditMode, reset } = useRegistrationStore();
 
   useEffect(() => {
@@ -23,7 +25,8 @@ const ResumeApplicationContent = () => {
       reset();
       setError({
         title: "Invalid Resume Link",
-        message: "The resume link is missing a token. Please check your email and try again.",
+        message:
+          "The resume link is missing a token. Please check your email and try again.",
       });
       setIsLoading(false);
       return;
@@ -56,7 +59,8 @@ const ResumeApplicationContent = () => {
           reset();
           setError({
             title: "Failed to Load Application",
-            message: "Failed to load application data. Please try again or start a new application.",
+            message:
+              "Failed to load application data. Please try again or start a new application.",
           });
           setIsLoading(false);
           return;
@@ -68,7 +72,8 @@ const ResumeApplicationContent = () => {
           reset();
           setError({
             title: "Application Not Found",
-            message: "Application data is missing. Please start a new application.",
+            message:
+              "Application data is missing. Please start a new application.",
           });
           setIsLoading(false);
           return;
@@ -83,7 +88,8 @@ const ResumeApplicationContent = () => {
           reset();
           setError({
             title: "Application Cannot Be Resumed",
-            message: "This application has already been processed and cannot be edited.",
+            message:
+              "This application has already been processed and cannot be edited.",
           });
           setIsLoading(false);
           return;
@@ -146,7 +152,10 @@ const ResumeApplicationContent = () => {
         router.replace("/register");
       } catch (error: unknown) {
         console.error("Error resuming application:", error);
-        const errorMessage = error instanceof Error ? error.message : "The resume link may be invalid or expired. Please start a new application.";
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "The resume link may be invalid or expired. Please start a new application.";
         // Clear localStorage on any error
         reset();
         setError({
@@ -176,7 +185,8 @@ const ResumeApplicationContent = () => {
           </p>
           <Button
             onClick={() => router.push("/register")}
-            className="w-full rounded-full bg-gradient-to-r from-[#89D7FF] to-[#00A8FF] px-8 py-3 text-white hover:opacity-90">
+            className="w-full rounded-full bg-gradient-to-r from-[#89D7FF] to-[#00A8FF] px-8 py-3 text-white hover:opacity-90"
+          >
             Start New Application
           </Button>
         </div>
@@ -213,7 +223,8 @@ const ResumeApplicationPage = () => {
             </p>
           </div>
         </div>
-      }>
+      }
+    >
       <ResumeApplicationContent />
     </Suspense>
   );

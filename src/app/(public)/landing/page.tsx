@@ -17,7 +17,8 @@ const Page: React.FC = () => {
 
             <h2
               className="md:mt-1 mt-4 font-bold leading-tight"
-              style={{ color: "#00A8FF", fontSize: "clamp(36px, 6vw, 60px)" }}>
+              style={{ color: "#00A8FF", fontSize: "clamp(36px, 6vw, 60px)" }}
+            >
               Medical Examiner
             </h2>
 
@@ -32,7 +33,8 @@ const Page: React.FC = () => {
                 style={{
                   background:
                     "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
-                }}>
+                }}
+              >
                 Let&apos;s Get Started
                 <ArrowRight size={18} strokeWidth={3} className="sm:size-5" />
               </button>

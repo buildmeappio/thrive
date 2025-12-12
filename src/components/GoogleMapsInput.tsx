@@ -2,7 +2,11 @@
 import React, { useEffect, useRef } from "react";
 import { MapPin } from "lucide-react";
 import { useGoogleMaps } from "@/lib/useGoogleMaps";
-import { GoogleMapsPlaceData, GoogleMapsAutocompleteOptions, GoogleMapsAddressComponent } from "@/types/google-maps";
+import {
+  GoogleMapsPlaceData,
+  GoogleMapsAutocompleteOptions,
+  GoogleMapsAddressComponent,
+} from "@/types/google-maps";
 
 interface GoogleMapsInputProps {
   value?: string;
@@ -50,7 +54,9 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
 
     // Clean up existing instance if province changed
     if (autoCompleteRef.current) {
-      window.google?.maps?.event?.clearInstanceListeners(autoCompleteRef.current);
+      window.google?.maps?.event?.clearInstanceListeners(
+        autoCompleteRef.current,
+      );
       autoCompleteRef.current = null;
     }
 
@@ -64,13 +70,13 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
 
       autoCompleteRef.current = new window.google.maps.places.Autocomplete(
         inputRef.current,
-        autocompleteOptions
+        autocompleteOptions,
       );
 
       // Add place changed listener
       const placeChangedListener = autoCompleteRef.current?.addListener(
         "place_changed",
-        handlePlaceSelect
+        handlePlaceSelect,
       );
 
       // Cleanup listeners on unmount
@@ -80,7 +86,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
         }
         if (autoCompleteRef.current) {
           window.google?.maps?.event?.clearInstanceListeners(
-            autoCompleteRef.current
+            autoCompleteRef.current,
           );
         }
       };
@@ -110,7 +116,9 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
         formattedAddress: formattedAddress,
         latitude: place.geometry.location?.lat() || 0,
         longitude: place.geometry.location?.lng() || 0,
-        components: place.address_components as GoogleMapsAddressComponent[] | undefined,
+        components: place.address_components as
+          | GoogleMapsAddressComponent[]
+          | undefined,
         raw: place,
       };
 

@@ -92,4 +92,3 @@ export interface NotificationsFormProps {
   onComplete: () => void;
   onCancel?: () => void;
 }
-

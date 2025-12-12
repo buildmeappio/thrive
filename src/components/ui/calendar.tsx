@@ -27,7 +27,6 @@ const months = [
   "December",
 ];
 
-
 function Calendar({
   className,
   classNames,
@@ -45,10 +44,10 @@ function Calendar({
   // Initialize with current date or provided defaultMonth
   const initialDate = props.defaultMonth || new Date();
   const [selectedMonth, setSelectedMonth] = React.useState<number>(
-    initialDate.getMonth()
+    initialDate.getMonth(),
   );
   const [selectedYear, setSelectedYear] = React.useState<number>(
-    initialDate.getFullYear()
+    initialDate.getFullYear(),
   );
 
   // Generate year options (current year ± 10 years)
@@ -62,7 +61,7 @@ function Calendar({
         "bg-background group/calendar min-w-[250px] p-3 [--cell-size:5rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
-        className
+        className,
       )}
       month={new Date(selectedYear, selectedMonth)}
       onMonthChange={(month) => {
@@ -79,88 +78,88 @@ function Calendar({
         root: cn("w-[300px]", defaultClassNames.root),
         months: cn(
           "relative flex flex-col gap-4 md:flex-row",
-          defaultClassNames.months
+          defaultClassNames.months,
         ),
         month: cn("flex w-full flex-col gap-4", defaultClassNames.month),
         nav: cn(
           "absolute inset-x-0 top-[10px] align-center flex w-full items-center justify-between gap-1",
-          defaultClassNames.nav
+          defaultClassNames.nav,
         ),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
           "h-[--cell-size] w-[--cell-size] select-none p-0 aria-disabled:opacity-50",
-          defaultClassNames.button_previous
+          defaultClassNames.button_previous,
         ),
         button_next: cn(
           buttonVariants({ variant: buttonVariant }),
           "h-[--cell-size] w-[--cell-size] select-none p-0 aria-disabled:opacity-50",
-          defaultClassNames.button_next
+          defaultClassNames.button_next,
         ),
         month_caption: cn(
           "flex h-[--cell-size] w-full items-center justify-center px-[--cell-size]",
-          defaultClassNames.month_caption
+          defaultClassNames.month_caption,
         ),
         dropdowns: cn(
           "flex h-[--cell-size] w-full items-center justify-center gap-1.5 text-sm font-medium",
-          defaultClassNames.dropdowns
+          defaultClassNames.dropdowns,
         ),
         dropdown_root: cn(
           "has-focus:border-ring align-center border-input shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] relative rounded-md border",
-          defaultClassNames.dropdown_root
+          defaultClassNames.dropdown_root,
         ),
         dropdown: cn(
           "bg-popover absolute inset-0 opacity-0",
-          defaultClassNames.dropdown
+          defaultClassNames.dropdown,
         ),
         caption_label: cn(
           "select-none font-medium",
           captionLayout === "label"
             ? "text-sm"
             : "[&>svg]:text-muted-foreground flex h-8 items-center gap-1 rounded-md pl-2 pr-1 text-sm [&>svg]:size-3.5",
-          defaultClassNames.caption_label
+          defaultClassNames.caption_label,
         ),
         table: "w-full border-collapse",
         weekdays: cn("flex", defaultClassNames.weekdays),
         weekday: cn(
           "text-muted-foreground flex-1 select-none rounded-md text-[0.8rem] font-normal",
-          defaultClassNames.weekday
+          defaultClassNames.weekday,
         ),
         week: cn("mt-2 flex w-full", defaultClassNames.week),
         week_number_header: cn(
           "w-[--cell-size] select-none",
-          defaultClassNames.week_number_header
+          defaultClassNames.week_number_header,
         ),
         week_number: cn(
           "text-muted-foreground select-none text-[0.8rem]",
-          defaultClassNames.week_number
+          defaultClassNames.week_number,
         ),
         day: cn(
           "group/day relative aspect-square h-full w-full select-none p-0 text-center [&:first-child[data-selected=true]_button]:rounded-l-md [&:last-child[data-selected=true]_button]:rounded-r-md",
-          defaultClassNames.day
+          defaultClassNames.day,
         ),
         // Use the custom blue for range_start, range_end, and selected day backgrounds
         range_start: cn(
           "rounded-l-md",
           defaultClassNames.range_start,
-          "!bg-[#00A8FF] !text-white"
+          "!bg-[#00A8FF] !text-white",
         ),
         range_middle: cn("rounded-none", defaultClassNames.range_middle),
         range_end: cn(
           "rounded-r-md",
           defaultClassNames.range_end,
-          "!bg-[#00A8FF] !text-white"
+          "!bg-[#00A8FF] !text-white",
         ),
         today: cn(
           "rounded-md data-[selected=true]:rounded-none",
-          defaultClassNames.today
+          defaultClassNames.today,
         ),
         outside: cn(
           "text-muted-foreground aria-selected:text-muted-foreground",
-          defaultClassNames.outside
+          defaultClassNames.outside,
         ),
         disabled: cn(
           "text-muted-foreground opacity-50",
-          defaultClassNames.disabled
+          defaultClassNames.disabled,
         ),
         hidden: cn("invisible", defaultClassNames.hidden),
         ...classNames,
@@ -221,7 +220,7 @@ function Calendar({
                 <SelectTrigger className="w-[80px]">
                   <SelectValue>{selectedYear}</SelectValue>
                 </SelectTrigger>
-                <SelectContent style={{ maxHeight: '200px' }}>
+                <SelectContent style={{ maxHeight: "200px" }}>
                   {years.map((year) => (
                     <SelectItem key={year} value={year.toString()}>
                       {year}
@@ -247,7 +246,7 @@ function Calendar({
                 <SelectTrigger className="w-[120px]">
                   <SelectValue>{months[selectedMonth]}</SelectValue>
                 </SelectTrigger>
-                <SelectContent style={{ maxHeight: '200px' }}>
+                <SelectContent style={{ maxHeight: "200px" }}>
                   {months.map((month, index) => (
                     <SelectItem key={month} value={index.toString()}>
                       {month}
@@ -298,7 +297,7 @@ function CalendarDayButton({
         // Override background and text color for selected and range days
         "data-[selected-single=true]:!bg-[#00A8FF] data-[selected-single=true]:!text-white data-[range-start=true]:!bg-[#00A8FF] data-[range-start=true]:!text-white data-[range-end=true]:!bg-[#00A8FF] data-[range-end=true]:!text-white data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 flex aspect-square h-auto w-full min-w-[--cell-size] flex-col gap-1 font-normal leading-none data-[range-end=true]:rounded-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] [&>span]:text-xs [&>span]:opacity-70",
         defaultClassNames.day,
-        className
+        className,
       )}
       {...props}
     />

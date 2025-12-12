@@ -1,6 +1,11 @@
 "use client";
 import React, { useEffect } from "react";
-import { BackButton, ContinueButton, ProgressIndicator, SaveAndContinueButton } from "@/components";
+import {
+  BackButton,
+  ContinueButton,
+  ProgressIndicator,
+  SaveAndContinueButton,
+} from "@/components";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -58,7 +63,8 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
   return (
     <div
       className="mt-4 flex w-full flex-col rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+    >
       <ProgressIndicator
         currentStep={currentStep}
         totalSteps={totalSteps}
@@ -95,7 +101,8 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
                   </div>
                   <Label
                     htmlFor="experienceDetails"
-                    className="-mt-2 text-xs font-normal text-[#8A8A8A] sm:text-sm">
+                    className="-mt-2 text-xs font-normal text-[#8A8A8A] sm:text-sm"
+                  >
                     Talk about yourself and your background
                   </Label>
                   {fieldState.error &&

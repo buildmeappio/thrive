@@ -18,7 +18,8 @@ export default function LegalRepresentativeSection({
   return (
     <AccordionItem
       value="legalRepresentative"
-      className="border-b border-[#EDEDED]">
+      className="border-b border-[#EDEDED]"
+    >
       <AccordionTrigger className="text-xl font-bold text-black hover:no-underline py-4 [&>svg]:hidden group">
         <div className="flex items-center justify-between w-full pr-4">
           <span>Legal Representative</span>

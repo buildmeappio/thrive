@@ -23,7 +23,7 @@ const updateNotifications = async (payload: UpdateNotificationsInput) => {
         smsNotifications: payload.smsNotifications,
         emailMarketing: payload.emailMarketing,
         activationStep: payload.activationStep,
-      }
+      },
     );
 
     return {
@@ -36,10 +36,9 @@ const updateNotifications = async (payload: UpdateNotificationsInput) => {
   } catch (error) {
     console.error("Error updating notifications:", error);
     throw HttpError.internalServerError(
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE
+      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
     );
   }
 };
 
 export default updateNotifications;
-

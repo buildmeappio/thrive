@@ -107,11 +107,11 @@ const SideBar = ({
 
     // Sort routes by specificity (longest href first) to match most specific route first
     const sortedRoutes = [...medicalExaminerSidebarRoutes].sort(
-      (a, b) => b.href.length - a.href.length
+      (a, b) => b.href.length - a.href.length,
     );
 
     const matchedItem = sortedRoutes.find((item) =>
-      checkIsPartOfSidebar(pathname, item.href)
+      checkIsPartOfSidebar(pathname, item.href),
     );
 
     if (matchedItem) {
@@ -142,13 +142,15 @@ const SideBar = ({
     <aside
       className={`fixed top-20 left-0 z-50 flex h-[calc(100vh-5rem)] w-[280px] transform-gpu flex-col bg-white transition-transform duration-300 ${
         isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-      } border-r border-gray-200 rounded-r-[50px] md:pt-6`}>
+      } border-r border-gray-200 rounded-r-[50px] md:pt-6`}
+    >
       <div className="relative flex h-full min-h-0 w-full flex-col">
         {/* Mobile Close Button */}
         <div className="flex justify-end pt-2 pr-2 md:hidden">
           <button
             onClick={onMobileClose}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -169,7 +171,8 @@ const SideBar = ({
                   <div
                     key={item.index}
                     className="group relative flex w-full items-center justify-start rounded-full px-6 py-3 text-left text-sm font-medium transition-all duration-200 border border-transparent bg-[#F3F3F3] text-[#9B9B9B] opacity-50 cursor-not-allowed mb-6"
-                    title="Complete activation steps to unlock">
+                    title="Complete activation steps to unlock"
+                  >
                     <div className="flex w-full items-center justify-start space-x-2">
                       <IconComponent
                         size={20}
@@ -191,7 +194,8 @@ const SideBar = ({
                       ? "border-2 border-[#BCE8FF] bg-[#E9F8FF] text-black shadow-sm"
                       : "border border-transparent bg-[#F3F3F3] text-[#9B9B9B] hover:border-[#BCE8FF] hover:bg-[#E9F8FF] hover:text-black"
                   } mb-6`}
-                  title={item.label}>
+                  title={item.label}
+                >
                   <div className="flex w-full items-center justify-start space-x-2">
                     <IconComponent
                       size={20}
@@ -212,7 +216,8 @@ const SideBar = ({
           <div className="flex-shrink-0 p-6 mb-12">
             <button
               onClick={handleLogout}
-              className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#00A8FF] px-4 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#00A8FF]/90">
+              className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#00A8FF] px-4 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#00A8FF]/90"
+            >
               <LogOut size={20} strokeWidth={2} className="text-white" />
               <span className="text-sm">Logout</span>
             </button>

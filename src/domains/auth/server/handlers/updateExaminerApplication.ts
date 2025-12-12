@@ -45,7 +45,7 @@ export type UpdateExaminerApplicationInput = {
 };
 
 const updateExaminerApplication = async (
-  payload: UpdateExaminerApplicationInput
+  payload: UpdateExaminerApplicationInput,
 ) => {
   try {
     // Get existing application
@@ -72,7 +72,7 @@ const updateExaminerApplication = async (
 
       if (emailExists && emailExists.id !== payload.applicationId) {
         throw HttpError.badRequest(
-          "An application with this email already exists"
+          "An application with this email already exists",
         );
       }
     }
@@ -85,11 +85,15 @@ const updateExaminerApplication = async (
         await prisma.address.update({
           where: { id: addressId },
           data: {
-            address: payload.address || existingApplication.mailingAddress || "",
+            address:
+              payload.address || existingApplication.mailingAddress || "",
             street: payload.street || null,
             suite: payload.suite || null,
             postalCode: payload.postalCode || null,
-            province: payload.province || existingApplication.provinceOfResidence || null,
+            province:
+              payload.province ||
+              existingApplication.provinceOfResidence ||
+              null,
             city: payload.city || null,
           },
         });
@@ -97,11 +101,15 @@ const updateExaminerApplication = async (
         // Create new address
         const newAddress = await prisma.address.create({
           data: {
-            address: payload.address || existingApplication.mailingAddress || "",
+            address:
+              payload.address || existingApplication.mailingAddress || "",
             street: payload.street || null,
             suite: payload.suite || null,
             postalCode: payload.postalCode || null,
-            province: payload.province || existingApplication.provinceOfResidence || null,
+            province:
+              payload.province ||
+              existingApplication.provinceOfResidence ||
+              null,
             city: payload.city || null,
           },
         });
@@ -116,7 +124,9 @@ const updateExaminerApplication = async (
       },
       data: {
         // Personal Information
-        ...(payload.firstName !== undefined && { firstName: payload.firstName }),
+        ...(payload.firstName !== undefined && {
+          firstName: payload.firstName,
+        }),
         ...(payload.lastName !== undefined && { lastName: payload.lastName }),
         ...(payload.email !== undefined && { email: payload.email }),
         ...(payload.phone !== undefined && { phone: payload.phone }),
@@ -180,7 +190,8 @@ const updateExaminerApplication = async (
           agreeToTerms: payload.agreeTermsConditions,
         }),
         ...(payload.consentBackgroundVerification !== undefined && {
-          isConsentToBackgroundVerification: payload.consentBackgroundVerification,
+          isConsentToBackgroundVerification:
+            payload.consentBackgroundVerification,
         }),
 
         // Reset status to SUBMITTED when application is updated
@@ -196,7 +207,7 @@ const updateExaminerApplication = async (
         firstName: updatedApplication.firstName || "",
         lastName: updatedApplication.lastName || "",
       },
-      updatedApplication.email
+      updatedApplication.email,
     );
 
     return {
@@ -211,10 +222,9 @@ const updateExaminerApplication = async (
     throw HttpError.fromError(
       error,
       ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
-      500
+      500,
     );
   }
 };
 
 export default updateExaminerApplication;
-

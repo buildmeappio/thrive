@@ -27,7 +27,7 @@ interface CasesTableWithPaginationProps {
 // Utility function to truncate text with ellipsis
 const truncateText = (
   text: string | null | undefined,
-  maxLength: number = 28
+  maxLength: number = 28,
 ): string => {
   if (!text) return "N/A";
   if (text.length <= maxLength) return text;
@@ -65,7 +65,8 @@ const SortableHeader = ({
   return (
     <div
       className="flex items-center gap-2 cursor-pointer select-none hover:text-[#00A8FF] transition-colors"
-      onClick={handleSort}>
+      onClick={handleSort}
+    >
       <span>{children}</span>
       {direction === null && <ArrowUpDown className="h-4 w-4 text-gray-400" />}
       {direction === "asc" && <ArrowUp className="h-4 w-4 text-[#00A8FF]" />}
@@ -97,7 +98,7 @@ export default function CasesTableWithPagination({
         (row) =>
           row.claimant.toLowerCase().includes(query) ||
           row.company.toLowerCase().includes(query) ||
-          row.caseNumber.toLowerCase().includes(query)
+          row.caseNumber.toLowerCase().includes(query),
       );
     }
 
@@ -254,15 +255,17 @@ export default function CasesTableWithPagination({
                   "text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden",
                   index === 0 && "rounded-tl-2xl rounded-bl-2xl",
                   index === columns.length - 1 &&
-                    "rounded-tr-2xl rounded-br-2xl"
-                )}>
+                    "rounded-tr-2xl rounded-br-2xl",
+                )}
+              >
                 {col.key === "action" ? (
                   ""
                 ) : (
                   <SortableHeader
                     field={col.key as SortField}
                     currentSort={sorting}
-                    onSort={handleSort}>
+                    onSort={handleSort}
+                  >
                     {col.label}
                   </SortableHeader>
                 )}
@@ -313,17 +316,20 @@ export default function CasesTableWithPagination({
               return (
                 <TableRow
                   key={row.id}
-                  className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]">
+                  className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
+                >
                   <TableCell
                     style={{
                       minWidth: `${columns[0].minSize}px`,
                       maxWidth: `${columns[0].maxSize}px`,
                       width: `${columns[0].size}px`,
                     }}
-                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
+                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle"
+                  >
                     <div
                       className="text-[16px] leading-normal truncate"
-                      title={row.caseNumber}>
+                      title={row.caseNumber}
+                    >
                       {truncateText(row.caseNumber, 20)}
                     </div>
                   </TableCell>
@@ -333,10 +339,12 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[1].maxSize}px`,
                       width: `${columns[1].size}px`,
                     }}
-                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
+                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle"
+                  >
                     <div
                       className="text-[16px] leading-normal truncate"
-                      title={row.claimant}>
+                      title={row.claimant}
+                    >
                       {truncateText(row.claimant, 25)}
                     </div>
                   </TableCell>
@@ -346,10 +354,12 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[2].maxSize}px`,
                       width: `${columns[2].size}px`,
                     }}
-                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
+                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle"
+                  >
                     <div
                       className="text-[16px] leading-normal truncate"
-                      title={capitalizeWords(row.company)}>
+                      title={capitalizeWords(row.company)}
+                    >
                       {truncateText(capitalizeWords(row.company), 25)}
                     </div>
                   </TableCell>
@@ -359,14 +369,16 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[3].maxSize}px`,
                       width: `${columns[3].size}px`,
                     }}
-                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
+                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle"
+                  >
                     <div
                       className="text-[16px] leading-normal truncate"
                       title={
                         row.appointment
                           ? formatDateTime(row.appointment)
                           : "N/A"
-                      }>
+                      }
+                    >
                       {row.appointment
                         ? truncateText(formatDateTime(row.appointment), 25)
                         : "N/A"}
@@ -378,12 +390,12 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[4].maxSize}px`,
                       width: `${columns[4].size}px`,
                     }}
-                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle">
+                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle"
+                  >
                     <div
                       className="text-[16px] leading-normal truncate"
-                      title={
-                        row.dueDate ? formatDateShort(row.dueDate) : "N/A"
-                      }>
+                      title={row.dueDate ? formatDateShort(row.dueDate) : "N/A"}
+                    >
                       {row.dueDate
                         ? truncateText(formatDateShort(row.dueDate), 15)
                         : "N/A"}
@@ -395,12 +407,14 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[5].maxSize}px`,
                       width: `${columns[5].size}px`,
                     }}
-                    className="py-5 sm:py-3 overflow-hidden align-middle">
+                    className="py-5 sm:py-3 overflow-hidden align-middle"
+                  >
                     <span
                       className={cn(
                         "text-[17px] sm:text-[14px] tracking-[-0.01em] font-poppins leading-normal",
-                        statusColor
-                      )}>
+                        statusColor,
+                      )}
+                    >
                       {statusText}
                     </span>
                   </TableCell>
@@ -410,11 +424,13 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[6].maxSize}px`,
                       width: `${columns[6].size}px`,
                     }}
-                    className="py-5 sm:py-3 overflow-hidden align-middle">
+                    className="py-5 sm:py-3 overflow-hidden align-middle"
+                  >
                     <Link
                       href={`/appointments/${row.id}`}
                       aria-label={`Open ${row.claimant}`}
-                      className="flex-shrink-0 grid h-7 w-7 sm:h-5 sm:w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF] transition-colors">
+                      className="flex-shrink-0 grid h-7 w-7 sm:h-5 sm:w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF] transition-colors"
+                    >
                       <ChevronRight className="h-5 w-5 sm:h-3.5 sm:w-3.5 text-[#00A8FF]" />
                     </Link>
                   </TableCell>
@@ -425,7 +441,8 @@ export default function CasesTableWithPagination({
             <TableRow>
               <TableCell
                 colSpan={columns.length}
-                className="h-24 text-center text-black font-poppins text-[16px] leading-none">
+                className="h-24 text-center text-black font-poppins text-[16px] leading-none"
+              >
                 No data available
               </TableCell>
             </TableRow>

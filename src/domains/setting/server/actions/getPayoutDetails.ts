@@ -5,7 +5,7 @@ import getPayoutDetails, {
 } from "../handlers/getPayoutDetails";
 
 export const getPayoutDetailsAction = async (
-  payload: GetPayoutDetailsInput
+  payload: GetPayoutDetailsInput,
 ) => {
   try {
     const result = await getPayoutDetails(payload);
@@ -13,7 +13,9 @@ export const getPayoutDetailsAction = async (
   } catch (error: unknown) {
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch payout details",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to fetch payout details",
     };
   }
 };

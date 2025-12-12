@@ -32,7 +32,7 @@ export default function SignatureCanvas() {
 
   const getCoordinates = (
     e: React.MouseEvent<HTMLCanvasElement>,
-    canvas: HTMLCanvasElement
+    canvas: HTMLCanvasElement,
   ) => {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -118,7 +118,8 @@ export default function SignatureCanvas() {
             type="button"
             onClick={handleClear}
             className="flex items-center cursor-pointer gap-1.5 px-3 py-1.5 text-xs text-gray-600 hover:text-gray-800 transition-colors font-poppins"
-            title="Clear signature">
+            title="Clear signature"
+          >
             <X className="w-3.5 h-3.5" />
             Clear
           </button>

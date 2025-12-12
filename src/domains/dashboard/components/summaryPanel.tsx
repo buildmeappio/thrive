@@ -19,7 +19,7 @@ export default function SummaryPanel({
   onPeriodChange,
 }: SummaryPanelProps) {
   const [selectedPeriod, setSelectedPeriod] = useState(
-    period || dropdownOptions[0] || "Month"
+    period || dropdownOptions[0] || "Month",
   );
 
   const handlePeriodChange = (value: string) => {
@@ -30,12 +30,14 @@ export default function SummaryPanel({
   return (
     <section
       className="rounded-[29px] w-full bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
-      aria-labelledby="summary-heading">
+      aria-labelledby="summary-heading"
+    >
       {/* Header */}
       <div className="flex items-center justify-between gap-2 sm:gap-3 mb-6">
         <h3
           id="summary-heading"
-          className="font-degular font-[600] text-[26px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black">
+          className="font-degular font-[600] text-[26px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black"
+        >
           Summary
         </h3>
 

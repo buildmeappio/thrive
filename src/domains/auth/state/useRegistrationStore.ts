@@ -204,12 +204,17 @@ const createRegistrationStorage = (): PersistStorage<Store> => {
 
                   // Keep plain objects (ExistingDocument objects)
                   // These have been serialized to JSON already, so they're plain objects with properties
-                  if (item && typeof item === "object" && "id" in item && item.id) {
+                  if (
+                    item &&
+                    typeof item === "object" &&
+                    "id" in item &&
+                    item.id
+                  ) {
                     return true;
                   }
 
                   return false;
-                }
+                },
               );
               sanitizedData.medicalLicense = filtered;
             }
@@ -251,7 +256,7 @@ export const useRegistrationStore = create<Store>()(
     (set) => ({
       data: initialData,
       merge: (
-        patch: Partial<RegistrationData> // <- ensure Partial here
+        patch: Partial<RegistrationData>, // <- ensure Partial here
       ) => set((s) => ({ data: { ...s.data, ...patch } })),
       setAll: (all: RegistrationData) => set({ data: all }),
       reset: () => set({ data: initialData }),
@@ -299,8 +304,9 @@ export const useRegistrationStore = create<Store>()(
             "",
           languagesSpoken: isApplication
             ? examinerData.languagesSpoken || [] // Array of language IDs
-            : examinerData.examinerLanguages?.map((l: { languageId: string }) => l.languageId) ||
-              [],
+            : examinerData.examinerLanguages?.map(
+                (l: { languageId: string }) => l.languageId,
+              ) || [],
 
           // Step 2: Address
           address:
@@ -327,14 +333,16 @@ export const useRegistrationStore = create<Store>()(
             examinerData.medicalLicenseDocuments &&
             Array.isArray(examinerData.medicalLicenseDocuments) &&
             examinerData.medicalLicenseDocuments.length > 0
-              ? examinerData.medicalLicenseDocuments.map((doc: MedicalLicenseDocument) => ({
-                  id: doc.id,
-                  name: doc.name,
-                  displayName: doc.displayName || doc.name,
-                  type: doc.type,
-                  size: doc.size,
-                  isExisting: true,
-                }))
+              ? examinerData.medicalLicenseDocuments.map(
+                  (doc: MedicalLicenseDocument) => ({
+                    id: doc.id,
+                    name: doc.name,
+                    displayName: doc.displayName || doc.name,
+                    type: doc.type,
+                    size: doc.size,
+                    isExisting: true,
+                  }),
+                )
               : [],
 
           // Step 3: IME Experience
@@ -403,8 +411,8 @@ export const useRegistrationStore = create<Store>()(
       onRehydrateStorage: () => () => {
         // Rehydration completed
       },
-    }
-  )
+    },
+  ),
 );
 
 /**

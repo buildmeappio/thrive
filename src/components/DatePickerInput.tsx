@@ -32,7 +32,7 @@ const DatePickerInput: React.FC<DatePickerInputProps> = ({
   disabled,
 }) => {
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(
-    value ? (typeof value === "string" ? new Date(value) : value) : null
+    value ? (typeof value === "string" ? new Date(value) : value) : null,
   );
 
   React.useEffect(() => {

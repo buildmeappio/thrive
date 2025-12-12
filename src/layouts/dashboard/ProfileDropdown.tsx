@@ -27,7 +27,7 @@ const ProfileDropdown = ({
   const avatarDesktopRef = useRef<HTMLDivElement>(null);
   const avatarMobileRef = useRef<HTMLDivElement>(null);
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   // Fetch profile photo URL on mount
@@ -35,7 +35,7 @@ const ProfileDropdown = ({
     const fetchProfilePhoto = async () => {
       if (session?.user?.image) {
         const url = await getProfilePhotoUrlAction(
-          session.user.image as string
+          session.user.image as string,
         );
         setProfilePhotoUrl(url || undefined);
       }
@@ -80,7 +80,8 @@ const ProfileDropdown = ({
       <div
         ref={dropdownRef}
         className="absolute left-[100%] z-50 mt-2 w-30 -translate-x-[100%] -translate-y-[5%] divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white shadow-lg"
-        style={{ minWidth: 220 }}>
+        style={{ minWidth: 220 }}
+      >
         <div className="px-4 py-3 text-sm text-gray-900">
           <div className="font-medium">{displayName}</div>
           <div className="truncate text-gray-500">{displayEmail}</div>
@@ -90,14 +91,16 @@ const ProfileDropdown = ({
             {isActivationComplete ? (
               <a
                 href={createRoute(URLS.BILLING)}
-                className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
+                className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100"
+              >
                 <LifeBuoy size={16} />
                 <span>Billing & Invoices</span>
               </a>
             ) : (
               <div
                 className="flex items-center space-x-2 px-4 py-2 text-gray-400 cursor-not-allowed"
-                title="Complete activation steps to unlock">
+                title="Complete activation steps to unlock"
+              >
                 <LifeBuoy size={16} />
                 <span>Billing & Invoices</span>
               </div>
@@ -106,7 +109,8 @@ const ProfileDropdown = ({
           <li>
             <a
               href={createRoute(URLS.SETTINGS)}
-              className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
+              className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100"
+            >
               <LifeBuoy size={16} />
               <span>Settings</span>
             </a>
@@ -115,14 +119,16 @@ const ProfileDropdown = ({
             {isActivationComplete ? (
               <a
                 href={createRoute(URLS.SUPPORT)}
-                className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100">
+                className="flex items-center space-x-2 px-4 py-2 transition-colors hover:bg-gray-100"
+              >
                 <LifeBuoy size={16} />
                 <span>Support & Help</span>
               </a>
             ) : (
               <div
                 className="flex items-center space-x-2 px-4 py-2 text-gray-400 cursor-not-allowed"
-                title="Complete activation steps to unlock">
+                title="Complete activation steps to unlock"
+              >
                 <LifeBuoy size={16} />
                 <span>Support & Help</span>
               </div>
@@ -135,7 +141,8 @@ const ProfileDropdown = ({
               signOut({ callbackUrl: createRoute(URLS.LOGIN) });
               localStorage.removeItem("token");
             }}
-            className="flex cursor-pointer items-center space-x-2 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
+            className="flex cursor-pointer items-center space-x-2 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
+          >
             <LogOut size={16} />
             <span>Sign out</span>
           </a>
@@ -149,7 +156,8 @@ const ProfileDropdown = ({
       <div className="relative" ref={avatarMobileRef}>
         <Avatar
           className="h-[50px] w-[50px] cursor-pointer border border-[#DBDBFF]"
-          onClick={() => setDropdownOpen((prev) => !prev)}>
+          onClick={() => setDropdownOpen((prev) => !prev)}
+        >
           <AvatarImage src={profilePhotoUrl} alt={displayName} />
           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
             {getInitials()}
@@ -168,7 +176,8 @@ const ProfileDropdown = ({
     <div className="relative" ref={avatarDesktopRef}>
       <Avatar
         className="h-[40px] w-[40px] cursor-pointer border border-[#DBDBFF]"
-        onClick={() => setDropdownOpen((prev) => !prev)}>
+        onClick={() => setDropdownOpen((prev) => !prev)}
+      >
         <AvatarImage src={profilePhotoUrl} alt={displayName} />
         <AvatarFallback className="bg-[#00A8FF] text-white font-semibold text-xl">
           {getInitials()}

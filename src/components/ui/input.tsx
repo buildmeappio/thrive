@@ -33,12 +33,16 @@ function Input({
       handleKeyPress(e, validationType);
       onKeyPress?.(e);
     },
-    [validationType, onKeyPress]
+    [validationType, onKeyPress],
   );
 
   const handleChangeEvent = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (validationType !== "none" && validationType !== "email" && validationType !== "phone") {
+      if (
+        validationType !== "none" &&
+        validationType !== "email" &&
+        validationType !== "phone"
+      ) {
         const filteredValue = handleInputChange(e, validationType);
         const syntheticEvent = {
           ...e,
@@ -52,7 +56,7 @@ function Input({
         onChange?.(e);
       }
     },
-    [validationType, onChange]
+    [validationType, onChange],
   );
 
   const handleBlurEvent = React.useCallback(
@@ -74,18 +78,22 @@ function Input({
       }
       onBlur?.(e);
     },
-    [validationType, onChange, onBlur]
+    [validationType, onChange, onBlur],
   );
 
   const handlePasteEvent = React.useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>) => {
       // Get pasted text
       const pastedText = e.clipboardData.getData("text");
-      
+
       // If validation is enabled, filter the pasted text
-      if (validationType !== "none" && validationType !== "email" && validationType !== "phone") {
+      if (
+        validationType !== "none" &&
+        validationType !== "email" &&
+        validationType !== "phone"
+      ) {
         const filteredValue = filterInputValue(pastedText, validationType);
-        
+
         // If the filtered value is different, prevent default and set the filtered value
         if (filteredValue !== pastedText) {
           e.preventDefault();
@@ -93,17 +101,20 @@ function Input({
           const start = input.selectionStart || 0;
           const end = input.selectionEnd || 0;
           const currentValue = input.value || "";
-          const newValue = currentValue.slice(0, start) + filteredValue + currentValue.slice(end);
-          
+          const newValue =
+            currentValue.slice(0, start) +
+            filteredValue +
+            currentValue.slice(end);
+
           // Update input value
           input.value = newValue;
-          
+
           // Set cursor position
           const newCursorPos = start + filteredValue.length;
           setTimeout(() => {
             input.setSelectionRange(newCursorPos, newCursorPos);
           }, 0);
-          
+
           // Trigger onChange with filtered value
           // Use the input element directly and create a minimal event object
           const syntheticEvent = {
@@ -126,7 +137,7 @@ function Input({
         }
       }
     },
-    [validationType, onChange]
+    [validationType, onChange],
   );
 
   return (
@@ -148,7 +159,7 @@ function Input({
           Icon && iconPosition === "left" && "pl-11",
           Icon && iconPosition === "right" && "pr-11",
           error && "ring-2 ring-red-500/30",
-          className
+          className,
         )}
         onChange={handleChangeEvent}
         onKeyPress={handleKeyPressEvent}

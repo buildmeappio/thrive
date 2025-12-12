@@ -4,7 +4,7 @@ import getReportHandler, { type GetReportInput } from "../handlers/getReport";
 import { GetReportResponse } from "../../types";
 
 export async function getReportAction(
-  input: GetReportInput
+  input: GetReportInput,
 ): Promise<GetReportResponse> {
   try {
     const result = await getReportHandler(input);
@@ -13,10 +13,11 @@ export async function getReportAction(
     console.error("Error in getReport action:", error);
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch report",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to fetch report",
     };
   }
 }
 
 export default getReportAction;
-

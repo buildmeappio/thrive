@@ -6,7 +6,7 @@ import { ReportFormData, CaseOverviewData } from "@/domains/reports/types";
  */
 export function generateReportHTML(
   reportData: ReportFormData,
-  caseData: CaseOverviewData
+  caseData: CaseOverviewData,
 ): string {
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -213,7 +213,7 @@ export function generateReportHTML(
         <div class="content-section">
           <p>${section.content.replace(/\n/g, "<br>")}</p>
         </div>
-      `
+      `,
         )
         .join("")}
 
@@ -266,7 +266,7 @@ export function generateReportHTML(
  */
 export function printReport(
   reportData: ReportFormData,
-  caseData: CaseOverviewData
+  caseData: CaseOverviewData,
 ): void {
   const html = generateReportHTML(reportData, caseData);
 
@@ -310,7 +310,7 @@ export function printReportFromHTML(htmlContent: string): void {
   if (logoUrl && logoUrlMatch) {
     processedHtml = htmlContent.replace(
       /\{\{logo_url\}\}/g,
-      `<img src="${logoUrl}" alt="Thrive Logo" class="report-logo" />`
+      `<img src="${logoUrl}" alt="Thrive Logo" class="report-logo" />`,
     );
   }
 

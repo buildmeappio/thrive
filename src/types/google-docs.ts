@@ -63,4 +63,3 @@ export interface GoogleDocsBatchUpdateRequest {
     [key: string]: unknown;
   }>;
 }
-

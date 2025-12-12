@@ -20,4 +20,3 @@ const forgotPassword = async (payload: ForgotPasswordInput) => {
 };
 
 export default forgotPassword;
-

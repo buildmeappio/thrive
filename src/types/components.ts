@@ -3,7 +3,11 @@
  */
 
 // Using a type alias to avoid potential circular type issues with Prisma Decimal
-type PrismaDecimal = { toString(): string; toNumber(): number; [Symbol.toPrimitive]?: (hint: string) => number | string };
+type PrismaDecimal = {
+  toString(): string;
+  toNumber(): number;
+  [Symbol.toPrimitive]?: (hint: string) => number | string;
+};
 
 /**
  * Language option structure
@@ -138,4 +142,3 @@ export interface ExaminerProfileDetailsData {
     examinerId?: string;
   };
 }
-

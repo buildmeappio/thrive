@@ -22,7 +22,7 @@ export function useCaseDetailsHandlers({
 
   const handleAction = async (
     status: "ACCEPT" | "DECLINE",
-    message?: string
+    message?: string,
   ) => {
     setIsLoading(true);
     try {

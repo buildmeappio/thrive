@@ -18,7 +18,8 @@ export default function RootLayout({
       lang="en"
       className={`light h-full`}
       style={{ fontFamily: "var(--font-degular)" }}
-      suppressHydrationWarning>
+      suppressHydrationWarning
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -33,7 +34,8 @@ export default function RootLayout({
       <body
         className="h-full font-degular"
         style={{ fontFamily: "var(--font-degular)" }}
-        suppressHydrationWarning>
+        suppressHydrationWarning
+      >
         <SessionProvider>
           <ThemeProvider>
             <Toaster richColors position="top-right" closeButton />

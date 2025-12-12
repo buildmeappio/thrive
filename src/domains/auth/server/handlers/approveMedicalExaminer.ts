@@ -29,9 +29,12 @@ const approveMedicalExaminer = async (payload: ApproveMedicalExaminerInput) => {
     }
 
     // Validate current status - can only approve SUBMITTED or IN_REVIEW applications
-    if (application.status !== ExaminerStatus.SUBMITTED && application.status !== ExaminerStatus.IN_REVIEW) {
+    if (
+      application.status !== ExaminerStatus.SUBMITTED &&
+      application.status !== ExaminerStatus.IN_REVIEW
+    ) {
       throw HttpError.badRequest(
-        `Cannot approve application with status: ${application.status}`
+        `Cannot approve application with status: ${application.status}`,
       );
     }
 
@@ -63,7 +66,7 @@ const approveMedicalExaminer = async (payload: ApproveMedicalExaminerInput) => {
         lastName: application.lastName || "",
         createPasswordLink: `${ENV.NEXT_PUBLIC_APP_URL!}/create-account?token=${token}`,
       },
-      application.email
+      application.email,
     );
 
     return {
@@ -79,7 +82,7 @@ const approveMedicalExaminer = async (payload: ApproveMedicalExaminerInput) => {
     throw HttpError.fromError(
       error,
       ErrorMessages.FAILED_APPROVE_EXAMINER,
-      500
+      500,
     );
   }
 };

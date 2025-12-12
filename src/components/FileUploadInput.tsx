@@ -119,8 +119,9 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
           "mt-2 flex h-[55px] w-full cursor-pointer items-center rounded-[10px] border-none bg-[#F2F5F6] px-3 text-sm transition-all",
           "hover:bg-[#E8EBEC] focus-within:ring-2 focus-within:ring-[#00A8FF]/30 focus-within:ring-offset-0",
           disabled && "cursor-not-allowed opacity-50",
-          error && "ring-2 ring-red-500/30"
-        )}>
+          error && "ring-2 ring-red-500/30",
+        )}
+      >
         {!value && showIcon && (
           <Upload
             className="mr-3 h-5 w-5 text-[#A4A4A4] flex-shrink-0"
@@ -164,7 +165,8 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
                   onClick={handleDownloadExisting}
                   className="p-1 rounded-full hover:bg-blue-100 text-blue-500 transition-colors flex-shrink-0"
                   disabled={disabled}
-                  title="Download existing document">
+                  title="Download existing document"
+                >
                   <Download className="h-4 w-4" />
                 </button>
               )}
@@ -177,7 +179,8 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
                   isExistingDocument(value)
                     ? "Remove and upload new file"
                     : "Remove file"
-                }>
+                }
+              >
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -199,14 +202,14 @@ const FileUploadInput: React.FC<FileUploadInputProps> = ({
       {(() => {
         const errorToShow = error || sizeError;
         if (!errorToShow) return null;
-        
+
         // Only show error message for validation errors, not simple "required" errors
-        const isRequiredError = error && (
-          error.toLowerCase() === "required" ||
-          error.toLowerCase().endsWith(" is required") ||
-          error.toLowerCase() === "is required"
-        );
-        
+        const isRequiredError =
+          error &&
+          (error.toLowerCase() === "required" ||
+            error.toLowerCase().endsWith(" is required") ||
+            error.toLowerCase() === "is required");
+
         // Always show sizeError (it's a validation error)
         // Only show error if it's not a required error
         if (sizeError) {

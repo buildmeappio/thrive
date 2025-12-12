@@ -37,13 +37,12 @@ export type CreateMedicalExaminerInput = {
   currentlyConductingIMEs: boolean;
   assessmentTypes: string[];
   redactedIMEReportDocumentId?: string;
-  
+
   // Legacy field
   forensicAssessmentTrained?: boolean; // Optional - removed from Step 3
 
   // step 4
   experienceDetails?: string;
-
 
   // step 7
   // signedNDADocumentId: string;
@@ -69,7 +68,7 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
 
     if (existingApplication) {
       throw HttpError.badRequest(
-        "An application with this email already exists"
+        "An application with this email already exists",
       );
     }
 
@@ -131,7 +130,8 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
         languagesSpoken: payload.languagesSpoken || [],
 
         // Consent
-        isConsentToBackgroundVerification: payload.consentBackgroundVerification,
+        isConsentToBackgroundVerification:
+          payload.consentBackgroundVerification,
         agreeToTerms: payload.agreeTermsConditions,
 
         // Application Status
@@ -147,7 +147,9 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
     });
 
     if (applicationSecureLinks.length > 0) {
-      const secureLinkIds = applicationSecureLinks.map((link) => link.secureLinkId);
+      const secureLinkIds = applicationSecureLinks.map(
+        (link) => link.secureLinkId,
+      );
       await prisma.secureLink.updateMany({
         where: {
           id: { in: secureLinkIds },
@@ -167,7 +169,7 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
         firstName: payload.firstName,
         lastName: payload.lastName,
       },
-      payload.email
+      payload.email,
     );
 
     return {

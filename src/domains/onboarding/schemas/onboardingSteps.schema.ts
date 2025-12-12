@@ -18,12 +18,10 @@ export const profileInfoSchema = z.object({
     .refine((val) => !/^\s+$/.test(val), {
       message: "First name cannot contain only spaces",
     })
-    .refine(
-      (val) => /^[a-zA-Z\s'.-]+$/.test(val),
-      {
-        message: "First name can only contain letters, spaces, apostrophes, hyphens, and periods",
-      }
-    )
+    .refine((val) => /^[a-zA-Z\s'.-]+$/.test(val), {
+      message:
+        "First name can only contain letters, spaces, apostrophes, hyphens, and periods",
+    })
     .refine(
       (val) => {
         // Must contain at least one letter
@@ -43,7 +41,7 @@ export const profileInfoSchema = z.object({
       {
         message:
           "First name must contain at least one letter and cannot start/end with special characters",
-      }
+      },
     ),
   lastName: z
     .string()
@@ -60,12 +58,10 @@ export const profileInfoSchema = z.object({
     .refine((val) => !/^\s+$/.test(val), {
       message: "Last name cannot contain only spaces",
     })
-    .refine(
-      (val) => /^[a-zA-Z\s'.-]+$/.test(val),
-      {
-        message: "Last name can only contain letters, spaces, apostrophes, hyphens, and periods",
-      }
-    )
+    .refine((val) => /^[a-zA-Z\s'.-]+$/.test(val), {
+      message:
+        "Last name can only contain letters, spaces, apostrophes, hyphens, and periods",
+    })
     .refine(
       (val) => {
         // Must contain at least one letter
@@ -85,7 +81,7 @@ export const profileInfoSchema = z.object({
       {
         message:
           "Last name must contain at least one letter and cannot start/end with special characters",
-      }
+      },
     ),
   emailAddress: z
     .string()
@@ -126,12 +122,15 @@ export const profileInfoSchema = z.object({
     .refine((val) => val.length >= 10, {
       message: "Clinic address must be at least 10 characters",
     })
-    .refine((val) => {
-      const error = validateAddressField(val);
-      return error === null;
-    }, {
-      message: "Please enter a valid clinic address",
-    }),
+    .refine(
+      (val) => {
+        const error = validateAddressField(val);
+        return error === null;
+      },
+      {
+        message: "Please enter a valid clinic address",
+      },
+    ),
   profilePhoto: z.string().optional(),
   bio: z
     .string()
@@ -205,7 +204,7 @@ export const overrideHoursSchema = z.array(
   z.object({
     date: z.string().min(1, { message: "Date is required" }),
     timeSlots: z.array(timeSlotSchema),
-  })
+  }),
 );
 
 export const bookingOptionsSchema = z.object({
@@ -262,13 +261,16 @@ export const payoutDetailsSchema = z
       .string()
       .optional()
       .transform((val) => val?.trim() || "") // Trim whitespace
-      .refine((val) => {
-        if (!val) return true; // Optional field
-        const error = validateAddressField(val);
-        return error === null;
-      }, {
-        message: "Please enter a valid cheque mailing address",
-      }),
+      .refine(
+        (val) => {
+          if (!val) return true; // Optional field
+          const error = validateAddressField(val);
+          return error === null;
+        },
+        {
+          message: "Please enter a valid cheque mailing address",
+        },
+      ),
     // Interac E-Transfer fields
     interacEmail: z
       .string()
@@ -309,7 +311,7 @@ export const payoutDetailsSchema = z
     {
       message:
         "Please fill in all required fields for the selected payout method",
-    }
+    },
   );
 
 export type PayoutDetailsInput = z.infer<typeof payoutDetailsSchema>;
@@ -328,7 +330,10 @@ export const servicesAssessmentSchema = z
   })
   .refine(
     (data) => {
-      if (data.travelToClaimants && (!data.travelRadius || data.travelRadius.trim() === "")) {
+      if (
+        data.travelToClaimants &&
+        (!data.travelRadius || data.travelRadius.trim() === "")
+      ) {
         return false;
       }
       return true;
@@ -336,11 +341,14 @@ export const servicesAssessmentSchema = z
     {
       message: "Travel radius is required when traveling to claimants",
       path: ["travelRadius"],
-    }
+    },
   )
   .refine(
     (data) => {
-      if (data.assessmentTypes.includes("other") && (!data.assessmentTypeOther || data.assessmentTypeOther.trim() === "")) {
+      if (
+        data.assessmentTypes.includes("other") &&
+        (!data.assessmentTypeOther || data.assessmentTypeOther.trim() === "")
+      ) {
         return false;
       }
       return true;
@@ -348,10 +356,7 @@ export const servicesAssessmentSchema = z
     {
       message: "Please specify the other assessment type",
       path: ["assessmentTypeOther"],
-    }
+    },
   );
 
-export type ServicesAssessmentInput = z.infer<
-  typeof servicesAssessmentSchema
->;
-
+export type ServicesAssessmentInput = z.infer<typeof servicesAssessmentSchema>;

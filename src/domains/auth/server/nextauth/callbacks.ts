@@ -33,7 +33,7 @@ export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
       } catch (error) {
         console.error(
           "Error refreshing activationStep in JWT callback:",
-          error
+          error,
         );
         // If there's an error, keep the existing token value
       }

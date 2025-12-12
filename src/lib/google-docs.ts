@@ -1,6 +1,12 @@
 import { google } from "googleapis";
 import { ENV } from "@/constants/variables";
-import { GoogleApiError, GoogleDocsElement, GoogleDocsParagraphElement, GoogleDocsBatchUpdateRequest, GoogleDocsTableElement } from "@/types/google-docs";
+import {
+  GoogleApiError,
+  GoogleDocsElement,
+  GoogleDocsParagraphElement,
+  GoogleDocsBatchUpdateRequest,
+  GoogleDocsTableElement,
+} from "@/types/google-docs";
 
 /**
  * Google Docs API service for contract generation
@@ -18,14 +24,14 @@ function getGoogleDocsAuth() {
 
   if (!clientId || !clientSecret || !refreshToken) {
     throw new Error(
-      "Missing required Google OAuth configuration. Please check DOCS_REFRESH_TOKEN, OAUTH_CLIENT_ID, and OAUTH_CLIENT_SECRET environment variables."
+      "Missing required Google OAuth configuration. Please check DOCS_REFRESH_TOKEN, OAUTH_CLIENT_ID, and OAUTH_CLIENT_SECRET environment variables.",
     );
   }
 
   const oauth2Client = new google.auth.OAuth2(
     clientId,
     clientSecret,
-    "https://developers.google.com/oauthplayground"
+    "https://developers.google.com/oauthplayground",
   );
 
   oauth2Client.setCredentials({ refresh_token: refreshToken });
@@ -43,7 +49,7 @@ function getGoogleDocsAuth() {
 export async function copyTemplate(
   templateId: string,
   name: string,
-  folderId?: string
+  folderId?: string,
 ): Promise<string> {
   try {
     const auth = getGoogleDocsAuth();
@@ -66,12 +72,9 @@ export async function copyTemplate(
     console.error("Error copying Google Doc template:", error);
     if (error instanceof Error) {
       const apiError = error as GoogleApiError;
-      if (
-        error.message.includes("File not found") ||
-        apiError.code === 404
-      ) {
+      if (error.message.includes("File not found") || apiError.code === 404) {
         throw new Error(
-          `Template not found. Please verify GOOGLE_REPORT_TEMPLATE_ID is correct.`
+          `Template not found. Please verify GOOGLE_REPORT_TEMPLATE_ID is correct.`,
         );
       }
       if (
@@ -79,14 +82,14 @@ export async function copyTemplate(
         apiError.code === 403
       ) {
         throw new Error(
-          `Insufficient permissions to copy template. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
+          `Insufficient permissions to copy template. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
         );
       }
     }
     throw new Error(
       `Failed to copy template: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`
+      }`,
     );
   }
 }
@@ -99,7 +102,7 @@ export async function copyTemplate(
  */
 export async function replacePlaceholders(
   documentId: string,
-  placeholders: Record<string, string>
+  placeholders: Record<string, string>,
 ): Promise<void> {
   try {
     const auth = getGoogleDocsAuth();
@@ -133,12 +136,9 @@ export async function replacePlaceholders(
     console.error("Error replacing placeholders:", error);
     if (error instanceof Error) {
       const apiError = error as GoogleApiError;
-      if (
-        error.message.includes("File not found") ||
-        apiError.code === 404
-      ) {
+      if (error.message.includes("File not found") || apiError.code === 404) {
         throw new Error(
-          `Document not found. Please verify the document ID is correct.`
+          `Document not found. Please verify the document ID is correct.`,
         );
       }
       if (
@@ -146,14 +146,14 @@ export async function replacePlaceholders(
         apiError.code === 403
       ) {
         throw new Error(
-          `Insufficient permissions to update document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
+          `Insufficient permissions to update document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
         );
       }
     }
     throw new Error(
       `Failed to replace placeholders: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`
+      }`,
     );
   }
 }
@@ -172,7 +172,7 @@ export async function insertImageAtPlaceholder(
   imageUri: string,
   placeholderText: string,
   width?: number,
-  height?: number
+  height?: number,
 ): Promise<void> {
   try {
     const auth = getGoogleDocsAuth();
@@ -196,7 +196,11 @@ export async function insertImageAtPlaceholder(
             if (paragraphElement.textRun && paragraphElement.textRun.content) {
               const text = paragraphElement.textRun.content;
               if (text.includes(placeholderText)) {
-                const elementWithIndex = paragraphElement as GoogleDocsParagraphElement & { startIndex?: number; endIndex?: number };
+                const elementWithIndex =
+                  paragraphElement as GoogleDocsParagraphElement & {
+                    startIndex?: number;
+                    endIndex?: number;
+                  };
                 placeholderIndex = elementWithIndex.startIndex || 0;
                 placeholderEndIndex = elementWithIndex.endIndex || 0;
                 return;
@@ -222,23 +226,25 @@ export async function insertImageAtPlaceholder(
 
     if (placeholderIndex === null || placeholderEndIndex === null) {
       console.warn(
-        `Placeholder "${placeholderText}" not found in document. Skipping image insertion.`
+        `Placeholder "${placeholderText}" not found in document. Skipping image insertion.`,
       );
       return;
     }
 
     // Calculate actual text boundaries within the element
     const textContent = (doc.data.body.content as GoogleDocsElement[])
-      .flatMap((element: GoogleDocsElement) => element.paragraph?.elements || [])
+      .flatMap(
+        (element: GoogleDocsElement) => element.paragraph?.elements || [],
+      )
       .find(
         (el: GoogleDocsParagraphElement) =>
           el.textRun?.content?.includes(placeholderText) &&
-          el.startIndex === placeholderIndex
+          el.startIndex === placeholderIndex,
       );
 
     if (!textContent || !textContent.textRun?.content) {
       console.warn(
-        `Could not find text content for placeholder "${placeholderText}"`
+        `Could not find text content for placeholder "${placeholderText}"`,
       );
       return;
     }
@@ -285,7 +291,7 @@ export async function insertImageAtPlaceholder(
   } catch (error) {
     console.error(
       `Error inserting image at placeholder "${placeholderText}":`,
-      error
+      error,
     );
     // Don't throw - allow the process to continue with other placeholders
     console.warn(`Skipping image insertion for "${placeholderText}"`);
@@ -307,7 +313,7 @@ export async function exportAsHTML(documentId: string): Promise<string> {
         fileId: documentId,
         mimeType: "text/html",
       },
-      { responseType: "text" }
+      { responseType: "text" },
     );
 
     if (!response.data) {
@@ -319,12 +325,9 @@ export async function exportAsHTML(documentId: string): Promise<string> {
     console.error("Error exporting HTML:", error);
     if (error instanceof Error) {
       const apiError = error as GoogleApiError;
-      if (
-        error.message.includes("File not found") ||
-        apiError.code === 404
-      ) {
+      if (error.message.includes("File not found") || apiError.code === 404) {
         throw new Error(
-          `Document not found. Please verify the document ID is correct.`
+          `Document not found. Please verify the document ID is correct.`,
         );
       }
       if (
@@ -332,14 +335,14 @@ export async function exportAsHTML(documentId: string): Promise<string> {
         apiError.code === 403
       ) {
         throw new Error(
-          `Insufficient permissions to export document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
+          `Insufficient permissions to export document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
         );
       }
     }
     throw new Error(
       `Failed to export HTML: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`
+      }`,
     );
   }
 }
@@ -355,7 +358,7 @@ export async function exportAsHTML(documentId: string): Promise<string> {
 export function postProcessHTML(
   html: string,
   logoUrl?: string,
-  signatureDataUrl?: string
+  signatureDataUrl?: string,
 ): string {
   let processedHtml = html;
 
@@ -364,7 +367,7 @@ export function postProcessHTML(
     // Match various possible formats Google Docs might output
     processedHtml = processedHtml.replace(
       new RegExp(logoUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"),
-      `<img src="${logoUrl}" alt="Thrive Logo" style="max-width: 200px; height: auto; display: block; margin-bottom: 20px;" />`
+      `<img src="${logoUrl}" alt="Thrive Logo" style="max-width: 200px; height: auto; display: block; margin-bottom: 20px;" />`,
     );
   }
 
@@ -375,9 +378,9 @@ export function postProcessHTML(
     processedHtml = processedHtml.replace(
       new RegExp(
         dataUrlPattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[^\\s<>]*",
-        "gi"
+        "gi",
       ),
-      `<img src="${signatureDataUrl}" alt="Signature" style="max-width: 300px; height: auto; display: block; margin-top: 20px;" />`
+      `<img src="${signatureDataUrl}" alt="Signature" style="max-width: 300px; height: auto; display: block; margin-top: 20px;" />`,
     );
   }
 
@@ -385,14 +388,14 @@ export function postProcessHTML(
   if (logoUrl) {
     processedHtml = processedHtml.replace(
       /\{\{logo_url\}\}/gi,
-      `<img src="${logoUrl}" alt="Thrive Logo" style="max-width: 200px; height: auto; display: block; margin-bottom: 20px;" />`
+      `<img src="${logoUrl}" alt="Thrive Logo" style="max-width: 200px; height: auto; display: block; margin-bottom: 20px;" />`,
     );
   }
 
   if (signatureDataUrl) {
     processedHtml = processedHtml.replace(
       /\{\{signature_image\}\}/gi,
-      `<img src="${signatureDataUrl}" alt="Signature" style="max-width: 300px; height: auto; display: block; margin-top: 20px;" />`
+      `<img src="${signatureDataUrl}" alt="Signature" style="max-width: 300px; height: auto; display: block; margin-top: 20px;" />`,
     );
   }
 
@@ -548,7 +551,7 @@ function formatDateTime(date: Date | string): string {
  * Map report data to Google Doc placeholders
  */
 export function mapReportDataToPlaceholders(
-  data: ReportDocData
+  data: ReportDocData,
 ): Record<string, string> {
   // Format dynamic sections as numbered sections with titles and content
   const dynamicSectionsText = data.dynamicSections
@@ -585,7 +588,7 @@ export function mapReportDataToPlaceholders(
  * @returns Object with documentId and HTML content
  */
 export async function generateReportFromTemplate(
-  data: ReportDocData
+  data: ReportDocData,
 ): Promise<{ documentId: string; htmlContent: string }> {
   const templateId =
     ENV.GOOGLE_REPORT_TEMPLATE_ID || ENV.GOOGLE_REPORT_TEMPLATE_ID;
@@ -593,7 +596,7 @@ export async function generateReportFromTemplate(
 
   if (!templateId) {
     throw new Error(
-      "GOOGLE_REPORT_TEMPLATE_ID environment variable is not set"
+      "GOOGLE_REPORT_TEMPLATE_ID environment variable is not set",
     );
   }
 
@@ -601,7 +604,7 @@ export async function generateReportFromTemplate(
   const documentId = await copyTemplate(
     templateId,
     `Report_${data.caseNumber.replace(/\s+/g, "_")}_${Date.now()}`,
-    folderId
+    folderId,
   );
 
   try {
@@ -620,7 +623,7 @@ export async function generateReportFromTemplate(
         data.logoUrl,
         data.logoUrl, // The placeholder was replaced with the URL itself
         150, // width in points (approx 2 inches)
-        50 // height in points
+        50, // height in points
       );
     }
 
@@ -633,7 +636,7 @@ export async function generateReportFromTemplate(
         data.signatureDataUrl,
         data.signatureDataUrl.substring(0, 100), // Match beginning of data URL
         200, // width in points
-        80 // height in points
+        80, // height in points
       );
     }
 
@@ -644,7 +647,7 @@ export async function generateReportFromTemplate(
     const htmlContent = postProcessHTML(
       rawHtmlContent,
       data.logoUrl,
-      data.signatureDataUrl
+      data.signatureDataUrl,
     );
 
     return {

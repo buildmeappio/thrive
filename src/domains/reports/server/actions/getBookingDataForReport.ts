@@ -10,7 +10,7 @@ interface GetBookingDataForReportResult {
 }
 
 export async function getBookingDataForReportAction(
-  bookingId: string
+  bookingId: string,
 ): Promise<GetBookingDataForReportResult> {
   try {
     const data = await reportService.getBookingDataForReport(bookingId);

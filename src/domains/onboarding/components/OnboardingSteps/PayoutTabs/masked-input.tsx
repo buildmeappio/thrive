@@ -22,7 +22,8 @@ export function MaskedInput({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const hasValue = typeof value === "string" && value.length > 0;
-  const displayValue = show || !hasValue ? value : maskChar.repeat(value?.toString().length || 0);
+  const displayValue =
+    show || !hasValue ? value : maskChar.repeat(value?.toString().length || 0);
 
   // Restore cursor position after masking/unmasking
   useEffect(() => {
@@ -41,7 +42,7 @@ export function MaskedInput({
       const newValue = e.target.value;
       // Remove mask characters and get the actual input
       const actualValue = newValue.replace(new RegExp(maskChar, "g"), "");
-      
+
       // Create a synthetic event with the actual value
       const syntheticEvent = {
         ...e,
@@ -50,7 +51,7 @@ export function MaskedInput({
           value: actualValue,
         },
       };
-      
+
       setCursorPosition(e.target.selectionStart);
       onChange?.(syntheticEvent as React.ChangeEvent<HTMLInputElement>);
     }
@@ -82,7 +83,8 @@ export function MaskedInput({
             }, 0);
           }}
           className="absolute top-1/2 right-3 -translate-y-1/2 focus:outline-none cursor-pointer"
-          tabIndex={-1}>
+          tabIndex={-1}
+        >
           {show ? (
             <EyeOff size={20} color="#9EA9AA" />
           ) : (
@@ -93,4 +95,3 @@ export function MaskedInput({
     </div>
   );
 }
-

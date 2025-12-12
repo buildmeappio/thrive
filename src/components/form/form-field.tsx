@@ -13,7 +13,7 @@ interface FormFieldProps<TFieldValues extends FieldValues> {
   label?: string;
   required?: boolean;
   children: (
-    field: UseFormRegisterReturn<FieldPath<TFieldValues>> & { error?: boolean }
+    field: UseFormRegisterReturn<FieldPath<TFieldValues>> & { error?: boolean },
   ) => React.ReactElement;
   className?: string;
   hint?: string;
@@ -35,14 +35,14 @@ const FormField = <TFieldValues extends FieldValues>({
   const error = errors[name];
   const errorMessage = error?.message as string | undefined;
   const hasError = !!error;
-  
+
   // Only show error message for validation errors, not simple "required" errors
   // Simple required errors: "is required", "required", ends with "is required"
-  const isRequiredError = errorMessage && (
-    errorMessage.toLowerCase() === "required" ||
-    errorMessage.toLowerCase().endsWith(" is required") ||
-    errorMessage.toLowerCase() === "is required"
-  );
+  const isRequiredError =
+    errorMessage &&
+    (errorMessage.toLowerCase() === "required" ||
+      errorMessage.toLowerCase().endsWith(" is required") ||
+      errorMessage.toLowerCase() === "is required");
   const showErrorMessage = errorMessage && !isRequiredError;
 
   return (
@@ -54,8 +54,12 @@ const FormField = <TFieldValues extends FieldValues>({
         </Label>
       )}
       {children({ ...register(name), error: hasError })}
-      {showErrorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
-      {hint && !showErrorMessage && <p className="text-xs text-gray-500">{hint}</p>}
+      {showErrorMessage && (
+        <p className="text-xs text-red-500">{errorMessage}</p>
+      )}
+      {hint && !showErrorMessage && (
+        <p className="text-xs text-gray-500">{hint}</p>
+      )}
     </div>
   );
 };

@@ -6,7 +6,7 @@ import prisma from "@/lib/db";
 export async function checkExaminerStatus() {
   try {
     const user = await getCurrentUser();
-    
+
     if (!user?.accountId) {
       return { isSuspended: false };
     }
@@ -25,4 +25,3 @@ export async function checkExaminerStatus() {
     return { isSuspended: false };
   }
 }
-

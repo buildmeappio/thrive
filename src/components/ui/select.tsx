@@ -12,7 +12,7 @@ interface SelectContextValue {
 }
 
 const SelectContext = React.createContext<SelectContextValue | undefined>(
-  undefined
+  undefined,
 );
 
 const useSelectContext = () => {
@@ -61,7 +61,11 @@ const Select = ({
         if (label) return; // Already found
 
         if (React.isValidElement(child)) {
-          const props = child.props as { value?: string; children?: React.ReactNode; [key: string]: unknown };
+          const props = child.props as {
+            value?: string;
+            children?: React.ReactNode;
+            [key: string]: unknown;
+          };
           // Check if this is a SelectItem with matching value
           if (props.value === value) {
             label = typeof props.children === "string" ? props.children : value;
@@ -92,7 +96,7 @@ const Select = ({
       onValueChange?.(newValue);
       setOpen(false);
     },
-    [isControlled, onValueChange]
+    [isControlled, onValueChange],
   );
 
   const onOpenChange = React.useCallback((newOpen: boolean) => {
@@ -152,8 +156,7 @@ const SelectValue = ({
 };
 SelectValue.displayName = "SelectValue";
 
-interface SelectTriggerProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface SelectTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
 }
 
@@ -171,15 +174,16 @@ const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
         aria-haspopup="listbox"
         className={cn(
           "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-          className
+          className,
         )}
         onClick={() => onOpenChange(!open)}
-        {...props}>
+        {...props}
+      >
         {children}
         <ChevronDown className="h-4 w-4 opacity-50" />
       </button>
     );
-  }
+  },
 );
 SelectTrigger.displayName = "SelectTrigger";
 
@@ -236,13 +240,14 @@ const SelectContent = React.forwardRef<HTMLDivElement, SelectContentProps>(
         className={cn(
           "scrollbar-thin absolute z-50 mt-1 max-h-96 min-w-[8rem] overflow-y-auto rounded-md border bg-white text-gray-900 shadow-md animate-in fade-in-80",
           position === "popper" && "w-full",
-          className
+          className,
         )}
-        style={style}>
+        style={style}
+      >
         <div className="p-1">{children}</div>
       </div>
     );
-  }
+  },
 );
 SelectContent.displayName = "SelectContent";
 
@@ -289,17 +294,18 @@ const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
         aria-selected={isSelected}
         className={cn(
           "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-          className
+          className,
         )}
         onClick={handleClick}
-        {...props}>
+        {...props}
+      >
         <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
           {isSelected && <Check className="h-4 w-4" />}
         </span>
         {children}
       </div>
     );
-  }
+  },
 );
 SelectItem.displayName = "SelectItem";
 

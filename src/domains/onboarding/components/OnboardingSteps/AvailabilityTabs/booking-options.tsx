@@ -31,7 +31,8 @@ const BookingOptions: React.FC<BookingOptionsProps> = ({ form: _form }) => {
                 <div className="flex flex-col">
                   <select
                     {...field}
-                    className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[180px]">
+                    className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[180px]"
+                  >
                     <option value="">Select maximum</option>
                     {MAX_IMES_PER_WEEK_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -57,7 +58,8 @@ const BookingOptions: React.FC<BookingOptionsProps> = ({ form: _form }) => {
                 <div className="flex flex-col">
                   <select
                     {...field}
-                    className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[180px]">
+                    className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[180px]"
+                  >
                     <option value="">Select notice</option>
                     {MINIMUM_NOTICE_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>

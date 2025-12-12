@@ -6,7 +6,7 @@ import {
 } from "../../types";
 
 const getDashboardBookings = async (
-  payload: GetDashboardBookingsInput
+  payload: GetDashboardBookingsInput,
 ): Promise<GetDashboardBookingsResponse> => {
   try {
     const { examinerProfileId } = payload;
@@ -25,7 +25,9 @@ const getDashboardBookings = async (
     console.error("Error in getDashboardBookings handler:", error);
     return {
       success: false,
-      message: (error instanceof Error ? error.message : undefined) || "Failed to fetch dashboard bookings",
+      message:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to fetch dashboard bookings",
     };
   }
 };

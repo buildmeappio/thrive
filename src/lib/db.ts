@@ -12,27 +12,16 @@ if (!connectionString) {
 
 const config: PoolConfig = {
   connectionString,
-  // Connection pool settings
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 10000, // Return an error after 10 seconds if connection cannot be established
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
 };
 
-// SSL configuration for production
-// Most production databases (AWS RDS, Azure, etc.) require SSL
 if (process.env.NODE_ENV === "production") {
-  // Check if SSL should be disabled explicitly
-  const sslDisabled = process.env.DATABASE_SSL_REQUIRED === "false";
-
-  if (!sslDisabled) {
-    // Enable SSL - most production databases require it
-    // rejectUnauthorized: false allows self-signed certificates (common in managed databases)
-    // Set DATABASE_SSL_REQUIRED=true if you want strict certificate validation
-    const strictSSL = process.env.DATABASE_SSL_REQUIRED === "true";
-    config.ssl = {
-      rejectUnauthorized: strictSSL,
-    };
-  }
+  const sslRequired = process.env.DATABASE_SSL_REQUIRED === "true";
+  config.ssl = {
+    rejectUnauthorized: sslRequired,
+  };
 }
 
 const pool = new Pool(config);

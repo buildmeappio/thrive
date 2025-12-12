@@ -41,7 +41,7 @@ export interface UploadDocumentResponse {
  */
 export async function uploadDocuments(
   files: File | File[],
-  userId?: string
+  userId?: string,
 ): Promise<UploadDocumentResponse> {
   try {
     const formData = new FormData();

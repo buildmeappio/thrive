@@ -25,9 +25,14 @@ const LoginForm = () => {
 
   // Show success message if password was reset
   useEffect(() => {
-    if (!hasShownResetToast.current && searchParams.get("reset") === "success") {
+    if (
+      !hasShownResetToast.current &&
+      searchParams.get("reset") === "success"
+    ) {
       hasShownResetToast.current = true;
-      toast.success("Password reset successfully! You can now login with your new password.");
+      toast.success(
+        "Password reset successfully! You can now login with your new password.",
+      );
 
       const params = new URLSearchParams(searchParams.toString());
       params.delete("reset");
@@ -42,14 +47,19 @@ const LoginForm = () => {
     try {
       // Check if account is suspended before attempting login
       console.log("LoginForm: Checking suspension for email:", values.email);
-      const suspensionCheck = await checkSuspensionByEmail(values.email.toLowerCase());
+      const suspensionCheck = await checkSuspensionByEmail(
+        values.email.toLowerCase(),
+      );
       console.log("LoginForm: Suspension check result:", suspensionCheck);
-      
+
       if (suspensionCheck.isSuspended) {
         console.log("LoginForm: Account is suspended, blocking login");
-        toast.error("Your account is suspended. Please contact administrator.", {
-          position: "top-right",
-        });
+        toast.error(
+          "Your account is suspended. Please contact administrator.",
+          {
+            position: "top-right",
+          },
+        );
         setIsLoading(false);
         return; // Early return prevents login attempt
       }
@@ -81,7 +91,8 @@ const LoginForm = () => {
       onSubmit={onSubmit}
       validateOnChange={false}
       validateOnBlur={false}
-      enableReinitialize>
+      enableReinitialize
+    >
       {({ values, errors, handleChange, touched }) => (
         <Form>
           <div className="mb-6">
@@ -120,23 +131,26 @@ const LoginForm = () => {
           <div className="mb-4 text-right">
             <Link
               href={URLS.PASSWORD_FORGOT}
-              className="text-sm font-bold text-[#0097E5] underline">
+              className="text-sm font-bold text-[#0097E5] underline"
+            >
               Forgot Password?
             </Link>
           </div>
           <Button
             type="submit"
             className="w-full bg-[#00A8FF] hover:bg-[#0097E5] text-white text-xl font-semibold py-7 px-3 rounded-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isLoading}>
+            disabled={isLoading}
+          >
             {isLoading ? "Logging in..." : "Log In"}
             {!isLoading && <ArrowRight strokeWidth={3} color="white" />}
           </Button>
           {/* Debug: Show validation errors if form was touched */}
-          {Object.keys(errors).length > 0 && Object.keys(touched).length > 0 && (
-            <div className="mt-2 text-xs text-red-500">
-              Please fix the errors above to continue.
-            </div>
-          )}
+          {Object.keys(errors).length > 0 &&
+            Object.keys(touched).length > 0 && (
+              <div className="mt-2 text-xs text-red-500">
+                Please fix the errors above to continue.
+              </div>
+            )}
         </Form>
       )}
     </Formik>

@@ -3,7 +3,9 @@
 import { SaveApplicationProgressInput } from "../server/handlers/saveApplicationProgress";
 import authHandlers from "../server/handlers/index";
 
-const saveApplicationProgress = async (payload: SaveApplicationProgressInput) => {
+const saveApplicationProgress = async (
+  payload: SaveApplicationProgressInput,
+) => {
   try {
     const result = await authHandlers.saveApplicationProgress(payload);
     return result;
@@ -19,4 +21,3 @@ const saveApplicationProgress = async (payload: SaveApplicationProgressInput) =>
 };
 
 export default saveApplicationProgress;
-

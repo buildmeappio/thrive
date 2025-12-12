@@ -8,7 +8,7 @@ export const signContract = async (
   htmlContent: string,
   pdfBase64: string,
   ipAddress?: string,
-  userAgent?: string
+  userAgent?: string,
 ) => {
   const result = await signContractHandler({
     contractId,

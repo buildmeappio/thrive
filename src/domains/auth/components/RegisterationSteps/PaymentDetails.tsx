@@ -62,7 +62,8 @@ const PaymentDetails: React.FC<RegStepProps> = ({
   return (
     <div
       className="mt-4 flex w-full flex-col rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
-      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+      style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+    >
       <ProgressIndicator
         currentStep={currentStep}
         totalSteps={totalSteps}
@@ -83,7 +84,8 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                 <FormField
                   name="IMEFee"
                   label="Standard IME Fee (CAD)"
-                  required>
+                  required
+                >
                   {(field: UseFormRegisterReturn & { error?: boolean }) => (
                     <Input
                       {...field}
@@ -101,7 +103,8 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                 <FormField
                   name="recordReviewFee"
                   label="Record Review Fee (CAD)"
-                  required>
+                  required
+                >
                   {(field: UseFormRegisterReturn & { error?: boolean }) => (
                     <Input
                       {...field}
@@ -134,7 +137,8 @@ const PaymentDetails: React.FC<RegStepProps> = ({
                 <FormField
                   name="cancellationFee"
                   label="Cancellation Fee (CAD)"
-                  required>
+                  required
+                >
                   {(field: UseFormRegisterReturn & { error?: boolean }) => (
                     <Input
                       {...field}

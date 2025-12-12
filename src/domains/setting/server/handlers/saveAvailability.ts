@@ -34,7 +34,7 @@ const saveAvailability = async (payload: SaveAvailabilityInput) => {
   try {
     // Transform weekly hours from object to array format
     const weeklyHoursArray: WeeklyHoursData[] = Object.entries(
-      payload.weeklyHours
+      payload.weeklyHours,
     ).map(([dayOfWeek, data]) => ({
       dayOfWeek: dayOfWeek.toUpperCase() as
         | "MONDAY"
@@ -57,7 +57,7 @@ const saveAvailability = async (payload: SaveAvailabilityInput) => {
       {
         weeklyHours: weeklyHoursArray,
         overrideHours: overrideHoursArray,
-      }
+      },
     );
 
     // Save booking options if provided
@@ -93,7 +93,7 @@ const saveAvailability = async (payload: SaveAvailabilityInput) => {
   } catch (error) {
     console.error("Error saving availability:", error);
     throw HttpError.internalServerError(
-      "Failed to save availability preferences"
+      "Failed to save availability preferences",
     );
   }
 };

@@ -8,7 +8,7 @@ export type GetPayoutDetailsInput = {
 
 const getPayoutDetails = async (payload: GetPayoutDetailsInput) => {
   const examinerProfile = await dashboardService.getExaminerProfileByAccountId(
-    payload.accountId
+    payload.accountId,
   );
 
   if (!examinerProfile) {
@@ -46,4 +46,3 @@ const getPayoutDetails = async (payload: GetPayoutDetailsInput) => {
 };
 
 export default getPayoutDetails;
-

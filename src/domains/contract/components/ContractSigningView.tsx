@@ -72,17 +72,17 @@ const ContractSigningView = ({
       const originalOverflow = contractElement.style.overflow;
       const originalHeight = contractElement.style.height;
       const originalMaxHeight = contractElement.style.maxHeight;
-      
+
       // Temporarily adjust styles to capture full content
       contractElement.style.overflow = "visible";
       contractElement.style.height = "auto";
       contractElement.style.maxHeight = "none";
-      
+
       // Scroll to top to ensure we capture from the beginning
       contractElement.scrollTop = 0;
-      
+
       // Wait a bit for rendering
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Use html2canvas to capture the FULL contract as an image
       // Using scale: 1.5 for balance between quality and file size
@@ -109,34 +109,43 @@ const ContractSigningView = ({
       const pdfWidth = 210; // A4 width in mm
       const pdfHeight = 297; // A4 height in mm
       const margin = 10; // Margin in mm
-      const contentWidth = pdfWidth - (margin * 2);
-      const contentHeight = pdfHeight - (margin * 2);
+      const contentWidth = pdfWidth - margin * 2;
+      const contentHeight = pdfHeight - margin * 2;
 
       // Calculate image dimensions to fit PDF width while maintaining aspect ratio
       const imgWidth = contentWidth;
       const imgHeight = (canvas.height * contentWidth) / canvas.width;
 
       // Helper function to find safe break points (horizontal gaps/white space)
-      const findSafeBreakPoint = (startY: number, endY: number, canvas: HTMLCanvasElement): number => {
+      const findSafeBreakPoint = (
+        startY: number,
+        endY: number,
+        canvas: HTMLCanvasElement,
+      ): number => {
         const ctx = canvas.getContext("2d");
         if (!ctx) return endY;
-        
-        const imageData = ctx.getImageData(0, startY, canvas.width, endY - startY);
+
+        const imageData = ctx.getImageData(
+          0,
+          startY,
+          canvas.width,
+          endY - startY,
+        );
         const data = imageData.data;
         const threshold = 245; // Consider pixels lighter than this as "white"
         const minGapHeight = 20; // Minimum gap height to consider as a break point (in pixels)
         const whitePixelRatio = 0.85; // At least 85% of pixels should be white
-        
+
         let bestBreakY = endY;
         let gapStart = -1;
         let bestGapHeight = 0;
         let bestGapY = endY;
-        
+
         // Scan from bottom to top (near the end) to find gaps
         const searchHeight = endY - startY;
         for (let y = searchHeight - 1; y >= minGapHeight; y--) {
           let whiteCount = 0;
-          
+
           // Sample pixels across the width (check every 5th pixel for performance)
           const sampleStep = 5;
           for (let x = 0; x < canvas.width; x += sampleStep) {
@@ -145,26 +154,29 @@ const ContractSigningView = ({
             const g = data[idx + 1];
             const b = data[idx + 2];
             const brightness = (r + g + b) / 3;
-            
+
             if (brightness >= threshold) {
               whiteCount++;
             }
           }
-          
+
           const whiteRatio = whiteCount / (canvas.width / sampleStep);
           const isGapRow = whiteRatio >= whitePixelRatio;
-          
+
           if (isGapRow) {
             if (gapStart === -1) {
               gapStart = y;
             }
             const gapHeight = gapStart - y + 1;
-            
+
             // Track the best gap (largest and closest to end)
             if (gapHeight >= minGapHeight) {
               const gapY = startY + y;
               // Prefer gaps closer to the end, but prioritize larger gaps
-              if (gapHeight > bestGapHeight || (gapHeight === bestGapHeight && gapY > bestGapY)) {
+              if (
+                gapHeight > bestGapHeight ||
+                (gapHeight === bestGapHeight && gapY > bestGapY)
+              ) {
                 bestGapHeight = gapHeight;
                 bestGapY = gapY;
                 // Use the start of the gap as break point (top of the gap)
@@ -176,7 +188,7 @@ const ContractSigningView = ({
             gapStart = -1;
           }
         }
-        
+
         return bestBreakY;
       };
 
@@ -184,11 +196,13 @@ const ContractSigningView = ({
 
       // Calculate page height in pixels
       const pageHeightInPixels = contentHeight * (canvas.height / imgHeight);
-      
+
       // Calculate how many pages we need
       const totalPages = Math.ceil(imgHeight / contentHeight);
-      
-      console.log(`Generating PDF: ${totalPages} pages, image height: ${imgHeight}mm, content height per page: ${contentHeight}mm`);
+
+      console.log(
+        `Generating PDF: ${totalPages} pages, image height: ${imgHeight}mm, content height per page: ${contentHeight}mm`,
+      );
 
       // Add content to PDF, splitting across pages at safe break points
       let currentY = 0;
@@ -200,110 +214,125 @@ const ContractSigningView = ({
         // Calculate the ideal end position for this page
         const idealEndY = Math.min(
           currentY + pageHeightInPixels,
-          canvas.height
+          canvas.height,
         );
-        
+
         // Find a safe break point near the ideal end position
         // Look for break points within the last 30% of the page (but at least 100px from start)
         const searchStartY = Math.max(
           currentY + 100, // Ensure we have some content before looking for breaks
-          idealEndY - (pageHeightInPixels * 0.3)
+          idealEndY - pageHeightInPixels * 0.3,
         );
         const safeBreakY = findSafeBreakPoint(searchStartY, idealEndY, canvas);
-        
+
         // Use the safe break point if it's reasonable (not too close to start, not too far from ideal)
         const sourceY = currentY;
         const minHeight = pageHeightInPixels * 0.7; // At least 70% of page height
         const maxHeight = pageHeightInPixels * 1.1; // At most 110% of page height
-        
+
         let actualEndY = idealEndY;
-        if (safeBreakY < idealEndY && safeBreakY > currentY + minHeight && safeBreakY <= currentY + maxHeight) {
+        if (
+          safeBreakY < idealEndY &&
+          safeBreakY > currentY + minHeight &&
+          safeBreakY <= currentY + maxHeight
+        ) {
           actualEndY = safeBreakY;
         }
-        
+
         // For last page, use remaining content
         if (page === totalPages - 1) {
           actualEndY = canvas.height;
         }
-        
+
         const actualSourceHeight = actualEndY - sourceY;
-        
+
         // Ensure we have at least some content
         if (actualSourceHeight < 50 && page < totalPages - 1) {
           // If the safe break is too close to start, use ideal end
-          const fallbackEndY = Math.min(currentY + pageHeightInPixels, canvas.height);
+          const fallbackEndY = Math.min(
+            currentY + pageHeightInPixels,
+            canvas.height,
+          );
           const fallbackHeight = fallbackEndY - sourceY;
-          
+
           // Create a temporary canvas for this page's portion
           const pageCanvas = document.createElement("canvas");
           pageCanvas.width = canvas.width;
           pageCanvas.height = fallbackHeight;
           const pageCtx = pageCanvas.getContext("2d");
-          
+
           if (!pageCtx) {
             throw new Error("Failed to get canvas context");
           }
-          
+
           // Fill with white background first
           pageCtx.fillStyle = "#ffffff";
           pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-          
+
           // Draw the portion of the original canvas for this page
           pageCtx.drawImage(
             canvas,
-            0, sourceY,
-            canvas.width, fallbackHeight,
-            0, 0,
-            pageCanvas.width, pageCanvas.height
+            0,
+            sourceY,
+            canvas.width,
+            fallbackHeight,
+            0,
+            0,
+            pageCanvas.width,
+            pageCanvas.height,
           );
-          
+
           const pageImgData = pageCanvas.toDataURL("image/jpeg", 0.92);
           const pageImgHeight = (fallbackHeight * imgWidth) / canvas.width;
-          
+
           pdf.addImage(
             pageImgData,
             "JPEG",
             margin,
             margin,
             imgWidth,
-            pageImgHeight
+            pageImgHeight,
           );
-          
+
           currentY = fallbackEndY;
           continue;
         }
-        
+
         // Create a temporary canvas for this page's portion
         const pageCanvas = document.createElement("canvas");
         pageCanvas.width = canvas.width;
         pageCanvas.height = actualSourceHeight;
         const pageCtx = pageCanvas.getContext("2d");
-        
+
         if (!pageCtx) {
           throw new Error("Failed to get canvas context");
         }
-        
+
         // Fill with white background first
         pageCtx.fillStyle = "#ffffff";
         pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-        
+
         // Draw the portion of the original canvas for this page
         pageCtx.drawImage(
           canvas,
-          0, sourceY, // Source x, y (start from top of this page's portion)
-          canvas.width, actualSourceHeight, // Source width, height
-          0, 0, // Destination x, y
-          pageCanvas.width, pageCanvas.height // Destination width, height
+          0,
+          sourceY, // Source x, y (start from top of this page's portion)
+          canvas.width,
+          actualSourceHeight, // Source width, height
+          0,
+          0, // Destination x, y
+          pageCanvas.width,
+          pageCanvas.height, // Destination width, height
         );
-        
+
         // Convert page canvas to image with compression
         // Using 0.92 quality for JPEG to reduce file size while maintaining readability
         // JPEG is better for text documents than PNG for file size
         const pageImgData = pageCanvas.toDataURL("image/jpeg", 0.92);
-        
+
         // Calculate the height this page's image should be in mm
         const pageImgHeight = (actualSourceHeight * imgWidth) / canvas.width;
-        
+
         // Add this page's image to PDF
         pdf.addImage(
           pageImgData,
@@ -311,26 +340,30 @@ const ContractSigningView = ({
           margin,
           margin,
           imgWidth,
-          pageImgHeight
+          pageImgHeight,
         );
-        
+
         // Update currentY for next page
         currentY = actualEndY;
       }
 
       // Convert PDF to base64
       const pdfBase64 = pdf.output("datauristring").split(",")[1];
-      
+
       // Check file size (Gmail limit is 25MB)
       const pdfSizeBytes = (pdfBase64.length * 3) / 4; // Approximate size in bytes
       const pdfSizeMB = pdfSizeBytes / (1024 * 1024);
-      
-      console.log(`PDF generated: ${pdfSizeMB.toFixed(2)} MB, ${totalPages} pages`);
-      
+
+      console.log(
+        `PDF generated: ${pdfSizeMB.toFixed(2)} MB, ${totalPages} pages`,
+      );
+
       if (pdfSizeMB > 24) {
-        console.warn(`⚠️ PDF size (${pdfSizeMB.toFixed(2)} MB) is close to Gmail's 25MB limit`);
+        console.warn(
+          `⚠️ PDF size (${pdfSizeMB.toFixed(2)} MB) is close to Gmail's 25MB limit`,
+        );
       }
-      
+
       return pdfBase64;
     } catch (error) {
       console.error("Error generating PDF:", error);
@@ -357,7 +390,7 @@ const ContractSigningView = ({
         htmlContent,
         pdfBase64,
         undefined,
-        userAgent
+        userAgent,
       );
 
       if (!result.success) {
@@ -371,7 +404,7 @@ const ContractSigningView = ({
           examinerProfileId,
           examinerEmail,
           contractId,
-          pdfBase64 // Pass base64 string, server will convert to Buffer
+          pdfBase64, // Pass base64 string, server will convert to Buffer
         );
       } catch (notificationError) {
         console.warn("Failed to send notification emails:", notificationError);
@@ -406,7 +439,7 @@ const ContractSigningView = ({
       const result = await declineContractByExaminer(
         examinerProfileId,
         examinerEmail,
-        declineReason
+        declineReason,
       );
 
       if (!result.success) {
@@ -496,7 +529,7 @@ const ContractSigningView = ({
 
     const updateTargets = (
       selectors: string[],
-      updater: (el: HTMLElement) => void
+      updater: (el: HTMLElement) => void,
     ): boolean => {
       let matched = false;
       selectors.forEach((selector) => {
@@ -537,7 +570,7 @@ const ContractSigningView = ({
     const findSignatureBlock = () => {
       const walker = document.createTreeWalker(
         contractEl,
-        NodeFilter.SHOW_TEXT
+        NodeFilter.SHOW_TEXT,
       );
 
       while (walker.nextNode()) {
@@ -597,7 +630,7 @@ const ContractSigningView = ({
 
       const walker = document.createTreeWalker(
         contractEl,
-        NodeFilter.SHOW_TEXT
+        NodeFilter.SHOW_TEXT,
       );
 
       let foundExaminerSignature = false;
@@ -634,7 +667,7 @@ const ContractSigningView = ({
 
     const ensureDynamicContainer = () => {
       let dynamicContainer = contractEl.querySelector<HTMLElement>(
-        "#contract-dynamic-examiner-signature"
+        "#contract-dynamic-examiner-signature",
       );
 
       if (!dynamicContainer) {
@@ -668,7 +701,7 @@ const ContractSigningView = ({
         } else {
           el.innerHTML = "";
         }
-      }
+      },
     );
 
     const dynamicContainer = hasImageTarget ? null : ensureDynamicContainer();
@@ -682,7 +715,7 @@ const ContractSigningView = ({
     } else if (!hasImageTarget && signatureImage) {
       // Final fallback: append to contract root once (should rarely happen)
       let fallback = contractEl.querySelector<HTMLElement>(
-        "#contract-dynamic-examiner-signature"
+        "#contract-dynamic-examiner-signature",
       );
       if (!fallback) {
         fallback = document.createElement("div");
@@ -697,7 +730,7 @@ const ContractSigningView = ({
       fallback.innerHTML = `<img src="${signatureImage}" alt="Examiner Signature" style="max-width: 240px; height: auto;" />`;
     } else if (!signatureImage) {
       const fallback = contractEl.querySelector<HTMLElement>(
-        "#contract-dynamic-examiner-signature"
+        "#contract-dynamic-examiner-signature",
       );
       fallback?.remove();
     }
@@ -716,7 +749,7 @@ const ContractSigningView = ({
         !currentText.includes(formattedDate)
       ) {
         const dateInput = dateField.querySelector<HTMLElement>(
-          "input, span, div, p"
+          "input, span, div, p",
         );
         if (dateInput) {
           const inputText = dateInput.textContent || "";
@@ -733,7 +766,7 @@ const ContractSigningView = ({
           }
         } else {
           const textNodes = Array.from(dateField.childNodes).filter(
-            (node) => node.nodeType === Node.TEXT_NODE
+            (node) => node.nodeType === Node.TEXT_NODE,
           );
           if (textNodes.length > 0) {
             const textNode = textNodes[0] as Text;
@@ -754,8 +787,8 @@ const ContractSigningView = ({
               dateField.textContent = currentText.trim().endsWith(":")
                 ? `${currentText.trim()} ${formattedDate}`
                 : currentText.trim()
-                ? `${currentText.trim()}: ${formattedDate}`
-                : `Date: ${formattedDate}`;
+                  ? `${currentText.trim()}: ${formattedDate}`
+                  : `Date: ${formattedDate}`;
             }
           }
         }
@@ -770,7 +803,7 @@ const ContractSigningView = ({
       ],
       (el) => {
         el.textContent = sigName || "";
-      }
+      },
     );
 
     updateTargets(
@@ -781,7 +814,7 @@ const ContractSigningView = ({
       ],
       (el) => {
         el.textContent = formattedDate;
-      }
+      },
     );
   }, [
     contractHtml,
@@ -801,14 +834,16 @@ const ContractSigningView = ({
         <div className="max-w-2xl w-full">
           <div
             className="bg-white rounded-[20px] p-8 md:p-12 text-center"
-            style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+            style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+          >
             {/* Declined Icon */}
             <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
               <svg
                 className="w-10 h-10 text-red-600"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -842,14 +877,16 @@ const ContractSigningView = ({
         <div className="max-w-2xl w-full">
           <div
             className="bg-white rounded-[20px] p-8 md:p-12 text-center"
-            style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+            style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+          >
             {/* Success Icon */}
             <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
               <svg
                 className="w-10 h-10 text-green-600"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -890,7 +927,8 @@ const ContractSigningView = ({
               lineHeight: "1.4",
               boxShadow: "0px 0px 36.35px 0px #00000008",
               height: "calc(100vh - 100px)",
-            }}>
+            }}
+          >
             <div
               id="contract-content"
               dangerouslySetInnerHTML={{
@@ -905,7 +943,8 @@ const ContractSigningView = ({
             className="w-full lg:w-96 lg:min-w-[384px] bg-white p-6 md:p-8 rounded-[20px] flex flex-col shrink-0"
             style={{
               boxShadow: "0px 0px 36.35px 0px #00000008",
-            }}>
+            }}
+          >
             <div className="border-b-2 border-[#00A8FF] pb-3 mb-6">
               <h2 className="text-2xl md:text-[24px] font-semibold text-black">
                 Sign Agreement
@@ -953,7 +992,8 @@ const ContractSigningView = ({
                 </div>
                 <button
                   onClick={clearSignature}
-                  className="mt-2 text-sm text-[#00A8FF] hover:text-[#0088CC] font-semibold underline transition-colors">
+                  className="mt-2 text-sm text-[#00A8FF] hover:text-[#0088CC] font-semibold underline transition-colors"
+                >
                   Clear Signature
                 </button>
               </div>
@@ -991,7 +1031,8 @@ const ContractSigningView = ({
                           "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
                       }
                     : {}
-                }>
+                }
+              >
                 {isSigning ? "Processing..." : "Sign Agreement"}
               </button>
 
@@ -999,7 +1040,8 @@ const ContractSigningView = ({
               <button
                 onClick={() => setShowDeclineModal(true)}
                 disabled={isSigning}
-                className="w-full py-3 px-4 rounded-lg font-semibold text-red-600 text-base transition-all border-2 border-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="w-full py-3 px-4 rounded-lg font-semibold text-red-600 text-base transition-all border-2 border-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Decline Agreement
               </button>
             </div>
@@ -1011,7 +1053,8 @@ const ContractSigningView = ({
           <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center p-4 z-50">
             <div
               className="bg-white rounded-[20px] p-8 max-w-md w-full"
-              style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+              style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+            >
               {/* Modal Header with border */}
               <div className="border-b-2 border-[#00A8FF] pb-3 mb-6">
                 <h3 className="text-2xl font-semibold text-[#140047]">
@@ -1037,7 +1080,8 @@ const ContractSigningView = ({
                     setDeclineReason("");
                   }}
                   disabled={isDeclining}
-                  className="flex-1 py-3 px-4 rounded-[10px] font-semibold text-[#00A8FF] border-2 border-[#00A8FF] bg-white hover:bg-[#F7FCFF] transition-colors disabled:opacity-50">
+                  className="flex-1 py-3 px-4 rounded-[10px] font-semibold text-[#00A8FF] border-2 border-[#00A8FF] bg-white hover:bg-[#F7FCFF] transition-colors disabled:opacity-50"
+                >
                   Cancel
                 </button>
                 <button
@@ -1049,7 +1093,8 @@ const ContractSigningView = ({
                       isDeclining || !declineReason.trim()
                         ? "#9CA3AF"
                         : "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
-                  }}>
+                  }}
+                >
                   {isDeclining ? "Declining..." : "Confirm Decline"}
                 </button>
               </div>

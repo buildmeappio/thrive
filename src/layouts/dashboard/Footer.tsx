@@ -41,7 +41,8 @@ const Footer = () => {
                 link.active
                   ? "bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text font-medium text-transparent"
                   : "text-gray-300 transition-colors duration-200 hover:text-white"
-              }>
+              }
+            >
               {link.label}
             </a>
           </li>
@@ -88,7 +89,8 @@ const Footer = () => {
                   {href ? (
                     <a
                       href={href}
-                      className="text-gray-300 transition-colors duration-200 hover:text-white">
+                      className="text-gray-300 transition-colors duration-200 hover:text-white"
+                    >
                       {content}
                     </a>
                   ) : (

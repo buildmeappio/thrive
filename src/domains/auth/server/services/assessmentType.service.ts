@@ -15,14 +15,9 @@ class AssessmentTypeService {
 
       return assessmentTypes;
     } catch (error) {
-      throw HttpError.fromError(
-        error,
-        "Failed to fetch assessment types",
-        500
-      );
+      throw HttpError.fromError(error, "Failed to fetch assessment types", 500);
     }
   }
 }
 
 export default new AssessmentTypeService();
-

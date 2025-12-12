@@ -9,7 +9,8 @@ const ThankYou: React.FC<RegStepProps> = ({ currentStep, totalSteps }) => {
       className="mt-4 w-full rounded-[20px] bg-white md:mt-6 md:w-[950px] md:rounded-[55px] md:px-[75px]"
       style={{
         boxShadow: "0px 0px 36.35px 0px #00000008",
-      }}>
+      }}
+    >
       <ProgressIndicator
         currentStep={currentStep}
         totalSteps={totalSteps}

@@ -21,4 +21,3 @@ const changePassword = async (payload: ChangePasswordInput) => {
 };
 
 export default changePassword;
-

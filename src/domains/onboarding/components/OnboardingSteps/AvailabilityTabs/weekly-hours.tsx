@@ -50,7 +50,7 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
     start1: string,
     end1: string,
     start2: string,
-    end2: string
+    end2: string,
   ): boolean => {
     const start1Index = timeOptions.indexOf(start1);
     const end1Index = timeOptions.indexOf(end1);
@@ -97,7 +97,7 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
     currentIndex: number,
     startTime: string,
     endTime: string,
-    time: string
+    time: string,
   ): boolean => {
     if (time === endTime) return false;
 
@@ -137,7 +137,7 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
     currentIndex: number,
     startTime: string,
     endTime: string,
-    time: string
+    time: string,
   ): boolean => {
     if (time === startTime) return false;
 
@@ -199,29 +199,33 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
         ? timeOptions[newStartIndex + 3]
         : timeOptions[timeOptions.length - 1];
 
-    form.setValue(`weeklyHours.${day}.timeSlots` as Path<AvailabilityPreferencesInput>, [
-      ...currentSlots,
-      { startTime: newStartTime, endTime: newEndTime },
-    ]);
+    form.setValue(
+      `weeklyHours.${day}.timeSlots` as Path<AvailabilityPreferencesInput>,
+      [...currentSlots, { startTime: newStartTime, endTime: newEndTime }],
+    );
   };
 
   const removeTimeSlot = (day: DayOfWeek, index: number) => {
     const currentSlots = weeklyHours[day].timeSlots;
     form.setValue(
       `weeklyHours.${day}.timeSlots` as Path<AvailabilityPreferencesInput>,
-      currentSlots.filter((_, i) => i !== index)
+      currentSlots.filter((_, i) => i !== index),
     );
   };
 
   const toggleDay = (day: DayOfWeek) => {
     const isEnabled = weeklyHours[day].enabled;
-    form.setValue(`weeklyHours.${day}.enabled` as Path<AvailabilityPreferencesInput>, !isEnabled);
+    form.setValue(
+      `weeklyHours.${day}.enabled` as Path<AvailabilityPreferencesInput>,
+      !isEnabled,
+    );
 
     // If enabling and no time slots exist, add a default one
     if (!isEnabled && weeklyHours[day].timeSlots.length === 0) {
-      form.setValue(`weeklyHours.${day}.timeSlots` as Path<AvailabilityPreferencesInput>, [
-        { startTime: "8:00 AM", endTime: "11:00 AM" },
-      ]);
+      form.setValue(
+        `weeklyHours.${day}.timeSlots` as Path<AvailabilityPreferencesInput>,
+        [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+      );
     }
     // If disabling, keep the time slots (don't clear them)
   };
@@ -256,7 +260,8 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                 htmlFor={day.value}
                 className={`ml-2 text-sm font-medium ${
                   dayData.enabled ? "text-gray-900" : "text-gray-400"
-                }`}>
+                }`}
+              >
                 {day.label}
               </label>
             </div>
@@ -275,7 +280,7 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                           slot.startTime,
                           slot.endTime,
                           otherSlot.startTime,
-                          otherSlot.endTime
+                          otherSlot.endTime,
                         )
                       ) {
                         hasOverlap = true;
@@ -307,14 +312,17 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                                 `weeklyHours.${
                                   day.value as DayOfWeek
                                 }.timeSlots.${index}` as Path<AvailabilityPreferencesInput>,
-                                { startTime: newStartTime, endTime: newEndTime }
+                                {
+                                  startTime: newStartTime,
+                                  endTime: newEndTime,
+                                },
                               );
                             } else {
                               form.setValue(
                                 `weeklyHours.${
                                   day.value as DayOfWeek
                                 }.timeSlots.${index}.startTime` as Path<AvailabilityPreferencesInput>,
-                                newStartTime
+                                newStartTime,
                               );
                             }
                           }}
@@ -323,20 +331,22 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                             isInvalid ? "border-red-500" : "border-gray-300"
                           }`}
                           style={{ maxHeight: "200px" }}
-                          size={1}>
+                          size={1}
+                        >
                           {timeOptions.map((time) => {
                             const isValid = isValidStartTime(
                               dayData.timeSlots,
                               index,
                               slot.startTime,
                               slot.endTime,
-                              time
+                              time,
                             );
                             return (
                               <option
                                 key={time}
                                 value={time}
-                                disabled={!isValid && time !== slot.startTime}>
+                                disabled={!isValid && time !== slot.startTime}
+                              >
                                 {time}
                               </option>
                             );
@@ -358,14 +368,17 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                                 `weeklyHours.${
                                   day.value as DayOfWeek
                                 }.timeSlots.${index}` as Path<AvailabilityPreferencesInput>,
-                                { startTime: newStartTime, endTime: newEndTime }
+                                {
+                                  startTime: newStartTime,
+                                  endTime: newEndTime,
+                                },
                               );
                             } else {
                               form.setValue(
                                 `weeklyHours.${
                                   day.value as DayOfWeek
                                 }.timeSlots.${index}.endTime` as Path<AvailabilityPreferencesInput>,
-                                newEndTime
+                                newEndTime,
                               );
                             }
                           }}
@@ -374,20 +387,22 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                             isInvalid ? "border-red-500" : "border-gray-300"
                           }`}
                           style={{ maxHeight: "200px" }}
-                          size={1}>
+                          size={1}
+                        >
                           {timeOptions.map((time) => {
                             const isValid = isValidEndTime(
                               dayData.timeSlots,
                               index,
                               slot.startTime,
                               slot.endTime,
-                              time
+                              time,
                             );
                             return (
                               <option
                                 key={time}
                                 value={time}
-                                disabled={!isValid && time !== slot.endTime}>
+                                disabled={!isValid && time !== slot.endTime}
+                              >
                                 {time}
                               </option>
                             );
@@ -401,7 +416,8 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                             onClick={() => addTimeSlot(day.value as DayOfWeek)}
                             disabled={!dayData.enabled}
                             className="p-2 text-[#00A8FF] hover:text-[#0097E5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Add time slot">
+                            title="Add time slot"
+                          >
                             <Plus className="w-4 h-4" />
                           </button>
                         )}
@@ -415,7 +431,8 @@ const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
                             }
                             disabled={!dayData.enabled}
                             className="p-2 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Remove time slot">
+                            title="Remove time slot"
+                          >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         )}

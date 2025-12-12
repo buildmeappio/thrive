@@ -15,7 +15,8 @@ export function SessionProvider({ children, session }: SessionProviderProps) {
       basePath="/examiner/api/auth"
       session={session}
       refetchInterval={5 * 60}
-      refetchOnWindowFocus={true}>
+      refetchOnWindowFocus={true}
+    >
       {children}
     </NextAuthSessionProvider>
   );

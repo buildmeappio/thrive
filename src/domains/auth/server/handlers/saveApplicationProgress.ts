@@ -49,7 +49,7 @@ export type SaveApplicationProgressInput = {
 };
 
 const saveApplicationProgress = async (
-  payload: SaveApplicationProgressInput
+  payload: SaveApplicationProgressInput,
 ) => {
   try {
     if (!payload.email) {
@@ -80,9 +80,7 @@ const saveApplicationProgress = async (
       const uploadResults = await Promise.all(uploadPromises);
 
       const successfulUploads = uploadResults.filter((r) => r.success);
-      medicalLicenseDocumentIds = successfulUploads.map(
-        (r) => r.document.id
-      );
+      medicalLicenseDocumentIds = successfulUploads.map((r) => r.document.id);
     }
 
     // Merge with existing document IDs if provided
@@ -118,11 +116,15 @@ const saveApplicationProgress = async (
         const updatedAddress = await prisma.address.update({
           where: { id: existingApplication.addressId },
           data: {
-            address: payload.address || existingApplication.address?.address || "",
-            street: payload.street ?? existingApplication.address?.street ?? null,
+            address:
+              payload.address || existingApplication.address?.address || "",
+            street:
+              payload.street ?? existingApplication.address?.street ?? null,
             suite: payload.suite ?? existingApplication.address?.suite ?? null,
             postalCode:
-              payload.postalCode ?? existingApplication.address?.postalCode ?? null,
+              payload.postalCode ??
+              existingApplication.address?.postalCode ??
+              null,
             province:
               payload.province ?? existingApplication.address?.province ?? null,
             city: payload.city ?? existingApplication.address?.city ?? null,
@@ -270,7 +272,9 @@ const saveApplicationProgress = async (
 
     // Mark all previous secure links as INVALID
     if (existingSecureLinks.length > 0) {
-      const secureLinkIds = existingSecureLinks.map((link) => link.secureLinkId);
+      const secureLinkIds = existingSecureLinks.map(
+        (link) => link.secureLinkId,
+      );
       await prisma.secureLink.updateMany({
         where: {
           id: { in: secureLinkIds },
@@ -313,13 +317,8 @@ const saveApplicationProgress = async (
       token, // Return token to be used in the resume link
     };
   } catch (error) {
-    throw HttpError.fromError(
-      error,
-      ErrorMessages.REGISTRATION_FAILED,
-      500
-    );
+    throw HttpError.fromError(error, ErrorMessages.REGISTRATION_FAILED, 500);
   }
 };
 
 export default saveApplicationProgress;
-

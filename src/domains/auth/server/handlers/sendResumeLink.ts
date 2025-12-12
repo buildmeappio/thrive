@@ -39,20 +39,26 @@ const sendResumeLink = async (payload: SendResumeLinkInput) => {
 
     if (!token) {
       // Fetch the latest PENDING secure link for this application
-      const applicationSecureLink = await prisma.applicationSecureLink.findFirst({
-        where: {
-          applicationId: payload.applicationId,
-        },
-        include: {
-          secureLink: true,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+      const applicationSecureLink =
+        await prisma.applicationSecureLink.findFirst({
+          where: {
+            applicationId: payload.applicationId,
+          },
+          include: {
+            secureLink: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        });
 
-      if (!applicationSecureLink || applicationSecureLink.secureLink.status !== SecureLinkStatus.PENDING) {
-        throw HttpError.badRequest("No valid secure link found for this application");
+      if (
+        !applicationSecureLink ||
+        applicationSecureLink.secureLink.status !== SecureLinkStatus.PENDING
+      ) {
+        throw HttpError.badRequest(
+          "No valid secure link found for this application",
+        );
       }
 
       token = applicationSecureLink.secureLink.token;
@@ -75,7 +81,7 @@ const sendResumeLink = async (payload: SendResumeLinkInput) => {
         lastName,
         resumeLink,
       },
-      payload.email
+      payload.email,
     );
 
     return {

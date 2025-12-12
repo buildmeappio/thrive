@@ -18,7 +18,7 @@ const passwordSchema = z
       .min(6, "Password must be at least 6 characters")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain one uppercase letter, one lowercase letter, and one number"
+        "Password must contain one uppercase letter, one lowercase letter, and one number",
       ),
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
@@ -70,7 +70,7 @@ const ChangePasswordSection: React.FC<ChangePasswordSectionProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -83,10 +83,7 @@ const ChangePasswordSection: React.FC<ChangePasswordSectionProps> = ({
 
       <FormProvider form={form} onSubmit={onSubmit}>
         <div className="space-y-4 mb-6">
-          <FormField
-            name="currentPassword"
-            label="Current Password"
-            required>
+          <FormField name="currentPassword" label="Current Password" required>
             {(field: UseFormRegisterReturn & { error?: boolean }) => (
               <PasswordInput
                 {...field}
@@ -100,7 +97,8 @@ const ChangePasswordSection: React.FC<ChangePasswordSectionProps> = ({
             name="newPassword"
             label="New Password"
             required
-            hint="Must be at least 6 characters with one uppercase letter, one lowercase letter, and one number">
+            hint="Must be at least 6 characters with one uppercase letter, one lowercase letter, and one number"
+          >
             {(field: UseFormRegisterReturn & { error?: boolean }) => (
               <PasswordInput
                 {...field}
@@ -110,10 +108,7 @@ const ChangePasswordSection: React.FC<ChangePasswordSectionProps> = ({
             )}
           </FormField>
 
-          <FormField
-            name="confirmPassword"
-            label="Confirm Password"
-            required>
+          <FormField name="confirmPassword" label="Confirm Password" required>
             {(field: UseFormRegisterReturn & { error?: boolean }) => (
               <PasswordInput
                 {...field}
@@ -127,7 +122,8 @@ const ChangePasswordSection: React.FC<ChangePasswordSectionProps> = ({
         <Button
           type="submit"
           disabled={loading}
-          className="px-6 rounded-[20px] bg-[#00A8FF] hover:bg-[#0096E6] text-white">
+          className="px-6 rounded-[20px] bg-[#00A8FF] hover:bg-[#0096E6] text-white"
+        >
           {loading ? "Updating..." : "Update Password"}
         </Button>
       </FormProvider>
@@ -136,4 +132,3 @@ const ChangePasswordSection: React.FC<ChangePasswordSectionProps> = ({
 };
 
 export default ChangePasswordSection;
-

@@ -3,7 +3,7 @@
 import { getPresignedUrlFromS3 } from "@/lib/s3";
 
 export const getExaminerDocumentPresignedUrlAction = async (
-  documentName: string
+  documentName: string,
 ): Promise<{ success: boolean; url?: string; error?: string }> => {
   try {
     if (!documentName) {
@@ -31,7 +31,9 @@ export const getExaminerDocumentPresignedUrlAction = async (
     console.error("Error in getExaminerDocumentPresignedUrl action:", error);
     return {
       success: false,
-      error: (error instanceof Error ? error.message : undefined) || "Failed to generate presigned URL",
+      error:
+        (error instanceof Error ? error.message : undefined) ||
+        "Failed to generate presigned URL",
     };
   }
 };

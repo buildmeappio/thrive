@@ -27,7 +27,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
   const router = useRouter();
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [steps, setSteps] = useState<ActivationStep[]>(
-    initializeActivationSteps()
+    initializeActivationSteps(),
   );
 
   // Initialize steps based on activationStep - steps must be completed in order
@@ -92,7 +92,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
           default:
             return step;
         }
-      })
+      }),
     );
   }, [profileData?.activationStep]);
 
@@ -123,8 +123,8 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
   const handleStepComplete = (stepId: string) => {
     setSteps((prevSteps) =>
       prevSteps.map((step) =>
-        step.id === stepId ? { ...step, completed: true } : step
-      )
+        step.id === stepId ? { ...step, completed: true } : step,
+      ),
     );
     setActiveStep(null);
   };
@@ -215,7 +215,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                   examinerProfileId={examinerProfileId}
                   initialData={{
                     medicalLicenseDocumentIds: Array.isArray(
-                      profileData.medicalLicenseDocumentIds
+                      profileData.medicalLicenseDocumentIds,
                     )
                       ? profileData.medicalLicenseDocumentIds
                       : [],
@@ -232,7 +232,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                         ? profileData.insuranceDocumentId
                         : undefined,
                     specialtyCertificatesDocumentIds: Array.isArray(
-                      profileData.specialtyCertificatesDocumentIds
+                      profileData.specialtyCertificatesDocumentIds,
                     )
                       ? profileData.specialtyCertificatesDocumentIds
                       : [],
@@ -310,8 +310,9 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                 "border-2 bg-white cursor-not-allowed",
                 step.completed
                   ? "border-none bg-white"
-                  : "opacity-50 border-transparent"
-              )}>
+                  : "opacity-50 border-transparent",
+              )}
+            >
               <div className="flex items-center gap-4 flex-1">
                 {renderStepIcon()}
                 <span
@@ -319,8 +320,9 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                     "text-lg font-medium text-left",
                     step.completed
                       ? "text-gray-400 line-through decoration-2"
-                      : "text-gray-400"
-                  )}>
+                      : "text-gray-400",
+                  )}
+                >
                   {step.title}
                 </span>
               </div>
@@ -350,9 +352,10 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
               step.completed
                 ? "border-none bg-white cursor-default"
                 : clickable
-                ? "cursor-pointer border-transparent hover:border-[#00A8FF]/20"
-                : "opacity-50 cursor-not-allowed border-transparent"
-            )}>
+                  ? "cursor-pointer border-transparent hover:border-[#00A8FF]/20"
+                  : "opacity-50 cursor-not-allowed border-transparent",
+            )}
+          >
             <div className="flex items-center gap-4 flex-1">
               {renderStepIcon()}
               <span
@@ -361,9 +364,10 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                   step.completed
                     ? "text-gray-400 line-through decoration-2"
                     : clickable
-                    ? "text-gray-700"
-                    : "text-gray-400"
-                )}>
+                      ? "text-gray-700"
+                      : "text-gray-400",
+                )}
+              >
                 {step.title}
               </span>
             </div>

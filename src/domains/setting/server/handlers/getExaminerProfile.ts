@@ -9,7 +9,7 @@ export type GetExaminerProfileInput = {
 
 const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
   const examinerProfile = await dashboardService.getExaminerProfileByAccountId(
-    payload.accountId
+    payload.accountId,
   );
 
   if (!examinerProfile) {

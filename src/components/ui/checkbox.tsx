@@ -4,8 +4,10 @@ import * as React from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface CheckboxProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange"> {
+interface CheckboxProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "onChange"
+> {
   checkedColor?: string;
   checkIconColor?: string;
   checked?: boolean;
@@ -23,10 +25,10 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
       disabled,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [internalChecked, setInternalChecked] = React.useState(
-      checked || false
+      checked || false,
     );
 
     const isControlled = checked !== undefined;
@@ -73,12 +75,13 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             "peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
             "flex items-center justify-center",
             disabled && "cursor-not-allowed opacity-50",
-            className
+            className,
           )}
           style={{
             backgroundColor: isChecked ? checkedColor : "transparent",
             borderColor: isChecked ? checkedColor : "#d1d5db",
-          }}>
+          }}
+        >
           {isChecked && (
             <Check
               className="size-3.5"
@@ -89,7 +92,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 Checkbox.displayName = "Checkbox";

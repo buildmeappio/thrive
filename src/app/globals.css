@@ -2,56 +2,63 @@
 
 /* Degular Font Family from CDN */
 @font-face {
-  font-family: 'Degular';
-  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Thin.otf') format('opentype');
+  font-family: "Degular";
+  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Thin.otf")
+    format("opentype");
   font-weight: 100;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Degular';
-  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Light.otf') format('opentype');
+  font-family: "Degular";
+  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Light.otf")
+    format("opentype");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Degular';
-  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Regular.otf') format('opentype');
+  font-family: "Degular";
+  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Regular.otf")
+    format("opentype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Degular';
-  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Medium.otf') format('opentype');
+  font-family: "Degular";
+  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Medium.otf")
+    format("opentype");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Degular';
-  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Semibold.otf') format('opentype');
+  font-family: "Degular";
+  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Semibold.otf")
+    format("opentype");
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Degular';
-  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Bold.otf') format('opentype');
+  font-family: "Degular";
+  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Bold.otf")
+    format("opentype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Degular';
-  src: url('https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Black.otf') format('opentype');
+  font-family: "Degular";
+  src: url("https://assets.thriveassessmentcare.com/fonts/degular/DegularDemo-Black.otf")
+    format("opentype");
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -59,64 +66,72 @@
 
 /* Poppins Font Family from CDN */
 @font-face {
-  font-family: 'Poppins';
-  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Thin.ttf') format('truetype');
+  font-family: "Poppins";
+  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Thin.ttf")
+    format("truetype");
   font-weight: 100;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Light.ttf') format('truetype');
+  font-family: "Poppins";
+  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Light.ttf")
+    format("truetype");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Regular.ttf') format('truetype');
+  font-family: "Poppins";
+  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Regular.ttf")
+    format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Medium.ttf') format('truetype');
+  font-family: "Poppins";
+  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Medium.ttf")
+    format("truetype");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_SemiBold.ttf') format('truetype');
+  font-family: "Poppins";
+  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_SemiBold.ttf")
+    format("truetype");
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Bold.ttf') format('truetype');
+  font-family: "Poppins";
+  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Bold.ttf")
+    format("truetype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_ExtraBold.ttf') format('truetype');
+  font-family: "Poppins";
+  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_ExtraBold.ttf")
+    format("truetype");
   font-weight: 800;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Poppins';
-  src: url('https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Black.ttf') format('truetype');
+  font-family: "Poppins";
+  src: url("https://assets.thriveassessmentcare.com/fonts/poppins/Poppins_Black.ttf")
+    format("truetype");
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -152,9 +167,9 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   --color-page-bg: var(--page-bg);
-  --font-family-sans: 'Degular', ui-sans-serif, system-ui, sans-serif;
-  --font-degular: 'Degular', ui-sans-serif, system-ui, sans-serif;
-  --font-poppins: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  --font-family-sans: "Degular", ui-sans-serif, system-ui, sans-serif;
+  --font-degular: "Degular", ui-sans-serif, system-ui, sans-serif;
+  --font-poppins: "Poppins", ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -222,12 +237,11 @@
   body {
     @apply bg-background text-foreground;
   }
-  
 
   /* Custom Scrollbar Styles */
   * {
     scrollbar-width: thin;
-    scrollbar-color: #00A8FF #F2F5F6;
+    scrollbar-color: #00a8ff #f2f5f6;
   }
 
   *::-webkit-scrollbar {
@@ -236,22 +250,22 @@
   }
 
   *::-webkit-scrollbar-track {
-    background: #F2F5F6;
+    background: #f2f5f6;
     border-radius: 4px;
   }
 
   *::-webkit-scrollbar-thumb {
-    background: #00A8FF;
+    background: #00a8ff;
     border-radius: 4px;
     transition: background 0.2s ease;
   }
 
   *::-webkit-scrollbar-thumb:hover {
-    background: #0090D9;
+    background: #0090d9;
   }
 
   *::-webkit-scrollbar-thumb:active {
-    background: #0078B8;
+    background: #0078b8;
   }
 
   /* Thin scrollbar variant for dropdowns and small containers */

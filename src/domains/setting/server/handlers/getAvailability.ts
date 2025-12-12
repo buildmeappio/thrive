@@ -101,7 +101,7 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
           (slot: { startTime: string; endTime: string }) => ({
             startTime: slot.startTime,
             endTime: slot.endTime,
-          })
+          }),
         ),
       };
     });
@@ -120,10 +120,10 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
             (slot: { startTime: string; endTime: string }) => ({
               startTime: slot.startTime,
               endTime: slot.endTime,
-            })
+            }),
           ),
         };
-      }
+      },
     );
 
     // Build booking options from database
@@ -159,7 +159,7 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
   } catch (error) {
     console.error("Error fetching availability:", error);
     throw HttpError.internalServerError(
-      "Failed to fetch availability preferences"
+      "Failed to fetch availability preferences",
     );
   }
 };

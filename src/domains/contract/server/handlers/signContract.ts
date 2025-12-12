@@ -43,11 +43,12 @@ export async function signContractHandler(input: SignContractInput) {
     // Upload HTML to S3 (required)
     let htmlUpload: { key: string; sha256: string };
     let pdfUpload: { key: string; sha256: string } | null = null;
-    
+
     try {
       htmlUpload = await uploadHtmlToS3(input.contractId, input.htmlContent);
     } catch (htmlError: unknown) {
-      const errorMessage = htmlError instanceof Error ? htmlError.message : "Unknown error";
+      const errorMessage =
+        htmlError instanceof Error ? htmlError.message : "Unknown error";
       return {
         success: false,
         error: `Failed to upload HTML: ${errorMessage}`,
@@ -60,8 +61,12 @@ export async function signContractHandler(input: SignContractInput) {
       pdfUpload = await uploadPdfToS3(input.contractId, pdfBuffer);
       console.log("✅ PDF uploaded to S3 successfully");
     } catch (pdfError: unknown) {
-      const errorMessage = pdfError instanceof Error ? pdfError.message : "Unknown error";
-      console.warn("⚠️ Failed to upload PDF to S3 (contract signing will still proceed):", errorMessage);
+      const errorMessage =
+        pdfError instanceof Error ? pdfError.message : "Unknown error";
+      console.warn(
+        "⚠️ Failed to upload PDF to S3 (contract signing will still proceed):",
+        errorMessage,
+      );
       console.warn("⚠️ Email will use base64 PDF directly instead");
       // Continue without PDF upload - email will use base64 PDF
     }
@@ -76,7 +81,8 @@ export async function signContractHandler(input: SignContractInput) {
         }),
       });
     } catch (updateError: unknown) {
-      const errorMessage = updateError instanceof Error ? updateError.message : "Unknown error";
+      const errorMessage =
+        updateError instanceof Error ? updateError.message : "Unknown error";
       return {
         success: false,
         error: `Failed to update contract status: ${errorMessage}`,

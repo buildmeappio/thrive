@@ -19,7 +19,7 @@ const updateCompliance = async (payload: UpdateComplianceInput) => {
         pipedaCompliance: payload.pipedaCompliance,
         medicalLicenseActive: payload.medicalLicenseActive,
         activationStep: payload.activationStep,
-      }
+      },
     );
 
     return {
@@ -32,10 +32,9 @@ const updateCompliance = async (payload: UpdateComplianceInput) => {
   } catch (error) {
     console.error("Error updating compliance:", error);
     throw HttpError.internalServerError(
-      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE
+      ErrorMessages.FAILED_UPDATE_EXAMINER_PROFILE,
     );
   }
 };
 
 export default updateCompliance;
-

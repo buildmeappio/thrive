@@ -69,7 +69,8 @@ export default function SignatureSubmissionSection() {
               }`}
               onClick={() =>
                 updateField("confirmationChecked", !confirmationChecked)
-              }>
+              }
+            >
               {confirmationChecked && (
                 <Check className="w-3 h-3 text-white" strokeWidth={3} />
               )}

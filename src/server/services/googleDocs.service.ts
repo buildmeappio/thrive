@@ -55,7 +55,7 @@ class GoogleDocsService {
   async updateReportDocument(
     documentId: string,
     reportData: ReportFormData,
-    caseData: CaseOverviewData
+    caseData: CaseOverviewData,
   ): Promise<void> {
     try {
       // Build the document content
@@ -85,7 +85,7 @@ class GoogleDocsService {
           fileId: documentId,
           mimeType: "application/pdf",
         },
-        { responseType: "arraybuffer" }
+        { responseType: "arraybuffer" },
       );
 
       return Buffer.from(response.data as ArrayBuffer);
@@ -100,7 +100,7 @@ class GoogleDocsService {
    */
   private buildDocumentRequests(
     reportData: ReportFormData,
-    caseData: CaseOverviewData
+    caseData: CaseOverviewData,
   ): GoogleDocsBatchUpdateRequest["requests"] {
     const requests: GoogleDocsBatchUpdateRequest["requests"] = [];
     let index = 1;
@@ -150,12 +150,12 @@ class GoogleDocsService {
     // Consent & Legal
     addText("Consent & Legal Disclosure", true, true);
     addText(
-      `Consent Form Signed: ${reportData.consentFormSigned ? "Yes" : "No"}`
+      `Consent Form Signed: ${reportData.consentFormSigned ? "Yes" : "No"}`,
     );
     addText(
       `LAT Rule 10.2 Acknowledgment: ${
         reportData.latRuleAcknowledgment ? "Yes" : "No"
-      }`
+      }`,
     );
     addText("");
 
@@ -178,7 +178,7 @@ class GoogleDocsService {
     addText(`Date of Report: ${reportData.dateOfReport}`);
     addText("");
     addText(
-      "I confirm that this report is accurate, impartial, and based on my clinical expertise."
+      "I confirm that this report is accurate, impartial, and based on my clinical expertise.",
     );
 
     return requests;

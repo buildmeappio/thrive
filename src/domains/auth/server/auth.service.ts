@@ -15,7 +15,7 @@ class AuthService {
       {
         otp: otp,
       },
-      email
+      email,
     );
 
     return { token };
