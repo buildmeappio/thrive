@@ -25,9 +25,9 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
     if (!result.success) {
       notFound();
     }
-    
+
     applicationData = result.application;
-    
+
     // Check if access is blocked (e.g., interview completed)
     if (result.isBlocked && result.errorMessage) {
       errorMessage = result.errorMessage;
@@ -71,16 +71,16 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
                       <h3 className="font-semibold text-red-900 mb-2">
                         Interview Completed
                       </h3>
-                      <p className="text-red-800 text-sm">
-                        {errorMessage}
-                      </p>
+                      <p className="text-red-800 text-sm">{errorMessage}</p>
                       {applicationData && (
                         <p className="text-red-700 text-sm mt-3">
                           Hello{" "}
                           <span className="font-semibold">
-                            {applicationData.firstName} {applicationData.lastName}
+                            {applicationData.firstName}{" "}
+                            {applicationData.lastName}
                           </span>
-                          , you are no longer able to schedule or reschedule your interview as it has already been completed.
+                          , you are no longer able to schedule or reschedule
+                          your interview as it has already been completed.
                         </p>
                       )}
                     </div>
@@ -89,7 +89,9 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
 
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                   <p className="text-sm text-blue-900">
-                    <span className="font-semibold">Need Assistance?</span> If you have any questions or need assistance, please contact us at{" "}
+                    <span className="font-semibold">Need Assistance?</span> If
+                    you have any questions or need assistance, please contact us
+                    at{" "}
                     <a
                       href="mailto:support@thrivenetwork.ca"
                       className="underline hover:text-blue-700"
