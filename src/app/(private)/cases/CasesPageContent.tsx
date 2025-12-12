@@ -136,7 +136,7 @@ export default function CasesPageContent({
         const target = event.target as Element;
         // Check if the click is outside any dropdown container or calendar popover (rendered in a portal)
         const isInsideDropdown = target.closest(
-          ".filter-dropdown, .date-popover-content"
+          ".filter-dropdown, .date-popover-content",
         );
         if (!isInsideDropdown) {
           setActiveDropdown(null);
@@ -403,7 +403,7 @@ export default function CasesPageContent({
               <button
                 onClick={() =>
                   setActiveDropdown(
-                    activeDropdown === "claimType" ? null : "claimType"
+                    activeDropdown === "claimType" ? null : "claimType",
                   )
                 }
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
@@ -496,7 +496,7 @@ export default function CasesPageContent({
               <button
                 onClick={() =>
                   setActiveDropdown(
-                    activeDropdown === "status" ? null : "status"
+                    activeDropdown === "status" ? null : "status",
                   )
                 }
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
@@ -581,7 +581,7 @@ export default function CasesPageContent({
               <button
                 onClick={() =>
                   setActiveDropdown(
-                    activeDropdown === "priority" ? null : "priority"
+                    activeDropdown === "priority" ? null : "priority",
                   )
                 }
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${

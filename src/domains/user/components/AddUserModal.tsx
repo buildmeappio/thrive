@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,13 +23,19 @@ const formSchema = z.object({
   firstName: z
     .string()
     .min(1, "First name is required")
-    .regex(/^[a-zA-Z\s'-]+$/, "First name can only contain letters, spaces, hyphens, and apostrophes")
+    .regex(
+      /^[a-zA-Z\s'-]+$/,
+      "First name can only contain letters, spaces, hyphens, and apostrophes",
+    )
     .min(2, "First name must be at least 2 characters")
     .max(50, "First name must be less than 50 characters"),
   lastName: z
     .string()
     .min(1, "Last name is required")
-    .regex(/^[a-zA-Z\s'-]+$/, "Last name can only contain letters, spaces, hyphens, and apostrophes")
+    .regex(
+      /^[a-zA-Z\s'-]+$/,
+      "Last name can only contain letters, spaces, hyphens, and apostrophes",
+    )
     .min(2, "Last name must be at least 2 characters")
     .max(50, "Last name must be less than 50 characters"),
   email: z
@@ -41,7 +53,11 @@ type AddUserModalProps = {
   onUserCreated: (user: UserTableRow) => void;
 };
 
-const AddUserModal = ({ isOpen, onClose, onUserCreated }: AddUserModalProps) => {
+const AddUserModal = ({
+  isOpen,
+  onClose,
+  onUserCreated,
+}: AddUserModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
@@ -100,7 +116,10 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }: AddUserModalProps) => 
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 px-8 py-6">
           <div>
-            <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="firstName"
+              className="text-sm font-medium text-gray-700"
+            >
               First Name<span className="text-red-500">*</span>
             </Label>
             <Input
@@ -112,12 +131,17 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }: AddUserModalProps) => 
               className={errors.firstName ? "ring-1 ring-red-500" : ""}
             />
             {errors.firstName && (
-              <p className="mt-1 text-xs text-red-500">{errors.firstName.message}</p>
+              <p className="mt-1 text-xs text-red-500">
+                {errors.firstName.message}
+              </p>
             )}
           </div>
 
           <div>
-            <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="lastName"
+              className="text-sm font-medium text-gray-700"
+            >
               Last Name<span className="text-red-500">*</span>
             </Label>
             <Input
@@ -129,12 +153,17 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }: AddUserModalProps) => 
               className={errors.lastName ? "ring-1 ring-red-500" : ""}
             />
             {errors.lastName && (
-              <p className="mt-1 text-xs text-red-500">{errors.lastName.message}</p>
+              <p className="mt-1 text-xs text-red-500">
+                {errors.lastName.message}
+              </p>
             )}
           </div>
 
           <div>
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="email"
+              className="text-sm font-medium text-gray-700"
+            >
               Email<span className="text-red-500">*</span>
             </Label>
             <Input
@@ -146,7 +175,9 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }: AddUserModalProps) => 
               className={errors.email ? "ring-1 ring-red-500" : ""}
             />
             {errors.email && (
-              <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+              <p className="mt-1 text-xs text-red-500">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -175,4 +206,3 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }: AddUserModalProps) => 
 };
 
 export default AddUserModal;
-

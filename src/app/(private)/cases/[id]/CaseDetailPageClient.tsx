@@ -117,7 +117,7 @@ export default function CaseDetailPageClient({
       await caseActions.completeReview(caseDetails.id);
       setCaseStatus("reviewed");
       toast.success(
-        "Case approved successfully. An email has been sent to the claimant."
+        "Case approved successfully. An email has been sent to the claimant.",
       );
       router.refresh();
     } catch (error) {
@@ -135,7 +135,7 @@ export default function CaseDetailPageClient({
       setIsRequestOpen(false);
       setCaseStatus("info_needed");
       toast.success(
-        "Request sent successfully. An email has been sent to the organization."
+        "Request sent successfully. An email has been sent to the organization.",
       );
       router.refresh();
     } catch (error) {
@@ -148,19 +148,19 @@ export default function CaseDetailPageClient({
 
   const handleReject = async (
     messageToClaimant: string,
-    messageToOrganization: string
+    messageToOrganization: string,
   ) => {
     setLoadingAction("reject");
     try {
       await caseActions.rejectCase(
         caseDetails.id,
         messageToClaimant,
-        messageToOrganization
+        messageToOrganization,
       );
       setIsRejectOpen(false);
       setCaseStatus("rejected");
       toast.success(
-        "Case rejected successfully. Rejection emails have been sent."
+        "Case rejected successfully. Rejection emails have been sent.",
       );
       router.push("/cases");
     } catch (error) {
@@ -178,7 +178,8 @@ export default function CaseDetailPageClient({
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           <Link
             href="/cases"
-            className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+            className="flex items-center gap-2 sm:gap-4 flex-shrink-0"
+          >
             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
@@ -200,7 +201,7 @@ export default function CaseDetailPageClient({
             <span>Created by</span>
             <span className="font-medium text-gray-900">
               {capitalizeWords(
-                safeValue(caseDetails.case.organization?.name || "Unknown")
+                safeValue(caseDetails.case.organization?.name || "Unknown"),
               )}
             </span>
           </div>
@@ -211,9 +212,9 @@ export default function CaseDetailPageClient({
             <span className="font-medium text-gray-900">
               {caseDetails.createdAt
                 ? `${formatDate(
-                    caseDetails.createdAt.toISOString()
+                    caseDetails.createdAt.toISOString(),
                   )} - ${convertTo12HourFormat(
-                    caseDetails.createdAt.toISOString()
+                    caseDetails.createdAt.toISOString(),
                   )}`
                 : "-"}
             </span>
@@ -225,9 +226,9 @@ export default function CaseDetailPageClient({
             <span className="font-medium text-gray-900">
               {caseDetails.dueDate
                 ? `${formatDate(
-                    caseDetails.dueDate.toISOString()
+                    caseDetails.dueDate.toISOString(),
                   )} - ${convertTo12HourFormat(
-                    caseDetails.dueDate.toISOString()
+                    caseDetails.dueDate.toISOString(),
                   )}`
                 : "-"}
             </span>
@@ -252,7 +253,8 @@ export default function CaseDetailPageClient({
                 fontSize: "12px",
               }}
               onClick={handleCompleteReview}
-              disabled={loadingAction !== null}>
+              disabled={loadingAction !== null}
+            >
               {loadingAction === "review" ? "Completing..." : "Complete Review"}
             </button>
 
@@ -266,7 +268,8 @@ export default function CaseDetailPageClient({
                 fontSize: "12px",
               }}
               onClick={() => setIsRequestOpen(true)}
-              disabled={loadingAction !== null}>
+              disabled={loadingAction !== null}
+            >
               {loadingAction === "request" ? "Sending..." : "Need More Info"}
             </button>
 
@@ -280,7 +283,8 @@ export default function CaseDetailPageClient({
                 fontSize: "12px",
               }}
               onClick={() => setIsRejectOpen(true)}
-              disabled={loadingAction !== null}>
+              disabled={loadingAction !== null}
+            >
               {loadingAction === "reject" ? "Rejecting..." : "Reject"}
             </button>
           </div>
@@ -291,7 +295,7 @@ export default function CaseDetailPageClient({
           <div className="flex justify-end px-3 sm:px-6 pb-4 sm:pb-6">
             <button
               className={cn(
-                "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-green-50 flex items-center gap-2 cursor-default"
+                "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-green-50 flex items-center gap-2 cursor-default",
               )}
               style={{
                 fontFamily: "Poppins, sans-serif",
@@ -299,7 +303,8 @@ export default function CaseDetailPageClient({
                 lineHeight: "100%",
                 fontSize: "14px",
               }}
-              disabled>
+              disabled
+            >
               <Check className="w-4 h-4" />
               Reviewed
             </button>
@@ -310,7 +315,7 @@ export default function CaseDetailPageClient({
           <div className="flex justify-end px-3 sm:px-6 pb-4 sm:pb-6">
             <button
               className={cn(
-                "px-4 py-3 rounded-full border border-blue-500 text-blue-700 bg-blue-50 flex items-center gap-2 cursor-default"
+                "px-4 py-3 rounded-full border border-blue-500 text-blue-700 bg-blue-50 flex items-center gap-2 cursor-default",
               )}
               style={{
                 fontFamily: "Poppins, sans-serif",
@@ -318,12 +323,14 @@ export default function CaseDetailPageClient({
                 lineHeight: "100%",
                 fontSize: "14px",
               }}
-              disabled>
+              disabled
+            >
               <svg
                 className="w-4 h-4"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -340,7 +347,7 @@ export default function CaseDetailPageClient({
           <div className="flex justify-end px-3 sm:px-6 pb-4 sm:pb-6">
             <button
               className={cn(
-                "px-4 py-3 rounded-full text-white bg-red-700 flex items-center gap-2 cursor-default"
+                "px-4 py-3 rounded-full text-white bg-red-700 flex items-center gap-2 cursor-default",
               )}
               style={{
                 fontFamily: "Poppins, sans-serif",
@@ -348,7 +355,8 @@ export default function CaseDetailPageClient({
                 lineHeight: "100%",
                 fontSize: "14px",
               }}
-              disabled>
+              disabled
+            >
               Rejected
             </button>
           </div>
@@ -365,7 +373,8 @@ export default function CaseDetailPageClient({
                 fontWeight: 400,
                 lineHeight: "100%",
                 fontSize: "12px",
-              }}>
+              }}
+            >
               <FileText className="w-4 h-4" />
               Review Report
             </Link>
@@ -382,7 +391,7 @@ export default function CaseDetailPageClient({
                   "px-4 py-3 rounded-full border flex items-center gap-2 cursor-default",
                   caseDetails.report.status === "APPROVED"
                     ? "border-green-500 text-green-700 bg-green-50"
-                    : "border-red-500 text-red-700 bg-red-50"
+                    : "border-red-500 text-red-700 bg-red-50",
                 )}
                 style={{
                   fontFamily: "Poppins, sans-serif",
@@ -390,7 +399,8 @@ export default function CaseDetailPageClient({
                   lineHeight: "100%",
                   fontSize: "14px",
                 }}
-                disabled>
+                disabled
+              >
                 {caseDetails.report.status === "APPROVED" && (
                   <Check className="w-4 h-4" />
                 )}

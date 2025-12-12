@@ -13,7 +13,7 @@ const getOrganizations = async (): Promise<OrganizationData[]> => {
   }
 
   const orgs = await OrganizationsService.listOrganizations();
-  logger.log("organization list", orgs)
+  logger.log("organization list", orgs);
   return orgs.map(OrganizationDto.toOrganization);
 };
 

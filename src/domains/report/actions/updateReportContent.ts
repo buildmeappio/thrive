@@ -14,7 +14,7 @@ const updateReportContent = async (
       content: string;
       order: number;
     }>;
-  }
+  },
 ) => {
   const user = await getCurrentUser();
   if (!user) {
@@ -26,4 +26,3 @@ const updateReportContent = async (
 };
 
 export default updateReportContent;
-

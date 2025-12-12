@@ -27,9 +27,21 @@ type Props = {
 };
 
 const INTENTS = {
-  primary: { bg: "bg-[#00A8FF]", badge: "bg-[#0037A5] text-white", arrow: "bg-[#000080] text-white" },
-  indigo: { bg: "bg-[#0C108B]", badge: "bg-[#0000BD] text-white", arrow: "bg-[#00A8FF] text-white" },
-  aqua: { bg: "bg-[linear-gradient(90deg,#01F4C8_0%,#00A8FF_100%)]", badge: "bg-[#006599] text-white", arrow: "bg-[#000080] text-white" },
+  primary: {
+    bg: "bg-[#00A8FF]",
+    badge: "bg-[#0037A5] text-white",
+    arrow: "bg-[#000080] text-white",
+  },
+  indigo: {
+    bg: "bg-[#0C108B]",
+    badge: "bg-[#0000BD] text-white",
+    arrow: "bg-[#00A8FF] text-white",
+  },
+  aqua: {
+    bg: "bg-[linear-gradient(90deg,#01F4C8_0%,#00A8FF_100%)]",
+    badge: "bg-[#006599] text-white",
+    arrow: "bg-[#000080] text-white",
+  },
 } as const;
 
 export default function StatCard({
@@ -59,7 +71,7 @@ export default function StatCard({
         "relative rounded-[22px] shadow-[0_0_36.92px_rgba(0,0,0,0.08)]",
         colors.bg,
         "px-[16px] sm:px-[19px] pt-[15px] sm:pt-[17px] pb-[10px] sm:pb-[12px] pr-[24px] sm:pr-[28px]",
-        "min-h-[160px] sm:min-h-[128px]"
+        "min-h-[160px] sm:min-h-[128px]",
       )}
       style={{ fontFamily: "Poppins, system-ui" }}
     >
@@ -67,9 +79,7 @@ export default function StatCard({
       <div className="flex items-start justify-between">
         <span className="grid h-[26px] w-[26px] place-items-center rounded-full">
           {icon ? (
-            <span className="text-white w-[16px] h-[16px]">
-              {icon}
-            </span>
+            <span className="text-white w-[16px] h-[16px]">{icon}</span>
           ) : iconSrc ? (
             <Image
               src={iconSrc}
@@ -99,7 +109,7 @@ export default function StatCard({
             className={cn(
               "inline-flex items-center justify-center rounded-[34px] h-[28px] px-[12px]",
               "text-[12.5px] font-medium tracking-[-0.02em]",
-              colors.badge
+              colors.badge,
             )}
           >
             {badge}
@@ -128,7 +138,7 @@ export default function StatCard({
           aria-label="Open"
           className={cn(
             "grid place-items-center h-[28px] w-[28px] rounded-full",
-            colors.arrow
+            colors.arrow,
           )}
         >
           <svg

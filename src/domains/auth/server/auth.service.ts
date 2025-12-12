@@ -10,7 +10,9 @@ type AuthUserRecord = (User & UserLoginFlags) & {
 };
 
 /** Fetch user with most-recent account + role. Null if user missing OR no role. */
-export async function getUserWithRoleByEmail(email: string): Promise<AuthUserRecord | null> {
+export async function getUserWithRoleByEmail(
+  email: string,
+): Promise<AuthUserRecord | null> {
   const user = await prisma.user.findUnique({
     where: { email },
     include: {
@@ -25,9 +27,11 @@ export async function getUserWithRoleByEmail(email: string): Promise<AuthUserRec
   return user as AuthUserRecord;
 }
 
-
 /** Verify password against stored hash. */
-export async function verifyPassword(email: string, password: string): Promise<boolean> {
+export async function verifyPassword(
+  email: string,
+  password: string,
+): Promise<boolean> {
   const user = await prisma.user.findUnique({
     where: { email },
     select: { password: true },
@@ -50,4 +54,3 @@ export async function resolveGoogleUser(email: string) {
   if (!isAllowedRole(authUser.accounts[0].role.name)) return null;
   return authUser;
 }
-

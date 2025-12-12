@@ -129,7 +129,7 @@ export class ValidationService {
     }
 
     const contactPersonValidation = this.validateContactPerson(
-      data.contactPerson
+      data.contactPerson,
     );
     if (!contactPersonValidation.isValid) {
       errors.push(contactPersonValidation.error!);

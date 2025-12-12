@@ -88,23 +88,15 @@ const generateTemporaryPassword = () => {
   const symbols = "!@#$%^&*";
   const all = upper + lower + numbers + symbols;
 
-  const pick = (source: string) =>
-    source[crypto.randomInt(0, source.length)];
+  const pick = (source: string) => source[crypto.randomInt(0, source.length)];
 
-  const base = [
-    pick(upper),
-    pick(lower),
-    pick(numbers),
-    pick(symbols),
-  ];
+  const base = [pick(upper), pick(lower), pick(numbers), pick(symbols)];
 
   for (let i = base.length; i < 12; i += 1) {
     base.push(pick(all));
   }
 
-  return base
-    .sort(() => 0.5 - Math.random())
-    .join("");
+  return base.sort(() => 0.5 - Math.random()).join("");
 };
 
 const sendUserInviteEmail = async ({
@@ -130,7 +122,7 @@ const sendUserInviteEmail = async ({
         CDN_URL: ENV.NEXT_PUBLIC_CDN_URL ?? "",
         year: new Date().getFullYear(),
       },
-      email
+      email,
     );
 
     if (!result.success) {

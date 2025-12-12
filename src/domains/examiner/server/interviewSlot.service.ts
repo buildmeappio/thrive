@@ -1,4 +1,4 @@
-'use server'; 
+"use server";
 import prisma from "@/lib/db";
 import { addMinutes, startOfDay, endOfDay } from "date-fns";
 
@@ -8,7 +8,7 @@ import { addMinutes, startOfDay, endOfDay } from "date-fns";
 export const checkSlotConflict = async (
   startTime: Date,
   endTime: Date,
-  excludeSlotId?: string
+  excludeSlotId?: string,
 ): Promise<boolean> => {
   const conflictingSlots = await prisma.interviewSlot.findMany({
     where: {
@@ -24,10 +24,7 @@ export const checkSlotConflict = async (
         },
         // Slot ends during existing slot
         {
-          AND: [
-            { startTime: { lt: endTime } },
-            { endTime: { gte: endTime } },
-          ],
+          AND: [{ startTime: { lt: endTime } }, { endTime: { gte: endTime } }],
         },
         // Slot completely contains existing slot
         {
@@ -58,11 +55,13 @@ export const checkSlotConflict = async (
 export const createInterviewSlot = async (
   startTime: Date,
   durationMinutes: number,
-  applicationId?: string
+  applicationId?: string,
 ) => {
   // Validate duration (must be divisible by 15 and at least 15 minutes)
   if (durationMinutes < 15 || durationMinutes % 15 !== 0) {
-    throw new Error("Slot duration must be at least 15 minutes and divisible by 15");
+    throw new Error(
+      "Slot duration must be at least 15 minutes and divisible by 15",
+    );
   }
 
   const endTime = addMinutes(startTime, durationMinutes);
@@ -111,7 +110,7 @@ export const createInterviewSlot = async (
  */
 export const getAvailableTimeSlots = async (
   date: Date,
-  slotDurationMinutes: number = 30
+  slotDurationMinutes: number = 30,
 ) => {
   const dayStart = startOfDay(date);
   const dayEnd = endOfDay(date);
@@ -145,31 +144,32 @@ export const getAvailableTimeSlots = async (
 
   while (currentTime <= maxTime) {
     const slotEnd = addMinutes(currentTime, slotDurationMinutes);
-    
+
     if (slotEnd > dayEnd) {
       break;
     }
 
     // Check if this time slot conflicts with any booked slots
     const hasConflict = await checkSlotConflict(currentTime, slotEnd);
-    
+
     // Check if exact slot exists
     const exactSlot = existingSlots.find(
       (slot) =>
         slot.startTime.getTime() === currentTime.getTime() &&
-        slot.endTime.getTime() === slotEnd.getTime()
+        slot.endTime.getTime() === slotEnd.getTime(),
     );
 
     suggestions.push({
       startTime: new Date(currentTime),
       endTime: new Date(slotEnd),
       duration: slotDurationMinutes,
-      isAvailable: !hasConflict && (!exactSlot || exactSlot.status === "AVAILABLE"),
+      isAvailable:
+        !hasConflict && (!exactSlot || exactSlot.status === "AVAILABLE"),
       conflictReason: hasConflict
         ? "Time conflicts with existing booking"
         : exactSlot?.status === "BOOKED"
-        ? "Already booked"
-        : undefined,
+          ? "Already booked"
+          : undefined,
     });
 
     // Move to next 15-minute increment
@@ -194,7 +194,7 @@ export const getAvailableTimeSlots = async (
  */
 export const getAllSlotsForDateRange = async (
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ) => {
   return prisma.interviewSlot.findMany({
     where: {
@@ -228,11 +228,13 @@ export const getAllSlotsForDateRange = async (
 export const bookInterviewSlot = async (
   startTime: Date,
   durationMinutes: number,
-  applicationId: string
+  applicationId: string,
 ) => {
   // Validate duration
   if (durationMinutes < 15 || durationMinutes % 15 !== 0) {
-    throw new Error("Slot duration must be at least 15 minutes and divisible by 15");
+    throw new Error(
+      "Slot duration must be at least 15 minutes and divisible by 15",
+    );
   }
 
   return prisma.$transaction(async (tx) => {
@@ -334,4 +336,3 @@ const interviewSlotService = {
 };
 
 export default interviewSlotService;
-

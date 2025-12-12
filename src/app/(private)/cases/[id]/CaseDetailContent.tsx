@@ -12,7 +12,9 @@ interface CaseDetailContentProps {
   caseDetails: CaseDetailDtoType;
 }
 
-export default function CaseDetailContent({ caseDetails }: CaseDetailContentProps) {
+export default function CaseDetailContent({
+  caseDetails,
+}: CaseDetailContentProps) {
   const safeValue = (value: unknown): string => {
     if (value === null || value === undefined || value === "") {
       return "-";
@@ -24,28 +26,56 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
   const formatText = (str: string): string => {
     if (!str) return str;
     return str
-      .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
-      .split(' ')
-      .filter(word => word.length > 0)  // Remove empty strings
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+      .replace(/[-_]/g, " ") // Replace - and _ with spaces
+      .split(" ")
+      .filter((word) => word.length > 0) // Remove empty strings
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
   };
 
   return (
     <div>
       {/* Claimant Details */}
       <CollapsibleSection title="Claimant Details" isOpen={true}>
-        <FieldRow label="Type of Claim" value={safeValue(caseDetails.case.caseType?.name)} type="text" />
-        <FieldRow label="First Name" value={capitalizeWords(safeValue(caseDetails.claimant?.firstName))} type="text" />
-        <FieldRow label="Last Name" value={capitalizeWords(safeValue(caseDetails.claimant?.lastName))} type="text" />
         <FieldRow
-          label="Date of Birth"
-          value={caseDetails.claimant?.dateOfBirth ? formatDate(caseDetails.claimant.dateOfBirth.toISOString()) : "-"}
+          label="Type of Claim"
+          value={safeValue(caseDetails.case.caseType?.name)}
           type="text"
         />
-        <FieldRow label="Gender" value={safeValue(caseDetails.claimant?.gender)} type="text" />
-        <FieldRow label="Phone" value={formatPhoneNumber(caseDetails.claimant?.phoneNumber)} type="text" />
-        <FieldRow label="Email Address" value={safeValue(caseDetails.claimant?.emailAddress)} type="text" />
+        <FieldRow
+          label="First Name"
+          value={capitalizeWords(safeValue(caseDetails.claimant?.firstName))}
+          type="text"
+        />
+        <FieldRow
+          label="Last Name"
+          value={capitalizeWords(safeValue(caseDetails.claimant?.lastName))}
+          type="text"
+        />
+        <FieldRow
+          label="Date of Birth"
+          value={
+            caseDetails.claimant?.dateOfBirth
+              ? formatDate(caseDetails.claimant.dateOfBirth.toISOString())
+              : "-"
+          }
+          type="text"
+        />
+        <FieldRow
+          label="Gender"
+          value={safeValue(caseDetails.claimant?.gender)}
+          type="text"
+        />
+        <FieldRow
+          label="Phone"
+          value={formatPhoneNumber(caseDetails.claimant?.phoneNumber)}
+          type="text"
+        />
+        <FieldRow
+          label="Email Address"
+          value={safeValue(caseDetails.claimant?.emailAddress)}
+          type="text"
+        />
         <FieldRow
           label="Address Lookup"
           value={
@@ -63,23 +93,69 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
           }
           type="text"
         />
-        <FieldRow label="Related Cases" value={safeValue(caseDetails.claimant?.relatedCases)} type="text" />
-        <FieldRow label="Family Doctor" value={safeValue(caseDetails.familyDoctor?.name)} type="text" />
-        <FieldRow label="Email Address" value={safeValue(caseDetails.familyDoctor?.email)} type="text" />
-        <FieldRow label="Phone" value={formatPhoneNumber(caseDetails.familyDoctor?.phoneNumber)} type="text" />
-        <FieldRow label="Fax No." value={formatPhoneNumber(caseDetails.familyDoctor?.faxNumber)} type="text" />
+        <FieldRow
+          label="Related Cases"
+          value={safeValue(caseDetails.claimant?.relatedCases)}
+          type="text"
+        />
+        <FieldRow
+          label="Family Doctor"
+          value={safeValue(caseDetails.familyDoctor?.name)}
+          type="text"
+        />
+        <FieldRow
+          label="Email Address"
+          value={safeValue(caseDetails.familyDoctor?.email)}
+          type="text"
+        />
+        <FieldRow
+          label="Phone"
+          value={formatPhoneNumber(caseDetails.familyDoctor?.phoneNumber)}
+          type="text"
+        />
+        <FieldRow
+          label="Fax No."
+          value={formatPhoneNumber(caseDetails.familyDoctor?.faxNumber)}
+          type="text"
+        />
       </CollapsibleSection>
 
       {/* Insurance Details */}
       <CollapsibleSection title="Insurance Details">
-        <FieldRow label="Company Name" value={safeValue(caseDetails.insurance?.companyName)} type="text" />
-        <FieldRow label="Email Address" value={safeValue(caseDetails.insurance?.emailAddress)} type="text" />
-        <FieldRow label="Contact Person" value={capitalizeWords(safeValue(caseDetails.insurance?.contactPersonName))} type="text" />
-        <FieldRow label="Policy Number" value={safeValue(caseDetails.insurance?.policyNumber)} type="text" />
-        <FieldRow label="Claim Number" value={safeValue(caseDetails.insurance?.claimNumber)} type="text" />
+        <FieldRow
+          label="Company Name"
+          value={safeValue(caseDetails.insurance?.companyName)}
+          type="text"
+        />
+        <FieldRow
+          label="Email Address"
+          value={safeValue(caseDetails.insurance?.emailAddress)}
+          type="text"
+        />
+        <FieldRow
+          label="Contact Person"
+          value={capitalizeWords(
+            safeValue(caseDetails.insurance?.contactPersonName),
+          )}
+          type="text"
+        />
+        <FieldRow
+          label="Policy Number"
+          value={safeValue(caseDetails.insurance?.policyNumber)}
+          type="text"
+        />
+        <FieldRow
+          label="Claim Number"
+          value={safeValue(caseDetails.insurance?.claimNumber)}
+          type="text"
+        />
         <FieldRow
           label="Date of Loss"
-          value={caseDetails.insurance?.dateOfLoss ? formatDate(caseDetails.insurance.dateOfLoss.toISOString()) : "-"}
+          value={
+            caseDetails.insurance?.dateOfLoss
+              ? formatDate(caseDetails.insurance.dateOfLoss.toISOString())
+              : "-"
+          }
           type="text"
         />
         <FieldRow
@@ -87,10 +163,30 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
           value={caseDetails.insurance?.policyHolderIsClaimant ? "Yes" : "No"}
           type="text"
         />
-        <FieldRow label="Policy Holder First Name" value={capitalizeWords(safeValue(caseDetails.insurance?.policyHolderFirstName))} type="text" />
-        <FieldRow label="Policy Holder Last Name" value={capitalizeWords(safeValue(caseDetails.insurance?.policyHolderLastName))} type="text" />
-        <FieldRow label="Phone Number" value={formatPhoneNumber(caseDetails.insurance?.phoneNumber)} type="text" />
-        <FieldRow label="Fax Number" value={formatPhoneNumber(caseDetails.insurance?.faxNumber)} type="text" />
+        <FieldRow
+          label="Policy Holder First Name"
+          value={capitalizeWords(
+            safeValue(caseDetails.insurance?.policyHolderFirstName),
+          )}
+          type="text"
+        />
+        <FieldRow
+          label="Policy Holder Last Name"
+          value={capitalizeWords(
+            safeValue(caseDetails.insurance?.policyHolderLastName),
+          )}
+          type="text"
+        />
+        <FieldRow
+          label="Phone Number"
+          value={formatPhoneNumber(caseDetails.insurance?.phoneNumber)}
+          type="text"
+        />
+        <FieldRow
+          label="Fax Number"
+          value={formatPhoneNumber(caseDetails.insurance?.faxNumber)}
+          type="text"
+        />
         <FieldRow
           label="Address"
           value={
@@ -112,10 +208,30 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
 
       {/* Legal Representative */}
       <CollapsibleSection title="Legal Representative">
-        <FieldRow label="Organization" value={safeValue(caseDetails.legalRepresentative?.companyName)} type="text" />
-        <FieldRow label="Contact Person" value={capitalizeWords(safeValue(caseDetails.legalRepresentative?.contactPersonName))} type="text" />
-        <FieldRow label="Phone Number" value={formatPhoneNumber(caseDetails.legalRepresentative?.phoneNumber)} type="text" />
-        <FieldRow label="Fax Number" value={formatPhoneNumber(caseDetails.legalRepresentative?.faxNumber)} type="text" />
+        <FieldRow
+          label="Organization"
+          value={safeValue(caseDetails.legalRepresentative?.companyName)}
+          type="text"
+        />
+        <FieldRow
+          label="Contact Person"
+          value={capitalizeWords(
+            safeValue(caseDetails.legalRepresentative?.contactPersonName),
+          )}
+          type="text"
+        />
+        <FieldRow
+          label="Phone Number"
+          value={formatPhoneNumber(
+            caseDetails.legalRepresentative?.phoneNumber,
+          )}
+          type="text"
+        />
+        <FieldRow
+          label="Fax Number"
+          value={formatPhoneNumber(caseDetails.legalRepresentative?.faxNumber)}
+          type="text"
+        />
         <FieldRow
           label="Address"
           value={
@@ -137,27 +253,66 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
 
       {/* Examination Information */}
       <CollapsibleSection title="Examination Information">
-        <FieldRow label="Examination Type" value={safeValue(caseDetails.examinationType?.name)} type="text" />
-        <FieldRow label="Short Form" value={safeValue(caseDetails.examinationType?.shortForm)} type="text" />
         <FieldRow
-          label="Due Date"
-          value={caseDetails.dueDate ? formatDate(caseDetails.dueDate.toISOString()) : "-"}
+          label="Examination Type"
+          value={safeValue(caseDetails.examinationType?.name)}
           type="text"
         />
-        <FieldRow label="Urgency Level" value={caseDetails.urgencyLevel ? formatText(caseDetails.urgencyLevel) : "-"} type="text" />
-        <FieldRow label="Notes" value={safeValue(caseDetails.notes)} type="text" />
-        <FieldRow label="Additional Notes" value={safeValue(caseDetails.additionalNotes)} type="text" />
+        <FieldRow
+          label="Short Form"
+          value={safeValue(caseDetails.examinationType?.shortForm)}
+          type="text"
+        />
+        <FieldRow
+          label="Due Date"
+          value={
+            caseDetails.dueDate
+              ? formatDate(caseDetails.dueDate.toISOString())
+              : "-"
+          }
+          type="text"
+        />
+        <FieldRow
+          label="Urgency Level"
+          value={
+            caseDetails.urgencyLevel
+              ? formatText(caseDetails.urgencyLevel)
+              : "-"
+          }
+          type="text"
+        />
+        <FieldRow
+          label="Notes"
+          value={safeValue(caseDetails.notes)}
+          type="text"
+        />
+        <FieldRow
+          label="Additional Notes"
+          value={safeValue(caseDetails.additionalNotes)}
+          type="text"
+        />
       </CollapsibleSection>
 
       {/* Services */}
       <CollapsibleSection title="Services">
         {(() => {
-          const interpreterService = caseDetails.services?.find(s => s.type?.toUpperCase() === 'INTERPRETER' && s.enabled);
-          const transportService = caseDetails.services?.find(s => s.type?.toUpperCase() === 'TRANSPORTATION' && s.enabled);
-          const hasServices = interpreterService || transportService || caseDetails.supportPerson;
+          const interpreterService = caseDetails.services?.find(
+            (s) => s.type?.toUpperCase() === "INTERPRETER" && s.enabled,
+          );
+          const transportService = caseDetails.services?.find(
+            (s) => s.type?.toUpperCase() === "TRANSPORTATION" && s.enabled,
+          );
+          const hasServices =
+            interpreterService || transportService || caseDetails.supportPerson;
 
           if (!hasServices) {
-            return <FieldRow label="Services" value="No services requested" type="text" />;
+            return (
+              <FieldRow
+                label="Services"
+                value="No services requested"
+                type="text"
+              />
+            );
           }
 
           return (
@@ -168,10 +323,10 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
                   <div className="mb-3 font-poppins text-[16px] font-semibold text-[#1A1A1A]">
                     Interpreter
                   </div>
-                  <FieldRow 
-                    label="Language" 
-                    value={interpreterService.interpreter?.languageName || "-"} 
-                    type="text" 
+                  <FieldRow
+                    label="Language"
+                    value={interpreterService.interpreter?.languageName || "-"}
+                    type="text"
                   />
                 </>
               )}
@@ -182,8 +337,8 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
                   <div className="mb-3 mt-4 font-poppins text-[16px] font-semibold text-[#1A1A1A]">
                     Transportation
                   </div>
-                  <FieldRow 
-                    label="Pick-Up Address" 
+                  <FieldRow
+                    label="Pick-Up Address"
                     value={
                       transportService.transport?.address
                         ? [
@@ -196,13 +351,13 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
                             .join(", ") || "-"
                         : "-"
                     }
-                    type="text" 
+                    type="text"
                   />
                   {transportService.transport?.notes && (
-                    <FieldRow 
-                      label="Notes" 
-                      value={safeValue(transportService.transport.notes)} 
-                      type="text" 
+                    <FieldRow
+                      label="Notes"
+                      value={safeValue(transportService.transport.notes)}
+                      type="text"
                     />
                   )}
                 </>
@@ -214,10 +369,10 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
                   <div className="mb-3 mt-4 font-poppins text-[16px] font-semibold text-[#1A1A1A]">
                     Support Person
                   </div>
-                  <FieldRow 
-                    label="Support Person Required" 
-                    value="Yes" 
-                    type="text" 
+                  <FieldRow
+                    label="Support Person Required"
+                    value="Yes"
+                    type="text"
                   />
                 </>
               )}
@@ -230,10 +385,10 @@ export default function CaseDetailContent({ caseDetails }: CaseDetailContentProp
       <CollapsibleSection title="Documents">
         {caseDetails.case.documents && caseDetails.case.documents.length > 0 ? (
           caseDetails.case.documents.map((document, index: number) => (
-            <FieldRow 
-              key={document.id || index} 
-              label={safeValue(document.name)} 
-              value={safeValue(document.name)} 
+            <FieldRow
+              key={document.id || index}
+              label={safeValue(document.name)}
+              value={safeValue(document.name)}
               type="document"
               documentUrl={document.url || undefined}
             />

@@ -18,12 +18,12 @@ const listAllExaminers = async () => {
         OR: [
           {
             // Primary: Examiners with ACTIVE status (set when account is created)
-            status: 'ACTIVE',
+            status: "ACTIVE",
           },
           {
             // Fallback: Examiners with linked application that has ACTIVE status
             application: {
-              status: 'ACTIVE',
+              status: "ACTIVE",
               deletedAt: null,
             },
           },
@@ -69,7 +69,7 @@ const listAllExaminers = async () => {
 
     // Filter out examiners with missing user data
     const validExaminers = examiners.filter(
-      (examiner) => examiner.account?.user
+      (examiner) => examiner.account?.user,
     );
 
     const examinersData = ExaminerDto.toExaminerDataList(validExaminers);
@@ -78,28 +78,42 @@ const listAllExaminers = async () => {
     const mappedData = await mapSpecialtyIdsToNames(examinersData);
 
     // If any yearsOfIMEExperience looks like a UUID, fetch the actual names from the taxonomy table
-    const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
     const yearsUuids = new Set<string>();
-    
+
     for (const examiner of validExaminers) {
-      if (examiner.yearsOfIMEExperience && uuidRegex.test(examiner.yearsOfIMEExperience.replace(/\s/g, ''))) {
+      if (
+        examiner.yearsOfIMEExperience &&
+        uuidRegex.test(examiner.yearsOfIMEExperience.replace(/\s/g, ""))
+      ) {
         yearsUuids.add(examiner.yearsOfIMEExperience);
       }
     }
 
     if (yearsUuids.size > 0) {
       try {
-        const yearsOfExperienceRecords = await prisma.yearsOfExperience.findMany({
-          where: { id: { in: Array.from(yearsUuids) } },
-        });
-        
-        const yearsMap = new Map(yearsOfExperienceRecords.map(y => [y.id, y.name]));
-        
+        const yearsOfExperienceRecords =
+          await prisma.yearsOfExperience.findMany({
+            where: { id: { in: Array.from(yearsUuids) } },
+          });
+
+        const yearsMap = new Map(
+          yearsOfExperienceRecords.map((y) => [y.id, y.name]),
+        );
+
         for (let i = 0; i < mappedData.length; i++) {
           const examinerData = mappedData[i];
           const originalExaminer = validExaminers[i];
-          if (originalExaminer.yearsOfIMEExperience && uuidRegex.test(originalExaminer.yearsOfIMEExperience.replace(/\s/g, ''))) {
-            const yearName = yearsMap.get(originalExaminer.yearsOfIMEExperience);
+          if (
+            originalExaminer.yearsOfIMEExperience &&
+            uuidRegex.test(
+              originalExaminer.yearsOfIMEExperience.replace(/\s/g, ""),
+            )
+          ) {
+            const yearName = yearsMap.get(
+              originalExaminer.yearsOfIMEExperience,
+            );
             if (yearName) {
               examinerData.yearsOfIMEExperience = yearName;
             }
@@ -114,8 +128,8 @@ const listAllExaminers = async () => {
     const assessmentTypeUuids = new Set<string>();
     for (const examiner of validExaminers) {
       if (examiner.assessmentTypes) {
-        examiner.assessmentTypes.forEach(typeId => {
-          if (uuidRegex.test(typeId.replace(/\s/g, ''))) {
+        examiner.assessmentTypes.forEach((typeId) => {
+          if (uuidRegex.test(typeId.replace(/\s/g, ""))) {
             assessmentTypeUuids.add(typeId);
           }
         });
@@ -125,20 +139,23 @@ const listAllExaminers = async () => {
     if (assessmentTypeUuids.size > 0) {
       try {
         const examTypes = await prisma.examinationType.findMany({
-          where: { 
+          where: {
             id: { in: Array.from(assessmentTypeUuids) },
-            deletedAt: null 
+            deletedAt: null,
           },
         });
-        
-        const typeMap = new Map(examTypes.map(t => [t.id, t.name]));
-        
+
+        const typeMap = new Map(examTypes.map((t) => [t.id, t.name]));
+
         for (let i = 0; i < mappedData.length; i++) {
           const examinerData = mappedData[i];
           const originalExaminer = validExaminers[i];
-          if (originalExaminer.assessmentTypes && originalExaminer.assessmentTypes.length > 0) {
-            examinerData.assessmentTypes = originalExaminer.assessmentTypes.map(id => 
-              typeMap.get(id) || id
+          if (
+            originalExaminer.assessmentTypes &&
+            originalExaminer.assessmentTypes.length > 0
+          ) {
+            examinerData.assessmentTypes = originalExaminer.assessmentTypes.map(
+              (id) => typeMap.get(id) || id,
             );
           }
         }

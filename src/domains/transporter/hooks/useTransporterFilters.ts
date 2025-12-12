@@ -44,7 +44,7 @@ export function useTransporterFilters(data: TransporterData[]) {
       result = result.filter((d) =>
         [d.companyName, d.contactPerson, d.email]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q))
+          .some((v) => String(v).toLowerCase().includes(q)),
       );
     }
 

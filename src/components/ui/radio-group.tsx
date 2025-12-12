@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import * as RadioGroupPrimitive from '@radix-ui/react-radio-group';
-import { CircleIcon } from 'lucide-react';
+import * as React from "react";
+import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
+import { CircleIcon } from "lucide-react";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 function RadioGroup({
   className,
@@ -13,33 +13,36 @@ function RadioGroup({
   return (
     <RadioGroupPrimitive.Root
       data-slot="radio-group"
-      className={cn('grid gap-3', className)}
+      className={cn("grid gap-3", className)}
       {...props}
     />
   );
 }
 
-interface RadioGroupItemProps extends React.ComponentProps<typeof RadioGroupPrimitive.Item> {
+interface RadioGroupItemProps extends React.ComponentProps<
+  typeof RadioGroupPrimitive.Item
+> {
   checkedColor?: string;
   indicatorColor?: string;
 }
 
 function RadioGroupItem({
   className,
-  checkedColor = '#00A8FF',
-  indicatorColor = '#00A8FF',
+  checkedColor = "#00A8FF",
+  indicatorColor = "#00A8FF",
   ...props
 }: RadioGroupItemProps) {
   return (
     <RadioGroupPrimitive.Item
       data-slot="radio-group-item"
       className={cn(
-        'peer border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow,background-color,border-color] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50',
-        className
+        "peer border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow,background-color,border-color] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
+        className,
       )}
       style={{
-        backgroundColor: 'data-state=checked' in props ? checkedColor : 'transparent',
-        borderColor: 'data-state=checked' in props ? checkedColor : '#00A8FF',
+        backgroundColor:
+          "data-state=checked" in props ? checkedColor : "transparent",
+        borderColor: "data-state=checked" in props ? checkedColor : "#00A8FF",
       }}
       {...props}
     >

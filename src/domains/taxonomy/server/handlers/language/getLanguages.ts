@@ -1,4 +1,4 @@
-import * as languageService from '../../language.service';
+import * as languageService from "../../language.service";
 
 const getLanguages = async () => {
   const result = await languageService.getLanguages();
@@ -6,4 +6,3 @@ const getLanguages = async () => {
 };
 
 export default getLanguages;
-

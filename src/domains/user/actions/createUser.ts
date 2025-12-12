@@ -14,7 +14,7 @@ const createUserSchema = z.object({
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 
 export const createUser = async (
-  rawInput: CreateUserInput
+  rawInput: CreateUserInput,
 ): Promise<{ success: boolean; user?: UserTableRow; error?: string }> => {
   try {
     const input = createUserSchema.parse(rawInput);
@@ -43,4 +43,3 @@ export const createUser = async (
 };
 
 export default createUser;
-

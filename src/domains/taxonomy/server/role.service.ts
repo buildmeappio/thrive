@@ -1,6 +1,6 @@
-import prisma from '@/lib/db';
-import { HttpError } from '@/utils/httpError';
-import { CreateRoleInput, UpdateRoleInput, RoleData } from '../types/Role';
+import prisma from "@/lib/db";
+import { HttpError } from "@/utils/httpError";
+import { CreateRoleInput, UpdateRoleInput, RoleData } from "../types/Role";
 
 export const createRole = async (data: CreateRoleInput) => {
   try {
@@ -13,7 +13,7 @@ export const createRole = async (data: CreateRoleInput) => {
     });
 
     if (existingRole) {
-      throw HttpError.badRequest('A role with this name already exists');
+      throw HttpError.badRequest("A role with this name already exists");
     }
 
     const role = await prisma.role.create({
@@ -42,7 +42,7 @@ export const updateRole = async (id: string, data: UpdateRoleInput) => {
     });
 
     if (!existingRole) {
-      throw HttpError.notFound('Role not found');
+      throw HttpError.notFound("Role not found");
     }
 
     // If name is being updated, check if it's already in use
@@ -56,7 +56,7 @@ export const updateRole = async (id: string, data: UpdateRoleInput) => {
       });
 
       if (nameExists) {
-        throw HttpError.badRequest('A role with this name already exists');
+        throw HttpError.badRequest("A role with this name already exists");
       }
     }
 
@@ -84,11 +84,11 @@ export const getRoles = async (): Promise<RoleData[]> => {
         deletedAt: null,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
-    return roles.map(role => ({
+    return roles.map((role) => ({
       id: role.id,
       name: role.name,
       createdAt: role.createdAt.toISOString(),
@@ -108,7 +108,7 @@ export const getRoleById = async (id: string) => {
     });
 
     if (!role) {
-      throw HttpError.notFound('Role not found');
+      throw HttpError.notFound("Role not found");
     }
 
     return role;
@@ -119,4 +119,3 @@ export const getRoleById = async (id: string) => {
     throw HttpError.internalServerError("Internal server error");
   }
 };
-

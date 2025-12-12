@@ -87,4 +87,3 @@ export const reactivateExaminer = async (id: string) => {
     };
   }
 };
-

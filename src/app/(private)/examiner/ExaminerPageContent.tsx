@@ -18,11 +18,11 @@ interface ExaminerPageContentProps {
 const formatText = (str: string): string => {
   if (!str) return str;
   return str
-    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
-    .split(' ')
-    .filter(word => word.length > 0)  // Remove empty strings
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+    .replace(/[-_]/g, " ") // Replace - and _ with spaces
+    .split(" ")
+    .filter((word) => word.length > 0) // Remove empty strings
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 };
 
 interface FilterState {
@@ -30,12 +30,19 @@ interface FilterState {
   status: string;
 }
 
-export default function ExaminerPageContent({ examinersData, applicationsData, specialties, statuses }: ExaminerPageContentProps) {
-  const [activeTab, setActiveTab] = useState<"applications" | "examiners">("applications");
+export default function ExaminerPageContent({
+  examinersData,
+  applicationsData,
+  specialties,
+  statuses,
+}: ExaminerPageContentProps) {
+  const [activeTab, setActiveTab] = useState<"applications" | "examiners">(
+    "applications",
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({
     specialty: "all",
-    status: "all"
+    status: "all",
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -43,37 +50,38 @@ export default function ExaminerPageContent({ examinersData, applicationsData, s
   const data = activeTab === "applications" ? applicationsData : examinersData;
 
   // Filter statuses based on active tab - remove ACTIVE from applications tab
-  const filteredStatuses = activeTab === "applications" 
-    ? statuses.filter(status => status !== "ACTIVE")
-    : statuses;
+  const filteredStatuses =
+    activeTab === "applications"
+      ? statuses.filter((status) => status !== "ACTIVE")
+      : statuses;
 
   // Reset status filter to "all" if it's set to "ACTIVE" when switching to applications tab
   useEffect(() => {
     if (activeTab === "applications" && filters.status === "ACTIVE") {
-      setFilters(prev => ({ ...prev, status: "all" }));
+      setFilters((prev) => ({ ...prev, status: "all" }));
     }
   }, [activeTab, filters.status]);
 
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [filterType]: value
+      [filterType]: value,
     }));
     setActiveDropdown(null);
   };
 
-
   const clearFilters = () => {
     setFilters({
       specialty: "all",
-      status: "all"
+      status: "all",
     });
   };
 
   // For examiners, only check specialty filter (status filter is hidden)
-  const hasActiveFilters = activeTab === "examiners" 
-    ? filters.specialty !== "all"
-    : filters.specialty !== "all" || filters.status !== "all";
+  const hasActiveFilters =
+    activeTab === "examiners"
+      ? filters.specialty !== "all"
+      : filters.specialty !== "all" || filters.status !== "all";
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -81,7 +89,7 @@ export default function ExaminerPageContent({ examinersData, applicationsData, s
       if (activeDropdown) {
         const target = event.target as Element;
         // Check if the click is outside any dropdown container
-        const isInsideDropdown = target.closest('.filter-dropdown');
+        const isInsideDropdown = target.closest(".filter-dropdown");
         if (!isInsideDropdown) {
           setActiveDropdown(null);
         }
@@ -89,11 +97,11 @@ export default function ExaminerPageContent({ examinersData, applicationsData, s
     };
 
     if (activeDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [activeDropdown]);
 
@@ -104,7 +112,7 @@ export default function ExaminerPageContent({ examinersData, applicationsData, s
     statuses,
     searchQuery,
     filters,
-    type: activeTab
+    type: activeTab,
   });
 
   return (
@@ -147,14 +155,20 @@ export default function ExaminerPageContent({ examinersData, applicationsData, s
             <stop offset="0%" stopColor="#01F4C8" />
             <stop offset="100%" stopColor="#00A8FF" />
           </linearGradient>
-          <linearGradient id="specialtyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <linearGradient
+            id="specialtyGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="0%"
+          >
             <stop offset="0%" stopColor="#01F4C8" />
             <stop offset="100%" stopColor="#00A8FF" />
           </linearGradient>
-           <linearGradient id="statusGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-             <stop offset="0%" stopColor="#01F4C8" />
-             <stop offset="100%" stopColor="#00A8FF" />
-           </linearGradient>
+          <linearGradient id="statusGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#01F4C8" />
+            <stop offset="100%" stopColor="#00A8FF" />
+          </linearGradient>
         </defs>
       </svg>
       <div className="flex flex-col gap-3 sm:gap-6 mb-20 dashboard-zoom-mobile">
@@ -164,8 +178,18 @@ export default function ExaminerPageContent({ examinersData, applicationsData, s
           <div className="flex-1 sm:max-w-md w-full">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="url(#searchGradient)" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg
+                  className="h-4 w-4 sm:h-5 sm:w-5"
+                  fill="none"
+                  stroke="url(#searchGradient)"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
               </div>
               <input
@@ -182,18 +206,39 @@ export default function ExaminerPageContent({ examinersData, applicationsData, s
           <div className="flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
             {/* Specialty Filter */}
             <div className="relative filter-dropdown">
-              <button 
-                onClick={() => setActiveDropdown(activeDropdown === "specialty" ? null : "specialty")}
+              <button
+                onClick={() =>
+                  setActiveDropdown(
+                    activeDropdown === "specialty" ? null : "specialty",
+                  )
+                }
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  filters.specialty !== "all" 
-                    ? "border-[#00A8FF] text-[#00A8FF]" 
+                  filters.specialty !== "all"
+                    ? "border-[#00A8FF] text-[#00A8FF]"
                     : "border-gray-200 text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                 <Cross className="w-3.5 h-3.5 sm:w-4 sm:h-4" stroke="url(#specialtyGradient)" />
-                <span>{filters.specialty !== "all" ? formatText(filters.specialty) : "Specialty"}</span>
-                <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "specialty" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <Cross
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                  stroke="url(#specialtyGradient)"
+                />
+                <span>
+                  {filters.specialty !== "all"
+                    ? formatText(filters.specialty)
+                    : "Specialty"}
+                </span>
+                <svg
+                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "specialty" ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
               {activeDropdown === "specialty" && (
@@ -205,7 +250,9 @@ export default function ExaminerPageContent({ examinersData, applicationsData, s
                         handleFilterChange("specialty", "all");
                       }}
                       className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.specialty === "all" ? "bg-gray-100 text-[#00A8FF]" : ""
+                        filters.specialty === "all"
+                          ? "bg-gray-100 text-[#00A8FF]"
+                          : ""
                       }`}
                     >
                       All Specialties
@@ -218,7 +265,9 @@ export default function ExaminerPageContent({ examinersData, applicationsData, s
                           handleFilterChange("specialty", specialty);
                         }}
                         className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          filters.specialty === specialty ? "bg-gray-100 text-[#00A8FF]" : ""
+                          filters.specialty === specialty
+                            ? "bg-gray-100 text-[#00A8FF]"
+                            : ""
                         }`}
                       >
                         {formatText(specialty)}
@@ -229,21 +278,42 @@ export default function ExaminerPageContent({ examinersData, applicationsData, s
               )}
             </div>
 
-             {/* Status Filter - Only show for applications, not examiners */}
+            {/* Status Filter - Only show for applications, not examiners */}
             {activeTab === "applications" && (
               <div className="relative filter-dropdown">
-                <button 
-                  onClick={() => setActiveDropdown(activeDropdown === "status" ? null : "status")}
+                <button
+                  onClick={() =>
+                    setActiveDropdown(
+                      activeDropdown === "status" ? null : "status",
+                    )
+                  }
                   className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                    filters.status !== "all" 
-                      ? "border-[#00A8FF] text-[#00A8FF]" 
+                    filters.status !== "all"
+                      ? "border-[#00A8FF] text-[#00A8FF]"
                       : "border-gray-200 text-gray-700 hover:bg-gray-50"
                   }`}
                 >
-                   <Funnel className="w-3.5 h-3.5 sm:w-4 sm:h-4" stroke="url(#statusGradient)" />
-                  <span>{filters.status !== "all" ? formatText(filters.status) : "Status"}</span>
-                  <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <Funnel
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                    stroke="url(#statusGradient)"
+                  />
+                  <span>
+                    {filters.status !== "all"
+                      ? formatText(filters.status)
+                      : "Status"}
+                  </span>
+                  <svg
+                    className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 {activeDropdown === "status" && (
@@ -255,7 +325,9 @@ export default function ExaminerPageContent({ examinersData, applicationsData, s
                           handleFilterChange("status", "all");
                         }}
                         className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          filters.status === "all" ? "bg-gray-100 text-[#00A8FF]" : ""
+                          filters.status === "all"
+                            ? "bg-gray-100 text-[#00A8FF]"
+                            : ""
                         }`}
                       >
                         All Statuses
@@ -268,7 +340,9 @@ export default function ExaminerPageContent({ examinersData, applicationsData, s
                             handleFilterChange("status", status);
                           }}
                           className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                            filters.status === status ? "bg-gray-100 text-[#00A8FF]" : ""
+                            filters.status === status
+                              ? "bg-gray-100 text-[#00A8FF]"
+                              : ""
                           }`}
                         >
                           {formatText(status)}
@@ -286,8 +360,18 @@ export default function ExaminerPageContent({ examinersData, applicationsData, s
                 onClick={clearFilters}
                 className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
               >
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
                 <span>Clear</span>
               </button>

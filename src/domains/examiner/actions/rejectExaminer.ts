@@ -28,10 +28,7 @@ interface ExaminerWithRelations extends ExaminerProfile {
   examinerLanguages: Array<ExaminerLanguage & { language: Language }>;
 }
 
-const rejectExaminer = async (
-  id: string,
-  messageToExaminer: string
-) => {
+const rejectExaminer = async (id: string, messageToExaminer: string) => {
   const user = await getCurrentUser();
   if (!user) {
     throw HttpError.unauthorized("You must be logged in to reject");
@@ -44,22 +41,25 @@ const rejectExaminer = async (
   // Check if it's an application or examiner
   const entityType = await checkEntityType(id);
 
-  if (entityType === 'application') {
+  if (entityType === "application") {
     // Reject the application
     const application = await applicationService.rejectApplication(
       id,
       user.accountId,
-      messageToExaminer.trim()
+      messageToExaminer.trim(),
     );
 
     // Send rejection email
     try {
-      await sendRejectionEmailToApplicant(application as any, messageToExaminer);
+      await sendRejectionEmailToApplicant(
+        application as any,
+        messageToExaminer,
+      );
       logger.log("✓ Rejection email sent successfully");
     } catch (emailError) {
       logger.error(
         "⚠️ Failed to send rejection email (but rejection succeeded):",
-        emailError
+        emailError,
       );
     }
 
@@ -68,12 +68,12 @@ const rejectExaminer = async (
     revalidatePath("/examiner");
 
     return application;
-  } else if (entityType === 'examiner') {
+  } else if (entityType === "examiner") {
     // Reject the examiner
     const examiner = await examinerService.rejectExaminer(
       id,
       user.accountId,
-      messageToExaminer.trim()
+      messageToExaminer.trim(),
     );
 
     // Send rejection email
@@ -83,7 +83,7 @@ const rejectExaminer = async (
     } catch (emailError) {
       logger.error(
         "⚠️ Failed to send rejection email (but rejection succeeded):",
-        emailError
+        emailError,
       );
     }
 
@@ -99,14 +99,16 @@ const rejectExaminer = async (
 
 async function sendRejectionEmailToApplicant(
   application: ExaminerApplication,
-  rejectionMessage: string
+  rejectionMessage: string,
 ) {
   const userEmail = application.email;
   const firstName = application.firstName;
   const lastName = application.lastName;
 
   if (!userEmail || !firstName || !lastName) {
-    logger.error("Missing required application information for rejection email");
+    logger.error(
+      "Missing required application information for rejection email",
+    );
     return;
   }
 
@@ -122,7 +124,7 @@ async function sendRejectionEmailToApplicant(
         process.env.NEXT_PUBLIC_APP_URL ||
         "",
     },
-    userEmail
+    userEmail,
   );
 
   if (!result.success) {
@@ -132,7 +134,7 @@ async function sendRejectionEmailToApplicant(
 
 async function sendRejectionEmailToExaminer(
   examiner: ExaminerWithRelations,
-  rejectionMessage: string
+  rejectionMessage: string,
 ) {
   const userEmail = examiner.account?.user?.email;
   const firstName = examiner.account?.user?.firstName;
@@ -155,7 +157,7 @@ async function sendRejectionEmailToExaminer(
         process.env.NEXT_PUBLIC_APP_URL ||
         "",
     },
-    userEmail
+    userEmail,
   );
 
   if (!result.success) {

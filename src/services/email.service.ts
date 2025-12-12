@@ -71,27 +71,32 @@ class EmailService {
 
   private replacePlaceholders(
     template: string,
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
   ): string {
     let result = template;
-    
+
     // Handle Handlebars conditionals: {{#if variableName}}...{{/if}}
     const ifBlockRegex = /\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g;
     result = result.replace(ifBlockRegex, (match, variableName, content) => {
       const value = data[variableName];
       // If variable is truthy, include the content; otherwise, remove it
-      if (value && (value === true || value === "true" || String(value).toLowerCase() === "true")) {
+      if (
+        value &&
+        (value === true ||
+          value === "true" ||
+          String(value).toLowerCase() === "true")
+      ) {
         return content;
       }
       return "";
     });
-    
+
     // Replace simple placeholders: {{variableName}}
     result = Object.entries(data).reduce((acc, [key, value]) => {
       const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
       return acc.replace(regex, String(value ?? ""));
     }, result);
-    
+
     return result;
   }
 
@@ -99,7 +104,7 @@ class EmailService {
     subject: string,
     templateName: string,
     data: Record<string, unknown> = {},
-    to?: string
+    to?: string,
   ): Promise<{ success: true } | { success: false; error: string }> {
     try {
       const transporter = await this.createTransporter();

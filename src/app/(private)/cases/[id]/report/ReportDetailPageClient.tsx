@@ -27,10 +27,10 @@ export default function ReportDetailPageClient({
   const [isEditing, setIsEditing] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [referralQuestionsResponse, setReferralQuestionsResponse] = useState(
-    reportDetails.referralQuestionsResponse
+    reportDetails.referralQuestionsResponse,
   );
   const [dynamicSections, setDynamicSections] = useState(
-    reportDetails.dynamicSections
+    reportDetails.dynamicSections,
   );
 
   const safeValue = (value: unknown): string => {
@@ -120,7 +120,7 @@ export default function ReportDetailPageClient({
   const handleSectionChange = (
     index: number,
     field: "title" | "content",
-    value: string
+    value: string,
   ) => {
     const updated = [...dynamicSections];
     updated[index] = { ...updated[index], [field]: value };
@@ -166,7 +166,8 @@ export default function ReportDetailPageClient({
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           <Link
             href={`/cases/${reportDetails.booking.examination.id}`}
-            className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+            className="flex items-center gap-2 sm:gap-4 flex-shrink-0"
+          >
             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
@@ -178,8 +179,9 @@ export default function ReportDetailPageClient({
         <div
           className={cn(
             "px-4 py-2 rounded-full text-sm font-semibold flex-shrink-0 border",
-            statusBadge.className
-          )}>
+            statusBadge.className,
+          )}
+        >
           {statusBadge.text}
         </div>
       </div>
@@ -252,7 +254,8 @@ export default function ReportDetailPageClient({
               {dynamicSections.map((section, index) => (
                 <div
                   key={section.id}
-                  className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  className="border border-gray-200 rounded-lg p-4 space-y-3"
+                >
                   {isEditing ? (
                     <>
                       <div className="space-y-2">
@@ -276,7 +279,11 @@ export default function ReportDetailPageClient({
                         <Textarea
                           value={section.content}
                           onChange={(e) =>
-                            handleSectionChange(index, "content", e.target.value)
+                            handleSectionChange(
+                              index,
+                              "content",
+                              e.target.value,
+                            )
                           }
                           placeholder="Enter section content"
                           rows={6}
@@ -287,7 +294,8 @@ export default function ReportDetailPageClient({
                         <button
                           type="button"
                           onClick={() => handleRemoveSection(index)}
-                          className="flex items-center gap-2 text-red-600 hover:text-red-700 text-sm">
+                          className="flex items-center gap-2 text-red-600 hover:text-red-700 text-sm"
+                        >
                           <XCircle className="w-4 h-4" />
                           Remove Section
                         </button>
@@ -309,7 +317,8 @@ export default function ReportDetailPageClient({
                 <button
                   type="button"
                   onClick={handleAddSection}
-                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium">
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                >
                   <Plus className="w-4 h-4" />
                   Add New Section
                 </button>
@@ -348,7 +357,8 @@ export default function ReportDetailPageClient({
                   fontSize: "12px",
                 }}
                 onClick={handleCancel}
-                disabled={loadingAction !== null}>
+                disabled={loadingAction !== null}
+              >
                 <X className="w-4 h-4" />
                 Cancel
               </button>
@@ -361,7 +371,8 @@ export default function ReportDetailPageClient({
                   fontSize: "12px",
                 }}
                 onClick={handleSave}
-                disabled={loadingAction !== null}>
+                disabled={loadingAction !== null}
+              >
                 {loadingAction === "save" ? (
                   "Saving..."
                 ) : (
@@ -385,7 +396,8 @@ export default function ReportDetailPageClient({
                       fontSize: "12px",
                     }}
                     onClick={() => setIsEditing(true)}
-                    disabled={loadingAction !== null}>
+                    disabled={loadingAction !== null}
+                  >
                     <Edit2 className="w-4 h-4" />
                     Edit Report
                   </button>
@@ -398,7 +410,8 @@ export default function ReportDetailPageClient({
                       fontSize: "12px",
                     }}
                     onClick={handleApprove}
-                    disabled={loadingAction !== null}>
+                    disabled={loadingAction !== null}
+                  >
                     {loadingAction === "approve" ? (
                       "Approving..."
                     ) : (
@@ -417,7 +430,8 @@ export default function ReportDetailPageClient({
                       fontSize: "12px",
                     }}
                     onClick={handleReject}
-                    disabled={loadingAction !== null}>
+                    disabled={loadingAction !== null}
+                  >
                     {loadingAction === "reject" ? (
                       "Rejecting..."
                     ) : (
@@ -436,4 +450,3 @@ export default function ReportDetailPageClient({
     </>
   );
 }
-

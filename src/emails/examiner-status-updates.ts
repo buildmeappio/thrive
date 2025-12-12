@@ -15,27 +15,41 @@ function escapeHtml(input: string) {
 }
 
 function loadTemplate(templateName: string): string {
-  const templatePath = path.join(process.cwd(), "templates", "emails", `${templateName}.html`);
+  const templatePath = path.join(
+    process.cwd(),
+    "templates",
+    "emails",
+    `${templateName}.html`,
+  );
   return fs.readFileSync(templatePath, "utf-8");
 }
 
-function renderTemplate(template: string, variables: Record<string, string>): string {
+function renderTemplate(
+  template: string,
+  variables: Record<string, string>,
+): string {
   let rendered = template;
-  
+
   // Replace {{variable}} with actual values
   Object.entries(variables).forEach(([key, value]) => {
     const regex = new RegExp(`{{${key}}}`, "g");
     rendered = rendered.replace(regex, escapeHtml(value));
   });
-  
+
   // Replace CDN_URL
-  rendered = rendered.replace(/{{CDN_URL}}/g, process.env.NEXT_PUBLIC_CDN_URL || "");
-  
+  rendered = rendered.replace(
+    /{{CDN_URL}}/g,
+    process.env.NEXT_PUBLIC_CDN_URL || "",
+  );
+
   return rendered;
 }
 
 // In Review
-export function generateExaminerInReviewEmail(params: { firstName: string; lastName: string }): string {
+export function generateExaminerInReviewEmail(params: {
+  firstName: string;
+  lastName: string;
+}): string {
   const template = loadTemplate("examiner-in-review");
   return renderTemplate(template, params);
 }
@@ -43,8 +57,8 @@ export function generateExaminerInReviewEmail(params: { firstName: string; lastN
 export const EXAMINER_IN_REVIEW_SUBJECT = "Your Application is Now In Review";
 
 // Interview Scheduled
-export function generateExaminerInterviewScheduledEmail(params: { 
-  firstName: string; 
+export function generateExaminerInterviewScheduledEmail(params: {
+  firstName: string;
   lastName: string;
   scheduleInterviewLink: string;
 }): string {
@@ -52,18 +66,23 @@ export function generateExaminerInterviewScheduledEmail(params: {
   return renderTemplate(template, params);
 }
 
-export const EXAMINER_INTERVIEW_SCHEDULED_SUBJECT = "Interview Scheduled for Your Application";
+export const EXAMINER_INTERVIEW_SCHEDULED_SUBJECT =
+  "Interview Scheduled for Your Application";
 
 // Interview Completed
-export function generateExaminerInterviewCompletedEmail(params: { firstName: string; lastName: string }): string {
+export function generateExaminerInterviewCompletedEmail(params: {
+  firstName: string;
+  lastName: string;
+}): string {
   const template = loadTemplate("examiner-interview-completed");
   return renderTemplate(template, params);
 }
 
-export const EXAMINER_INTERVIEW_COMPLETED_SUBJECT = "Interview Completed - Application Update";
+export const EXAMINER_INTERVIEW_COMPLETED_SUBJECT =
+  "Interview Completed - Application Update";
 
 // Contract Sent
-export function generateExaminerContractSentEmail(params: { 
+export function generateExaminerContractSentEmail(params: {
   firstName: string;
   lastName: string;
   contractSigningLink: string;
@@ -72,13 +91,17 @@ export function generateExaminerContractSentEmail(params: {
   return renderTemplate(template, params);
 }
 
-export const EXAMINER_CONTRACT_SENT_SUBJECT = "Sign Your Independent Medical Examiner Agreement";
+export const EXAMINER_CONTRACT_SENT_SUBJECT =
+  "Sign Your Independent Medical Examiner Agreement";
 
 // Contract Signed (Admin confirmed)
-export function generateExaminerContractSignedEmail(params: { firstName: string; lastName: string }): string {
+export function generateExaminerContractSignedEmail(params: {
+  firstName: string;
+  lastName: string;
+}): string {
   const template = loadTemplate("examiner-contract-signed");
   return renderTemplate(template, params);
 }
 
-export const EXAMINER_CONTRACT_SIGNED_SUBJECT = "Contract Confirmed - Final Approval Pending";
-
+export const EXAMINER_CONTRACT_SIGNED_SUBJECT =
+  "Contract Confirmed - Final Approval Pending";

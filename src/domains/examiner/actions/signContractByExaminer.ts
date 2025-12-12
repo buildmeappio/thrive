@@ -9,7 +9,10 @@ import { sendMail } from "@/lib/email";
  * Called when examiner signs the contract (from examiner portal)
  * Updates contractSignedByExaminerAt timestamp and sends notification to admin
  */
-export async function signContractByExaminer(examinerProfileId: string, _examinerEmail?: string) {
+export async function signContractByExaminer(
+  examinerProfileId: string,
+  _examinerEmail?: string,
+) {
   try {
     // Update the examiner profile with contract signed timestamp
     const examiner = await prisma.examinerProfile.update({
@@ -92,4 +95,3 @@ export async function signContractByExaminer(examinerProfileId: string, _examine
 }
 
 export default signContractByExaminer;
-

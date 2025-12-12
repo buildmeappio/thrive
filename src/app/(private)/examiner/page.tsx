@@ -1,9 +1,9 @@
 import ExaminerPageContent from "./ExaminerPageContent";
-import { 
-  listAllExaminers, 
+import {
+  listAllExaminers,
   listAllApplications,
-  listExaminerSpecialties, 
-  listExaminerStatuses 
+  listExaminerSpecialties,
+  listExaminerStatuses,
 } from "@/domains/examiner/actions";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { Metadata } from "next";
@@ -108,11 +108,11 @@ const Page = async () => {
   }));
 
   return (
-    <ExaminerPageContent 
-      examinersData={examinersData} 
+    <ExaminerPageContent
+      examinersData={examinersData}
       applicationsData={applicationsData}
-      specialties={specialties} 
-      statuses={statuses} 
+      specialties={specialties}
+      statuses={statuses}
     />
   );
 };

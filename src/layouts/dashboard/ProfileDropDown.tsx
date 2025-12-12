@@ -1,10 +1,10 @@
-'use client';
-import { type Session } from 'next-auth';
-import { signOut } from 'next-auth/react';
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
-import { LogOut, LifeBuoy } from 'lucide-react';
-import { ENV } from '@/constants/variables';
+"use client";
+import { type Session } from "next-auth";
+import { signOut } from "next-auth/react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { LogOut, LifeBuoy } from "lucide-react";
+import { ENV } from "@/constants/variables";
 
 type ProfileDropdownProps = {
   isMobile: boolean;
@@ -30,9 +30,9 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -42,7 +42,10 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
   }, [session?.user?.image]);
 
   const getProfileImageUrl = () => {
-    return session?.user?.image || `${ENV.NEXT_PUBLIC_CDN_URL}/images/admin-avatar.png`;
+    return (
+      session?.user?.image ||
+      `${ENV.NEXT_PUBLIC_CDN_URL}/images/admin-avatar.png`
+    );
   };
 
   const renderDropdown = () => {
@@ -53,9 +56,7 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
         style={{ minWidth: 180 }}
       >
         <div className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">
-          <div className="font-medium truncate">
-            {session?.user?.name}
-          </div>
+          <div className="font-medium truncate">{session?.user?.name}</div>
           <div className="truncate text-gray-500">{session?.user?.email}</div>
         </div>
         <ul className="py-1 sm:py-2 text-xs sm:text-sm text-gray-700">
@@ -71,8 +72,8 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
           <li>
             <button
               onClick={async () => {
-                localStorage.removeItem('token');
-                await signOut({ callbackUrl: '/admin/login', redirect: true });
+                localStorage.removeItem("token");
+                await signOut({ callbackUrl: "/admin/login", redirect: true });
               }}
               className="flex w-full cursor-pointer items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 transition-colors hover:bg-gray-100"
             >
@@ -93,7 +94,7 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
         </div>
       )}
       <Image
-        onClick={() => setDropdownOpen(prev => !prev)}
+        onClick={() => setDropdownOpen((prev) => !prev)}
         className="h-7 w-7 sm:h-10 sm:w-10 lg:h-[50px] lg:w-[50px] cursor-pointer rounded-full border border-[#DBDBFF] bg-white object-cover flex-shrink-0"
         src={getProfileImageUrl()}
         alt="User dropdown"
@@ -101,7 +102,7 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
         width={48}
         onLoad={() => setTimeout(() => setImageLoading(false), 500)}
         onError={() => setTimeout(() => setImageLoading(false), 500)}
-        style={imageLoading ? { visibility: 'hidden' } : {}}
+        style={imageLoading ? { visibility: "hidden" } : {}}
       />
       {dropdownOpen && renderDropdown()}
     </div>

@@ -7,4 +7,3 @@ const createChaperone = async (data: CreateChaperoneInput) => {
 };
 
 export default createChaperone;
-

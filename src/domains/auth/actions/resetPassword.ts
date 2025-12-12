@@ -13,4 +13,3 @@ const resetPasswordAction = async (data: ResetPasswordInput) => {
 };
 
 export default resetPasswordAction;
-

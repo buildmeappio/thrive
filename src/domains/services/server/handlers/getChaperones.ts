@@ -6,4 +6,3 @@ const getChaperones = async () => {
 };
 
 export default getChaperones;
-

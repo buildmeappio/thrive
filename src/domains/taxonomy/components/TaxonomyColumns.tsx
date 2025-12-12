@@ -25,9 +25,10 @@ const Header = ({
         "font-poppins flex items-center gap-2 text-left text-[16px] leading-5 font-semibold text-black",
         first && "",
         sortable &&
-          "cursor-pointer transition-colors select-none hover:text-[#000093]"
+          "cursor-pointer transition-colors select-none hover:text-[#000093]",
       )}
-      onClick={sortable ? onClick : undefined}>
+      onClick={sortable ? onClick : undefined}
+    >
       <span>{children}</span>
       {sortable && (
         <div className="flex items-center">
@@ -70,16 +71,18 @@ const DeleteButton = ({
       <button
         onClick={disabled ? undefined : onDelete}
         disabled={disabled}
-        className={cn("cursor-pointer", disabled && "cursor-not-allowed")}>
+        className={cn("cursor-pointer", disabled && "cursor-not-allowed")}
+      >
         <div
           className={cn(
             "flex h-[30px] w-[40px] items-center justify-center rounded-full p-0 transition-opacity",
-            disabled ? "bg-gray-100 opacity-50" : "bg-red-50 hover:opacity-80"
-          )}>
+            disabled ? "bg-gray-100 opacity-50" : "bg-red-50 hover:opacity-80",
+          )}
+        >
           <Trash2
             className={cn(
               "h-4 w-4",
-              disabled ? "text-gray-400" : "text-red-600"
+              disabled ? "text-gray-400" : "text-red-600",
             )}
           />
         </div>
@@ -116,7 +119,8 @@ const Content = ({
     <div
       ref={textRef}
       className="text-[#4D4D4D] font-poppins text-[16px] leading-5 overflow-hidden text-ellipsis whitespace-nowrap"
-      title={showTooltip ? title : undefined}>
+      title={showTooltip ? title : undefined}
+    >
       {children}
     </div>
   );
@@ -134,7 +138,7 @@ export const createTaxonomyColumns = (
   displayFields: string[],
   onEdit: (taxonomy: TaxonomyData) => void,
   onDelete: (taxonomy: TaxonomyData) => void,
-  type: TaxonomyType
+  type: TaxonomyType,
 ): ColumnDef<TaxonomyData>[] => {
   const columns: ColumnDef<TaxonomyData>[] = displayFields.map(
     (field, index) => ({
@@ -143,7 +147,8 @@ export const createTaxonomyColumns = (
           first={index === 0}
           sortable
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          sortDirection={column.getIsSorted()}>
+          sortDirection={column.getIsSorted()}
+        >
           {formatFieldName(field)}
         </Header>
       ),
@@ -194,8 +199,8 @@ export const createTaxonomyColumns = (
             typeof value === "number"
               ? value
               : typeof value === "string"
-              ? parseInt(value, 10)
-              : Number(value);
+                ? parseInt(value, 10)
+                : Number(value);
 
           // Check if it's a valid numeric value
           if (!isNaN(numValue) && typeof numValue === "number") {
@@ -236,7 +241,7 @@ export const createTaxonomyColumns = (
       },
       size: field === "description" ? 250 : 200,
       maxSize: field === "description" ? 300 : 250,
-    })
+    }),
   );
 
   // Add Frequency column (appears in all taxonomy tables except configuration)
@@ -246,7 +251,8 @@ export const createTaxonomyColumns = (
         <Header
           sortable
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          sortDirection={column.getIsSorted()}>
+          sortDirection={column.getIsSorted()}
+        >
           Frequency
         </Header>
       ),
@@ -271,7 +277,8 @@ export const createTaxonomyColumns = (
       <Header
         sortable
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        sortDirection={column.getIsSorted()}>
+        sortDirection={column.getIsSorted()}
+      >
         Date Added
       </Header>
     ),

@@ -26,7 +26,6 @@ const pool = new Pool(config);
 
 const adapter = new PrismaPg(pool);
 
-
 // Prisma Client configuration
 // For Prisma 7+, we need to provide an adapter for direct database connection
 const prismaClientOptions: Prisma.PrismaClientOptions = {

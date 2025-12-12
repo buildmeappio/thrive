@@ -22,7 +22,8 @@ export async function createTransporter(data: CreateTransporterData) {
     // Transform Prisma result to TransporterData
     const transformed: TransporterData = {
       ...transporter,
-      serviceAreas: transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
+      serviceAreas:
+        transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
     };
 
     return { success: true, data: transformed };
@@ -67,7 +68,8 @@ export async function getTransporters(page = 1, limit = 10, search = "") {
     // Transform Prisma results to TransporterData
     const transformed: TransporterData[] = transporters.map((t) => ({
       ...t,
-      serviceAreas: t.serviceAreas as unknown as TransporterData["serviceAreas"],
+      serviceAreas:
+        t.serviceAreas as unknown as TransporterData["serviceAreas"],
     }));
 
     return {
@@ -99,7 +101,8 @@ export async function getTransporterById(id: string) {
     // Transform Prisma result to TransporterData
     const transformed: TransporterData = {
       ...transporter,
-      serviceAreas: transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
+      serviceAreas:
+        transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
     };
 
     return { success: true, data: transformed };
@@ -109,7 +112,10 @@ export async function getTransporterById(id: string) {
   }
 }
 
-export async function updateTransporter(id: string, data: UpdateTransporterData) {
+export async function updateTransporter(
+  id: string,
+  data: UpdateTransporterData,
+) {
   try {
     logger.log("TransporterService.update called with:", { id, data });
 
@@ -131,7 +137,8 @@ export async function updateTransporter(id: string, data: UpdateTransporterData)
     // Transform Prisma result to TransporterData
     const transformed: TransporterData = {
       ...transporter,
-      serviceAreas: transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
+      serviceAreas:
+        transporter.serviceAreas as unknown as TransporterData["serviceAreas"],
     };
 
     logger.log("Transporter updated successfully:", transporter);

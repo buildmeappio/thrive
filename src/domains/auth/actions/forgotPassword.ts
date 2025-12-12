@@ -8,4 +8,3 @@ const forgotPasswordAction = async (formData: FormData) => {
 };
 
 export default forgotPasswordAction;
-

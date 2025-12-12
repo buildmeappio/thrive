@@ -1,4 +1,14 @@
-import { ExaminerProfile, Account, User, Documents, ExaminerLanguage, Language, ExaminerFeeStructure, Address, ExaminerStatus } from "@prisma/client";
+import {
+  ExaminerProfile,
+  Account,
+  User,
+  Documents,
+  ExaminerLanguage,
+  Language,
+  ExaminerFeeStructure,
+  Address,
+  ExaminerStatus,
+} from "@prisma/client";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 
 type ExaminerWithRelations = ExaminerProfile & {
@@ -45,7 +55,8 @@ export class ExaminerDto {
       cvUrl: undefined, // Will be set by handler with presigned URL
       medicalLicenseUrl: undefined, // Will be set by handler with presigned URL
       medicalLicenseUrls: undefined, // Will be set by handler with presigned URLs (for multiple licenses)
-      languagesSpoken: examiner.examinerLanguages?.map((el) => el.language.name) || [],
+      languagesSpoken:
+        examiner.examinerLanguages?.map((el) => el.language.name) || [],
       yearsOfIMEExperience: String(examiner.yearsOfIMEExperience || "0"),
       imesCompleted: examiner.imesCompleted || undefined,
       currentlyConductingIMEs: examiner.currentlyConductingIMEs || false,
@@ -56,26 +67,36 @@ export class ExaminerDto {
       redactedIMEReportUrl: undefined, // Will be set by handler with presigned URL
       insuranceProofUrl: undefined, // Will be set by handler with presigned URL
       signedNdaUrl: undefined, // Will be set by handler with presigned URL
-      isForensicAssessmentTrained: examiner.isForensicAssessmentTrained ?? false,
+      isForensicAssessmentTrained:
+        examiner.isForensicAssessmentTrained ?? false,
       agreeToTerms: examiner.agreeToTerms ?? false,
-      contractSignedByExaminerAt: examiner.contractSignedByExaminerAt?.toISOString() || undefined,
-      contractConfirmedByAdminAt: examiner.contractConfirmedByAdminAt?.toISOString() || undefined,
-      status: (examiner.status || examiner.application?.status || "APPROVED") as ExaminerData["status"], // Prioritize ExaminerProfile status over application status (application is historical record)
+      contractSignedByExaminerAt:
+        examiner.contractSignedByExaminerAt?.toISOString() || undefined,
+      contractConfirmedByAdminAt:
+        examiner.contractConfirmedByAdminAt?.toISOString() || undefined,
+      status: (examiner.status ||
+        examiner.application?.status ||
+        "APPROVED") as ExaminerData["status"], // Prioritize ExaminerProfile status over application status (application is historical record)
       createdAt: examiner.createdAt.toISOString(),
       updatedAt: examiner.updatedAt.toISOString(),
-      feeStructure: feeStructure ? {
-        id: feeStructure.id,
-        IMEFee: Number(feeStructure.IMEFee),
-        recordReviewFee: Number(feeStructure.recordReviewFee),
-        hourlyRate: feeStructure.hourlyRate ? Number(feeStructure.hourlyRate) : undefined,
-        cancellationFee: Number(feeStructure.cancellationFee),
-        paymentTerms: feeStructure.paymentTerms,
-      } : undefined,
+      feeStructure: feeStructure
+        ? {
+            id: feeStructure.id,
+            IMEFee: Number(feeStructure.IMEFee),
+            recordReviewFee: Number(feeStructure.recordReviewFee),
+            hourlyRate: feeStructure.hourlyRate
+              ? Number(feeStructure.hourlyRate)
+              : undefined,
+            cancellationFee: Number(feeStructure.cancellationFee),
+            paymentTerms: feeStructure.paymentTerms,
+          }
+        : undefined,
     };
   }
 
-  static toExaminerDataList(examiners: ExaminerWithRelations[]): ExaminerData[] {
+  static toExaminerDataList(
+    examiners: ExaminerWithRelations[],
+  ): ExaminerData[] {
     return examiners.map((e) => this.toExaminerData(e));
   }
 }
-

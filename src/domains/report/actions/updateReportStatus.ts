@@ -30,7 +30,7 @@ const updateReportStatus = async (id: string, status: ReportStatus) => {
 
 async function sendReportStatusEmailToExaminer(
   report: any,
-  status: ReportStatus
+  status: ReportStatus,
 ) {
   const examiner = report.booking?.examination?.examiner;
   const userEmail = examiner?.user?.email;
@@ -69,7 +69,7 @@ async function sendReportStatusEmailToExaminer(
           process.env.NEXT_PUBLIC_APP_URL ||
           "",
       },
-      userEmail
+      userEmail,
     );
 
     if (!result.success) {
@@ -90,7 +90,7 @@ async function sendReportStatusEmailToExaminer(
           process.env.NEXT_PUBLIC_APP_URL ||
           "",
       },
-      userEmail
+      userEmail,
     );
 
     if (!result.success) {
@@ -100,4 +100,3 @@ async function sendReportStatusEmailToExaminer(
 }
 
 export default updateReportStatus;
-

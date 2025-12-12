@@ -13,12 +13,12 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
     return <ExaminerDetail examiner={examiner} />;
   } catch (error) {
     logger.error("Error in examiner detail page:", error);
-    
+
     // Only return notFound for 404 errors, re-throw others
     if (error instanceof HttpError && error.status === 404) {
       return notFound();
     }
-    
+
     // For other errors, throw them to show error page
     throw error;
   }

@@ -6,4 +6,3 @@ const deleteChaperone = async (id: string) => {
 };
 
 export default deleteChaperone;
-

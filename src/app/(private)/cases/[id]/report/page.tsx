@@ -28,7 +28,9 @@ const Page: React.FC<PageProps> = async ({ params }) => {
     notFound();
   }
 
-  const reportDetails = await reportActions.getReportById(caseDetails.report.id);
+  const reportDetails = await reportActions.getReportById(
+    caseDetails.report.id,
+  );
 
   return (
     <DashboardShell>
@@ -41,4 +43,3 @@ const Page: React.FC<PageProps> = async ({ params }) => {
 };
 
 export default Page;
-

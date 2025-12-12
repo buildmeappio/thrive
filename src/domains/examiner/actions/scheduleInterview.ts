@@ -22,9 +22,8 @@ const scheduleInterview = async (id: string) => {
   const entityType = await checkEntityType(id);
 
   if (entityType === "application") {
-    const application = await applicationService.scheduleApplicationInterview(
-      id
-    );
+    const application =
+      await applicationService.scheduleApplicationInterview(id);
 
     // Send notification email to applicant
     try {
@@ -66,7 +65,7 @@ const scheduleInterview = async (id: string) => {
     return application;
   } else if (entityType === "examiner") {
     throw HttpError.badRequest(
-      "We no longer maintain examiner profile as a means to accept examiner applications"
+      "We no longer maintain examiner profile as a means to accept examiner applications",
     );
   } else {
     throw HttpError.notFound("Application or examiner not found");

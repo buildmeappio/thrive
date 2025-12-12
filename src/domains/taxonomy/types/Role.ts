@@ -17,4 +17,3 @@ export type CreateRoleInput = {
 };
 
 export type UpdateRoleInput = Partial<CreateRoleInput>;
-

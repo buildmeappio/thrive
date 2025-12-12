@@ -1,4 +1,4 @@
-'use server';
+"use server";
 import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
 import { Examination, Prisma, SecureLinkStatus } from "@prisma/client";
@@ -62,7 +62,7 @@ class CaseService {
 
     logger.log("roles", accounts);
     const isInvalidRole = accounts.some(
-      (account) => !isAllowedRole(account.role.name)
+      (account) => !isAllowedRole(account.role.name),
     );
 
     logger.log("isInvalidRole", isInvalidRole);
@@ -72,7 +72,7 @@ class CaseService {
     }
 
     const isSuperAdmin = accounts.some(
-      (account) => account.role.name === Roles.SUPER_ADMIN
+      (account) => account.role.name === Roles.SUPER_ADMIN,
     );
     if (isSuperAdmin) {
       return undefined;
@@ -80,7 +80,7 @@ class CaseService {
 
     const account = accounts.find(
       (account) =>
-        account.role.name === Roles.STAFF || account.role.name === Roles.ADMIN
+        account.role.name === Roles.STAFF || account.role.name === Roles.ADMIN,
     );
 
     if (!account) {

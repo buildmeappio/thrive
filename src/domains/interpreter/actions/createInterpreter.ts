@@ -12,15 +12,21 @@ type CreateInterpreterInput = {
 };
 
 type CreateInterpreterResult =
-  | { success: true; interpreter: ReturnType<typeof InterpreterDto.toInterpreterData> }
+  | {
+      success: true;
+      interpreter: ReturnType<typeof InterpreterDto.toInterpreterData>;
+    }
   | { success: false; message: string };
 
 const createInterpreter = async (
-  data: CreateInterpreterInput
+  data: CreateInterpreterInput,
 ): Promise<CreateInterpreterResult> => {
   try {
     const interpreter = await interpreterService.createInterpreter(data);
-    return { success: true, interpreter: InterpreterDto.toInterpreterData(interpreter) };
+    return {
+      success: true,
+      interpreter: InterpreterDto.toInterpreterData(interpreter),
+    };
   } catch (error) {
     const message =
       error instanceof Error && error.message
@@ -31,4 +37,3 @@ const createInterpreter = async (
 };
 
 export default createInterpreter;
-

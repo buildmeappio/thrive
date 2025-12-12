@@ -15,7 +15,10 @@ export default function MessagesPanel({ items }: Props) {
       <div className="flex items-center gap-3 pb-3 w-full">
         <span className="relative grid h-[40px] sm:h-[30.5px] w-[40px] sm:w-[30.5px] place-items-center rounded-full bg-[#EEEFFF]">
           {/* gradient message icon */}
-          <MessageSquare className="h-[20px] sm:h-[16px] w-[20px] sm:w-[16px]" style={{ color: "#00A8FF" }} />
+          <MessageSquare
+            className="h-[20px] sm:h-[16px] w-[20px] sm:w-[16px]"
+            style={{ color: "#00A8FF" }}
+          />
           {/* notification badge */}
           <span className="absolute -top-1 -right-1 h-6 w-6 sm:h-4 sm:w-4 rounded-full bg-red-500 text-white text-[13px] sm:text-[10px] font-medium flex items-center justify-center">
             1
@@ -38,7 +41,9 @@ export default function MessagesPanel({ items }: Props) {
           >
             {/* gradient dot */}
             <span className="h-[11px] sm:h-[9px] w-[11px] sm:w-[9px] rounded-full bg-[linear-gradient(270deg,#01F4C8_0%,#00A8FF_100%)]" />
-            <p className="text-[17px] sm:text-[13px] tracking-[-0.02em] text-[#444] truncate">{message}</p>
+            <p className="text-[17px] sm:text-[13px] tracking-[-0.02em] text-[#444] truncate">
+              {message}
+            </p>
           </div>
         ))}
       </div>
@@ -55,4 +60,3 @@ export default function MessagesPanel({ items }: Props) {
     </section>
   );
 }
-

@@ -1,5 +1,5 @@
-import * as caseStatusService from '../../caseStatus.service';
-import { CreateCaseStatusInput } from '../../../types/CaseStatus';
+import * as caseStatusService from "../../caseStatus.service";
+import { CreateCaseStatusInput } from "../../../types/CaseStatus";
 
 const createCaseStatus = async (data: CreateCaseStatusInput) => {
   const result = await caseStatusService.createCaseStatus(data);
@@ -7,4 +7,3 @@ const createCaseStatus = async (data: CreateCaseStatusInput) => {
 };
 
 export default createCaseStatus;
-

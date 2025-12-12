@@ -13,28 +13,38 @@ const rejectOrganization = async (id: string, reason: string) => {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const organization = await handlers.rejectOrganization(id, user.accountId, reason);
+  const organization = await handlers.rejectOrganization(
+    id,
+    user.accountId,
+    reason,
+  );
 
   // Send rejection email
   try {
     await sendRejectReasonToOrganization(organization, reason);
     logger.log("✓ Rejection email sent successfully");
   } catch (emailError) {
-    logger.error("⚠️ Failed to send rejection email (but rejection succeeded):", emailError);
+    logger.error(
+      "⚠️ Failed to send rejection email (but rejection succeeded):",
+      emailError,
+    );
   }
 
   // Revalidate dashboard and organization pages
   revalidatePath("/dashboard");
   revalidatePath("/organization");
   revalidatePath(`/organization/${id}`);
-  
+
   return organization;
 };
 
-async function sendRejectReasonToOrganization(org: OrganizationData, reason: string) {
+async function sendRejectReasonToOrganization(
+  org: OrganizationData,
+  reason: string,
+) {
   const email = org.managerEmail;
-  const firstName = org.managerName?.split(' ')[0] || "";
-  const lastName = org.managerName?.split(' ').slice(1).join(' ') || "";
+  const firstName = org.managerName?.split(" ")[0] || "";
+  const lastName = org.managerName?.split(" ").slice(1).join(" ") || "";
 
   if (!email) {
     logger.error("Organization manager email not found");
@@ -49,9 +59,12 @@ async function sendRejectReasonToOrganization(org: OrganizationData, reason: str
       lastName,
       organizationName: org.name,
       rejectionMessage: reason,
-      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
+      CDN_URL:
+        process.env.NEXT_PUBLIC_CDN_URL ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        "",
     },
-    email
+    email,
   );
 
   if (!result.success) {

@@ -14,7 +14,7 @@ import { SecureLinkStatus } from "@prisma/client";
  */
 const createSecureLink = async (
   examinationId: string,
-  expiresInHours: number = 168
+  expiresInHours: number = 168,
 ): Promise<string> => {
   try {
     // Get examination data to create JWT token with required payload
@@ -52,7 +52,7 @@ const createSecureLink = async (
         caseId: examination.caseId,
         examinationId: examination.id,
       },
-      expiresIn as any
+      expiresIn as any,
     );
 
     // Calculate expiration date based on expiresInHours
@@ -92,7 +92,7 @@ const createSecureLink = async (
     const link = `${baseUrl}${availabilityUrl}?token=${jwtToken}`;
 
     logger.log(
-      `Created secure link for examination ${examinationId}: ${link} (stored in DB with ID: ${secureLink.id})`
+      `Created secure link for examination ${examinationId}: ${link} (stored in DB with ID: ${secureLink.id})`,
     );
 
     return link;

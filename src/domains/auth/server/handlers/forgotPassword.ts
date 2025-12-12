@@ -10,27 +10,35 @@ type ForgotPasswordData = {
   email: string;
 };
 
-export const forgotPassword = async (data: ForgotPasswordData): Promise<{ success: boolean; message: string; userExists?: boolean }> => {
+export const forgotPassword = async (
+  data: ForgotPasswordData,
+): Promise<{ success: boolean; message: string; userExists?: boolean }> => {
   try {
     // Check if user exists
     const user = await authService.getUserWithRoleByEmail(data.email);
 
     // Check if user exists and has admin role
     if (!user) {
-      logger.log(`Password reset requested for non-existent email: ${data.email}`);
+      logger.log(
+        `Password reset requested for non-existent email: ${data.email}`,
+      );
       return {
         success: false,
-        message: "If an account with that email exists, we've sent password reset instructions.",
+        message:
+          "If an account with that email exists, we've sent password reset instructions.",
         userExists: false,
       };
     }
 
     // Check if user has accounts
     if (!user.accounts || user.accounts.length === 0) {
-      logger.log(`Password reset requested for user with no accounts: ${data.email}`);
+      logger.log(
+        `Password reset requested for user with no accounts: ${data.email}`,
+      );
       return {
         success: false,
-        message: "If an account with that email exists, we've sent password reset instructions.",
+        message:
+          "If an account with that email exists, we've sent password reset instructions.",
         userExists: false,
       };
     }
@@ -41,12 +49,16 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
 
     // Check if the user has an allowed admin role (only SUPER_ADMIN or ADMIN, not STAFF)
     // This prevents examiners, interpreters, staff, etc. from using admin password reset
-    const isAdminOrSuperAdmin = roleName === Roles.SUPER_ADMIN || roleName === Roles.ADMIN;
+    const isAdminOrSuperAdmin =
+      roleName === Roles.SUPER_ADMIN || roleName === Roles.ADMIN;
     if (!roleName || !isAdminOrSuperAdmin) {
-      logger.log(`Password reset requested for non-allowed role: ${data.email}, role: ${roleName || 'none'}`);
+      logger.log(
+        `Password reset requested for non-allowed role: ${data.email}, role: ${roleName || "none"}`,
+      );
       return {
         success: false,
-        message: "If an account with that email exists, we've sent password reset instructions.",
+        message:
+          "If an account with that email exists, we've sent password reset instructions.",
         userExists: false,
       };
     }
@@ -54,7 +66,9 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
     const userId = user.id;
     const accountId = account.id;
 
-    logger.log(`Generating password reset token for user: ${user.email}, userId: ${userId}, accountId: ${accountId}, role: ${roleName}`);
+    logger.log(
+      `Generating password reset token for user: ${user.email}, userId: ${userId}, accountId: ${accountId}, role: ${roleName}`,
+    );
 
     // Generate password reset token with userId, accountId, role, and updatedAt timestamp (expires in 1 hour)
     // The updatedAt timestamp ensures token becomes invalid once password is changed
@@ -69,7 +83,7 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
         purpose: "password-reset",
         updatedAt: user.updatedAt.getTime(), // Timestamp when token was issued
       },
-      "1h"
+      "1h",
     );
 
     // Create reset link with /admin prefix
@@ -90,11 +104,13 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
         }),
       });
       emailSent = true;
-      logger.log(`✅ Password reset email sent to ${data.email} (via sendMail)`);
+      logger.log(
+        `✅ Password reset email sent to ${data.email} (via sendMail)`,
+      );
     } catch (emailError) {
       logger.error("Primary email method failed:", emailError);
       lastError = emailError;
-      
+
       // Fallback to emailService if sendMail fails
       try {
         logger.log("Trying emailService fallback...");
@@ -107,12 +123,14 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
             resetLink,
             CDN_URL: ENV.NEXT_PUBLIC_CDN_URL || "",
           },
-          user.email
+          user.email,
         );
-        
+
         if (result.success) {
           emailSent = true;
-          logger.log(`✅ Password reset email sent to ${data.email} (via emailService)`);
+          logger.log(
+            `✅ Password reset email sent to ${data.email} (via emailService)`,
+          );
         } else {
           const errorMsg = (result as { success: false; error: string }).error;
           logger.error("EmailService also failed:", errorMsg);
@@ -125,13 +143,17 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
     }
 
     if (!emailSent) {
-      logger.error(`❌ Failed to send password reset email to ${data.email}:`, lastError);
+      logger.error(
+        `❌ Failed to send password reset email to ${data.email}:`,
+        lastError,
+      );
       // Still return success to prevent email enumeration, but log the error
     }
 
     return {
       success: true,
-      message: "If an account with that email exists, we've sent password reset instructions.",
+      message:
+        "If an account with that email exists, we've sent password reset instructions.",
       userExists: true,
     };
   } catch (error) {
@@ -139,7 +161,8 @@ export const forgotPassword = async (data: ForgotPasswordData): Promise<{ succes
     // Return error with userExists false for unknown errors
     return {
       success: false,
-      message: "If an account with that email exists, we've sent password reset instructions.",
+      message:
+        "If an account with that email exists, we've sent password reset instructions.",
       userExists: false,
     };
   }
@@ -265,4 +288,3 @@ function generatePasswordResetEmail({
 </html>
   `;
 }
-

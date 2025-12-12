@@ -14,4 +14,3 @@ const getReportById = cache(async (id: string) => {
 });
 
 export default getReportById;
-

@@ -1,5 +1,5 @@
-import * as caseStatusService from '../../caseStatus.service';
-import { UpdateCaseStatusInput } from '../../../types/CaseStatus';
+import * as caseStatusService from "../../caseStatus.service";
+import { UpdateCaseStatusInput } from "../../../types/CaseStatus";
 
 const updateCaseStatus = async (id: string, data: UpdateCaseStatusInput) => {
   const result = await caseStatusService.updateCaseStatus(id, data);
@@ -7,4 +7,3 @@ const updateCaseStatus = async (id: string, data: UpdateCaseStatusInput) => {
 };
 
 export default updateCaseStatus;
-

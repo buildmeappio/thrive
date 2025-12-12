@@ -13,7 +13,7 @@ import logger from "@/utils/logger";
  */
 export async function generatePresignedUrl(
   documentName: string,
-  expiresIn: number = 3600 // 1 hour default
+  expiresIn: number = 3600, // 1 hour default
 ): Promise<string> {
   try {
     if (!ENV.AWS_S3_BUCKET) {
@@ -45,11 +45,11 @@ export async function generatePresignedUrl(
  */
 export async function generatePresignedUrls(
   documentNames: string[],
-  expiresIn: number = 3600
+  expiresIn: number = 3600,
 ): Promise<string[]> {
   try {
     const urlPromises = documentNames.map((name) =>
-      generatePresignedUrl(name, expiresIn)
+      generatePresignedUrl(name, expiresIn),
     );
     return await Promise.all(urlPromises);
   } catch (error) {
@@ -70,7 +70,7 @@ export async function uploadToS3(
   buffer: Buffer,
   fileName: string,
   contentType: string = "text/html",
-  folder: string = "contractS"
+  folder: string = "contractS",
 ): Promise<string> {
   try {
     if (!ENV.AWS_S3_BUCKET) {
@@ -87,7 +87,7 @@ export async function uploadToS3(
     });
 
     await s3Client.send(command);
-    
+
     logger.log(`✅ File uploaded to S3: ${s3Key}`);
     return s3Key;
   } catch (error) {
@@ -104,7 +104,7 @@ export async function uploadToS3(
  */
 export async function getS3FileUrl(
   s3Key: string,
-  expiresIn: number = 604800 // 7 days default for contracts
+  expiresIn: number = 604800, // 7 days default for contracts
 ): Promise<string> {
   try {
     if (!ENV.AWS_S3_BUCKET) {
@@ -123,4 +123,3 @@ export async function getS3FileUrl(
     throw error;
   }
 }
-

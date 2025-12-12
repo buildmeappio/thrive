@@ -7,4 +7,3 @@ const updateChaperone = async (id: string, data: UpdateChaperoneInput) => {
 };
 
 export default updateChaperone;
-

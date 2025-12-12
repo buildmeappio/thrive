@@ -37,7 +37,6 @@ const formatText = (str: string) => {
     .join(" ");
 };
 
-
 interface FilterState {
   claimType: string;
   status: string;
@@ -114,7 +113,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<CaseData> }) => {
       const caseNumber = row.getValue("number") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={caseNumber}
         >
@@ -135,7 +134,7 @@ const columnsDef = [
       const organization = row.getValue("organization") as string;
       const capitalizedOrg = capitalizeWords(organization);
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={capitalizedOrg}
         >
@@ -155,7 +154,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<CaseData> }) => {
       const caseType = formatText(row.getValue("caseType") as string);
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={caseType}
         >
@@ -175,7 +174,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<CaseData> }) => {
       const date = formatDateShort(row.getValue("submittedAt"));
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap"
           title={date}
         >
@@ -197,7 +196,7 @@ const columnsDef = [
         ? formatDateShort(row.getValue("dueDate"))
         : "N/A";
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap"
           title={dueDate}
         >
@@ -217,7 +216,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<CaseData> }) => {
       const status = formatText(row.getValue("status") as string);
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={status}
         >
@@ -237,7 +236,7 @@ const columnsDef = [
     cell: ({ row }: { row: Row<CaseData> }) => {
       const priority = formatText(row.getValue("urgencyLevel") as string);
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={priority}
         >
@@ -321,7 +320,7 @@ export default function CaseTableWithPagination({
       result = result.filter((d) =>
         [d.number, d.organization, d.caseType, d.status, d.urgencyLevel]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q))
+          .some((v) => String(v).toLowerCase().includes(q)),
       );
     }
 
@@ -358,29 +357,36 @@ export default function CaseTableWithPagination({
                 >
                   {headerGroup.headers.map((header) => {
                     const columnDef = columnsDef[header.index];
-                    const minWidth = columnDef?.minSize || 'auto';
-                    const maxWidth = columnDef?.maxSize || 'auto';
-                    const width = columnDef?.size || 'auto';
+                    const minWidth = columnDef?.minSize || "auto";
+                    const maxWidth = columnDef?.maxSize || "auto";
+                    const width = columnDef?.size || "auto";
                     return (
                       <TableHead
                         key={header.id}
                         style={{
-                          minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
-                          maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
-                          width: typeof width === 'number' ? `${width}px` : width,
+                          minWidth:
+                            typeof minWidth === "number"
+                              ? `${minWidth}px`
+                              : minWidth,
+                          maxWidth:
+                            typeof maxWidth === "number"
+                              ? `${maxWidth}px`
+                              : maxWidth,
+                          width:
+                            typeof width === "number" ? `${width}px` : width,
                         }}
                         className={cn(
                           "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
                           header.index === 0 && "rounded-l-2xl",
                           header.index === headerGroup.headers.length - 1 &&
-                          "rounded-r-2xl"
+                            "rounded-r-2xl",
                         )}
                       >
                         {header.isPlaceholder
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                       </TableHead>
                     );
@@ -400,22 +406,29 @@ export default function CaseTableWithPagination({
                     {row.getVisibleCells().map((cell) => {
                       const columnIndex = cell.column.getIndex();
                       const columnDef = columnsDef[columnIndex];
-                      const minWidth = columnDef?.minSize || 'auto';
-                      const maxWidth = columnDef?.maxSize || 'auto';
-                      const width = columnDef?.size || 'auto';
+                      const minWidth = columnDef?.minSize || "auto";
+                      const maxWidth = columnDef?.maxSize || "auto";
+                      const width = columnDef?.size || "auto";
                       return (
-                        <TableCell 
-                          key={cell.id} 
+                        <TableCell
+                          key={cell.id}
                           style={{
-                            minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
-                            maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
-                            width: typeof width === 'number' ? `${width}px` : width,
+                            minWidth:
+                              typeof minWidth === "number"
+                                ? `${minWidth}px`
+                                : minWidth,
+                            maxWidth:
+                              typeof maxWidth === "number"
+                                ? `${maxWidth}px`
+                                : maxWidth,
+                            width:
+                              typeof width === "number" ? `${width}px` : width,
                           }}
                           className="px-6 py-3 overflow-hidden align-middle"
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </TableCell>
                       );

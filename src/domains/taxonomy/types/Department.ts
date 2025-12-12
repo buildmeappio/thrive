@@ -17,4 +17,3 @@ export type CreateDepartmentInput = {
 };
 
 export type UpdateDepartmentInput = Partial<CreateDepartmentInput>;
-

@@ -6,4 +6,3 @@ const getLanguages = async () => {
 };
 
 export default getLanguages;
-

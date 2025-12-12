@@ -1,7 +1,6 @@
 import listCases from "./listCases";
 import getCaseById from "./getCaseById";
 
-
 const handlers = {
   listCases,
   getCaseById,

@@ -1,8 +1,14 @@
-import prisma from '@/lib/db';
-import { HttpError } from '@/utils/httpError';
-import { CreateExaminationTypeBenefitInput, UpdateExaminationTypeBenefitInput, ExaminationTypeBenefitData } from '../types/ExaminationTypeBenefit';
+import prisma from "@/lib/db";
+import { HttpError } from "@/utils/httpError";
+import {
+  CreateExaminationTypeBenefitInput,
+  UpdateExaminationTypeBenefitInput,
+  ExaminationTypeBenefitData,
+} from "../types/ExaminationTypeBenefit";
 
-export const createExaminationTypeBenefit = async (data: CreateExaminationTypeBenefitInput) => {
+export const createExaminationTypeBenefit = async (
+  data: CreateExaminationTypeBenefitInput,
+) => {
   try {
     // Check if examination type exists
     const examinationType = await prisma.examinationType.findFirst({
@@ -13,7 +19,7 @@ export const createExaminationTypeBenefit = async (data: CreateExaminationTypeBe
     });
 
     if (!examinationType) {
-      throw HttpError.notFound('Examination type not found');
+      throw HttpError.notFound("Examination type not found");
     }
 
     const examinationTypeBenefit = await prisma.examinationTypeBenefit.create({
@@ -32,7 +38,10 @@ export const createExaminationTypeBenefit = async (data: CreateExaminationTypeBe
   }
 };
 
-export const updateExaminationTypeBenefit = async (id: string, data: UpdateExaminationTypeBenefitInput) => {
+export const updateExaminationTypeBenefit = async (
+  id: string,
+  data: UpdateExaminationTypeBenefitInput,
+) => {
   try {
     // Check if examination type benefit exists
     const existingBenefit = await prisma.examinationTypeBenefit.findFirst({
@@ -43,11 +52,14 @@ export const updateExaminationTypeBenefit = async (id: string, data: UpdateExami
     });
 
     if (!existingBenefit) {
-      throw HttpError.notFound('Examination type benefit not found');
+      throw HttpError.notFound("Examination type benefit not found");
     }
 
     // If examination type is being updated, check if it exists
-    if (data.examinationTypeId && data.examinationTypeId !== existingBenefit.examinationTypeId) {
+    if (
+      data.examinationTypeId &&
+      data.examinationTypeId !== existingBenefit.examinationTypeId
+    ) {
       const examinationType = await prisma.examinationType.findFirst({
         where: {
           id: data.examinationTypeId,
@@ -56,12 +68,14 @@ export const updateExaminationTypeBenefit = async (id: string, data: UpdateExami
       });
 
       if (!examinationType) {
-        throw HttpError.notFound('Examination type not found');
+        throw HttpError.notFound("Examination type not found");
       }
     }
 
-    const updateData: Partial<{ examinationTypeId: string; benefit: string }> = {};
-    if (data.examinationTypeId !== undefined) updateData.examinationTypeId = data.examinationTypeId;
+    const updateData: Partial<{ examinationTypeId: string; benefit: string }> =
+      {};
+    if (data.examinationTypeId !== undefined)
+      updateData.examinationTypeId = data.examinationTypeId;
     if (data.benefit !== undefined) updateData.benefit = data.benefit;
 
     const examinationTypeBenefit = await prisma.examinationTypeBenefit.update({
@@ -78,7 +92,9 @@ export const updateExaminationTypeBenefit = async (id: string, data: UpdateExami
   }
 };
 
-export const getExaminationTypeBenefits = async (): Promise<ExaminationTypeBenefitData[]> => {
+export const getExaminationTypeBenefits = async (): Promise<
+  ExaminationTypeBenefitData[]
+> => {
   try {
     const benefits = await prisma.examinationTypeBenefit.findMany({
       where: {
@@ -88,11 +104,11 @@ export const getExaminationTypeBenefits = async (): Promise<ExaminationTypeBenef
         examinationType: true,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
-    return benefits.map(benefit => ({
+    return benefits.map((benefit) => ({
       id: benefit.id,
       examinationTypeId: benefit.examinationTypeId,
       examinationTypeName: benefit.examinationType.name,
@@ -117,7 +133,7 @@ export const getExaminationTypeBenefitById = async (id: string) => {
     });
 
     if (!benefit) {
-      throw HttpError.notFound('Examination type benefit not found');
+      throw HttpError.notFound("Examination type benefit not found");
     }
 
     return benefit;

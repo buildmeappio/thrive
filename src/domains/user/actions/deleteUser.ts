@@ -11,7 +11,7 @@ const schema = z.object({
 type DeleteUserInput = z.infer<typeof schema>;
 
 export const deleteUser = async (
-  rawInput: DeleteUserInput
+  rawInput: DeleteUserInput,
 ): Promise<{ success: boolean; error?: string }> => {
   try {
     const input = schema.parse(rawInput);
@@ -21,11 +21,9 @@ export const deleteUser = async (
     logger.error("Delete user failed:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to delete user",
+      error: error instanceof Error ? error.message : "Failed to delete user",
     };
   }
 };
 
 export default deleteUser;
-

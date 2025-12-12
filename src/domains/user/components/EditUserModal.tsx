@@ -16,13 +16,19 @@ const schema = z.object({
   firstName: z
     .string()
     .min(1, "First name is required")
-    .regex(/^[a-zA-Z\s'-]+$/, "First name can only contain letters, spaces, hyphens, and apostrophes")
+    .regex(
+      /^[a-zA-Z\s'-]+$/,
+      "First name can only contain letters, spaces, hyphens, and apostrophes",
+    )
     .min(2, "First name must be at least 2 characters")
     .max(50, "First name must be less than 50 characters"),
   lastName: z
     .string()
     .min(1, "Last name is required")
-    .regex(/^[a-zA-Z\s'-]+$/, "Last name can only contain letters, spaces, hyphens, and apostrophes")
+    .regex(
+      /^[a-zA-Z\s'-]+$/,
+      "Last name can only contain letters, spaces, hyphens, and apostrophes",
+    )
     .min(2, "Last name must be at least 2 characters")
     .max(50, "Last name must be less than 50 characters"),
   email: z
@@ -95,7 +101,7 @@ const EditUserModal = ({
       closeModal();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update user"
+        error instanceof Error ? error.message : "Failed to update user",
       );
     } finally {
       setIsSaving(false);
@@ -113,7 +119,7 @@ const EditUserModal = ({
       toast.success("Password reset email sent successfully.");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to send reset email"
+        error instanceof Error ? error.message : "Failed to send reset email",
       );
     } finally {
       setIsSendingReset(false);
@@ -133,7 +139,9 @@ const EditUserModal = ({
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="p-6 sm:p-8 space-y-6">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900">Edit User</h2>
+              <h2 className="text-2xl font-semibold text-gray-900">
+                Edit User
+              </h2>
               <p className="mt-2 text-sm text-gray-500">
                 Update the user details or send them a password reset link.
               </p>
@@ -141,7 +149,10 @@ const EditUserModal = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="firstName"
+                  className="text-sm font-medium text-gray-700"
+                >
                   First Name<span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -159,7 +170,10 @@ const EditUserModal = ({
               </div>
 
               <div>
-                <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="lastName"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Last Name<span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -177,7 +191,10 @@ const EditUserModal = ({
               </div>
 
               <div className="sm:col-span-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Email<span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -195,7 +212,10 @@ const EditUserModal = ({
               </div>
 
               <div>
-                <Label htmlFor="role" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="role"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Role
                 </Label>
                 <Input
@@ -234,4 +254,3 @@ const EditUserModal = ({
 };
 
 export default EditUserModal;
-

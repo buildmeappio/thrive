@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2, AlertCircle } from 'lucide-react';
-import { WeeklyHours, Weekday } from '../types/Availability';
+import React, { useState, useEffect } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Plus, Trash2, AlertCircle } from "lucide-react";
+import { WeeklyHours, Weekday } from "../types/Availability";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
 type WeeklyHoursSectionProps = {
   weeklyHours: WeeklyHours[];
@@ -25,13 +25,13 @@ type TimeSlotError = {
 };
 
 const DAYS: { value: Weekday; label: string }[] = [
-  { value: 'SUNDAY', label: 'Sunday' },
-  { value: 'MONDAY', label: 'Monday' },
-  { value: 'TUESDAY', label: 'Tuesday' },
-  { value: 'WEDNESDAY', label: 'Wednesday' },
-  { value: 'THURSDAY', label: 'Thursday' },
-  { value: 'FRIDAY', label: 'Friday' },
-  { value: 'SATURDAY', label: 'Saturday' },
+  { value: "SUNDAY", label: "Sunday" },
+  { value: "MONDAY", label: "Monday" },
+  { value: "TUESDAY", label: "Tuesday" },
+  { value: "WEDNESDAY", label: "Wednesday" },
+  { value: "THURSDAY", label: "Thursday" },
+  { value: "FRIDAY", label: "Friday" },
+  { value: "SATURDAY", label: "Saturday" },
 ];
 
 // Generate time options in 30-minute intervals
@@ -39,9 +39,9 @@ const generateTimeOptions = () => {
   const options: string[] = [];
   for (let hour = 0; hour < 24; hour++) {
     for (let minute = 0; minute < 60; minute += 30) {
-      const period = hour < 12 ? 'AM' : 'PM';
+      const period = hour < 12 ? "AM" : "PM";
       const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-      const displayMinute = minute.toString().padStart(2, '0');
+      const displayMinute = minute.toString().padStart(2, "0");
       options.push(`${displayHour}:${displayMinute} ${period}`);
     }
   }
@@ -52,54 +52,61 @@ const timeOptions = generateTimeOptions();
 
 // Helper function to convert time string to minutes since midnight
 const timeToMinutes = (timeStr: string): number => {
-  const [time, period] = timeStr.split(' ');
-  const [hours, minutes] = time.split(':').map(Number);
-  
+  const [time, period] = timeStr.split(" ");
+  const [hours, minutes] = time.split(":").map(Number);
+
   let hour24 = hours;
-  if (period === 'PM' && hours !== 12) hour24 += 12;
-  if (period === 'AM' && hours === 12) hour24 = 0;
-  
+  if (period === "PM" && hours !== 12) hour24 += 12;
+  if (period === "AM" && hours === 12) hour24 = 0;
+
   return hour24 * 60 + minutes;
 };
 
 // Helper function to add hours to a time string
 const addHoursToTime = (timeStr: string, hoursToAdd: number): string => {
   // Parse time string (e.g., "10:00 AM")
-  const [time, period] = timeStr.split(' ');
-  const [hours, minutes] = time.split(':').map(Number);
-  
+  const [time, period] = timeStr.split(" ");
+  const [hours, minutes] = time.split(":").map(Number);
+
   // Convert to 24-hour format
   let hour24 = hours;
-  if (period === 'PM' && hours !== 12) hour24 += 12;
-  if (period === 'AM' && hours === 12) hour24 = 0;
-  
+  if (period === "PM" && hours !== 12) hour24 += 12;
+  if (period === "AM" && hours === 12) hour24 = 0;
+
   // Add hours
   hour24 = (hour24 + hoursToAdd) % 24;
-  
+
   // Convert back to 12-hour format
-  const newPeriod = hour24 >= 12 ? 'PM' : 'AM';
+  const newPeriod = hour24 >= 12 ? "PM" : "AM";
   const newHour = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
-  
-  return `${newHour}:${minutes.toString().padStart(2, '0')} ${newPeriod}`;
+
+  return `${newHour}:${minutes.toString().padStart(2, "0")} ${newPeriod}`;
 };
 
-const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, onChange, disabled = false }) => {
+const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({
+  weeklyHours,
+  onChange,
+  disabled = false,
+}) => {
   const [errors, setErrors] = useState<TimeSlotError[]>([]);
 
   // Helper function to get valid end time options based on start time
-  const getValidEndTimeOptions = (startTime: string, currentEndTime?: string): string[] => {
+  const getValidEndTimeOptions = (
+    startTime: string,
+    currentEndTime?: string,
+  ): string[] => {
     const startMinutes = timeToMinutes(startTime);
-    const validOptions = timeOptions.filter(time => {
+    const validOptions = timeOptions.filter((time) => {
       const timeMinutes = timeToMinutes(time);
       return timeMinutes > startMinutes;
     });
-    
+
     // If current end time is invalid but exists, include it in the list so it can be displayed
     // This prevents the dropdown from showing empty when the time is invalid
     if (currentEndTime && !validOptions.includes(currentEndTime)) {
       return [currentEndTime, ...validOptions];
     }
-    
+
     return validOptions;
   };
 
@@ -119,33 +126,39 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
           newErrors.push({
             day: dayHours.dayOfWeek,
             slotIndex,
-            message: 'Start time must be before end time',
+            message: "Start time must be before end time",
           });
         }
 
         // Check for overlaps with other slots on the same day
-        for (let otherIndex = slotIndex + 1; otherIndex < dayHours.timeSlots.length; otherIndex++) {
+        for (
+          let otherIndex = slotIndex + 1;
+          otherIndex < dayHours.timeSlots.length;
+          otherIndex++
+        ) {
           const otherSlot = dayHours.timeSlots[otherIndex];
           const otherStartMinutes = timeToMinutes(otherSlot.startTime);
           const otherEndMinutes = timeToMinutes(otherSlot.endTime);
 
           // Check if slots overlap
           const hasOverlap =
-            (startMinutes >= otherStartMinutes && startMinutes < otherEndMinutes) ||
+            (startMinutes >= otherStartMinutes &&
+              startMinutes < otherEndMinutes) ||
             (endMinutes > otherStartMinutes && endMinutes <= otherEndMinutes) ||
-            (startMinutes <= otherStartMinutes && endMinutes >= otherEndMinutes);
+            (startMinutes <= otherStartMinutes &&
+              endMinutes >= otherEndMinutes);
 
           if (hasOverlap) {
             // Mark both slots as having overlap errors
             newErrors.push({
               day: dayHours.dayOfWeek,
               slotIndex,
-              message: 'Time slots cannot overlap',
+              message: "Time slots cannot overlap",
             });
             newErrors.push({
               day: dayHours.dayOfWeek,
               slotIndex: otherIndex,
-              message: 'Time slots cannot overlap',
+              message: "Time slots cannot overlap",
             });
           }
         }
@@ -155,13 +168,17 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
     setErrors(newErrors);
   }, [weeklyHours]);
 
-  const getSlotError = (day: Weekday, slotIndex: number): string | undefined => {
-    return errors.find((e) => e.day === day && e.slotIndex === slotIndex)?.message;
+  const getSlotError = (
+    day: Weekday,
+    slotIndex: number,
+  ): string | undefined => {
+    return errors.find((e) => e.day === day && e.slotIndex === slotIndex)
+      ?.message;
   };
 
   const handleDayToggle = (day: Weekday, checked: boolean) => {
     const updated = weeklyHours.map((wh) =>
-      wh.dayOfWeek === day ? { ...wh, enabled: checked } : wh
+      wh.dayOfWeek === day ? { ...wh, enabled: checked } : wh,
     );
     onChange(updated);
   };
@@ -169,9 +186,9 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
   const handleAddSlot = (day: Weekday) => {
     const updated = weeklyHours.map((wh) => {
       if (wh.dayOfWeek === day) {
-        let newStartTime = '8:00 AM';
-        let newEndTime = '11:00 AM';
-        
+        let newStartTime = "8:00 AM";
+        let newEndTime = "11:00 AM";
+
         // If there are existing slots, calculate based on the last slot
         if (wh.timeSlots.length > 0) {
           const lastSlot = wh.timeSlots[wh.timeSlots.length - 1];
@@ -180,10 +197,13 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
           // New slot ends 1 hour after it starts
           newEndTime = addHoursToTime(newStartTime, 1);
         }
-        
-        return { 
-          ...wh, 
-          timeSlots: [...wh.timeSlots, { startTime: newStartTime, endTime: newEndTime }] 
+
+        return {
+          ...wh,
+          timeSlots: [
+            ...wh.timeSlots,
+            { startTime: newStartTime, endTime: newEndTime },
+          ],
         };
       }
       return wh;
@@ -194,32 +214,42 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
   const handleRemoveSlot = (day: Weekday, slotIndex: number) => {
     const updated = weeklyHours.map((wh) =>
       wh.dayOfWeek === day
-        ? { ...wh, timeSlots: wh.timeSlots.filter((_, idx) => idx !== slotIndex) }
-        : wh
+        ? {
+            ...wh,
+            timeSlots: wh.timeSlots.filter((_, idx) => idx !== slotIndex),
+          }
+        : wh,
     );
     onChange(updated);
   };
 
-  const handleUpdateSlot = (day: Weekday, slotIndex: number, field: 'startTime' | 'endTime', value: string) => {
+  const handleUpdateSlot = (
+    day: Weekday,
+    slotIndex: number,
+    field: "startTime" | "endTime",
+    value: string,
+  ) => {
     const updated = weeklyHours.map((wh) =>
       wh.dayOfWeek === day
         ? {
             ...wh,
             timeSlots: wh.timeSlots.map((slot, idx) =>
-              idx === slotIndex ? { ...slot, [field]: value } : slot
+              idx === slotIndex ? { ...slot, [field]: value } : slot,
             ),
           }
-        : wh
+        : wh,
     );
     onChange(updated);
   };
 
   const getDayHours = (day: Weekday): WeeklyHours => {
-    return weeklyHours.find((wh) => wh.dayOfWeek === day) || {
-      dayOfWeek: day,
-      enabled: false,
-      timeSlots: [],
-    };
+    return (
+      weeklyHours.find((wh) => wh.dayOfWeek === day) || {
+        dayOfWeek: day,
+        enabled: false,
+        timeSlots: [],
+      }
+    );
   };
 
   return (
@@ -228,7 +258,7 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
         const dayHours = getDayHours(day.value);
         // Ensure enabled days have at least one time slot
         const hasTimeSlots = dayHours.timeSlots.length > 0;
-        
+
         return (
           <div key={day.value} className="space-y-2">
             {/* First row or all rows */}
@@ -250,29 +280,39 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
                   <label
                     htmlFor={`day-${day.value}`}
                     className={`text-base font-poppins cursor-pointer select-none ${
-                      dayHours.enabled ? 'text-gray-900' : 'text-gray-400'
+                      dayHours.enabled ? "text-gray-900" : "text-gray-400"
                     }`}
                   >
                     {day.label}
                   </label>
                 </div>
-                <Select value="8:00 AM" disabled={!dayHours.enabled || disabled}>
+                <Select
+                  value="8:00 AM"
+                  disabled={!dayHours.enabled || disabled}
+                >
                   <SelectTrigger className="h-11 rounded-lg border border-gray-300 bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {timeOptions.map((time) => (
-                      <SelectItem key={time} value={time}>{time}</SelectItem>
+                      <SelectItem key={time} value={time}>
+                        {time}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Select value="11:00 AM" disabled={!dayHours.enabled || disabled}>
+                <Select
+                  value="11:00 AM"
+                  disabled={!dayHours.enabled || disabled}
+                >
                   <SelectTrigger className="h-11 rounded-lg border border-gray-300 bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {timeOptions.map((time) => (
-                      <SelectItem key={time} value={time}>{time}</SelectItem>
+                      <SelectItem key={time} value={time}>
+                        {time}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -296,14 +336,18 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
                           <Checkbox
                             id={`day-${day.value}`}
                             checked={dayHours.enabled}
-                            onCheckedChange={(checked) => handleDayToggle(day.value, !!checked)}
+                            onCheckedChange={(checked) =>
+                              handleDayToggle(day.value, !!checked)
+                            }
                             disabled={disabled}
                             className="w-5 h-5"
                           />
                           <label
                             htmlFor={`day-${day.value}`}
                             className={`text-base font-poppins cursor-pointer select-none ${
-                              dayHours.enabled ? 'text-gray-900' : 'text-gray-400'
+                              dayHours.enabled
+                                ? "text-gray-900"
+                                : "text-gray-400"
                             }`}
                           >
                             {day.label}
@@ -314,36 +358,63 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
                       )}
                       <Select
                         value={slot.startTime}
-                        onValueChange={(value) => handleUpdateSlot(day.value, slotIndex, 'startTime', value)}
+                        onValueChange={(value) =>
+                          handleUpdateSlot(
+                            day.value,
+                            slotIndex,
+                            "startTime",
+                            value,
+                          )
+                        }
                         disabled={!dayHours.enabled || disabled}
                       >
-                        <SelectTrigger className={`h-11 rounded-lg border bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400 ${error ? 'border-red-500' : 'border-gray-300'}`}>
+                        <SelectTrigger
+                          className={`h-11 rounded-lg border bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400 ${error ? "border-red-500" : "border-gray-300"}`}
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {timeOptions.map((time) => (
-                            <SelectItem key={time} value={time}>{time}</SelectItem>
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                       <Select
                         value={slot.endTime}
-                        onValueChange={(value) => handleUpdateSlot(day.value, slotIndex, 'endTime', value)}
+                        onValueChange={(value) =>
+                          handleUpdateSlot(
+                            day.value,
+                            slotIndex,
+                            "endTime",
+                            value,
+                          )
+                        }
                         disabled={!dayHours.enabled || disabled}
                       >
-                        <SelectTrigger className={`h-11 rounded-lg border bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400 ${error ? 'border-red-500' : 'border-gray-300'}`}>
+                        <SelectTrigger
+                          className={`h-11 rounded-lg border bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400 ${error ? "border-red-500" : "border-gray-300"}`}
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {getValidEndTimeOptions(slot.startTime, slot.endTime).map((time) => (
-                            <SelectItem key={time} value={time}>{time}</SelectItem>
+                          {getValidEndTimeOptions(
+                            slot.startTime,
+                            slot.endTime,
+                          ).map((time) => (
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                       {slotIndex === 0 ? (
                         <button
                           type="button"
-                          onClick={() => dayHours.enabled && handleAddSlot(day.value)}
+                          onClick={() =>
+                            dayHours.enabled && handleAddSlot(day.value)
+                          }
                           disabled={!dayHours.enabled || disabled}
                           className="flex items-center justify-center w-10 h-10 text-cyan-500 hover:text-cyan-600 disabled:text-gray-300 disabled:cursor-not-allowed"
                         >
@@ -378,4 +449,3 @@ const WeeklyHoursSection: React.FC<WeeklyHoursSectionProps> = ({ weeklyHours, on
 };
 
 export default WeeklyHoursSection;
-

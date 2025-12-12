@@ -1,4 +1,7 @@
-import { WeeklyHoursState, OverrideHoursState } from "@/components/availability";
+import {
+  WeeklyHoursState,
+  OverrideHoursState,
+} from "@/components/availability";
 
 export type InterpreterFormData = {
   companyName: string;
@@ -16,8 +19,12 @@ export type ErrorWithStatus = {
   code?: string;
 };
 
-export const isErrorWithMessage = (error: unknown): error is ErrorWithStatus => {
+export const isErrorWithMessage = (
+  error: unknown,
+): error is ErrorWithStatus => {
   if (!error || typeof error !== "object") return false;
-  return "message" in error && typeof (error as Record<string, unknown>).message === "string";
+  return (
+    "message" in error &&
+    typeof (error as Record<string, unknown>).message === "string"
+  );
 };
-

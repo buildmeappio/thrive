@@ -21,12 +21,14 @@ export async function listOrganizations() {
         },
       },
       orderBy: {
-        createdAt: 'desc', // Sort by creation time, newest first
+        createdAt: "desc", // Sort by creation time, newest first
       },
     });
   } catch (error) {
     logger.error(error);
-    throw new HttpError(500, "Failed to list organizations", { details: error });
+    throw new HttpError(500, "Failed to list organizations", {
+      details: error,
+    });
   }
 }
 
@@ -55,7 +57,10 @@ export async function getOrganizationById(id: string) {
   }
 }
 
-export async function approveOrganization(id: string, approverAccountId: string) {
+export async function approveOrganization(
+  id: string,
+  approverAccountId: string,
+) {
   try {
     const updated = await prisma.$transaction(async (tx) => {
       // enforce PENDING -> ACCEPTED
@@ -72,12 +77,16 @@ export async function approveOrganization(id: string, approverAccountId: string)
         },
       });
       if (res.count === 0) {
-        const current = await tx.organization.findUnique({ where: { id }, select: { status: true } });
-        throw new HttpError(
-          409,
-          "Invalid status transition",
-          { details: { expected: "PENDING", actual: current?.status ?? "NOT_FOUND" } }
-        );
+        const current = await tx.organization.findUnique({
+          where: { id },
+          select: { status: true },
+        });
+        throw new HttpError(409, "Invalid status transition", {
+          details: {
+            expected: "PENDING",
+            actual: current?.status ?? "NOT_FOUND",
+          },
+        });
       }
       return tx.organization.findUnique({
         where: { id },
@@ -98,11 +107,17 @@ export async function approveOrganization(id: string, approverAccountId: string)
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to approve organization", { details: error });
+    throw new HttpError(500, "Failed to approve organization", {
+      details: error,
+    });
   }
 }
 
-export async function rejectOrganization(id: string, rejectorAccountId: string, reason: string) {
+export async function rejectOrganization(
+  id: string,
+  rejectorAccountId: string,
+  reason: string,
+) {
   if (!reason?.trim()) throw new HttpError(400, "Rejection reason is required");
   try {
     const updated = await prisma.$transaction(async (tx) => {
@@ -121,12 +136,16 @@ export async function rejectOrganization(id: string, rejectorAccountId: string, 
         },
       });
       if (res.count === 0) {
-        const current = await tx.organization.findUnique({ where: { id }, select: { status: true } });
-        throw new HttpError(
-          409,
-          "Invalid status transition",
-          { details: { expected: "PENDING", actual: current?.status ?? "NOT_FOUND" } }
-        );
+        const current = await tx.organization.findUnique({
+          where: { id },
+          select: { status: true },
+        });
+        throw new HttpError(409, "Invalid status transition", {
+          details: {
+            expected: "PENDING",
+            actual: current?.status ?? "NOT_FOUND",
+          },
+        });
       }
       return tx.organization.findUnique({
         where: { id },
@@ -147,7 +166,9 @@ export async function rejectOrganization(id: string, rejectorAccountId: string, 
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to reject organization", { details: error });
+    throw new HttpError(500, "Failed to reject organization", {
+      details: error,
+    });
   }
 }
 
@@ -162,12 +183,16 @@ export async function requestMoreInfoOrganization(id: string) {
         },
       });
       if (res.count === 0) {
-        const current = await tx.organization.findUnique({ where: { id }, select: { status: true } });
-        throw new HttpError(
-          409,
-          "Invalid status transition",
-          { details: { expected: "PENDING", actual: current?.status ?? "NOT_FOUND" } }
-        );
+        const current = await tx.organization.findUnique({
+          where: { id },
+          select: { status: true },
+        });
+        throw new HttpError(409, "Invalid status transition", {
+          details: {
+            expected: "PENDING",
+            actual: current?.status ?? "NOT_FOUND",
+          },
+        });
       }
       return tx.organization.findUnique({
         where: { id },
@@ -188,7 +213,11 @@ export async function requestMoreInfoOrganization(id: string) {
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);
-    throw new HttpError(500, "Failed to update organization status to INFO_REQUESTED", { details: error });
+    throw new HttpError(
+      500,
+      "Failed to update organization status to INFO_REQUESTED",
+      { details: error },
+    );
   }
 }
 
@@ -197,6 +226,8 @@ export async function listOrganizationTypes() {
     return await prisma.organizationType.findMany();
   } catch (error) {
     logger.error(error);
-    throw new HttpError(500, "Failed to list organization types", { details: error });
+    throw new HttpError(500, "Failed to list organization types", {
+      details: error,
+    });
   }
 }

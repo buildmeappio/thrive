@@ -9,4 +9,3 @@ export type UserTableRow = {
   mustResetPassword: boolean;
   createdAt: string;
 };
-

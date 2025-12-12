@@ -5,7 +5,7 @@ import { InterpreterFilters } from "../types/InterpreterData";
 
 const getInterpreters = async (filters: InterpreterFilters = {}) => {
   const result = await interpreterService.getInterpreters(filters);
-  
+
   return {
     data: InterpreterDto.toInterpreterDataList(result.data),
     total: result.total,
@@ -16,4 +16,3 @@ const getInterpreters = async (filters: InterpreterFilters = {}) => {
 };
 
 export default getInterpreters;
-

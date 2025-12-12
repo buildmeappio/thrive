@@ -15,7 +15,7 @@ const schema = z.object({
 type UpdateUserInput = z.infer<typeof schema>;
 
 export const updateUser = async (
-  rawInput: UpdateUserInput
+  rawInput: UpdateUserInput,
 ): Promise<{ success: boolean; user?: UserTableRow; error?: string }> => {
   try {
     const input = schema.parse(rawInput);
@@ -38,11 +38,9 @@ export const updateUser = async (
     logger.error("Update user failed:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to update user",
+      error: error instanceof Error ? error.message : "Failed to update user",
     };
   }
 };
 
 export default updateUser;
-

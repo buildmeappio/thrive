@@ -20,7 +20,8 @@ export default function ForbiddenPage() {
 
           {/* Description */}
           <p className="text-gray-600 text-base">
-            You don&apos;t have permission to access this resource. Please contact your administrator if you believe this is an error.
+            You don&apos;t have permission to access this resource. Please
+            contact your administrator if you believe this is an error.
           </p>
 
           {/* Error Code */}
@@ -54,4 +55,3 @@ export default function ForbiddenPage() {
     </div>
   );
 }
-

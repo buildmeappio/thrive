@@ -1,4 +1,4 @@
-import * as caseTypeService from '../../caseType.service';
+import * as caseTypeService from "../../caseType.service";
 
 const getCaseTypes = async () => {
   const result = await caseTypeService.getCaseTypes();
@@ -6,4 +6,3 @@ const getCaseTypes = async () => {
 };
 
 export default getCaseTypes;
-

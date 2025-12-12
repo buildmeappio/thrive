@@ -22,13 +22,17 @@ const PUBLIC_ROUTES = Object.freeze([
 
 export const PREFIX = "/admin";
 
-const PRIVATE_ROUTES = Object.freeze([URLS.DASHBOARD, URLS.USERS, URLS.PASSWORD_SET]);
+const PRIVATE_ROUTES = Object.freeze([
+  URLS.DASHBOARD,
+  URLS.USERS,
+  URLS.PASSWORD_SET,
+]);
 
 export { URLS, PUBLIC_ROUTES, PRIVATE_ROUTES };
 
 export const createRoute = (route: string) => {
   // if (!route.includes(PREFIX)) {
-    // return PREFIX + route;
+  // return PREFIX + route;
   // }
   return route;
 };

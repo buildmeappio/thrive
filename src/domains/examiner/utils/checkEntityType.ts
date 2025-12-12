@@ -5,7 +5,9 @@ import prisma from "@/lib/db";
  * @param id - The ID to check
  * @returns 'application' | 'examiner' | null
  */
-export async function checkEntityType(id: string): Promise<'application' | 'examiner' | null> {
+export async function checkEntityType(
+  id: string,
+): Promise<"application" | "examiner" | null> {
   // Check if it's an application first
   const application = await prisma.examinerApplication.findUnique({
     where: { id },
@@ -13,7 +15,7 @@ export async function checkEntityType(id: string): Promise<'application' | 'exam
   });
 
   if (application) {
-    return 'application';
+    return "application";
   }
 
   // Check if it's an examiner profile
@@ -23,9 +25,8 @@ export async function checkEntityType(id: string): Promise<'application' | 'exam
   });
 
   if (examiner) {
-    return 'examiner';
+    return "examiner";
   }
 
   return null;
 }
-

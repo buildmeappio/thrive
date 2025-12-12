@@ -12,7 +12,13 @@ type OrganizationView = {
   id: string;
   name: string;
   manager: Array<{
-    account?: { user?: { email?: string | null; firstName?: string | null; lastName?: string | null } | null } | null;
+    account?: {
+      user?: {
+        email?: string | null;
+        firstName?: string | null;
+        lastName?: string | null;
+      } | null;
+    } | null;
   }>;
 };
 
@@ -29,13 +35,13 @@ const approveOrganization = async (id: string) => {
 
   const organization = await handlers.approveOrganization(id, user.accountId);
 
-//   await sendApprovalEmailToOrganization(organization);
-  
+  //   await sendApprovalEmailToOrganization(organization);
+
   // Revalidate dashboard and organization pages
   revalidatePath("/dashboard");
   revalidatePath("/organization");
   revalidatePath(`/organization/${id}`);
-  
+
   return organization;
 };
 
@@ -93,8 +99,11 @@ function emailShell(innerHtml: string) {
 
 function escapeHtml(input: string) {
   return String(input)
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 export default approveOrganization;

@@ -9,7 +9,7 @@ type ToggleUserStatusInput = {
 };
 
 export const toggleUserStatus = async (
-  data: ToggleUserStatusInput
+  data: ToggleUserStatusInput,
 ): Promise<{ success: boolean; error?: string }> => {
   try {
     await userService.toggleUserStatus(data.userId, data.isLoginEnabled);
@@ -25,4 +25,3 @@ export const toggleUserStatus = async (
 };
 
 export default toggleUserStatus;
-

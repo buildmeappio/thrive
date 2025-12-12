@@ -1,5 +1,8 @@
 import prisma from "@/lib/db";
-import { createContractDocument, type ContractData as GoogleDocsContractData } from "@/lib/google-docs";
+import {
+  createContractDocument,
+  type ContractData as GoogleDocsContractData,
+} from "@/lib/google-docs";
 import { uploadToS3 } from "@/lib/s3";
 import { sha256Buffer, hashContractData } from "@/lib/crypto";
 import { signContractToken } from "@/lib/jwt";
@@ -36,10 +39,15 @@ class ContractService {
       if (!ENV.GOOGLE_CONTRACT_TEMPLATE_ID || !ENV.GOOGLE_CONTRACTS_FOLDER_ID) {
         return {
           success: false,
-          error: "Google Docs configuration missing. Please set GOOGLE_CONTRACT_TEMPLATE_ID and GOOGLE_CONTRACTS_FOLDER_ID to create the initial template.",
+          error:
+            "Google Docs configuration missing. Please set GOOGLE_CONTRACT_TEMPLATE_ID and GOOGLE_CONTRACTS_FOLDER_ID to create the initial template.",
         };
       }
-      template = await this.createDefaultIMETemplate(createdBy, ENV.GOOGLE_CONTRACT_TEMPLATE_ID, ENV.GOOGLE_CONTRACTS_FOLDER_ID);
+      template = await this.createDefaultIMETemplate(
+        createdBy,
+        ENV.GOOGLE_CONTRACT_TEMPLATE_ID,
+        ENV.GOOGLE_CONTRACTS_FOLDER_ID,
+      );
     }
 
     if (!template || !template.currentVersion) {
@@ -51,7 +59,8 @@ class ContractService {
       if (!ENV.GOOGLE_CONTRACT_TEMPLATE_ID) {
         return {
           success: false,
-          error: "Template version does not have a Google Doc template ID configured, and no ID provided in environment. Please configure the template version.",
+          error:
+            "Template version does not have a Google Doc template ID configured, and no ID provided in environment. Please configure the template version.",
         };
       }
       await prisma.templateVersion.update({
@@ -68,17 +77,27 @@ class ContractService {
       });
 
       // Fallback if still not set for any reason
-      if (!template || !template.currentVersion || !template.currentVersion.googleDocTemplateId) {
+      if (
+        !template ||
+        !template.currentVersion ||
+        !template.currentVersion.googleDocTemplateId
+      ) {
         return {
           success: false,
-          error: "Failed to update template version with Google Doc Template ID.",
+          error:
+            "Failed to update template version with Google Doc Template ID.",
         };
       }
     }
 
     // Ensure the template version has a Google Docs Folder ID, update in DB if missing
-    let folderId = template.currentVersion.googleDocFolderId || ENV.GOOGLE_CONTRACTS_FOLDER_ID;
-    if (!template.currentVersion.googleDocFolderId && ENV.GOOGLE_CONTRACTS_FOLDER_ID) {
+    let folderId =
+      template.currentVersion.googleDocFolderId ||
+      ENV.GOOGLE_CONTRACTS_FOLDER_ID;
+    if (
+      !template.currentVersion.googleDocFolderId &&
+      ENV.GOOGLE_CONTRACTS_FOLDER_ID
+    ) {
       await prisma.templateVersion.update({
         where: { id: template.currentVersion.id },
         data: { googleDocFolderId: ENV.GOOGLE_CONTRACTS_FOLDER_ID },
@@ -92,13 +111,16 @@ class ContractService {
         },
       });
 
-      folderId = template?.currentVersion?.googleDocFolderId || ENV.GOOGLE_CONTRACTS_FOLDER_ID;
+      folderId =
+        template?.currentVersion?.googleDocFolderId ||
+        ENV.GOOGLE_CONTRACTS_FOLDER_ID;
     }
 
     if (!folderId) {
       return {
         success: false,
-        error: "Google Docs folder ID not configured. Please set GOOGLE_CONTRACTS_FOLDER_ID or configure template version.",
+        error:
+          "Google Docs folder ID not configured. Please set GOOGLE_CONTRACTS_FOLDER_ID or configure template version.",
       };
     }
 
@@ -111,7 +133,7 @@ class ContractService {
    */
   async createAndSendContractForApplication(
     applicationId: string,
-    createdBy: string
+    createdBy: string,
   ): Promise<{
     success: boolean;
     contractId?: string;
@@ -134,20 +156,30 @@ class ContractService {
       }
 
       // Fee structure is required for contract creation
-      if (!application.IMEFee || !application.recordReviewFee || !application.cancellationFee || !application.paymentTerms) {
+      if (
+        !application.IMEFee ||
+        !application.recordReviewFee ||
+        !application.cancellationFee ||
+        !application.paymentTerms
+      ) {
         return {
           success: false,
-          error: "Fee structure not found. Please add fee structure before sending contract.",
+          error:
+            "Fee structure not found. Please add fee structure before sending contract.",
         };
       }
 
-      const examinerName = `${application.firstName || ""} ${application.lastName || ""}`.trim();
+      const examinerName =
+        `${application.firstName || ""} ${application.lastName || ""}`.trim();
       const examinerEmail = application.email;
 
       // 2. Get or create the IME template
       const templateResult = await this.getOrCreateTemplate(createdBy);
       if (!templateResult.success || !templateResult.template) {
-        return { success: false, error: templateResult.error || "Template not found" };
+        return {
+          success: false,
+          error: templateResult.error || "Template not found",
+        };
       }
 
       const template = templateResult.template;
@@ -160,7 +192,9 @@ class ContractService {
         feeStructure: {
           IMEFee: Number(application.IMEFee),
           recordReviewFee: Number(application.recordReviewFee),
-          hourlyRate: application.hourlyRate ? Number(application.hourlyRate) : undefined,
+          hourlyRate: application.hourlyRate
+            ? Number(application.hourlyRate)
+            : undefined,
           cancellationFee: Number(application.cancellationFee),
           paymentTerms: application.paymentTerms,
         },
@@ -168,12 +202,13 @@ class ContractService {
 
       // 4. Create Google Doc, merge placeholders, and export HTML and PDF
       logger.log("📄 Creating contract from Google Doc template...");
-      const { documentId, htmlContent, pdfContent, driveHtmlId } = await createContractDocument(
-        template.currentVersion.googleDocTemplateId,
-        template.currentVersion.googleDocFolderId,
-        googleDocsContractData,
-        false // Don't save HTML to Drive for now
-      );
+      const { documentId, htmlContent, pdfContent, driveHtmlId } =
+        await createContractDocument(
+          template.currentVersion.googleDocTemplateId,
+          template.currentVersion.googleDocFolderId,
+          googleDocsContractData,
+          false, // Don't save HTML to Drive for now
+        );
 
       // 5. Prepare contract data for database (contract content data only, no metadata)
       const contractData: ContractData = {
@@ -183,7 +218,9 @@ class ContractService {
         feeStructure: {
           IMEFee: Number(application.IMEFee),
           recordReviewFee: Number(application.recordReviewFee),
-          hourlyRate: application.hourlyRate ? Number(application.hourlyRate) : undefined,
+          hourlyRate: application.hourlyRate
+            ? Number(application.hourlyRate)
+            : undefined,
           cancellationFee: Number(application.cancellationFee),
           paymentTerms: application.paymentTerms,
         },
@@ -191,7 +228,7 @@ class ContractService {
       };
 
       // 6. Calculate hashes - convert HTML string to Buffer for hashing
-      const htmlBuffer = Buffer.from(htmlContent, 'utf-8');
+      const htmlBuffer = Buffer.from(htmlContent, "utf-8");
       const htmlHash = sha256Buffer(htmlBuffer);
       const pdfHash = sha256Buffer(pdfContent);
       const dataHash = hashContractData("", contractData);
@@ -220,10 +257,13 @@ class ContractService {
       });
 
       // 9. Generate JWT token with contract ID and application ID (expires in 90 days)
-      const accessToken = signContractToken({
-        contractId: tempContract.id,
-        applicationId: applicationId,
-      }, '90d');
+      const accessToken = signContractToken(
+        {
+          contractId: tempContract.id,
+          applicationId: applicationId,
+        },
+        "90d",
+      );
 
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 90);
@@ -292,7 +332,9 @@ class ContractService {
         },
       });
 
-      logger.log(`✅ Contract created and sent successfully for application: ${contract.id}`);
+      logger.log(
+        `✅ Contract created and sent successfully for application: ${contract.id}`,
+      );
       logger.log(`   Google Doc ID: ${documentId}`);
       logger.log(`   HTML S3 Key: ${htmlS3Key}`);
       logger.log(`   PDF S3 Key: ${pdfS3Key}`);
@@ -311,7 +353,8 @@ class ContractService {
       logger.error("Error creating contract for application:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to create contract",
+        error:
+          error instanceof Error ? error.message : "Failed to create contract",
       };
     }
   }
@@ -322,7 +365,7 @@ class ContractService {
    */
   async createAndSendContract(
     examinerProfileId: string,
-    createdBy: string
+    createdBy: string,
   ): Promise<{
     success: boolean;
     contractId?: string;
@@ -362,7 +405,8 @@ class ContractService {
       if (!examiner.feeStructure || examiner.feeStructure.length === 0) {
         return {
           success: false,
-          error: "Fee structure not found. Please add fee structure before sending contract.",
+          error:
+            "Fee structure not found. Please add fee structure before sending contract.",
         };
       }
 
@@ -373,12 +417,13 @@ class ContractService {
       // 2. Get or create the IME template
       const templateResult = await this.getOrCreateTemplate(createdBy);
       if (!templateResult.success || !templateResult.template) {
-        return { success: false, error: templateResult.error || "Template not found" };
+        return {
+          success: false,
+          error: templateResult.error || "Template not found",
+        };
       }
 
       const template = templateResult.template;
-
-
 
       // 3. Prepare contract data for Google Docs
       const googleDocsContractData: GoogleDocsContractData = {
@@ -388,7 +433,9 @@ class ContractService {
         feeStructure: {
           IMEFee: Number(feeStructure.IMEFee),
           recordReviewFee: Number(feeStructure.recordReviewFee),
-          hourlyRate: feeStructure.hourlyRate ? Number(feeStructure.hourlyRate) : undefined,
+          hourlyRate: feeStructure.hourlyRate
+            ? Number(feeStructure.hourlyRate)
+            : undefined,
           cancellationFee: Number(feeStructure.cancellationFee),
           paymentTerms: feeStructure.paymentTerms,
         },
@@ -396,12 +443,13 @@ class ContractService {
 
       // 4. Create Google Doc, merge placeholders, and export HTML and PDF
       logger.log("📄 Creating contract from Google Doc template...");
-      const { documentId, htmlContent, pdfContent, driveHtmlId } = await createContractDocument(
-        template.currentVersion.googleDocTemplateId,
-        template.currentVersion.googleDocFolderId,
-        googleDocsContractData,
-        false // Don't save HTML to Drive for now
-      );
+      const { documentId, htmlContent, pdfContent, driveHtmlId } =
+        await createContractDocument(
+          template.currentVersion.googleDocTemplateId,
+          template.currentVersion.googleDocFolderId,
+          googleDocsContractData,
+          false, // Don't save HTML to Drive for now
+        );
 
       // 5. Prepare contract data for database (contract content data only, no metadata)
       const contractData: ContractData = {
@@ -411,7 +459,9 @@ class ContractService {
         feeStructure: {
           IMEFee: Number(feeStructure.IMEFee),
           recordReviewFee: Number(feeStructure.recordReviewFee),
-          hourlyRate: feeStructure.hourlyRate ? Number(feeStructure.hourlyRate) : undefined,
+          hourlyRate: feeStructure.hourlyRate
+            ? Number(feeStructure.hourlyRate)
+            : undefined,
           cancellationFee: Number(feeStructure.cancellationFee),
           paymentTerms: feeStructure.paymentTerms,
         },
@@ -419,7 +469,7 @@ class ContractService {
       };
 
       // 6. Calculate hashes - convert HTML string to Buffer for hashing
-      const htmlBuffer = Buffer.from(htmlContent, 'utf-8');
+      const htmlBuffer = Buffer.from(htmlContent, "utf-8");
       const htmlHash = sha256Buffer(htmlBuffer);
       const pdfHash = sha256Buffer(pdfContent);
       const dataHash = hashContractData("", contractData);
@@ -447,10 +497,13 @@ class ContractService {
       });
 
       // 9. Generate JWT token with contract ID and examiner profile ID (expires in 90 days)
-      const accessToken = signContractToken({
-        contractId: tempContract.id,
-        examinerProfileId,
-      }, '90d');
+      const accessToken = signContractToken(
+        {
+          contractId: tempContract.id,
+          examinerProfileId,
+        },
+        "90d",
+      );
 
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 90);
@@ -537,7 +590,8 @@ class ContractService {
       logger.error("❌ Error creating contract:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to create contract",
+        error:
+          error instanceof Error ? error.message : "Failed to create contract",
       };
     }
   }
@@ -550,7 +604,7 @@ class ContractService {
   private async createDefaultIMETemplate(
     createdBy: string,
     googleDocTemplateId: string,
-    googleDocFolderId: string
+    googleDocFolderId: string,
   ) {
     // Create template
     const template = await prisma.documentTemplate.create({

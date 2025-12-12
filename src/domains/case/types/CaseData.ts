@@ -3,7 +3,7 @@ export type CaseData = {
   number: string;
   claimant: string;
   organization: string;
-  caseType: string; 
+  caseType: string;
   status: string;
   urgencyLevel: string;
   reason: string;
@@ -12,4 +12,3 @@ export type CaseData = {
   assignedAt?: string;
   dueDate?: string | null;
 };
-

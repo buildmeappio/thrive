@@ -22,7 +22,7 @@ const TopHeader = () => {
           </linearGradient>
         </defs>
       </svg>
-      
+
       <div className="h-full flex items-center justify-between px-2 sm:px-4 lg:px-6">
         {/* Logo and hamburger menu on the left */}
         <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0 min-w-0">
@@ -34,7 +34,7 @@ const TopHeader = () => {
           >
             <Menu size={16} className="sm:w-5 sm:h-5 text-[#000093]" />
           </button>
-          
+
           <Image
             src={`${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
             alt="Thrive"
@@ -52,7 +52,11 @@ const TopHeader = () => {
             className="relative flex h-7 w-7 sm:h-10 sm:w-10 lg:h-[50px] lg:w-[50px] items-center justify-center rounded-full bg-[#EEEEFF] transition-colors hover:bg-[#D0F3FF] flex-shrink-0"
             aria-label="Messages"
           >
-            <MessageSquareText size={14} className="sm:w-5 sm:h-5 lg:w-6 lg:h-6" style={{ fill: "url(#iconGradient)", stroke: "white" }} />
+            <MessageSquareText
+              size={14}
+              className="sm:w-5 sm:h-5 lg:w-6 lg:h-6"
+              style={{ fill: "url(#iconGradient)", stroke: "white" }}
+            />
           </button>
 
           {/* Notification Icon */}
@@ -60,7 +64,11 @@ const TopHeader = () => {
             className="relative flex h-7 w-7 sm:h-10 sm:w-10 lg:h-[50px] lg:w-[50px] items-center justify-center rounded-full bg-[#EEEEFF] transition-colors hover:bg-[#D0F3FF] flex-shrink-0"
             aria-label="Notifications"
           >
-            <Bell size={14} className="sm:w-5 sm:h-5 lg:w-6 lg:h-6" style={{ fill: "url(#iconGradient)", stroke: "none" }} />
+            <Bell
+              size={14}
+              className="sm:w-5 sm:h-5 lg:w-6 lg:h-6"
+              style={{ fill: "url(#iconGradient)", stroke: "none" }}
+            />
           </button>
 
           {/* Profile Dropdown */}
@@ -72,4 +80,3 @@ const TopHeader = () => {
 };
 
 export default TopHeader;
-

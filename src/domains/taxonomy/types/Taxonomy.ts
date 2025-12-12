@@ -1,19 +1,19 @@
-export type TaxonomyType = 
-  | 'caseStatus'
-  | 'caseType'
-  | 'claimType'
-  | 'department'
-  | 'examinationType'
-  | 'examinationTypeBenefit'
-  | 'language'
-  | 'organizationType'
-  | 'role'
-  | 'maximumDistanceTravel'
-  | 'yearsOfExperience'
-  | 'configuration'
-  | 'assessmentType';
+export type TaxonomyType =
+  | "caseStatus"
+  | "caseType"
+  | "claimType"
+  | "department"
+  | "examinationType"
+  | "examinationTypeBenefit"
+  | "language"
+  | "organizationType"
+  | "role"
+  | "maximumDistanceTravel"
+  | "yearsOfExperience"
+  | "configuration"
+  | "assessmentType";
 
-export type TaxonomyFieldType = 'text' | 'textarea' | 'select';
+export type TaxonomyFieldType = "text" | "textarea" | "select";
 
 export type TaxonomyField = {
   name: string;
@@ -106,15 +106,15 @@ export type AssessmentType = BaseTaxonomy & {
 };
 
 // Union type for all taxonomies
-export type Taxonomy = 
-  | CaseStatus 
-  | CaseType 
-  | ClaimType 
-  | Department 
-  | ExaminationType 
-  | ExaminationTypeBenefit 
-  | Language 
-  | OrganizationType 
+export type Taxonomy =
+  | CaseStatus
+  | CaseType
+  | ClaimType
+  | Department
+  | ExaminationType
+  | ExaminationTypeBenefit
+  | Language
+  | OrganizationType
   | Role
   | MaximumDistanceTravel
   | YearsOfExperience
@@ -135,4 +135,3 @@ export type CreateTaxonomyInput = {
 };
 
 export type UpdateTaxonomyInput = Partial<CreateTaxonomyInput>;
-
