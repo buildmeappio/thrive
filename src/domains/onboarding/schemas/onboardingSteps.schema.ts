@@ -232,9 +232,7 @@ export type AvailabilityPreferencesInput = z.infer<
 // Schema for payout details
 export const payoutDetailsSchema = z
   .object({
-    payoutMethod: z.enum(["direct_deposit", "cheque", "interac"], {
-      message: "Please select a payout method",
-    }),
+    payoutMethod: z.enum(["direct_deposit", "cheque", "interac"]).optional(),
     // Stripe Direct Deposit fields
     legalName: z
       .string()
@@ -280,37 +278,67 @@ export const payoutDetailsSchema = z
   })
   .refine(
     (data) => {
-      if (data.payoutMethod === "direct_deposit") {
-        return (
-          data.legalName &&
-          data.legalName.length > 0 &&
-          data.sin &&
-          data.sin.length === 9 && // SIN is 9 digits
-          data.transitNumber &&
-          data.institutionNumber &&
-          data.accountNumber &&
-          data.transitNumber.length === 5 &&
-          data.institutionNumber.length === 3 &&
-          data.accountNumber.length >= 7 &&
-          data.accountNumber.length <= 12
-        );
+      // Check if at least one payment method is complete
+      const isDirectDepositComplete =
+        data.legalName &&
+        data.legalName.length > 0 &&
+        data.sin &&
+        data.sin.length === 9 && // SIN is 9 digits
+        data.transitNumber &&
+        data.institutionNumber &&
+        data.accountNumber &&
+        data.transitNumber.length === 5 &&
+        data.institutionNumber.length === 3 &&
+        data.accountNumber.length >= 7 &&
+        data.accountNumber.length <= 12;
+
+      const isChequeComplete =
+        data.chequeMailingAddress && data.chequeMailingAddress.length > 0;
+
+      const isInteracComplete =
+        data.interacEmail &&
+        z.string().email().safeParse(data.interacEmail).success;
+
+      // At least one method must be complete
+      if (!isDirectDepositComplete && !isChequeComplete && !isInteracComplete) {
+        return false;
       }
-      if (data.payoutMethod === "cheque") {
-        return (
-          data.chequeMailingAddress && data.chequeMailingAddress.length > 0
-        );
+
+      // If any method has partial data, validate that method's requirements
+      // Check if direct deposit has any fields filled
+      const hasDirectDepositFields =
+        data.legalName ||
+        data.sin ||
+        data.transitNumber ||
+        data.institutionNumber ||
+        data.accountNumber;
+
+      // If direct deposit fields are filled but incomplete, it's invalid
+      if (hasDirectDepositFields && !isDirectDepositComplete) {
+        return false;
       }
-      if (data.payoutMethod === "interac") {
-        return (
-          data.interacEmail &&
-          z.string().email().safeParse(data.interacEmail).success
-        );
+
+      // Check if cheque has any fields filled
+      const hasChequeFields = data.chequeMailingAddress;
+
+      // If cheque fields are filled but incomplete, it's invalid
+      if (hasChequeFields && !isChequeComplete) {
+        return false;
       }
+
+      // Check if interac has any fields filled
+      const hasInteracFields = data.interacEmail;
+
+      // If interac fields are filled but incomplete, it's invalid
+      if (hasInteracFields && !isInteracComplete) {
+        return false;
+      }
+
       return true;
     },
     {
       message:
-        "Please fill in all required fields for the selected payout method",
+        "Please complete at least one payment method. If you start filling a method, all required fields for that method must be completed.",
     },
   );
 

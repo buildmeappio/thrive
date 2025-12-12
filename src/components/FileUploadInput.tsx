@@ -13,6 +13,7 @@ export type ExistingDocument = {
   type: string;
   size: number;
   isExisting: true;
+  isFromDatabase?: boolean; // Optional flag to distinguish files loaded from DB vs newly uploaded
 };
 
 export type DocumentFile = File | ExistingDocument | null;

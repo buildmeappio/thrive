@@ -15,7 +15,7 @@ export type UploadDocumentResponse =
         originalName: string;
         size: number;
         type: string;
-        url?: string;
+        // url removed - use presigned URLs instead via getExaminerDocumentPresignedUrlAction
       };
     };
 
@@ -56,11 +56,8 @@ export const uploadDocumentAction = async (
       };
     }
 
-    // Construct CDN URL if configured
-    const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL
-      ? `${process.env.NEXT_PUBLIC_CDN_URL}/documents/examiner/${uploadResult.document.name}`
-      : undefined;
-
+    // Don't return CDN URL - we'll generate presigned URLs on-demand when needed
+    // This ensures we always use presigned URLs for security
     return {
       success: true,
       data: {
@@ -69,7 +66,7 @@ export const uploadDocumentAction = async (
         originalName: file.name,
         size: uploadResult.document.size,
         type: uploadResult.document.type,
-        url: cdnUrl,
+        // Don't include url - use presigned URLs instead
       },
     };
   } catch (error) {

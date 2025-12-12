@@ -4,6 +4,8 @@ import { Upload, File, X, Eye } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { log } from "@/utils/logger";
+import { toast } from "sonner";
+import Image from "next/image";
 import { ExistingDocument, DocumentFile } from "./FileUploadInput";
 import { getExaminerDocumentPresignedUrlAction } from "@/domains/auth/server/actions/getExaminerDocumentPresignedUrl";
 
@@ -41,6 +43,9 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [sizeError, setSizeError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewFileName, setPreviewFileName] = useState<string>("");
+  const [previewFileType, setPreviewFileType] = useState<string>("");
 
   const handleClick = () => {
     if (!disabled) {
@@ -155,18 +160,28 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
           const result = await getExaminerDocumentPresignedUrlAction(file.name);
 
           if (result.success && result.url) {
-            // Open the document in a new tab
-            window.open(result.url, "_blank");
+            // Set preview state to show modal
+            setPreviewFileName(
+              (file as ExistingDocument).displayName || file.name || "",
+            );
+            setPreviewFileType(file.type || "pdf");
+            setPreviewUrl(result.url);
           } else {
             console.error("Failed to get presigned URL:", result.error);
-            alert("Failed to preview document. Please try again.");
+            toast.error("Failed to preview document. Please try again.");
           }
         } catch (error) {
           console.error("Error previewing document:", error);
-          alert("Failed to preview document. Please try again.");
+          toast.error("Failed to preview document. Please try again.");
         }
       }
     };
+
+  const closePreview = () => {
+    setPreviewUrl(null);
+    setPreviewFileName("");
+    setPreviewFileType("");
+  };
 
   const isExistingDocument = (doc: DocumentFile): doc is ExistingDocument => {
     return (
@@ -265,26 +280,28 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
                   <p className="text-[11px] text-[#9EA9AA]">
                     {formatFileSize(file?.size || 0)}
                   </p>
-                  {isExistingDocument(file) && (
-                    <span className="text-[10px] text-[#00A8FF] bg-[#E6F4FF] px-2 py-0.5 rounded">
-                      Previously uploaded
-                    </span>
-                  )}
+                  {isExistingDocument(file) &&
+                    (file as ExistingDocument).isFromDatabase && (
+                      <span className="text-[10px] text-[#00A8FF] bg-[#E6F4FF] px-2 py-0.5 rounded">
+                        Previously uploaded
+                      </span>
+                    )}
                 </div>
               </div>
 
               <div className="flex items-center gap-1 flex-shrink-0">
-                {isExistingDocument(file) && (
-                  <button
-                    type="button"
-                    onClick={handlePreviewExisting(file)}
-                    className="p-1.5 rounded-full hover:bg-blue-100 text-blue-500 transition-colors"
-                    disabled={disabled}
-                    title="Preview document"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </button>
-                )}
+                {isExistingDocument(file) &&
+                  (file as ExistingDocument).isFromDatabase && (
+                    <button
+                      type="button"
+                      onClick={handlePreviewExisting(file)}
+                      className="p-1.5 rounded-full hover:bg-blue-100 text-blue-500 transition-colors"
+                      disabled={disabled}
+                      title="Preview document"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                  )}
                 <button
                   type="button"
                   onClick={handleRemoveFile(index)}
@@ -344,6 +361,94 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
           size: {formatFileSize(maxSize)} per file
           {maxFiles && ` • Max files: ${maxFiles}`}
         </p>
+      )}
+
+      {/* Document Preview Modal */}
+      {previewUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4"
+          role="dialog"
+          aria-modal="true"
+          onClick={closePreview}
+        >
+          <div
+            className="relative w-full max-w-6xl h-[90vh] bg-white rounded-2xl shadow-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 truncate pr-4">
+                {previewFileName}
+              </h3>
+              <button
+                onClick={closePreview}
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  className="text-gray-600"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M18.3 5.7a1 1 0 0 0-1.4-1.4L12 9.17 7.1 4.3A1 1 0 0 0 5.7 5.7L10.6 10.6 5.7 15.5a1 1 0 1 0 1.4 1.4L12 12.03l4.9 4.87a1 1 0 0 0 1.4-1.4l-4.9-4.87 4.9-4.93Z"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Preview Content */}
+            <div className="h-[calc(90vh-80px)] overflow-auto p-4">
+              {previewFileType &&
+              ["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(
+                previewFileType.toLowerCase(),
+              ) ? (
+                <div className="relative w-full flex justify-center">
+                  <Image
+                    src={previewUrl}
+                    alt={previewFileName}
+                    width={0}
+                    height={0}
+                    sizes="100vw"
+                    className="max-w-full h-auto"
+                    unoptimized
+                    onError={() => {
+                      toast.error("Failed to load image preview");
+                      closePreview();
+                    }}
+                  />
+                </div>
+              ) : previewFileType?.toLowerCase() === "pdf" ||
+                previewUrl.toLowerCase().match(/\.(pdf)$/i) ? (
+                <iframe
+                  src={previewUrl}
+                  className="w-full h-full min-h-[600px] border-0"
+                  title={previewFileName}
+                  onError={() => {
+                    toast.error("Failed to load PDF preview");
+                    closePreview();
+                  }}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <p className="text-gray-600 mb-4">
+                    Preview not available for this file type.
+                  </p>
+                  <a
+                    href={previewUrl}
+                    download={previewFileName}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#00A8FF] underline"
+                  >
+                    Download to view
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
