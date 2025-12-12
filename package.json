@@ -58,6 +58,7 @@
     "formik": "^2.4.6",
     "googleapis": "^160.0.0",
     "html2canvas": "^1.4.1",
+    "husky": "^9.1.7",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.3",
     "libphonenumber-js": "^1.12.22",
