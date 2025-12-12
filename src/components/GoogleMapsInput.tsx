@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import { MapPin } from "lucide-react";
 import { useGoogleMaps } from "@/lib/useGoogleMaps";
+import { isDevelopmentOrLocal } from "@/utils/environment";
 import {
   GoogleMapsPlaceData,
   GoogleMapsAutocompleteOptions,
@@ -41,7 +42,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
 }) => {
   const autoCompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const { isLoaded } = useGoogleMaps();
+  const { isLoaded, hasError } = useGoogleMaps();
   const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 
   useEffect(() => {
@@ -162,19 +163,26 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
           className={`w-full bg-[${
             from === "profile-info-form" ? "#F9F9F9" : "#F2F5F6"
           }] h-[55px] rounded-lg pl-10 pr-4 focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none`}
-          disabled={!isLoaded}
+          // Never disable the input - allow manual entry even if API fails
         />
       </div>
       {error && (
         <span className="text-xs text-red-500 mt-1 block">{error}</span>
       )}
-      {!API_KEY && (
+      {/* Only show API key errors in local and dev environments */}
+      {isDevelopmentOrLocal() && !API_KEY && (
         <div className="text-xs text-amber-600 mt-1">
-          <strong>Note:</strong> Google Maps API key not configured. Please set
-          NEXT_PUBLIC_GOOGLE_PLACES_API_KEY in your environment variables.
+          <strong>Note:</strong> Google Maps API key not configured. You can
+          still enter your address manually.
         </div>
       )}
-      {API_KEY && !isLoaded && (
+      {isDevelopmentOrLocal() && API_KEY && hasError && (
+        <div className="text-xs text-amber-600 mt-1">
+          <strong>Note:</strong> Address autocomplete is unavailable. You can
+          still enter your address manually.
+        </div>
+      )}
+      {API_KEY && !isLoaded && !hasError && (
         <div className="text-xs text-gray-400 mt-1 flex items-center gap-1">
           <div className="w-3 h-3 border border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
           <span>Initializing address search...</span>

@@ -11,18 +11,21 @@ const SCRIPT_ID = "google-maps-script";
  */
 export const useGoogleMaps = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const API_KEY = ENV.GOOGLE_PLACES_API_KEY;
 
   useEffect(() => {
     // Check if API key is available
     if (!API_KEY) {
       console.error("NEXT_PUBLIC_GOOGLE_PLACES_API_KEY is not defined");
+      setHasError(true);
       return;
     }
 
     // If Google Maps is already loaded, set state immediately
     if (window.google?.maps?.places?.Autocomplete) {
       setIsLoaded(true);
+      setHasError(false);
       return;
     }
 
@@ -30,11 +33,19 @@ export const useGoogleMaps = () => {
     const existingScript = document.getElementById(SCRIPT_ID);
     if (existingScript) {
       // Script exists, wait for it to load
+      let attempts = 0;
+      const maxAttempts = 50; // 5 seconds max wait
       const checkLoaded = () => {
         if (window.google?.maps?.places?.Autocomplete) {
           setIsLoaded(true);
-        } else {
+          setHasError(false);
+        } else if (attempts < maxAttempts) {
+          attempts++;
           setTimeout(checkLoaded, 100);
+        } else {
+          // Timeout - API failed to load
+          setHasError(true);
+          console.error("Google Maps API failed to load after timeout");
         }
       };
       checkLoaded();
@@ -48,13 +59,22 @@ export const useGoogleMaps = () => {
     script.async = true;
     script.defer = true;
 
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds max wait
+
     script.onload = () => {
       // Wait for the places library to fully initialize
       const checkPlacesReady = () => {
         if (window.google?.maps?.places?.Autocomplete) {
           setIsLoaded(true);
-        } else {
+          setHasError(false);
+        } else if (attempts < maxAttempts) {
+          attempts++;
           setTimeout(checkPlacesReady, 100);
+        } else {
+          // Timeout - API failed to initialize
+          setHasError(true);
+          console.error("Google Maps Places API failed to initialize");
         }
       };
       checkPlacesReady();
@@ -62,6 +82,7 @@ export const useGoogleMaps = () => {
 
     script.onerror = () => {
       console.error("Failed to load Google Maps script");
+      setHasError(true);
     };
 
     document.head.appendChild(script);
@@ -75,5 +96,5 @@ export const useGoogleMaps = () => {
     };
   }, [API_KEY]);
 
-  return { isLoaded };
+  return { isLoaded, hasError };
 };
