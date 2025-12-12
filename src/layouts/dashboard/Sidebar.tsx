@@ -20,6 +20,7 @@ import {
   File,
   ThumbsUp,
   Users,
+  Calendar,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useSidebar } from "@/providers/Sidebar";
@@ -54,40 +55,46 @@ export const routes: Route[] = [
     index: 2,
   },
   {
+    icon: Calendar,
+    label: "Interviews",
+    href: "/interviews",
+    index: 3,
+  },
+  {
     icon: CaseUpper,
     label: "Cases",
     href: "/cases",
-    index: 3,
+    index: 4,
   },
   {
     icon: Languages,
     label: "Interpreters",
     href: "/interpreter",
-    index: 4,
+    index: 5,
   },
   {
     icon: Truck,
     label: "Transporters",
     href: "/transporter",
-    index: 5,
+    index: 6,
   },
   {
     icon: File,
     label: "Chaperone",
     href: "/dashboard/chaperones",
-    index: 6,
+    index: 7,
   },
   {
     icon: ThumbsUp,
     label: "Benefits",
     href: "/dashboard/benefits",
-    index: 7,
+    index: 8,
   },
-  { icon: Users, label: "Users", href: "/users", index: 8 },
+  { icon: Users, label: "Users", href: "/users", index: 9 },
   {
     icon: BookText,
     label: "Taxonomies",
-    index: 9,
+    index: 10,
     subRoutes: [
       // { label: "Roles", href: "/dashboard/taxonomy/role" },
       { label: "Case Types", href: "/dashboard/taxonomy/caseType" },
@@ -125,7 +132,7 @@ export const routes: Route[] = [
       },
     ],
   },
-  { icon: LifeBuoy, label: "Support", href: "/support", index: 10 },
+  { icon: LifeBuoy, label: "Support", href: "/support", index: 11 },
 ];
 
 const Sidebar = () => {
