@@ -60,7 +60,6 @@ jobs:
           JWT_EXAMINER_INFO_REQUEST_SECRET=${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}
           JWT_ORGANIZATION_INFO_REQUEST_SECRET=${{ secrets.JWT_ORGANIZATION_INFO_REQUEST_SECRET }}
           JWT_CLAIMANT_APPROVE_SECRET=${{ secrets.JWT_CLAIMANT_APPROVE_SECRET }}
-          JWT_RESUME_SECRET=${{ secrets.JWT_RESUME_SECRET }}
           JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET=${{ secrets.JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET }}
           DOCS_REFRESH_TOKEN=${{ secrets.DOCS_REFRESH_TOKEN }}
           GOOGLE_CONTRACT_TEMPLATE_ID=${{ secrets.GOOGLE_CONTRACT_TEMPLATE_ID }}
@@ -121,7 +120,6 @@ jobs:
           JWT_EXAMINER_INFO_REQUEST_SECRET=${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}
           JWT_ORGANIZATION_INFO_REQUEST_SECRET=${{ secrets.JWT_ORGANIZATION_INFO_REQUEST_SECRET }}
           JWT_CLAIMANT_APPROVE_SECRET=${{ secrets.JWT_CLAIMANT_APPROVE_SECRET }}
-          JWT_RESUME_SECRET=${{ secrets.JWT_RESUME_SECRET }}
           JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET=${{ secrets.JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET }}
           DOCS_REFRESH_TOKEN=${{ secrets.DOCS_REFRESH_TOKEN }}
           GOOGLE_CONTRACT_TEMPLATE_ID=${{ secrets.GOOGLE_CONTRACT_TEMPLATE_ID }}
@@ -165,16 +163,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Transfer docker-compose.yml to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: ${{ secrets.EC2_PORT || 22 }}
-          source: "docker-compose.yml"
-          target: "${{ secrets.EC2_DEPLOY_PATH }}/"
 
       - name: Deploy Docker image on EC2 using docker-compose
         uses: appleboy/ssh-action@v1.0.3
@@ -227,7 +215,6 @@ jobs:
             JWT_EXAMINER_INFO_REQUEST_SECRET=${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}
             JWT_ORGANIZATION_INFO_REQUEST_SECRET=${{ secrets.JWT_ORGANIZATION_INFO_REQUEST_SECRET }}
             JWT_CLAIMANT_APPROVE_SECRET=${{ secrets.JWT_CLAIMANT_APPROVE_SECRET }}
-            JWT_RESUME_SECRET=${{ secrets.JWT_RESUME_SECRET }}
             JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET=${{ secrets.JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET }}
             
             OAUTH_CLIENT_ID=${{ secrets.OAUTH_CLIENT_ID }}
