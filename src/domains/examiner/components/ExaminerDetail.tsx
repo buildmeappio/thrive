@@ -334,7 +334,9 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     try {
       await requestInterview(examiner.id);
       setStatus("interview_requested");
-      toast.success("Interview request sent. Examiner will receive an email to schedule their interview.");
+      toast.success(
+        "Interview request sent. Examiner will receive an email to schedule their interview.",
+      );
       router.refresh();
     } catch (error) {
       logger.error("Failed to request interview:", error);
@@ -999,7 +1001,11 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               lineHeight: "100%",
                               fontSize: "14px",
                             }}
-                            disabled={loadingAction !== null || !examiner.interviewSlot || examiner.interviewSlot.status !== "BOOKED"}
+                            disabled={
+                              loadingAction !== null ||
+                              !examiner.interviewSlot ||
+                              examiner.interviewSlot.status !== "BOOKED"
+                            }
                             onClick={handleMarkInterviewCompleted}
                           >
                             {loadingAction === "markInterviewCompleted"

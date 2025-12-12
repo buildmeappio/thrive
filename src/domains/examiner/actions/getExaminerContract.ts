@@ -1,12 +1,9 @@
 "use server";
 
 import prisma from "@/lib/db";
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import logger from "@/utils/logger";
-
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
-});
+import { s3Client } from "@/lib/s3-client";
 
 async function streamToString(body: any): Promise<string> {
   if (!body) return "";

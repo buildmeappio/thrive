@@ -1,4 +1,9 @@
-import { ExaminerApplication, Address, Documents, InterviewSlot } from "@prisma/client";
+import {
+  ExaminerApplication,
+  Address,
+  Documents,
+  InterviewSlot,
+} from "@prisma/client";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 
 type ApplicationWithRelations = ExaminerApplication & {

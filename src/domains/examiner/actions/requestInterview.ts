@@ -73,4 +73,3 @@ const requestInterview = async (id: string) => {
 };
 
 export default requestInterview;
-
