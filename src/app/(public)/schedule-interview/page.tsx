@@ -20,7 +20,7 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
   let applicationData;
   try {
     const result = await verifyInterviewToken(token);
-    if (!result.success) {  
+    if (!result.success) {
       notFound();
     }
     applicationData = result.application;
