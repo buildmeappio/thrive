@@ -48,7 +48,9 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
           }),
         );
         existingDocs.push(
-          ...(medicalLicenseDocs.filter((doc) => doc !== null) as ExistingDocument[]),
+          ...(medicalLicenseDocs.filter(
+            (doc) => doc !== null,
+          ) as ExistingDocument[]),
         );
       }
 
@@ -72,7 +74,9 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
 
       // Load CV/Resume
       if (initialData?.resumeDocumentId) {
-        const result = await getDocumentByIdAction(initialData.resumeDocumentId);
+        const result = await getDocumentByIdAction(
+          initialData.resumeDocumentId,
+        );
         if (result.success && result.data) {
           existingDocs.push({
             id: initialData.resumeDocumentId,
@@ -124,7 +128,9 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
           }),
         );
         existingDocs.push(
-          ...(specialtyDocs.filter((doc) => doc !== null) as ExistingDocument[]),
+          ...(specialtyDocs.filter(
+            (doc) => doc !== null,
+          ) as ExistingDocument[]),
         );
       }
 
@@ -184,7 +190,9 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
             });
           } else {
             throw new Error(
-              (!result.success && "message" in result ? result.message : undefined) || `Failed to upload ${file.name}`,
+              (!result.success && "message" in result
+                ? result.message
+                : undefined) || `Failed to upload ${file.name}`,
             );
           }
         }
@@ -207,7 +215,10 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
           medicalLicenseIds.push(file.id);
         } else if (displayName.includes("government id")) {
           governmentIdId = file.id;
-        } else if (displayName.includes("cv") || displayName.includes("resume")) {
+        } else if (
+          displayName.includes("cv") ||
+          displayName.includes("resume")
+        ) {
           cvResumeId = file.id;
         } else if (displayName.includes("insurance")) {
           insuranceId = file.id;

@@ -4,7 +4,11 @@ import prisma from "@/lib/db";
 
 export const getDocumentByIdAction = async (
   documentId: string,
-): Promise<{ success: boolean; data?: { name: string; displayName: string; size: number }; error?: string }> => {
+): Promise<{
+  success: boolean;
+  data?: { name: string; displayName: string; size: number };
+  error?: string;
+}> => {
   try {
     if (!documentId) {
       return {
@@ -27,10 +31,10 @@ export const getDocumentByIdAction = async (
 
     return {
       success: true,
-      data: { 
-        name: document.name, 
+      data: {
+        name: document.name,
         displayName: document.displayName || document.name,
-        size: document.size 
+        size: document.size,
       },
     };
   } catch (error: unknown) {

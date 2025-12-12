@@ -98,10 +98,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
 
   const isInteracComplete = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return (
-      formValues.interacEmail &&
-      emailRegex.test(formValues.interacEmail)
-    );
+    return formValues.interacEmail && emailRegex.test(formValues.interacEmail);
   };
 
   const onSubmit = async (values: PayoutDetailsInput) => {
@@ -238,7 +235,9 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
           {/* Info Message */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> You can fill in one or more payment methods. At least one complete payment method is required to proceed.
+              <strong>Note:</strong> You can fill in one or more payment
+              methods. At least one complete payment method is required to
+              proceed.
             </p>
           </div>
         </div>

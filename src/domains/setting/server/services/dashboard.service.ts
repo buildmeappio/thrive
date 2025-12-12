@@ -220,7 +220,9 @@ class DashboardService {
     const updatedProfile = await prisma.examinerProfile.update({
       where: { id: examinerProfileId },
       data: {
-        ...(data.payoutMethod !== undefined && { payoutMethod: data.payoutMethod }),
+        ...(data.payoutMethod !== undefined && {
+          payoutMethod: data.payoutMethod,
+        }),
         ...(data.legalName !== undefined && {
           legalName: data.legalName,
         }),
