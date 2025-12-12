@@ -12,7 +12,7 @@
     "seed": "prisma db seed",
     "docker:up": "docker-compose --env-file .env -f docker-compose.dev.yaml up -d",
     "docker:down": "docker-compose --env-file .env -f docker-compose.dev.yaml down -v",
-    "db:sync": "chmod +x scripts/db-sync.sh && bash scripts/db-sync.sh"
+    "db:sync": "bash scripts/db-sync.sh"
   },
   "repository": {
     "type": "git",

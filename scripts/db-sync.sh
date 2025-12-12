@@ -21,30 +21,30 @@ detect_windows() {
     return 1
 }
 
-if detect_windows; then
-    echo ""
-    echo "❌ This script does NOT run natively on Windows."
-    echo ""
-    echo "It is a bash script that depends on common Unix utilities and behaviors:"
-    echo " - bash, sed, grep, awk, lsof, mktemp, chmod, stat, sleep, etc."
-    echo " - native/CLI ssh, docker-compose or docker compose, and PostgreSQL client tools"
-    echo " - Unix-style signals and file permissions"
-    echo ""
-    echo "To use this script on Windows, you MUST run it under a compatible environment:"
-    echo " - Windows Subsystem for Linux (WSL): Recommended. Install WSL2 and Ubuntu from Microsoft Store."
-    echo " - Git Bash / MSYS2: Might work, but some commands or paths could cause issues."
-    echo " - Cygwin: Might work, but not officially supported."
-    echo ""
-    echo "Native Windows support (e.g. .bat/.ps1 script) is NOT provided."
-    echo ""
-    echo '👉 To use this script on Windows, run it via WSL/Ubuntu or Git Bash, e.g.:'
-    echo ""
-    echo "    wsl bash scripts/db-sync.sh"
-    echo ""
-    echo "Or, log in to a Linux/macOS machine or VM and run it there. Exiting now."
-    echo ""
-    exit 1
-fi
+# if detect_windows; then
+#     echo ""
+#     echo "❌ This script does NOT run natively on Windows."
+#     echo ""
+#     echo "It is a bash script that depends on common Unix utilities and behaviors:"
+#     echo " - bash, sed, grep, awk, lsof, mktemp, chmod, stat, sleep, etc."
+#     echo " - native/CLI ssh, docker-compose or docker compose, and PostgreSQL client tools"
+#     echo " - Unix-style signals and file permissions"
+#     echo ""
+#     echo "To use this script on Windows, you MUST run it under a compatible environment:"
+#     echo " - Windows Subsystem for Linux (WSL): Recommended. Install WSL2 and Ubuntu from Microsoft Store."
+#     echo " - Git Bash / MSYS2: Might work, but some commands or paths could cause issues."
+#     echo " - Cygwin: Might work, but not officially supported."
+#     echo ""
+#     echo "Native Windows support (e.g. .bat/.ps1 script) is NOT provided."
+#     echo ""
+#     echo '👉 To use this script on Windows, run it via WSL/Ubuntu or Git Bash, e.g.:'
+#     echo ""
+#     echo "    wsl bash scripts/db-sync.sh"
+#     echo ""
+#     echo "Or, log in to a Linux/macOS machine or VM and run it there. Exiting now."
+#     echo ""
+#     exit 1
+# fi
 
 # Function to create .env.db file interactively
 create_env_db_file() {
@@ -169,6 +169,23 @@ create_env_db_file() {
     echo "✅ .env.db file created successfully!"
 }
 
+# Function to convert Windows paths to Unix paths for Git Bash
+convert_windows_path() {
+    local path="$1"
+    # Convert C:\Users\... to /c/Users/...
+    if [[ "$path" =~ ^[A-Za-z]:\\ ]]; then
+        # Extract drive letter and convert to lowercase
+        drive="${path:0:1}"
+        drive=$(echo "$drive" | tr '[:upper:]' '[:lower:]')
+        # Remove drive letter and colon, convert backslashes to forward slashes
+        rest="${path:2}"
+        rest="${rest//\\//}"
+        echo "/$drive/$rest"
+    else
+        echo "$path"
+    fi
+}
+
 # Function to load environment variables from .env.db file or .env file
 load_env() {
     if [ -f ".env.db" ]; then
@@ -177,11 +194,18 @@ load_env() {
             # Skip comments and empty lines
             [[ $key =~ ^#.*$ ]] && continue
             [[ -z "$key" ]] && continue
-            
+            # Skip lines with empty values
+            [[ -z "$value" ]] && continue
+
             # Remove leading/trailing whitespace and quotes
             key=$(echo "$key" | xargs)
             value=$(echo "$value" | xargs | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
-            
+
+            # Convert Windows paths for key file paths
+            if [[ "$key" == "SYNC_BASTON_KEY" ]] || [[ "$key" =~ _KEY$ ]]; then
+                value=$(convert_windows_path "$value")
+            fi
+
             # Export the variable
             export "$key=$value"
         done < ".env.db"
@@ -191,11 +215,18 @@ load_env() {
             # Skip comments and empty lines
             [[ $key =~ ^#.*$ ]] && continue
             [[ -z "$key" ]] && continue
-            
+            # Skip lines with empty values
+            [[ -z "$value" ]] && continue
+
             # Remove leading/trailing whitespace and quotes
             key=$(echo "$key" | xargs)
             value=$(echo "$value" | xargs | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
-            
+
+            # Convert Windows paths for key file paths
+            if [[ "$key" == "SYNC_BASTON_KEY" ]] || [[ "$key" =~ _KEY$ ]]; then
+                value=$(convert_windows_path "$value")
+            fi
+
             # Export the variable
             export "$key=$value"
         done < ".env"
@@ -208,11 +239,18 @@ load_env() {
             # Skip comments and empty lines
             [[ $key =~ ^#.*$ ]] && continue
             [[ -z "$key" ]] && continue
-            
+            # Skip lines with empty values
+            [[ -z "$value" ]] && continue
+
             # Remove leading/trailing whitespace and quotes
             key=$(echo "$key" | xargs)
             value=$(echo "$value" | xargs | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
-            
+
+            # Convert Windows paths for key file paths
+            if [[ "$key" == "SYNC_BASTON_KEY" ]] || [[ "$key" =~ _KEY$ ]]; then
+                value=$(convert_windows_path "$value")
+            fi
+
             # Export the variable
             export "$key=$value"
         done < ".env.db"
