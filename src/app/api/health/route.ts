@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/db';
+import { NextResponse } from "next/server";
+import prisma from "@/lib/db";
 
 // Mark route as dynamic to prevent static analysis during build
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 /**
  * Health check endpoint for deployment monitoring

@@ -16,35 +16,38 @@ interface InterviewPageContentProps {
 const formatText = (str: string) => {
   if (!str) return str;
   return str
-    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
-    .split(' ')
-    .filter(word => word.length > 0)  // Remove empty strings
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+    .replace(/[-_]/g, " ") // Replace - and _ with spaces
+    .split(" ")
+    .filter((word) => word.length > 0) // Remove empty strings
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 };
 
 interface FilterState {
   status: string;
 }
 
-export default function InterviewPageContent({ data, statuses }: InterviewPageContentProps) {
+export default function InterviewPageContent({
+  data,
+  statuses,
+}: InterviewPageContentProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({
-    status: "all"
+    status: "all",
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [filterType]: value
+      [filterType]: value,
     }));
     setActiveDropdown(null);
   };
 
   const clearFilters = () => {
     setFilters({
-      status: "all"
+      status: "all",
     });
   };
 
@@ -56,7 +59,7 @@ export default function InterviewPageContent({ data, statuses }: InterviewPageCo
       if (activeDropdown) {
         const target = event.target as Element;
         // Check if the click is outside any dropdown container
-        const isInsideDropdown = target.closest('.filter-dropdown');
+        const isInsideDropdown = target.closest(".filter-dropdown");
         if (!isInsideDropdown) {
           setActiveDropdown(null);
         }
@@ -64,11 +67,11 @@ export default function InterviewPageContent({ data, statuses }: InterviewPageCo
     };
 
     if (activeDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [activeDropdown]);
 
@@ -76,7 +79,7 @@ export default function InterviewPageContent({ data, statuses }: InterviewPageCo
   const { table, tableElement } = InterviewTableWithPagination({
     data,
     searchQuery,
-    filters
+    filters,
   });
 
   return (
@@ -108,8 +111,18 @@ export default function InterviewPageContent({ data, statuses }: InterviewPageCo
           <div className="flex-1 sm:max-w-md w-full">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="url(#searchGradient)" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg
+                  className="h-4 w-4 sm:h-5 sm:w-5"
+                  fill="none"
+                  stroke="url(#searchGradient)"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
               </div>
               <input
@@ -126,18 +139,39 @@ export default function InterviewPageContent({ data, statuses }: InterviewPageCo
           <div className="flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
             {/* Status Filter */}
             <div className="relative filter-dropdown">
-              <button 
-                onClick={() => setActiveDropdown(activeDropdown === "status" ? null : "status")}
+              <button
+                onClick={() =>
+                  setActiveDropdown(
+                    activeDropdown === "status" ? null : "status",
+                  )
+                }
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  filters.status !== "all" 
-                    ? "border-[#00A8FF] text-[#00A8FF]" 
+                  filters.status !== "all"
+                    ? "border-[#00A8FF] text-[#00A8FF]"
                     : "border-gray-200 text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                <Funnel className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ stroke: "url(#statusGradient)" }} />
-                <span>{filters.status !== "all" ? formatText(filters.status) : "Status"}</span>
-                <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <Funnel
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                  style={{ stroke: "url(#statusGradient)" }}
+                />
+                <span>
+                  {filters.status !== "all"
+                    ? formatText(filters.status)
+                    : "Status"}
+                </span>
+                <svg
+                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
               {activeDropdown === "status" && (
@@ -149,7 +183,9 @@ export default function InterviewPageContent({ data, statuses }: InterviewPageCo
                         handleFilterChange("status", "all");
                       }}
                       className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "all" ? "bg-gray-100 text-[#00A8FF]" : ""
+                        filters.status === "all"
+                          ? "bg-gray-100 text-[#00A8FF]"
+                          : ""
                       }`}
                     >
                       All Statuses
@@ -162,7 +198,9 @@ export default function InterviewPageContent({ data, statuses }: InterviewPageCo
                           handleFilterChange("status", status);
                         }}
                         className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          filters.status === status ? "bg-gray-100 text-[#00A8FF]" : ""
+                          filters.status === status
+                            ? "bg-gray-100 text-[#00A8FF]"
+                            : ""
                         }`}
                       >
                         {formatText(status)}
@@ -179,8 +217,18 @@ export default function InterviewPageContent({ data, statuses }: InterviewPageCo
                 onClick={clearFilters}
                 className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
               >
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
                 <span>Clear</span>
               </button>
@@ -201,4 +249,3 @@ export default function InterviewPageContent({ data, statuses }: InterviewPageCo
     </DashboardShell>
   );
 }
-

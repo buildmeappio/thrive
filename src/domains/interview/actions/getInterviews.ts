@@ -34,7 +34,8 @@ const getInterviews = async (): Promise<InterviewData[]> => {
     const interviews: InterviewData[] = interviewSlots.map((slot) => ({
       id: slot.id,
       examinerName: slot.application
-        ? `${slot.application.firstName || ""} ${slot.application.lastName || ""}`.trim() || slot.application.email
+        ? `${slot.application.firstName || ""} ${slot.application.lastName || ""}`.trim() ||
+          slot.application.email
         : "N/A",
       startTime: slot.startTime.toISOString(),
       endTime: slot.endTime.toISOString(),
@@ -54,4 +55,3 @@ const getInterviews = async (): Promise<InterviewData[]> => {
 };
 
 export default getInterviews;
-
