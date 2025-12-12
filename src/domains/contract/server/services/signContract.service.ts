@@ -1,14 +1,25 @@
 "use server";
 
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, S3ClientConfig } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 import prisma from "@/lib/db";
 import { ContractStatus } from "@prisma/client";
+import { ENV } from "@/constants/variables";
 
-// S3 client – credentials auto-resolved from env or IAM role
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
-});
+// S3 client configuration – credentials auto-resolved from env vars or IAM role
+const s3Config: S3ClientConfig = {
+  region: ENV.AWS_REGION!,
+};
+
+// Add credentials if available (for local development)
+if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
+  s3Config.credentials = {
+    accessKeyId: ENV.AWS_ACCESS_KEY_ID,
+    secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
+  };
+}
+
+const s3Client = new S3Client(s3Config);
 
 // Upload HTML content to S3
 export async function uploadHtmlToS3(contractId: string, htmlContent: string) {
@@ -17,7 +28,7 @@ export async function uploadHtmlToS3(contractId: string, htmlContent: string) {
 
   await s3Client.send(
     new PutObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKET_NAME!,
+      Bucket: ENV.AWS_S3_BUCKET!,
       Key: key,
       Body: buffer,
       ContentType: "text/html; charset=utf-8",
@@ -60,7 +71,7 @@ export async function uploadPdfToS3(contractId: string, pdfBuffer: Buffer) {
 
   await s3Client.send(
     new PutObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKET_NAME!,
+      Bucket: ENV.AWS_S3_BUCKET!,
       Key: key,
       Body: pdfBuffer,
       ContentType: "application/pdf",

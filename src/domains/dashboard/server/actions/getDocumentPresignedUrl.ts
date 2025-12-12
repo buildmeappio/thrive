@@ -1,12 +1,23 @@
 "use server";
 
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand, S3ClientConfig } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { ENV } from "@/constants/variables";
 
-const s3Client = new S3Client({
+// S3 client configuration – credentials auto-resolved from env vars or IAM role
+const s3Config: S3ClientConfig = {
   region: ENV.AWS_REGION!,
-});
+};
+
+// Add credentials if available (for local development)
+if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
+  s3Config.credentials = {
+    accessKeyId: ENV.AWS_ACCESS_KEY_ID,
+    secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
+  };
+}
+
+const s3Client = new S3Client(s3Config);
 
 export const getDocumentPresignedUrlAction = async (
   documentName: string,
