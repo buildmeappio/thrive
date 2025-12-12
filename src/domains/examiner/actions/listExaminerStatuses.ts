@@ -10,6 +10,7 @@ export default async function listExaminerStatuses(): Promise<string[]> {
     "SUBMITTED",
     "IN_REVIEW",
     "MORE_INFO_REQUESTED",
+    "INTERVIEW_REQUESTED",
     "INTERVIEW_SCHEDULED",
     "INTERVIEW_COMPLETED",
     "CONTRACT_SENT",

@@ -309,6 +309,20 @@ export const bookInterviewSlot = async (
           applicationId: applicationId,
         },
       });
+
+      // Update application status from INTERVIEW_REQUESTED to INTERVIEW_SCHEDULED
+      const application = await tx.examinerApplication.findUnique({
+        where: { id: applicationId },
+      });
+      if (application?.status === "INTERVIEW_REQUESTED") {
+        await tx.examinerApplication.update({
+          where: { id: applicationId },
+          data: {
+            status: "INTERVIEW_SCHEDULED",
+          },
+        });
+      }
+
       return updatedSlot;
     }
 
@@ -322,6 +336,19 @@ export const bookInterviewSlot = async (
         applicationId: applicationId,
       },
     });
+
+    // Update application status from INTERVIEW_REQUESTED to INTERVIEW_SCHEDULED
+    const application = await tx.examinerApplication.findUnique({
+      where: { id: applicationId },
+    });
+    if (application?.status === "INTERVIEW_REQUESTED") {
+      await tx.examinerApplication.update({
+        where: { id: applicationId },
+        data: {
+          status: "INTERVIEW_SCHEDULED",
+        },
+      });
+    }
 
     return newSlot;
   });

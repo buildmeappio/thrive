@@ -19,6 +19,7 @@ const listAllApplications = async () => {
             "PENDING",
             "IN_REVIEW",
             "MORE_INFO_REQUESTED",
+            "INTERVIEW_REQUESTED",
             "INTERVIEW_SCHEDULED",
             "INTERVIEW_COMPLETED",
             "CONTRACT_SENT",
@@ -34,6 +35,7 @@ const listAllApplications = async () => {
         ndaDocument: true,
         insuranceDocument: true,
         redactedIMEReportDocument: true,
+        interviewSlot: true,
       },
       orderBy: { createdAt: "desc" },
     });

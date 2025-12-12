@@ -199,26 +199,6 @@ const columnsDef = [
     maxSize: 250,
     size: 200,
   },
-  {
-    accessorKey: "status",
-    header: ({ column }: { column: Column<InterviewData, unknown> }) => (
-      <SortableHeader column={column}>Status</SortableHeader>
-    ),
-    cell: ({ row }: { row: Row<InterviewData> }) => {
-      const status = formatText(row.getValue("status") as string);
-      return (
-        <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
-          title={status}
-        >
-          {truncateText(status, 20)}
-        </div>
-      );
-    },
-    minSize: 120,
-    maxSize: 180,
-    size: 140,
-  },
 ];
 
 export default function InterviewTableWithPagination({
@@ -244,7 +224,6 @@ export default function InterviewTableWithPagination({
           d.examinerName,
           formatDateTime(d.startTime),
           formatTimeRange(d.startTime, d.endTime),
-          formatText(d.status),
         ]
           .filter(Boolean)
           .some((v) => String(v).toLowerCase().includes(q)),

@@ -1,4 +1,4 @@
-import { ExaminerApplication, Address, Documents } from "@prisma/client";
+import { ExaminerApplication, Address, Documents, InterviewSlot } from "@prisma/client";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 
 type ApplicationWithRelations = ExaminerApplication & {
@@ -7,6 +7,7 @@ type ApplicationWithRelations = ExaminerApplication & {
   ndaDocument: Documents | null;
   insuranceDocument: Documents | null;
   redactedIMEReportDocument: Documents | null;
+  interviewSlot: InterviewSlot | null;
 };
 
 export class ApplicationDto {
@@ -57,6 +58,12 @@ export class ApplicationDto {
       status: application.status as ExaminerData["status"], // Cast ExaminerStatus to ServerStatus (DRAFT is filtered out in queries)
       createdAt: application.createdAt.toISOString(),
       updatedAt: application.updatedAt.toISOString(),
+      interviewSlot: application.interviewSlot
+        ? {
+            id: application.interviewSlot.id,
+            status: application.interviewSlot.status,
+          }
+        : null,
       feeStructure:
         application.IMEFee !== null &&
         application.recordReviewFee !== null &&
