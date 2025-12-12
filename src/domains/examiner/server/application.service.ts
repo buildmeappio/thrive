@@ -9,6 +9,7 @@ const includeRelations = {
   ndaDocument: true,
   insuranceDocument: true,
   redactedIMEReportDocument: true,
+  interviewSlot: true,
 };
 
 export const getRecentApplications = async (
@@ -33,10 +34,29 @@ export const getRecentApplications = async (
 };
 
 export const getApplicationById = async (id: string) => {
-  return prisma.examinerApplication.findUnique({
+  const application = await prisma.examinerApplication.findUnique({
     where: { id },
     include: includeRelations,
   });
+
+  // If application has a booked interview slot but status is still INTERVIEW_REQUESTED,
+  // automatically update status to INTERVIEW_SCHEDULED
+  if (
+    application &&
+    application.status === ExaminerStatus.INTERVIEW_REQUESTED &&
+    application.interviewSlot &&
+    application.interviewSlot.status === "BOOKED"
+  ) {
+    return prisma.examinerApplication.update({
+      where: { id },
+      data: {
+        status: ExaminerStatus.INTERVIEW_SCHEDULED,
+      },
+      include: includeRelations,
+    });
+  }
+
+  return application;
 };
 
 export const getApplicationCount = async (status?: string | string[]) => {
@@ -100,6 +120,16 @@ export const moveApplicationToReview = async (id: string) => {
     where: { id },
     data: {
       status: ExaminerStatus.IN_REVIEW,
+    },
+    include: includeRelations,
+  });
+};
+
+export const requestApplicationInterview = async (id: string) => {
+  return prisma.examinerApplication.update({
+    where: { id },
+    data: {
+      status: ExaminerStatus.INTERVIEW_REQUESTED,
     },
     include: includeRelations,
   });
@@ -222,6 +252,7 @@ const applicationService = {
   rejectApplication,
   requestMoreInfoFromApplication,
   moveApplicationToReview,
+  requestApplicationInterview,
   scheduleApplicationInterview,
   markApplicationInterviewCompleted,
   createInterviewSchedulingLink,

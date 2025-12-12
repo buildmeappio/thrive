@@ -17,6 +17,7 @@ import {
   sendContract,
   moveToReview,
   scheduleInterview,
+  requestInterview,
   markInterviewCompleted,
   markContractSigned,
   getExaminerContract,
@@ -79,6 +80,7 @@ const mapStatus = {
   SUBMITTED: "submitted",
   IN_REVIEW: "in_review",
   MORE_INFO_REQUESTED: "more_info_requested",
+  INTERVIEW_REQUESTED: "interview_requested",
   INTERVIEW_SCHEDULED: "interview_scheduled",
   INTERVIEW_COMPLETED: "interview_completed",
   CONTRACT_SENT: "contract_sent",
@@ -129,6 +131,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     | "sendContract"
     | "moveToReview"
     | "scheduleInterview"
+    | "requestInterview"
     | "markInterviewCompleted"
     | "markContractSigned"
     | null
@@ -326,16 +329,16 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     await handleSendContractAfterFeeStructure();
   };
 
-  const handleScheduleInterview = async () => {
-    setLoadingAction("scheduleInterview");
+  const handleRequestInterview = async () => {
+    setLoadingAction("requestInterview");
     try {
-      await scheduleInterview(examiner.id);
-      setStatus("interview_scheduled");
-      toast.success("Interview scheduled.");
+      await requestInterview(examiner.id);
+      setStatus("interview_requested");
+      toast.success("Interview request sent. Examiner will receive an email to schedule their interview.");
       router.refresh();
     } catch (error) {
-      logger.error("Failed to schedule interview:", error);
-      toast.error("Failed to schedule interview. Please try again.");
+      logger.error("Failed to request interview:", error);
+      toast.error("Failed to request interview. Please try again.");
     } finally {
       setLoadingAction(null);
     }
@@ -485,6 +488,27 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                   strokeLinejoin="round"
                   strokeWidth={2}
                   d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </GradientIcon>
+          ),
+        };
+      case "interview_requested":
+        return {
+          text: "Interview Requested",
+          icon: (
+            <GradientIcon>
+              <svg
+                className="w-3 h-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
             </GradientIcon>
@@ -909,7 +933,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                     <div className="flex flex-row flex-wrap gap-3">
                       {/* SUBMITTED or PENDING: Auto-moved to IN_REVIEW (no button needed) */}
 
-                      {/* IN_REVIEW: Schedule Interview, Request More Info, Reject */}
+                      {/* IN_REVIEW: Request Interview, Request More Info, Reject */}
                       {status === "in_review" && (
                         <>
                           <button
@@ -923,11 +947,11 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               fontSize: "14px",
                             }}
                             disabled={loadingAction !== null}
-                            onClick={handleScheduleInterview}
+                            onClick={handleRequestInterview}
                           >
-                            {loadingAction === "scheduleInterview"
-                              ? "Scheduling..."
-                              : "Schedule Interview"}
+                            {loadingAction === "requestInterview"
+                              ? "Requesting..."
+                              : "Request Interview"}
                           </button>
                           <button
                             onClick={() => setIsRequestOpen(true)}
@@ -947,6 +971,44 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                           <button
                             className={cn(
                               "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed",
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                            disabled={loadingAction !== null}
+                            onClick={() => setIsRejectOpen(true)}
+                          >
+                            Reject Application
+                          </button>
+                        </>
+                      )}
+
+                      {/* INTERVIEW_REQUESTED: Interview Held (disabled until scheduled), Reject */}
+                      {status === "interview_requested" && (
+                        <>
+                          <button
+                            className={cn(
+                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                            disabled={loadingAction !== null || !examiner.interviewSlot || examiner.interviewSlot.status !== "BOOKED"}
+                            onClick={handleMarkInterviewCompleted}
+                          >
+                            {loadingAction === "markInterviewCompleted"
+                              ? "Marking..."
+                              : "Interview Held"}
+                          </button>
+                          <button
+                            className={cn(
+                              "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed",
                             )}
                             style={{
                               fontFamily: "Poppins, sans-serif",

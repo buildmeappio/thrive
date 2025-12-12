@@ -40,6 +40,10 @@ export type ExaminerData = {
   createdAt: string;
   updatedAt: string;
   feeStructure?: ExaminerFeeStructure;
+  interviewSlot?: {
+    id: string;
+    status: string;
+  } | null;
 };
 
 export type ExaminerFeeStructure = {
@@ -61,6 +65,7 @@ type ServerStatus =
   | "SUBMITTED"
   | "IN_REVIEW"
   | "MORE_INFO_REQUESTED"
+  | "INTERVIEW_REQUESTED"
   | "INTERVIEW_SCHEDULED"
   | "INTERVIEW_COMPLETED"
   | "CONTRACT_SENT"
