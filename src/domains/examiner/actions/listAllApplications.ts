@@ -35,6 +35,7 @@ const listAllApplications = async () => {
         ndaDocument: true,
         insuranceDocument: true,
         redactedIMEReportDocument: true,
+        interviewSlot: true,
       },
       orderBy: { createdAt: "desc" },
     });
