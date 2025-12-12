@@ -178,6 +178,11 @@ jobs:
             ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY_NAME }}"
             IMAGE_TAG="${{ github.sha }}"
             AWS_REGION="${{ secrets.AWS_REGION }}"
+
+            # Load nvm and use Node.js version 22
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm use 22 || nvm install 22 && nvm use 22
             
             # Create directory if it doesn't exist
             mkdir -p $DEPLOY_PATH
