@@ -241,13 +241,19 @@ jobs:
             
             # Change to the deployment directory
             cd $DEPLOY_PATH
+
+            git checkout develop
+            git pull origin develop
+
+            # Npm Install
+            npm install
             
             # Export ECR variables for docker-compose to use (full image path)
             export ECR_REGISTRY=$ECR_REGISTRY/$ECR_REPOSITORY
             export IMAGE_TAG=latest
             
             # Stop and remove existing containers using docker-compose
-            docker-compose down || true
+            docker-compose down
             
             # Start using docker-compose (will use the ECR image from docker-compose.yml)
             docker-compose up -d
