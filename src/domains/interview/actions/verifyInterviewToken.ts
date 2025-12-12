@@ -39,39 +39,35 @@ export const verifyInterviewToken = async (token: string) => {
       throw HttpError.unauthorized("Invalid token for this application");
     }
 
-    // Check if interview is already completed
-    if (application.status === ExaminerStatus.INTERVIEW_COMPLETED) {
-      throw HttpError.forbidden(
-        "Interview scheduling is no longer available. Your interview has already been completed.",
-      );
-    }
+    // Prepare application data
+    const applicationData = {
+      id: application.id,
+      firstName: application.firstName,
+      lastName: application.lastName,
+      email: application.email,
+      status: application.status,
+      alreadyBooked: !!application.interviewSlot,
+      bookedSlot: application.interviewSlot || undefined,
+    };
 
-    // Check if already booked
-    if (application.interviewSlot) {
+    // Check if interview is already completed
+    // Return the data but indicate it's blocked
+    if (application.status === ExaminerStatus.INTERVIEW_COMPLETED) {
       return {
         success: true,
-        application: {
-          id: application.id,
-          firstName: application.firstName,
-          lastName: application.lastName,
-          email: application.email,
-          status: application.status,
-          alreadyBooked: true,
-          bookedSlot: application.interviewSlot,
-        },
+        application: applicationData,
+        isBlocked: true,
+        blockReason: "INTERVIEW_COMPLETED",
+        errorMessage:
+          "Interview scheduling is no longer available. Your interview has already been completed.",
       };
     }
 
+    // Normal flow - interview can be scheduled/rescheduled
     return {
       success: true,
-      application: {
-        id: application.id,
-        firstName: application.firstName,
-        lastName: application.lastName,
-        email: application.email,
-        status: application.status,
-        alreadyBooked: false,
-      },
+      application: applicationData,
+      isBlocked: false,
     };
   } catch (error: any) {
     if (error instanceof HttpError) {

@@ -2,11 +2,7 @@ import { notFound } from "next/navigation";
 import { verifyInterviewToken } from "@/domains/interview/actions/verifyInterviewToken";
 import InterviewCalendar from "@/domains/interview/components/InterviewCalendar";
 import configurationService from "@/server/services/configuration.service";
-import HttpError from "@/utils/httpError";
 import { XCircle, AlertCircle } from "lucide-react";
-import { verifyExaminerScheduleInterviewToken } from "@/lib/jwt";
-import prisma from "@/lib/db";
-import { ExaminerStatus } from "@prisma/client";
 
 interface PageProps {
   searchParams: Promise<{ token?: string }>;
@@ -29,64 +25,17 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
     if (!result.success) {
       notFound();
     }
+    
     applicationData = result.application;
     
-    // Additional check: if status is INTERVIEW_COMPLETED, show error page
-    if (applicationData.status === ExaminerStatus.INTERVIEW_COMPLETED) {
-      errorMessage = "Interview scheduling is no longer available. Your interview has already been completed.";
+    // Check if access is blocked (e.g., interview completed)
+    if (result.isBlocked && result.errorMessage) {
+      errorMessage = result.errorMessage;
     }
   } catch (error) {
     console.error("Failed to verify token:", error);
-    
-    // Get error message
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    
-    // Check if it's an HttpError with statusCode 403 (forbidden) or if the message indicates interview completed
-    const isInterviewCompletedError = 
-      (error instanceof HttpError && error.statusCode === 403) ||
-      errorMsg.toLowerCase().includes("interview scheduling is no longer available") ||
-      errorMsg.toLowerCase().includes("interview has already been completed") ||
-      errorMsg.toLowerCase().includes("already been completed");
-    
-    if (isInterviewCompletedError) {
-      errorMessage = errorMsg || "Interview scheduling is no longer available. Your interview has already been completed.";
-      // Try to get application data for display purposes
-      try {
-        const { email, applicationId } = verifyExaminerScheduleInterviewToken(token);
-        const application = await prisma.examinerApplication.findUnique({
-          where: { id: applicationId },
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            status: true,
-          },
-        });
-        if (application && application.email === email) {
-          // Double-check status
-          if (application.status === ExaminerStatus.INTERVIEW_COMPLETED) {
-            applicationData = {
-              id: application.id,
-              firstName: application.firstName,
-              lastName: application.lastName,
-              email: application.email,
-              status: application.status,
-              alreadyBooked: false,
-            };
-          } else {
-            // Status doesn't match, might be a different error
-            notFound();
-          }
-        }
-      } catch (fetchError) {
-        // If we can't fetch application data, just show error
-        console.error("Failed to fetch application data:", fetchError);
-      }
-    } else {
-      // For other errors (invalid token, not found, etc.), show not found
-      notFound();
-    }
+    // For any errors (invalid token, not found, etc.), show not found
+    notFound();
   }
 
   // If there's an error message (interview completed), show error page
@@ -156,6 +105,11 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
         </main>
       </div>
     );
+  }
+
+  // If we don't have application data at this point, something went wrong
+  if (!applicationData) {
+    notFound();
   }
 
   // Fetch interview settings
