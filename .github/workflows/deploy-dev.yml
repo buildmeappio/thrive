@@ -1,9 +1,11 @@
-name: Deploy to Dev Environment
+name: Deploy to Dev
 
 on:
   push:
     branches: [develop]
-  workflow_dispatch: {}
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
 
 concurrency:
   group: deploy-dev-${{ github.ref_name }}
@@ -11,282 +13,334 @@ concurrency:
 
 permissions:
   id-token: write
-  contents: read
-  actions: read
-
-env:
-  AWS_REGION: ${{ vars.AWS_REGION || 'ca-central-1' }}
-  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
-  CONTAINER_NAME: ${{ vars.CONTAINER_NAME || 'examiner-web' }}
-  AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
-  EC2_HOST: ${{ secrets.EC2_HOST }}
-  EC2_USER: ${{ secrets.EC2_USER || 'ubuntu' }}
-  EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-  SECRET_NAME_DB: ${{ vars.SECRET_NAME_DB || 'dev-db-connection' }}
-  SECRET_NAME_ENV: ${{ vars.SECRET_NAME_ENV || 'dev/examiner' }}
-  DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '~/examiner' }}
+  contents: write
+  actions: write
 
 jobs:
-  lint:
-    name: Lint, Format, Type Check, and Build Check
+  ci:
     runs-on: ubuntu-latest
+    environment: dev
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          cache: "npm"
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: Run ESLint
-        run: npm run lint -- .
-
-      - name: Check formatting
+        run: npm install
+        
+      - name: Check linting
+        run: npm run lint:check
+      
+      - name: Format code
+        run: npm run format:check
+      
+      - name: Create .env file from secrets
         run: |
-          # Check if there are any formatting issues
-          npm run lint -- --fix . || true
-          if [ -n "$(git diff --name-only)" ]; then
-            echo "Code formatting issues detected. Please run 'npm run lint -- --fix' to fix them."
-            git diff
-            exit 1
-          fi
+          cat <<EOF > .env
+          DATABASE_URL="${{ secrets.DATABASE_URL }}"
+          DATABASE_SSL_REQUIRED="${{ secrets.DATABASE_SSL_REQUIRED }}"
+          
+          # AWS KEYS
+          AWS_S3_ACCESS_KEY_ID="${{ secrets.AWS_S3_ACCESS_KEY_ID }}"
+          AWS_S3_SECRET_ACCESS_KEY="${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}"
+          AWS_S3_REGION="${{ secrets.AWS_S3_REGION }}"
+          AWS_S3_BUCKET_NAME="${{ secrets.AWS_S3_BUCKET_NAME }}"
+          
+          # Public CDN URL
+          NEXT_PUBLIC_CDN_URL="${{ secrets.NEXT_PUBLIC_CDN_URL }}"
+          
+          SMTP_USER="${{ secrets.SMTP_USER }}"
+          SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
+          SMTP_FROM_EMAIL="${{ secrets.SMTP_FROM_EMAIL }}"
+          SMTP_HOST="${{ secrets.SMTP_HOST }}"
+          SMTP_FROM_NAME="${{ secrets.SMTP_FROM_NAME }}"
+          SMTP_PORT="${{ secrets.SMTP_PORT }}"
+          
+          # NEXTAUTH
+          NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
+          NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}"
+          NEXT_PUBLIC_APP_URL="${{ secrets.NEXT_PUBLIC_APP_URL }}"
+          
+          # GOOGLE CLOUD CONSOLE
+          OAUTH_CLIENT_ID="${{ secrets.OAUTH_CLIENT_ID }}"
+          OAUTH_CLIENT_SECRET="${{ secrets.OAUTH_CLIENT_SECRET }}"
+          OAUTH_REFRESH_TOKEN="${{ secrets.OAUTH_REFRESH_TOKEN }}"
+          OAUTH_USERNAME="${{ secrets.OAUTH_USERNAME }}"
+          GOOGLE_PLACES_API_KEY="${{ secrets.GOOGLE_PLACES_API_KEY }}"
+          
+          # JWT SECRET KEYS
+          JWT_OTP_SECRET="${{ secrets.JWT_OTP_SECRET }}"
+          JWT_OTP_EXPIRY="${{ secrets.JWT_OTP_EXPIRY }}"
+          JWT_SET_PASSWORD_SECRET="${{ secrets.JWT_SET_PASSWORD_SECRET }}"
+          JWT_SET_PASSWORD_EXPIRY="${{ secrets.JWT_SET_PASSWORD_EXPIRY }}"
+          JWT_FORGET_PASSWORD_SECRET="${{ secrets.JWT_FORGET_PASSWORD_SECRET }}"
+          JWT_FORGET_PASSWORD_EXPIRY="${{ secrets.JWT_FORGET_PASSWORD_EXPIRY }}"
+          JWT_EXAMINER_INFO_REQUEST_SECRET="${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}"
+          JWT_EXAMINER_INFO_EXPIRY="${{ secrets.JWT_EXAMINER_INFO_EXPIRY }}"
+          JWT_RESUME_SECRET="${{ secrets.JWT_RESUME_SECRET }}"
+          JWT_CLAIMANT_APPROVE_SECRET="${{ secrets.JWT_CLAIMANT_APPROVE_SECRET }}"
+          
+          NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL="${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}"
+          
+          NEXT_PUBLIC_GOOGLE_PLACES_API_KEY="${{ secrets.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY }}"
+          
+          # GOOGLE DOC CONF
+          DOCS_REFRESH_TOKEN="${{ secrets.DOCS_REFRESH_TOKEN }}"
+          GOOGLE_REPORT_TEMPLATE_ID="${{ secrets.GOOGLE_REPORT_TEMPLATE_ID }}"
+          GOOGLE_CONTRACT_FOLDER_ID="${{ secrets.GOOGLE_CONTRACT_FOLDER_ID }}"
+          EMAIL_REPLY_TO="${{ secrets.EMAIL_REPLY_TO }}"
+          
+          # ADMIN NOTIFY
+          ADMIN_NOTIFICATION_EMAIL="${{ secrets.ADMIN_NOTIFICATION_EMAIL }}"
+          
+          # Workflow specific
+          ENVIRONMENT=development
+          NEXT_PUBLIC_ENVIRONMENT=development
+          NODE_TLS_REJECT_UNAUTHORIZED="${{ secrets.NODE_TLS_REJECT_UNAUTHORIZED || 0 }}"
+          EOF
 
-      - name: Type check
-        run: npx tsc --noEmit
+      - name: Check build
+        run: |
+          npm run db:generate
+          npm run build
 
-      - name: Build check
-        run: npm run build
 
-  build:
-    name: Build and Push Docker Image
-    needs: [lint]
+  build-image:
     runs-on: ubuntu-latest
+    needs: ci
+    if: github.event_name != 'pull_request'
     environment: dev
     permissions:
       id-token: write
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Configure AWS Credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-          role-session-name: github-${{ github.run_id }}
-          aws-region: ${{ env.AWS_REGION }}
-          audience: sts.amazonaws.com
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
+      
       - name: Create .env file from secrets
         run: |
           cat <<EOF > .env
+          DATABASE_URL="${{ secrets.DATABASE_URL }}"
+          DATABASE_SSL_REQUIRED="${{ secrets.DATABASE_SSL_REQUIRED }}"
+          
+          # AWS KEYS
+          AWS_S3_ACCESS_KEY_ID="${{ secrets.AWS_S3_ACCESS_KEY_ID }}"
+          AWS_S3_SECRET_ACCESS_KEY="${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}"
+          AWS_S3_REGION="${{ secrets.AWS_S3_REGION }}"
+          AWS_S3_BUCKET_NAME="${{ secrets.AWS_S3_BUCKET_NAME }}"
+          
+          # Public CDN URL
+          NEXT_PUBLIC_CDN_URL="${{ secrets.NEXT_PUBLIC_CDN_URL }}"
+          
+          SMTP_USER="${{ secrets.SMTP_USER }}"
+          SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
+          SMTP_FROM_EMAIL="${{ secrets.SMTP_FROM_EMAIL }}"
+          SMTP_HOST="${{ secrets.SMTP_HOST }}"
+          SMTP_FROM_NAME="${{ secrets.SMTP_FROM_NAME }}"
+          SMTP_PORT="${{ secrets.SMTP_PORT }}"
+          
+          # NEXTAUTH
+          NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
+          NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}"
+          NEXT_PUBLIC_APP_URL="${{ secrets.NEXT_PUBLIC_APP_URL }}"
+          
+          # GOOGLE CLOUD CONSOLE
+          OAUTH_CLIENT_ID="${{ secrets.OAUTH_CLIENT_ID }}"
+          OAUTH_CLIENT_SECRET="${{ secrets.OAUTH_CLIENT_SECRET }}"
+          OAUTH_REFRESH_TOKEN="${{ secrets.OAUTH_REFRESH_TOKEN }}"
+          OAUTH_USERNAME="${{ secrets.OAUTH_USERNAME }}"
+          GOOGLE_PLACES_API_KEY="${{ secrets.GOOGLE_PLACES_API_KEY }}"
+          
+          # JWT SECRET KEYS
+          JWT_OTP_SECRET="${{ secrets.JWT_OTP_SECRET }}"
+          JWT_OTP_EXPIRY="${{ secrets.JWT_OTP_EXPIRY }}"
+          JWT_SET_PASSWORD_SECRET="${{ secrets.JWT_SET_PASSWORD_SECRET }}"
+          JWT_SET_PASSWORD_EXPIRY="${{ secrets.JWT_SET_PASSWORD_EXPIRY }}"
+          JWT_FORGET_PASSWORD_SECRET="${{ secrets.JWT_FORGET_PASSWORD_SECRET }}"
+          JWT_FORGET_PASSWORD_EXPIRY="${{ secrets.JWT_FORGET_PASSWORD_EXPIRY }}"
+          JWT_EXAMINER_INFO_REQUEST_SECRET="${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}"
+          JWT_EXAMINER_INFO_EXPIRY="${{ secrets.JWT_EXAMINER_INFO_EXPIRY }}"
+          JWT_RESUME_SECRET="${{ secrets.JWT_RESUME_SECRET }}"
+          JWT_CLAIMANT_APPROVE_SECRET="${{ secrets.JWT_CLAIMANT_APPROVE_SECRET }}"
+          
+          NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL="${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}"
+          
+          NEXT_PUBLIC_GOOGLE_PLACES_API_KEY="${{ secrets.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY }}"
+          
+          # GOOGLE DOC CONF
+          DOCS_REFRESH_TOKEN="${{ secrets.DOCS_REFRESH_TOKEN }}"
+          GOOGLE_REPORT_TEMPLATE_ID="${{ secrets.GOOGLE_REPORT_TEMPLATE_ID }}"
+          GOOGLE_CONTRACT_FOLDER_ID="${{ secrets.GOOGLE_CONTRACT_FOLDER_ID }}"
+          EMAIL_REPLY_TO="${{ secrets.EMAIL_REPLY_TO }}"
+          
+          # ADMIN NOTIFY
+          ADMIN_NOTIFICATION_EMAIL="${{ secrets.ADMIN_NOTIFICATION_EMAIL }}"
+          
+          # Workflow specific
           ENVIRONMENT=development
           NEXT_PUBLIC_ENVIRONMENT=development
-          NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
-          NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
-          NEXT_PUBLIC_GOOGLE_PLACES_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY }}
-          NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL=${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}
+          AWS_REGION="${{ vars.AWS_REGION }}"
+          NODE_TLS_REJECT_UNAUTHORIZED="${{ secrets.NODE_TLS_REJECT_UNAUTHORIZED || 0 }}"
           EOF
 
-      - name: Build and Push Docker container with tags
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          file: Dockerfile
-          tags: |
-            ${{ env.ECR_REPOSITORY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
-            ${{ env.ECR_REPOSITORY }}/${{ env.CONTAINER_NAME }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64
+      - name: Build and push Docker image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --build-arg NEXT_PUBLIC_CDN_URL="${{ secrets.NEXT_PUBLIC_CDN_URL }}" \
+            --build-arg NEXT_PUBLIC_APP_URL="${{ secrets.NEXT_PUBLIC_APP_URL }}" \
+            --build-arg NEXT_PUBLIC_GOOGLE_PLACES_API_KEY="${{ secrets.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY }}" \
+            --build-arg NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL="${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}" \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            --push \
+            .
 
   deploy:
-    name: Deploy to EC2
-    needs: [build]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: build-image
+    if: github.event_name != 'pull_request'
     environment: dev
     permissions:
       id-token: write
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Deploy Docker image on EC2 using docker-compose
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-          role-session-name: github-${{ github.run_id }}
-          aws-region: ${{ env.AWS_REGION }}
-          audience: sts.amazonaws.com
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y jq curl
-
-      - name: Get secrets from AWS Secrets Manager
-        id: get-secrets
-        run: |
-          # Get database connection secret (nested JSON)
-          DB_SECRET=$(aws secretsmanager get-secret-value --secret-id ${{ env.SECRET_NAME_DB }} --region ${{ env.AWS_REGION }} --query SecretString --output text)
-
-          # Extract DATABASE_URL from nested JSON (assuming format like {"url": "postgresql://..."})
-          DATABASE_URL=$(echo $DB_SECRET | jq -r '.url // .DATABASE_URL // empty')
-
-          # Get other environment variables from dev/examiner secret
-          ENV_SECRET=$(aws secretsmanager get-secret-value --secret-id ${{ env.SECRET_NAME_ENV }} --region ${{ env.AWS_REGION }} --query SecretString --output text)
-
-          # Parse JSON secret and convert to .env format
-          echo "$ENV_SECRET" | jq -r 'to_entries[] | "\(.key)=\(.value)"' > .env.tmp
-
-          # Add DATABASE_URL if it exists
-          if [ ! -z "$DATABASE_URL" ]; then
-            echo "DATABASE_URL=$DATABASE_URL" >> .env.tmp
-          fi
-
-          # Sort and remove duplicates, keeping DATABASE_URL if it was added
-          sort -u -t= -k1,1 .env.tmp > .env
-          rm .env.tmp
-
-          echo "::notice::Created .env file with secrets"
-          # Don't output the actual secrets for security
-
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ env.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ env.EC2_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Prepare docker-compose with image tag
-        run: |
-          # Create a docker-compose file with the specific image tag
-          IMAGE_TAG="${{ env.ECR_REPOSITORY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}"
-          cat > docker-compose.deploy.yml << COMPOSE_EOF
-          services:
-            app:
-              image: ${IMAGE_TAG}
-              platform: linux/amd64
-              container_name: examiner-web
-              restart: unless-stopped
-              env_file:
-                - .env
-              environment:
-                - NODE_ENV=production
-              ports:
-                - "3001:3001"
-              deploy:
-                resources:
-                  limits:
-                    memory: 2G
-              healthcheck:
-                test: ["CMD", "curl", "-f", "http://localhost:3001/examiner/api/health"]
-                interval: 30s
-                timeout: 10s
-                retries: 3
-                start_period: 40s
-          COMPOSE_EOF
-
-      - name: Copy files to EC2
-        env:
-          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
-        run: |
-          # Expand ~ to home directory on EC2 and create directory
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
-            ${{ env.EC2_USER }}@${{ env.EC2_HOST }} \
-            "DEPLOY_PATH='${DEPLOY_PATH}'; mkdir -p \${DEPLOY_PATH/#\~/\$HOME}"
-          # Get expanded path for SCP
-          REMOTE_PATH=$(ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
-            ${{ env.EC2_USER }}@${{ env.EC2_HOST }} \
-            "DEPLOY_PATH='${DEPLOY_PATH}'; echo \${DEPLOY_PATH/#\~/\$HOME}")
-          # Copy files to EC2
-          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
-            .env \
-            docker-compose.deploy.yml \
-            ${{ env.EC2_USER }}@${{ env.EC2_HOST }}:"${REMOTE_PATH}/"
-
-      - name: Deploy on EC2
-        env:
-          ECR_REPO: ${{ env.ECR_REPOSITORY }}
-          CONTAINER_NAME: ${{ env.CONTAINER_NAME }}
-          IMAGE_TAG: ${{ github.sha }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
-        run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
-            ${{ env.EC2_USER }}@${{ env.EC2_HOST }} << EOF
-            set -e
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          script: |
+            # Set deployment path and ECR variables
+            DEPLOY_PATH="${{ secrets.EC2_DEPLOY_PATH }}"
+            ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
+            ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY_NAME }}"
+            IMAGE_TAG="${{ github.sha }}"
+            AWS_REGION="${{ secrets.AWS_REGION }}"
             
-            DEPLOY_PATH="${DEPLOY_PATH}"
-            cd \${DEPLOY_PATH/#\~/\$HOME}
+            # Create directory if it doesn't exist
+            mkdir -p $DEPLOY_PATH
             
-            # Git pull latest code
+            # Login to Amazon ECR (EC2 instance should have IAM role with ECR permissions, or use AWS credentials)
+            # If using IAM role (recommended), the following will work automatically
+            # If using credentials, set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in .env or export them
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+            
+            # Pull the latest image from ECR
+            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
+            
+            # Create .env file based on env-example structure with all environment variables from GitHub secrets
+            cat > $DEPLOY_PATH/.env << EOF
+            DATABASE_URL="${{ secrets.DATABASE_URL }}"
+            DATABASE_SSL_REQUIRED="${{ secrets.DATABASE_SSL_REQUIRED }}"
+            
+            # AWS KEYS
+            AWS_S3_ACCESS_KEY_ID="${{ secrets.AWS_S3_ACCESS_KEY_ID }}"
+            AWS_S3_SECRET_ACCESS_KEY="${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}"
+            AWS_S3_REGION="${{ secrets.AWS_S3_REGION }}"
+            AWS_S3_BUCKET_NAME="${{ secrets.AWS_S3_BUCKET_NAME }}"
+            
+            # Public CDN URL
+            NEXT_PUBLIC_CDN_URL="${{ secrets.NEXT_PUBLIC_CDN_URL }}"
+            
+            SMTP_USER="${{ secrets.SMTP_USER }}"
+            SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
+            SMTP_FROM_EMAIL="${{ secrets.SMTP_FROM_EMAIL }}"
+            SMTP_HOST="${{ secrets.SMTP_HOST }}"
+            SMTP_FROM_NAME="${{ secrets.SMTP_FROM_NAME }}"
+            SMTP_PORT="${{ secrets.SMTP_PORT }}"
+            
+            # NEXTAUTH
+            NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
+            NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}"
+            NEXT_PUBLIC_APP_URL="${{ secrets.NEXT_PUBLIC_APP_URL }}"
+            
+            # GOOGLE CLOUD CONSOLE
+            OAUTH_CLIENT_ID="${{ secrets.OAUTH_CLIENT_ID }}"
+            OAUTH_CLIENT_SECRET="${{ secrets.OAUTH_CLIENT_SECRET }}"
+            OAUTH_REFRESH_TOKEN="${{ secrets.OAUTH_REFRESH_TOKEN }}"
+            OAUTH_USERNAME="${{ secrets.OAUTH_USERNAME }}"
+            GOOGLE_PLACES_API_KEY="${{ secrets.GOOGLE_PLACES_API_KEY }}"
+            
+            # JWT SECRET KEYS
+            JWT_OTP_SECRET="${{ secrets.JWT_OTP_SECRET }}"
+            JWT_OTP_EXPIRY="${{ secrets.JWT_OTP_EXPIRY }}"
+            JWT_SET_PASSWORD_SECRET="${{ secrets.JWT_SET_PASSWORD_SECRET }}"
+            JWT_SET_PASSWORD_EXPIRY="${{ secrets.JWT_SET_PASSWORD_EXPIRY }}"
+            JWT_FORGET_PASSWORD_SECRET="${{ secrets.JWT_FORGET_PASSWORD_SECRET }}"
+            JWT_FORGET_PASSWORD_EXPIRY="${{ secrets.JWT_FORGET_PASSWORD_EXPIRY }}"
+            JWT_EXAMINER_INFO_REQUEST_SECRET="${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}"
+            JWT_EXAMINER_INFO_EXPIRY="${{ secrets.JWT_EXAMINER_INFO_EXPIRY }}"
+            JWT_RESUME_SECRET="${{ secrets.JWT_RESUME_SECRET }}"
+            JWT_CLAIMANT_APPROVE_SECRET="${{ secrets.JWT_CLAIMANT_APPROVE_SECRET }}"
+            
+            NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL="${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}"
+            
+            NEXT_PUBLIC_GOOGLE_PLACES_API_KEY="${{ secrets.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY }}"
+            
+            # GOOGLE DOC CONF
+            DOCS_REFRESH_TOKEN="${{ secrets.DOCS_REFRESH_TOKEN }}"
+            GOOGLE_REPORT_TEMPLATE_ID="${{ secrets.GOOGLE_REPORT_TEMPLATE_ID }}"
+            GOOGLE_CONTRACT_FOLDER_ID="${{ secrets.GOOGLE_CONTRACT_FOLDER_ID }}"
+            EMAIL_REPLY_TO="${{ secrets.EMAIL_REPLY_TO }}"
+            
+            # ADMIN NOTIFY
+            ADMIN_NOTIFICATION_EMAIL="${{ secrets.ADMIN_NOTIFICATION_EMAIL }}"
+            
+            # Workflow specific
+            NODE_ENV=production
+            NODE_TLS_REJECT_UNAUTHORIZED="${{ secrets.NODE_TLS_REJECT_UNAUTHORIZED || 0 }}"
+            EOF
+            
+            # Change to the deployment directory
+            cd $DEPLOY_PATH
+
+            git checkout develop
             git pull origin develop
 
-            # Login to ECR
-            aws ecr get-login-password --region ${AWS_REGION} | \
-              docker login --username AWS --password-stdin ${ECR_REPO}
+            # Npm Install
+            npm install
             
-            # Pull the latest image
-            docker pull ${ECR_REPO}/${CONTAINER_NAME}:${IMAGE_TAG}
+            # Export ECR variables for docker-compose to use (full image path)
+            export ECR_REGISTRY=$ECR_REGISTRY/$ECR_REPOSITORY
+            export IMAGE_TAG=latest
             
-            # Stop and remove existing container if it exists
-            docker-compose -f docker-compose.deploy.yml down || true
+            # Stop and remove existing containers using docker-compose
+            docker-compose down
             
-            # Start the new container
-            docker-compose -f docker-compose.deploy.yml up -d
+            # Start using docker-compose (will use the ECR image from docker-compose.yml)
+            docker-compose up -d
             
-            # Wait for container to be healthy
-            echo "Waiting for container to be healthy..."
-            timeout=120
-            elapsed=0
-            while [ \$elapsed -lt \$timeout ]; do
-              if docker-compose -f docker-compose.deploy.yml ps | grep -q "Up (healthy)"; then
-                echo "Container is healthy!"
-                exit 0
-              fi
-              sleep 5
-              elapsed=\$((elapsed + 5))
-              echo "Health check attempt: \$elapsed seconds elapsed"
-            done
-            
-            # If we get here, health check failed
-            echo "Health check failed after \$timeout seconds"
-            docker-compose -f docker-compose.deploy.yml logs
-            exit 1
-          EOF
-
-      - name: Verify deployment
-        env:
-          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
-        run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
-            ${{ env.EC2_USER }}@${{ env.EC2_HOST }} << EOF
-            DEPLOY_PATH="${DEPLOY_PATH}"
-            cd \${DEPLOY_PATH/#\~/\$HOME}
-            docker-compose -f docker-compose.deploy.yml ps
-            docker-compose -f docker-compose.deploy.yml logs --tail=50
-          EOF
+            # Show running containers
+            docker ps
+            docker-compose ps
