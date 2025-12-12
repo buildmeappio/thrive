@@ -57,7 +57,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
     // Clean up existing instance if province changed
     if (autoCompleteRef.current) {
       window.google?.maps?.event?.clearInstanceListeners(
-        autoCompleteRef.current
+        autoCompleteRef.current,
       );
       autoCompleteRef.current = null;
     }
@@ -72,13 +72,13 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
 
       autoCompleteRef.current = new window.google.maps.places.Autocomplete(
         inputRef.current,
-        autocompleteOptions
+        autocompleteOptions,
       );
 
       // Add place changed listener
       const placeChangedListener = autoCompleteRef.current?.addListener(
         "place_changed",
-        handlePlaceSelect
+        handlePlaceSelect,
       );
 
       // Cleanup listeners on unmount
@@ -88,7 +88,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
         }
         if (autoCompleteRef.current) {
           window.google?.maps?.event?.clearInstanceListeners(
-            autoCompleteRef.current
+            autoCompleteRef.current,
           );
         }
       };
