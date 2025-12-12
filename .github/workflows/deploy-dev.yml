@@ -250,6 +250,11 @@ jobs:
             IMAGE_TAG="${{ github.sha }}"
             AWS_REGION="${{ secrets.AWS_REGION }}"
             
+            # Load nvm and use Node.js version 22
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm use 22 || nvm install 22 && nvm use 22
+            
             # Create directory if it doesn't exist
             mkdir -p $DEPLOY_PATH
             
@@ -325,6 +330,8 @@ jobs:
             NODE_TLS_REJECT_UNAUTHORIZED="${{ secrets.NODE_TLS_REJECT_UNAUTHORIZED || 0 }}"
             EOF
             
+
+
             # Change to the deployment directory
             cd $DEPLOY_PATH
 
