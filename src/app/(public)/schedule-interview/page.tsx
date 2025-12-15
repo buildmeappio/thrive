@@ -56,7 +56,7 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
                   Interview Scheduling Unavailable
                 </h2>
                 <p className="text-orange-50 text-sm md:text-base">
-                  Your interview has already been completed
+                  Rescheduling is no longer available for your application
                 </p>
               </div>
 
@@ -69,7 +69,7 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-red-900 mb-2">
-                        Interview Completed
+                        Rescheduling Not Available
                       </h3>
                       <p className="text-red-800 text-sm">{errorMessage}</p>
                       {applicationData && (
@@ -79,8 +79,7 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
                             {applicationData.firstName}{" "}
                             {applicationData.lastName}
                           </span>
-                          , you are no longer able to schedule or reschedule
-                          your interview as it has already been completed.
+                          , you are no longer able to reschedule your interview.
                         </p>
                       )}
                     </div>
@@ -94,8 +93,7 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
                     at{" "}
                     <a
                       href="mailto:support@thrivenetwork.ca"
-                      className="underline hover:text-blue-700"
-                    >
+                      className="underline hover:text-blue-700">
                       support@thrivenetwork.ca
                     </a>
                     .
