@@ -4,13 +4,12 @@ services:
     platform: linux/amd64 # Use linux/amd64 for production x86_64 deployments
     container_name: examiner-web
     restart: unless-stopped
+    network_mode: host
     env_file:
       - .env
     environment:
       - NODE_ENV=production
       - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-0}
-    ports:
-      - "3001:3001"
     deploy:
       resources:
         limits:
