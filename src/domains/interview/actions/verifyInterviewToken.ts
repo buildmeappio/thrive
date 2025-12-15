@@ -50,16 +50,37 @@ export const verifyInterviewToken = async (token: string) => {
       bookedSlot: application.interviewSlot || undefined,
     };
 
-    // Check if interview is already completed
-    // Return the data but indicate it's blocked
-    if (application.status === ExaminerStatus.INTERVIEW_COMPLETED) {
+    // Check if application status blocks rescheduling
+    const status = application.status;
+    if (
+      status === ExaminerStatus.INTERVIEW_COMPLETED ||
+      status === ExaminerStatus.CONTRACT_SENT ||
+      status === ExaminerStatus.CONTRACT_SIGNED ||
+      status === ExaminerStatus.APPROVED
+    ) {
+      let errorMessage = "Interview rescheduling is no longer available.";
+      
+      switch (status) {
+        case ExaminerStatus.INTERVIEW_COMPLETED:
+          errorMessage = "Interview rescheduling is no longer available. Your interview has already been completed.";
+          break;
+        case ExaminerStatus.CONTRACT_SENT:
+          errorMessage = "Interview rescheduling is no longer available. A contract has been sent to you.";
+          break;
+        case ExaminerStatus.CONTRACT_SIGNED:
+          errorMessage = "Interview rescheduling is no longer available. You have already signed the contract.";
+          break;
+        case ExaminerStatus.APPROVED:
+          errorMessage = "Interview rescheduling is no longer available. Your application has been approved.";
+          break;
+      }
+
       return {
         success: true,
         application: applicationData,
         isBlocked: true,
-        blockReason: "INTERVIEW_COMPLETED",
-        errorMessage:
-          "Interview scheduling is no longer available. Your interview has already been completed.",
+        blockReason: status,
+        errorMessage,
       };
     }
 
