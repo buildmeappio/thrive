@@ -266,9 +266,7 @@ export const payoutDetailsSchema = z
 
       // Check if direct deposit has any fields filled
       const hasDirectDepositFields =
-        data.transitNumber ||
-        data.institutionNumber ||
-        data.accountNumber;
+        data.transitNumber || data.institutionNumber || data.accountNumber;
 
       // If direct deposit fields are filled but incomplete, it's invalid
       if (hasDirectDepositFields && !isDirectDepositComplete) {

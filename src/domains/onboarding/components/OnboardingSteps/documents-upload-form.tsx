@@ -55,10 +55,10 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
               };
             }
             return null;
-          })
+          }),
         );
         existingDocs.push(
-          ...(loadedDocs.filter((doc) => doc !== null) as ExistingDocument[])
+          ...(loadedDocs.filter((doc) => doc !== null) as ExistingDocument[]),
         );
       }
 
@@ -74,8 +74,8 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
   useEffect(() => {
     const currentHash = JSON.stringify(
       allFiles.map((f) =>
-        f instanceof File ? f.name : (f as ExistingDocument).id
-      )
+        f instanceof File ? f.name : (f as ExistingDocument).id,
+      ),
     );
     if (
       previousFilesRef.current &&
@@ -119,11 +119,11 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
           file !== null &&
           typeof file === "object" &&
           "isExisting" in file &&
-          file.isExisting === true
+          file.isExisting === true,
       );
 
       const newFiles = allFiles.filter(
-        (file): file is File => file instanceof File
+        (file): file is File => file instanceof File,
       );
 
       // Upload new files to S3 first
@@ -145,7 +145,7 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
             throw new Error(
               (!result.success && "message" in result
                 ? result.message
-                : undefined) || `Failed to upload ${file.name}`
+                : undefined) || `Failed to upload ${file.name}`,
             );
           }
         }
@@ -171,7 +171,7 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -199,11 +199,11 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
           file !== null &&
           typeof file === "object" &&
           "isExisting" in file &&
-          file.isExisting === true
+          file.isExisting === true,
       );
 
       const newFiles = allFiles.filter(
-        (file): file is File => file instanceof File
+        (file): file is File => file instanceof File,
       );
 
       // Upload new files to S3 first
@@ -225,7 +225,7 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
             throw new Error(
               (!result.success && "message" in result
                 ? result.message
-                : undefined) || `Failed to upload ${file.name}`
+                : undefined) || `Failed to upload ${file.name}`,
             );
           }
         }
@@ -256,7 +256,7 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -279,7 +279,8 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
             form="documents-upload-form"
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || !isFormValid}>
+            disabled={loading || !isFormValid}
+          >
             <span>Mark as Complete</span>
             <CircleCheck className="w-5 h-5 text-gray-700" />
           </Button>

@@ -50,10 +50,7 @@ export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
           }
         }
       } catch (error) {
-        console.error(
-          "Error refreshing user data in JWT callback:",
-          error,
-        );
+        console.error("Error refreshing user data in JWT callback:", error);
         // If there's an error, keep the existing token values
       }
     }

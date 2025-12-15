@@ -378,7 +378,8 @@ class DashboardService {
           insuranceDocumentId: data.insuranceDocumentId,
         }),
         ...(data.specialtyCertificatesDocumentIds !== undefined && {
-          specialtyCertificatesDocumentIds: data.specialtyCertificatesDocumentIds,
+          specialtyCertificatesDocumentIds:
+            data.specialtyCertificatesDocumentIds,
         }),
         ...(data.activationStep && {
           activationStep: data.activationStep,

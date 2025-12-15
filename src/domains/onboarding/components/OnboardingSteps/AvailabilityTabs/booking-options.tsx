@@ -27,14 +27,14 @@ const BookingOptions: React.FC<BookingOptionsProps> = ({ form }) => {
       <div className="w-full md:max-w-[50%] border border-gray-300 rounded-lg p-6 bg-[#FCFDFF]">
         <div className="space-y-1">
           {/* Maximum IMEs per week */}
-              <div className="flex items-center justify-between gap-4 relative py-2">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-[#00A8FF] shrink-0" />
-                  <span className="text-sm font-medium text-gray-800">
+          <div className="flex items-center justify-between gap-4 relative py-2">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-[#00A8FF] shrink-0" />
+              <span className="text-sm font-medium text-gray-800">
                 Maximum IMEs per week<span className="text-red-500">*</span>
-                  </span>
-                </div>
-                <div className="flex flex-col">
+              </span>
+            </div>
+            <div className="flex flex-col">
               <Controller
                 name="bookingOptions.maxIMEsPerWeek"
                 control={control}
@@ -59,18 +59,18 @@ const BookingOptions: React.FC<BookingOptionsProps> = ({ form }) => {
                   {maxIMEsError.message as string}
                 </p>
               )}
-                </div>
-              </div>
+            </div>
+          </div>
 
           {/* Minimum notice required */}
-              <div className="flex items-center justify-between gap-4 relative py-2">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-[#00A8FF] shrink-0" />
-                  <span className="text-sm font-medium text-gray-800">
+          <div className="flex items-center justify-between gap-4 relative py-2">
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-[#00A8FF] shrink-0" />
+              <span className="text-sm font-medium text-gray-800">
                 Minimum notice required<span className="text-red-500">*</span>
-                  </span>
-                </div>
-                <div className="flex flex-col">
+              </span>
+            </div>
+            <div className="flex flex-col">
               <Controller
                 name="bookingOptions.minimumNotice"
                 control={control}
@@ -95,8 +95,8 @@ const BookingOptions: React.FC<BookingOptionsProps> = ({ form }) => {
                   {minimumNoticeError.message as string}
                 </p>
               )}
-                </div>
-              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

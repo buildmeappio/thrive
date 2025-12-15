@@ -141,7 +141,20 @@ const createOnboardingStorage = (): PersistStorage<OnboardingStore> => {
 };
 
 // Initial state
-const initialState: Omit<OnboardingStore, "examinerProfileId" | "setExaminerProfileId" | "mergeProfileData" | "mergeServicesData" | "mergeAvailabilityData" | "mergePayoutData" | "mergeDocumentsData" | "mergeComplianceData" | "mergeNotificationsData" | "loadInitialData" | "reset"> = {
+const initialState: Omit<
+  OnboardingStore,
+  | "examinerProfileId"
+  | "setExaminerProfileId"
+  | "mergeProfileData"
+  | "mergeServicesData"
+  | "mergeAvailabilityData"
+  | "mergePayoutData"
+  | "mergeDocumentsData"
+  | "mergeComplianceData"
+  | "mergeNotificationsData"
+  | "loadInitialData"
+  | "reset"
+> = {
   profileData: null,
   servicesData: null,
   availabilityData: null,
@@ -272,12 +285,13 @@ export const useOnboardingStore = create<OnboardingStore>()(
         notificationsData: state.notificationsData,
         examinerProfileId: state.examinerProfileId,
       }),
-    }
-  )
+    },
+  ),
 );
 
 // Helper function to get store key for a specific examiner
-export const getOnboardingStorageKey = (examinerProfileId: string | null): string => {
+export const getOnboardingStorageKey = (
+  examinerProfileId: string | null,
+): string => {
   return getStorageKey(examinerProfileId);
 };
-

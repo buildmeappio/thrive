@@ -86,12 +86,12 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
         onComplete();
       } else {
         toast.error(
-          result.message || "Failed to save compliance acknowledgments"
+          result.message || "Failed to save compliance acknowledgments",
         );
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -126,7 +126,7 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
 
       if (result.success) {
         toast.success(
-          "Compliance acknowledgments saved and marked as complete"
+          "Compliance acknowledgments saved and marked as complete",
         );
         // Mark step as complete
         if (onMarkComplete) {
@@ -136,12 +136,12 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
         onComplete();
       } else {
         toast.error(
-          result.message || "Failed to save compliance acknowledgments"
+          result.message || "Failed to save compliance acknowledgments",
         );
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -163,7 +163,8 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
             onClick={handleMarkComplete}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || !isFormValid}>
+            disabled={loading || !isFormValid}
+          >
             <CircleCheck className="w-5 h-5 text-gray-700" />
             <span>Mark as Complete</span>
           </Button>

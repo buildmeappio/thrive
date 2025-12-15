@@ -35,7 +35,9 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
 
   // Track if we have a local file preview (data URL from FileReader)
   const hasLocalPreviewRef = React.useRef(false);
-  const previousPhotoUrlRef = React.useRef<string | null | undefined>(currentPhotoUrl);
+  const previousPhotoUrlRef = React.useRef<string | null | undefined>(
+    currentPhotoUrl,
+  );
   const previewRef = React.useRef<string | null>(preview);
 
   // Sync preview ref with preview state
@@ -147,8 +149,8 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
         setPreview(dataUrl);
         hasLocalPreviewRef.current = true; // Mark that we have a local preview
         completeLoading();
-      if (onPhotoChange) {
-        onPhotoChange(file);
+        if (onPhotoChange) {
+          onPhotoChange(file);
         }
       }
     };
@@ -164,9 +166,9 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
       hasLocalPreviewRef.current = false;
       completeLoading();
     };
-    
+
     try {
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(file);
     } catch (err) {
       clearTimeout(timeoutId);
       setError("Failed to read file");

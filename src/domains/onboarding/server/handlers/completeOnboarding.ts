@@ -32,4 +32,3 @@ const completeOnboarding = async (payload: CompleteOnboardingInput) => {
 };
 
 export default completeOnboarding;
-

@@ -85,7 +85,7 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
         label: type.name,
         icon: getAssessmentTypeIcon(type.name),
         description: type.description || undefined,
-      })
+      }),
     );
     // Add "Other" option at the end
     formattedTypes.push({
@@ -244,7 +244,7 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -285,7 +285,7 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
         previousStoreDataRef.current = currentHash;
 
         toast.success(
-          "Services & Assessment Types saved and marked as complete"
+          "Services & Assessment Types saved and marked as complete",
         );
         // Mark step as complete
         if (onMarkComplete) {
@@ -298,7 +298,7 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -324,7 +324,8 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
             onClick={handleMarkComplete}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || !isFormValid}>
+            disabled={loading || !isFormValid}
+          >
             <CircleCheck className="w-5 h-5 text-gray-700" />
             <span>Mark as Complete</span>
           </Button>
@@ -355,16 +356,18 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
                         "hover:border-[#00A8FF] hover:shadow-md",
                         isSelected
                           ? "border-[#00A8FF] bg-[#00A8FF]/5"
-                          : "border-gray-200 bg-white"
-                      )}>
+                          : "border-gray-200 bg-white",
+                      )}
+                    >
                       <div className="flex items-start gap-3">
                         <div
                           className={cn(
                             "shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center mt-0.5",
                             isSelected
                               ? "border-[#00A8FF] bg-[#00A8FF]"
-                              : "border-gray-300 bg-white"
-                          )}>
+                              : "border-gray-300 bg-white",
+                          )}
+                        >
                           {isSelected && (
                             <CheckCircle2 className="w-4 h-4 text-white" />
                           )}
@@ -375,8 +378,9 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
                             <span
                               className={cn(
                                 "text-sm font-medium",
-                                isSelected ? "text-gray-900" : "text-gray-700"
-                              )}>
+                                isSelected ? "text-gray-900" : "text-gray-700",
+                              )}
+                            >
                               {type.label}
                             </span>
                           </div>
@@ -409,7 +413,8 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
             <FormField
               name="assessmentTypeOther"
               label="Other Assessment Type"
-              required>
+              required
+            >
               {(field) => (
                 <input
                   {...field}
@@ -438,17 +443,20 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
                 onClick={() =>
                   form.setValue(
                     "acceptVirtualAssessments",
-                    !acceptVirtualAssessments
+                    !acceptVirtualAssessments,
                   )
                 }
                 className={cn(
                   "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                  acceptVirtualAssessments ? "bg-[#00A8FF]" : "bg-gray-300"
-                )}>
+                  acceptVirtualAssessments ? "bg-[#00A8FF]" : "bg-gray-300",
+                )}
+              >
                 <span
                   className={cn(
                     "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                    acceptVirtualAssessments ? "translate-x-6" : "translate-x-1"
+                    acceptVirtualAssessments
+                      ? "translate-x-6"
+                      : "translate-x-1",
                   )}
                 />
               </button>
@@ -468,19 +476,20 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
                 onClick={() =>
                   form.setValue(
                     "acceptInPersonAssessments",
-                    !acceptInPersonAssessments
+                    !acceptInPersonAssessments,
                   )
                 }
                 className={cn(
                   "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                  acceptInPersonAssessments ? "bg-[#00A8FF]" : "bg-gray-300"
-                )}>
+                  acceptInPersonAssessments ? "bg-[#00A8FF]" : "bg-gray-300",
+                )}
+              >
                 <span
                   className={cn(
                     "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
                     acceptInPersonAssessments
                       ? "translate-x-6"
-                      : "translate-x-1"
+                      : "translate-x-1",
                   )}
                 />
               </button>
@@ -510,12 +519,13 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
                 }}
                 className={cn(
                   "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                  travelToClaimants ? "bg-[#00A8FF]" : "bg-gray-300"
-                )}>
+                  travelToClaimants ? "bg-[#00A8FF]" : "bg-gray-300",
+                )}
+              >
                 <span
                   className={cn(
                     "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                    travelToClaimants ? "translate-x-6" : "translate-x-1"
+                    travelToClaimants ? "translate-x-6" : "translate-x-1",
                   )}
                 />
               </button>
@@ -525,12 +535,14 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
               <FormField
                 name="travelRadius"
                 label="Travel Radius"
-                required={travelToClaimants}>
+                required={travelToClaimants}
+              >
                 {(field) => (
                   <select
                     {...field}
                     className="w-full px-4 py-3 rounded-lg bg-[#F9F9F9] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
-                    disabled={loading}>
+                    disabled={loading}
+                  >
                     <option value="">Select travel radius</option>
                     {travelRadiusOptions.map((option) => (
                       <option key={option.value} value={option.value}>

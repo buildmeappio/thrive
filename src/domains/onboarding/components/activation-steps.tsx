@@ -123,7 +123,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
             day.enabled === true &&
             "timeSlots" in day &&
             Array.isArray(day.timeSlots) &&
-            day.timeSlots.length > 0
+            day.timeSlots.length > 0,
         );
         const bookingOptions = availabilityData?.bookingOptions;
         const hasBookingOptions = Boolean(
@@ -132,7 +132,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
           "maxIMEsPerWeek" in bookingOptions &&
           "minimumNotice" in bookingOptions &&
           isFieldFilled(bookingOptions.maxIMEsPerWeek) &&
-          isFieldFilled(bookingOptions.minimumNotice)
+          isFieldFilled(bookingOptions.minimumNotice),
         );
         return hasTimeSlots && hasBookingOptions;
       }
@@ -269,7 +269,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
         day.enabled === true &&
         "timeSlots" in day &&
         Array.isArray(day.timeSlots) &&
-        day.timeSlots.length > 0
+        day.timeSlots.length > 0,
     );
     if (!hasTimeSlots) {
       return false;
@@ -370,7 +370,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
             day.enabled === true &&
             "timeSlots" in day &&
             Array.isArray(day.timeSlots) &&
-            day.timeSlots.length > 0
+            day.timeSlots.length > 0,
         );
       const bookingOptions = availabilityData?.bookingOptions;
       if (
@@ -411,7 +411,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
       if (incompleteSteps.length > 0) {
         setActiveStep(incompleteSteps[0]);
         toast.error(
-          "Please complete all required fields before completing onboarding"
+          "Please complete all required fields before completing onboarding",
         );
         return;
       }
@@ -435,7 +435,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
       !isFieldFilled(profileData?.profilePhotoId)
     ) {
       validationErrors.push(
-        "Profile: Please complete all required fields including profile photo"
+        "Profile: Please complete all required fields including profile photo",
       );
       if (!activeStep || activeStep !== "profile") {
         setActiveStep("profile");
@@ -455,7 +455,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
         !isFieldFilled(profileData?.assessmentTypeOther))
     ) {
       validationErrors.push(
-        "Services: Please select at least one assessment type and complete all required fields"
+        "Services: Please select at least one assessment type and complete all required fields",
       );
       if (!activeStep || activeStep !== "services") {
         setActiveStep("services");
@@ -476,7 +476,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
           day.enabled === true &&
           "timeSlots" in day &&
           Array.isArray(day.timeSlots) &&
-          day.timeSlots.length > 0
+          day.timeSlots.length > 0,
       );
     const bookingOptions = availabilityData?.bookingOptions;
     if (
@@ -489,7 +489,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
       !isFieldFilled(bookingOptions.minimumNotice)
     ) {
       validationErrors.push(
-        "Availability: Please set at least one day with time slots and complete booking options"
+        "Availability: Please set at least one day with time slots and complete booking options",
       );
       if (!activeStep || activeStep !== "availability") {
         setActiveStep("availability");
@@ -504,7 +504,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
       !isFieldFilled(payoutData?.accountNumber)
     ) {
       validationErrors.push(
-        "Payout: Please complete all direct deposit fields"
+        "Payout: Please complete all direct deposit fields",
       );
       if (!activeStep || activeStep !== "payout") {
         setActiveStep("payout");
@@ -531,7 +531,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
       !isFieldFilled(profileData?.medicalLicenseActive)
     ) {
       validationErrors.push(
-        "Compliance: Please acknowledge all required compliance statements"
+        "Compliance: Please acknowledge all required compliance statements",
       );
       if (!activeStep || activeStep !== "compliance") {
         setActiveStep("compliance");
@@ -565,7 +565,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
         if (form) {
           // Try to find and click the submit button to trigger validation
           const submitButton = form.querySelector(
-            'button[type="submit"]'
+            'button[type="submit"]',
           ) as HTMLButtonElement;
           if (submitButton && !submitButton.disabled) {
             // Trigger validation by clicking submit (this will show errors if invalid)
@@ -575,7 +575,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
             // If validation fails, the form's onSubmit will handle showing errors
             // Check if there are any visible error messages
             const errorMessages = form.querySelectorAll(
-              ".text-red-500, [role='alert']"
+              ".text-red-500, [role='alert']",
             );
             if (errorMessages.length > 0) {
               toast.error("Please fix the validation errors shown in the form");
@@ -605,7 +605,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setCompleting(false);
@@ -700,7 +700,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
             examinerProfileId={examinerProfileId}
             initialData={{
               medicalLicenseDocumentIds: Array.isArray(
-                profileData.medicalLicenseDocumentIds
+                profileData.medicalLicenseDocumentIds,
               )
                 ? profileData.medicalLicenseDocumentIds
                 : [],
@@ -717,7 +717,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                   ? profileData.insuranceDocumentId
                   : undefined,
               specialtyCertificatesDocumentIds: Array.isArray(
-                profileData.specialtyCertificatesDocumentIds
+                profileData.specialtyCertificatesDocumentIds,
               )
                 ? profileData.specialtyCertificatesDocumentIds
                 : [],
@@ -800,15 +800,17 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
                 "border-2 bg-white",
                 step.id === activeStep
                   ? "border-[#00A8FF] bg-[#F0F9FF]"
-                  : "border-transparent hover:border-[#00A8FF]/20 cursor-pointer"
-              )}>
+                  : "border-transparent hover:border-[#00A8FF]/20 cursor-pointer",
+              )}
+            >
               <div className="flex items-center gap-4 flex-1">
                 {renderStepIcon(step.id)}
                 <span
                   className={cn(
                     "text-lg font-medium text-left",
-                    step.id === activeStep ? "text-[#00A8FF]" : "text-gray-700"
-                  )}>
+                    step.id === activeStep ? "text-[#00A8FF]" : "text-gray-700",
+                  )}
+                >
                   {step.title}
                 </span>
               </div>
@@ -823,7 +825,8 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
           <Button
             onClick={handleCompleteOnboarding}
             disabled={completing}
-            className="rounded-full bg-[#00A8FF] hover:bg-[#0099E6] text-white px-8 py-2 flex items-center justify-center gap-2">
+            className="rounded-full bg-[#00A8FF] hover:bg-[#0099E6] text-white px-8 py-2 flex items-center justify-center gap-2"
+          >
             <span>Complete Onboarding</span>
             <CheckCircle2 className="w-5 h-5" />
           </Button>
@@ -841,8 +844,9 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
           onClick={() => handleStepClick(step)}
           className={cn(
             "w-full flex items-center justify-between p-3 rounded-2xl transition-all duration-200",
-            "border-2 bg-white cursor-pointer border-transparent hover:border-[#00A8FF]/20"
-          )}>
+            "border-2 bg-white cursor-pointer border-transparent hover:border-[#00A8FF]/20",
+          )}
+        >
           <div className="flex items-center gap-4 flex-1">
             {renderStepIcon(step.id)}
             <span className="text-lg font-medium text-left text-gray-700">
@@ -856,7 +860,8 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
         <Button
           onClick={handleCompleteOnboarding}
           disabled={completing}
-          className="rounded-full bg-[#00A8FF] hover:bg-[#0099E6] text-white px-8 py-2 flex items-center justify-center gap-2">
+          className="rounded-full bg-[#00A8FF] hover:bg-[#0099E6] text-white px-8 py-2 flex items-center justify-center gap-2"
+        >
           <span>Complete Onboarding</span>
           <CheckCircle2 className="w-5 h-5" />
         </Button>

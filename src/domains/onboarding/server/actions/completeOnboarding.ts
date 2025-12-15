@@ -17,4 +17,3 @@ export const completeOnboardingAction = async (data: {
     };
   }
 };
-

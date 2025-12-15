@@ -134,7 +134,7 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -172,7 +172,7 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -193,7 +193,8 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
             onClick={handleMarkComplete}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
-            disabled={loading}>
+            disabled={loading}
+          >
             <span>Mark as Complete</span>
             <CircleCheck className="w-5 h-5 text-gray-700" />
           </Button>
@@ -206,11 +207,13 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
             {NOTIFICATION_SETTINGS.map((setting) => (
               <div
                 key={setting.id}
-                className="flex items-start justify-between gap-4">
+                className="flex items-start justify-between gap-4"
+              >
                 <div className="flex-1">
                   <label
                     htmlFor={setting.id}
-                    className="text-sm font-medium text-gray-800 cursor-pointer block">
+                    className="text-sm font-medium text-gray-800 cursor-pointer block"
+                  >
                     {setting.label}
                   </label>
                   <p className="text-xs text-gray-500 mt-1">
@@ -225,7 +228,8 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
                     onClick={() => toggleNotification(setting.id)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:ring-offset-2 ${
                       notifications[setting.id] ? "bg-[#00A8FF]" : "bg-gray-300"
-                    }`}>
+                    }`}
+                  >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                         notifications[setting.id]

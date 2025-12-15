@@ -174,7 +174,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -226,7 +226,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -247,7 +247,8 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
             form="payout-details-form"
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || !isFormValid}>
+            disabled={loading || !isFormValid}
+          >
             <span>Mark as Complete</span>
             <CircleCheck className="w-5 h-5 text-gray-700" />
           </Button>

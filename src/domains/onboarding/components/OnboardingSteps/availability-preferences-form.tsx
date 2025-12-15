@@ -97,7 +97,7 @@ const AvailabilityPreferencesForm: React.FC<
                   }
 
                   return { startTime, endTime };
-                }
+                },
               ),
             };
           }
@@ -245,7 +245,7 @@ const AvailabilityPreferencesForm: React.FC<
               slot.startTime &&
               slot.endTime &&
               timeOptions.includes(slot.startTime) &&
-              timeOptions.includes(slot.endTime)
+              timeOptions.includes(slot.endTime),
           );
 
         // If enabled but no valid slots after filtering, add default
@@ -354,7 +354,7 @@ const AvailabilityPreferencesForm: React.FC<
         day.enabled === true &&
         "timeSlots" in day &&
         Array.isArray(day.timeSlots) &&
-        day.timeSlots.length > 0
+        day.timeSlots.length > 0,
     );
 
     // Check bookingOptions
@@ -367,7 +367,7 @@ const AvailabilityPreferencesForm: React.FC<
       bookingOptions.maxIMEsPerWeek &&
       bookingOptions.maxIMEsPerWeek.trim().length > 0 &&
       bookingOptions.minimumNotice &&
-      bookingOptions.minimumNotice.trim().length > 0
+      bookingOptions.minimumNotice.trim().length > 0,
     );
 
     return (
@@ -430,7 +430,7 @@ const AvailabilityPreferencesForm: React.FC<
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -509,7 +509,7 @@ const AvailabilityPreferencesForm: React.FC<
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -530,7 +530,8 @@ const AvailabilityPreferencesForm: React.FC<
             onClick={handleMarkComplete}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || !isFormValid}>
+            disabled={loading || !isFormValid}
+          >
             <span>Mark as Complete</span>
             <CircleCheck className="w-5 h-5 text-gray-700" />
           </Button>
@@ -547,7 +548,8 @@ const AvailabilityPreferencesForm: React.FC<
               activeTab === "weeklyHours"
                 ? "text-black font-bold"
                 : "text-gray-500 hover:text-gray-700"
-            }`}>
+            }`}
+          >
             Weekly Hours
             {activeTab === "weeklyHours" && (
               <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
@@ -573,7 +575,8 @@ const AvailabilityPreferencesForm: React.FC<
               activeTab === "bookingOptions"
                 ? "text-black font-bold"
                 : "text-gray-500 hover:text-gray-700"
-            }`}>
+            }`}
+          >
             Additional Preferences
             {activeTab === "bookingOptions" && (
               <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>

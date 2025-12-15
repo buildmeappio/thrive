@@ -44,7 +44,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(
     typeof initialData?.profilePhotoUrl === "string"
       ? initialData.profilePhotoUrl
-      : null
+      : null,
   );
   const [yearsOfExperienceOptions, setYearsOfExperienceOptions] = useState<
     Array<{ value: string; label: string }>
@@ -63,7 +63,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       ) {
         try {
           const photoUrl = await getProfilePhotoUrlAction(
-            initialData.profilePhotoId
+            initialData.profilePhotoId,
           );
           if (photoUrl) {
             setProfilePhotoUrl(photoUrl);
@@ -258,7 +258,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -339,7 +339,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -366,7 +366,8 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
             form="profile-info-form"
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || !isFormValid}>
+            disabled={loading || !isFormValid}
+          >
             <span>Mark as Complete</span>
             <CircleCheck className="w-5 h-5 text-gray-700" />
           </Button>
