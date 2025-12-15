@@ -59,19 +59,23 @@ export const verifyInterviewToken = async (token: string) => {
       status === ExaminerStatus.APPROVED
     ) {
       let errorMessage = "Interview rescheduling is no longer available.";
-      
+
       switch (status) {
         case ExaminerStatus.INTERVIEW_COMPLETED:
-          errorMessage = "Interview rescheduling is no longer available. Your interview has already been completed.";
+          errorMessage =
+            "Interview rescheduling is no longer available. Your interview has already been completed.";
           break;
         case ExaminerStatus.CONTRACT_SENT:
-          errorMessage = "Interview rescheduling is no longer available. A contract has been sent to you.";
+          errorMessage =
+            "Interview rescheduling is no longer available. A contract has been sent to you.";
           break;
         case ExaminerStatus.CONTRACT_SIGNED:
-          errorMessage = "Interview rescheduling is no longer available. You have already signed the contract.";
+          errorMessage =
+            "Interview rescheduling is no longer available. You have already signed the contract.";
           break;
         case ExaminerStatus.APPROVED:
-          errorMessage = "Interview rescheduling is no longer available. Your application has been approved.";
+          errorMessage =
+            "Interview rescheduling is no longer available. Your application has been approved.";
           break;
       }
 
