@@ -1,11 +1,6 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      shm_size: "4gb"
-      args:
-        BUILDKIT_INLINE_CACHE: 1
+    image: ${ECR_REGISTRY}:${IMAGE_TAG}
     platform: linux/amd64 # Use linux/amd64 for production x86_64 deployments
     container_name: examiner-web
     restart: unless-stopped
