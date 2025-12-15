@@ -1,5 +1,4 @@
 import Image from "@/components/Image";
-import { ENV } from "@/constants/variables";
 
 const Header = () => {
   return (
@@ -7,7 +6,7 @@ const Header = () => {
       {/* fixed 120px header to match design */}
       <div className="mx-auto flex w-full max-w-none items-center justify-center p-2">
         <Image
-          src={`${ENV.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
+          src={`https://assets.thriveassessmentcare.com/images/thriveLogo.png`}
           alt="Thrive Assessment & Care"
           width={240}
           height={75}
