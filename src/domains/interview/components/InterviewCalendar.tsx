@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { format, addMinutes, isPast, startOfDay } from "date-fns";
@@ -52,6 +52,22 @@ const InterviewCalendar = ({
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + interviewSettings.minDaysAhead);
+
+  /**
+   * IMPORTANT: We must query slots by the intended "calendar day" consistently.
+   * The UI selects a day in the user's local timezone, but server actions run in
+   * server timezone (often UTC). Passing a local Date directly can cause
+   * startOfDay/endOfDay on the server to shift to the wrong day (commonly for
+   * timezones ahead of UTC), so booked slots appear missing.
+   *
+   * To fix this, we always send "UTC midnight of the selected local Y/M/D".
+   */
+  const toUtcMidnightOfLocalDay = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    return new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+  };
 
   // Initialize from booked slot if available
   const getInitialState = () => {
@@ -113,9 +129,8 @@ const InterviewCalendar = ({
   const [bookingError, setBookingError] = React.useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = React.useState(false);
 
-  // Track if we're initializing from booked slot
-  const [isInitializing, setIsInitializing] =
-    React.useState(!!initialBookedSlot);
+  // Track if we're initializing from a booked slot (useRef to avoid refetch loops)
+  const isInitializingFromBookedSlotRef = useRef(!!initialBookedSlot);
 
   // Fetch time suggestions for the selected date
   useEffect(() => {
@@ -124,12 +139,14 @@ const InterviewCalendar = ({
     const fetchSlots = async () => {
       setLoading(true);
       // Only reset selectedTime if we're not initializing from a booked slot
-      if (!isInitializing) {
+      if (!isInitializingFromBookedSlotRef.current) {
         setSelectedTime(null);
       }
       setBookingError(null);
       try {
-        const result = await getAvailableSlots(selectedDate);
+        const result = await getAvailableSlots(
+          toUtcMidnightOfLocalDay(selectedDate),
+        );
         if (result.success) {
           setExistingSlots(
             result.existingSlots.map(
@@ -153,17 +170,20 @@ const InterviewCalendar = ({
               }),
             ),
           );
+        } else if (result.error) {
+          // Avoid silent failures (otherwise it looks like "no booked slots exist")
+          console.error("getAvailableSlots failed:", result.error);
         }
       } catch (error) {
         console.error("Failed to fetch slots:", error);
       } finally {
         setLoading(false);
-        setIsInitializing(false);
+        isInitializingFromBookedSlotRef.current = false;
       }
     };
 
     fetchSlots();
-  }, [selectedDate, isInitializing]);
+  }, [selectedDate]);
 
   // Generate time slots dynamically based on selected duration and working hours
   const generateTimeSlots = React.useMemo(() => {
@@ -244,7 +264,7 @@ const InterviewCalendar = ({
 
   // Check if a time slot is the current user's booked slot
   const checkIsCurrentUserSlot = (time: Date): boolean => {
-    if (!initialBookedSlot || !selectedTime) return false;
+    if (!initialBookedSlot) return false;
     const bookedStart =
       typeof initialBookedSlot.startTime === "string"
         ? new Date(initialBookedSlot.startTime)
@@ -324,7 +344,9 @@ const InterviewCalendar = ({
         // Refresh slots to show newly booked slots by other examiners
         if (selectedDate) {
           try {
-            const refreshResult = await getAvailableSlots(selectedDate);
+            const refreshResult = await getAvailableSlots(
+              toUtcMidnightOfLocalDay(selectedDate),
+            );
             if (refreshResult.success) {
               setExistingSlots(
                 refreshResult.existingSlots.map(
@@ -347,6 +369,11 @@ const InterviewCalendar = ({
                         : slot.endTime,
                   }),
                 ),
+              );
+            } else if (refreshResult.error) {
+              console.error(
+                "getAvailableSlots refresh failed:",
+                refreshResult.error,
               );
             }
           } catch (refreshError) {
@@ -371,7 +398,9 @@ const InterviewCalendar = ({
       // Refresh slots to show newly booked slots by other examiners
       if (selectedDate) {
         try {
-          const refreshResult = await getAvailableSlots(selectedDate);
+          const refreshResult = await getAvailableSlots(
+            toUtcMidnightOfLocalDay(selectedDate),
+          );
           if (refreshResult.success) {
             setExistingSlots(
               refreshResult.existingSlots.map(
@@ -394,6 +423,11 @@ const InterviewCalendar = ({
                       : slot.endTime,
                 }),
               ),
+            );
+          } else if (refreshResult.error) {
+            console.error(
+              "getAvailableSlots refresh failed:",
+              refreshResult.error,
             );
           }
         } catch (refreshError) {

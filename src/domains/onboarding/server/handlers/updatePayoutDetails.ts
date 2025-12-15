@@ -4,7 +4,7 @@ import ErrorMessages from "@/constants/ErrorMessages";
 
 export type UpdatePayoutDetailsInput = {
   examinerProfileId: string;
-  payoutMethod: "direct_deposit" | "cheque" | "interac";
+  payoutMethod?: "direct_deposit" | "cheque" | "interac";
   legalName?: string;
   sin?: string;
   transitNumber?: string;

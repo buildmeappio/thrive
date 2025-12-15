@@ -176,7 +176,7 @@ const SideBar = ({
                     <div className="flex w-full items-center justify-start space-x-2">
                       <IconComponent
                         size={20}
-                        className="flex-shrink-0 transition-all duration-200 text-[#9B9B9B]"
+                        className="shrink-0 transition-all duration-200 text-[#9B9B9B]"
                       />
                       <span className="flex-1 text-left">{item.label}</span>
                     </div>
@@ -199,7 +199,7 @@ const SideBar = ({
                   <div className="flex w-full items-center justify-start space-x-2">
                     <IconComponent
                       size={20}
-                      className={`flex-shrink-0 transition-all duration-200 ${
+                      className={`shrink-0 transition-all duration-200 ${
                         isSelected || itemIsActive
                           ? "text-[#00A8FF]"
                           : "text-[#9B9B9B] group-hover:text-[#00A8FF]"
@@ -213,7 +213,7 @@ const SideBar = ({
           </nav>
 
           {/* Logout Button */}
-          <div className="flex-shrink-0 p-6 mb-12">
+          <div className="shrink-0 p-6 mb-12">
             <button
               onClick={handleLogout}
               className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#00A8FF] px-4 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#00A8FF]/90"

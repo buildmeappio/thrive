@@ -1,10 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
-import { FormProvider, FormField } from "@/components/form";
+import { FormProvider } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
-import { CircleCheck, Shield } from "lucide-react";
+import { CircleCheck, Shield, CheckCircle2 } from "lucide-react";
 import { updatePayoutDetailsAction } from "../../server/actions";
 import {
   payoutDetailsSchema,
@@ -12,8 +12,6 @@ import {
 } from "../../schemas/onboardingSteps.schema";
 import { DirectDepositTab, ChequeTab, InteracTab } from "./PayoutTabs";
 import { toast } from "sonner";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 
 import type { PayoutDetailsFormProps } from "../../types";
 
@@ -26,19 +24,14 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
   const { update } = useSession();
   const [loading, setLoading] = useState(false);
 
+  const [activeTab, setActiveTab] = useState<
+    "direct_deposit" | "interac" | "cheque"
+  >("direct_deposit");
+
   const form = useForm<PayoutDetailsInput>({
     schema: payoutDetailsSchema,
     defaultValues: {
-      payoutMethod:
-        typeof initialData?.payoutMethod === "string" &&
-        (initialData.payoutMethod === "direct_deposit" ||
-          initialData.payoutMethod === "cheque" ||
-          initialData.payoutMethod === "interac")
-          ? (initialData.payoutMethod as
-              | "direct_deposit"
-              | "cheque"
-              | "interac")
-          : "direct_deposit",
+      payoutMethod: undefined, // No longer required
       legalName:
         (typeof initialData?.legalName === "string"
           ? initialData.legalName
@@ -74,7 +67,39 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
     mode: "onSubmit",
   });
 
-  const payoutMethod = form.watch("payoutMethod");
+  // Watch form values to determine completion status
+  const formValues = form.watch();
+
+  // Helper function to check if a payment method is complete
+  const isDirectDepositComplete = () => {
+    const { legalName, sin, transitNumber, institutionNumber, accountNumber } =
+      formValues;
+    return (
+      legalName &&
+      legalName.length > 0 &&
+      sin &&
+      sin.length === 9 &&
+      transitNumber &&
+      transitNumber.length === 5 &&
+      institutionNumber &&
+      institutionNumber.length === 3 &&
+      accountNumber &&
+      accountNumber.length >= 7 &&
+      accountNumber.length <= 12
+    );
+  };
+
+  const isChequeComplete = () => {
+    return (
+      formValues.chequeMailingAddress &&
+      formValues.chequeMailingAddress.length > 0
+    );
+  };
+
+  const isInteracComplete = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return formValues.interacEmail && emailRegex.test(formValues.interacEmail);
+  };
 
   const onSubmit = async (values: PayoutDetailsInput) => {
     if (!examinerProfileId) {
@@ -84,9 +109,12 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
 
     setLoading(true);
     try {
+      // Remove payoutMethod if undefined to avoid type issues
+      const { payoutMethod, ...restValues } = values;
       const result = await updatePayoutDetailsAction({
         examinerProfileId,
-        ...values,
+        ...restValues,
+        ...(payoutMethod && { payoutMethod }), // Only include if defined
         activationStep: "payout", // Mark step 4 as completed
       });
 
@@ -139,68 +167,78 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       </div>
 
       <FormProvider form={form} onSubmit={onSubmit} id="payout-form">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column: Payout Method Selection */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Payout Method
-            </h3>
-            <FormField name="payoutMethod" required>
-              {(_field) => (
-                <RadioGroup
-                  value={payoutMethod || "direct_deposit"}
-                  onValueChange={(value) => {
-                    form.setValue(
-                      "payoutMethod",
-                      value as "direct_deposit" | "cheque" | "interac",
-                    );
-                  }}
-                  className="space-y-3"
-                >
-                  <div className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <RadioGroupItem
-                      value="direct_deposit"
-                      id="direct_deposit"
-                    />
-                    <Label
-                      htmlFor="direct_deposit"
-                      className="cursor-pointer flex-1"
-                    >
-                      Stripe Direct Deposit
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <RadioGroupItem value="interac" id="interac" />
-                    <Label htmlFor="interac" className="cursor-pointer flex-1">
-                      Interac e-Transfer
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <RadioGroupItem value="cheque" id="cheque" />
-                    <Label htmlFor="cheque" className="cursor-pointer flex-1">
-                      Bank Transfer (Void Cheque)
-                    </Label>
-                  </div>
-                </RadioGroup>
-              )}
-            </FormField>
+        <div className="space-y-6">
+          {/* Tabs Navigation */}
+          <div className="relative border border-gray-300 rounded-2xl bg-[#F0F3FC] p-2 pl-6">
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setActiveTab("direct_deposit")}
+                className={`pb-2 px-4 transition-colors cursor-pointer relative flex items-center gap-2 ${
+                  activeTab === "direct_deposit"
+                    ? "text-black font-bold"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <span>Direct Deposit</span>
+                {isDirectDepositComplete() && (
+                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                )}
+                {activeTab === "direct_deposit" && (
+                  <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("interac")}
+                className={`pb-2 px-4 transition-colors cursor-pointer relative flex items-center gap-2 ${
+                  activeTab === "interac"
+                    ? "text-black font-bold"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <span>Interac e-Transfer</span>
+                {isInteracComplete() && (
+                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                )}
+                {activeTab === "interac" && (
+                  <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("cheque")}
+                className={`pb-2 px-4 transition-colors cursor-pointer relative flex items-center gap-2 ${
+                  activeTab === "cheque"
+                    ? "text-black font-bold"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <span>Bank Transfer (Void Cheque)</span>
+                {isChequeComplete() && (
+                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                )}
+                {activeTab === "cheque" && (
+                  <span className="absolute -bottom-2 left-0 right-0 h-1 bg-[#00A8FF]"></span>
+                )}
+              </button>
+            </div>
           </div>
 
-          {/* Right Column: Conditional Fields */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Payment Details
-            </h3>
-            <div className="border border-gray-200 rounded-lg p-6 bg-[#FCFDFF]">
-              {payoutMethod === "direct_deposit" && <DirectDepositTab />}
-              {payoutMethod === "interac" && <InteracTab />}
-              {payoutMethod === "cheque" && <ChequeTab />}
-              {!payoutMethod && (
-                <p className="text-gray-500 text-sm">
-                  Please select a payout method to continue.
-                </p>
-              )}
-            </div>
+          {/* Tab Content */}
+          <div className="border border-gray-200 rounded-lg p-6 bg-[#FCFDFF]">
+            {activeTab === "direct_deposit" && <DirectDepositTab />}
+            {activeTab === "interac" && <InteracTab />}
+            {activeTab === "cheque" && <ChequeTab />}
+          </div>
+
+          {/* Info Message */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
+              <strong>Note:</strong> You can fill in one or more payment
+              methods. At least one complete payment method is required to
+              proceed.
+            </p>
           </div>
         </div>
       </FormProvider>

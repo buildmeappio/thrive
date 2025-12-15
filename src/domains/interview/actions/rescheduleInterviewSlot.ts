@@ -9,6 +9,7 @@ import HttpError from "@/utils/httpError";
 import { addMinutes, format } from "date-fns";
 import emailService from "@/server/services/email.service";
 import { ENV } from "@/constants/variables";
+import { ExaminerStatus } from "@prisma/client";
 
 export const rescheduleInterviewSlot = async (
   token: string,
@@ -39,6 +40,38 @@ export const rescheduleInterviewSlot = async (
 
     if (application.email !== email) {
       throw HttpError.unauthorized("Invalid token for this application");
+    }
+
+    // Check if application status blocks rescheduling
+    const status = application.status;
+    if (
+      status === ExaminerStatus.INTERVIEW_COMPLETED ||
+      status === ExaminerStatus.CONTRACT_SENT ||
+      status === ExaminerStatus.CONTRACT_SIGNED ||
+      status === ExaminerStatus.APPROVED
+    ) {
+      let errorMessage = "Interview rescheduling is no longer available.";
+
+      switch (status) {
+        case ExaminerStatus.INTERVIEW_COMPLETED:
+          errorMessage =
+            "Interview rescheduling is no longer available. Your interview has already been completed.";
+          break;
+        case ExaminerStatus.CONTRACT_SENT:
+          errorMessage =
+            "Interview rescheduling is no longer available. A contract has been sent to you.";
+          break;
+        case ExaminerStatus.CONTRACT_SIGNED:
+          errorMessage =
+            "Interview rescheduling is no longer available. You have already signed the contract.";
+          break;
+        case ExaminerStatus.APPROVED:
+          errorMessage =
+            "Interview rescheduling is no longer available. Your application has been approved.";
+          break;
+      }
+
+      throw HttpError.badRequest(errorMessage);
     }
 
     if (!application.interviewSlot) {

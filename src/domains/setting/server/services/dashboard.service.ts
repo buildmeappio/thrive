@@ -23,6 +23,10 @@ class DashboardService {
           },
         },
         resumeDocument: true,
+        ndaDocument: true,
+        insuranceDocument: true,
+        governmentIdDocument: true,
+        redactedIMEReportDocument: true,
       },
     });
 
@@ -213,12 +217,18 @@ class DashboardService {
     }
 
     // Update examiner profile
-    // Note: legalName, sin, and autodepositEnabled are not in the schema yet
-    // These fields may need to be added to the ExaminerProfile schema
     const updatedProfile = await prisma.examinerProfile.update({
       where: { id: examinerProfileId },
       data: {
-        ...(data.payoutMethod && { payoutMethod: data.payoutMethod }),
+        ...(data.payoutMethod !== undefined && {
+          payoutMethod: data.payoutMethod,
+        }),
+        ...(data.legalName !== undefined && {
+          legalName: data.legalName,
+        }),
+        ...(data.sin !== undefined && {
+          sin: data.sin,
+        }),
         ...(data.transitNumber !== undefined && {
           transitNumber: data.transitNumber,
         }),
@@ -234,11 +244,12 @@ class DashboardService {
         ...(data.interacEmail !== undefined && {
           interacEmail: data.interacEmail,
         }),
+        ...(data.autodepositEnabled !== undefined && {
+          autodepositEnabled: data.autodepositEnabled,
+        }),
         ...(data.activationStep && {
           activationStep: data.activationStep,
         }),
-        // TODO: Add these fields to the schema when they are added:
-        // legalName, sin, autodepositEnabled
       },
     });
 

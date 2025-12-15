@@ -27,6 +27,11 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
     emailPaymentPayout?: boolean | null;
     smsNotifications?: boolean | null;
     emailMarketing?: boolean | null;
+    medicalLicenseDocumentIds?: string[];
+    governmentIdDocumentId?: string | null;
+    resumeDocumentId?: string | null;
+    insuranceDocumentId?: string | null;
+    specialtyCertificatesDocumentIds?: string[];
   };
 
   // Get profile photo URL from Documents table if exists
@@ -73,6 +78,13 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
       emailPaymentPayout: profile.emailPaymentPayout ?? null,
       smsNotifications: profile.smsNotifications ?? null,
       emailMarketing: profile.emailMarketing ?? null,
+      // Document IDs - these are copied from application during account creation
+      medicalLicenseDocumentIds: profile.medicalLicenseDocumentIds || [],
+      governmentIdDocumentId: profile.governmentIdDocumentId || null,
+      resumeDocumentId: profile.resumeDocumentId || null,
+      insuranceDocumentId: profile.insuranceDocumentId || null,
+      specialtyCertificatesDocumentIds:
+        profile.specialtyCertificatesDocumentIds || [],
     },
   };
 };
