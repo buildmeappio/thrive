@@ -93,7 +93,8 @@ const ScheduleInterviewPage = async ({ searchParams }: PageProps) => {
                     at{" "}
                     <a
                       href="mailto:support@thrivenetwork.ca"
-                      className="underline hover:text-blue-700">
+                      className="underline hover:text-blue-700"
+                    >
                       support@thrivenetwork.ca
                     </a>
                     .
