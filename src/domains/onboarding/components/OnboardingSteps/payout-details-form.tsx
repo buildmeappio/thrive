@@ -180,7 +180,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
-                <span>Stripe Direct Deposit</span>
+                <span>Direct Deposit</span>
                 {isDirectDepositComplete() && (
                   <CheckCircle2 className="w-4 h-4 text-green-600" />
                 )}
