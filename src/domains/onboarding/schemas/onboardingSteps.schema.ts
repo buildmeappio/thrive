@@ -232,16 +232,8 @@ export type AvailabilityPreferencesInput = z.infer<
 // Schema for payout details
 export const payoutDetailsSchema = z
   .object({
-    payoutMethod: z.enum(["direct_deposit", "cheque", "interac"]).optional(),
-    // Stripe Direct Deposit fields
-    legalName: z
-      .string()
-      .optional()
-      .transform((val) => val?.trim() || ""), // Trim whitespace
-    sin: z
-      .string()
-      .optional()
-      .transform((val) => val?.trim() || ""), // Trim whitespace
+    payoutMethod: z.enum(["direct_deposit"]).optional(),
+    // Direct Deposit fields
     transitNumber: z
       .string()
       .optional()
@@ -254,36 +246,11 @@ export const payoutDetailsSchema = z
       .string()
       .optional()
       .transform((val) => val?.trim() || ""), // Trim whitespace
-    // Bank Transfer (Void Cheque) fields
-    chequeMailingAddress: z
-      .string()
-      .optional()
-      .transform((val) => val?.trim() || "") // Trim whitespace
-      .refine(
-        (val) => {
-          if (!val) return true; // Optional field
-          const error = validateAddressField(val);
-          return error === null;
-        },
-        {
-          message: "Please enter a valid cheque mailing address",
-        },
-      ),
-    // Interac E-Transfer fields
-    interacEmail: z
-      .string()
-      .optional()
-      .transform((val) => val?.trim() || ""), // Trim whitespace
-    autodepositEnabled: z.boolean().optional(),
   })
   .refine(
     (data) => {
-      // Check if at least one payment method is complete
+      // Check if direct deposit is complete
       const isDirectDepositComplete =
-        data.legalName &&
-        data.legalName.length > 0 &&
-        data.sin &&
-        data.sin.length === 9 && // SIN is 9 digits
         data.transitNumber &&
         data.institutionNumber &&
         data.accountNumber &&
@@ -292,23 +259,13 @@ export const payoutDetailsSchema = z
         data.accountNumber.length >= 7 &&
         data.accountNumber.length <= 12;
 
-      const isChequeComplete =
-        data.chequeMailingAddress && data.chequeMailingAddress.length > 0;
-
-      const isInteracComplete =
-        data.interacEmail &&
-        z.string().email().safeParse(data.interacEmail).success;
-
-      // At least one method must be complete
-      if (!isDirectDepositComplete && !isChequeComplete && !isInteracComplete) {
+      // Direct deposit must be complete
+      if (!isDirectDepositComplete) {
         return false;
       }
 
-      // If any method has partial data, validate that method's requirements
       // Check if direct deposit has any fields filled
       const hasDirectDepositFields =
-        data.legalName ||
-        data.sin ||
         data.transitNumber ||
         data.institutionNumber ||
         data.accountNumber;
@@ -318,27 +275,11 @@ export const payoutDetailsSchema = z
         return false;
       }
 
-      // Check if cheque has any fields filled
-      const hasChequeFields = data.chequeMailingAddress;
-
-      // If cheque fields are filled but incomplete, it's invalid
-      if (hasChequeFields && !isChequeComplete) {
-        return false;
-      }
-
-      // Check if interac has any fields filled
-      const hasInteracFields = data.interacEmail;
-
-      // If interac fields are filled but incomplete, it's invalid
-      if (hasInteracFields && !isInteracComplete) {
-        return false;
-      }
-
       return true;
     },
     {
       message:
-        "Please complete at least one payment method. If you start filling a method, all required fields for that method must be completed.",
+        "Please complete all required fields for direct deposit. Transit number (5 digits), institution number (3 digits), and account number (7-12 digits) are required.",
     },
   );
 

@@ -4,8 +4,6 @@ import ErrorMessages from "@/constants/ErrorMessages";
 
 export type UpdateNotificationsInput = {
   examinerProfileId: string;
-  emailNewIMEs?: boolean;
-  emailInterviewRequests?: boolean;
   emailPaymentPayout?: boolean;
   smsNotifications?: boolean;
   emailMarketing?: boolean;
@@ -17,8 +15,6 @@ const updateNotifications = async (payload: UpdateNotificationsInput) => {
     const updatedProfile = await dashboardService.updateNotifications(
       payload.examinerProfileId,
       {
-        emailNewIMEs: payload.emailNewIMEs,
-        emailInterviewRequests: payload.emailInterviewRequests,
         emailPaymentPayout: payload.emailPaymentPayout,
         smsNotifications: payload.smsNotifications,
         emailMarketing: payload.emailMarketing,

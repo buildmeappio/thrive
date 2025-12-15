@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { FormProvider, FormField } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
+import { useOnboardingStore } from "../../state/useOnboardingStore";
 import type { ServicesAssessmentFormProps } from "../../types";
 
 // Icon mapping for assessment types based on name patterns
@@ -58,9 +59,23 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
   maxTravelDistances,
   onComplete,
   onCancel: _onCancel,
+  onMarkComplete,
+  onStepEdited,
+  isCompleted = false,
 }) => {
   const [loading, setLoading] = useState(false);
   const [hoveredType, setHoveredType] = useState<string | null>(null);
+
+  // Get store data and actions
+  const { servicesData, mergeServicesData, setExaminerProfileId } =
+    useOnboardingStore();
+
+  // Initialize examiner profile ID in store
+  useEffect(() => {
+    if (examinerProfileId) {
+      setExaminerProfileId(examinerProfileId);
+    }
+  }, [examinerProfileId, setExaminerProfileId]);
 
   // Format assessment types from server with icons
   const assessmentTypeOptions = React.useMemo(() => {
@@ -70,7 +85,7 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
         label: type.name,
         icon: getAssessmentTypeIcon(type.name),
         description: type.description || undefined,
-      }),
+      })
     );
     // Add "Other" option at the end
     formattedTypes.push({
@@ -90,23 +105,113 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
     }));
   }, [maxTravelDistances]);
 
+  // Merge store data with initialData for defaultValues
+  const defaultValues = useMemo(() => {
+    const storeData = servicesData || {};
+    return {
+      assessmentTypes:
+        storeData.assessmentTypes || initialData?.assessmentTypes || [],
+      acceptVirtualAssessments:
+        storeData.acceptVirtualAssessments ??
+        initialData?.acceptVirtualAssessments ??
+        true,
+      acceptInPersonAssessments:
+        storeData.acceptInPersonAssessments ??
+        initialData?.acceptInPersonAssessments ??
+        true,
+      travelToClaimants:
+        storeData.travelToClaimants ?? initialData?.travelToClaimants ?? false,
+      travelRadius: storeData.travelRadius || initialData?.travelRadius || "",
+      assessmentTypeOther:
+        storeData.assessmentTypeOther || initialData?.assessmentTypeOther || "",
+    };
+  }, [servicesData, initialData]);
+
   const form = useForm<ServicesAssessmentInput>({
     schema: servicesAssessmentSchema,
-    defaultValues: {
-      assessmentTypes: initialData?.assessmentTypes || [],
-      acceptVirtualAssessments: initialData?.acceptVirtualAssessments ?? true,
-      acceptInPersonAssessments: initialData?.acceptInPersonAssessments ?? true,
-      travelToClaimants: initialData?.travelToClaimants ?? false,
-      travelRadius: initialData?.travelRadius || "",
-      assessmentTypeOther: initialData?.assessmentTypeOther || "",
-    },
+    defaultValues,
     mode: "onSubmit",
   });
 
+  // Track previous values to prevent infinite loops
+  const previousStoreDataRef = React.useRef<string | null>(null);
+  const initialFormDataRef = React.useRef<string | null>(null);
+  const isInitializedRef = React.useRef(false);
+
+  // Mark as initialized after first render and store initial form data
+  useEffect(() => {
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true;
+      initialFormDataRef.current = JSON.stringify(form.getValues());
+    }
+  }, [form]);
+
+  // Watch form changes and update store (only if values actually changed)
+  const formValues = form.watch();
+  const isDirty = form.formState.isDirty;
+  const formErrors = form.formState.errors;
+
+  useEffect(() => {
+    if (!isInitializedRef.current) return;
+
+    const currentHash = JSON.stringify(formValues);
+    if (currentHash === previousStoreDataRef.current) return;
+
+    // Debounce store updates
+    const timeoutId = setTimeout(() => {
+      mergeServicesData(formValues);
+      previousStoreDataRef.current = currentHash;
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [formValues, mergeServicesData]);
+
+  // Check if form values have changed from initial saved values
+  const hasFormChanged = useMemo(() => {
+    if (!initialFormDataRef.current) return false;
+    const currentHash = JSON.stringify(formValues);
+    return currentHash !== initialFormDataRef.current;
+  }, [formValues]);
+
+  // If form is dirty or has changed from initial values, and step is completed, mark as incomplete
+  useEffect(() => {
+    if ((isDirty || hasFormChanged) && isCompleted && onStepEdited) {
+      onStepEdited();
+    }
+  }, [isDirty, hasFormChanged, isCompleted, onStepEdited]);
+
   const assessmentTypes = form.watch("assessmentTypes");
   const travelToClaimants = form.watch("travelToClaimants");
+  const travelRadius = form.watch("travelRadius");
+  const assessmentTypeOther = form.watch("assessmentTypeOther");
   const acceptVirtualAssessments = form.watch("acceptVirtualAssessments");
   const acceptInPersonAssessments = form.watch("acceptInPersonAssessments");
+
+  // Check if all required fields are filled
+  const isFormValid = useMemo(() => {
+    const hasAssessmentTypes =
+      Array.isArray(assessmentTypes) && assessmentTypes.length > 0;
+    const travelValid =
+      !travelToClaimants ||
+      (travelToClaimants && travelRadius && travelRadius.trim().length > 0);
+    const otherValid =
+      !assessmentTypes.includes("other") ||
+      (assessmentTypeOther && assessmentTypeOther.trim().length > 0);
+
+    return (
+      hasAssessmentTypes &&
+      travelValid &&
+      otherValid &&
+      !formErrors.assessmentTypes &&
+      !formErrors.travelRadius &&
+      !formErrors.assessmentTypeOther
+    );
+  }, [
+    assessmentTypes,
+    travelToClaimants,
+    travelRadius,
+    assessmentTypeOther,
+    formErrors,
+  ]);
 
   const toggleAssessmentType = (typeId: string) => {
     const currentTypes = form.getValues("assessmentTypes");
@@ -127,10 +232,11 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
       const result = await updateServicesAssessmentAction({
         examinerProfileId,
         ...values,
-        activationStep: "services", // Mark step 2 as completed
       });
 
       if (result.success) {
+        // Update store with saved values
+        mergeServicesData(values);
         toast.success("Services & Assessment Types updated successfully");
         onComplete();
       } else {
@@ -138,7 +244,61 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle "Mark as Complete" - saves and marks step as complete
+  const handleMarkComplete = async () => {
+    if (!examinerProfileId) {
+      toast.error("Examiner profile ID not found");
+      return;
+    }
+
+    // TypeScript narrowing: examinerProfileId is now guaranteed to be string
+    const profileId: string = examinerProfileId;
+
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast.error("Please fix validation errors before marking as complete");
+      return;
+    }
+
+    const values = form.getValues();
+    setLoading(true);
+    try {
+      const result = await updateServicesAssessmentAction({
+        examinerProfileId: profileId,
+        ...values,
+      });
+
+      if (result.success) {
+        // Update store with saved values
+        mergeServicesData(values);
+
+        // Update initial form data reference to current values so future changes are detected
+        const currentHash = JSON.stringify(values);
+        initialFormDataRef.current = currentHash;
+        previousStoreDataRef.current = currentHash;
+
+        toast.success(
+          "Services & Assessment Types saved and marked as complete"
+        );
+        // Mark step as complete
+        if (onMarkComplete) {
+          onMarkComplete();
+        }
+        // Close the step
+        onComplete();
+      } else {
+        toast.error(result.message || "Failed to update services");
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "An unexpected error occurred"
       );
     } finally {
       setLoading(false);
@@ -147,7 +307,7 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
 
   return (
     <div className="bg-white rounded-2xl px-8 py-6 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-medium">
             What Assessments Do You Perform?
@@ -157,16 +317,18 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
             types you perform.
           </p>
         </div>
-        <Button
-          type="submit"
-          form="services-form"
-          variant="outline"
-          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
-          disabled={loading}
-        >
-          <span>Mark as Complete</span>
-          <CircleCheck className="w-5 h-5 text-gray-700" />
-        </Button>
+        {/* Mark as Complete Button - Top Right */}
+        {!isCompleted && (
+          <Button
+            type="button"
+            onClick={handleMarkComplete}
+            variant="outline"
+            className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || !isFormValid}>
+            <CircleCheck className="w-5 h-5 text-gray-700" />
+            <span>Mark as Complete</span>
+          </Button>
+        )}
       </div>
 
       <FormProvider form={form} onSubmit={onSubmit} id="services-form">
@@ -193,18 +355,16 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
                         "hover:border-[#00A8FF] hover:shadow-md",
                         isSelected
                           ? "border-[#00A8FF] bg-[#00A8FF]/5"
-                          : "border-gray-200 bg-white",
-                      )}
-                    >
+                          : "border-gray-200 bg-white"
+                      )}>
                       <div className="flex items-start gap-3">
                         <div
                           className={cn(
                             "shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center mt-0.5",
                             isSelected
                               ? "border-[#00A8FF] bg-[#00A8FF]"
-                              : "border-gray-300 bg-white",
-                          )}
-                        >
+                              : "border-gray-300 bg-white"
+                          )}>
                           {isSelected && (
                             <CheckCircle2 className="w-4 h-4 text-white" />
                           )}
@@ -215,9 +375,8 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
                             <span
                               className={cn(
                                 "text-sm font-medium",
-                                isSelected ? "text-gray-900" : "text-gray-700",
-                              )}
-                            >
+                                isSelected ? "text-gray-900" : "text-gray-700"
+                              )}>
                               {type.label}
                             </span>
                           </div>
@@ -250,8 +409,7 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
             <FormField
               name="assessmentTypeOther"
               label="Other Assessment Type"
-              required
-            >
+              required>
               {(field) => (
                 <input
                   {...field}
@@ -280,20 +438,17 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
                 onClick={() =>
                   form.setValue(
                     "acceptVirtualAssessments",
-                    !acceptVirtualAssessments,
+                    !acceptVirtualAssessments
                   )
                 }
                 className={cn(
                   "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                  acceptVirtualAssessments ? "bg-[#00A8FF]" : "bg-gray-300",
-                )}
-              >
+                  acceptVirtualAssessments ? "bg-[#00A8FF]" : "bg-gray-300"
+                )}>
                 <span
                   className={cn(
                     "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                    acceptVirtualAssessments
-                      ? "translate-x-6"
-                      : "translate-x-1",
+                    acceptVirtualAssessments ? "translate-x-6" : "translate-x-1"
                   )}
                 />
               </button>
@@ -313,20 +468,19 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
                 onClick={() =>
                   form.setValue(
                     "acceptInPersonAssessments",
-                    !acceptInPersonAssessments,
+                    !acceptInPersonAssessments
                   )
                 }
                 className={cn(
                   "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                  acceptInPersonAssessments ? "bg-[#00A8FF]" : "bg-gray-300",
-                )}
-              >
+                  acceptInPersonAssessments ? "bg-[#00A8FF]" : "bg-gray-300"
+                )}>
                 <span
                   className={cn(
                     "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
                     acceptInPersonAssessments
                       ? "translate-x-6"
-                      : "translate-x-1",
+                      : "translate-x-1"
                   )}
                 />
               </button>
@@ -356,13 +510,12 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
                 }}
                 className={cn(
                   "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                  travelToClaimants ? "bg-[#00A8FF]" : "bg-gray-300",
-                )}
-              >
+                  travelToClaimants ? "bg-[#00A8FF]" : "bg-gray-300"
+                )}>
                 <span
                   className={cn(
                     "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                    travelToClaimants ? "translate-x-6" : "translate-x-1",
+                    travelToClaimants ? "translate-x-6" : "translate-x-1"
                   )}
                 />
               </button>
@@ -372,14 +525,12 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
               <FormField
                 name="travelRadius"
                 label="Travel Radius"
-                required={travelToClaimants}
-              >
+                required={travelToClaimants}>
                 {(field) => (
                   <select
                     {...field}
                     className="w-full px-4 py-3 rounded-lg bg-[#F9F9F9] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
-                    disabled={loading}
-                  >
+                    disabled={loading}>
                     <option value="">Select travel radius</option>
                     {travelRadiusOptions.map((option) => (
                       <option key={option.value} value={option.value}>

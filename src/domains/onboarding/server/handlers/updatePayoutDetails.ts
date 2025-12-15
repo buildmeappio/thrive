@@ -4,15 +4,10 @@ import ErrorMessages from "@/constants/ErrorMessages";
 
 export type UpdatePayoutDetailsInput = {
   examinerProfileId: string;
-  payoutMethod?: "direct_deposit" | "cheque" | "interac";
-  legalName?: string;
-  sin?: string;
+  payoutMethod?: "direct_deposit";
   transitNumber?: string;
   institutionNumber?: string;
   accountNumber?: string;
-  chequeMailingAddress?: string;
-  interacEmail?: string;
-  autodepositEnabled?: boolean;
   activationStep?: string;
 };
 
@@ -22,14 +17,9 @@ const updatePayoutDetails = async (payload: UpdatePayoutDetailsInput) => {
       payload.examinerProfileId,
       {
         payoutMethod: payload.payoutMethod,
-        legalName: payload.legalName,
-        sin: payload.sin,
         transitNumber: payload.transitNumber,
         institutionNumber: payload.institutionNumber,
         accountNumber: payload.accountNumber,
-        chequeMailingAddress: payload.chequeMailingAddress,
-        interacEmail: payload.interacEmail,
-        autodepositEnabled: payload.autodepositEnabled,
         activationStep: payload.activationStep,
       },
     );

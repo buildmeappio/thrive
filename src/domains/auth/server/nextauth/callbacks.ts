@@ -14,28 +14,47 @@ export const callbacks: NonNullable<NextAuthOptions["callbacks"]> = {
       token.accountId = u.accountId;
       token.activationStep = u.activationStep;
     } else if (token.accountId) {
-      // On subsequent requests, refresh activationStep from database
-      // to ensure we always have the latest value
+      // On subsequent requests, refresh activationStep and profilePhotoId from database
+      // to ensure we always have the latest values
       try {
-        const examinerProfile = await prisma.examinerProfile.findFirst({
+        const account = await prisma.account.findUnique({
           where: {
-            accountId: token.accountId as string,
-            deletedAt: null,
+            id: token.accountId as string,
           },
           select: {
-            activationStep: true,
+            user: {
+              select: {
+                profilePhotoId: true,
+              },
+            },
+            examinerProfiles: {
+              where: {
+                deletedAt: null,
+              },
+              select: {
+                activationStep: true,
+              },
+              take: 1,
+            },
           },
         });
 
-        if (examinerProfile) {
-          token.activationStep = examinerProfile.activationStep;
+        if (account) {
+          // Update profilePhotoId (stored in token.image)
+          if (account.user?.profilePhotoId) {
+            token.image = account.user.profilePhotoId;
+          }
+          // Update activationStep
+          if (account.examinerProfiles[0]?.activationStep) {
+            token.activationStep = account.examinerProfiles[0].activationStep;
+          }
         }
       } catch (error) {
         console.error(
-          "Error refreshing activationStep in JWT callback:",
+          "Error refreshing user data in JWT callback:",
           error,
         );
-        // If there's an error, keep the existing token value
+        // If there's an error, keep the existing token values
       }
     }
     return token;
