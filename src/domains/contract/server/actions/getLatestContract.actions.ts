@@ -3,7 +3,7 @@ import { GetObjectCommand, S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
 import { S3StreamChunk } from "@/types/api";
 import { ENV } from "@/constants/variables";
 
-// S3 client configuration – credentials auto-resolved from env vars or IAM role
+// S3 client – AWS SDK will auto-resolve credentials from env vars or IAM role
 const s3Config: S3ClientConfig = {
   region: ENV.AWS_REGION!,
 };
@@ -15,7 +15,6 @@ if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
     secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
   };
 }
-
 const s3Client = new S3Client(s3Config);
 
 async function streamToString(
@@ -96,7 +95,7 @@ export async function getLatestContract(id: string) {
     const htmlKey = contract.signedHtmlS3Key || contract.unsignedHtmlS3Key;
     if (htmlKey) {
       const htmlCommand = new GetObjectCommand({
-        Bucket: ENV.AWS_S3_BUCKET!,
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
         Key: htmlKey,
       });
       const htmlResponse = await s3Client.send(htmlCommand);

@@ -6,6 +6,20 @@ import { ENV } from "@/constants/variables";
 import { S3Client, GetObjectCommand, S3ClientConfig } from "@aws-sdk/client-s3";
 import { S3StreamChunk } from "@/types/api";
 
+const s3Config: S3ClientConfig = {
+  region: ENV.AWS_REGION!,
+};
+
+// Add credentials if available (for local development)
+if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
+  s3Config.credentials = {
+    accessKeyId: ENV.AWS_ACCESS_KEY_ID,
+    secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
+  };
+}
+
+const s3Client = new S3Client(s3Config);
+
 // Helper function to convert S3 stream to Buffer
 async function streamToBuffer(
   body: S3StreamChunk | null | undefined,
@@ -231,24 +245,9 @@ export const signContractByExaminer = async (
 
         if (contract?.signedPdfS3Key) {
           const s3Key = contract.signedPdfS3Key;
-          
-          // S3 client configuration – credentials auto-resolved from env vars or IAM role
-          const s3Config: S3ClientConfig = {
-            region: ENV.AWS_REGION!,
-          };
-
-          // Add credentials if available (for local development)
-          if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
-            s3Config.credentials = {
-              accessKeyId: ENV.AWS_ACCESS_KEY_ID,
-              secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
-            };
-          }
-
-          const s3Client = new S3Client(s3Config);
 
           const getObjectCommand = new GetObjectCommand({
-            Bucket: ENV.AWS_S3_BUCKET!,
+            Bucket: process.env.AWS_S3_BUCKET_NAME!,
             Key: s3Key,
           });
 

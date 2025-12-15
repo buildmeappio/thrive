@@ -6,7 +6,7 @@ import prisma from "@/lib/db";
 import { ContractStatus } from "@prisma/client";
 import { ENV } from "@/constants/variables";
 
-// S3 client configuration – credentials auto-resolved from env vars or IAM role
+// S3 client – credentials auto-resolved from env or IAM role
 const s3Config: S3ClientConfig = {
   region: ENV.AWS_REGION!,
 };
@@ -18,7 +18,6 @@ if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
     secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
   };
 }
-
 const s3Client = new S3Client(s3Config);
 
 // Upload HTML content to S3
@@ -28,7 +27,7 @@ export async function uploadHtmlToS3(contractId: string, htmlContent: string) {
 
   await s3Client.send(
     new PutObjectCommand({
-      Bucket: ENV.AWS_S3_BUCKET!,
+      Bucket: process.env.AWS_S3_BUCKET_NAME!,
       Key: key,
       Body: buffer,
       ContentType: "text/html; charset=utf-8",
@@ -71,7 +70,7 @@ export async function uploadPdfToS3(contractId: string, pdfBuffer: Buffer) {
 
   await s3Client.send(
     new PutObjectCommand({
-      Bucket: ENV.AWS_S3_BUCKET!,
+      Bucket: process.env.AWS_S3_BUCKET_NAME!,
       Key: key,
       Body: pdfBuffer,
       ContentType: "application/pdf",

@@ -4,7 +4,6 @@ import { S3Client, GetObjectCommand, S3ClientConfig } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { ENV } from "@/constants/variables";
 
-// S3 client configuration – credentials auto-resolved from env vars or IAM role
 const s3Config: S3ClientConfig = {
   region: ENV.AWS_REGION!,
 };
