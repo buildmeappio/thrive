@@ -47,7 +47,7 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
   // If agreements change and step is completed, mark as incomplete
   useEffect(() => {
     if (hasFormChanged && isCompleted && onStepEdited) {
-        onStepEdited();
+      onStepEdited();
     }
   }, [hasFormChanged, isCompleted, onStepEdited]);
 
@@ -157,7 +157,9 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
       <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-medium">
-            {isSettingsPage ? "Compliance" : "Privacy & Compliance Acknowledgments"}
+            {isSettingsPage
+              ? "Compliance"
+              : "Privacy & Compliance Acknowledgments"}
           </h2>
         </div>
         {/* Mark as Complete Button - Top Right (Onboarding only) */}
@@ -167,7 +169,8 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
             onClick={handleMarkComplete}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading}>
+            disabled={loading}
+          >
             <CircleCheck className="w-5 h-5 text-gray-700" />
             <span>Mark as Complete</span>
           </Button>
@@ -249,7 +252,8 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
             type="button"
             onClick={handleSubmit}
             className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-            disabled={loading}>
+            disabled={loading}
+          >
             <CircleCheck className="w-5 h-5 text-white" />
             <span>Save Changes</span>
           </Button>

@@ -124,7 +124,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -168,7 +168,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       // Generic error if validation fails for other reasons
       toast.error(
         errors.root?.message ||
-          "Please complete all required fields for direct deposit"
+          "Please complete all required fields for direct deposit",
       );
       return;
     }
@@ -201,7 +201,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -223,7 +223,8 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
             onClick={handleMarkComplete}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading}>
+            disabled={loading}
+          >
             <span>Mark as Complete</span>
             <CircleCheck className="w-5 h-5 text-gray-700" />
           </Button>
@@ -255,7 +256,8 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
             type="button"
             onClick={() => form.handleSubmit(onSubmit)()}
             className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-            disabled={loading}>
+            disabled={loading}
+          >
             <span>Save Changes</span>
             <CircleCheck className="w-5 h-5 text-white" />
           </Button>

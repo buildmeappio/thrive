@@ -86,64 +86,70 @@ const getStorageKey = (examinerProfileId: string | null): string => {
 // Checks for browser environment to avoid SSR errors
 // The storage type matches PersistedOnboardingState (what partialize returns)
 // not the full OnboardingStore (which includes actions)
-const createOnboardingStorage = (): PersistStorage<PersistedOnboardingState> => {
-  return {
-    getItem: (name: string): StorageValue<PersistedOnboardingState> | null => {
-      // Check if we're in a browser environment
-      if (typeof window === "undefined") {
-        return null;
-      }
-      try {
-        const str = localStorage.getItem(name);
-        if (!str) return null;
-        const parsed = JSON.parse(str);
-        return parsed as StorageValue<PersistedOnboardingState>;
-      } catch (error) {
-        console.warn("Failed to get onboarding storage:", error);
-        return null;
-      }
-    },
-    setItem: (name: string, value: StorageValue<PersistedOnboardingState>): void => {
-      // Check if we're in a browser environment
-      if (typeof window === "undefined") {
-        return;
-      }
-      try {
-        // Store with dynamic key if examinerProfileId exists
-        const examinerProfileId = value?.state?.examinerProfileId;
-        if (examinerProfileId) {
-          const dynamicKey = getStorageKey(examinerProfileId);
-          localStorage.setItem(dynamicKey, JSON.stringify(value));
+const createOnboardingStorage =
+  (): PersistStorage<PersistedOnboardingState> => {
+    return {
+      getItem: (
+        name: string,
+      ): StorageValue<PersistedOnboardingState> | null => {
+        // Check if we're in a browser environment
+        if (typeof window === "undefined") {
+          return null;
         }
-        // Also save to base storage
-        localStorage.setItem(name, JSON.stringify(value));
-      } catch (error) {
-        console.warn("Failed to set onboarding storage:", error);
-      }
-    },
-    removeItem: (name: string): void => {
-      // Check if we're in a browser environment
-      if (typeof window === "undefined") {
-        return;
-      }
-      try {
-        // Try to get current state to find examinerProfileId
-        const str = localStorage.getItem(name);
-        if (str) {
+        try {
+          const str = localStorage.getItem(name);
+          if (!str) return null;
           const parsed = JSON.parse(str);
-          const examinerProfileId = parsed?.state?.examinerProfileId;
+          return parsed as StorageValue<PersistedOnboardingState>;
+        } catch (error) {
+          console.warn("Failed to get onboarding storage:", error);
+          return null;
+        }
+      },
+      setItem: (
+        name: string,
+        value: StorageValue<PersistedOnboardingState>,
+      ): void => {
+        // Check if we're in a browser environment
+        if (typeof window === "undefined") {
+          return;
+        }
+        try {
+          // Store with dynamic key if examinerProfileId exists
+          const examinerProfileId = value?.state?.examinerProfileId;
           if (examinerProfileId) {
             const dynamicKey = getStorageKey(examinerProfileId);
-            localStorage.removeItem(dynamicKey);
+            localStorage.setItem(dynamicKey, JSON.stringify(value));
           }
+          // Also save to base storage
+          localStorage.setItem(name, JSON.stringify(value));
+        } catch (error) {
+          console.warn("Failed to set onboarding storage:", error);
         }
-        localStorage.removeItem(name);
-      } catch (error) {
-        console.warn("Failed to remove onboarding storage:", error);
-      }
-    },
+      },
+      removeItem: (name: string): void => {
+        // Check if we're in a browser environment
+        if (typeof window === "undefined") {
+          return;
+        }
+        try {
+          // Try to get current state to find examinerProfileId
+          const str = localStorage.getItem(name);
+          if (str) {
+            const parsed = JSON.parse(str);
+            const examinerProfileId = parsed?.state?.examinerProfileId;
+            if (examinerProfileId) {
+              const dynamicKey = getStorageKey(examinerProfileId);
+              localStorage.removeItem(dynamicKey);
+            }
+          }
+          localStorage.removeItem(name);
+        } catch (error) {
+          console.warn("Failed to remove onboarding storage:", error);
+        }
+      },
+    };
   };
-};
 
 // Initial state
 const initialState: Omit<

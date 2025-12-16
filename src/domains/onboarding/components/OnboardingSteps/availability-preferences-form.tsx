@@ -131,15 +131,13 @@ const AvailabilityPreferencesForm: React.FC<
       : undefined;
 
     return {
-      weeklyHours:
-        dbData.weeklyHours ||
-        availabilityInitialValues.weeklyHours,
+      weeklyHours: dbData.weeklyHours || availabilityInitialValues.weeklyHours,
       overrideHours: dbData.overrideHours || [],
       // Use DB bookingOptions, then initial values
       bookingOptions: (dbBookingOptions || {
-          maxIMEsPerWeek: "",
-          minimumNotice: "",
-        }) as { maxIMEsPerWeek: string; minimumNotice: string },
+        maxIMEsPerWeek: "",
+        minimumNotice: "",
+      }) as { maxIMEsPerWeek: string; minimumNotice: string },
     };
   }, [initialData]);
 
@@ -455,7 +453,9 @@ const AvailabilityPreferencesForm: React.FC<
       <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-medium">
-            {isSettingsPage ? "Availability Preferences" : "Set Your Availability"}
+            {isSettingsPage
+              ? "Availability Preferences"
+              : "Set Your Availability"}
           </h2>
         </div>
         {/* Mark as Complete Button - Top Right (Onboarding only) */}
@@ -465,7 +465,8 @@ const AvailabilityPreferencesForm: React.FC<
             onClick={handleMarkComplete}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading}>
+            disabled={loading}
+          >
             <span>Mark as Complete</span>
             <CircleCheck className="w-5 h-5 text-gray-700" />
           </Button>
@@ -538,7 +539,8 @@ const AvailabilityPreferencesForm: React.FC<
             type="button"
             onClick={() => form.handleSubmit(onSubmit)()}
             className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-            disabled={loading}>
+            disabled={loading}
+          >
             <span>Save Changes</span>
             <CircleCheck className="w-5 h-5 text-white" />
           </Button>

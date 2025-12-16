@@ -39,7 +39,7 @@ export function useMarkAsComplete<T extends FieldValues>({
     const isValid = await form.trigger();
     if (!isValid) {
       const values = form.getValues();
-      
+
       // Use custom validation error handler if provided
       if (getValidationErrors) {
         const customError = getValidationErrors(values);
@@ -52,7 +52,8 @@ export function useMarkAsComplete<T extends FieldValues>({
       // Generic error if validation fails
       const errors = form.formState.errors;
       toast.error(
-        errors.root?.message || "Please fix validation errors before marking as complete"
+        errors.root?.message ||
+          "Please fix validation errors before marking as complete",
       );
       return;
     }
@@ -78,7 +79,7 @@ export function useMarkAsComplete<T extends FieldValues>({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "An unexpected error occurred",
       );
     } finally {
       setLoading(false);
@@ -90,4 +91,3 @@ export function useMarkAsComplete<T extends FieldValues>({
     loading,
   };
 }
-

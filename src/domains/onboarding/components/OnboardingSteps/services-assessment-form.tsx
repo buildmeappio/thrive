@@ -100,10 +100,8 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
   const defaultValues = useMemo(() => {
     return {
       assessmentTypes: initialData?.assessmentTypes || [],
-      acceptVirtualAssessments:
-        initialData?.acceptVirtualAssessments ?? true,
-      acceptInPersonAssessments:
-        initialData?.acceptInPersonAssessments ?? true,
+      acceptVirtualAssessments: initialData?.acceptVirtualAssessments ?? true,
+      acceptInPersonAssessments: initialData?.acceptInPersonAssessments ?? true,
       travelToClaimants: initialData?.travelToClaimants ?? false,
       travelRadius: initialData?.travelRadius || "",
       assessmentTypeOther: initialData?.assessmentTypeOther || "",
@@ -272,7 +270,9 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
       <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-medium">
-            {isSettingsPage ? "Services & Assessments" : "What Assessments Do You Perform?"}
+            {isSettingsPage
+              ? "Services & Assessments"
+              : "What Assessments Do You Perform?"}
           </h2>
           {!isSettingsPage && (
             <p className="text-sm text-gray-500">
@@ -288,7 +288,8 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
             onClick={handleMarkComplete}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading}>
+            disabled={loading}
+          >
             <CircleCheck className="w-5 h-5 text-gray-700" />
             <span>Mark as Complete</span>
           </Button>
@@ -518,7 +519,6 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
             )}
           </div>
         </div>
-
       </FormProvider>
       {/* Save Changes Button - Bottom Right (Settings only) */}
       {isSettingsPage && (
@@ -527,7 +527,8 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
             type="button"
             onClick={() => form.handleSubmit(onSubmit)()}
             className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-            disabled={loading}>
+            disabled={loading}
+          >
             <CircleCheck className="w-5 h-5 text-white" />
             <span>Save Changes</span>
           </Button>

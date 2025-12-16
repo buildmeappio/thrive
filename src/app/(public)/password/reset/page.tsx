@@ -23,8 +23,8 @@ const ResetPasswordPage = async ({
 };
 
 const PasswordResetUI = ({ token }: { token: string }) => (
-  <div className="bg-[#F4FBFF]">
-    <div className="mx-auto min-h-screen max-w-[900px] p-6">
+  <div className="bg-[#F4FBFF] h-[calc(100vh-120px)] overflow-hidden">
+    <div className="mx-auto h-full max-w-[900px] p-6 flex flex-col justify-center">
       {/* Header */}
       <div className="mt-8 mb-4 flex h-[60px] items-center justify-center text-center md:mt-0 md:h-[60px]">
         <h2 className="text-[25px] font-semibold whitespace-nowrap md:text-[40px]">

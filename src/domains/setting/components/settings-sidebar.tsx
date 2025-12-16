@@ -1,7 +1,16 @@
 "use client";
 
 import React from "react";
-import { User, Stethoscope, Calendar, CreditCard, FileText, Shield, Bell, Lock } from "lucide-react";
+import {
+  User,
+  Stethoscope,
+  Calendar,
+  CreditCard,
+  FileText,
+  Shield,
+  Bell,
+  Lock,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface SettingsStep {
@@ -64,12 +73,14 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
 }) => {
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 w-full lg:w-auto lg:max-w-[280px] shrink-0">
-      <h2 className="text-lg font-semibold text-gray-900 mb-6">Account settings</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-6">
+        Account settings
+      </h2>
       <nav className="space-y-1">
         {SETTINGS_STEPS.map((step) => {
           const Icon = step.icon;
           const isActive = activeStep === step.id;
-          
+
           return (
             <button
               key={step.id}
@@ -78,13 +89,13 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
                 "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors relative",
                 isActive
                   ? "bg-[#E6F4FF] text-[#00A8FF] font-medium"
-                  : "text-gray-700 hover:bg-gray-50"
+                  : "text-gray-700 hover:bg-gray-50",
               )}
             >
               <Icon
                 className={cn(
                   "w-5 h-5 shrink-0",
-                  isActive ? "text-[#00A8FF]" : "text-gray-500"
+                  isActive ? "text-[#00A8FF]" : "text-gray-500",
                 )}
               />
               <span className="text-sm">{step.label}</span>
@@ -100,4 +111,3 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
 };
 
 export default SettingsSidebar;
-

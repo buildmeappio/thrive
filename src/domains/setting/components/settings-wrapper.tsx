@@ -64,4 +64,3 @@ const SettingsWrapper: React.FC<SettingsWrapperProps> = ({
 };
 
 export default SettingsWrapper;
-

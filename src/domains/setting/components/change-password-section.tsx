@@ -1,42 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { FormProvider, FormField } from "@/components/form";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/PasswordInput";
 import { useForm } from "@/hooks/use-form-hook";
 import { UseFormRegisterReturn } from "@/lib/form";
-import { z } from "zod";
 import { toast } from "sonner";
 import { CircleCheck } from "lucide-react";
+import { URLS } from "@/constants/route";
 import changePassword from "@/domains/auth/actions/changePassword";
-
-const passwordSchema = z
-  .object({
-    currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: z
-      .string()
-      .min(6, "Password must be at least 6 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain one uppercase letter, one lowercase letter, and one number",
-      ),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  })
-  .refine((data) => data.currentPassword !== data.newPassword, {
-    message: "New password cannot match your current password",
-    path: ["newPassword"],
-  });
-
-type PasswordFormData = z.infer<typeof passwordSchema>;
-
-interface ChangePasswordSectionProps {
-  userId: string;
-}
+import { passwordSchema, PasswordFormData } from "../schemas/password.schema";
+import type { ChangePasswordSectionProps } from "../types";
 
 const ChangePasswordSection: React.FC<ChangePasswordSectionProps> = ({
   userId,
@@ -83,16 +59,26 @@ const ChangePasswordSection: React.FC<ChangePasswordSectionProps> = ({
       <h2 className="text-xl font-semibold mb-6">Change Password</h2>
 
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="space-y-4 pb-20">
-          <FormField name="currentPassword" label="Current Password" required>
-            {(field: UseFormRegisterReturn & { error?: boolean }) => (
-              <PasswordInput
-                {...field}
-                placeholder="Enter current password"
-                className="bg-[#F9F9F9]"
-              />
-            )}
-          </FormField>
+        <div className="space-y-3 pb-14">
+          <div>
+            <FormField name="currentPassword" label="Current Password" required>
+              {(field: UseFormRegisterReturn & { error?: boolean }) => (
+                <PasswordInput
+                  {...field}
+                  placeholder="Enter current password"
+                  className="bg-[#F9F9F9]"
+                />
+              )}
+            </FormField>
+            <div className="text-right mt-1">
+              <Link
+                href={URLS.PASSWORD_FORGOT}
+                className="text-sm font-bold text-[#0097E5] underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+          </div>
 
           <FormField
             name="newPassword"

@@ -114,7 +114,7 @@ const SettingsPage = async () => {
       </div>
 
       <SettingsWrapper
-          examinerProfileId={profileData.id}
+        examinerProfileId={profileData.id}
         userId={user.id}
         profileData={profileFormData}
         servicesData={servicesFormData}

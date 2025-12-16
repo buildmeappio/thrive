@@ -162,4 +162,3 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
 };
 
 export default SettingsContent;
-

@@ -83,7 +83,7 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
   // If notifications change and step is completed, mark as incomplete
   useEffect(() => {
     if (hasFormChanged && isCompleted && onStepEdited) {
-        onStepEdited();
+      onStepEdited();
     }
   }, [hasFormChanged, isCompleted, onStepEdited]);
 
@@ -173,7 +173,8 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
             onClick={handleMarkComplete}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
-            disabled={loading}>
+            disabled={loading}
+          >
             <span>Mark as Complete</span>
             <CircleCheck className="w-5 h-5 text-gray-700" />
           </Button>
@@ -230,7 +231,8 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
             type="button"
             onClick={handleSubmit}
             className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-            disabled={loading}>
+            disabled={loading}
+          >
             <span>Save Changes</span>
             <CircleCheck className="w-5 h-5 text-white" />
           </Button>
