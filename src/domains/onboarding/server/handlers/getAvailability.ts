@@ -58,7 +58,7 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
         where: { id: payload.examinerProfileId },
         select: {
           minimumNoticeValue: true,
-          // Note: maxIMEsPerWeek field may need to be added to the database schema
+          maxIMEsPerWeek: true,
         },
       }),
     ]);
@@ -125,7 +125,7 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
     // Build booking options from database
     const bookingOptions = examinerProfile
       ? {
-          maxIMEsPerWeek: "", // TODO: Add maxIMEsPerWeek field to database schema
+          maxIMEsPerWeek: examinerProfile.maxIMEsPerWeek || "",
           minimumNotice: examinerProfile.minimumNoticeValue || "",
         }
       : undefined;

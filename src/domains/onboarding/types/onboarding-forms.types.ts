@@ -5,6 +5,10 @@ export interface ProfileInfoFormProps {
   initialData: InitialFormData;
   onComplete: () => void;
   onCancel?: () => void;
+  onMarkComplete?: () => void;
+  onStepEdited?: () => void;
+  isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }
 
 export interface ServicesAssessmentFormProps {
@@ -32,6 +36,10 @@ export interface ServicesAssessmentFormProps {
   }>;
   onComplete: () => void;
   onCancel?: () => void;
+  onMarkComplete?: () => void;
+  onStepEdited?: () => void;
+  isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }
 
 export interface SpecialtyPreferencesFormProps {
@@ -47,6 +55,10 @@ export interface AvailabilityPreferencesFormProps {
   initialData: InitialFormData;
   onComplete: () => void;
   onCancel?: () => void;
+  onMarkComplete?: () => void;
+  onStepEdited?: () => void;
+  isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }
 
 export interface PayoutDetailsFormProps {
@@ -54,6 +66,10 @@ export interface PayoutDetailsFormProps {
   initialData: InitialFormData;
   onComplete: () => void;
   onCancel?: () => void;
+  onMarkComplete?: () => void;
+  onStepEdited?: () => void;
+  isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }
 
 export interface DocumentsUploadFormProps {
@@ -67,6 +83,10 @@ export interface DocumentsUploadFormProps {
   };
   onComplete: () => void;
   onCancel?: () => void;
+  onMarkComplete?: () => void;
+  onStepEdited?: () => void;
+  isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }
 
 export interface ComplianceFormProps {
@@ -78,17 +98,23 @@ export interface ComplianceFormProps {
   };
   onComplete: () => void;
   onCancel?: () => void;
+  onMarkComplete?: () => void;
+  onStepEdited?: () => void;
+  isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }
 
 export interface NotificationsFormProps {
   examinerProfileId: string | null;
   initialData: {
-    emailNewIMEs?: boolean;
-    emailInterviewRequests?: boolean;
     emailPaymentPayout?: boolean;
     smsNotifications?: boolean;
     emailMarketing?: boolean;
   };
   onComplete: () => void;
   onCancel?: () => void;
+  onMarkComplete?: () => void;
+  onStepEdited?: () => void;
+  isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }

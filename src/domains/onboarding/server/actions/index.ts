@@ -1,5 +1,6 @@
 export { updateServicesAssessmentAction } from "./updateServicesAssessment";
 export { getSpecialtyPreferencesAction } from "./getSpecialtyPreferences";
+export { completeOnboardingAction } from "./completeOnboarding";
 export { updateSpecialtyPreferencesAction } from "./updateSpecialtyPreferences";
 export { getAvailabilityPreferencesAction } from "./getAvailabilityPreferences";
 export { updateAvailabilityPreferencesAction } from "./updateAvailabilityPreferences";

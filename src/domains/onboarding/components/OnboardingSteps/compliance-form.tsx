@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { CircleCheck } from "lucide-react";
@@ -13,14 +13,52 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
   initialData,
   onComplete,
   onCancel: _onCancel,
+  onMarkComplete,
+  onStepEdited,
+  isCompleted = false,
+  isSettingsPage = false,
 }) => {
   const { update } = useSession();
   const [loading, setLoading] = useState(false);
-  const [agreements, setAgreements] = useState({
-    phipaCompliance: initialData?.phipaCompliance ?? false,
-    pipedaCompliance: initialData?.pipedaCompliance ?? false,
-    medicalLicenseActive: initialData?.medicalLicenseActive ?? false,
-  });
+
+  // Use initial data directly
+  const initialAgreements = useMemo(() => {
+    return {
+      phipaCompliance: initialData?.phipaCompliance ?? false,
+      pipedaCompliance: initialData?.pipedaCompliance ?? false,
+      medicalLicenseActive: initialData?.medicalLicenseActive ?? false,
+    };
+  }, [initialData]);
+
+  const [agreements, setAgreements] = useState(initialAgreements);
+
+  // Reset agreements when initialData changes
+  useEffect(() => {
+    setAgreements(initialAgreements);
+  }, [initialAgreements]);
+
+  // Check if form values have changed from initial saved values
+  const hasFormChanged = useMemo(() => {
+    const currentHash = JSON.stringify(agreements);
+    const initialHash = JSON.stringify(initialAgreements);
+    return currentHash !== initialHash;
+  }, [agreements, initialAgreements]);
+
+  // If agreements change and step is completed, mark as incomplete
+  useEffect(() => {
+    if (hasFormChanged && isCompleted && onStepEdited) {
+      onStepEdited();
+    }
+  }, [hasFormChanged, isCompleted, onStepEdited]);
+
+  // Check if all required checkboxes are checked
+  const isFormValid = useMemo(() => {
+    return (
+      agreements.phipaCompliance &&
+      agreements.pipedaCompliance &&
+      agreements.medicalLicenseActive
+    );
+  }, [agreements]);
 
   const handleSubmit = async () => {
     if (!examinerProfileId) {
@@ -45,15 +83,61 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
         phipaCompliance: agreements.phipaCompliance,
         pipedaCompliance: agreements.pipedaCompliance,
         medicalLicenseActive: agreements.medicalLicenseActive,
-        activationStep: "compliance",
       });
 
       if (result.success) {
         toast.success("Compliance acknowledgments saved successfully");
         onComplete();
+      } else {
+        toast.error(
+          result.message || "Failed to save compliance acknowledgments",
+        );
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "An unexpected error occurred",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        // Update session to refresh JWT token with new activationStep
-        await update();
+  // Handle "Mark as Complete" - saves and marks step as complete
+  const handleMarkComplete = async () => {
+    if (!examinerProfileId) {
+      toast.error("Examiner profile ID not found");
+      return;
+    }
+
+    // Validate all checkboxes are checked
+    if (
+      !agreements.phipaCompliance ||
+      !agreements.pipedaCompliance ||
+      !agreements.medicalLicenseActive
+    ) {
+      toast.error("Please acknowledge all required compliance statements");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await updateComplianceAction({
+        examinerProfileId,
+        phipaCompliance: agreements.phipaCompliance,
+        pipedaCompliance: agreements.pipedaCompliance,
+        medicalLicenseActive: agreements.medicalLicenseActive,
+      });
+
+      if (result.success) {
+        toast.success(
+          "Compliance acknowledgments saved and marked as complete",
+        );
+        // Mark step as complete
+        if (onMarkComplete) {
+          onMarkComplete();
+        }
+        // Close the step
+        onComplete();
       } else {
         toast.error(
           result.message || "Failed to save compliance acknowledgments",
@@ -69,29 +153,31 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 className="text-2xl font-medium">
-          Privacy & Compliance Acknowledgments
-        </h2>
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          variant="outline"
-          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
-          disabled={
-            loading ||
-            !agreements.phipaCompliance ||
-            !agreements.pipedaCompliance ||
-            !agreements.medicalLicenseActive
-          }
-        >
-          <span>Mark as Complete</span>
-          <CircleCheck className="w-5 h-5 text-gray-700" />
-        </Button>
+    <div className="bg-white rounded-2xl p-6 shadow-sm relative">
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-2xl font-medium">
+            {isSettingsPage
+              ? "Compliance"
+              : "Privacy & Compliance Acknowledgments"}
+          </h2>
+        </div>
+        {/* Mark as Complete Button - Top Right (Onboarding only) */}
+        {!isSettingsPage && (
+          <Button
+            type="button"
+            onClick={handleMarkComplete}
+            variant="outline"
+            className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading}
+          >
+            <CircleCheck className="w-5 h-5 text-gray-700" />
+            <span>Mark as Complete</span>
+          </Button>
+        )}
       </div>
 
-      <div className="space-y-4">
+      <div className={`space-y-4 ${isSettingsPage ? "pb-20" : ""}`}>
         <div className="border border-gray-200 rounded-lg p-6 bg-[#FCFDFF]">
           <div className="space-y-6">
             {/* PHIPA Compliance */}
@@ -159,6 +245,20 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
           </div>
         </div>
       </div>
+      {/* Save Changes Button - Bottom Right (Settings only) */}
+      {isSettingsPage && (
+        <div className="absolute bottom-6 right-6 z-10">
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            disabled={loading}
+          >
+            <CircleCheck className="w-5 h-5 text-white" />
+            <span>Save Changes</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

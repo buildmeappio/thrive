@@ -22,11 +22,12 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
     professionalTitle?: string | null;
     clinicName?: string | null;
     clinicAddress?: string | null;
-    emailNewIMEs?: boolean | null;
-    emailInterviewRequests?: boolean | null;
     emailPaymentPayout?: boolean | null;
     smsNotifications?: boolean | null;
     emailMarketing?: boolean | null;
+    phipaCompliance?: boolean | null;
+    pipedaCompliance?: boolean | null;
+    medicalLicenseActive?: boolean | null;
     medicalLicenseDocumentIds?: string[];
     governmentIdDocumentId?: string | null;
     resumeDocumentId?: string | null;
@@ -73,11 +74,22 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
       maxTravelDistance: profile.maxTravelDistance || null,
       assessmentTypeOther: profile.assessmentTypeOther || null,
       // Notification settings - return null if not set, so form can use defaults
-      emailNewIMEs: profile.emailNewIMEs ?? null,
-      emailInterviewRequests: profile.emailInterviewRequests ?? null,
       emailPaymentPayout: profile.emailPaymentPayout ?? null,
       smsNotifications: profile.smsNotifications ?? null,
       emailMarketing: profile.emailMarketing ?? null,
+      // Compliance fields - return boolean value or null if not set
+      phipaCompliance:
+        typeof profile.phipaCompliance === "boolean"
+          ? profile.phipaCompliance
+          : null,
+      pipedaCompliance:
+        typeof profile.pipedaCompliance === "boolean"
+          ? profile.pipedaCompliance
+          : null,
+      medicalLicenseActive:
+        typeof profile.medicalLicenseActive === "boolean"
+          ? profile.medicalLicenseActive
+          : null,
       // Document IDs - these are copied from application during account creation
       medicalLicenseDocumentIds: profile.medicalLicenseDocumentIds || [],
       governmentIdDocumentId: profile.governmentIdDocumentId || null,

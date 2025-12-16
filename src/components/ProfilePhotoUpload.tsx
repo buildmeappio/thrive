@@ -33,6 +33,46 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
   // Add image load error handler
   const [imageError, setImageError] = useState(false);
 
+  // Track if we have a local file preview (data URL from FileReader)
+  const hasLocalPreviewRef = React.useRef(false);
+  const previousPhotoUrlRef = React.useRef<string | null | undefined>(
+    currentPhotoUrl,
+  );
+  const previewRef = React.useRef<string | null>(preview);
+
+  // Sync preview ref with preview state
+  React.useEffect(() => {
+    previewRef.current = preview;
+  }, [preview]);
+
+  // Update preview when currentPhotoUrl changes (e.g., when navigating back to the form)
+  React.useEffect(() => {
+    // Only update if currentPhotoUrl actually changed (not just on every render)
+    if (previousPhotoUrlRef.current === currentPhotoUrl) {
+      return;
+    }
+    previousPhotoUrlRef.current = currentPhotoUrl;
+
+    // Don't update if we have a local preview (user just uploaded a file)
+    if (hasLocalPreviewRef.current) {
+      return;
+    }
+
+    if (currentPhotoUrl && currentPhotoUrl.trim() !== "") {
+      // Only update if the URL is different from current preview
+      if (previewRef.current !== currentPhotoUrl) {
+        setPreview(currentPhotoUrl);
+        setImageError(false);
+        hasLocalPreviewRef.current = false; // Reset flag when using URL
+      }
+    } else if (currentPhotoUrl === null || currentPhotoUrl === undefined) {
+      // Only clear preview if we don't have a local preview
+      if (!previewRef.current || !previewRef.current.startsWith("data:")) {
+        setPreview(null);
+      }
+    }
+  }, [currentPhotoUrl]); // Removed preview from dependencies to prevent infinite loops
+
   // Size configurations
   const sizeClasses = {
     sm: "w-16 h-16",
@@ -71,29 +111,70 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
   const handleFileSelect = (file: File) => {
     setError(null);
     setIsLoading(true);
+    setImageError(false);
 
     // Validate file
     const validation = validateFile(file);
     if (!validation.valid) {
       setError(validation.error || "Invalid file");
       setIsLoading(false);
+      hasLocalPreviewRef.current = false;
       return;
     }
 
-    // Create preview
+    // Create preview with timeout fallback
     const reader = new FileReader();
+    let completed = false;
+
+    const completeLoading = () => {
+      if (!completed) {
+        completed = true;
+        setIsLoading(false);
+      }
+    };
+
+    // Timeout fallback (5 seconds)
+    const timeoutId = setTimeout(() => {
+      if (!completed) {
+        setError("File reading took too long. Please try again.");
+        hasLocalPreviewRef.current = false;
+        completeLoading();
+      }
+    }, 5000);
+
     reader.onloadend = () => {
-      setPreview(reader.result as string);
-      setIsLoading(false);
-      if (onPhotoChange) {
-        onPhotoChange(file);
+      clearTimeout(timeoutId);
+      if (!completed && reader.result) {
+        const dataUrl = reader.result as string;
+        setPreview(dataUrl);
+        hasLocalPreviewRef.current = true; // Mark that we have a local preview
+        completeLoading();
+        if (onPhotoChange) {
+          onPhotoChange(file);
+        }
       }
     };
     reader.onerror = () => {
+      clearTimeout(timeoutId);
       setError("Failed to read file");
-      setIsLoading(false);
+      hasLocalPreviewRef.current = false;
+      completeLoading();
     };
-    reader.readAsDataURL(file);
+    reader.onabort = () => {
+      clearTimeout(timeoutId);
+      setError("File reading was cancelled");
+      hasLocalPreviewRef.current = false;
+      completeLoading();
+    };
+
+    try {
+      reader.readAsDataURL(file);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      setError("Failed to read file");
+      hasLocalPreviewRef.current = false;
+      completeLoading();
+    }
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

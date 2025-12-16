@@ -2,9 +2,14 @@ import { Metadata } from "next";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import { redirect } from "next/navigation";
 import { getExaminerProfileAction } from "@/domains/setting/server/actions";
-import ProfileInformationSection from "@/domains/setting/components/profile-information-section";
-import ChangePasswordSection from "@/domains/setting/components/change-password-section";
+import SettingsWrapper from "@/domains/setting/components/settings-wrapper";
 import { URLS } from "@/constants/route";
+import {
+  getAvailabilityAction,
+  getPayoutDetailsAction,
+} from "@/domains/onboarding/server/actions";
+import getAssessmentTypes from "@/domains/auth/actions/getAssessmentTypes";
+import getMaxTravelDistances from "@/domains/auth/actions/getMaxTravelDistances";
 
 export const metadata: Metadata = {
   title: "Settings | Thrive - Examiner",
@@ -30,30 +35,97 @@ const SettingsPage = async () => {
 
   const profileData = profileResult.data;
 
+  // Fetch all required data in parallel
+  const [
+    availabilityResult,
+    payoutResult,
+    assessmentTypes,
+    maxTravelDistances,
+  ] = await Promise.all([
+    getAvailabilityAction({ examinerProfileId: profileData.id }),
+    getPayoutDetailsAction({ accountId: user.accountId }),
+    getAssessmentTypes(),
+    getMaxTravelDistances(),
+  ]);
+
+  const availability =
+    availabilityResult.success && "data" in availabilityResult
+      ? availabilityResult.data
+      : null;
+
+  const payoutDetails =
+    payoutResult.success && "data" in payoutResult ? payoutResult.data : null;
+
+  // Prepare profile data for ProfileInfoForm
+  const profileFormData = {
+    firstName: profileData.firstName || "",
+    lastName: profileData.lastName || "",
+    emailAddress: profileData.emailAddress || "",
+    professionalTitle: profileData.professionalTitle || "",
+    yearsOfExperience: profileData.yearsOfExperience || "",
+    clinicName: profileData.clinicName || "",
+    clinicAddress: profileData.clinicAddress || "",
+    bio: profileData.bio || "",
+    profilePhotoId: profileData.profilePhotoId || null,
+    profilePhotoUrl: profileData.profilePhotoUrl || null,
+  };
+
+  // Prepare services data
+  const servicesFormData = {
+    assessmentTypes: profileData.assessmentTypes || [],
+    acceptVirtualAssessments: profileData.acceptVirtualAssessments ?? true,
+    acceptInPersonAssessments: true, // Default to true
+    travelToClaimants: !!profileData.maxTravelDistance,
+    travelRadius: profileData.maxTravelDistance || "",
+    assessmentTypeOther: profileData.assessmentTypeOther || "",
+  };
+
+  // Prepare availability data
+  const availabilityFormData = availability || {};
+
+  // Prepare payout data
+  const payoutFormData = payoutDetails || {};
+
+  // Prepare documents data
+  const documentsFormData = {
+    medicalLicenseDocumentIds: profileData.medicalLicenseDocumentIds || [],
+  };
+
+  // Prepare compliance data
+  const complianceFormData = {
+    phipaCompliance: profileData.phipaCompliance ?? false,
+    pipedaCompliance: profileData.pipedaCompliance ?? false,
+    medicalLicenseActive: profileData.medicalLicenseActive ?? false,
+  };
+
+  // Prepare notifications data
+  const notificationsFormData = {
+    emailPaymentPayout: profileData.emailPaymentPayout ?? true,
+    smsNotifications: profileData.smsNotifications ?? false,
+    emailMarketing: profileData.emailMarketing ?? false,
+  };
+
   return (
-    <div className="w-full max-w-5xl">
+    <div className="w-full">
       <div className="mb-6">
         <h1 className="text-[28px] font-semibold text-gray-900 md:text-[34px]">
           Account Settings
         </h1>
       </div>
 
-      <div className="flex flex-col gap-8">
-        <ProfileInformationSection
-          examinerProfileId={profileData.id}
-          initialData={{
-            firstName: profileData.firstName,
-            lastName: profileData.lastName,
-            emailAddress: profileData.emailAddress,
-            phoneNumber: profileData.phoneNumber,
-            landlineNumber: profileData.landlineNumber || "",
-            provinceOfResidence: profileData.provinceOfResidence || "",
-            mailingAddress: profileData.mailingAddress || "",
-          }}
-        />
-
-        <ChangePasswordSection userId={user.id} />
-      </div>
+      <SettingsWrapper
+        examinerProfileId={profileData.id}
+        userId={user.id}
+        profileData={profileFormData}
+        servicesData={servicesFormData}
+        availabilityData={availabilityFormData}
+        payoutData={payoutFormData}
+        documentsData={documentsFormData}
+        complianceData={complianceFormData}
+        notificationsData={notificationsFormData}
+        assessmentTypes={assessmentTypes}
+        maxTravelDistances={maxTravelDistances}
+      />
     </div>
   );
 };

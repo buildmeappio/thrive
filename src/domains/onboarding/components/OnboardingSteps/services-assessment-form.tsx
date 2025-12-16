@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { FormProvider, FormField } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
@@ -58,9 +58,15 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
   maxTravelDistances,
   onComplete,
   onCancel: _onCancel,
+  onMarkComplete,
+  onStepEdited,
+  isCompleted = false,
+  isSettingsPage = false,
 }) => {
   const [loading, setLoading] = useState(false);
   const [hoveredType, setHoveredType] = useState<string | null>(null);
+
+  // No longer using localStorage/store - forms work directly with database data
 
   // Format assessment types from server with icons
   const assessmentTypeOptions = React.useMemo(() => {
@@ -90,23 +96,88 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
     }));
   }, [maxTravelDistances]);
 
-  const form = useForm<ServicesAssessmentInput>({
-    schema: servicesAssessmentSchema,
-    defaultValues: {
+  // Use initialData directly from database (no localStorage merging)
+  const defaultValues = useMemo(() => {
+    return {
       assessmentTypes: initialData?.assessmentTypes || [],
       acceptVirtualAssessments: initialData?.acceptVirtualAssessments ?? true,
       acceptInPersonAssessments: initialData?.acceptInPersonAssessments ?? true,
       travelToClaimants: initialData?.travelToClaimants ?? false,
       travelRadius: initialData?.travelRadius || "",
       assessmentTypeOther: initialData?.assessmentTypeOther || "",
-    },
+    };
+  }, [initialData]);
+
+  const form = useForm<ServicesAssessmentInput>({
+    schema: servicesAssessmentSchema,
+    defaultValues,
     mode: "onSubmit",
   });
 
+  // Track initial form data to detect changes
+  const initialFormDataRef = React.useRef<string | null>(null);
+  const isInitializedRef = React.useRef(false);
+
+  // Mark as initialized after first render and store initial form data
+  useEffect(() => {
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true;
+      initialFormDataRef.current = JSON.stringify(form.getValues());
+    }
+  }, [form]);
+
+  // Watch form changes
+  const formValues = form.watch();
+  const isDirty = form.formState.isDirty;
+  const formErrors = form.formState.errors;
+
+  // Check if form values have changed from initial saved values
+  const hasFormChanged = useMemo(() => {
+    if (!initialFormDataRef.current) return false;
+    const currentHash = JSON.stringify(formValues);
+    return currentHash !== initialFormDataRef.current;
+  }, [formValues]);
+
+  // If form is dirty or has changed from initial values, and step is completed, mark as incomplete
+  useEffect(() => {
+    if ((isDirty || hasFormChanged) && isCompleted && onStepEdited) {
+      onStepEdited();
+    }
+  }, [isDirty, hasFormChanged, isCompleted, onStepEdited]);
+
   const assessmentTypes = form.watch("assessmentTypes");
   const travelToClaimants = form.watch("travelToClaimants");
+  const travelRadius = form.watch("travelRadius");
+  const assessmentTypeOther = form.watch("assessmentTypeOther");
   const acceptVirtualAssessments = form.watch("acceptVirtualAssessments");
   const acceptInPersonAssessments = form.watch("acceptInPersonAssessments");
+
+  // Check if all required fields are filled
+  const isFormValid = useMemo(() => {
+    const hasAssessmentTypes =
+      Array.isArray(assessmentTypes) && assessmentTypes.length > 0;
+    const travelValid =
+      !travelToClaimants ||
+      (travelToClaimants && travelRadius && travelRadius.trim().length > 0);
+    const otherValid =
+      !assessmentTypes.includes("other") ||
+      (assessmentTypeOther && assessmentTypeOther.trim().length > 0);
+
+    return (
+      hasAssessmentTypes &&
+      travelValid &&
+      otherValid &&
+      !formErrors.assessmentTypes &&
+      !formErrors.travelRadius &&
+      !formErrors.assessmentTypeOther
+    );
+  }, [
+    assessmentTypes,
+    travelToClaimants,
+    travelRadius,
+    assessmentTypeOther,
+    formErrors,
+  ]);
 
   const toggleAssessmentType = (typeId: string) => {
     const currentTypes = form.getValues("assessmentTypes");
@@ -127,7 +198,6 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
       const result = await updateServicesAssessmentAction({
         examinerProfileId,
         ...values,
-        activationStep: "services", // Mark step 2 as completed
       });
 
       if (result.success) {
@@ -145,32 +215,89 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
     }
   };
 
+  // Handle "Mark as Complete" - saves and marks step as complete
+  const handleMarkComplete = async () => {
+    if (!examinerProfileId) {
+      toast.error("Examiner profile ID not found");
+      return;
+    }
+
+    // TypeScript narrowing: examinerProfileId is now guaranteed to be string
+    const profileId: string = examinerProfileId;
+
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast.error("Please fix validation errors before marking as complete");
+      return;
+    }
+
+    const values = form.getValues();
+    setLoading(true);
+    try {
+      const result = await updateServicesAssessmentAction({
+        examinerProfileId: profileId,
+        ...values,
+      });
+
+      if (result.success) {
+        // Update initial form data reference to current values so future changes are detected
+        const currentHash = JSON.stringify(values);
+        initialFormDataRef.current = currentHash;
+
+        toast.success(
+          "Services & Assessment Types saved and marked as complete",
+        );
+        // Mark step as complete
+        if (onMarkComplete) {
+          onMarkComplete();
+        }
+        // Close the step
+        onComplete();
+      } else {
+        toast.error(result.message || "Failed to update services");
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "An unexpected error occurred",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-2xl px-8 py-6 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div className="bg-white rounded-2xl px-8 py-6 shadow-sm relative">
+      <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-medium">
-            What Assessments Do You Perform?
+            {isSettingsPage
+              ? "Services & Assessments"
+              : "What Assessments Do You Perform?"}
           </h2>
-          <p className="text-sm text-gray-500">
-            Define your capabilities for case matching. Select all assessment
-            types you perform.
-          </p>
+          {!isSettingsPage && (
+            <p className="text-sm text-gray-500">
+              Define your capabilities for case matching. Select all assessment
+              types you perform.
+            </p>
+          )}
         </div>
-        <Button
-          type="submit"
-          form="services-form"
-          variant="outline"
-          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
-          disabled={loading}
-        >
-          <span>Mark as Complete</span>
-          <CircleCheck className="w-5 h-5 text-gray-700" />
-        </Button>
+        {/* Mark as Complete Button - Top Right (Onboarding only) */}
+        {!isSettingsPage && (
+          <Button
+            type="button"
+            onClick={handleMarkComplete}
+            variant="outline"
+            className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading}
+          >
+            <CircleCheck className="w-5 h-5 text-gray-700" />
+            <span>Mark as Complete</span>
+          </Button>
+        )}
       </div>
 
       <FormProvider form={form} onSubmit={onSubmit} id="services-form">
-        <div className="space-y-8">
+        <div className={`space-y-8 ${isSettingsPage ? "pb-20" : ""}`}>
           {/* Assessment Types Grid */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-4">
@@ -393,6 +520,20 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
           </div>
         </div>
       </FormProvider>
+      {/* Save Changes Button - Bottom Right (Settings only) */}
+      {isSettingsPage && (
+        <div className="absolute bottom-6 right-6 z-10">
+          <Button
+            type="button"
+            onClick={() => form.handleSubmit(onSubmit)()}
+            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            disabled={loading}
+          >
+            <CircleCheck className="w-5 h-5 text-white" />
+            <span>Save Changes</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

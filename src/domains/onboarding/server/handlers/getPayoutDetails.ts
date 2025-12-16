@@ -18,14 +18,9 @@ const getPayoutDetails = async (payload: GetPayoutDetailsInput) => {
   // Type assertion for new fields
   const profile = examinerProfile as typeof examinerProfile & {
     payoutMethod?: string | null;
-    legalName?: string | null;
-    sin?: string | null;
     transitNumber?: string | null;
     institutionNumber?: string | null;
     accountNumber?: string | null;
-    chequeMailingAddress?: string | null;
-    interacEmail?: string | null;
-    autodepositEnabled?: boolean | null;
   };
 
   return {
@@ -33,14 +28,9 @@ const getPayoutDetails = async (payload: GetPayoutDetailsInput) => {
     data: {
       id: profile.id,
       payoutMethod: profile.payoutMethod || "direct_deposit",
-      legalName: profile.legalName || "",
-      sin: profile.sin || "",
       transitNumber: profile.transitNumber || "",
       institutionNumber: profile.institutionNumber || "",
       accountNumber: profile.accountNumber || "",
-      chequeMailingAddress: profile.chequeMailingAddress || "",
-      interacEmail: profile.interacEmail || "",
-      autodepositEnabled: profile.autodepositEnabled ?? false,
     },
   };
 };

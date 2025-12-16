@@ -98,7 +98,7 @@ const DashboardPage = async () => {
           {/* Right Column - Two Panels */}
           <div className="lg:col-span-1 space-y-6">
             <UpdatesPanel items={updates} listHref="/updates" />
-            <SummaryPanel earnings="$2,250" invoiced="$1,500" totalIMEs={3} />
+            <SummaryPanel earnings="$0" invoiced="$0" totalIMEs={0} />
           </div>
         </div>
       </div>

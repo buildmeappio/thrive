@@ -2,10 +2,10 @@ import { Invoice, BillingSummary } from "../types";
 
 // Mock billing summary data
 export const mockBillingSummary: BillingSummary = {
-  totalEarnings: 45250.0,
-  totalInvoiced: 38500.0,
-  pendingPayments: 6750.0,
-  paidThisMonth: 12500.0,
+  totalEarnings: 0.0,
+  totalInvoiced: 0.0,
+  pendingPayments: 0.0,
+  paidThisMonth: 0.0,
 };
 
 // Mock invoices data

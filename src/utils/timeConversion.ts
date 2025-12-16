@@ -243,6 +243,8 @@ export function convertAvailabilityToUTC(
     overrideHours: data.overrideHours
       ? convertOverrideHoursToUTC(data.overrideHours)
       : undefined,
+    // Preserve bookingOptions as-is (no time conversion needed)
+    bookingOptions: data.bookingOptions,
   };
 }
 
@@ -262,5 +264,7 @@ export function convertAvailabilityToLocal(
     overrideHours: data.overrideHours
       ? convertOverrideHoursToLocal(data.overrideHours)
       : undefined,
+    // Preserve bookingOptions as-is (no time conversion needed)
+    bookingOptions: data.bookingOptions,
   };
 }

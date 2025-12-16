@@ -63,8 +63,8 @@ const saveAvailability = async (payload: SaveAvailabilityInput) => {
           // Store minimumNotice in minimumNoticeValue (as hours: 24, 48, or 72)
           minimumNoticeValue: payload.bookingOptions.minimumNotice,
           minimumNoticeUnit: "hours", // Always hours for 24h, 48h, 72h
-          // TODO: Add maxIMEsPerWeek field to ExaminerProfile schema to store this value
-          // For now, maxIMEsPerWeek is not persisted until the field is added
+          // Store maxIMEsPerWeek
+          maxIMEsPerWeek: payload.bookingOptions.maxIMEsPerWeek || null,
         },
       });
     }
