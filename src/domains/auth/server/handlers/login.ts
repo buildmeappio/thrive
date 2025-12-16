@@ -4,6 +4,7 @@ import { AuthDtoType } from "@/domains/auth/server/dto/auth.dto";
 import * as authService from "@/domains/auth/server/auth.service";
 import { isAllowedRole } from "@/lib/rbac";
 import { AuthDto } from "@/domains/auth/server/dto/auth.dto";
+import { AccountStatus } from "@prisma/client";
 
 type LoginData = {
   email: string;
@@ -16,7 +17,7 @@ export const login = async (data: LoginData): Promise<AuthDtoType> => {
   if (!user) {
     throw new Error("User not found");
   }
-  if (!user.isLoginEnabled) {
+  if (user.accounts[0].status !== AccountStatus.ACTIVE) {
     throw new Error(
       "Your account is disabled. Please contact an administrator.",
     );

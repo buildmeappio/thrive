@@ -2,8 +2,9 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
-import { Roles } from "@/domains/auth/constants/roles";
+import { Roles, RoleType } from "@/domains/auth/constants/roles";
 import { ENV } from "@/constants/variables";
+import { AccountStatus } from "@prisma/client";
 
 const getUserById = async (id: string) => {
   try {
@@ -48,7 +49,6 @@ const listAdminUsers = async () => {
         lastName: true,
         email: true,
         gender: true,
-        isLoginEnabled: true,
         mustResetPassword: true,
         createdAt: true,
         accounts: {
@@ -58,6 +58,7 @@ const listAdminUsers = async () => {
                 name: true,
               },
             },
+            status: true,
           },
           orderBy: {
             createdAt: "desc",
@@ -161,17 +162,15 @@ const createAdminUser = async (input: CreateAdminUserInput) => {
           email: normalizedEmail,
           gender: input.gender,
           password: hashedPassword,
-          isLoginEnabled: true,
+          accounts: {
+            create: {
+              roleId: adminRole.id,
+              status: AccountStatus.ACTIVE,
+            },
+          },
           mustResetPassword: true,
           temporaryPasswordIssuedAt: new Date(),
-        },
-      });
-
-      await tx.account.create({
-        data: {
-          userId: createdUser.id,
-          roleId: adminRole.id,
-        },
+        }
       });
 
       return { user: createdUser };
@@ -198,7 +197,6 @@ const createAdminUser = async (input: CreateAdminUserInput) => {
         lastName: true,
         email: true,
         gender: true,
-        isLoginEnabled: true,
         mustResetPassword: true,
         createdAt: true,
         accounts: {
@@ -208,6 +206,7 @@ const createAdminUser = async (input: CreateAdminUserInput) => {
                 name: true,
               },
             },
+            status: true,
           },
           orderBy: {
             createdAt: "desc",
@@ -223,14 +222,22 @@ const createAdminUser = async (input: CreateAdminUserInput) => {
   }
 };
 
-const toggleUserStatus = async (userId: string, isLoginEnabled: boolean) => {
+const toggleUserStatus = async (userId: string, role: RoleType, status: AccountStatus) => {
   try {
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data: { isLoginEnabled },
+    const account = await prisma.account.findFirst({
+      where: { userId, role: { name: role } },
+    });
+    console.log(account);
+    if (!account) {
+      throw HttpError.notFound("Account not found");
+    }
+
+    const updated = await prisma.account.update({
+      where: { id: account.id },
+      data: { status },
       select: {
         id: true,
-        isLoginEnabled: true,
+        status: true,
       },
     });
     return updated;
@@ -283,7 +290,6 @@ const updateUser = async ({
         lastName: true,
         email: true,
         gender: true,
-        isLoginEnabled: true,
         mustResetPassword: true,
         createdAt: true,
         accounts: {
@@ -293,6 +299,7 @@ const updateUser = async ({
                 name: true,
               },
             },
+            status: true,
           },
           orderBy: {
             createdAt: "desc",

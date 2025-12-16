@@ -4,6 +4,7 @@ import { z } from "zod";
 import userService from "../server/user.service";
 import { UserTableRow } from "../types/UserData";
 import logger from "@/utils/logger";
+import { AccountStatus } from "@prisma/client";
 
 const createUserSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -19,6 +20,7 @@ export const createUser = async (
   try {
     const input = createUserSchema.parse(rawInput);
     const user = await userService.createAdminUser(input);
+    const account = user.accounts[0];
     return {
       success: true,
       user: {
@@ -27,8 +29,8 @@ export const createUser = async (
         lastName: user.lastName,
         email: user.email,
         gender: user.gender,
-        role: user.accounts[0]?.role?.name || "N/A",
-        isLoginEnabled: user.isLoginEnabled,
+        role: account?.role?.name || "N/A",
+        isActive: account?.status === AccountStatus.ACTIVE,
         mustResetPassword: user.mustResetPassword,
         createdAt: user.createdAt.toISOString(),
       },

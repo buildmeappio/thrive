@@ -6,7 +6,7 @@ import { signOut } from "next-auth/react";
 import { DashboardShell } from "@/layouts/dashboard";
 import { toast } from "sonner";
 import AddUserModal from "@/domains/user/components/AddUserModal";
-import UserTableWithPagination from "@/domains/user/components/UserTableWithPagination";
+import { useUserTable } from "@/domains/user/components/UserTableWithPagination";
 import EditUserModal from "@/domains/user/components/EditUserModal";
 import DeleteUserModal from "@/domains/user/components/DeleteUserModal";
 import type { UserTableRow } from "@/domains/user/types/UserData";
@@ -15,6 +15,8 @@ import {
   deleteUser as deleteUserAction,
 } from "@/domains/user/actions";
 import Pagination from "@/components/Pagination";
+import UserTable from "@/domains/user/components/UserTableWithPagination";
+import { RoleType } from "@/domains/auth/constants/roles";
 
 type UsersPageContentProps = {
   initialUsers: UserTableRow[];
@@ -31,20 +33,22 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
   const [deletingUser, setDeletingUser] = useState<UserTableRow | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleToggleStatus = (userId: string, enabled: boolean) => {
+  const handleToggleStatus = (userId: string, role: RoleType, enabled: boolean) => {
     const previousUsers = users;
     const isDisablingSelf = session?.user?.id === userId && !enabled;
 
     setUsers((prev) =>
       prev.map((user) =>
-        user.id === userId ? { ...user, isLoginEnabled: enabled } : user,
+        user.id === userId ? { ...user, isActive: enabled } : user,
       ),
     );
     setTogglingUserId(userId);
     startToggle(async () => {
+      console.log(userId, session.user.roleName);
       const result = await toggleUserStatus({
         userId,
-        isLoginEnabled: enabled,
+        role,
+        isActive: enabled,
       });
       if (!result.success) {
         setUsers(previousUsers);
@@ -108,7 +112,7 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
     }
   };
 
-  const { table, tableElement } = UserTableWithPagination({
+  const { table, columns } = useUserTable({
     data: users,
     searchQuery,
     togglingUserId,
@@ -195,7 +199,7 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
         </div>
 
         <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
-          {tableElement}
+          <UserTable table={table} columns={columns} />
         </div>
 
         <div className="mt-4 px-3 sm:px-6 overflow-x-hidden">

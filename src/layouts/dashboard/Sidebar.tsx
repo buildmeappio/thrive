@@ -21,6 +21,7 @@ import {
   ThumbsUp,
   Users,
   Calendar,
+  Mail,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useSidebar } from "@/providers/Sidebar";
@@ -133,6 +134,12 @@ export const routes: Route[] = [
     ],
   },
   { icon: LifeBuoy, label: "Support", href: "/support", index: 11 },
+  {
+    icon: Mail,
+    label: "Email Templates",
+    href: "/dashboard/email-templates",
+    index: 12,
+  },
 ];
 
 const Sidebar = () => {

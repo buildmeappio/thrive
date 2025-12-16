@@ -6,6 +6,7 @@ model Account {
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt  DateTime? @map("deleted_at") @db.Timestamptz()
+  status     AccountStatus @default(ACTIVE) @map("status")
 
   role                 Role                  @relation(name: "AccountRole", fields: [roleId], references: [id])
   user                 User                  @relation(name: "AccountUser", fields: [userId], references: [id])
@@ -15,5 +16,6 @@ model Account {
   assignedExaminations Examination[]         @relation("AssignedCases")
   examinerProfiles     ExaminerProfile[]
 
+  @@unique([userId, roleId])
   @@map("accounts")
 }
