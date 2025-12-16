@@ -15,11 +15,15 @@ const config: PoolConfig = {
 };
 
 // Only enable SSL when explicitly requested; some DBs don't support TLS.
-if (process.env.NODE_ENV === "production") {
-  const sslRequired = process.env.DATABASE_SSL_REQUIRED === "true";
+// Check DATABASE_SSL_REQUIRED for all environments
+const sslRequired = process.env.DATABASE_SSL_REQUIRED === "true";
+if (sslRequired) {
   config.ssl = {
-    rejectUnauthorized: sslRequired,
+    rejectUnauthorized: process.env.NODE_ENV === "production",
   };
+} else {
+  // Explicitly disable SSL when not required
+  config.ssl = false;
 }
 
 // Create pool - it won't connect until actually used

@@ -120,6 +120,10 @@ export const routes: Route[] = [
         label: "Assessment Types",
         href: "/dashboard/taxonomy/assessmentType",
       },
+      {
+        label: "Professional Titles",
+        href: "/dashboard/taxonomy/professionalTitle",
+      },
       { label: "Languages", href: "/dashboard/taxonomy/language" },
       {
         label: "Organization Types",

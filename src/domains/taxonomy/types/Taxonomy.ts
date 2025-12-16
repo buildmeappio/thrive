@@ -11,7 +11,8 @@ export type TaxonomyType =
   | "maximumDistanceTravel"
   | "yearsOfExperience"
   | "configuration"
-  | "assessmentType";
+  | "assessmentType"
+  | "professionalTitle";
 
 export type TaxonomyFieldType = "text" | "textarea" | "select";
 
@@ -105,6 +106,11 @@ export type AssessmentType = BaseTaxonomy & {
   description: string | null;
 };
 
+export type ProfessionalTitle = BaseTaxonomy & {
+  name: string;
+  description: string | null;
+};
+
 // Union type for all taxonomies
 export type Taxonomy =
   | CaseStatus
@@ -119,7 +125,8 @@ export type Taxonomy =
   | MaximumDistanceTravel
   | YearsOfExperience
   | Configuration
-  | AssessmentType;
+  | AssessmentType
+  | ProfessionalTitle;
 
 // For table display
 export type TaxonomyData = {

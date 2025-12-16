@@ -24,6 +24,7 @@ const getPrismaModel = (type: TaxonomyType) => {
     yearsOfExperience: prisma.yearsOfExperience,
     configuration: prisma.configuration,
     assessmentType: prisma.assessmentType,
+    professionalTitle: prisma.professionalTitle,
   };
   return modelMap[type];
 };
