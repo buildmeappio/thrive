@@ -12,8 +12,8 @@ export const dynamic = "force-dynamic";
 const Page = async () => {
   const interviews = await interviewActions.getInterviews();
 
-  // Always show all three interview statuses in the filter
-  const statusNames = ["AVAILABLE", "BOOKED", "CANCELLED"];
+  // Show only BOOKED and COMPLETED statuses in the filter
+  const statusNames = ["BOOKED", "COMPLETED"];
 
   return <InterviewPageContent data={interviews} statuses={statusNames} />;
 };

@@ -83,6 +83,10 @@ type Props = {
   searchQuery?: string;
   filters?: {
     status: string;
+    dateRange?: {
+      start: string;
+      end: string;
+    };
   };
 };
 
@@ -199,6 +203,27 @@ const columnsDef = [
     maxSize: 250,
     size: 200,
   },
+  {
+    accessorKey: "status",
+    header: ({ column }: { column: Column<InterviewData, unknown> }) => (
+      <SortableHeader column={column}>Status</SortableHeader>
+    ),
+    cell: ({ row }: { row: Row<InterviewData> }) => {
+      const status = row.getValue("status") as string;
+      const formattedStatus = formatText(status);
+      return (
+        <div
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={formattedStatus}
+        >
+          {formattedStatus}
+        </div>
+      );
+    },
+    minSize: 120,
+    maxSize: 180,
+    size: 150,
+  },
 ];
 
 export default function InterviewTableWithPagination({
@@ -216,6 +241,27 @@ export default function InterviewTableWithPagination({
       result = result.filter((d) => d.status === filters.status);
     }
 
+    // Filter by date range
+    if (filters.dateRange) {
+      const { start, end } = filters.dateRange;
+      if (start) {
+        result = result.filter((d) => {
+          const interviewDate = new Date(d.startTime);
+          const startDate = new Date(start);
+          startDate.setHours(0, 0, 0, 0);
+          return interviewDate >= startDate;
+        });
+      }
+      if (end) {
+        result = result.filter((d) => {
+          const interviewDate = new Date(d.startTime);
+          const endDate = new Date(end);
+          endDate.setHours(23, 59, 59, 999); // Include the entire end date
+          return interviewDate <= endDate;
+        });
+      }
+    }
+
     // Filter by search query
     const q = searchQuery.trim().toLowerCase();
     if (q) {
@@ -224,6 +270,7 @@ export default function InterviewTableWithPagination({
           d.examinerName,
           formatDateTime(d.startTime),
           formatTimeRange(d.startTime, d.endTime),
+          formatText(d.status),
         ]
           .filter(Boolean)
           .some((v) => String(v).toLowerCase().includes(q)),
