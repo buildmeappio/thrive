@@ -6,7 +6,7 @@ import Section from "@/components/Section";
 import FieldRow from "@/components/FieldRow";
 import { ExaminerProfileData } from "../types/ExaminerProfileData";
 import { ArrowLeft } from "lucide-react";
-import { capitalizeWords } from "@/utils/text";
+import { capitalizeWords, formatDocumentFilename } from "@/utils/text";
 import Link from "next/link";
 
 type Props = { profile: ExaminerProfileData };
@@ -314,15 +314,20 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
                   if (allDocuments.length > 0) {
                     return (
                       <div className="max-h-[300px] overflow-y-auto space-y-2">
-                        {allDocuments.map((doc, index) => (
-                          <FieldRow
-                            key={index}
-                            label={doc.filename}
-                            value={doc.filename}
-                            type="document"
-                            documentUrl={doc.url}
-                          />
-                        ))}
+                        {allDocuments.map((doc, index) => {
+                          const formattedFilename = formatDocumentFilename(
+                            doc.filename,
+                          );
+                          return (
+                            <FieldRow
+                              key={index}
+                              label={formattedFilename}
+                              value={doc.filename}
+                              type="document"
+                              documentUrl={doc.url}
+                            />
+                          );
+                        })}
                       </div>
                     );
                   } else {

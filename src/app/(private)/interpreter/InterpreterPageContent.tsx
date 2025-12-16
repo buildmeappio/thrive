@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import InterpreterTableWithPagination from "@/domains/interpreter/components/InterpreterTableWithPagination";
+import InterpreterTable, {
+  useInterpreterTable,
+} from "@/domains/interpreter/components/InterpreterTableWrapper";
 import Pagination from "@/components/Pagination";
 import { InterpreterData } from "@/domains/interpreter/types/InterpreterData";
 import { DashboardShell } from "@/layouts/dashboard";
@@ -83,8 +85,8 @@ export default function InterpreterPageContent({
     };
   }, [activeDropdown]);
 
-  // Get table and table element from the component
-  const { table, tableElement } = InterpreterTableWithPagination({
+  // Get table and columns from the hook
+  const { table, columns } = useInterpreterTable({
     data,
     searchQuery,
     filters,
@@ -275,7 +277,7 @@ export default function InterpreterPageContent({
 
         {/* Interpreters Table Card */}
         <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
-          {tableElement}
+          <InterpreterTable table={table} columns={columns} />
         </div>
 
         {/* Pagination */}

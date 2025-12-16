@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import InterviewTableWithPagination from "@/domains/interview/components/InterviewTableWithPagination";
+import InterviewTable, {
+  useInterviewTable,
+} from "@/domains/interview/components/InterviewTableWithPagination";
 import Pagination from "@/components/Pagination";
 import { InterviewData } from "@/domains/interview/types/InterviewData";
 import { DashboardShell } from "@/layouts/dashboard";
@@ -108,8 +110,8 @@ export default function InterviewPageContent({
     };
   }, [activeDropdown]);
 
-  // Get table and table element from the component
-  const { table, tableElement } = InterviewTableWithPagination({
+  // Get table and columns from the hook
+  const { table, columns } = useInterviewTable({
     data,
     searchQuery,
     filters,
@@ -295,7 +297,7 @@ export default function InterviewPageContent({
 
         {/* Interviews Table Card */}
         <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
-          {tableElement}
+          <InterviewTable table={table} columns={columns} />
         </div>
 
         {/* Pagination - Outside the card */}

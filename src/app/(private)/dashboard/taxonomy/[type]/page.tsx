@@ -20,6 +20,7 @@ const validTypes: TaxonomyType[] = [
   "yearsOfExperience",
   "configuration",
   "assessmentType",
+  "professionalTitle",
 ];
 
 type PageProps = {

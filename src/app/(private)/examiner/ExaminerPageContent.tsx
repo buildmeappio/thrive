@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
-import ExaminerTableWithPagination from "@/domains/examiner/components/ExaminerTableWithPagination";
+import ExaminerTable, {
+  useExaminerTable,
+} from "@/domains/examiner/components/ExaminerTableWithPagination";
 import Pagination from "@/components/Pagination";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { DashboardShell } from "@/layouts/dashboard";
@@ -123,11 +125,9 @@ export default function ExaminerPageContent({
     };
   }, [activeDropdown]);
 
-  // Get table and table element from the component
-  const { table, tableElement } = ExaminerTableWithPagination({
+  // Get table and columns from the hook
+  const { table, columns } = useExaminerTable({
     data: examiners,
-    specialties,
-    statuses,
     searchQuery,
     filters,
     type: "examiners",
@@ -297,7 +297,7 @@ export default function ExaminerPageContent({
 
         {/* Examiners Table Card */}
         <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
-          {tableElement}
+          <ExaminerTable table={table} columns={columns} />
         </div>
 
         {/* Pagination - Outside the card */}

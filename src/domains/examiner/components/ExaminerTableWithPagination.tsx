@@ -8,6 +8,7 @@ import {
   getSortedRowModel,
   SortingState,
   flexRender,
+  type ColumnDef,
   type Row,
   type Column,
 } from "@tanstack/react-table";
@@ -30,15 +31,19 @@ interface FilterState {
   status: string;
 }
 
-type Props = {
+type useExaminerTableOptions = {
   data: ExaminerData[];
-  specialties?: string[];
-  statuses?: string[];
-  searchQuery?: string;
+  searchQuery: string;
   filters?: FilterState;
-  type?: "applications" | "examiners"; // To determine routing
+  type?: "applications" | "examiners";
   togglingExaminerId?: string | null;
   onToggleStatus?: (id: string) => void;
+};
+
+type ColumnMeta = {
+  minSize?: number;
+  maxSize?: number;
+  size?: number;
 };
 
 const ActionButton = ({
@@ -108,18 +113,18 @@ const SortableHeader = ({
   );
 };
 
-const getColumnsDef = (
+const createColumns = (
   type?: "applications" | "examiners",
   togglingExaminerId?: string | null,
   onToggleStatus?: (id: string) => void,
-) => {
-  const baseColumns = [
+): ColumnDef<ExaminerData, unknown>[] => {
+  const baseColumns: ColumnDef<ExaminerData, unknown>[] = [
     {
       accessorKey: "name",
-      header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+      header: ({ column }) => (
         <SortableHeader column={column}>Name</SortableHeader>
       ),
-      cell: ({ row }: { row: Row<ExaminerData> }) => {
+      cell: ({ row }) => {
         const name = row.getValue("name") as string;
         const capitalizedName = capitalizeWords(name);
         return (
@@ -131,16 +136,14 @@ const getColumnsDef = (
           </div>
         );
       },
-      minSize: 150,
-      maxSize: 250,
-      size: 200,
+      meta: { minSize: 150, maxSize: 250, size: 200 } as ColumnMeta,
     },
     {
       accessorKey: "email",
-      header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+      header: ({ column }) => (
         <SortableHeader column={column}>Email</SortableHeader>
       ),
-      cell: ({ row }: { row: Row<ExaminerData> }) => {
+      cell: ({ row }) => {
         const email = row.getValue("email") as string;
         return (
           <div
@@ -151,16 +154,14 @@ const getColumnsDef = (
           </div>
         );
       },
-      minSize: 180,
-      maxSize: 300,
-      size: 220,
+      meta: { minSize: 180, maxSize: 300, size: 220 } as ColumnMeta,
     },
     {
       accessorKey: "specialties",
-      header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+      header: ({ column }) => (
         <SortableHeader column={column}>Specialties</SortableHeader>
       ),
-      cell: ({ row }: { row: Row<ExaminerData> }) => {
+      cell: ({ row }) => {
         const specialties = row.getValue("specialties") as string | string[];
         const formattedText = Array.isArray(specialties)
           ? specialties
@@ -177,16 +178,14 @@ const getColumnsDef = (
           </div>
         );
       },
-      minSize: 150,
-      maxSize: 300,
-      size: 220,
+      meta: { minSize: 150, maxSize: 300, size: 220 } as ColumnMeta,
     },
     {
       accessorKey: "province",
-      header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+      header: ({ column }) => (
         <SortableHeader column={column}>Province</SortableHeader>
       ),
-      cell: ({ row }: { row: Row<ExaminerData> }) => {
+      cell: ({ row }) => {
         const province = row.getValue("province") as string;
         return (
           <div
@@ -197,9 +196,7 @@ const getColumnsDef = (
           </div>
         );
       },
-      minSize: 100,
-      maxSize: 150,
-      size: 120,
+      meta: { minSize: 100, maxSize: 150, size: 120 } as ColumnMeta,
     },
   ];
 
@@ -207,10 +204,10 @@ const getColumnsDef = (
   if (type === "applications") {
     baseColumns.push({
       accessorKey: "status",
-      header: ({ column }: { column: Column<ExaminerData, unknown> }) => (
+      header: ({ column }) => (
         <SortableHeader column={column}>Status</SortableHeader>
       ),
-      cell: ({ row }: { row: Row<ExaminerData> }) => {
+      cell: ({ row }) => {
         const status = row.getValue("status") as string;
         const formattedStatus = formatText(status);
         return (
@@ -222,16 +219,14 @@ const getColumnsDef = (
           </div>
         );
       },
-      minSize: 120,
-      maxSize: 180,
-      size: 150,
+      meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
     });
   } else if (type === "examiners" && onToggleStatus) {
     // Add status toggle column for examiners
     baseColumns.push({
       header: () => <span>Status</span>,
       accessorKey: "status",
-      cell: ({ row }: { row: Row<ExaminerData> }) => {
+      cell: ({ row }) => {
         const isToggling = togglingExaminerId === row.original.id;
         const status = row.original.status;
         const isActive = status === "ACTIVE";
@@ -260,9 +255,7 @@ const getColumnsDef = (
           </div>
         );
       },
-      minSize: 110,
-      maxSize: 130,
-      size: 110,
+      meta: { minSize: 110, maxSize: 130, size: 110 } as ColumnMeta,
     });
   }
 
@@ -270,35 +263,28 @@ const getColumnsDef = (
   baseColumns.push({
     header: () => <></>,
     accessorKey: "id",
-    cell: ({ row }: { row: Row<ExaminerData> }) => {
+    cell: ({ row }) => {
       return <ActionButton id={row.original.id} type={type} />;
     },
-    minSize: 60,
-    maxSize: 60,
-    size: 60,
+    meta: { minSize: 60, maxSize: 60, size: 60 } as ColumnMeta,
   });
 
   return baseColumns;
 };
 
-export default function ExaminerTableWithPagination({
-  data,
-  searchQuery = "",
-  filters,
-  type,
-  togglingExaminerId,
-  onToggleStatus,
-}: Props) {
-  const [query, setQuery] = useState(searchQuery);
+export const useExaminerTable = (props: useExaminerTableOptions) => {
+  const {
+    data,
+    searchQuery,
+    filters,
+    type,
+    togglingExaminerId,
+    onToggleStatus,
+  } = props;
+
   const [sorting, setSorting] = useState<SortingState>([]);
-  const columnsDef = getColumnsDef(type, togglingExaminerId, onToggleStatus);
 
-  // Update internal query when searchQuery prop changes
-  useEffect(() => {
-    setQuery(searchQuery);
-  }, [searchQuery]);
-
-  const filtered = useMemo(() => {
+  const filteredData = useMemo(() => {
     let result = data;
 
     // Filter by specialty
@@ -317,7 +303,7 @@ export default function ExaminerTableWithPagination({
     }
 
     // Filter by search query
-    const q = query.trim().toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
     if (q) {
       result = result.filter((d) => {
         // For examiners, exclude status from search; for applications, include it
@@ -332,11 +318,16 @@ export default function ExaminerTableWithPagination({
     }
 
     return result;
-  }, [data, query, filters, type]);
+  }, [data, searchQuery, filters, type]);
+
+  const columns = useMemo(
+    () => createColumns(type, togglingExaminerId, onToggleStatus),
+    [type, togglingExaminerId, onToggleStatus],
+  );
 
   const table = useReactTable({
-    data: filtered,
-    columns: columnsDef,
+    data: filteredData,
+    columns,
     state: { sorting },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -344,118 +335,107 @@ export default function ExaminerTableWithPagination({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  // reset to first page when searching or filtering
   useEffect(() => {
     table.setPageIndex(0);
-  }, [query, filters, table]);
+  }, [searchQuery, filters, table]);
 
   return {
     table,
-    tableElement: (
-      <>
-        {/* Table */}
-        <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
-          <Table className="w-full border-0 table-fixed">
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow
-                  className="bg-[#F3F3F3] border-b-0"
-                  key={headerGroup.id}
-                >
-                  {headerGroup.headers.map((header) => {
-                    const columnDef = columnsDef[header.index];
-                    const minWidth = columnDef?.minSize || "auto";
-                    const maxWidth = columnDef?.maxSize || "auto";
-                    const width = columnDef?.size || "auto";
-                    return (
-                      <TableHead
-                        key={header.id}
-                        style={{
-                          minWidth:
-                            typeof minWidth === "number"
-                              ? `${minWidth}px`
-                              : minWidth,
-                          maxWidth:
-                            typeof maxWidth === "number"
-                              ? `${maxWidth}px`
-                              : maxWidth,
-                          width:
-                            typeof width === "number" ? `${width}px` : width,
-                        }}
-                        className={cn(
-                          "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
-                          header.index === 0 && "rounded-l-2xl",
-                          header.index === headerGroup.headers.length - 1 &&
-                            "rounded-r-2xl",
-                        )}
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-
-            <TableBody>
-              {table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className="bg-white border-0 border-b-1"
-                  >
-                    {row.getVisibleCells().map((cell) => {
-                      const columnIndex = cell.column.getIndex();
-                      const columnDef = columnsDef[columnIndex];
-                      const minWidth = columnDef?.minSize || "auto";
-                      const maxWidth = columnDef?.maxSize || "auto";
-                      const width = columnDef?.size || "auto";
-                      return (
-                        <TableCell
-                          key={cell.id}
-                          style={{
-                            minWidth:
-                              typeof minWidth === "number"
-                                ? `${minWidth}px`
-                                : minWidth,
-                            maxWidth:
-                              typeof maxWidth === "number"
-                                ? `${maxWidth}px`
-                                : maxWidth,
-                            width:
-                              typeof width === "number" ? `${width}px` : width,
-                          }}
-                          className="px-6 py-3 overflow-hidden align-middle"
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columnsDef.length}
-                    className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
-                  >
-                    No Examiners Found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </>
-    ),
+    columns,
   };
-}
+};
+
+type ExaminerTableProps = {
+  table: ReturnType<typeof useExaminerTable>["table"];
+  columns: ReturnType<typeof useExaminerTable>["columns"];
+};
+
+const ExaminerTable: React.FC<ExaminerTableProps> = ({ table, columns }) => {
+  return (
+    <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
+      <Table className="w-full border-0 table-fixed">
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                const column = header.column.columnDef;
+                const meta = (column.meta as ColumnMeta) || {};
+                return (
+                  <TableHead
+                    key={header.id}
+                    style={{
+                      minWidth: meta.minSize ? `${meta.minSize}px` : undefined,
+                      maxWidth: meta.maxSize ? `${meta.maxSize}px` : undefined,
+                      width: meta.size ? `${meta.size}px` : undefined,
+                    }}
+                    className={cn(
+                      "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
+                      header.index === 0 && "rounded-l-2xl",
+                      header.index === headerGroup.headers.length - 1 &&
+                        "rounded-r-2xl",
+                    )}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
+
+        <TableBody>
+          {table.getRowModel().rows.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+                className="bg-white border-0 border-b-1"
+              >
+                {row.getVisibleCells().map((cell) => {
+                  const column = cell.column.columnDef;
+                  const meta = (column.meta as ColumnMeta) || {};
+                  return (
+                    <TableCell
+                      key={cell.id}
+                      style={{
+                        minWidth: meta.minSize
+                          ? `${meta.minSize}px`
+                          : undefined,
+                        maxWidth: meta.maxSize
+                          ? `${meta.maxSize}px`
+                          : undefined,
+                        width: meta.size ? `${meta.size}px` : undefined,
+                      }}
+                      className="px-6 py-3 overflow-hidden align-middle"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
+              >
+                No Examiners Found
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  );
+};
+
+export default ExaminerTable;

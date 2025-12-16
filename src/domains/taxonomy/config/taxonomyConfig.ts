@@ -287,4 +287,27 @@ export const TaxonomyConfigs: Record<TaxonomyType, TaxonomyConfig> = {
     displayFields: ["name", "description"],
     searchFields: ["name", "description"],
   },
+  professionalTitle: {
+    name: "Professional Titles",
+    singularName: "Professional Title",
+    tableName: "professionalTitle",
+    fields: [
+      {
+        name: "name",
+        label: "Name",
+        type: "text",
+        required: true,
+        placeholder: "Enter professional title",
+      },
+      {
+        name: "description",
+        label: "Description",
+        type: "textarea",
+        required: false,
+        placeholder: "Enter description (optional)",
+      },
+    ],
+    displayFields: ["name", "description"],
+    searchFields: ["name", "description"],
+  },
 };
