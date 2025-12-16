@@ -100,8 +100,7 @@ const GradientIcon = ({ children }: { children: React.ReactNode }) => {
     <div className="relative w-5 h-5 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] flex items-center justify-center overflow-hidden">
       <div
         className="absolute inset-0 rounded-full"
-        style={{ backgroundColor: "#00E1B8", opacity: 0.5 }}
-      ></div>
+        style={{ backgroundColor: "#00E1B8", opacity: 0.5 }}></div>
       <div className="relative z-10 text-white flex items-center justify-center">
         {children}
       </div>
@@ -181,18 +180,18 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
       await approveExaminer(examiner.id);
       if (isApplication) {
         toast.success(
-          "Application approved successfully! An email has been sent to the applicant.",
+          "Application approved successfully! An email has been sent to the applicant."
         );
       } else {
         toast.success(
-          "Examiner approved successfully! An email has been sent to the examiner.",
+          "Examiner approved successfully! An email has been sent to the examiner."
         );
       }
       setStatus("approved");
     } catch (error) {
       logger.error("Failed to approve:", error);
       toast.error(
-        `Failed to approve ${isApplication ? "application" : "examiner"}. Please try again.`,
+        `Failed to approve ${isApplication ? "application" : "examiner"}. Please try again.`
       );
     } finally {
       setLoadingAction(null);
@@ -201,18 +200,18 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
 
   const handleRejectSubmit = async (
     internalNotes: string,
-    messageToExaminer: string,
+    messageToExaminer: string
   ) => {
     setLoadingAction("reject");
     try {
       await rejectExaminer(examiner.id, messageToExaminer);
       if (isApplication) {
         toast.success(
-          "Application rejected. An email has been sent to the applicant.",
+          "Application rejected. An email has been sent to the applicant."
         );
       } else {
         toast.success(
-          "Examiner rejected. An email has been sent to the examiner.",
+          "Examiner rejected. An email has been sent to the examiner."
         );
       }
       setStatus("rejected");
@@ -220,7 +219,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     } catch (error) {
       logger.error("Failed to reject:", error);
       toast.error(
-        `Failed to reject ${isApplication ? "application" : "examiner"}. Please try again.`,
+        `Failed to reject ${isApplication ? "application" : "examiner"}. Please try again.`
       );
     } finally {
       setLoadingAction(null);
@@ -230,7 +229,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
   const handleRequestMoreInfoSubmit = async (
     internalNotes: string,
     messageToExaminer: string,
-    documentsRequired: boolean,
+    documentsRequired: boolean
   ) => {
     setLoadingAction("request");
     try {
@@ -251,7 +250,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
   };
 
   const handleFeeStructureSubmit = async (
-    data: Omit<ExaminerFeeStructure, "id">,
+    data: Omit<ExaminerFeeStructure, "id">
   ) => {
     setLoadingAction("feeStructure");
     try {
@@ -335,7 +334,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
       await requestInterview(examiner.id);
       setStatus("interview_requested");
       toast.success(
-        "Interview request sent. Examiner will receive an email to schedule their interview.",
+        "Interview request sent. Examiner will receive an email to schedule their interview."
       );
       router.refresh();
     } catch (error) {
@@ -389,8 +388,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -410,8 +408,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -441,8 +438,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -462,8 +458,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -483,8 +478,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -504,8 +498,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -525,8 +518,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -555,8 +547,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -576,8 +567,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -616,8 +606,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -637,8 +626,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 className="w-3 h-3"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -661,8 +649,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           <Link
             href="/examiner"
-            className="flex items-center gap-2 sm:gap-4 flex-shrink-0"
-          >
+            className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
@@ -684,8 +671,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
               fontSize: "14px",
               color: "#004766",
               backgroundColor: "#E0F7F4",
-            }}
-          >
+            }}>
             {statusBadge.icon}
             <span style={{ color: "#004766" }}>{statusBadge.text}</span>
           </div>
@@ -861,8 +847,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                         WebkitLineClamp: 6,
                         WebkitBoxOrient: "vertical",
                         textOverflow: "ellipsis",
-                      }}
-                    >
+                      }}>
                       {examiner.experienceDetails}
                     </p>
                   </div>
@@ -925,7 +910,53 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 />
               </Section>
 
-              {/* Section 6: Actions - Hidden when MORE_INFO_REQUESTED, INFO_REQUESTED, or ACTIVE */}
+              {/* Section 6: Interview Details - Only show if interview is scheduled */}
+              {examiner.interviewSlot &&
+                examiner.interviewSlot.status === "BOOKED" &&
+                examiner.interviewSlot.startTime &&
+                examiner.interviewSlot.endTime && (
+                  <Section title="Interview Details">
+                    <FieldRow
+                      label="Interview Date"
+                      value={
+                        examiner.interviewSlot.startTime
+                          ? new Date(
+                              examiner.interviewSlot.startTime
+                            ).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : "N/A"
+                      }
+                      type="text"
+                    />
+                    <FieldRow
+                      label="Interview Time"
+                      value={
+                        examiner.interviewSlot.startTime &&
+                        examiner.interviewSlot.endTime
+                          ? `${new Date(
+                              examiner.interviewSlot.startTime
+                            ).toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            })} - ${new Date(
+                              examiner.interviewSlot.endTime
+                            ).toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            })}`
+                          : "N/A"
+                      }
+                      type="text"
+                    />
+                  </Section>
+                )}
+
+              {/* Section 7: Actions - Hidden when MORE_INFO_REQUESTED, INFO_REQUESTED, or ACTIVE */}
               {/* Hide actions for approved applications (they're now examiners) and active examiners */}
               {status !== "more_info_requested" &&
                 status !== "info_requested" &&
@@ -940,7 +971,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                         <>
                           <button
                             className={cn(
-                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
+                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                             style={{
                               fontFamily: "Poppins, sans-serif",
@@ -949,8 +980,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               fontSize: "14px",
                             }}
                             disabled={loadingAction !== null}
-                            onClick={handleRequestInterview}
-                          >
+                            onClick={handleRequestInterview}>
                             {loadingAction === "requestInterview"
                               ? "Requesting..."
                               : "Request Interview"}
@@ -958,7 +988,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                           <button
                             onClick={() => setIsRequestOpen(true)}
                             className={cn(
-                              "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed",
+                              "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                             style={{
                               fontFamily: "Poppins, sans-serif",
@@ -966,13 +996,12 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               lineHeight: "100%",
                               fontSize: "14px",
                             }}
-                            disabled={loadingAction !== null}
-                          >
+                            disabled={loadingAction !== null}>
                             Request More Info
                           </button>
                           <button
                             className={cn(
-                              "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed",
+                              "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                             style={{
                               fontFamily: "Poppins, sans-serif",
@@ -981,8 +1010,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               fontSize: "14px",
                             }}
                             disabled={loadingAction !== null}
-                            onClick={() => setIsRejectOpen(true)}
-                          >
+                            onClick={() => setIsRejectOpen(true)}>
                             Reject Application
                           </button>
                         </>
@@ -993,7 +1021,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                         <>
                           <button
                             className={cn(
-                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
+                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                             style={{
                               fontFamily: "Poppins, sans-serif",
@@ -1006,15 +1034,14 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               !examiner.interviewSlot ||
                               examiner.interviewSlot.status !== "BOOKED"
                             }
-                            onClick={handleMarkInterviewCompleted}
-                          >
+                            onClick={handleMarkInterviewCompleted}>
                             {loadingAction === "markInterviewCompleted"
                               ? "Marking..."
                               : "Interview Held"}
                           </button>
                           <button
                             className={cn(
-                              "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed",
+                              "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                             style={{
                               fontFamily: "Poppins, sans-serif",
@@ -1023,8 +1050,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               fontSize: "14px",
                             }}
                             disabled={loadingAction !== null}
-                            onClick={() => setIsRejectOpen(true)}
-                          >
+                            onClick={() => setIsRejectOpen(true)}>
                             Reject Application
                           </button>
                         </>
@@ -1035,7 +1061,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                         <>
                           <button
                             className={cn(
-                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
+                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                             style={{
                               fontFamily: "Poppins, sans-serif",
@@ -1044,15 +1070,14 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               fontSize: "14px",
                             }}
                             disabled={loadingAction !== null}
-                            onClick={handleMarkInterviewCompleted}
-                          >
+                            onClick={handleMarkInterviewCompleted}>
                             {loadingAction === "markInterviewCompleted"
                               ? "Marking..."
                               : "Interview Held"}
                           </button>
                           <button
                             className={cn(
-                              "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed",
+                              "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                             style={{
                               fontFamily: "Poppins, sans-serif",
@@ -1061,8 +1086,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               fontSize: "14px",
                             }}
                             disabled={loadingAction !== null}
-                            onClick={() => setIsRejectOpen(true)}
-                          >
+                            onClick={() => setIsRejectOpen(true)}>
                             Reject Application
                           </button>
                         </>
@@ -1079,22 +1103,21 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                             }}
                             disabled={loadingAction !== null}
                             className={cn(
-                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
+                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                             style={{
                               fontFamily: "Poppins, sans-serif",
                               fontWeight: 400,
                               lineHeight: "100%",
                               fontSize: "14px",
-                            }}
-                          >
+                            }}>
                             {loadingAction === "sendContract"
                               ? "Sending..."
                               : "Send Contract"}
                           </button>
                           <button
                             className={cn(
-                              "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed",
+                              "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                             style={{
                               fontFamily: "Poppins, sans-serif",
@@ -1103,8 +1126,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               fontSize: "14px",
                             }}
                             disabled={loadingAction !== null}
-                            onClick={() => setIsRejectOpen(true)}
-                          >
+                            onClick={() => setIsRejectOpen(true)}>
                             Reject Application
                           </button>
                         </>
@@ -1118,7 +1140,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               "px-4 py-3 rounded-full flex items-center gap-2 relative",
                               examiner.contractSignedByExaminerAt
                                 ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 cursor-pointer"
-                                : "border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed",
+                                : "border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed"
                             )}
                             style={{
                               fontFamily: "Poppins, sans-serif",
@@ -1137,7 +1159,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                                 try {
                                   const result = await getExaminerContract(
                                     examiner.id,
-                                    isApplication,
+                                    isApplication
                                   );
                                   if (result.success && result.contractHtml) {
                                     setContractHtml(result.contractHtml);
@@ -1147,7 +1169,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                                 } catch (error) {
                                   logger.error(
                                     "Error loading contract:",
-                                    error,
+                                    error
                                   );
                                   toast.error("Failed to load contract");
                                 } finally {
@@ -1157,7 +1179,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                                 toast.info(
                                   isApplication
                                     ? "Applicant has not signed contract yet"
-                                    : "Examiner has not signed contract yet",
+                                    : "Examiner has not signed contract yet"
                                 );
                               }
                             }}
@@ -1167,23 +1189,21 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                                 : isApplication
                                   ? "Applicant has not signed contract yet"
                                   : "Examiner has not signed contract yet"
-                            }
-                          >
+                            }>
                             Review Signed Contract
                           </button>
                           <button
                             onClick={handleSendContract}
                             disabled={loadingAction !== null}
                             className={cn(
-                              "px-4 py-3 rounded-full border border-blue-600 text-blue-600 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed",
+                              "px-4 py-3 rounded-full border border-blue-600 text-blue-600 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                             style={{
                               fontFamily: "Poppins, sans-serif",
                               fontWeight: 400,
                               lineHeight: "100%",
                               fontSize: "14px",
-                            }}
-                          >
+                            }}>
                             {loadingAction === "sendContract"
                               ? "Re-sending..."
                               : "Re-send Contract"}
@@ -1195,7 +1215,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                       {status === "contract_signed" && (
                         <button
                           className={cn(
-                            "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
+                            "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                           )}
                           style={{
                             fontFamily: "Poppins, sans-serif",
@@ -1204,8 +1224,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                             fontSize: "14px",
                           }}
                           disabled={loadingAction !== null}
-                          onClick={handleApprove}
-                        >
+                          onClick={handleApprove}>
                           {loadingAction === "approve"
                             ? "Approving..."
                             : "Approve Application"}
@@ -1221,7 +1240,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                             "px-4 py-3 rounded-full flex items-center gap-2 cursor-default",
                             status === "rejected"
                               ? "text-white bg-red-700"
-                              : "border border-gray-500 text-gray-700 bg-gray-50",
+                              : "border border-gray-500 text-gray-700 bg-gray-50"
                           )}
                           style={{
                             fontFamily: "Poppins, sans-serif",
@@ -1229,8 +1248,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                             lineHeight: "100%",
                             fontSize: "14px",
                           }}
-                          disabled
-                        >
+                          disabled>
                           {status === "rejected" && "Rejected"}
                           {status === "withdrawn" && "Withdrawn"}
                         </button>
@@ -1338,12 +1356,10 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
         {isContractReviewOpen && (
           <div
             className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setIsContractReviewOpen(false)}
-          >
+            onClick={() => setIsContractReviewOpen(false)}>
             <div
               className="bg-white w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg relative flex flex-col"
-              onClick={(e) => e.stopPropagation()}
-            >
+              onClick={(e) => e.stopPropagation()}>
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200">
                 <div>
@@ -1354,7 +1370,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                     Signed by {capitalizeWords(examiner.name)} on{" "}
                     {examiner.contractSignedByExaminerAt
                       ? new Date(
-                          examiner.contractSignedByExaminerAt,
+                          examiner.contractSignedByExaminerAt
                         ).toLocaleDateString("en-US", {
                           month: "long",
                           day: "numeric",
@@ -1366,8 +1382,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 <button
                   onClick={() => setIsContractReviewOpen(false)}
                   className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
-                  aria-label="Close"
-                >
+                  aria-label="Close">
                   ✕
                 </button>
               </div>
@@ -1398,8 +1413,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
               <div className="flex items-center justify-between p-6 border-t border-gray-200">
                 <button
                   onClick={() => setIsContractReviewOpen(false)}
-                  className="px-6 py-3 rounded-full border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-poppins text-sm font-medium"
-                >
+                  className="px-6 py-3 rounded-full border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-poppins text-sm font-medium">
                   Close
                 </button>
                 <div className="flex items-center gap-3">
@@ -1407,9 +1421,8 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                     onClick={handleDeclineContract}
                     disabled={loadingAction !== null}
                     className={cn(
-                      "px-6 py-3 rounded-full border border-red-500 text-red-700 bg-white hover:bg-red-50 font-poppins text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed",
-                    )}
-                  >
+                      "px-6 py-3 rounded-full border border-red-500 text-red-700 bg-white hover:bg-red-50 font-poppins text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    )}>
                     {loadingAction === "reject"
                       ? "Declining..."
                       : "Decline Contract"}
@@ -1421,9 +1434,8 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                     }}
                     disabled={loadingAction !== null}
                     className={cn(
-                      "px-6 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-poppins text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
-                    )}
-                  >
+                      "px-6 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-poppins text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    )}>
                     {loadingAction === "markContractSigned"
                       ? "Confirming..."
                       : "Confirm Contract"}

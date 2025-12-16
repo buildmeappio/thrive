@@ -1,7 +1,6 @@
 import ExaminerPageContent from "./ExaminerPageContent";
 import {
   listAllExaminers,
-  listAllApplications,
   listExaminerSpecialties,
   listExaminerStatuses,
 } from "@/domains/examiner/actions";
@@ -16,9 +15,8 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const Page = async () => {
-  const [examiners, applications, specialties, statuses] = await Promise.all([
+  const [examiners, specialties, statuses] = await Promise.all([
     listAllExaminers(),
-    listAllApplications(),
     listExaminerSpecialties(),
     listExaminerStatuses(),
   ]);
@@ -65,52 +63,9 @@ const Page = async () => {
     feeStructure: examiner.feeStructure,
   }));
 
-  const applicationsData: ExaminerData[] = applications.map((application) => ({
-    id: application.id,
-    name: application.name,
-    firstName: application.firstName,
-    lastName: application.lastName,
-    specialties: application.specialties,
-    phone: application.phone,
-    landlineNumber: application.landlineNumber,
-    email: application.email,
-    province: application.province,
-    mailingAddress: application.mailingAddress,
-    addressLookup: application.addressLookup,
-    addressStreet: application.addressStreet,
-    addressCity: application.addressCity,
-    addressPostalCode: application.addressPostalCode,
-    addressSuite: application.addressSuite,
-    addressProvince: application.addressProvince,
-    licenseNumber: application.licenseNumber,
-    provinceOfLicensure: application.provinceOfLicensure,
-    licenseExpiryDate: application.licenseExpiryDate,
-    cvUrl: application.cvUrl,
-    medicalLicenseUrl: application.medicalLicenseUrl,
-    medicalLicenseUrls: application.medicalLicenseUrls,
-    languagesSpoken: application.languagesSpoken,
-    yearsOfIMEExperience: application.yearsOfIMEExperience,
-    imesCompleted: application.imesCompleted,
-    currentlyConductingIMEs: application.currentlyConductingIMEs,
-    insurersOrClinics: application.insurersOrClinics,
-    assessmentTypes: application.assessmentTypes,
-    assessmentTypeOther: application.assessmentTypeOther,
-    experienceDetails: application.experienceDetails,
-    redactedIMEReportUrl: application.redactedIMEReportUrl,
-    insuranceProofUrl: application.insuranceProofUrl,
-    signedNdaUrl: application.signedNdaUrl,
-    isForensicAssessmentTrained: application.isForensicAssessmentTrained,
-    agreeToTerms: application.agreeToTerms,
-    status: application.status,
-    createdAt: application.createdAt,
-    updatedAt: application.updatedAt,
-    feeStructure: application.feeStructure,
-  }));
-
   return (
     <ExaminerPageContent
       examinersData={examinersData}
-      applicationsData={applicationsData}
       specialties={specialties}
       statuses={statuses}
     />

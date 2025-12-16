@@ -22,6 +22,7 @@ export { default as signContractByExaminer } from "./signContractByExaminer";
 export { default as getExaminerContract } from "./getExaminerContract";
 export { suspendExaminer } from "./suspendExaminer";
 export { reactivateExaminer } from "./reactivateExaminer";
+export { toggleExaminerStatus } from "./toggleExaminerStatus";
 // Application actions (for listing only - actions use same functions)
 export { default as listAllApplications } from "./listAllApplications";
 export { default as listRecentApplications } from "./listRecentApplications";

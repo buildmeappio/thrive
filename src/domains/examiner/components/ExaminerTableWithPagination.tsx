@@ -37,6 +37,8 @@ type Props = {
   searchQuery?: string;
   filters?: FilterState;
   type?: "applications" | "examiners"; // To determine routing
+  togglingExaminerId?: string | null;
+  onToggleStatus?: (id: string) => void;
 };
 
 const ActionButton = ({
@@ -47,7 +49,7 @@ const ActionButton = ({
   type?: "applications" | "examiners";
 }) => {
   const href =
-    type === "applications" ? `/examiner/application/${id}` : `/examiner/${id}`;
+    type === "applications" ? `/application/${id}` : `/examiner/${id}`;
   return (
     <Link href={href} className="w-full h-full cursor-pointer">
       <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-1 w-[30px] h-[30px] flex items-center justify-center hover:opacity-80">
@@ -90,8 +92,7 @@ const SortableHeader = ({
   return (
     <div
       className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
-      onClick={handleSort}
-    >
+      onClick={handleSort}>
       <span>{children}</span>
       {sortDirection === false && (
         <ArrowUpDown className="h-4 w-4 text-gray-400" />
@@ -106,7 +107,11 @@ const SortableHeader = ({
   );
 };
 
-const getColumnsDef = (type?: "applications" | "examiners") => {
+const getColumnsDef = (
+  type?: "applications" | "examiners",
+  togglingExaminerId?: string | null,
+  onToggleStatus?: (id: string) => void
+) => {
   const baseColumns = [
     {
       accessorKey: "name",
@@ -119,8 +124,7 @@ const getColumnsDef = (type?: "applications" | "examiners") => {
         return (
           <div
             className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-            title={capitalizedName}
-          >
+            title={capitalizedName}>
             {capitalizedName}
           </div>
         );
@@ -139,8 +143,7 @@ const getColumnsDef = (type?: "applications" | "examiners") => {
         return (
           <div
             className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-            title={email}
-          >
+            title={email}>
             {email}
           </div>
         );
@@ -165,8 +168,7 @@ const getColumnsDef = (type?: "applications" | "examiners") => {
         return (
           <div
             className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-            title={formattedText}
-          >
+            title={formattedText}>
             {formattedText}
           </div>
         );
@@ -185,8 +187,7 @@ const getColumnsDef = (type?: "applications" | "examiners") => {
         return (
           <div
             className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-            title={province}
-          >
+            title={province}>
             {province}
           </div>
         );
@@ -197,7 +198,7 @@ const getColumnsDef = (type?: "applications" | "examiners") => {
     },
   ];
 
-  // Add status column only for applications
+  // Add status column for applications (text) or examiners (toggle)
   if (type === "applications") {
     baseColumns.push({
       accessorKey: "status",
@@ -210,8 +211,7 @@ const getColumnsDef = (type?: "applications" | "examiners") => {
         return (
           <div
             className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-            title={formattedStatus}
-          >
+            title={formattedStatus}>
             {formattedStatus}
           </div>
         );
@@ -219,6 +219,43 @@ const getColumnsDef = (type?: "applications" | "examiners") => {
       minSize: 120,
       maxSize: 180,
       size: 150,
+    });
+  } else if (type === "examiners" && onToggleStatus) {
+    // Add status toggle column for examiners
+    baseColumns.push({
+      header: () => <span>Status</span>,
+      accessorKey: "status",
+      cell: ({ row }: { row: Row<ExaminerData> }) => {
+        const isToggling = togglingExaminerId === row.original.id;
+        const status = row.original.status;
+        const isActive = status === "ACTIVE";
+        return (
+          <div className="flex items-center justify-center w-full">
+            <button
+              type="button"
+              className={cn(
+                "relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 flex-shrink-0",
+                isActive
+                  ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]"
+                  : "bg-gray-300",
+                isToggling && "cursor-not-allowed opacity-60"
+              )}
+              onClick={() => onToggleStatus(row.original.id)}
+              disabled={isToggling}
+              aria-pressed={isActive}>
+              <span
+                className={cn(
+                  "inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform",
+                  isActive ? "translate-x-6" : "translate-x-1"
+                )}
+              />
+            </button>
+          </div>
+        );
+      },
+      minSize: 110,
+      maxSize: 130,
+      size: 110,
     });
   }
 
@@ -242,10 +279,12 @@ export default function ExaminerTableWithPagination({
   searchQuery = "",
   filters,
   type,
+  togglingExaminerId,
+  onToggleStatus,
 }: Props) {
   const [query, setQuery] = useState(searchQuery);
   const [sorting, setSorting] = useState<SortingState>([]);
-  const columnsDef = getColumnsDef(type);
+  const columnsDef = getColumnsDef(type, togglingExaminerId, onToggleStatus);
 
   // Update internal query when searchQuery prop changes
   useEffect(() => {
@@ -314,8 +353,7 @@ export default function ExaminerTableWithPagination({
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
                   className="bg-[#F3F3F3] border-b-0"
-                  key={headerGroup.id}
-                >
+                  key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     const columnDef = columnsDef[header.index];
                     const minWidth = columnDef?.minSize || "auto";
@@ -340,14 +378,13 @@ export default function ExaminerTableWithPagination({
                           "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
                           header.index === 0 && "rounded-l-2xl",
                           header.index === headerGroup.headers.length - 1 &&
-                            "rounded-r-2xl",
-                        )}
-                      >
+                            "rounded-r-2xl"
+                        )}>
                         {header.isPlaceholder
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext(),
+                              header.getContext()
                             )}
                       </TableHead>
                     );
@@ -362,8 +399,7 @@ export default function ExaminerTableWithPagination({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="bg-white border-0 border-b-1"
-                  >
+                    className="bg-white border-0 border-b-1">
                     {row.getVisibleCells().map((cell) => {
                       const columnIndex = cell.column.getIndex();
                       const columnDef = columnsDef[columnIndex];
@@ -385,11 +421,10 @@ export default function ExaminerTableWithPagination({
                             width:
                               typeof width === "number" ? `${width}px` : width,
                           }}
-                          className="px-6 py-3 overflow-hidden align-middle"
-                        >
+                          className="px-6 py-3 overflow-hidden align-middle">
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext(),
+                            cell.getContext()
                           )}
                         </TableCell>
                       );
@@ -400,8 +435,7 @@ export default function ExaminerTableWithPagination({
                 <TableRow>
                   <TableCell
                     colSpan={columnsDef.length}
-                    className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
-                  >
+                    className="h-24 text-center text-black font-poppins text-[16px] leading-normal">
                     No Examiners Found
                   </TableCell>
                 </TableRow>

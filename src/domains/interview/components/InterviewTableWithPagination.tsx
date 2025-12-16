@@ -21,14 +21,25 @@ import {
 } from "@/components/ui/table";
 import { InterviewData } from "@/domains/interview/types/InterviewData";
 import { cn } from "@/lib/utils";
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, ArrowRight } from "lucide-react";
 import { capitalizeWords } from "@/utils/text";
+import Link from "next/link";
 
+// Utility function to format text from database: remove _, -, and capitalize each word
+const formatText = (str: string): string => {
+  if (!str) return str;
+  return str
+    .replace(/[-_]/g, " ") // Replace - and _ with spaces
+    .split(" ")
+    .filter((word) => word.length > 0) // Remove empty strings
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
 
 // Utility function to truncate text with ellipsis
 const truncateText = (
   text: string | null | undefined,
-  maxLength: number = 28,
+  maxLength: number = 28
 ): string => {
   if (!text) return "N/A";
   if (text.length <= maxLength) return text;
@@ -51,7 +62,7 @@ const formatDateTime = (date: string | Date): string => {
 // Utility function to format time range
 const formatTimeRange = (
   startTime: string | Date,
-  endTime: string | Date,
+  endTime: string | Date
 ): string => {
   const start = new Date(startTime);
   const end = new Date(endTime);
@@ -66,6 +77,21 @@ const formatTimeRange = (
     hour12: true,
   });
   return `${startTimeStr} - ${endTimeStr}`;
+};
+
+const ActionButton = ({ applicationId }: { applicationId?: string }) => {
+  if (!applicationId) {
+    return null;
+  }
+  return (
+    <Link
+      href={`/application/${applicationId}`}
+      className="w-full h-full cursor-pointer">
+      <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-1 w-[30px] h-[30px] flex items-center justify-center hover:opacity-80">
+        <ArrowRight className="w-4 h-4 text-white" />
+      </div>
+    </Link>
+  );
 };
 
 type Props = {
@@ -102,8 +128,7 @@ const SortableHeader = ({
   return (
     <div
       className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
-      onClick={handleSort}
-    >
+      onClick={handleSort}>
       <span>{children}</span>
       {sortDirection === false && (
         <ArrowUpDown className="h-4 w-4 text-gray-400" />
@@ -130,8 +155,7 @@ const columnsDef = [
       return (
         <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
-          title={capitalizedName}
-        >
+          title={capitalizedName}>
           {truncateText(capitalizedName, 28)}
         </div>
       );
@@ -151,8 +175,7 @@ const columnsDef = [
       return (
         <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
-          title={formatted}
-        >
+          title={formatted}>
           {truncateText(formatted, 30)}
         </div>
       );
@@ -178,8 +201,7 @@ const columnsDef = [
       return (
         <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
-          title={timeRange}
-        >
+          title={timeRange}>
           {truncateText(timeRange, 20)}
         </div>
       );
@@ -204,8 +226,7 @@ const columnsDef = [
       return (
         <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-          title={formattedStatus}
-        >
+          title={formattedStatus}>
           {formattedStatus}
         </div>
       );
@@ -213,6 +234,16 @@ const columnsDef = [
     minSize: 120,
     maxSize: 180,
     size: 150,
+  },
+  {
+    header: () => <></>,
+    accessorKey: "applicationId",
+    cell: ({ row }: { row: Row<InterviewData> }) => {
+      return <ActionButton applicationId={row.original.applicationId} />;
+    },
+    minSize: 60,
+    maxSize: 60,
+    size: 60,
   },
 ];
 
@@ -263,7 +294,7 @@ export default function InterviewTableWithPagination({
           formatText(d.status),
         ]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q)),
+          .some((v) => String(v).toLowerCase().includes(q))
       );
     }
 
@@ -296,8 +327,7 @@ export default function InterviewTableWithPagination({
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
                   className="bg-[#F3F3F3] border-b-0"
-                  key={headerGroup.id}
-                >
+                  key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     const columnDef = columnsDef[header.index];
                     const minWidth = columnDef?.minSize || "auto";
@@ -322,14 +352,13 @@ export default function InterviewTableWithPagination({
                           "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
                           header.index === 0 && "rounded-l-2xl",
                           header.index === headerGroup.headers.length - 1 &&
-                            "rounded-r-2xl",
-                        )}
-                      >
+                            "rounded-r-2xl"
+                        )}>
                         {header.isPlaceholder
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext(),
+                              header.getContext()
                             )}
                       </TableHead>
                     );
@@ -344,8 +373,7 @@ export default function InterviewTableWithPagination({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="bg-white border-0 border-b"
-                  >
+                    className="bg-white border-0 border-b">
                     {row.getVisibleCells().map((cell) => {
                       const columnIndex = cell.column.getIndex();
                       const columnDef = columnsDef[columnIndex];
@@ -367,11 +395,10 @@ export default function InterviewTableWithPagination({
                             width:
                               typeof width === "number" ? `${width}px` : width,
                           }}
-                          className="px-6 py-3 overflow-hidden align-middle"
-                        >
+                          className="px-6 py-3 overflow-hidden align-middle">
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext(),
+                            cell.getContext()
                           )}
                         </TableCell>
                       );
@@ -382,8 +409,7 @@ export default function InterviewTableWithPagination({
                 <TableRow>
                   <TableCell
                     colSpan={columnsDef.length}
-                    className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
-                  >
+                    className="h-24 text-center text-black font-poppins text-[16px] leading-normal">
                     No Interviews Found
                   </TableCell>
                 </TableRow>
