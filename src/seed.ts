@@ -1,5 +1,6 @@
+
 /* eslint-disable no-console */
-import { PrismaClient } from "@prisma/client";
+import prisma from "./db";
 
 import RoleSeeder from "./seeders/role.seeder";
 import OrganizationTypeSeeder from "./seeders/organizationType.seeder";
@@ -24,6 +25,7 @@ import ConfigurationSeeder from "./seeders/configuration.seeder";
 import AssessmentTypeSeeder from "./seeders/assessmentType.seeder";
 import DevSuperAdminSeeder from "./seeders/devSuperAdmin.seeder";
 import ProfessionalTitleSeeder from "./seeders/professionalTitle.seeder";
+import EmailTemplateSeeder from "./seeders/emailTemplate.seeder";
 
 const seeds = [
   RoleSeeder,
@@ -49,9 +51,8 @@ const seeds = [
   AssessmentTypeSeeder,
   DevSuperAdminSeeder,
   ProfessionalTitleSeeder,
+  EmailTemplateSeeder,
 ];
-
-const prisma = new PrismaClient();
 
 async function hasRunSeed(name: string) {
   const existing = await prisma.prismaSeed.findFirst({
