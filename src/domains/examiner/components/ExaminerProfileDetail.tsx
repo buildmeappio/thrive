@@ -21,10 +21,19 @@ const formatText = (str: string): string => {
     .join(" ");
 };
 
-const dayOfWeekOrder = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+const dayOfWeekOrder = [
+  "SUNDAY",
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+];
 
 const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
-  const fullName = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
+  const fullName =
+    `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
 
   return (
     <DashboardShell>
@@ -117,8 +126,11 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
                 <FieldRow
                   label="Assessment Types"
                   value={
-                    profile.assessmentTypes && profile.assessmentTypes.length > 0
-                      ? profile.assessmentTypes.map((type) => formatText(type)).join(", ")
+                    profile.assessmentTypes &&
+                    profile.assessmentTypes.length > 0
+                      ? profile.assessmentTypes
+                          .map((type) => formatText(type))
+                          .join(", ")
                       : "-"
                   }
                   type="text"
@@ -170,31 +182,44 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
                   }
                   type="text"
                 />
-                
+
                 {/* Weekly Hours */}
-                {profile.weeklyAvailability && profile.weeklyAvailability.length > 0 && (
-                  <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[120px] flex flex-col">
-                    <h4 className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] mb-3">
-                      Weekly Hours
-                    </h4>
-                    <div className="space-y-2">
-                      {profile.weeklyAvailability
-                        .sort((a, b) => dayOfWeekOrder.indexOf(a.dayOfWeek) - dayOfWeekOrder.indexOf(b.dayOfWeek))
-                        .map((day) => (
-                          <div key={day.id} className="flex justify-between items-start">
-                            <span className="font-poppins text-[14px] text-[#4E4E4E] font-medium min-w-[100px]">
-                              {formatText(day.dayOfWeek)}:
-                            </span>
-                            <span className="font-poppins text-[14px] text-[#000080] text-right flex-1">
-                              {day.enabled && day.timeSlots.length > 0
-                                ? day.timeSlots.map((slot) => `${slot.startTime} - ${slot.endTime}`).join(", ")
-                                : "Unavailable"}
-                            </span>
-                          </div>
-                        ))}
+                {profile.weeklyAvailability &&
+                  profile.weeklyAvailability.length > 0 && (
+                    <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[120px] flex flex-col">
+                      <h4 className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] mb-3">
+                        Weekly Hours
+                      </h4>
+                      <div className="space-y-2">
+                        {profile.weeklyAvailability
+                          .sort(
+                            (a, b) =>
+                              dayOfWeekOrder.indexOf(a.dayOfWeek) -
+                              dayOfWeekOrder.indexOf(b.dayOfWeek),
+                          )
+                          .map((day) => (
+                            <div
+                              key={day.id}
+                              className="flex justify-between items-start"
+                            >
+                              <span className="font-poppins text-[14px] text-[#4E4E4E] font-medium min-w-[100px]">
+                                {formatText(day.dayOfWeek)}:
+                              </span>
+                              <span className="font-poppins text-[14px] text-[#000080] text-right flex-1">
+                                {day.enabled && day.timeSlots.length > 0
+                                  ? day.timeSlots
+                                      .map(
+                                        (slot) =>
+                                          `${slot.startTime} - ${slot.endTime}`,
+                                      )
+                                      .join(", ")
+                                  : "Unavailable"}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </Section>
             </div>
 
@@ -214,7 +239,11 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
                 />
                 <FieldRow
                   label="Account Number"
-                  value={profile.accountNumber ? "****" + profile.accountNumber.slice(-4) : "-"}
+                  value={
+                    profile.accountNumber
+                      ? "****" + profile.accountNumber.slice(-4)
+                      : "-"
+                  }
                   type="text"
                 />
               </Section>
@@ -224,41 +253,63 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
                 {(() => {
                   // Collect all documents into a single array
                   const allDocuments: { url: string; filename: string }[] = [];
-                  
+
                   // Add medical license documents
-                  if (profile.medicalLicenseUrls && profile.medicalLicenseUrls.length > 0) {
+                  if (
+                    profile.medicalLicenseUrls &&
+                    profile.medicalLicenseUrls.length > 0
+                  ) {
                     profile.medicalLicenseUrls.forEach((url, idx) => {
-                      const name = profile.medicalLicenseNames?.[idx] || "Verification_Document.pdf";
+                      const name =
+                        profile.medicalLicenseNames?.[idx] ||
+                        "Verification_Document.pdf";
                       allDocuments.push({ url, filename: name });
                     });
                   }
-                  
+
                   // Add government ID
                   if (profile.governmentIdUrl) {
-                    const name = profile.governmentIdName || "Verification_Document.pdf";
-                    allDocuments.push({ url: profile.governmentIdUrl, filename: name });
+                    const name =
+                      profile.governmentIdName || "Verification_Document.pdf";
+                    allDocuments.push({
+                      url: profile.governmentIdUrl,
+                      filename: name,
+                    });
                   }
-                  
+
                   // Add resume
                   if (profile.resumeUrl) {
-                    const name = profile.resumeName || "Verification_Document.pdf";
-                    allDocuments.push({ url: profile.resumeUrl, filename: name });
+                    const name =
+                      profile.resumeName || "Verification_Document.pdf";
+                    allDocuments.push({
+                      url: profile.resumeUrl,
+                      filename: name,
+                    });
                   }
-                  
+
                   // Add insurance
                   if (profile.insuranceUrl) {
-                    const name = profile.insuranceName || "Verification_Document.pdf";
-                    allDocuments.push({ url: profile.insuranceUrl, filename: name });
+                    const name =
+                      profile.insuranceName || "Verification_Document.pdf";
+                    allDocuments.push({
+                      url: profile.insuranceUrl,
+                      filename: name,
+                    });
                   }
-                  
+
                   // Add specialty certificates
-                  if (profile.specialtyCertificatesUrls && profile.specialtyCertificatesUrls.length > 0) {
+                  if (
+                    profile.specialtyCertificatesUrls &&
+                    profile.specialtyCertificatesUrls.length > 0
+                  ) {
                     profile.specialtyCertificatesUrls.forEach((url, idx) => {
-                      const name = profile.specialtyCertificatesNames?.[idx] || "Verification_Document.pdf";
+                      const name =
+                        profile.specialtyCertificatesNames?.[idx] ||
+                        "Verification_Document.pdf";
                       allDocuments.push({ url, filename: name });
                     });
                   }
-                  
+
                   // Display all documents or "Not uploaded" message
                   if (allDocuments.length > 0) {
                     return (
@@ -313,4 +364,3 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
 };
 
 export default ExaminerProfileDetail;
-

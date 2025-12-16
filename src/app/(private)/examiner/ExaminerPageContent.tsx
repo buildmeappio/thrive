@@ -46,7 +46,7 @@ export default function ExaminerPageContent({
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [togglingExaminerId, setTogglingExaminerId] = useState<string | null>(
-    null
+    null,
   );
   const [, startToggle] = useTransition();
 
@@ -78,8 +78,8 @@ export default function ExaminerPageContent({
       prev.map((e) =>
         e.id === examinerId
           ? { ...e, status: isActive ? "SUSPENDED" : "ACTIVE" }
-          : e
-      )
+          : e,
+      ),
     );
     setTogglingExaminerId(examinerId);
 
@@ -93,7 +93,7 @@ export default function ExaminerPageContent({
         toast.success(
           isActive
             ? "Examiner has been suspended."
-            : "Examiner has been reactivated."
+            : "Examiner has been reactivated.",
         );
         router.refresh();
       }
@@ -156,7 +156,8 @@ export default function ExaminerPageContent({
             x1="0%"
             y1="0%"
             x2="100%"
-            y2="0%">
+            y2="0%"
+          >
             <stop offset="0%" stopColor="#01F4C8" />
             <stop offset="100%" stopColor="#00A8FF" />
           </linearGradient>
@@ -173,7 +174,8 @@ export default function ExaminerPageContent({
                   className="h-4 w-4 sm:h-5 sm:w-5"
                   fill="none"
                   stroke="url(#searchGradient)"
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -199,14 +201,15 @@ export default function ExaminerPageContent({
               <button
                 onClick={() =>
                   setActiveDropdown(
-                    activeDropdown === "specialty" ? null : "specialty"
+                    activeDropdown === "specialty" ? null : "specialty",
                   )
                 }
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
                   filters.specialty !== "all"
                     ? "border-[#00A8FF] text-[#00A8FF]"
                     : "border-gray-200 text-gray-700 hover:bg-gray-50"
-                }`}>
+                }`}
+              >
                 <Cross
                   className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                   stroke="url(#specialtyGradient)"
@@ -220,7 +223,8 @@ export default function ExaminerPageContent({
                   className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "specialty" ? "rotate-180" : ""}`}
                   fill="none"
                   stroke="currentColor"
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -241,7 +245,8 @@ export default function ExaminerPageContent({
                         filters.specialty === "all"
                           ? "bg-gray-100 text-[#00A8FF]"
                           : ""
-                      }`}>
+                      }`}
+                    >
                       All Specialties
                     </button>
                     {specialties.map((specialty) => (
@@ -255,7 +260,8 @@ export default function ExaminerPageContent({
                           filters.specialty === specialty
                             ? "bg-gray-100 text-[#00A8FF]"
                             : ""
-                        }`}>
+                        }`}
+                      >
                         {formatText(specialty)}
                       </button>
                     ))}
@@ -268,12 +274,14 @@ export default function ExaminerPageContent({
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap">
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
+              >
                 <svg
                   className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                   fill="none"
                   stroke="currentColor"
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
