@@ -7,5 +7,3 @@ export default async function EmailTemplatesPage() {
   const templates = await listEmailTemplates();
   return <EmailTemplatesPageContent templates={templates} />;
 }
-
-

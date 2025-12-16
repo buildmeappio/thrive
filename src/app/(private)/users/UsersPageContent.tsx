@@ -33,7 +33,11 @@ const UsersPageContent = ({ initialUsers }: UsersPageContentProps) => {
   const [deletingUser, setDeletingUser] = useState<UserTableRow | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleToggleStatus = (userId: string, role: RoleType, enabled: boolean) => {
+  const handleToggleStatus = (
+    userId: string,
+    role: RoleType,
+    enabled: boolean,
+  ) => {
     const previousUsers = users;
     const isDisablingSelf = session?.user?.id === userId && !enabled;
 

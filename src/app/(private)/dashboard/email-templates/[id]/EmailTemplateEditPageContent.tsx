@@ -19,7 +19,9 @@ type Props = {
 export default function EmailTemplateEditPageContent({ template }: Props) {
   const router = useRouter();
   const editorApiRef = useRef<any>(null);
-  const [subject, setSubject] = useState(template.currentVersion?.subject ?? "");
+  const [subject, setSubject] = useState(
+    template.currentVersion?.subject ?? "",
+  );
   const [isActive, setIsActive] = useState(template.isActive);
   const [saving, setSaving] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string>(
@@ -28,9 +30,9 @@ export default function EmailTemplateEditPageContent({ template }: Props) {
   const [latestDesignJson, setLatestDesignJson] = useState<unknown>(
     template.currentVersion?.designJson ?? {},
   );
-  const [rightTab, setRightTab] = useState<"preview" | "variables" | "versions">(
-    "preview",
-  );
+  const [rightTab, setRightTab] = useState<
+    "preview" | "variables" | "versions"
+  >("preview");
 
   const allowedVarsText = useMemo(() => {
     return template.allowedVariables.map((v) => `{{${v.name}}}`).join(", ");
@@ -119,7 +121,9 @@ export default function EmailTemplateEditPageContent({ template }: Props) {
         <div className="flex flex-col gap-3">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-xs text-gray-500 font-mono">{template.key}</div>
+              <div className="text-xs text-gray-500 font-mono">
+                {template.key}
+              </div>
               <h1 className="text-[#000000] text-[18px] sm:text-[22px] lg:text-[26px] font-semibold font-degular leading-tight break-words">
                 {template.name}
               </h1>
@@ -232,7 +236,8 @@ export default function EmailTemplateEditPageContent({ template }: Props) {
           {rightTab === "variables" ? (
             <div className="p-3 overflow-auto max-h-[980px]">
               <div className="text-xs text-gray-500 mb-3">
-                Click “Copy” and paste into the editor (or use Unlayer Merge Tags).
+                Click “Copy” and paste into the editor (or use Unlayer Merge
+                Tags).
               </div>
               <div className="flex flex-col gap-2">
                 {template.allowedVariables.map((v) => (
@@ -310,5 +315,3 @@ export default function EmailTemplateEditPageContent({ template }: Props) {
     </DashboardShell>
   );
 }
-
-

@@ -94,7 +94,10 @@ export default function EmailTemplatesPageContent({ templates }: Props) {
               ))}
               {filtered.length === 0 ? (
                 <tr>
-                  <td className="px-3 py-10 text-center text-sm text-gray-500" colSpan={5}>
+                  <td
+                    className="px-3 py-10 text-center text-sm text-gray-500"
+                    colSpan={5}
+                  >
                     No templates found.
                   </td>
                 </tr>
@@ -106,5 +109,3 @@ export default function EmailTemplatesPageContent({ templates }: Props) {
     </DashboardShell>
   );
 }
-
-

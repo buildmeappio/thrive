@@ -56,152 +56,166 @@ const createColumns = (
   onEditUser: (user: UserTableRow) => void,
   onDeleteUser: (user: UserTableRow) => void,
 ): ColumnDef<UserTableRow, unknown>[] => [
-    {
-      id: "name",
-      header: "Name",
-      cell: ({ row }: { row: Row<UserTableRow> }) => {
-        const fullName =
-          `${row.original.firstName} ${row.original.lastName}`.trim();
-        return (
-          <p className={textCellClass} title={fullName}>
-            {truncateText(fullName, 30)}
-          </p>
-        );
-      },
-      meta: { minSize: 180, maxSize: 250, size: 220 } as ColumnMeta,
-    },
-    {
-      accessorKey: "email",
-      header: "Email",
-      cell: ({ row }) => (
-        <p className={textCellClass} title={row.original.email}>
-          {truncateText(row.original.email, 32)}
+  {
+    id: "name",
+    header: "Name",
+    cell: ({ row }: { row: Row<UserTableRow> }) => {
+      const fullName =
+        `${row.original.firstName} ${row.original.lastName}`.trim();
+      return (
+        <p className={textCellClass} title={fullName}>
+          {truncateText(fullName, 30)}
         </p>
-      ),
-      meta: { minSize: 220, maxSize: 320, size: 260 } as ColumnMeta,
+      );
     },
-    {
-      accessorKey: "role",
-      header: "Role",
-      cell: ({ row }) => {
-        const role = row.getValue("role") as string;
-        const formattedRole = role
-          .split("_")
-          .map(
-            (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
-          )
-          .join(" ");
-        return (
-          <p className={textCellClass} title={formattedRole}>
-            {truncateText(formattedRole, 20)}
-          </p>
-        );
-      },
-      meta: { minSize: 120, maxSize: 180, size: 140 } as ColumnMeta,
-    },
-    {
-      accessorKey: "createdAt",
-      header: "Added On",
-      cell: ({ row }) => (
-        <p className={textCellClass}>
-          {format(new Date(row.original.createdAt), "MMM dd, yyyy")}
+    meta: { minSize: 180, maxSize: 250, size: 220 } as ColumnMeta,
+  },
+  {
+    accessorKey: "email",
+    header: "Email",
+    cell: ({ row }) => (
+      <p className={textCellClass} title={row.original.email}>
+        {truncateText(row.original.email, 32)}
+      </p>
+    ),
+    meta: { minSize: 220, maxSize: 320, size: 260 } as ColumnMeta,
+  },
+  {
+    accessorKey: "role",
+    header: "Role",
+    cell: ({ row }) => {
+      const role = row.getValue("role") as string;
+      const formattedRole = role
+        .split("_")
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+        )
+        .join(" ");
+      return (
+        <p className={textCellClass} title={formattedRole}>
+          {truncateText(formattedRole, 20)}
         </p>
-      ),
-      meta: { minSize: 150, maxSize: 200, size: 170 } as ColumnMeta,
+      );
     },
-    {
-      id: "status",
-      header: "Status",
-      cell: ({ row }) => {
-        const isToggling = togglingUserId === row.original.id;
-        const enabled = row.original.isActive;
-        return (
-          <div className="flex items-center justify-center w-full">
-            <button
-              type="button"
+    meta: { minSize: 120, maxSize: 180, size: 140 } as ColumnMeta,
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Added On",
+    cell: ({ row }) => (
+      <p className={textCellClass}>
+        {format(new Date(row.original.createdAt), "MMM dd, yyyy")}
+      </p>
+    ),
+    meta: { minSize: 150, maxSize: 200, size: 170 } as ColumnMeta,
+  },
+  {
+    id: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const isToggling = togglingUserId === row.original.id;
+      const enabled = row.original.isActive;
+      return (
+        <div className="flex items-center justify-center w-full">
+          <button
+            type="button"
+            className={cn(
+              "relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 flex-shrink-0",
+              enabled
+                ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]"
+                : "bg-gray-300",
+              isToggling && "cursor-not-allowed opacity-60",
+            )}
+            onClick={() =>
+              onToggleStatus(
+                row.original.id,
+                row.original.role as RoleType,
+                !enabled,
+              )
+            }
+            disabled={isToggling}
+            aria-pressed={enabled}
+          >
+            <span
               className={cn(
-                "relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 flex-shrink-0",
-                enabled
-                  ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]"
-                  : "bg-gray-300",
-                isToggling && "cursor-not-allowed opacity-60",
+                "inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform",
+                enabled ? "translate-x-6" : "translate-x-1",
               )}
-              onClick={() => onToggleStatus(row.original.id, row.original.role as RoleType, !enabled)}
-              disabled={isToggling}
-              aria-pressed={enabled}
+            />
+          </button>
+        </div>
+      );
+    },
+    meta: {
+      minSize: 110,
+      maxSize: 130,
+      size: 110,
+      align: "center",
+    } as ColumnMeta,
+  },
+  {
+    id: "actions",
+    header: "",
+    cell: ({ row }) => {
+      const isCurrentUser = currentUserId === row.original.id;
+      return (
+        <div className="flex justify-end items-center gap-1.5 sm:gap-2">
+          <button
+            type="button"
+            onClick={() => onEditUser(row.original)}
+            className="cursor-pointer flex-shrink-0"
+          >
+            <div className="flex h-[30px] w-[40px] items-center justify-center rounded-full bg-[#E0E0FF] p-0 hover:opacity-80">
+              <Edit className="h-4 w-4 text-[#000093]" />
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => !isCurrentUser && onDeleteUser(row.original)}
+            disabled={isCurrentUser}
+            className={cn(
+              "flex-shrink-0",
+              isCurrentUser ? "cursor-not-allowed" : "cursor-pointer",
+            )}
+          >
+            <div
+              className={cn(
+                "flex h-[30px] w-[40px] items-center justify-center rounded-full p-0 transition-opacity",
+                isCurrentUser
+                  ? "bg-gray-200 opacity-50"
+                  : "bg-red-50 hover:opacity-80",
+              )}
             >
-              <span
+              <Trash2
                 className={cn(
-                  "inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform",
-                  enabled ? "translate-x-6" : "translate-x-1",
+                  "h-4 w-4",
+                  isCurrentUser ? "text-gray-400" : "text-red-600",
                 )}
               />
-            </button>
-          </div>
-        );
-      },
-      meta: {
-        minSize: 110,
-        maxSize: 130,
-        size: 110,
-        align: "center",
-      } as ColumnMeta,
+            </div>
+          </button>
+        </div>
+      );
     },
-    {
-      id: "actions",
-      header: "",
-      cell: ({ row }) => {
-        const isCurrentUser = currentUserId === row.original.id;
-        return (
-          <div className="flex justify-end items-center gap-1.5 sm:gap-2">
-            <button
-              type="button"
-              onClick={() => onEditUser(row.original)}
-              className="cursor-pointer flex-shrink-0"
-            >
-              <div className="flex h-[30px] w-[40px] items-center justify-center rounded-full bg-[#E0E0FF] p-0 hover:opacity-80">
-                <Edit className="h-4 w-4 text-[#000093]" />
-              </div>
-            </button>
-            <button
-              type="button"
-              onClick={() => !isCurrentUser && onDeleteUser(row.original)}
-              disabled={isCurrentUser}
-              className={cn(
-                "flex-shrink-0",
-                isCurrentUser ? "cursor-not-allowed" : "cursor-pointer",
-              )}
-            >
-              <div
-                className={cn(
-                  "flex h-[30px] w-[40px] items-center justify-center rounded-full p-0 transition-opacity",
-                  isCurrentUser
-                    ? "bg-gray-200 opacity-50"
-                    : "bg-red-50 hover:opacity-80",
-                )}
-              >
-                <Trash2
-                  className={cn(
-                    "h-4 w-4",
-                    isCurrentUser ? "text-gray-400" : "text-red-600",
-                  )}
-                />
-              </div>
-            </button>
-          </div>
-        );
-      },
-      meta: {
-        minSize: 110,
-        maxSize: 130,
-        size: 110,
-        align: "right",
-      } as ColumnMeta,
-    },
-  ];
+    meta: {
+      minSize: 110,
+      maxSize: 130,
+      size: 110,
+      align: "right",
+    } as ColumnMeta,
+  },
+];
 
 export const useUserTable = (props: useUserTableOptions) => {
-  const { data, searchQuery, togglingUserId, currentUserId, onToggleStatus, onEditUser, onDeleteUser } = props;
+  const {
+    data,
+    searchQuery,
+    togglingUserId,
+    currentUserId,
+    onToggleStatus,
+    onEditUser,
+    onDeleteUser,
+  } = props;
   const filteredData = useMemo(() => {
     let filtered = data;
 
@@ -244,28 +258,21 @@ export const useUserTable = (props: useUserTableOptions) => {
   return {
     table,
     columns,
-  }
-}
+  };
+};
 
 type UserTableProps = {
   table: ReturnType<typeof useUserTable>["table"];
   columns: ReturnType<typeof useUserTable>["columns"];
 };
 
-const UserTable: React.FC<UserTableProps> = ({
-  table,
-  columns,
-}) => {
-
+const UserTable: React.FC<UserTableProps> = ({ table, columns }) => {
   return (
     <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
       <Table className="w-full border-0 table-fixed">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow
-              className="bg-[#F3F3F3] border-b-0"
-              key={headerGroup.id}
-            >
+            <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
               {headerGroup.headers.map((header, index) => {
                 const column = header.column.columnDef;
                 const meta = (column.meta as ColumnMeta) || {};
@@ -275,12 +282,8 @@ const UserTable: React.FC<UserTableProps> = ({
                   <TableHead
                     key={header.id}
                     style={{
-                      minWidth: meta.minSize
-                        ? `${meta.minSize}px`
-                        : undefined,
-                      maxWidth: meta.maxSize
-                        ? `${meta.maxSize}px`
-                        : undefined,
+                      minWidth: meta.minSize ? `${meta.minSize}px` : undefined,
+                      maxWidth: meta.maxSize ? `${meta.maxSize}px` : undefined,
                       width: meta.size ? `${meta.size}px` : undefined,
                     }}
                     className={cn(
@@ -291,7 +294,7 @@ const UserTable: React.FC<UserTableProps> = ({
                         : "px-4 sm:px-5 md:px-6",
                       index === 0 && "rounded-l-2xl",
                       index === headerGroup.headers.length - 1 &&
-                      "rounded-r-2xl",
+                        "rounded-r-2xl",
                       meta.align === "center" && "text-center",
                       meta.align === "right" && "text-right",
                     )}
@@ -299,9 +302,9 @@ const UserTable: React.FC<UserTableProps> = ({
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 );
               })}
@@ -364,7 +367,7 @@ const UserTable: React.FC<UserTableProps> = ({
           )}
         </TableBody>
       </Table>
-    </div >
+    </div>
   );
 };
 

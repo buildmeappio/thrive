@@ -27,8 +27,10 @@ export default function EmailTemplateEditor({
 
   const mergeTags = useMemo(() => {
     // Unlayer expects: { [name]: { name, value, sample } }
-    const tags: Record<string, { name: string; value: string; sample?: string }> =
-      {};
+    const tags: Record<
+      string,
+      { name: string; value: string; sample?: string }
+    > = {};
     for (const v of allowedVariables ?? []) {
       tags[v.name] = {
         name: v.label || v.name,
@@ -47,12 +49,14 @@ export default function EmailTemplateEditor({
     onEditorReady?.(api);
 
     // If seed stored {}, treat it as no design.
-    const designObj = initialDesignJson && typeof initialDesignJson === "object"
-      ? (initialDesignJson as any)
-      : null;
+    const designObj =
+      initialDesignJson && typeof initialDesignJson === "object"
+        ? (initialDesignJson as any)
+        : null;
 
     const looksLikeDesign =
-      designObj && (designObj.body || designObj.counters || designObj.schemaVersion);
+      designObj &&
+      (designObj.body || designObj.counters || designObj.schemaVersion);
 
     if (looksLikeDesign) {
       try {
@@ -117,5 +121,3 @@ export default function EmailTemplateEditor({
     </div>
   );
 }
-
-

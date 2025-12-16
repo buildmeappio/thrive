@@ -15,7 +15,11 @@ export const toggleUserStatus = async (
   data: ToggleUserStatusInput,
 ): Promise<{ success: boolean; error?: string }> => {
   try {
-    await userService.toggleUserStatus(data.userId, data.role, data.isActive ? AccountStatus.ACTIVE : AccountStatus.INACTIVE);
+    await userService.toggleUserStatus(
+      data.userId,
+      data.role,
+      data.isActive ? AccountStatus.ACTIVE : AccountStatus.INACTIVE,
+    );
     return { success: true };
   } catch (error) {
     logger.error("Toggle user status failed:", error);

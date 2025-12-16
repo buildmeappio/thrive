@@ -170,7 +170,7 @@ const createAdminUser = async (input: CreateAdminUserInput) => {
           },
           mustResetPassword: true,
           temporaryPasswordIssuedAt: new Date(),
-        }
+        },
       });
 
       return { user: createdUser };
@@ -222,7 +222,11 @@ const createAdminUser = async (input: CreateAdminUserInput) => {
   }
 };
 
-const toggleUserStatus = async (userId: string, role: RoleType, status: AccountStatus) => {
+const toggleUserStatus = async (
+  userId: string,
+  role: RoleType,
+  status: AccountStatus,
+) => {
   try {
     const account = await prisma.account.findFirst({
       where: { userId, role: { name: role } },
