@@ -24,16 +24,6 @@ import { cn } from "@/lib/utils";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { capitalizeWords } from "@/utils/text";
 
-// Utility function to format text from database: remove _, -, and capitalize each word
-const formatText = (str: string) => {
-  if (!str) return str;
-  return str
-    .replace(/[-_]/g, " ") // Replace - and _ with spaces
-    .split(" ")
-    .filter((word) => word.length > 0) // Remove empty strings
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
-};
 
 // Utility function to truncate text with ellipsis
 const truncateText = (

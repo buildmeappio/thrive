@@ -5,60 +5,22 @@ import { PrismaPg } from "@prisma/adapter-pg";
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 // Create PostgreSQL connection pool
-let connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   throw new Error("DATABASE_URL environment variable is not set");
 }
 
-// Check if SSL is explicitly required
-const sslRequired = process.env.DATABASE_SSL_REQUIRED === "true";
-
-// Remove SSL parameters from connection string if SSL is not required
-// This prevents SSL from being forced via connection string parameters
-if (!sslRequired) {
-  try {
-    const url = new URL(connectionString);
-    const params = new URLSearchParams(url.search);
-
-    // Remove all SSL-related parameters
-    const sslParams = [
-      "sslmode",
-      "ssl",
-      "sslcert",
-      "sslkey",
-      "sslrootcert",
-      "sslcrl",
-    ];
-    sslParams.forEach((param) => params.delete(param));
-
-    // Reconstruct URL without SSL parameters
-    url.search = params.toString();
-    connectionString = url.toString();
-  } catch (e) {
-    // If URL parsing fails, use regex to remove SSL parameters
-    connectionString = connectionString
-      .replace(/[?&]sslmode=[^&]*/gi, "")
-      .replace(/[?&]ssl=[^&]*/gi, "")
-      .replace(/[?&]sslcert=[^&]*/gi, "")
-      .replace(/[?&]sslkey=[^&]*/gi, "")
-      .replace(/[?&]sslrootcert=[^&]*/gi, "")
-      .replace(/[?&]sslcrl=[^&]*/gi, "");
-  }
-}
-
 const config: PoolConfig = {
   connectionString,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
 };
 
-// Explicitly configure SSL - disable unless explicitly required
-config.ssl = sslRequired
-  ? {
-      rejectUnauthorized: true,
-    }
-  : false;
+// Only enable SSL when explicitly requested; some DBs don't support TLS.
+if (process.env.NODE_ENV === "production") {
+  const sslRequired = process.env.DATABASE_SSL_REQUIRED === "true";
+  config.ssl = {
+    rejectUnauthorized: sslRequired,
+  };
+}
 
 // Create pool - it won't connect until actually used
 // The pool is lazy and only connects when a query is executed

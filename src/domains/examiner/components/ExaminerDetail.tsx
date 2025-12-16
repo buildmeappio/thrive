@@ -16,7 +16,7 @@ import {
   updateFeeStructure,
   sendContract,
   moveToReview,
-  scheduleInterview,
+  scheduleInterview as _scheduleInterview,
   requestInterview,
   markInterviewCompleted,
   markContractSigned,

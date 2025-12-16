@@ -1,5 +1,6 @@
 "use server";
 import prisma from "@/lib/db";
+import { ExaminerStatus } from "@prisma/client";
 import { ApplicationDto } from "../server/dto/application.dto";
 import { HttpError } from "@/utils/httpError";
 import { mapSpecialtyIdsToNames } from "../utils/mapSpecialtyIdsToNames";
@@ -15,16 +16,16 @@ const listAllApplications = async () => {
         deletedAt: null,
         status: {
           in: [
-            "SUBMITTED",
-            "PENDING",
-            "IN_REVIEW",
-            "MORE_INFO_REQUESTED",
-            "INTERVIEW_REQUESTED",
-            "INTERVIEW_SCHEDULED",
-            "INTERVIEW_COMPLETED",
-            "CONTRACT_SENT",
-            "CONTRACT_SIGNED",
-            "APPROVED",
+            ExaminerStatus.SUBMITTED,
+            ExaminerStatus.PENDING,
+            ExaminerStatus.IN_REVIEW,
+            ExaminerStatus.MORE_INFO_REQUESTED,
+            ExaminerStatus.INTERVIEW_REQUESTED,
+            ExaminerStatus.INTERVIEW_SCHEDULED,
+            ExaminerStatus.INTERVIEW_COMPLETED,
+            ExaminerStatus.CONTRACT_SENT,
+            ExaminerStatus.CONTRACT_SIGNED,
+            ExaminerStatus.APPROVED,
           ],
         },
         // Keep all applications including APPROVED as records, even if they have examiner profiles
