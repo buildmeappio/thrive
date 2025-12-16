@@ -30,7 +30,7 @@ const FieldRow = ({
   return (
     <>
       <div className="flex flex-col sm:flex-row justify-between sm:items-center w-full rounded-lg bg-[#F6F6F6] px-3 sm:px-4 py-2 gap-1.5 sm:gap-2">
-        <span className="shrink-0 font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E]">
+        <span className="min-w-0 flex-1 font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] truncate pr-2">
           {label.includes("*") ? (
             <>
               {label.replace("*", "")}
@@ -41,7 +41,7 @@ const FieldRow = ({
           )}
         </span>
 
-        <div className="min-w-0 sm:max-w-[75%] text-left sm:text-right">
+        <div className="flex-shrink-0 text-left sm:text-right">
           {type === "link" ? (
             <a
               href={valueHref}

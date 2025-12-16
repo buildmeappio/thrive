@@ -118,6 +118,19 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
       if (data[field.name] !== undefined && data[field.name] !== "") {
         let value = data[field.name];
 
+        // Trim string values to remove leading/trailing whitespace
+        if (typeof value === "string") {
+          value = value.trim();
+        }
+
+        // Skip if trimmed value is empty
+        if (!value) {
+          if (!field.required) {
+            submitData[field.name] = null;
+          }
+          return;
+        }
+
         // Special handling: Convert local time to UTC minutes on CLIENT before sending to backend
         // ONLY for start_working_hour_time, NOT for booking_cancellation_time
         const configName = (taxonomy?.name || data["name"] || "").toLowerCase();
@@ -184,6 +197,14 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
               id={field.name}
               {...register(field.name, {
                 required: field.required ? `${field.label} is required` : false,
+                validate: (value) => {
+                  // Trim the value and check if it's empty or whitespace only
+                  const trimmedValue = String(value || "").trim();
+                  if (field.required && !trimmedValue) {
+                    return `${field.label} cannot be empty or contain only spaces`;
+                  }
+                  return true;
+                },
               })}
               placeholder={field.placeholder}
               disabled={isSubmitting}
@@ -208,7 +229,13 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
             </Label>
             <Select
               value={String(watchedValue || "")}
-              onValueChange={(value) => setValue(field.name, value)}
+              onValueChange={(value) => {
+                // Validate that a proper value is selected
+                const trimmedValue = value.trim();
+                if (trimmedValue) {
+                  setValue(field.name, value, { shouldValidate: true });
+                }
+              }}
               disabled={isSubmitting}
             >
               <SelectTrigger className="h-10 rounded-full border-[#E5E7EB] focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent">
@@ -222,6 +249,19 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
                 ))}
               </SelectContent>
             </Select>
+            <input
+              type="hidden"
+              {...register(field.name, {
+                required: field.required ? `${field.label} is required` : false,
+                validate: (value) => {
+                  const trimmedValue = String(value || "").trim();
+                  if (field.required && !trimmedValue) {
+                    return `${field.label} must be selected`;
+                  }
+                  return true;
+                },
+              })}
+            />
             {error && (
               <p className="text-sm text-red-500">{error.message as string}</p>
             )}
@@ -244,24 +284,35 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
               type={isValueField && !isTimeField ? "number" : "text"}
               {...register(field.name, {
                 required: field.required ? `${field.label} is required` : false,
-                validate: isValueField
-                  ? (value) => {
-                      if (!value && field.required)
-                        return `${field.label} is required`;
-                      // For time fields, allow time format (e.g., "8:00 AM") or numeric minutes
-                      if (isTimeField) {
-                        // Allow format like "8:00 AM", "08:00", or numeric values like "480"
-                        const timePattern =
-                          /^(\d{1,2}:\d{2}\s*(AM|PM|am|pm)?|\d+)$/;
-                        if (!timePattern.test(String(value).trim())) {
-                          return 'Please enter time in format "8:00 AM" or as minutes';
-                        }
-                      } else if (value && isNaN(Number(value))) {
-                        return `${field.label} must be a valid number`;
-                      }
-                      return true;
+                validate: (value) => {
+                  const trimmedValue = String(value || "").trim();
+
+                  // Check for empty or whitespace-only values
+                  if (field.required && !trimmedValue) {
+                    return `${field.label} cannot be empty or contain only spaces`;
+                  }
+
+                  // Additional validation for value fields
+                  if (isValueField) {
+                    if (!trimmedValue && field.required) {
+                      return `${field.label} is required`;
                     }
-                  : undefined,
+
+                    // For time fields, allow time format (e.g., "8:00 AM") or numeric minutes
+                    if (isTimeField && trimmedValue) {
+                      // Allow format like "8:00 AM", "08:00", or numeric values like "480"
+                      const timePattern =
+                        /^(\d{1,2}:\d{2}\s*(AM|PM|am|pm)?|\d+)$/;
+                      if (!timePattern.test(trimmedValue)) {
+                        return 'Please enter time in format "8:00 AM" or as minutes';
+                      }
+                    } else if (trimmedValue && isNaN(Number(trimmedValue))) {
+                      return `${field.label} must be a valid number`;
+                    }
+                  }
+
+                  return true;
+                },
               })}
               placeholder={isTimeField ? "e.g., 8:00 AM" : field.placeholder}
               disabled={isSubmitting || isConfigurationEdit}

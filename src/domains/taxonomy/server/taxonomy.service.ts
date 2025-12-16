@@ -52,11 +52,49 @@ const parseValueAsNumber = (value: string | number): number => {
   }
 };
 
+// Helper function to validate input data for empty or whitespace-only values
+const validateTaxonomyInput = (
+  data: CreateTaxonomyInput | UpdateTaxonomyInput,
+  type: TaxonomyType,
+) => {
+  // Validate all string fields to ensure they're not empty or whitespace-only
+  Object.entries(data).forEach(([key, value]) => {
+    if (typeof value === "string") {
+      const trimmedValue = value.trim();
+      if (!trimmedValue) {
+        throw HttpError.badRequest(
+          `${key.charAt(0).toUpperCase() + key.slice(1)} cannot be empty or contain only spaces`,
+        );
+      }
+      // Update the data with trimmed value
+      (data as any)[key] = trimmedValue;
+    }
+  });
+
+  // Additional validation for specific fields
+  if (type !== "examinationTypeBenefit" && data.name !== undefined) {
+    if (typeof data.name === "string" && !data.name.trim()) {
+      throw HttpError.badRequest("Name cannot be empty or contain only spaces");
+    }
+  }
+
+  if (type === "examinationTypeBenefit" && data.benefit !== undefined) {
+    if (typeof data.benefit === "string" && !data.benefit.trim()) {
+      throw HttpError.badRequest(
+        "Benefit cannot be empty or contain only spaces",
+      );
+    }
+  }
+};
+
 export const createTaxonomy = async (
   type: TaxonomyType,
   data: CreateTaxonomyInput,
 ) => {
   try {
+    // Validate input data for empty or whitespace-only values
+    validateTaxonomyInput(data, type);
+
     const model = getPrismaModel(type);
 
     // Check for unique name constraint (except for examinationTypeBenefit)
@@ -130,6 +168,9 @@ export const updateTaxonomy = async (
   data: UpdateTaxonomyInput,
 ) => {
   try {
+    // Validate input data for empty or whitespace-only values
+    validateTaxonomyInput(data, type);
+
     const model = getPrismaModel(type);
 
     // Check if record exists

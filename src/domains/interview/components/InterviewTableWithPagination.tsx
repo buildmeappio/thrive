@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -8,6 +8,7 @@ import {
   getSortedRowModel,
   SortingState,
   flexRender,
+  type ColumnDef,
   type Row,
   type Column,
 } from "@tanstack/react-table";
@@ -95,16 +96,24 @@ const ActionButton = ({ applicationId }: { applicationId?: string }) => {
   );
 };
 
-type Props = {
-  data: InterviewData[];
-  searchQuery?: string;
-  filters?: {
-    status: string;
-    dateRange?: {
-      start: string;
-      end: string;
-    };
+interface FilterState {
+  status: string;
+  dateRange?: {
+    start: string;
+    end: string;
   };
+}
+
+type useInterviewTableOptions = {
+  data: InterviewData[];
+  searchQuery: string;
+  filters?: FilterState;
+};
+
+type ColumnMeta = {
+  minSize?: number;
+  maxSize?: number;
+  size?: number;
 };
 
 const SortableHeader = ({
@@ -145,13 +154,13 @@ const SortableHeader = ({
   );
 };
 
-const columnsDef = [
+const createColumns = (): ColumnDef<InterviewData, unknown>[] => [
   {
     accessorKey: "examinerName",
-    header: ({ column }: { column: Column<InterviewData, unknown> }) => (
+    header: ({ column }) => (
       <SortableHeader column={column}>Examiner Name</SortableHeader>
     ),
-    cell: ({ row }: { row: Row<InterviewData> }) => {
+    cell: ({ row }) => {
       const name = row.getValue("examinerName") as string;
       const capitalizedName = capitalizeWords(name);
       return (
@@ -163,16 +172,14 @@ const columnsDef = [
         </div>
       );
     },
-    minSize: 180,
-    maxSize: 300,
-    size: 240,
+    meta: { minSize: 180, maxSize: 300, size: 240 } as ColumnMeta,
   },
   {
     accessorKey: "startTime",
-    header: ({ column }: { column: Column<InterviewData, unknown> }) => (
+    header: ({ column }) => (
       <SortableHeader column={column}>Date & Time</SortableHeader>
     ),
-    cell: ({ row }: { row: Row<InterviewData> }) => {
+    cell: ({ row }) => {
       const startTime = row.getValue("startTime") as string;
       const formatted = formatDateTime(startTime);
       return (
@@ -184,21 +191,19 @@ const columnsDef = [
         </div>
       );
     },
-    sortingFn: (rowA: Row<InterviewData>, rowB: Row<InterviewData>) => {
+    sortingFn: (rowA, rowB) => {
       const dateA = new Date(rowA.getValue("startTime") as string).getTime();
       const dateB = new Date(rowB.getValue("startTime") as string).getTime();
       return dateA - dateB;
     },
-    minSize: 180,
-    maxSize: 300,
-    size: 220,
+    meta: { minSize: 180, maxSize: 300, size: 220 } as ColumnMeta,
   },
   {
     accessorKey: "timeRange",
-    header: ({ column }: { column: Column<InterviewData, unknown> }) => (
+    header: ({ column }) => (
       <SortableHeader column={column}>Time Slot</SortableHeader>
     ),
-    cell: ({ row }: { row: Row<InterviewData> }) => {
+    cell: ({ row }) => {
       const startTime = row.original.startTime;
       const endTime = row.original.endTime;
       const timeRange = formatTimeRange(startTime, endTime);
@@ -211,21 +216,19 @@ const columnsDef = [
         </div>
       );
     },
-    sortingFn: (rowA: Row<InterviewData>, rowB: Row<InterviewData>) => {
+    sortingFn: (rowA, rowB) => {
       const dateA = new Date(rowA.original.startTime as string).getTime();
       const dateB = new Date(rowB.original.startTime as string).getTime();
       return dateA - dateB;
     },
-    minSize: 150,
-    maxSize: 250,
-    size: 200,
+    meta: { minSize: 150, maxSize: 250, size: 200 } as ColumnMeta,
   },
   {
     accessorKey: "status",
-    header: ({ column }: { column: Column<InterviewData, unknown> }) => (
+    header: ({ column }) => (
       <SortableHeader column={column}>Status</SortableHeader>
     ),
-    cell: ({ row }: { row: Row<InterviewData> }) => {
+    cell: ({ row }) => {
       const status = row.getValue("status") as string;
       const formattedStatus = formatText(status);
       return (
@@ -237,39 +240,33 @@ const columnsDef = [
         </div>
       );
     },
-    minSize: 120,
-    maxSize: 180,
-    size: 150,
+    meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
   },
   {
     header: () => <></>,
     accessorKey: "applicationId",
-    cell: ({ row }: { row: Row<InterviewData> }) => {
+    cell: ({ row }) => {
       return <ActionButton applicationId={row.original.applicationId} />;
     },
-    minSize: 60,
-    maxSize: 60,
-    size: 60,
+    meta: { minSize: 60, maxSize: 60, size: 60 } as ColumnMeta,
   },
 ];
 
-export default function InterviewTableWithPagination({
-  data,
-  searchQuery = "",
-  filters = { status: "all" },
-}: Props) {
+export const useInterviewTable = (props: useInterviewTableOptions) => {
+  const { data, searchQuery, filters } = props;
+
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  const filtered = useMemo(() => {
+  const filteredData = useMemo(() => {
     let result = data;
 
     // Filter by status
-    if (filters.status !== "all") {
+    if (filters?.status && filters.status !== "all") {
       result = result.filter((d) => d.status === filters.status);
     }
 
     // Filter by date range
-    if (filters.dateRange) {
+    if (filters?.dateRange) {
       const { start, end } = filters.dateRange;
       if (start) {
         result = result.filter((d) => {
@@ -307,9 +304,11 @@ export default function InterviewTableWithPagination({
     return result;
   }, [data, searchQuery, filters]);
 
+  const columns = useMemo(() => createColumns(), []);
+
   const table = useReactTable({
-    data: filtered,
-    columns: columnsDef,
+    data: filteredData,
+    columns,
     state: { sorting },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -317,118 +316,107 @@ export default function InterviewTableWithPagination({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  // reset to first page when searching or filtering
   useEffect(() => {
     table.setPageIndex(0);
   }, [searchQuery, filters, table]);
 
   return {
     table,
-    tableElement: (
-      <>
-        {/* Table */}
-        <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
-          <Table className="w-full border-0 table-fixed">
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow
-                  className="bg-[#F3F3F3] border-b-0"
-                  key={headerGroup.id}
-                >
-                  {headerGroup.headers.map((header) => {
-                    const columnDef = columnsDef[header.index];
-                    const minWidth = columnDef?.minSize || "auto";
-                    const maxWidth = columnDef?.maxSize || "auto";
-                    const width = columnDef?.size || "auto";
-                    return (
-                      <TableHead
-                        key={header.id}
-                        style={{
-                          minWidth:
-                            typeof minWidth === "number"
-                              ? `${minWidth}px`
-                              : minWidth,
-                          maxWidth:
-                            typeof maxWidth === "number"
-                              ? `${maxWidth}px`
-                              : maxWidth,
-                          width:
-                            typeof width === "number" ? `${width}px` : width,
-                        }}
-                        className={cn(
-                          "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
-                          header.index === 0 && "rounded-l-2xl",
-                          header.index === headerGroup.headers.length - 1 &&
-                            "rounded-r-2xl",
-                        )}
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-
-            <TableBody>
-              {table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className="bg-white border-0 border-b"
-                  >
-                    {row.getVisibleCells().map((cell) => {
-                      const columnIndex = cell.column.getIndex();
-                      const columnDef = columnsDef[columnIndex];
-                      const minWidth = columnDef?.minSize || "auto";
-                      const maxWidth = columnDef?.maxSize || "auto";
-                      const width = columnDef?.size || "auto";
-                      return (
-                        <TableCell
-                          key={cell.id}
-                          style={{
-                            minWidth:
-                              typeof minWidth === "number"
-                                ? `${minWidth}px`
-                                : minWidth,
-                            maxWidth:
-                              typeof maxWidth === "number"
-                                ? `${maxWidth}px`
-                                : maxWidth,
-                            width:
-                              typeof width === "number" ? `${width}px` : width,
-                          }}
-                          className="px-6 py-3 overflow-hidden align-middle"
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columnsDef.length}
-                    className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
-                  >
-                    No Interviews Found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </>
-    ),
+    columns,
   };
-}
+};
+
+type InterviewTableProps = {
+  table: ReturnType<typeof useInterviewTable>["table"];
+  columns: ReturnType<typeof useInterviewTable>["columns"];
+};
+
+const InterviewTable: React.FC<InterviewTableProps> = ({ table, columns }) => {
+  return (
+    <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
+      <Table className="w-full border-0 table-fixed">
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                const column = header.column.columnDef;
+                const meta = (column.meta as ColumnMeta) || {};
+                return (
+                  <TableHead
+                    key={header.id}
+                    style={{
+                      minWidth: meta.minSize ? `${meta.minSize}px` : undefined,
+                      maxWidth: meta.maxSize ? `${meta.maxSize}px` : undefined,
+                      width: meta.size ? `${meta.size}px` : undefined,
+                    }}
+                    className={cn(
+                      "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
+                      header.index === 0 && "rounded-l-2xl",
+                      header.index === headerGroup.headers.length - 1 &&
+                        "rounded-r-2xl",
+                    )}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
+
+        <TableBody>
+          {table.getRowModel().rows.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+                className="bg-white border-0 border-b"
+              >
+                {row.getVisibleCells().map((cell) => {
+                  const column = cell.column.columnDef;
+                  const meta = (column.meta as ColumnMeta) || {};
+                  return (
+                    <TableCell
+                      key={cell.id}
+                      style={{
+                        minWidth: meta.minSize
+                          ? `${meta.minSize}px`
+                          : undefined,
+                        maxWidth: meta.maxSize
+                          ? `${meta.maxSize}px`
+                          : undefined,
+                        width: meta.size ? `${meta.size}px` : undefined,
+                      }}
+                      className="px-6 py-3 overflow-hidden align-middle"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
+              >
+                No Interviews Found
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  );
+};
+
+export default InterviewTable;

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useMemo, useEffect } from "react";
 import {
   useReactTable,
   getCoreRowModel,
   getPaginationRowModel,
   flexRender,
+  type ColumnDef,
   type Row,
 } from "@tanstack/react-table";
 import {
@@ -25,9 +26,9 @@ interface FilterState {
   languageId: string;
 }
 
-type Props = {
+type useInterpreterTableOptions = {
   data: InterpreterData[];
-  searchQuery?: string;
+  searchQuery: string;
   filters?: FilterState;
 };
 
@@ -41,11 +42,11 @@ const ActionButton = ({ id }: { id: string }) => {
   );
 };
 
-const columnsDef = [
+const createColumns = (): ColumnDef<InterpreterData, unknown>[] => [
   {
     accessorKey: "companyName",
     header: "Company",
-    cell: ({ row }: { row: Row<InterpreterData> }) => (
+    cell: ({ row }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
         {row.getValue("companyName")}
       </div>
@@ -54,7 +55,7 @@ const columnsDef = [
   {
     accessorKey: "contactPerson",
     header: "Contact Person",
-    cell: ({ row }: { row: Row<InterpreterData> }) => (
+    cell: ({ row }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
         {row.getValue("contactPerson")}
       </div>
@@ -63,7 +64,7 @@ const columnsDef = [
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }: { row: Row<InterpreterData> }) => (
+    cell: ({ row }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
         {row.getValue("email")}
       </div>
@@ -72,7 +73,7 @@ const columnsDef = [
   {
     accessorKey: "languages",
     header: "Languages",
-    cell: ({ row }: { row: Row<InterpreterData> }) => {
+    cell: ({ row }) => {
       const languages = row.original.languages;
       const displayText =
         languages.length > 2
@@ -91,7 +92,7 @@ const columnsDef = [
   {
     accessorKey: "phone",
     header: "Phone",
-    cell: ({ row }: { row: Row<InterpreterData> }) => (
+    cell: ({ row }) => (
       <div className="text-[#4D4D4D] font-poppins text-[16px] leading-none whitespace-nowrap">
         {row.getValue("phone") || "N/A"}
       </div>
@@ -100,25 +101,16 @@ const columnsDef = [
   {
     header: "",
     accessorKey: "id",
-    cell: ({ row }: { row: Row<InterpreterData> }) => {
+    cell: ({ row }) => {
       return <ActionButton id={row.original.id} />;
     },
-    maxSize: 60,
   },
 ];
 
-export default function InterpreterTableWrapper({
-  data,
-  searchQuery = "",
-  filters,
-}: Props) {
-  const [query, setQuery] = useState(searchQuery);
+export const useInterpreterTable = (props: useInterpreterTableOptions) => {
+  const { data, searchQuery, filters } = props;
 
-  useEffect(() => {
-    setQuery(searchQuery);
-  }, [searchQuery]);
-
-  const filtered = useMemo(() => {
+  const filteredData = useMemo(() => {
     let result = data;
 
     // Filter by language
@@ -129,7 +121,7 @@ export default function InterpreterTableWrapper({
     }
 
     // Filter by search query
-    const q = query.trim().toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
     if (q) {
       result = result.filter((d) =>
         [
@@ -145,19 +137,36 @@ export default function InterpreterTableWrapper({
     }
 
     return result;
-  }, [data, query, filters]);
+  }, [data, searchQuery, filters]);
+
+  const columns = useMemo(() => createColumns(), []);
 
   const table = useReactTable({
-    data: filtered,
-    columns: columnsDef,
+    data: filteredData,
+    columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
   useEffect(() => {
     table.setPageIndex(0);
-  }, [query, filters, table]);
+  }, [searchQuery, filters, table]);
 
+  return {
+    table,
+    columns,
+  };
+};
+
+type InterpreterTableProps = {
+  table: ReturnType<typeof useInterpreterTable>["table"];
+  columns: ReturnType<typeof useInterpreterTable>["columns"];
+};
+
+const InterpreterTable: React.FC<InterpreterTableProps> = ({
+  table,
+  columns,
+}) => {
   return (
     <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
       <Table className="min-w-[900px] border-0">
@@ -204,7 +213,7 @@ export default function InterpreterTableWrapper({
           ) : (
             <TableRow>
               <TableCell
-                colSpan={columnsDef.length}
+                colSpan={columns.length}
                 className="h-24 text-center text-black font-poppins text-[16px] leading-none"
               >
                 No Interpreters Found
@@ -215,4 +224,6 @@ export default function InterpreterTableWrapper({
       </Table>
     </div>
   );
-}
+};
+
+export default InterpreterTable;
