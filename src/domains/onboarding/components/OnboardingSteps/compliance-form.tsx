@@ -16,6 +16,7 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
   onMarkComplete,
   onStepEdited,
   isCompleted = false,
+  isSettingsPage = false,
 }) => {
   const { update } = useSession();
   const [loading, setLoading] = useState(false);
@@ -36,16 +37,19 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
     setAgreements(initialAgreements);
   }, [initialAgreements]);
 
+  // Check if form values have changed from initial saved values
+  const hasFormChanged = useMemo(() => {
+    const currentHash = JSON.stringify(agreements);
+    const initialHash = JSON.stringify(initialAgreements);
+    return currentHash !== initialHash;
+  }, [agreements, initialAgreements]);
+
   // If agreements change and step is completed, mark as incomplete
   useEffect(() => {
-    if (isCompleted && onStepEdited) {
-      const currentHash = JSON.stringify(agreements);
-      const initialHash = JSON.stringify(initialAgreements);
-      if (currentHash !== initialHash) {
+    if (hasFormChanged && isCompleted && onStepEdited) {
         onStepEdited();
-      }
     }
-  }, [agreements, isCompleted, onStepEdited, initialAgreements]);
+  }, [hasFormChanged, isCompleted, onStepEdited]);
 
   // Check if all required checkboxes are checked
   const isFormValid = useMemo(() => {
@@ -149,29 +153,28 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm">
+    <div className="bg-white rounded-2xl p-6 shadow-sm relative">
       <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-medium">
-            Privacy & Compliance Acknowledgments
+            {isSettingsPage ? "Compliance" : "Privacy & Compliance Acknowledgments"}
           </h2>
         </div>
-        {/* Mark as Complete Button - Top Right */}
-        {!isCompleted && (
+        {/* Mark as Complete Button - Top Right (Onboarding only) */}
+        {!isSettingsPage && (
           <Button
             type="button"
             onClick={handleMarkComplete}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || !isFormValid}
-          >
+            disabled={loading}>
             <CircleCheck className="w-5 h-5 text-gray-700" />
             <span>Mark as Complete</span>
           </Button>
         )}
       </div>
 
-      <div className="space-y-4">
+      <div className={`space-y-4 ${isSettingsPage ? "pb-20" : ""}`}>
         <div className="border border-gray-200 rounded-lg p-6 bg-[#FCFDFF]">
           <div className="space-y-6">
             {/* PHIPA Compliance */}
@@ -239,6 +242,19 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
           </div>
         </div>
       </div>
+      {/* Save Changes Button - Bottom Right (Settings only) */}
+      {isSettingsPage && (
+        <div className="absolute bottom-6 right-6 z-10">
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            disabled={loading}>
+            <CircleCheck className="w-5 h-5 text-white" />
+            <span>Save Changes</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

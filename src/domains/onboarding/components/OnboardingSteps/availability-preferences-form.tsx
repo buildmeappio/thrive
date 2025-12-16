@@ -17,7 +17,6 @@ import {
   convertUTCToLocal,
 } from "@/utils/timeConversion";
 import { timeOptions } from "@/constants/options";
-import { useOnboardingStore } from "../../state/useOnboardingStore";
 
 import type { AvailabilityPreferencesFormProps } from "../../types";
 
@@ -31,16 +30,15 @@ const AvailabilityPreferencesForm: React.FC<
   onMarkComplete,
   onStepEdited,
   isCompleted = false,
+  isSettingsPage = false,
 }) => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "weeklyHours" | "overrideHours" | "bookingOptions"
   >("weeklyHours");
 
-  // Get store data and actions
-  const { availabilityData, mergeAvailabilityData } = useOnboardingStore();
-
-  // Determine initial data: Merge store data with DB data (store takes precedence for user changes)
+  // No longer using localStorage/store - forms work directly with database data
+  // Determine initial data from DB only
   const formInitialData = useMemo(() => {
     // Check if we have valid data from DB
     const hasDbData =
@@ -122,17 +120,7 @@ const AvailabilityPreferencesForm: React.FC<
       dbData = availabilityInitialValues;
     }
 
-    // Merge store data with DB data (store data takes precedence)
-    const storeData = availabilityData || {};
-
-    // Ensure bookingOptions has the correct type from store
-    const storeBookingOptions = storeData.bookingOptions
-      ? {
-          maxIMEsPerWeek:
-            (storeData.bookingOptions as any).maxIMEsPerWeek || "",
-          minimumNotice: (storeData.bookingOptions as any).minimumNotice || "",
-        }
-      : undefined;
+    // No store data - use only DB data
 
     // Ensure bookingOptions has the correct type from DB
     const dbBookingOptions = dbData.bookingOptions
@@ -144,18 +132,16 @@ const AvailabilityPreferencesForm: React.FC<
 
     return {
       weeklyHours:
-        storeData.weeklyHours ||
         dbData.weeklyHours ||
         availabilityInitialValues.weeklyHours,
-      overrideHours: storeData.overrideHours || dbData.overrideHours || [],
-      // Store bookingOptions takes precedence, then DB, then initial values
-      bookingOptions: (storeBookingOptions ||
-        dbBookingOptions || {
+      overrideHours: dbData.overrideHours || [],
+      // Use DB bookingOptions, then initial values
+      bookingOptions: (dbBookingOptions || {
           maxIMEsPerWeek: "",
           minimumNotice: "",
         }) as { maxIMEsPerWeek: string; minimumNotice: string },
     };
-  }, [initialData, availabilityData]);
+  }, [initialData]);
 
   // Ensure all days have proper structure with valid time slots
   const ensuredFormData = useMemo(() => {
@@ -276,7 +262,6 @@ const AvailabilityPreferencesForm: React.FC<
   });
 
   // Track previous values to prevent infinite loops
-  const previousStoreDataRef = React.useRef<string | null>(null);
   const previousFormDataRef = React.useRef<string | null>(null);
   const initialFormDataRef = React.useRef<string | null>(null);
   const isInitialMountRef = React.useRef(true);
@@ -292,7 +277,6 @@ const AvailabilityPreferencesForm: React.FC<
     form.reset(ensuredFormData, { keepDefaultValues: false });
 
     previousFormDataRef.current = currentHash;
-    previousStoreDataRef.current = currentHash;
 
     // Store initial form data hash for comparison
     if (isInitialMountRef.current) {
@@ -301,28 +285,10 @@ const AvailabilityPreferencesForm: React.FC<
     }
   }, [ensuredFormData, form]);
 
-  // Watch form changes and update store (only when user actually changes values)
+  // Watch form changes
   const formValues = form.watch();
   const isDirty = form.formState.isDirty;
   const formErrors = form.formState.errors;
-
-  useEffect(() => {
-    // Compare current values with previous form data to detect user changes
-    const currentHash = JSON.stringify(formValues);
-
-    // Skip if this matches the initial form data (no user changes yet)
-    if (currentHash === previousFormDataRef.current) return;
-
-    // Skip if this matches previous store data (already saved)
-    if (currentHash === previousStoreDataRef.current) return;
-
-    // User has made changes - update store
-    const timeoutId = setTimeout(() => {
-      mergeAvailabilityData(formValues);
-      previousStoreDataRef.current = currentHash;
-    }, 300);
-    return () => clearTimeout(timeoutId);
-  }, [formValues, mergeAvailabilityData]);
 
   // Check if form values have changed from initial saved values
   const hasFormChanged = useMemo(() => {
@@ -408,21 +374,6 @@ const AvailabilityPreferencesForm: React.FC<
       });
 
       if (result.success) {
-        // Update store with saved values (convert to local for storage)
-        const localValues = convertAvailabilityToLocal(utcValues);
-        // Ensure bookingOptions has the correct type
-        const storeData: Partial<AvailabilityPreferencesInput> = {
-          ...localValues,
-          bookingOptions: localValues.bookingOptions
-            ? {
-                maxIMEsPerWeek:
-                  (localValues.bookingOptions as any).maxIMEsPerWeek || "",
-                minimumNotice:
-                  (localValues.bookingOptions as any).minimumNotice || "",
-              }
-            : undefined,
-        };
-        mergeAvailabilityData(storeData);
         toast.success("Availability preferences saved successfully");
         onComplete();
       } else {
@@ -475,27 +426,10 @@ const AvailabilityPreferencesForm: React.FC<
       });
 
       if (result.success) {
-        // Update store with saved values (convert to local for storage)
-        const localValues = convertAvailabilityToLocal(utcValues);
-        // Ensure bookingOptions has the correct type
-        const storeData: Partial<AvailabilityPreferencesInput> = {
-          ...localValues,
-          bookingOptions: localValues.bookingOptions
-            ? {
-                maxIMEsPerWeek:
-                  (localValues.bookingOptions as any).maxIMEsPerWeek || "",
-                minimumNotice:
-                  (localValues.bookingOptions as any).minimumNotice || "",
-              }
-            : undefined,
-        };
-        mergeAvailabilityData(storeData);
-
         // Update initial form data reference to current values so future changes are detected
         const currentHash = JSON.stringify(values);
         initialFormDataRef.current = currentHash;
         previousFormDataRef.current = currentHash;
-        previousStoreDataRef.current = currentHash;
 
         toast.success("Availability preferences saved and marked as complete");
         // Mark step as complete
@@ -517,21 +451,21 @@ const AvailabilityPreferencesForm: React.FC<
   };
 
   return (
-    <div className="bg-white rounded-2xl px-8 py-4 shadow-sm">
+    <div className="bg-white rounded-2xl px-8 py-4 shadow-sm relative">
       <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-2">
-          <h2 className="text-2xl font-medium">Set Your Availability</h2>
+          <h2 className="text-2xl font-medium">
+            {isSettingsPage ? "Availability Preferences" : "Set Your Availability"}
+          </h2>
         </div>
-        {/* Mark as Complete Button - Top Right */}
-        {!isCompleted && (
+        {/* Mark as Complete Button - Top Right (Onboarding only) */}
+        {!isSettingsPage && (
           <Button
-            type="submit"
-            form="availability-form"
+            type="button"
             onClick={handleMarkComplete}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || !isFormValid}
-          >
+            disabled={loading}>
             <span>Mark as Complete</span>
             <CircleCheck className="w-5 h-5 text-gray-700" />
           </Button>
@@ -586,15 +520,30 @@ const AvailabilityPreferencesForm: React.FC<
       </div>
 
       <FormProvider form={form} onSubmit={onSubmit} id="availability-form">
-        {/* Weekly Hours Tab */}
-        {activeTab === "weeklyHours" && <WeeklyHours form={form} />}
+        <div className={isSettingsPage ? "pb-20" : ""}>
+          {/* Weekly Hours Tab */}
+          {activeTab === "weeklyHours" && <WeeklyHours form={form} />}
 
-        {/* Override Hours Tab */}
-        {/* {activeTab === "overrideHours" && <OverrideHours form={form} />} */}
+          {/* Override Hours Tab */}
+          {/* {activeTab === "overrideHours" && <OverrideHours form={form} />} */}
 
-        {/* Booking Options Tab */}
-        {activeTab === "bookingOptions" && <BookingOptions form={form} />}
+          {/* Booking Options Tab */}
+          {activeTab === "bookingOptions" && <BookingOptions form={form} />}
+        </div>
       </FormProvider>
+      {/* Save Changes Button - Bottom Right (Settings only) */}
+      {isSettingsPage && (
+        <div className="absolute bottom-6 right-6 z-10">
+          <Button
+            type="button"
+            onClick={() => form.handleSubmit(onSubmit)()}
+            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            disabled={loading}>
+            <span>Save Changes</span>
+            <CircleCheck className="w-5 h-5 text-white" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

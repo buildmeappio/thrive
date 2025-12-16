@@ -21,6 +21,7 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
   onMarkComplete,
   onStepEdited,
   isCompleted = false,
+  isSettingsPage = false,
 }) => {
   const { update } = useSession();
   const [loading, setLoading] = useState(false);
@@ -70,23 +71,37 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
 
   // Track if files have changed from initial state
   const previousFilesRef = React.useRef<string | null>(null);
+  const initialFilesHashRef = React.useRef<string | null>(null);
 
+  // Store initial files hash on first load
   useEffect(() => {
+    if (!initialFilesHashRef.current) {
+      const initialHash = JSON.stringify(
+        allFiles.map((f) =>
+          f instanceof File ? f.name : (f as ExistingDocument).id,
+        ),
+      );
+      initialFilesHashRef.current = initialHash;
+      previousFilesRef.current = initialHash;
+    }
+  }, []);
+
+  // Check if files have changed from initial state
+  const hasFormChanged = useMemo(() => {
+    if (!initialFilesHashRef.current) return false;
     const currentHash = JSON.stringify(
       allFiles.map((f) =>
         f instanceof File ? f.name : (f as ExistingDocument).id,
       ),
     );
-    if (
-      previousFilesRef.current &&
-      previousFilesRef.current !== currentHash &&
-      isCompleted &&
-      onStepEdited
-    ) {
+    return currentHash !== initialFilesHashRef.current;
+  }, [allFiles]);
+
+  useEffect(() => {
+    if (hasFormChanged && isCompleted && onStepEdited) {
       onStepEdited();
     }
-    previousFilesRef.current = currentHash;
-  }, [allFiles, isCompleted, onStepEdited]);
+  }, [hasFormChanged, isCompleted, onStepEdited]);
 
   // Check if at least one document is uploaded
   const isFormValid = useMemo(() => {
@@ -264,23 +279,21 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm">
+    <div className="bg-white rounded-2xl p-6 shadow-sm relative">
       <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-medium">
-            Upload Verification Documents
+            {isSettingsPage ? "Documents" : "Upload Verification Documents"}
           </h2>
         </div>
-        {/* Mark as Complete Button - Top Right */}
-        {!isCompleted && (
+        {/* Mark as Complete Button - Top Right (Onboarding only) */}
+        {!isSettingsPage && (
           <Button
-            type="submit"
+            type="button"
             onClick={handleMarkComplete}
-            form="documents-upload-form"
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || !isFormValid}
-          >
+            disabled={loading}>
             <span>Mark as Complete</span>
             <CircleCheck className="w-5 h-5 text-gray-700" />
           </Button>
@@ -288,7 +301,7 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
       </div>
 
       {/* Single Upload Area */}
-      <div className="mt-8">
+      <div className={`mt-8 ${isSettingsPage ? "pb-20" : ""}`}>
         <MultipleFileUploadInput
           name="documents"
           label="Required Documents"
@@ -301,6 +314,19 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
           className="w-full"
         />
       </div>
+      {/* Save Changes Button - Bottom Right (Settings only) */}
+      {isSettingsPage && (
+        <div className="absolute bottom-6 right-6 z-10">
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            disabled={loading}>
+            <span>Save Changes</span>
+            <CircleCheck className="w-5 h-5 text-white" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

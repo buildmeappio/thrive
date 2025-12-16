@@ -1,10 +1,9 @@
 "use client";
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import { useSession } from "next-auth/react";
+import React, { useState, useEffect, useMemo } from "react";
 import { FormProvider } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
-import { CircleCheck, Shield, CheckCircle2 } from "lucide-react";
+import { CircleCheck, Shield } from "lucide-react";
 import { updatePayoutDetailsAction } from "../../server/actions";
 import {
   payoutDetailsSchema,
@@ -12,7 +11,6 @@ import {
 } from "../../schemas/onboardingSteps.schema";
 import { DirectDepositTab } from "./PayoutTabs";
 import { toast } from "sonner";
-import { useOnboardingStore } from "../../state/useOnboardingStore";
 
 import type { PayoutDetailsFormProps } from "../../types";
 
@@ -24,84 +22,69 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
   onMarkComplete,
   onStepEdited,
   isCompleted = false,
+  isSettingsPage = false,
 }) => {
-  const { update } = useSession();
   const [loading, setLoading] = useState(false);
 
-  const [activeTab] = useState<"direct_deposit">("direct_deposit");
-
-  // Get store data and actions
-  const { payoutData, mergePayoutData } = useOnboardingStore();
-
-  // Merge store data with initialData (store takes precedence for unsaved changes)
+  // Use initialData directly from database
   const defaultValues = useMemo(() => {
-    const storeData = payoutData || {};
     return {
-      payoutMethod: storeData.payoutMethod || undefined,
+      payoutMethod: undefined,
       transitNumber:
-        storeData.transitNumber ||
         (typeof initialData?.transitNumber === "string"
           ? initialData.transitNumber
-          : undefined) ||
-        "",
+          : undefined) || "",
       institutionNumber:
-        storeData.institutionNumber ||
         (typeof initialData?.institutionNumber === "string"
           ? initialData.institutionNumber
-          : undefined) ||
-        "",
+          : undefined) || "",
       accountNumber:
-        storeData.accountNumber ||
         (typeof initialData?.accountNumber === "string"
           ? initialData.accountNumber
-          : undefined) ||
-        "",
+          : undefined) || "",
     };
-  }, [payoutData, initialData]);
+  }, [initialData]);
 
   const form = useForm<PayoutDetailsInput>({
     schema: payoutDetailsSchema,
     defaultValues,
-    mode: "onSubmit",
+    mode: "onChange", // Validate on change so isFormValid works correctly
   });
 
   // Track if form has been initialized to prevent infinite loops
   const isInitializedRef = React.useRef(false);
-  const previousStoreDataRef = React.useRef<string | null>(null);
   const initialFormDataRef = React.useRef<string | null>(null);
 
-  // Only reset form on initial mount
+  // Reset form when defaultValues change (e.g., when data is refetched)
   useEffect(() => {
-    if (!isInitializedRef.current) {
-      form.reset(defaultValues);
-      isInitializedRef.current = true;
-      // Store initial data hash to detect changes
-      const initialHash = JSON.stringify(defaultValues);
-      previousStoreDataRef.current = initialHash;
-      initialFormDataRef.current = initialHash;
-    }
-  }, []); // Only run on mount
+    // Always reset form when defaultValues change to ensure form is in sync
+    form.reset(defaultValues);
 
-  // Watch form changes and update store (only if values actually changed)
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true;
+    }
+
+    // Store initial data hash to detect changes
+    const initialHash = JSON.stringify(defaultValues);
+    initialFormDataRef.current = initialHash;
+  }, [defaultValues, form]);
+
+  // Watch individual form fields for better reactivity - this ensures re-renders on change
+  const transitNumber = form.watch("transitNumber");
+  const institutionNumber = form.watch("institutionNumber");
+  const accountNumber = form.watch("accountNumber");
+
+  // Also watch all values for hasFormChanged check
   const formValues = form.watch();
   const isDirty = form.formState.isDirty;
-  const formErrors = form.formState.errors;
 
+  // Trigger validation when values change to update formErrors
   useEffect(() => {
-    // Skip if form hasn't been initialized yet
-    if (!isInitializedRef.current) return;
-
-    // Compare current values with previous store data to avoid unnecessary updates
-    const currentHash = JSON.stringify(formValues);
-    if (currentHash === previousStoreDataRef.current) return;
-
-    // Debounce store updates to avoid too many writes
-    const timeoutId = setTimeout(() => {
-      mergePayoutData(formValues);
-      previousStoreDataRef.current = currentHash;
-    }, 300);
-    return () => clearTimeout(timeoutId);
-  }, [formValues, mergePayoutData]);
+    if (isInitializedRef.current) {
+      // Trigger validation immediately when values change
+      form.trigger();
+    }
+  }, [transitNumber, institutionNumber, accountNumber, form]);
 
   // Check if form values have changed from initial saved values
   const hasFormChanged = useMemo(() => {
@@ -116,37 +99,6 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       onStepEdited();
     }
   }, [isDirty, hasFormChanged, isCompleted, onStepEdited]);
-
-  // Helper function to check if a payment method is complete
-  const isDirectDepositComplete = () => {
-    const { transitNumber, institutionNumber, accountNumber } = formValues;
-    return (
-      transitNumber &&
-      transitNumber.length === 5 &&
-      institutionNumber &&
-      institutionNumber.length === 3 &&
-      accountNumber &&
-      accountNumber.length >= 7 &&
-      accountNumber.length <= 12
-    );
-  };
-
-  // Check if all required fields are filled
-  const isFormValid = useMemo(() => {
-    const { transitNumber, institutionNumber, accountNumber } = formValues;
-    return (
-      transitNumber &&
-      transitNumber.length === 5 &&
-      institutionNumber &&
-      institutionNumber.length === 3 &&
-      accountNumber &&
-      accountNumber.length >= 7 &&
-      accountNumber.length <= 12 &&
-      !formErrors.transitNumber &&
-      !formErrors.institutionNumber &&
-      !formErrors.accountNumber
-    );
-  }, [formValues, formErrors]);
 
   const onSubmit = async (values: PayoutDetailsInput) => {
     if (!examinerProfileId) {
@@ -165,8 +117,6 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       });
 
       if (result.success) {
-        // Update store with saved values
-        mergePayoutData(values);
         toast.success("Payout details saved successfully");
         onComplete();
       } else {
@@ -174,7 +124,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
+        error instanceof Error ? error.message : "An unexpected error occurred"
       );
     } finally {
       setLoading(false);
@@ -188,9 +138,38 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       return;
     }
 
+    // Validate form before proceeding
     const isValid = await form.trigger();
     if (!isValid) {
-      toast.error("Please fix validation errors before marking as complete");
+      // Get form errors to show specific validation messages
+      const errors = form.formState.errors;
+      const transitNumber = form.getValues("transitNumber");
+      const institutionNumber = form.getValues("institutionNumber");
+      const accountNumber = form.getValues("accountNumber");
+
+      // Check specific field requirements
+      const transit = (transitNumber ?? "").trim();
+      const institution = (institutionNumber ?? "").trim();
+      const account = (accountNumber ?? "").trim();
+
+      if (transit.length !== 5) {
+        toast.error("Transit number must be exactly 5 digits");
+        return;
+      }
+      if (institution.length !== 3) {
+        toast.error("Institution number must be exactly 3 digits");
+        return;
+      }
+      if (account.length < 7 || account.length > 12) {
+        toast.error("Account number must be between 7 and 12 digits");
+        return;
+      }
+
+      // Generic error if validation fails for other reasons
+      toast.error(
+        errors.root?.message ||
+          "Please complete all required fields for direct deposit"
+      );
       return;
     }
 
@@ -206,13 +185,9 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       });
 
       if (result.success) {
-        // Update store with saved values
-        mergePayoutData(values);
-
         // Update initial form data reference to current values so future changes are detected
         const currentHash = JSON.stringify(values);
         initialFormDataRef.current = currentHash;
-        previousStoreDataRef.current = currentHash;
 
         toast.success("Payout details saved and marked as complete");
         // Mark step as complete
@@ -226,7 +201,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
+        error instanceof Error ? error.message : "An unexpected error occurred"
       );
     } finally {
       setLoading(false);
@@ -234,21 +209,21 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm">
+    <div className="bg-white rounded-2xl p-6 shadow-sm relative">
       <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-2">
-          <h2 className="text-2xl font-medium">Set Up Your Payout Method</h2>
+          <h2 className="text-2xl font-medium">
+            {isSettingsPage ? "Payout Details" : "Set Up Your Payout Method"}
+          </h2>
         </div>
-        {/* Mark as Complete Button - Top Right */}
-        {!isCompleted && (
+        {/* Mark as Complete Button - Top Right (Onboarding only) */}
+        {!isSettingsPage && (
           <Button
-            type="submit"
+            type="button"
             onClick={handleMarkComplete}
-            form="payout-details-form"
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || !isFormValid}
-          >
+            disabled={loading}>
             <span>Mark as Complete</span>
             <CircleCheck className="w-5 h-5 text-gray-700" />
           </Button>
@@ -266,13 +241,26 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       </div>
 
       <FormProvider form={form} onSubmit={onSubmit} id="payout-form">
-        <div className="space-y-6">
+        <div className={`space-y-6 ${isSettingsPage ? "pb-20" : ""}`}>
           {/* Tab Content */}
           <div className="border border-gray-200 rounded-lg p-6 bg-[#FCFDFF]">
             <DirectDepositTab />
           </div>
         </div>
       </FormProvider>
+      {/* Save Changes Button - Bottom Right (Settings only) */}
+      {isSettingsPage && (
+        <div className="absolute bottom-6 right-6 z-10">
+          <Button
+            type="button"
+            onClick={() => form.handleSubmit(onSubmit)()}
+            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            disabled={loading}>
+            <span>Save Changes</span>
+            <CircleCheck className="w-5 h-5 text-white" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

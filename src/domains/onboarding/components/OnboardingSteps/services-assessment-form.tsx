@@ -19,7 +19,6 @@ import {
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
-import { useOnboardingStore } from "../../state/useOnboardingStore";
 import type { ServicesAssessmentFormProps } from "../../types";
 
 // Icon mapping for assessment types based on name patterns
@@ -62,20 +61,12 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
   onMarkComplete,
   onStepEdited,
   isCompleted = false,
+  isSettingsPage = false,
 }) => {
   const [loading, setLoading] = useState(false);
   const [hoveredType, setHoveredType] = useState<string | null>(null);
 
-  // Get store data and actions
-  const { servicesData, mergeServicesData, setExaminerProfileId } =
-    useOnboardingStore();
-
-  // Initialize examiner profile ID in store
-  useEffect(() => {
-    if (examinerProfileId) {
-      setExaminerProfileId(examinerProfileId);
-    }
-  }, [examinerProfileId, setExaminerProfileId]);
+  // No longer using localStorage/store - forms work directly with database data
 
   // Format assessment types from server with icons
   const assessmentTypeOptions = React.useMemo(() => {
@@ -105,27 +96,19 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
     }));
   }, [maxTravelDistances]);
 
-  // Merge store data with initialData for defaultValues
+  // Use initialData directly from database (no localStorage merging)
   const defaultValues = useMemo(() => {
-    const storeData = servicesData || {};
     return {
-      assessmentTypes:
-        storeData.assessmentTypes || initialData?.assessmentTypes || [],
+      assessmentTypes: initialData?.assessmentTypes || [],
       acceptVirtualAssessments:
-        storeData.acceptVirtualAssessments ??
-        initialData?.acceptVirtualAssessments ??
-        true,
+        initialData?.acceptVirtualAssessments ?? true,
       acceptInPersonAssessments:
-        storeData.acceptInPersonAssessments ??
-        initialData?.acceptInPersonAssessments ??
-        true,
-      travelToClaimants:
-        storeData.travelToClaimants ?? initialData?.travelToClaimants ?? false,
-      travelRadius: storeData.travelRadius || initialData?.travelRadius || "",
-      assessmentTypeOther:
-        storeData.assessmentTypeOther || initialData?.assessmentTypeOther || "",
+        initialData?.acceptInPersonAssessments ?? true,
+      travelToClaimants: initialData?.travelToClaimants ?? false,
+      travelRadius: initialData?.travelRadius || "",
+      assessmentTypeOther: initialData?.assessmentTypeOther || "",
     };
-  }, [servicesData, initialData]);
+  }, [initialData]);
 
   const form = useForm<ServicesAssessmentInput>({
     schema: servicesAssessmentSchema,
@@ -133,8 +116,7 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
     mode: "onSubmit",
   });
 
-  // Track previous values to prevent infinite loops
-  const previousStoreDataRef = React.useRef<string | null>(null);
+  // Track initial form data to detect changes
   const initialFormDataRef = React.useRef<string | null>(null);
   const isInitializedRef = React.useRef(false);
 
@@ -146,24 +128,10 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
     }
   }, [form]);
 
-  // Watch form changes and update store (only if values actually changed)
+  // Watch form changes
   const formValues = form.watch();
   const isDirty = form.formState.isDirty;
   const formErrors = form.formState.errors;
-
-  useEffect(() => {
-    if (!isInitializedRef.current) return;
-
-    const currentHash = JSON.stringify(formValues);
-    if (currentHash === previousStoreDataRef.current) return;
-
-    // Debounce store updates
-    const timeoutId = setTimeout(() => {
-      mergeServicesData(formValues);
-      previousStoreDataRef.current = currentHash;
-    }, 300);
-    return () => clearTimeout(timeoutId);
-  }, [formValues, mergeServicesData]);
 
   // Check if form values have changed from initial saved values
   const hasFormChanged = useMemo(() => {
@@ -235,8 +203,6 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
       });
 
       if (result.success) {
-        // Update store with saved values
-        mergeServicesData(values);
         toast.success("Services & Assessment Types updated successfully");
         onComplete();
       } else {
@@ -276,13 +242,9 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
       });
 
       if (result.success) {
-        // Update store with saved values
-        mergeServicesData(values);
-
         // Update initial form data reference to current values so future changes are detected
         const currentHash = JSON.stringify(values);
         initialFormDataRef.current = currentHash;
-        previousStoreDataRef.current = currentHash;
 
         toast.success(
           "Services & Assessment Types saved and marked as complete",
@@ -306,26 +268,27 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl px-8 py-6 shadow-sm">
+    <div className="bg-white rounded-2xl px-8 py-6 shadow-sm relative">
       <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-medium">
-            What Assessments Do You Perform?
+            {isSettingsPage ? "Services & Assessments" : "What Assessments Do You Perform?"}
           </h2>
-          <p className="text-sm text-gray-500">
-            Define your capabilities for case matching. Select all assessment
-            types you perform.
-          </p>
+          {!isSettingsPage && (
+            <p className="text-sm text-gray-500">
+              Define your capabilities for case matching. Select all assessment
+              types you perform.
+            </p>
+          )}
         </div>
-        {/* Mark as Complete Button - Top Right */}
-        {!isCompleted && (
+        {/* Mark as Complete Button - Top Right (Onboarding only) */}
+        {!isSettingsPage && (
           <Button
             type="button"
             onClick={handleMarkComplete}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || !isFormValid}
-          >
+            disabled={loading}>
             <CircleCheck className="w-5 h-5 text-gray-700" />
             <span>Mark as Complete</span>
           </Button>
@@ -333,7 +296,7 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
       </div>
 
       <FormProvider form={form} onSubmit={onSubmit} id="services-form">
-        <div className="space-y-8">
+        <div className={`space-y-8 ${isSettingsPage ? "pb-20" : ""}`}>
           {/* Assessment Types Grid */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-4">
@@ -555,7 +518,21 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
             )}
           </div>
         </div>
+
       </FormProvider>
+      {/* Save Changes Button - Bottom Right (Settings only) */}
+      {isSettingsPage && (
+        <div className="absolute bottom-6 right-6 z-10">
+          <Button
+            type="button"
+            onClick={() => form.handleSubmit(onSubmit)()}
+            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            disabled={loading}>
+            <CircleCheck className="w-5 h-5 text-white" />
+            <span>Save Changes</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

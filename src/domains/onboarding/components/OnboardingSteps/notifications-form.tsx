@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CircleCheck } from "lucide-react";
 import { updateNotificationsAction } from "../../server/actions";
-import { useOnboardingStore } from "../../state/useOnboardingStore";
 import type { NotificationsFormProps } from "../../types";
 
 interface NotificationSetting {
@@ -47,60 +46,46 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
   onMarkComplete,
   onStepEdited,
   isCompleted = false,
+  isSettingsPage = false,
 }) => {
   const [loading, setLoading] = useState(false);
 
-  // Get store data and actions
-  const { notificationsData, mergeNotificationsData } = useOnboardingStore();
-
-  // Merge store data with initialData (store takes precedence for unsaved changes)
+  // No longer using localStorage/store - forms work directly with database data
+  // Use initialData directly from database
   const initialNotifications = useMemo(() => {
-    const storeData = notificationsData || {};
     return {
-      emailPaymentPayout:
-        storeData.emailPaymentPayout ?? initialData?.emailPaymentPayout ?? true,
-      smsNotifications:
-        storeData.smsNotifications ?? initialData?.smsNotifications ?? false,
-      emailMarketing:
-        storeData.emailMarketing ?? initialData?.emailMarketing ?? false,
+      emailPaymentPayout: initialData?.emailPaymentPayout ?? true,
+      smsNotifications: initialData?.smsNotifications ?? false,
+      emailMarketing: initialData?.emailMarketing ?? false,
     };
-  }, [notificationsData, initialData]);
+  }, [initialData]);
 
   const [notifications, setNotifications] =
     useState<Record<string, boolean>>(initialNotifications);
   const isInitializedRef = React.useRef(false);
-  const previousStoreDataRef = React.useRef<string | null>(null);
 
-  // Only set initial state on mount
+  // Update state when initialNotifications change (e.g., when data is refetched)
   useEffect(() => {
+    setNotifications(initialNotifications);
     if (!isInitializedRef.current) {
-      setNotifications(initialNotifications);
       isInitializedRef.current = true;
-      previousStoreDataRef.current = JSON.stringify(initialNotifications);
     }
-  }, []); // Only run on mount
+  }, [initialNotifications]);
 
-  // Update store when notifications change (only if values actually changed)
-  useEffect(() => {
-    if (!isInitializedRef.current) return;
-
+  // Check if form values have changed from initial saved values
+  const hasFormChanged = useMemo(() => {
+    if (!isInitializedRef.current) return false;
     const currentHash = JSON.stringify(notifications);
-    if (currentHash === previousStoreDataRef.current) return;
-
-    mergeNotificationsData(notifications);
-    previousStoreDataRef.current = currentHash;
-  }, [notifications, mergeNotificationsData]);
+    const initialHash = JSON.stringify(initialNotifications);
+    return currentHash !== initialHash;
+  }, [notifications, initialNotifications]);
 
   // If notifications change and step is completed, mark as incomplete
   useEffect(() => {
-    if (isInitializedRef.current && isCompleted && onStepEdited) {
-      const currentHash = JSON.stringify(notifications);
-      const initialHash = JSON.stringify(initialNotifications);
-      if (currentHash !== initialHash) {
+    if (hasFormChanged && isCompleted && onStepEdited) {
         onStepEdited();
-      }
     }
-  }, [notifications, isCompleted, onStepEdited, initialNotifications]);
+  }, [hasFormChanged, isCompleted, onStepEdited]);
 
   const toggleNotification = (id: string) => {
     setNotifications((prev) => ({
@@ -125,8 +110,6 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
       });
 
       if (result.success) {
-        // Update store with saved values
-        mergeNotificationsData(notifications);
         toast.success("Notification settings saved successfully");
         onComplete();
       } else {
@@ -158,8 +141,6 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
       });
 
       if (result.success) {
-        // Update store with saved values
-        mergeNotificationsData(notifications);
         toast.success("Notification settings saved and marked as complete");
         // Mark step as complete
         if (onMarkComplete) {
@@ -180,28 +161,26 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm">
+    <div className="bg-white rounded-2xl p-6 shadow-sm relative">
       <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-medium">Notification Settings</h2>
         </div>
-        {/* Mark as Complete Button - Top Right */}
-        {!isCompleted && (
+        {/* Mark as Complete Button - Top Right (Onboarding only) */}
+        {!isSettingsPage && (
           <Button
-            type="submit"
-            form="notifications-form"
+            type="button"
             onClick={handleMarkComplete}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
-            disabled={loading}
-          >
+            disabled={loading}>
             <span>Mark as Complete</span>
             <CircleCheck className="w-5 h-5 text-gray-700" />
           </Button>
         )}
       </div>
 
-      <div className="space-y-4">
+      <div className={`space-y-4 ${isSettingsPage ? "pb-20" : ""}`}>
         <div className="border border-gray-200 rounded-lg p-6 bg-[#FCFDFF]">
           <div className="space-y-6">
             {NOTIFICATION_SETTINGS.map((setting) => (
@@ -244,6 +223,19 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
           </div>
         </div>
       </div>
+      {/* Save Changes Button - Bottom Right (Settings only) */}
+      {isSettingsPage && (
+        <div className="absolute bottom-6 right-6 z-10">
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            disabled={loading}>
+            <span>Save Changes</span>
+            <CircleCheck className="w-5 h-5 text-white" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

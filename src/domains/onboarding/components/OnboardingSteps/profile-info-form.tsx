@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui";
 import {
   Mail,
@@ -38,13 +38,14 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   onMarkComplete,
   onStepEdited,
   isCompleted = false,
+  isSettingsPage = false,
 }) => {
   const [loading, setLoading] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(
     typeof initialData?.profilePhotoUrl === "string"
       ? initialData.profilePhotoUrl
-      : null,
+      : null
   );
   const [yearsOfExperienceOptions, setYearsOfExperienceOptions] = useState<
     Array<{ value: string; label: string }>
@@ -63,7 +64,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       ) {
         try {
           const photoUrl = await getProfilePhotoUrlAction(
-            initialData.profilePhotoId,
+            initialData.profilePhotoId
           );
           if (photoUrl) {
             setProfilePhotoUrl(photoUrl);
@@ -129,67 +130,48 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   const form = useForm<ProfileInfoInput>({
     schema: profileInfoSchema,
     defaultValues,
-    mode: "onSubmit",
+    mode: "onChange", // Change to onChange to track isDirty properly
   });
 
   const isDirty = form.formState.isDirty;
   const formValues = form.watch();
-  const formErrors = form.formState.errors;
   const initialFormDataRef = React.useRef<string | null>(null);
   const isInitializedRef = React.useRef(false);
 
-  // Mark as initialized after first render and store initial form data
+  // Reset form when defaultValues change and update initial data reference
   useEffect(() => {
+    form.reset(defaultValues);
+
     if (!isInitializedRef.current) {
       isInitializedRef.current = true;
-      initialFormDataRef.current = JSON.stringify(form.getValues());
     }
-  }, [form]);
+
+    // Store initial data hash to detect changes - use defaultValues directly
+    // This ensures we compare against the actual initial data, not form values
+    const initialHash = JSON.stringify(defaultValues);
+    initialFormDataRef.current = initialHash;
+  }, [defaultValues, form]);
 
   // Check if form values have changed from initial saved values
   const hasFormChanged = useMemo(() => {
-    if (!initialFormDataRef.current) return false;
+    if (!initialFormDataRef.current || !isInitializedRef.current) return false;
     const currentHash = JSON.stringify(formValues);
-    return currentHash !== initialFormDataRef.current;
+    const changed = currentHash !== initialFormDataRef.current;
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("Profile Form Change Detection:", {
+        currentHash,
+        initialHash: initialFormDataRef.current,
+        changed,
+        formValues,
+      });
+    }
+
+    return changed;
   }, [formValues]);
 
-  // Check if all required fields are filled
-  const isFormValid = useMemo(() => {
-    const values = formValues;
-    const hasProfilePhoto =
-      profilePhoto || profilePhotoUrl || initialData?.profilePhotoId;
-
-    return (
-      values.firstName &&
-      values.firstName.trim().length > 0 &&
-      values.lastName &&
-      values.lastName.trim().length > 0 &&
-      values.emailAddress &&
-      values.emailAddress.trim().length > 0 &&
-      values.professionalTitle &&
-      values.professionalTitle.trim().length > 0 &&
-      values.yearsOfExperience &&
-      values.yearsOfExperience.trim().length > 0 &&
-      values.clinicName &&
-      values.clinicName.trim().length > 0 &&
-      values.clinicAddress &&
-      values.clinicAddress.trim().length > 0 &&
-      hasProfilePhoto &&
-      !formErrors.firstName &&
-      !formErrors.lastName &&
-      !formErrors.emailAddress &&
-      !formErrors.professionalTitle &&
-      !formErrors.yearsOfExperience &&
-      !formErrors.clinicName &&
-      !formErrors.clinicAddress
-    );
-  }, [
-    formValues,
-    formErrors,
-    profilePhoto,
-    profilePhotoUrl,
-    initialData?.profilePhotoId,
-  ]);
+  // Validation is handled in handleMarkComplete via form.trigger()
+  // Button is always enabled, validation happens on click
 
   // If form is dirty or has changed from initial values, and step is completed, mark as incomplete
   useEffect(() => {
@@ -258,7 +240,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
+        error instanceof Error ? error.message : "An unexpected error occurred"
       );
     } finally {
       setLoading(false);
@@ -339,7 +321,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
+        error instanceof Error ? error.message : "An unexpected error occurred"
       );
     } finally {
       setLoading(false);
@@ -347,27 +329,29 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl px-8 py-4 shadow-sm">
+    <div className="bg-white rounded-2xl px-8 py-4 shadow-sm relative">
       <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-medium">
-            Complete Your Professional Profile{" "}
+            {isSettingsPage
+              ? "Profile Information"
+              : "Complete Your Professional Profile"}
           </h2>
-          <p className="text-sm text-gray-500">
-            Provide basic information about yourself. This will be visible to
-            insurers referring IMEs.
-          </p>
+          {!isSettingsPage && (
+            <p className="text-sm text-gray-500">
+              Provide basic information about yourself. This will be visible to
+              insurers referring IMEs.
+            </p>
+          )}
         </div>
-        {/* Mark as Complete Button - Top Right */}
-        {!isCompleted && (
+        {/* Mark as Complete Button - Top Right (Onboarding only) */}
+        {!isSettingsPage && (
           <Button
-            type="submit"
+            type="button"
             onClick={handleMarkComplete}
-            form="profile-info-form"
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading || !isFormValid}
-          >
+            disabled={loading}>
             <span>Mark as Complete</span>
             <CircleCheck className="w-5 h-5 text-gray-700" />
           </Button>
@@ -375,7 +359,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
       </div>
 
       <FormProvider form={form} onSubmit={onSubmit} id="profile-form">
-        <div className="space-y-6">
+        <div className={`space-y-6 ${isSettingsPage ? "pb-20" : ""}`}>
           {/* First Row - First Name, Last Name, Email */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField name="firstName" label="First Name" required>
@@ -493,6 +477,19 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
           </div>
         </div>
       </FormProvider>
+      {/* Save Changes Button - Bottom Right (Settings only) */}
+      {isSettingsPage && (
+        <div className="absolute bottom-6 right-6 z-10">
+          <Button
+            type="button"
+            onClick={() => form.handleSubmit(onSubmit)()}
+            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            disabled={loading}>
+            <span>Save Changes</span>
+            <CircleCheck className="w-5 h-5 text-white" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

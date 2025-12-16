@@ -31,10 +31,9 @@ export type NotificationsInput = {
 };
 
 /**
- * Onboarding store shape
+ * Persisted state (only data, no actions)
  */
-type OnboardingStore = {
-  // Store data for each step
+type PersistedOnboardingState = {
   profileData: Partial<ProfileInfoInput> | null;
   servicesData: Partial<ServicesAssessmentInput> | null;
   availabilityData: Partial<AvailabilityPreferencesInput> | null;
@@ -42,10 +41,13 @@ type OnboardingStore = {
   documentsData: Partial<DocumentsUploadInput> | null;
   complianceData: Partial<ComplianceInput> | null;
   notificationsData: Partial<NotificationsInput> | null;
-
-  // Examiner profile ID to scope the store
   examinerProfileId: string | null;
+};
 
+/**
+ * Onboarding store shape
+ */
+type OnboardingStore = PersistedOnboardingState & {
   // Actions to merge data for each step
   mergeProfileData: (data: Partial<ProfileInfoInput>) => void;
   mergeServicesData: (data: Partial<ServicesAssessmentInput>) => void;
@@ -82,9 +84,11 @@ const getStorageKey = (examinerProfileId: string | null): string => {
 
 // Custom storage that uses dynamic key based on examinerProfileId
 // Checks for browser environment to avoid SSR errors
-const createOnboardingStorage = (): PersistStorage<OnboardingStore> => {
+// The storage type matches PersistedOnboardingState (what partialize returns)
+// not the full OnboardingStore (which includes actions)
+const createOnboardingStorage = (): PersistStorage<PersistedOnboardingState> => {
   return {
-    getItem: (name: string): StorageValue<OnboardingStore> | null => {
+    getItem: (name: string): StorageValue<PersistedOnboardingState> | null => {
       // Check if we're in a browser environment
       if (typeof window === "undefined") {
         return null;
@@ -92,13 +96,14 @@ const createOnboardingStorage = (): PersistStorage<OnboardingStore> => {
       try {
         const str = localStorage.getItem(name);
         if (!str) return null;
-        return JSON.parse(str);
+        const parsed = JSON.parse(str);
+        return parsed as StorageValue<PersistedOnboardingState>;
       } catch (error) {
         console.warn("Failed to get onboarding storage:", error);
         return null;
       }
     },
-    setItem: (name: string, value: StorageValue<OnboardingStore>): void => {
+    setItem: (name: string, value: StorageValue<PersistedOnboardingState>): void => {
       // Check if we're in a browser environment
       if (typeof window === "undefined") {
         return;

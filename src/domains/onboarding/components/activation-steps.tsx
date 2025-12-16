@@ -45,6 +45,8 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
 
   const handleStepClick = (step: ActivationStep) => {
     // All steps are always clickable
+    // Refresh router to refetch fresh data from database when opening a step
+    router.refresh();
     setActiveStep(step.id);
   };
 

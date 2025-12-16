@@ -8,6 +8,7 @@ import { useForm } from "@/hooks/use-form-hook";
 import { UseFormRegisterReturn } from "@/lib/form";
 import { z } from "zod";
 import { toast } from "sonner";
+import { CircleCheck } from "lucide-react";
 import changePassword from "@/domains/auth/actions/changePassword";
 
 const passwordSchema = z
@@ -78,11 +79,11 @@ const ChangePasswordSection: React.FC<ChangePasswordSectionProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-[29px] p-6 shadow-[0_0_36.92px_rgba(0,0,0,0.08)]">
+    <div className="bg-white rounded-2xl p-6 shadow-sm relative">
       <h2 className="text-xl font-semibold mb-6">Change Password</h2>
 
       <FormProvider form={form} onSubmit={onSubmit}>
-        <div className="space-y-4 mb-6">
+        <div className="space-y-4 pb-20">
           <FormField name="currentPassword" label="Current Password" required>
             {(field: UseFormRegisterReturn & { error?: boolean }) => (
               <PasswordInput
@@ -119,13 +120,17 @@ const ChangePasswordSection: React.FC<ChangePasswordSectionProps> = ({
           </FormField>
         </div>
 
-        <Button
-          type="submit"
-          disabled={loading}
-          className="px-6 rounded-[20px] bg-[#00A8FF] hover:bg-[#0096E6] text-white"
-        >
-          {loading ? "Updating..." : "Update Password"}
-        </Button>
+        {/* Update Password Button - Bottom Right */}
+        <div className="absolute bottom-6 right-6 z-10">
+          <Button
+            type="submit"
+            disabled={loading}
+            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+          >
+            <span>{loading ? "Updating..." : "Update Password"}</span>
+            <CircleCheck className="w-5 h-5 text-white" />
+          </Button>
+        </div>
       </FormProvider>
     </div>
   );

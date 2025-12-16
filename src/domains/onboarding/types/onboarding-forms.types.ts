@@ -8,6 +8,7 @@ export interface ProfileInfoFormProps {
   onMarkComplete?: () => void;
   onStepEdited?: () => void;
   isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }
 
 export interface ServicesAssessmentFormProps {
@@ -38,6 +39,7 @@ export interface ServicesAssessmentFormProps {
   onMarkComplete?: () => void;
   onStepEdited?: () => void;
   isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }
 
 export interface SpecialtyPreferencesFormProps {
@@ -56,6 +58,7 @@ export interface AvailabilityPreferencesFormProps {
   onMarkComplete?: () => void;
   onStepEdited?: () => void;
   isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }
 
 export interface PayoutDetailsFormProps {
@@ -66,6 +69,7 @@ export interface PayoutDetailsFormProps {
   onMarkComplete?: () => void;
   onStepEdited?: () => void;
   isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }
 
 export interface DocumentsUploadFormProps {
@@ -82,6 +86,7 @@ export interface DocumentsUploadFormProps {
   onMarkComplete?: () => void;
   onStepEdited?: () => void;
   isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }
 
 export interface ComplianceFormProps {
@@ -96,6 +101,7 @@ export interface ComplianceFormProps {
   onMarkComplete?: () => void;
   onStepEdited?: () => void;
   isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }
 
 export interface NotificationsFormProps {
@@ -110,4 +116,5 @@ export interface NotificationsFormProps {
   onMarkComplete?: () => void;
   onStepEdited?: () => void;
   isCompleted?: boolean;
+  isSettingsPage?: boolean;
 }
