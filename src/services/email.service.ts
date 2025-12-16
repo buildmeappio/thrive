@@ -4,6 +4,7 @@ import fs from "fs/promises";
 import path from "path";
 import { ENV } from "@/constants/variables";
 import logger from "@/utils/logger";
+import prisma from "@/lib/db";
 
 const emailConfig: EmailConfig = {
   oauth: {
@@ -100,6 +101,44 @@ class EmailService {
     return result;
   }
 
+  private normalizeTemplateKey(templateName: string): string {
+    return templateName.endsWith(".html")
+      ? templateName.slice(0, -".html".length)
+      : templateName;
+  }
+
+  private withDefaultEmailVars(data: Record<string, unknown>) {
+    return {
+      CDN_URL:
+        data.CDN_URL ??
+        ENV.NEXT_PUBLIC_CDN_URL ??
+        ENV.NEXT_PUBLIC_APP_URL ??
+        "",
+      ...data,
+    };
+  }
+
+  private async loadDbTemplateIfActive(templateName: string): Promise<{
+    subject: string;
+    html: string;
+  } | null> {
+    const key = this.normalizeTemplateKey(templateName);
+    try {
+      const template = await prisma.emailTemplate.findFirst({
+        where: { key, isActive: true, deletedAt: null },
+        include: { currentVersion: true },
+      });
+      if (!template?.currentVersion) return null;
+      return {
+        subject: template.currentVersion.subject,
+        html: template.currentVersion.bodyHtml,
+      };
+    } catch (err) {
+      logger.error("Failed to load DB email template, falling back:", err);
+      return null;
+    }
+  }
+
   async sendEmail(
     subject: string,
     templateName: string,
@@ -108,13 +147,25 @@ class EmailService {
   ): Promise<{ success: true } | { success: false; error: string }> {
     try {
       const transporter = await this.createTransporter();
-      const template = await this.loadTemplate(templateName);
-      const htmlContent = this.replacePlaceholders(template, data);
+      const dataWithDefaults = this.withDefaultEmailVars(data);
+
+      const dbTemplate = await this.loadDbTemplateIfActive(templateName);
+      const rawHtml = dbTemplate
+        ? dbTemplate.html
+        : await this.loadTemplate(templateName);
+
+      const rawSubject = dbTemplate ? dbTemplate.subject : subject;
+
+      const htmlContent = this.replacePlaceholders(rawHtml, dataWithDefaults);
+      const subjectContent = this.replacePlaceholders(
+        rawSubject,
+        dataWithDefaults,
+      );
 
       await transporter.sendMail({
         from: this.config.oauth.email,
         to: to,
-        subject,
+        subject: subjectContent,
         html: htmlContent,
       });
 

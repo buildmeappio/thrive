@@ -29,7 +29,8 @@ export default function NotFoundPage() {
           <div className="pt-4">
             <Link
               href={URLS.DASHBOARD}
-              className="inline-block w-full px-6 py-3 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-semibold rounded-full hover:opacity-90 transition-opacity">
+              className="inline-block w-full px-6 py-3 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-semibold rounded-full hover:opacity-90 transition-opacity"
+            >
               Return to Dashboard
             </Link>
           </div>
@@ -38,7 +39,8 @@ export default function NotFoundPage() {
           <div>
             <Link
               href={URLS.HOME}
-              className="text-sm text-gray-600 hover:text-gray-900 underline">
+              className="text-sm text-gray-600 hover:text-gray-900 underline"
+            >
               Go to Home Page
             </Link>
           </div>

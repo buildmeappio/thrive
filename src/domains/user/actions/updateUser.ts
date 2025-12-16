@@ -4,6 +4,7 @@ import { z } from "zod";
 import userService from "../server/user.service";
 import { UserTableRow } from "../types/UserData";
 import logger from "@/utils/logger";
+import { AccountStatus } from "@prisma/client";
 
 const schema = z.object({
   id: z.string().uuid(),
@@ -20,6 +21,7 @@ export const updateUser = async (
   try {
     const input = schema.parse(rawInput);
     const updated = await userService.updateUser(input);
+    const account = updated.accounts[0];
     return {
       success: true,
       user: {
@@ -28,8 +30,8 @@ export const updateUser = async (
         lastName: updated.lastName,
         email: updated.email,
         gender: updated.gender,
-        role: updated.accounts[0]?.role?.name || "N/A",
-        isLoginEnabled: updated.isLoginEnabled,
+        role: account?.role?.name || "N/A",
+        isActive: account?.status === AccountStatus.ACTIVE,
         mustResetPassword: updated.mustResetPassword,
         createdAt: updated.createdAt.toISOString(),
       },

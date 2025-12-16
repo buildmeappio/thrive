@@ -16,5 +16,6 @@ model Account {
   assignedExaminations Examination[]         @relation("AssignedCases")
   examinerProfiles     ExaminerProfile[]
 
+  @@unique([userId, roleId])
   @@map("accounts")
 }

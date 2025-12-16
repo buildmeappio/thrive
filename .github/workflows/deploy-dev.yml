@@ -193,10 +193,11 @@ jobs:
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
             
             # Pull the latest image from ECR
-            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
+            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
             
             # Create .env file based on env-example structure with all environment variables from GitHub secrets
-            cat > $DEPLOY_PATH/.env << EOF
+            sudo tee $DEPLOY_PATH/.env > /dev/null << EOF
+
             DATABASE_URL="${{ secrets.DATABASE_URL }}"
             
             NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
@@ -242,7 +243,7 @@ jobs:
             
             # Export ECR variables for docker-compose to use (full image path)
             export ECR_REGISTRY=$ECR_REGISTRY/$ECR_REPOSITORY
-            export IMAGE_TAG=latest
+            export IMAGE_TAG=$IMAGE_TAG
             
             # Stop and remove existing containers using docker-compose
             docker-compose down

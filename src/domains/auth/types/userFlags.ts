@@ -1,5 +1,5 @@
 export type UserLoginFlags = {
-  isLoginEnabled: boolean;
+  isActive: boolean;
   mustResetPassword: boolean;
   temporaryPasswordIssuedAt: Date | null;
 };

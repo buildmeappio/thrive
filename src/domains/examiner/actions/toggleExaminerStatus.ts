@@ -56,4 +56,3 @@ export const toggleExaminerStatus = async (
 };
 
 export default toggleExaminerStatus;
-
