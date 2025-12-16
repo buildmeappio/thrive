@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect } from "react";
 import ExaminerTableWithPagination from "@/domains/examiner/components/ExaminerTableWithPagination";
 import Pagination from "@/components/Pagination";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { DashboardShell } from "@/layouts/dashboard";
-import { Cross } from "lucide-react";
-import { toggleExaminerStatus } from "@/domains/examiner/actions";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { Cross, Funnel } from "lucide-react";
 
-interface ExaminerPageContentProps {
-  examinersData: ExaminerData[];
+interface ApplicationsPageContentProps {
+  applicationsData: ExaminerData[];
   specialties: string[];
   statuses: string[];
 }
@@ -32,23 +29,20 @@ interface FilterState {
   status: string;
 }
 
-export default function ExaminerPageContent({
-  examinersData,
+export default function ApplicationsPageContent({
+  applicationsData,
   specialties,
   statuses,
-}: ExaminerPageContentProps) {
-  const router = useRouter();
-  const [examiners, setExaminers] = useState<ExaminerData[]>(examinersData);
+}: ApplicationsPageContentProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({
     specialty: "all",
     status: "all",
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [togglingExaminerId, setTogglingExaminerId] = useState<string | null>(
-    null,
-  );
-  const [, startToggle] = useTransition();
+
+  // Filter statuses - remove ACTIVE from applications
+  const filteredStatuses = statuses.filter((status) => status !== "ACTIVE");
 
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
     setFilters((prev) => ({
@@ -65,41 +59,8 @@ export default function ExaminerPageContent({
     });
   };
 
-  // For examiners, only check specialty filter (status filter is hidden)
-  const hasActiveFilters = filters.specialty !== "all";
-
-  const handleToggleStatus = (examinerId: string) => {
-    const previousExaminers = examiners;
-    const examiner = examiners.find((e) => e.id === examinerId);
-    const isActive = examiner?.status === "ACTIVE";
-
-    // Optimistically update the UI
-    setExaminers((prev) =>
-      prev.map((e) =>
-        e.id === examinerId
-          ? { ...e, status: isActive ? "SUSPENDED" : "ACTIVE" }
-          : e,
-      ),
-    );
-    setTogglingExaminerId(examinerId);
-
-    startToggle(async () => {
-      const result = await toggleExaminerStatus(examinerId);
-      if (!result.success) {
-        // Revert on error
-        setExaminers(previousExaminers);
-        toast.error(result.error ?? "Failed to update examiner status.");
-      } else {
-        toast.success(
-          isActive
-            ? "Examiner has been suspended."
-            : "Examiner has been reactivated.",
-        );
-        router.refresh();
-      }
-      setTogglingExaminerId(null);
-    });
-  };
+  const hasActiveFilters =
+    filters.specialty !== "all" || filters.status !== "all";
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -125,22 +86,20 @@ export default function ExaminerPageContent({
 
   // Get table and table element from the component
   const { table, tableElement } = ExaminerTableWithPagination({
-    data: examiners,
+    data: applicationsData,
     specialties,
     statuses,
     searchQuery,
     filters,
-    type: "examiners",
-    togglingExaminerId,
-    onToggleStatus: handleToggleStatus,
+    type: "applications",
   });
 
   return (
     <DashboardShell>
-      {/* Examiners Heading */}
+      {/* Applications Heading */}
       <div className="mb-4 sm:mb-6 dashboard-zoom-mobile">
         <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-          Examiners
+          Applications
         </h1>
       </div>
 
@@ -158,6 +117,10 @@ export default function ExaminerPageContent({
             x2="100%"
             y2="0%"
           >
+            <stop offset="0%" stopColor="#01F4C8" />
+            <stop offset="100%" stopColor="#00A8FF" />
+          </linearGradient>
+          <linearGradient id="statusGradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#01F4C8" />
             <stop offset="100%" stopColor="#00A8FF" />
           </linearGradient>
@@ -186,7 +149,7 @@ export default function ExaminerPageContent({
               </div>
               <input
                 type="text"
-                placeholder="Search by examiners"
+                placeholder="Search by applications"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-full bg-white text-xs sm:text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
@@ -270,6 +233,80 @@ export default function ExaminerPageContent({
               )}
             </div>
 
+            {/* Status Filter */}
+            <div className="relative filter-dropdown">
+              <button
+                onClick={() =>
+                  setActiveDropdown(
+                    activeDropdown === "status" ? null : "status",
+                  )
+                }
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
+                  filters.status !== "all"
+                    ? "border-[#00A8FF] text-[#00A8FF]"
+                    : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                <Funnel
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                  stroke="url(#statusGradient)"
+                />
+                <span>
+                  {filters.status !== "all"
+                    ? formatText(filters.status)
+                    : "Status"}
+                </span>
+                <svg
+                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {activeDropdown === "status" && (
+                <div className="absolute top-full right-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                  <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFilterChange("status", "all");
+                      }}
+                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
+                        filters.status === "all"
+                          ? "bg-gray-100 text-[#00A8FF]"
+                          : ""
+                      }`}
+                    >
+                      All Statuses
+                    </button>
+                    {filteredStatuses.map((status) => (
+                      <button
+                        key={status}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleFilterChange("status", status);
+                        }}
+                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
+                          filters.status === status
+                            ? "bg-gray-100 text-[#00A8FF]"
+                            : ""
+                        }`}
+                      >
+                        {formatText(status)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Clear Filters Button */}
             {hasActiveFilters && (
               <button
@@ -295,7 +332,7 @@ export default function ExaminerPageContent({
           </div>
         </div>
 
-        {/* Examiners Table Card */}
+        {/* Applications Table Card */}
         <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
           {tableElement}
         </div>

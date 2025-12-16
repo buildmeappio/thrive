@@ -16,7 +16,7 @@ import {
   updateFeeStructure,
   sendContract,
   moveToReview,
-  scheduleInterview,
+  scheduleInterview as _scheduleInterview,
   requestInterview,
   markInterviewCompleted,
   markContractSigned,
@@ -925,7 +925,60 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 />
               </Section>
 
-              {/* Section 6: Actions - Hidden when MORE_INFO_REQUESTED, INFO_REQUESTED, or ACTIVE */}
+              {/* Section 6: Interview Details - Show for all statuses after interview is scheduled */}
+              {examiner.interviewSlot &&
+                examiner.interviewSlot.startTime &&
+                examiner.interviewSlot.endTime &&
+                [
+                  "interview_scheduled",
+                  "interview_completed",
+                  "contract_sent",
+                  "contract_signed",
+                  "approved",
+                  "active",
+                ].includes(status) && (
+                  <Section title="Interview Details">
+                    <FieldRow
+                      label="Interview Date"
+                      value={
+                        examiner.interviewSlot.startTime
+                          ? new Date(
+                              examiner.interviewSlot.startTime,
+                            ).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : "N/A"
+                      }
+                      type="text"
+                    />
+                    <FieldRow
+                      label="Interview Time"
+                      value={
+                        examiner.interviewSlot.startTime &&
+                        examiner.interviewSlot.endTime
+                          ? `${new Date(
+                              examiner.interviewSlot.startTime,
+                            ).toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            })} - ${new Date(
+                              examiner.interviewSlot.endTime,
+                            ).toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            })}`
+                          : "N/A"
+                      }
+                      type="text"
+                    />
+                  </Section>
+                )}
+
+              {/* Section 7: Actions - Hidden when MORE_INFO_REQUESTED, INFO_REQUESTED, or ACTIVE */}
               {/* Hide actions for approved applications (they're now examiners) and active examiners */}
               {status !== "more_info_requested" &&
                 status !== "info_requested" &&

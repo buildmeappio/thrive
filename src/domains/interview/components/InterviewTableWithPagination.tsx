@@ -21,11 +21,12 @@ import {
 } from "@/components/ui/table";
 import { InterviewData } from "@/domains/interview/types/InterviewData";
 import { cn } from "@/lib/utils";
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, ArrowRight } from "lucide-react";
 import { capitalizeWords } from "@/utils/text";
+import Link from "next/link";
 
 // Utility function to format text from database: remove _, -, and capitalize each word
-const formatText = (str: string) => {
+const formatText = (str: string): string => {
   if (!str) return str;
   return str
     .replace(/[-_]/g, " ") // Replace - and _ with spaces
@@ -78,11 +79,31 @@ const formatTimeRange = (
   return `${startTimeStr} - ${endTimeStr}`;
 };
 
+const ActionButton = ({ applicationId }: { applicationId?: string }) => {
+  if (!applicationId) {
+    return null;
+  }
+  return (
+    <Link
+      href={`/application/${applicationId}`}
+      className="w-full h-full cursor-pointer"
+    >
+      <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-1 w-[30px] h-[30px] flex items-center justify-center hover:opacity-80">
+        <ArrowRight className="w-4 h-4 text-white" />
+      </div>
+    </Link>
+  );
+};
+
 type Props = {
   data: InterviewData[];
   searchQuery?: string;
   filters?: {
     status: string;
+    dateRange?: {
+      start: string;
+      end: string;
+    };
   };
 };
 
@@ -199,6 +220,37 @@ const columnsDef = [
     maxSize: 250,
     size: 200,
   },
+  {
+    accessorKey: "status",
+    header: ({ column }: { column: Column<InterviewData, unknown> }) => (
+      <SortableHeader column={column}>Status</SortableHeader>
+    ),
+    cell: ({ row }: { row: Row<InterviewData> }) => {
+      const status = row.getValue("status") as string;
+      const formattedStatus = formatText(status);
+      return (
+        <div
+          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+          title={formattedStatus}
+        >
+          {formattedStatus}
+        </div>
+      );
+    },
+    minSize: 120,
+    maxSize: 180,
+    size: 150,
+  },
+  {
+    header: () => <></>,
+    accessorKey: "applicationId",
+    cell: ({ row }: { row: Row<InterviewData> }) => {
+      return <ActionButton applicationId={row.original.applicationId} />;
+    },
+    minSize: 60,
+    maxSize: 60,
+    size: 60,
+  },
 ];
 
 export default function InterviewTableWithPagination({
@@ -216,6 +268,27 @@ export default function InterviewTableWithPagination({
       result = result.filter((d) => d.status === filters.status);
     }
 
+    // Filter by date range
+    if (filters.dateRange) {
+      const { start, end } = filters.dateRange;
+      if (start) {
+        result = result.filter((d) => {
+          const interviewDate = new Date(d.startTime);
+          const startDate = new Date(start);
+          startDate.setHours(0, 0, 0, 0);
+          return interviewDate >= startDate;
+        });
+      }
+      if (end) {
+        result = result.filter((d) => {
+          const interviewDate = new Date(d.startTime);
+          const endDate = new Date(end);
+          endDate.setHours(23, 59, 59, 999); // Include the entire end date
+          return interviewDate <= endDate;
+        });
+      }
+    }
+
     // Filter by search query
     const q = searchQuery.trim().toLowerCase();
     if (q) {
@@ -224,6 +297,7 @@ export default function InterviewTableWithPagination({
           d.examinerName,
           formatDateTime(d.startTime),
           formatTimeRange(d.startTime, d.endTime),
+          formatText(d.status),
         ]
           .filter(Boolean)
           .some((v) => String(v).toLowerCase().includes(q)),

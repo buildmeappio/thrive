@@ -146,12 +146,38 @@ export const scheduleApplicationInterview = async (id: string) => {
 };
 
 export const markApplicationInterviewCompleted = async (id: string) => {
-  return prisma.examinerApplication.update({
-    where: { id },
-    data: {
-      status: ExaminerStatus.INTERVIEW_COMPLETED,
-    },
-    include: includeRelations,
+  return prisma.$transaction(async (tx) => {
+    // First, get the application to check for interview slot
+    const existingApplication = await tx.examinerApplication.findUnique({
+      where: { id },
+      include: { interviewSlot: true },
+    });
+
+    if (!existingApplication) {
+      throw new Error("Application not found");
+    }
+
+    // Update interview slot status to COMPLETED if it exists and is BOOKED
+    if (
+      existingApplication.interviewSlot &&
+      existingApplication.interviewSlot.status === "BOOKED"
+    ) {
+      await tx.interviewSlot.update({
+        where: { id: existingApplication.interviewSlot.id },
+        data: {
+          status: "COMPLETED",
+        },
+      });
+    }
+
+    // Update application status
+    return tx.examinerApplication.update({
+      where: { id },
+      data: {
+        status: ExaminerStatus.INTERVIEW_COMPLETED,
+      },
+      include: includeRelations,
+    });
   });
 };
 

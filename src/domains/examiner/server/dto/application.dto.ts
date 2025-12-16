@@ -67,6 +67,9 @@ export class ApplicationDto {
         ? {
             id: application.interviewSlot.id,
             status: application.interviewSlot.status,
+            startTime: application.interviewSlot.startTime.toISOString(),
+            endTime: application.interviewSlot.endTime.toISOString(),
+            duration: application.interviewSlot.duration,
           }
         : null,
       feeStructure:

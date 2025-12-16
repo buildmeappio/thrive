@@ -6,6 +6,7 @@ import Pagination from "@/components/Pagination";
 import { InterviewData } from "@/domains/interview/types/InterviewData";
 import { DashboardShell } from "@/layouts/dashboard";
 import { Funnel } from "lucide-react";
+import DateRangeFilter from "@/components/ui/DateRangeFilter";
 
 interface InterviewPageContentProps {
   data: InterviewData[];
@@ -25,6 +26,10 @@ const formatText = (str: string) => {
 
 interface FilterState {
   status: string;
+  dateRange: {
+    start: string;
+    end: string;
+  };
 }
 
 export default function InterviewPageContent({
@@ -34,6 +39,10 @@ export default function InterviewPageContent({
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({
     status: "all",
+    dateRange: {
+      start: "",
+      end: "",
+    },
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -45,13 +54,37 @@ export default function InterviewPageContent({
     setActiveDropdown(null);
   };
 
+  const handleDateRangeApply = (dateRange: { start: string; end: string }) => {
+    setFilters((prev) => ({
+      ...prev,
+      dateRange,
+    }));
+  };
+
+  const handleDateRangeClear = () => {
+    setFilters((prev) => ({
+      ...prev,
+      dateRange: {
+        start: "",
+        end: "",
+      },
+    }));
+  };
+
   const clearFilters = () => {
     setFilters({
       status: "all",
+      dateRange: {
+        start: "",
+        end: "",
+      },
     });
   };
 
-  const hasActiveFilters = filters.status !== "all";
+  const hasActiveFilters =
+    filters.status !== "all" ||
+    filters.dateRange.start !== "" ||
+    filters.dateRange.end !== "";
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -102,6 +135,16 @@ export default function InterviewPageContent({
             <stop offset="0%" stopColor="#01F4C8" />
             <stop offset="100%" stopColor="#00A8FF" />
           </linearGradient>
+          <linearGradient
+            id="dateRangeGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="0%"
+          >
+            <stop offset="0%" stopColor="#01F4C8" />
+            <stop offset="100%" stopColor="#00A8FF" />
+          </linearGradient>
         </defs>
       </svg>
       <div className="flex flex-col gap-3 sm:gap-6 mb-20 dashboard-zoom-mobile">
@@ -137,6 +180,20 @@ export default function InterviewPageContent({
 
           {/* Filter Buttons - Wrap on mobile */}
           <div className="flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
+            {/* Date Range Filter */}
+            <div className="relative filter-dropdown">
+              <DateRangeFilter
+                onApply={handleDateRangeApply}
+                onClear={handleDateRangeClear}
+                isActive={
+                  filters.dateRange.start !== "" || filters.dateRange.end !== ""
+                }
+                label="Date Range"
+                value={filters.dateRange}
+                className="filter-dropdown"
+              />
+            </div>
+
             {/* Status Filter */}
             <div className="relative filter-dropdown">
               <button

@@ -37,6 +37,8 @@ type Props = {
   searchQuery?: string;
   filters?: FilterState;
   type?: "applications" | "examiners"; // To determine routing
+  togglingExaminerId?: string | null;
+  onToggleStatus?: (id: string) => void;
 };
 
 const ActionButton = ({
@@ -47,7 +49,7 @@ const ActionButton = ({
   type?: "applications" | "examiners";
 }) => {
   const href =
-    type === "applications" ? `/examiner/application/${id}` : `/examiner/${id}`;
+    type === "applications" ? `/application/${id}` : `/examiner/${id}`;
   return (
     <Link href={href} className="w-full h-full cursor-pointer">
       <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-1 w-[30px] h-[30px] flex items-center justify-center hover:opacity-80">
@@ -106,7 +108,11 @@ const SortableHeader = ({
   );
 };
 
-const getColumnsDef = (type?: "applications" | "examiners") => {
+const getColumnsDef = (
+  type?: "applications" | "examiners",
+  togglingExaminerId?: string | null,
+  onToggleStatus?: (id: string) => void,
+) => {
   const baseColumns = [
     {
       accessorKey: "name",
@@ -197,7 +203,7 @@ const getColumnsDef = (type?: "applications" | "examiners") => {
     },
   ];
 
-  // Add status column only for applications
+  // Add status column for applications (text) or examiners (toggle)
   if (type === "applications") {
     baseColumns.push({
       accessorKey: "status",
@@ -219,6 +225,44 @@ const getColumnsDef = (type?: "applications" | "examiners") => {
       minSize: 120,
       maxSize: 180,
       size: 150,
+    });
+  } else if (type === "examiners" && onToggleStatus) {
+    // Add status toggle column for examiners
+    baseColumns.push({
+      header: () => <span>Status</span>,
+      accessorKey: "status",
+      cell: ({ row }: { row: Row<ExaminerData> }) => {
+        const isToggling = togglingExaminerId === row.original.id;
+        const status = row.original.status;
+        const isActive = status === "ACTIVE";
+        return (
+          <div className="flex items-center justify-center w-full">
+            <button
+              type="button"
+              className={cn(
+                "relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 flex-shrink-0",
+                isActive
+                  ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]"
+                  : "bg-gray-300",
+                isToggling && "cursor-not-allowed opacity-60",
+              )}
+              onClick={() => onToggleStatus(row.original.id)}
+              disabled={isToggling}
+              aria-pressed={isActive}
+            >
+              <span
+                className={cn(
+                  "inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform",
+                  isActive ? "translate-x-6" : "translate-x-1",
+                )}
+              />
+            </button>
+          </div>
+        );
+      },
+      minSize: 110,
+      maxSize: 130,
+      size: 110,
     });
   }
 
@@ -242,10 +286,12 @@ export default function ExaminerTableWithPagination({
   searchQuery = "",
   filters,
   type,
+  togglingExaminerId,
+  onToggleStatus,
 }: Props) {
   const [query, setQuery] = useState(searchQuery);
   const [sorting, setSorting] = useState<SortingState>([]);
-  const columnsDef = getColumnsDef(type);
+  const columnsDef = getColumnsDef(type, togglingExaminerId, onToggleStatus);
 
   // Update internal query when searchQuery prop changes
   useEffect(() => {

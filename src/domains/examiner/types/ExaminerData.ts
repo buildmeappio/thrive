@@ -43,6 +43,9 @@ export type ExaminerData = {
   interviewSlot?: {
     id: string;
     status: string;
+    startTime?: string;
+    endTime?: string;
+    duration?: number;
   } | null;
 };
 

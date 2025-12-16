@@ -2,6 +2,7 @@ export { default as listRecentExaminers } from "./listRecentExaminers";
 export { default as getExaminerCount } from "./getExaminerCount";
 export { default as listAllExaminers } from "./listAllExaminers";
 export { default as getExaminerById } from "./getExaminerById";
+export { default as getExaminerProfileById } from "./getExaminerProfileById";
 export { default as approveExaminer } from "./approveExaminer";
 export { default as rejectExaminer } from "./rejectExaminer";
 export { default as requestMoreInfo } from "./requestMoreInfo";
@@ -21,6 +22,7 @@ export { default as signContractByExaminer } from "./signContractByExaminer";
 export { default as getExaminerContract } from "./getExaminerContract";
 export { suspendExaminer } from "./suspendExaminer";
 export { reactivateExaminer } from "./reactivateExaminer";
+export { toggleExaminerStatus } from "./toggleExaminerStatus";
 // Application actions (for listing only - actions use same functions)
 export { default as listAllApplications } from "./listAllApplications";
 export { default as listRecentApplications } from "./listRecentApplications";

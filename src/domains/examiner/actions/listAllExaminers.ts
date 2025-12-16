@@ -21,6 +21,10 @@ const listAllExaminers = async () => {
             status: "ACTIVE",
           },
           {
+            // Include SUSPENDED examiners so they can be reactivated
+            status: "SUSPENDED",
+          },
+          {
             // Fallback: Examiners with linked application that has ACTIVE status
             application: {
               status: "ACTIVE",
