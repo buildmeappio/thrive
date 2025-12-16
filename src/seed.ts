@@ -23,6 +23,7 @@ import YearsOfExperienceSeeder from "./seeders/yearsOfExperience.seeder";
 import ConfigurationSeeder from "./seeders/configuration.seeder";
 import AssessmentTypeSeeder from "./seeders/assessmentType.seeder";
 import DevSuperAdminSeeder from "./seeders/devSuperAdmin.seeder";
+import ProfessionalTitleSeeder from "./seeders/professionalTitle.seeder";
 
 const seeds = [
   RoleSeeder,
@@ -47,6 +48,7 @@ const seeds = [
   ConfigurationSeeder,
   AssessmentTypeSeeder,
   DevSuperAdminSeeder,
+  ProfessionalTitleSeeder,
 ];
 
 const prisma = new PrismaClient();
