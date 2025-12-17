@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useRef, useMemo } from "react";
-import { UseFormReturn } from "@/lib/form";
+import { UseFormReturn, FieldValues } from "@/lib/form";
 
-interface UseRegistrationFormResetOptions<T> {
+interface UseRegistrationFormResetOptions<T extends FieldValues> {
   form: UseFormReturn<T>;
   defaultValues: T;
   watchFields?: (keyof T)[];
@@ -13,7 +13,7 @@ interface UseRegistrationFormResetOptions<T> {
  * Hook for handling form reset logic in registration steps
  * Syncs form with store data while preserving errors if form has been submitted
  */
-export function useRegistrationFormReset<T>({
+export function useRegistrationFormReset<T extends FieldValues>({
   form,
   defaultValues,
   watchFields,

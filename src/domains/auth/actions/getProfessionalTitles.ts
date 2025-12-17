@@ -31,10 +31,7 @@ const getProfessionalTitles = async () => {
       );
     }
 
-    throw new Error(
-      ErrorMessages.PROFESSIONAL_TITLES_NOT_FOUND ||
-        "Professional titles not found",
-    );
+    throw new Error(ErrorMessages.PROFESSIONAL_TITLES_NOT_FOUND);
   }
 };
 

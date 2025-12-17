@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { UseFormReturn } from "@/lib/form";
 import { toast } from "sonner";
-import { AvailabilityPreferencesInput } from "../../schemas/onboardingSteps.schema";
+import { AvailabilityPreferencesInput } from "../schemas/onboardingSteps.schema";
 
 interface UseAvailabilityFormSubmissionOptions {
   form: UseFormReturn<AvailabilityPreferencesInput>;

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { updateExaminerProfileAction } from "@/domains/setting/server/actions";
 import { getProfilePhotoUrlAction } from "@/server/actions/getProfilePhotoUrl";
-import { ProfileInfoInput } from "../../schemas/onboardingSteps.schema";
+import { ProfileInfoInput } from "../schemas/onboardingSteps.schema";
 
 interface UseProfileFormSubmissionOptions {
   form: UseFormReturn<ProfileInfoInput>;
@@ -84,6 +84,19 @@ export function useProfileFormSubmission({
 
         // Update parent component's data state if callback is provided (for settings page)
         if (onDataUpdate && isSettingsPage) {
+          // Fetch profile photo URL if we have a profilePhotoId
+          let profilePhotoUrl: string | null = null;
+          const photoIdToFetch =
+            result.data?.profilePhotoId || initialProfilePhotoId;
+          if (photoIdToFetch && typeof photoIdToFetch === "string") {
+            try {
+              profilePhotoUrl = await getProfilePhotoUrlAction(photoIdToFetch);
+            } catch (error) {
+              console.error("Failed to fetch profile photo URL:", error);
+              profilePhotoUrl = null;
+            }
+          }
+
           onDataUpdate({
             firstName: values.firstName,
             lastName: values.lastName,
@@ -93,9 +106,8 @@ export function useProfileFormSubmission({
             clinicName: values.clinicName,
             clinicAddress: values.clinicAddress,
             bio: values.bio,
-            profilePhotoId:
-              result.data?.profilePhotoId || initialProfilePhotoId,
-            profilePhotoUrl: result.data?.profilePhotoUrl || null,
+            profilePhotoId: photoIdToFetch,
+            profilePhotoUrl: profilePhotoUrl,
           });
         }
 

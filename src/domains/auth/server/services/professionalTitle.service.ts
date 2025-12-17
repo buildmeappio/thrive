@@ -39,8 +39,7 @@ class ProfessionalTitleService {
 
       throw HttpError.fromError(
         error,
-        ErrorMessages.PROFESSIONAL_TITLES_NOT_FOUND ||
-          "Professional titles not found",
+        ErrorMessages.PROFESSIONAL_TITLES_NOT_FOUND,
         500,
       );
     }
