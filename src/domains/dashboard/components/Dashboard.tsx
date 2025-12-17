@@ -111,8 +111,8 @@ export default function Dashboard({
           {examinerRows.length > 0 && (
             <NewExaminers
               items={examinerRows}
-              listHref="/examiner"
-              buildDetailHref={(id) => `/examiner/application/${id}`}
+              listHref="/application"
+              buildDetailHref={(id) => `/application/${id}`}
             />
           )}
           <NewCases items={caseRows} listHref="/cases" />
