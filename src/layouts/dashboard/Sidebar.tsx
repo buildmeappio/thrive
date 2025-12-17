@@ -149,7 +149,7 @@ export const routes: Route[] = [
     icon: Mail,
     label: "Email Templates",
     href: "/dashboard/email-templates",
-    index: 12,
+    index: 13,
   },
 ];
 
