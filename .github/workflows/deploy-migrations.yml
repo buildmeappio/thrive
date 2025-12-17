@@ -146,6 +146,8 @@ jobs:
               npm install
             fi
             git pull origin ${{ github.ref }}
+            echo "Generating Prisma client..."
+            npx prisma generate
             echo "🌱 Running Prisma seeders..."
             npm run seed
             echo "✅ Seeders completed successfully!"
