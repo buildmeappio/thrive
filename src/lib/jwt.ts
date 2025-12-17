@@ -44,7 +44,9 @@ export function signAccountToken(
   expiresIn: SignOptions["expiresIn"] = "7d",
 ): string {
   const options: SignOptions = { expiresIn };
-  const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret("JWT_SET_PASSWORD_TOKEN_SECRET");
+  const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret(
+    "JWT_SET_PASSWORD_TOKEN_SECRET",
+  );
   return jwt.sign(payload, JWT_SET_PASSWORD_TOKEN_SECRET, options);
 }
 
@@ -55,7 +57,9 @@ export function signAccountToken(
  */
 export function verifyAccountToken(token: string): string | jwt.JwtPayload {
   try {
-    const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret("JWT_SET_PASSWORD_TOKEN_SECRET");
+    const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret(
+      "JWT_SET_PASSWORD_TOKEN_SECRET",
+    );
     return jwt.verify(token, JWT_SET_PASSWORD_TOKEN_SECRET);
   } catch {
     throw new Error("Invalid or expired token");
@@ -182,7 +186,9 @@ export function signContractToken(
   expiresIn: SignOptions["expiresIn"] = "90d",
 ): string {
   const options: SignOptions = { expiresIn };
-  const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret("JWT_SET_PASSWORD_TOKEN_SECRET");
+  const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret(
+    "JWT_SET_PASSWORD_TOKEN_SECRET",
+  );
   return jwt.sign(payload, JWT_SET_PASSWORD_TOKEN_SECRET, options);
 }
 
@@ -197,7 +203,9 @@ export function verifyContractToken(token: string): {
   applicationId?: string;
 } {
   try {
-    const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret("JWT_SET_PASSWORD_TOKEN_SECRET");
+    const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret(
+      "JWT_SET_PASSWORD_TOKEN_SECRET",
+    );
     const decoded = jwt.verify(
       token,
       JWT_SET_PASSWORD_TOKEN_SECRET,
@@ -228,7 +236,9 @@ export function signExaminerApplicationToken(
   expiresIn: SignOptions["expiresIn"] = "7d",
 ): string {
   const options: SignOptions = { expiresIn };
-  const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret("JWT_SET_PASSWORD_TOKEN_SECRET");
+  const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret(
+    "JWT_SET_PASSWORD_TOKEN_SECRET",
+  );
   return jwt.sign(payload, JWT_SET_PASSWORD_TOKEN_SECRET, options);
 }
 
@@ -242,7 +252,9 @@ export function verifyExaminerApplicationToken(token: string): {
   applicationId: string;
 } {
   try {
-    const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret("JWT_SET_PASSWORD_TOKEN_SECRET");
+    const JWT_SET_PASSWORD_TOKEN_SECRET = getJwtSecret(
+      "JWT_SET_PASSWORD_TOKEN_SECRET",
+    );
     const decoded = jwt.verify(
       token,
       JWT_SET_PASSWORD_TOKEN_SECRET,
@@ -275,7 +287,11 @@ export function signExaminerScheduleInterviewToken(
   const JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET = getJwtSecret(
     "JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET",
   );
-  return jwt.sign(payload, JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET, options);
+  return jwt.sign(
+    payload,
+    JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET,
+    options,
+  );
 }
 
 /**
