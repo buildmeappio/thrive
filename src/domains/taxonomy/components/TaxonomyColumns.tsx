@@ -142,16 +142,24 @@ export const createTaxonomyColumns = (
 ): ColumnDef<TaxonomyData>[] => {
   const columns: ColumnDef<TaxonomyData>[] = displayFields.map(
     (field, index) => ({
-      header: ({ column }) => (
-        <Header
-          first={index === 0}
-          sortable
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          sortDirection={column.getIsSorted()}
-        >
-          {formatFieldName(field)}
-        </Header>
-      ),
+      header: ({ column }) => {
+        // For professional titles, show "Title" instead of "Name"
+        const headerLabel =
+          type === "professionalTitle" && field === "name"
+            ? "Title"
+            : formatFieldName(field);
+
+        return (
+          <Header
+            first={index === 0}
+            sortable
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            sortDirection={column.getIsSorted()}
+          >
+            {headerLabel}
+          </Header>
+        );
+      },
       accessorKey: field,
       cell: ({ row }) => {
         const value = row.original[field];
@@ -166,7 +174,12 @@ export const createTaxonomyColumns = (
           field === "benefit" ||
           field.toLowerCase().includes("name")
         ) {
-          formattedValue = formatTaxonomyName(displayValue);
+          // For professional titles, use uppercase instead of title case
+          if (type === "professionalTitle" && field === "name") {
+            formattedValue = displayValue.toUpperCase();
+          } else {
+            formattedValue = formatTaxonomyName(displayValue);
+          }
 
           // For configuration, if name is "slot duration", append "(in minutes)"
           // If name is "booking cancellation time", append "(in hours)"
