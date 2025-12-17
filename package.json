@@ -4,13 +4,15 @@
   "main": "index.js",
   "scripts": {
     "generate": "prisma generate",
-    "migrate": "prisma migrate dev",
+    "migrate:create": "prisma migrate dev --create-only",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
     "studio": "prisma generate && prisma studio",
     "reset": "prisma migrate reset",
     "seed": "prisma db seed",
     "docker:up": "docker-compose --env-file .env -f docker-compose.dev.yaml up -d",
     "docker:down": "docker-compose --env-file .env -f docker-compose.dev.yaml down -v",
-    "db:sync": "chmod +x scripts/db-sync.sh && bash scripts/db-sync.sh"
+    "db:sync": "bash scripts/db-sync.sh"
   },
   "repository": {
     "type": "git",
@@ -25,14 +27,17 @@
   "homepage": "https://github.com/thrive-org/prisma-db#readme",
   "description": "",
   "dependencies": {
-    "@prisma/client": "^6.15.0",
+    "@prisma/adapter-pg": "^7.1.0",
+    "@prisma/client": "^7.1.0",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.1",
-    "prisma": "^6.15.0"
+    "pg": "^8.16.3",
+    "prisma": "^7.1.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/node": "^24.3.0",
+    "@types/pg": "^8.16.0",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   }

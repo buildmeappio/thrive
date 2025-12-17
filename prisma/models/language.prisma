@@ -1,0 +1,13 @@
+model Language {
+  id        String    @id @unique @default(uuid()) @db.Uuid
+  name      String    @map("name") @db.VarChar(255)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  examinationInterpreter ExaminationInterpreter[] @relation("ExaminationInterpreter")
+  examinerLanguages      ExaminerLanguage[]
+  interpreterLanguages   InterpreterLanguage[]
+
+  @@map("languages")
+}

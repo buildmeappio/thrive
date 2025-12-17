@@ -1,0 +1,7 @@
+enum ClaimantBookingStatus {
+  PENDING
+  ACCEPT
+  DECLINE
+  REQUEST_MORE_INFO
+  DISCARDED
+}

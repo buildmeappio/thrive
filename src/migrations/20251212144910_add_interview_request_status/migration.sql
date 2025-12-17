@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "ExaminerStatus" ADD VALUE 'INTERVIEW_REQUESTED';

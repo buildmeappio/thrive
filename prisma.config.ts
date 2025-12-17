@@ -1,17 +1,22 @@
-import path from 'path';
+import { defineConfig } from "prisma/config";
+import * as path from "path";
 import "dotenv/config";
-import type { PrismaConfig } from "prisma";
 
-export default {
-  schema: path.join("prisma", "schema.prisma"),
+const rootDir = process.cwd();
+
+export default defineConfig({
+  schema: path.resolve(rootDir, "prisma"),
+  datasource: {
+    url: process.env.DATABASE_URL!,
+  },
   migrations: {
-    path: path.join("src", "migrations"),
-		seed: 'tsx src/seed.ts'
+    path: path.resolve(rootDir, "src", "migrations"),
+    seed: "tsx src/seed.ts",
   },
   views: {
-    path: path.join("src", "views"),
+    path: path.resolve(rootDir, "src", "views"),
   },
   typedSql: {
-    path: path.join("src", "queries"),
+    path: path.resolve(rootDir, "src", "queries"),
   },
-} satisfies PrismaConfig;
+});
