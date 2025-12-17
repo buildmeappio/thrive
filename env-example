@@ -1,0 +1,122 @@
+# ============================================
+# Environment Variables Configuration
+# ============================================
+# Copy this file to .env and fill in your actual values
+# cp env-example .env
+
+# ============================================
+# Application Configuration
+# ============================================
+NODE_ENV=development
+
+# ============================================
+# Public URLs (Client-side accessible)
+# ============================================
+# Base URL of the application
+NEXT_PUBLIC_APP_URL=http://localhost:3002
+
+# Claimant availability page URL
+NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL=/claimant/availability
+
+# Claimant booking cancellation page URL
+NEXT_PUBLIC_CLAIMANT_BOOKING_CANCEL_URL=/claimant/booking/cancel
+
+# CDN URL for static assets
+NEXT_PUBLIC_CDN_URL=https://assets.thriveassessmentcare.com
+
+# Google Places API key for location services
+NEXT_PUBLIC_GOOGLE_PLACES_API_KEY=your_google_places_api_key_here
+
+# ============================================
+# Database Configuration
+# ============================================
+# PostgreSQL database connection string
+# Format: postgresql://user:password@host:port/database
+DATABASE_URL=postgresql://user:password@localhost:5432/organization_db
+
+# Require SSL for database connections (true/false)
+# Set to 'true' for production, 'false' for local development
+DATABASE_SSL_REQUIRED=false
+
+# ============================================
+# NextAuth Configuration
+# ============================================
+# Secret key for NextAuth.js session encryption
+# Generate with: openssl rand -base64 32
+NEXTAUTH_SECRET=your_nextauth_secret_key_here
+
+# Base URL for NextAuth callbacks
+NEXTAUTH_URL=http://localhost:3002/organization/api/auth
+
+# ============================================
+# OAuth Configuration (Email Service)
+# ============================================
+# OAuth credentials for email service (e.g., Gmail OAuth)
+OAUTH_USERNAME=your_email@example.com
+OAUTH_CLIENT_ID=your_oauth_client_id
+OAUTH_CLIENT_SECRET=your_oauth_client_secret
+OAUTH_REFRESH_TOKEN=your_oauth_refresh_token
+
+# ============================================
+# AWS S3 Configuration
+# ============================================
+# AWS region for S3 bucket
+AWS_S3_REGION=us-east-1
+
+# AWS access key ID for S3
+AWS_S3_ACCESS_KEY_ID=your_aws_access_key_id
+
+# AWS secret access key for S3
+AWS_S3_SECRET_ACCESS_KEY=your_aws_secret_access_key
+
+# S3 bucket name for file storage
+AWS_S3_BUCKET_NAME=your_s3_bucket_name
+
+# ============================================
+# JWT Token Secrets
+# ============================================
+# Secret for OTP (One-Time Password) JWT tokens
+# Generate with: openssl rand -base64 32
+JWT_OTP_TOKEN_SECRET=your_jwt_otp_secret_here
+JWT_OTP_TOKEN_EXPIRY=15m
+
+# Secret for password reset JWT tokens
+# Generate with: openssl rand -base64 32
+JWT_PASSWORD_TOKEN_SECRET=your_jwt_password_secret_here
+JWT_PASSWORD_TOKEN_EXPIRY=
+
+# Secret for claimant approval JWT tokens
+# Generate with: openssl rand -base64 32
+JWT_CLAIMANT_APPROVE_TOKEN_SECRET=your_jwt_claimant_approve_secret_here
+JWT_CLAIMANT_APPROVE_TOKEN_EXPIRY=
+
+# Secret for organization request info JWT tokens
+# Generate with: openssl rand -base64 32
+JWT_ORGANIZATION_INFO_REQUEST_TOKEN_SECRET=your_jwt_organization_info_request_secret_here
+JWT_ORGANIZATION_INFO_REQUEST_TOKEN_EXPIRY=
+
+# ============================================
+# Optional: Prisma Schema Pull Script
+# ============================================
+# These are optional and only needed if using the pull-schema.js script
+# GitHub repository owner (default: thrive-org)
+# OWNER=thrive-org
+
+# GitHub repository name (default: prisma-db)
+# REPO=prisma-db
+
+# Source path in repository (default: prisma)
+# SRC_PATH=prisma
+
+# Destination path locally (default: ./prisma)
+# DEST_PATH=./prisma
+
+# Branch to pull from (default: develop)
+# BRANCH=develop
+
+# Maximum concurrent downloads (default: 50)
+# MAX_CONCURRENT_DOWNLOADS=50
+
+# GitHub personal access token for private repositories
+# GITHUB_TOKEN=your_github_token_here
+

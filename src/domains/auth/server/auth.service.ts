@@ -12,7 +12,7 @@ import {
   signResetPasswordToken,
 } from '@/lib/jwt';
 import ErrorMessages from '@/constants/ErrorMessages';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import SuccessMessages from '@/constants/SuccessMessages';
 import { Prisma } from '@prisma/client';
 import { getE164PhoneNumber } from '@/utils/formatNumbers';
@@ -256,7 +256,8 @@ const getExaminationTypes = async () => {
 
 const generateOtpToken = (email: string, otp: string) => {
   try {
-    const token = signOtpToken({ email, otp }, '5m');
+    const expiresIn = env.JWT_OTP_TOKEN_EXPIRY as SignOptions['expiresIn'];
+    const token = signOtpToken({ email, otp }, expiresIn);
     return token;
   } catch (error) {
     console.error('Failed to generate OTP token:', error);
@@ -298,12 +299,12 @@ const verifyOtp = (otp: string, email: string, token: string) => {
       throw HttpError.badRequest('No OTP token found');
     }
 
-    if (!env.JWT_OTP_SECRET) {
+    if (!env.JWT_OTP_TOKEN_SECRET) {
       throw HttpError.badRequest(ErrorMessages.JWT_SECRETS_REQUIRED);
     }
 
     // Verify JWT
-    const decoded = jwt.verify(token, env.JWT_OTP_SECRET) as { email: string; otp: string };
+    const decoded = jwt.verify(token, env.JWT_OTP_TOKEN_SECRET) as { email: string; otp: string };
 
     // Compare OTP
     if (decoded.otp !== otp) {

@@ -36,7 +36,7 @@ export function verifyOtpToken(token: string): JwtPayload | null {
 // ----- Password Tokens -----
 export function signPasswordToken(
   payload: object,
-  expiresIn: SignOptions['expiresIn'] = '15m'
+  expiresIn: SignOptions['expiresIn'] = env.JWT_PASSWORD_TOKEN_EXPIRY as SignOptions['expiresIn']
 ): string {
   const passwordSecret = getJwtSecret('password');
   const options: SignOptions = { expiresIn };
@@ -55,7 +55,7 @@ export function verifyPasswordToken(token: string): JwtPayload | null {
 // ----- Reset Password Tokens -----
 export function signResetPasswordToken(
   payload: object,
-  expiresIn: SignOptions['expiresIn'] = '24h'
+  expiresIn: SignOptions['expiresIn'] = env.JWT_PASSWORD_TOKEN_EXPIRY as SignOptions['expiresIn']
 ): string {
   const passwordSecret = getJwtSecret('password');
   const options: SignOptions = { expiresIn };
@@ -74,7 +74,7 @@ export function verifyResetPasswordToken(token: string): JwtPayload | null {
 // ----- Claimant Approval Tokens -----
 export function signClaimantApprovalToken(
   payload: { email: string; caseId: string; examinationId: string },
-  expiresIn: SignOptions['expiresIn'] = '7d'
+  expiresIn: SignOptions['expiresIn'] = env.JWT_CLAIMANT_APPROVE_TOKEN_EXPIRY as SignOptions['expiresIn']
 ): string {
   const claimantSecret = getJwtSecret('claimant_approve');
   const options: SignOptions = { expiresIn };
@@ -93,7 +93,7 @@ export function verifyClaimantApprovalToken(token: string): JwtPayload | null {
 // ----- Organization Info Request Tokens -----
 export function signOrgInfoRequestToken(
   payload: { email: string; organizationId: string },
-  expiresIn: SignOptions['expiresIn'] = '7d'
+  expiresIn: SignOptions['expiresIn'] = env.JWT_ORGANIZATION_INFO_REQUEST_TOKEN_EXPIRY as SignOptions['expiresIn']
 ): string {
   const orgInfoRequestSecret = getJwtSecret('org_info_request');
   const options: SignOptions = { expiresIn };
