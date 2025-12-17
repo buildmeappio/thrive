@@ -360,6 +360,13 @@ jobs:
             export ECR_REGISTRY=$ECR_REGISTRY/$ECR_REPOSITORY
             export IMAGE_TAG=$IMAGE_TAG
 
+            # Find the currently running container image before stopping
+            OLD_IMAGE=$(docker ps --filter "ancestor=$ECR_REGISTRY:$IMAGE_TAG" --format "{{.Image}}")
+            if [ -z "$OLD_IMAGE" ]; then
+              # fallback: get the image for the current service(s), might be the previous sha
+              OLD_IMAGE=$(docker ps --filter "name=$(basename $DEPLOY_PATH)" --format "{{.Image}}")
+            fi
+
             # Stop and remove existing containers using docker-compose
             docker-compose down
 
@@ -369,3 +376,11 @@ jobs:
             # Show running containers
             docker ps
             docker-compose ps
+
+            # Remove the previously running image, if any, and if the image is different from the currently deployed one
+            if [ -n "$OLD_IMAGE" ] && [ "$OLD_IMAGE" != "$ECR_REGISTRY:$IMAGE_TAG" ]; then
+              echo "Removing old Docker image $OLD_IMAGE"
+              docker rmi "$OLD_IMAGE" || true
+            else
+              echo "No previous image to remove or previous is same as current."
+            fi
