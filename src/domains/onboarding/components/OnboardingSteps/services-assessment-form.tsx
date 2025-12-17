@@ -134,7 +134,18 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
   const { handleSubmit, handleMarkComplete, loading } = useFormSubmission({
     form,
     examinerProfileId,
-    updateAction: updateServicesAssessmentAction,
+    updateAction: async (data) => {
+      // Transform Partial<T> to required fields for the action
+      return await updateServicesAssessmentAction({
+        examinerProfileId: data.examinerProfileId,
+        assessmentTypes: data.assessmentTypes || [],
+        acceptVirtualAssessments: data.acceptVirtualAssessments ?? true,
+        acceptInPersonAssessments: data.acceptInPersonAssessments ?? true,
+        travelToClaimants: data.travelToClaimants ?? false,
+        travelRadius: data.travelRadius,
+        assessmentTypeOther: data.assessmentTypeOther,
+      });
+    },
     onComplete: () => {
       // Update initial form data reference to current values
       const values = form.getValues();

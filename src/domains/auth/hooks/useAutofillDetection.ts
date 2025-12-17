@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { UseFormReturn } from "@/lib/form";
+import { UseFormReturn, FieldValues, Path } from "@/lib/form";
 
-interface UseAutofillDetectionOptions<T> {
+interface UseAutofillDetectionOptions<T extends FieldValues> {
   form: UseFormReturn<T>;
   watchedFields: (keyof T)[];
 }
@@ -11,7 +11,7 @@ interface UseAutofillDetectionOptions<T> {
  * Hook for detecting browser autofill and triggering validation
  * Handles autofill detection for form fields that may be filled by browser
  */
-export function useAutofillDetection<T>({
+export function useAutofillDetection<T extends FieldValues>({
   form,
   watchedFields,
 }: UseAutofillDetectionOptions<T>) {
@@ -23,7 +23,7 @@ export function useAutofillDetection<T>({
       const formValues = form.getValues();
       const watchedValues = watchedFields.reduce(
         (acc, field) => {
-          acc[field] = form.watch(field);
+          acc[field] = form.watch(field as Path<T>);
           return acc;
         },
         {} as Record<keyof T, any>,
@@ -50,7 +50,7 @@ export function useAutofillDetection<T>({
         watchedFields.some((field) => target.id === String(field))
       ) {
         setTimeout(() => {
-          form.trigger(target.id as keyof T);
+          form.trigger(target.id as Path<T>);
           setAutofillCheck((prev) => prev + 1);
         }, 50);
       }

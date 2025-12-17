@@ -6,7 +6,7 @@ import {
   convertUTCToLocal,
 } from "@/utils/timeConversion";
 import { timeOptions } from "@/constants/options";
-import { AvailabilityPreferencesInput } from "../../schemas/onboardingSteps.schema";
+import { AvailabilityPreferencesInput } from "../schemas/onboardingSteps.schema";
 import { availabilityInitialValues } from "../constants/initialValues";
 
 interface InitialAvailabilityData {

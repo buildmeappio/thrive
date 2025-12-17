@@ -5,8 +5,14 @@ import { CircleCheck } from "lucide-react";
 import { useNotificationsState, useNotificationsSubmission } from "../../hooks";
 import type { NotificationsFormProps } from "../../types";
 
+interface NotificationSettings {
+  emailPaymentPayout: boolean;
+  smsNotifications: boolean;
+  emailMarketing: boolean;
+}
+
 interface NotificationSetting {
-  id: string;
+  id: keyof NotificationSettings;
   label: string;
   description: string;
   enabled: boolean;
@@ -108,15 +114,19 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
                   <button
                     type="button"
                     role="switch"
-                    aria-checked={notifications[setting.id]}
+                    aria-checked={
+                      notifications[setting.id as keyof typeof notifications]
+                    }
                     onClick={() => toggleNotification(setting.id)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:ring-offset-2 ${
-                      notifications[setting.id] ? "bg-[#00A8FF]" : "bg-gray-300"
+                      notifications[setting.id as keyof typeof notifications]
+                        ? "bg-[#00A8FF]"
+                        : "bg-gray-300"
                     }`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        notifications[setting.id]
+                        notifications[setting.id as keyof typeof notifications]
                           ? "translate-x-6"
                           : "translate-x-1"
                       }`}
