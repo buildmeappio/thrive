@@ -108,10 +108,7 @@ jobs:
             which npm || echo "⚠️  npm not found in PATH"
             which npx || echo "⚠️  npx not found in PATH"
             echo "🔍 Checking Prisma installation..."
-            if [ ! -d "node_modules" ]; then
-              echo "📥 Installing dependencies..."
-              npm install
-            fi
+            npm install
             git pull origin ${{ github.ref }}
             echo "🔄 Running Prisma migrations..."
             npx prisma migrate deploy
