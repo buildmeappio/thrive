@@ -82,8 +82,8 @@ JWT_OTP_TOKEN_EXPIRY=15m
 
 # Secret for password reset JWT tokens
 # Generate with: openssl rand -base64 32
-JWT_PASSWORD_TOKEN_SECRET=your_jwt_password_secret_here
-JWT_PASSWORD_TOKEN_EXPIRY=
+JWT_FORGET_PASSWORD_TOKEN_SECRET=your_jwt_password_secret_here
+JWT_FORGET_PASSWORD_TOKEN_EXPIRY=
 
 # Secret for claimant approval JWT tokens
 # Generate with: openssl rand -base64 32

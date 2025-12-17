@@ -4,7 +4,7 @@ import env from '@/config/env';
 
 const jwtConfig = {
   otp: env.JWT_OTP_TOKEN_SECRET,
-  password: env.JWT_PASSWORD_TOKEN_SECRET,
+  password: env.JWT_FORGET_PASSWORD_TOKEN_SECRET,
   claimant_approve: env.JWT_CLAIMANT_APPROVE_TOKEN_SECRET,
   org_info_request: env.JWT_ORGANIZATION_INFO_REQUEST_TOKEN_SECRET,
 } as const;
@@ -36,7 +36,7 @@ export function verifyOtpToken(token: string): JwtPayload | null {
 // ----- Password Tokens -----
 export function signPasswordToken(
   payload: object,
-  expiresIn: SignOptions['expiresIn'] = env.JWT_PASSWORD_TOKEN_EXPIRY as SignOptions['expiresIn']
+  expiresIn: SignOptions['expiresIn'] = env.JWT_FORGET_PASSWORD_TOKEN_EXPIRY as SignOptions['expiresIn']
 ): string {
   const passwordSecret = getJwtSecret('password');
   const options: SignOptions = { expiresIn };
@@ -55,7 +55,7 @@ export function verifyPasswordToken(token: string): JwtPayload | null {
 // ----- Reset Password Tokens -----
 export function signResetPasswordToken(
   payload: object,
-  expiresIn: SignOptions['expiresIn'] = env.JWT_PASSWORD_TOKEN_EXPIRY as SignOptions['expiresIn']
+  expiresIn: SignOptions['expiresIn'] = env.JWT_FORGET_PASSWORD_TOKEN_EXPIRY as SignOptions['expiresIn']
 ): string {
   const passwordSecret = getJwtSecret('password');
   const options: SignOptions = { expiresIn };
