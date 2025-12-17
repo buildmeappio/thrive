@@ -11,7 +11,7 @@ type ResetPasswordData = {
 };
 
 export const resetPassword = async (
-  data: ResetPasswordData
+  data: ResetPasswordData,
 ): Promise<{ success: boolean; error?: string }> => {
   try {
     // Verify the token
@@ -37,8 +37,8 @@ export const resetPassword = async (
     logger.error("Error resetting password:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to reset password",
+      error:
+        error instanceof Error ? error.message : "Failed to reset password",
     };
   }
 };
-

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -8,7 +8,7 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 import {
   Table,
   TableBody,
@@ -16,13 +16,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { createTaxonomyColumns } from './TaxonomyColumns';
-import { cn } from '@/lib/utils';
-import Pagination from '@/components/Pagination';
-import { TaxonomyData, TaxonomyType } from '../types/Taxonomy';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/table";
+import { createTaxonomyColumns } from "./TaxonomyColumns";
+import { cn } from "@/lib/utils";
+import Pagination from "@/components/Pagination";
+import { TaxonomyData, TaxonomyType } from "../types/Taxonomy";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type TaxonomyTableProps = {
   taxonomyList: TaxonomyData[];
@@ -35,8 +35,8 @@ type TaxonomyTableProps = {
   type: TaxonomyType;
 };
 
-const TaxonomyTable = ({ 
-  taxonomyList, 
+const TaxonomyTable = ({
+  taxonomyList,
   displayFields,
   searchFields,
   onEdit,
@@ -45,25 +45,28 @@ const TaxonomyTable = ({
   singularName,
   type,
 }: TaxonomyTableProps) => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
 
-    return taxonomyList.filter(taxonomy => {
+    return taxonomyList.filter((taxonomy) => {
       if (!q) return true;
 
       const hit = searchFields
-        .map(field => taxonomy[field])
+        .map((field) => taxonomy[field])
         .filter(Boolean)
-        .some(v => String(v).toLowerCase().includes(q));
+        .some((v) => String(v).toLowerCase().includes(q));
 
       return hit;
     });
   }, [taxonomyList, query, searchFields]);
 
-  const columns = useMemo(() => createTaxonomyColumns(displayFields, onEdit, onDelete, type), [displayFields, onEdit, onDelete, type]);
+  const columns = useMemo(
+    () => createTaxonomyColumns(displayFields, onEdit, onDelete, type),
+    [displayFields, onEdit, onDelete, type],
+  );
 
   const table = useReactTable({
     data: filtered,
@@ -94,8 +97,18 @@ const TaxonomyTable = ({
         <div className="flex-1 md:max-w-md">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-5 w-5" fill="none" stroke="url(#searchGradient)" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="url(#searchGradient)"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
             <input
@@ -114,87 +127,106 @@ const TaxonomyTable = ({
           className="hidden sm:flex h-[50px] min-w-[100px] rounded-full items-center gap-2 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] cursor-pointer"
         >
           <Plus size={20} />
-          <span className='text-[16px]'>Add {singularName}</span>
+          <span className="text-[16px]">Add {singularName}</span>
         </Button>
       </div>
 
       <div className="mt-6 bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
         <div className="overflow-x-auto rounded-md outline-none max-h-[60vh] lg:max-h-none">
           <Table className="min-w-[1000px] border-0">
-          <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
-                {headerGroup.headers.map((header, index) => (
-                  <TableHead
-                    key={header.id}
-                    style={{ 
-                      maxWidth: header.column.columnDef.maxSize ? `${header.column.columnDef.maxSize}px` : undefined,
-                      width: header.column.columnDef.size ? `${header.column.columnDef.size}px` : undefined
-                    }}
-                    className={cn(
-                      'px-6 text-left text-base font-medium text-black whitespace-nowrap',
-                      index === 0 && 'rounded-l-2xl',
-                      index === headerGroup.headers.length - 1 && 'rounded-r-2xl'
-                    )}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-
-          <TableBody>
-            {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map(row => (
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className="bg-white border-0 border-b-1"
+                  className="bg-[#F3F3F3] border-b-0"
+                  key={headerGroup.id}
                 >
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell 
-                      key={cell.id} 
-                      style={{ 
-                        maxWidth: cell.column.columnDef.maxSize ? `${cell.column.columnDef.maxSize}px` : undefined,
-                        width: cell.column.columnDef.size ? `${cell.column.columnDef.size}px` : undefined
+                  {headerGroup.headers.map((header, index) => (
+                    <TableHead
+                      key={header.id}
+                      style={{
+                        maxWidth: header.column.columnDef.maxSize
+                          ? `${header.column.columnDef.maxSize}px`
+                          : undefined,
+                        width: header.column.columnDef.size
+                          ? `${header.column.columnDef.size}px`
+                          : undefined,
                       }}
-                      className="px-6"
+                      className={cn(
+                        "px-6 text-left text-base font-medium text-black whitespace-nowrap",
+                        index === 0 && "rounded-l-2xl",
+                        index === headerGroup.headers.length - 1 &&
+                          "rounded-r-2xl",
+                      )}
                     >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-black font-poppins text-[16px] leading-none">
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <p>No {singularName.toLowerCase()}s found</p>
-                    {query && (
-                      <button
-                        onClick={() => setQuery('')}
-                        className="text-sm text-[#000093] hover:underline"
+              ))}
+            </TableHeader>
+
+            <TableBody>
+              {table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="bg-white border-0 border-b-1"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        style={{
+                          maxWidth: cell.column.columnDef.maxSize
+                            ? `${cell.column.columnDef.maxSize}px`
+                            : undefined,
+                          width: cell.column.columnDef.size
+                            ? `${cell.column.columnDef.size}px`
+                            : undefined,
+                        }}
+                        className="px-6"
                       >
-                        Clear search
-                      </button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center text-black font-poppins text-[16px] leading-none"
+                  >
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <p>No {singularName.toLowerCase()}s found</p>
+                      {query && (
+                        <button
+                          onClick={() => setQuery("")}
+                          className="text-sm text-[#000093] hover:underline"
+                        >
+                          Clear search
+                        </button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 
       {filtered.length > 0 && (
         <div className="px-3 sm:px-6 mt-4 overflow-x-hidden">
-          <Pagination
-            table={table}
-          />
+          <Pagination table={table} />
         </div>
       )}
     </>
@@ -202,4 +234,3 @@ const TaxonomyTable = ({
 };
 
 export default TaxonomyTable;
-

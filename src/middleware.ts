@@ -3,7 +3,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { isAllowedRole } from "./lib/rbac";
 
-const protectedRoutes = ["/dashboard", "/cases", "/users", "/admin/password/set"];
+const protectedRoutes = [
+  "/dashboard",
+  "/cases",
+  "/users",
+  "/admin/password/set",
+];
 
 export default withAuth(
   async function middleware(request: NextRequest) {
@@ -12,13 +17,13 @@ export default withAuth(
 
     // Check if current path is a protected route
     const isProtectedRoute = protectedRoutes.some((route) =>
-      pathname.startsWith(route)
+      pathname.startsWith(route),
     );
 
     // Validate user role for protected routes
     if (isProtectedRoute && token) {
       const roleName = token.roleName as string;
-      
+
       if (!isAllowedRole(roleName)) {
         return NextResponse.redirect(new URL("/forbidden", request.url));
       }
@@ -33,7 +38,9 @@ export default withAuth(
     }
 
     const requiresPasswordUpdate = Boolean(token?.mustResetPassword);
-    const isPasswordSetupRoute = pathname.startsWith("/admin/password/set") || pathname.startsWith("/password/set");
+    const isPasswordSetupRoute =
+      pathname.startsWith("/admin/password/set") ||
+      pathname.startsWith("/password/set");
     if (requiresPasswordUpdate && !isPasswordSetupRoute) {
       return NextResponse.redirect(new URL("/admin/password/set", request.url));
     }
@@ -53,7 +60,7 @@ export default withAuth(
     pages: {
       signIn: "/login",
     },
-  }
+  },
 );
 
 export const config = {

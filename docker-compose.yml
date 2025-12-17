@@ -1,26 +1,21 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      shm_size: "2gb"
-      args:
-        BUILDKIT_INLINE_CACHE: 1
-    platform: linux/amd64 # Use linux/amd64 for production x86_64 deployments
+    image: ${ECR_REGISTRY:-admin-web}:${IMAGE_TAG:-latest}
+    platform: linux/amd64
     container_name: admin-web
     restart: unless-stopped
     env_file:
       - .env
     environment:
       - NODE_ENV=production
-    ports:
-      - "3000:3000"
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-0}
+    network_mode: host
     deploy:
       resources:
         limits:
           memory: 2G
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/admin/api/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/admin/api/health" ]
       interval: 30s
       timeout: 10s
       retries: 3

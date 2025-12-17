@@ -36,7 +36,8 @@ export default function FilterDropdown({
           value !== "all"
             ? "border-[#00A8FF] text-[#00A8FF]"
             : "border-gray-200 text-gray-700 hover:bg-gray-50"
-        }`}>
+        }`}
+      >
         {icon || (
           <svg
             className="w-3.5 h-3.5 sm:w-4 sm:h-4"
@@ -45,7 +46,8 @@ export default function FilterDropdown({
             }}
             fill="none"
             stroke="currentColor"
-            viewBox="0 0 24 24">
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -61,7 +63,8 @@ export default function FilterDropdown({
           }`}
           fill="none"
           stroke="currentColor"
-          viewBox="0 0 24 24">
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -81,7 +84,8 @@ export default function FilterDropdown({
               }}
               className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
                 value === "all" ? "bg-gray-100 text-[#00A8FF]" : ""
-              }`}>
+              }`}
+            >
               All {label}s
             </button>
             {options.map((option) => (
@@ -93,7 +97,8 @@ export default function FilterDropdown({
                 }}
                 className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
                   value === option.value ? "bg-gray-100 text-[#00A8FF]" : ""
-                }`}>
+                }`}
+              >
                 {option.label}
               </button>
             ))}

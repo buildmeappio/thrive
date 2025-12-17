@@ -18,7 +18,13 @@ const Page = async () => {
   const typeNames = types.map((t) => t.name);
   const statusNames = ["PENDING", "ACCEPTED", "REJECTED"];
 
-  return <OrganizationPageContent data={orgs} types={typeNames} statuses={statusNames} />;
+  return (
+    <OrganizationPageContent
+      data={orgs}
+      types={typeNames}
+      statuses={statusNames}
+    />
+  );
 };
 
 export default Page;

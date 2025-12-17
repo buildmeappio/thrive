@@ -15,7 +15,7 @@ const Header = ({
     <p
       className={cn(
         "text-left text-black font-poppins font-semibold text-[18px] leading-none py-4 whitespace-nowrap",
-        first && "pl-4"
+        first && "pl-4",
       )}
     >
       {children}
@@ -42,12 +42,13 @@ const Content = ({
   first?: boolean;
   title?: string;
 }) => {
-  const textContent = typeof children === 'string' ? children : String(children);
+  const textContent =
+    typeof children === "string" ? children : String(children);
   return (
     <p
       className={cn(
         "text-left text-black font-poppins text-[#4D4D4D] font-regular text-[16px] leading-normal py-2 whitespace-nowrap overflow-hidden text-ellipsis",
-        first && "pl-4"
+        first && "pl-4",
       )}
       title={title || textContent}
     >
@@ -61,7 +62,11 @@ const columns: ColumnDef<ExaminerData>[] = [
     header: () => <Header first>Name</Header>,
     accessorKey: "name",
     cell: ({ row }) => {
-      return <Content first title={row.original.name}>{row.original.name}</Content>;
+      return (
+        <Content first title={row.original.name}>
+          {row.original.name}
+        </Content>
+      );
     },
   },
   {
@@ -76,8 +81,8 @@ const columns: ColumnDef<ExaminerData>[] = [
     accessorKey: "specialties",
     cell: ({ row }) => {
       const specialties = row.original.specialties;
-      const displayText = Array.isArray(specialties) 
-        ? specialties.join(", ") 
+      const displayText = Array.isArray(specialties)
+        ? specialties.join(", ")
         : specialties;
       return <Content title={displayText}>{displayText}</Content>;
     },
@@ -86,7 +91,9 @@ const columns: ColumnDef<ExaminerData>[] = [
     header: () => <Header>Province</Header>,
     accessorKey: "province",
     cell: ({ row }) => {
-      return <Content title={row.original.province}>{row.original.province}</Content>;
+      return (
+        <Content title={row.original.province}>{row.original.province}</Content>
+      );
     },
   },
   {
@@ -94,12 +101,16 @@ const columns: ColumnDef<ExaminerData>[] = [
     accessorKey: "status",
     cell: ({ row }) => {
       const status = row.original.status;
-      const statusText = 
-        status === "PENDING" ? "Pending Approval" : 
-        status === "ACCEPTED" ? "Approved" : 
-        status === "ACTIVE" ? "Active" : 
-        status === "INFO_REQUESTED" ? "Information Requested" : 
-        "Rejected";
+      const statusText =
+        status === "PENDING"
+          ? "Pending Approval"
+          : status === "ACCEPTED"
+            ? "Approved"
+            : status === "ACTIVE"
+              ? "Active"
+              : status === "INFO_REQUESTED"
+                ? "Information Requested"
+                : "Rejected";
       return <Content title={statusText}>{statusText}</Content>;
     },
   },

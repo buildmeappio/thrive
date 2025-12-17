@@ -45,21 +45,21 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-:root{
-  --bg-app:#F2F5F6;
-  --surface:#FFFFFF;
-  --surface-2:#EEF1F3;     /* pills */
+:root {
+  --bg-app: #f2f5f6;
+  --surface: #ffffff;
+  --surface-2: #eef1f3; /* pills */
   --border: oklch(0.922 0 0);
 
-  --primary-50:#EAF7FF;
-  --primary-300:#89D7FF;   /* from gradient */
-  --primary-600:#00A8FF;   /* from gradient */
-  --primary-700:#008FDB;
+  --primary-50: #eaf7ff;
+  --primary-300: #89d7ff; /* from gradient */
+  --primary-600: #00a8ff; /* from gradient */
+  --primary-700: #008fdb;
 
-  --text:#0F1A1C;
-  --text-muted:#7B8B91;
-  --text-highlight:#000093; /* navy only for text */
-  --focus:#00A8FF22;
+  --text: #0f1a1c;
+  --text-muted: #7b8b91;
+  --text-highlight: #000093; /* navy only for text */
+  --focus: #00a8ff22;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -134,53 +134,53 @@
   body {
     @apply bg-background text-foreground;
   }
-  
+
   /* Increase base font size on mobile for better readability */
   html {
     font-size: 20px;
   }
-  
+
   @media (min-width: 640px) {
     html {
       font-size: 16px;
     }
   }
-  
+
   /* Force dashboard components to render at 50% width on mobile for 2x zoom effect */
   @media (max-width: 639px) {
     /* Prevent horizontal scroll on body */
     body {
       overflow-x: hidden;
     }
-    
+
     /* Apply zoom effect to dashboard content */
     .dashboard-zoom-mobile {
-      transform: scale(1.0);
+      transform: scale(1);
       transform-origin: top left;
       width: 98%;
       max-width: 98vw;
       margin-bottom: 0.75rem;
     }
-    
+
     /* Transporter page size on mobile - 100% scale */
     .transporter-page .dashboard-zoom-mobile {
-      transform: scale(1.0);
+      transform: scale(1);
       transform-origin: top left;
       width: 98%;
       max-width: 98vw;
     }
-    
+
     /* Benefits page table view size on mobile - 100% scale */
     .benefits-page .dashboard-zoom-mobile {
-      transform: scale(1.0);
+      transform: scale(1);
       transform-origin: top left;
       width: 98%;
       max-width: 98vw;
     }
-    
+
     /* Taxonomy page size on mobile - 100% scale */
     .taxonomy-page .dashboard-zoom-mobile {
-      transform: scale(1.0);
+      transform: scale(1);
       transform-origin: top left;
       width: 98%;
       max-width: 98vw;
@@ -193,11 +193,11 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
+
   /* Hide scrollbar for IE, Edge and Firefox */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   /* Submenu animations */
@@ -222,21 +222,21 @@
   }
 
   .select-scrollbar::-webkit-scrollbar-track {
-    background-color: #F3F4F6;
+    background-color: #f3f4f6;
     border-radius: 9999px;
   }
 
   .select-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #00A8FF;
+    background-color: #00a8ff;
     border-radius: 9999px;
   }
 
   .select-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #0090DD;
+    background-color: #0090dd;
   }
 
   .select-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: #00A8FF #F3F4F6;
+    scrollbar-color: #00a8ff #f3f4f6;
   }
 }

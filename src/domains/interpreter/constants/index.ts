@@ -9,10 +9,9 @@ export const WEEKDAYS = [
 ];
 
 export const getWeekdayLabel = (weekday: number): string => {
-  return WEEKDAYS.find(w => w.value === weekday)?.label ?? "Unknown";
+  return WEEKDAYS.find((w) => w.value === weekday)?.label ?? "Unknown";
 };
 
 export const getWeekdayShort = (weekday: number): string => {
-  return WEEKDAYS.find(w => w.value === weekday)?.short ?? "N/A";
+  return WEEKDAYS.find((w) => w.value === weekday)?.short ?? "N/A";
 };
-

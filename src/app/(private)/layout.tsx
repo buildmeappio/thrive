@@ -14,7 +14,9 @@ type DashboardLayoutProps = {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { isCollapsed } = useSidebar();
   const pathname = usePathname();
-  const hideChrome = pathname?.startsWith("/admin/password/set") || pathname?.startsWith("/password/set");
+  const hideChrome =
+    pathname?.startsWith("/admin/password/set") ||
+    pathname?.startsWith("/password/set");
 
   if (hideChrome) {
     return (
@@ -35,7 +37,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <div
         className={cn(
           "flex flex-1 flex-col transition-all duration-300",
-          isCollapsed ? "md:ml-[90px]" : "md:ml-[280px]"
+          isCollapsed ? "md:ml-[90px]" : "md:ml-[280px]",
         )}
       >
         {children}

@@ -79,7 +79,7 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         className={className}
       />
     );
-  }
+  },
 );
 
 PhoneInput.displayName = "PhoneInput";
@@ -87,7 +87,7 @@ PhoneInput.displayName = "PhoneInput";
 export default PhoneInput;
 
 export const validateCanadianPhoneNumber = (
-  value: string | undefined
+  value: string | undefined,
 ): boolean => {
   if (!value) return false;
 

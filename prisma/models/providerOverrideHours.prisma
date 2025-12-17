@@ -1,0 +1,22 @@
+/// Date-specific override. "On 2025-11-03, here's my special schedule".
+/// This replaces the weekday template for that date.
+model ProviderOverrideHours {
+  id                     String @id @default(uuid()) @db.Uuid
+  availabilityProviderId String @map("availability_provider_id") @db.Uuid
+
+  /// Which calendar day is overridden
+  date DateTime @map("date") @db.Date
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  provider  AvailabilityProvider       @relation("ProviderOverrideHours", fields: [availabilityProviderId], references: [id], onDelete: Cascade)
+  timeSlots ProviderOverrideTimeSlot[]
+
+  /// 1 override record per provider per date.
+  @@unique([availabilityProviderId, date])
+  @@index([availabilityProviderId])
+  @@index([date])
+  @@map("provider_override_hours")
+}

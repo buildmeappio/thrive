@@ -1,19 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Calendar } from '@/components/ui/calendar';
-import { Checkbox } from '@/components/ui/checkbox';
-import { OverrideHours } from '../types/Availability';
-import { formatOverrideDisplayDate, overrideDateToLocalDate } from '@/components/availability/converters';
-import { format } from 'date-fns';
-import { Plus, Trash2, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { OverrideHours } from "../types/Availability";
+import {
+  formatOverrideDisplayDate,
+  overrideDateToLocalDate,
+} from "@/components/availability/converters";
+import { format } from "date-fns";
+import { Plus, Trash2, AlertCircle } from "lucide-react";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
 type OverrideHoursSectionProps = {
   overrideHours: OverrideHours[];
@@ -32,9 +35,9 @@ const generateTimeOptions = () => {
   const options: string[] = [];
   for (let hour = 0; hour < 24; hour++) {
     for (let minute = 0; minute < 60; minute += 30) {
-      const period = hour < 12 ? 'AM' : 'PM';
+      const period = hour < 12 ? "AM" : "PM";
       const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-      const displayMinute = minute.toString().padStart(2, '0');
+      const displayMinute = minute.toString().padStart(2, "0");
       options.push(`${displayHour}:${displayMinute} ${period}`);
     }
   }
@@ -45,35 +48,35 @@ const timeOptions = generateTimeOptions();
 
 // Helper function to convert time string to minutes since midnight
 const timeToMinutes = (timeStr: string): number => {
-  const [time, period] = timeStr.split(' ');
-  const [hours, minutes] = time.split(':').map(Number);
-  
+  const [time, period] = timeStr.split(" ");
+  const [hours, minutes] = time.split(":").map(Number);
+
   let hour24 = hours;
-  if (period === 'PM' && hours !== 12) hour24 += 12;
-  if (period === 'AM' && hours === 12) hour24 = 0;
-  
+  if (period === "PM" && hours !== 12) hour24 += 12;
+  if (period === "AM" && hours === 12) hour24 = 0;
+
   return hour24 * 60 + minutes;
 };
 
 // Helper function to add hours to a time string
 const addHoursToTime = (timeStr: string, hoursToAdd: number): string => {
   // Parse time string (e.g., "10:00 AM")
-  const [time, period] = timeStr.split(' ');
-  const [hours, minutes] = time.split(':').map(Number);
-  
+  const [time, period] = timeStr.split(" ");
+  const [hours, minutes] = time.split(":").map(Number);
+
   // Convert to 24-hour format
   let hour24 = hours;
-  if (period === 'PM' && hours !== 12) hour24 += 12;
-  if (period === 'AM' && hours === 12) hour24 = 0;
-  
+  if (period === "PM" && hours !== 12) hour24 += 12;
+  if (period === "AM" && hours === 12) hour24 = 0;
+
   // Add hours
   hour24 = (hour24 + hoursToAdd) % 24;
-  
+
   // Convert back to 12-hour format
-  const newPeriod = hour24 >= 12 ? 'PM' : 'AM';
+  const newPeriod = hour24 >= 12 ? "PM" : "AM";
   const newHour = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
-  
-  return `${newHour}:${minutes.toString().padStart(2, '0')} ${newPeriod}`;
+
+  return `${newHour}:${minutes.toString().padStart(2, "0")} ${newPeriod}`;
 };
 
 const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
@@ -84,19 +87,22 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
   const [errors, setErrors] = useState<TimeSlotError[]>([]);
 
   // Helper function to get valid end time options based on start time
-  const getValidEndTimeOptions = (startTime: string, currentEndTime?: string): string[] => {
+  const getValidEndTimeOptions = (
+    startTime: string,
+    currentEndTime?: string,
+  ): string[] => {
     const startMinutes = timeToMinutes(startTime);
-    const validOptions = timeOptions.filter(time => {
+    const validOptions = timeOptions.filter((time) => {
       const timeMinutes = timeToMinutes(time);
       return timeMinutes > startMinutes;
     });
-    
+
     // If current end time is invalid but exists, include it in the list so it can be displayed
     // This prevents the dropdown from showing empty when the time is invalid
     if (currentEndTime && !validOptions.includes(currentEndTime)) {
       return [currentEndTime, ...validOptions];
     }
-    
+
     return validOptions;
   };
 
@@ -114,33 +120,39 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
           newErrors.push({
             date: dateHours.date,
             slotIndex,
-            message: 'Start time must be before end time',
+            message: "Start time must be before end time",
           });
         }
 
         // Check for overlaps with other slots on the same date
-        for (let otherIndex = slotIndex + 1; otherIndex < dateHours.timeSlots.length; otherIndex++) {
+        for (
+          let otherIndex = slotIndex + 1;
+          otherIndex < dateHours.timeSlots.length;
+          otherIndex++
+        ) {
           const otherSlot = dateHours.timeSlots[otherIndex];
           const otherStartMinutes = timeToMinutes(otherSlot.startTime);
           const otherEndMinutes = timeToMinutes(otherSlot.endTime);
 
           // Check if slots overlap
           const hasOverlap =
-            (startMinutes >= otherStartMinutes && startMinutes < otherEndMinutes) ||
+            (startMinutes >= otherStartMinutes &&
+              startMinutes < otherEndMinutes) ||
             (endMinutes > otherStartMinutes && endMinutes <= otherEndMinutes) ||
-            (startMinutes <= otherStartMinutes && endMinutes >= otherEndMinutes);
+            (startMinutes <= otherStartMinutes &&
+              endMinutes >= otherEndMinutes);
 
           if (hasOverlap) {
             // Mark both slots as having overlap errors
             newErrors.push({
               date: dateHours.date,
               slotIndex,
-              message: 'Time slots cannot overlap',
+              message: "Time slots cannot overlap",
             });
             newErrors.push({
               date: dateHours.date,
               slotIndex: otherIndex,
-              message: 'Time slots cannot overlap',
+              message: "Time slots cannot overlap",
             });
           }
         }
@@ -150,22 +162,29 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
     setErrors(newErrors);
   }, [overrideHours]);
 
-  const getSlotError = (date: string, slotIndex: number): string | undefined => {
-    return errors.find((e) => e.date === date && e.slotIndex === slotIndex)?.message;
+  const getSlotError = (
+    date: string,
+    slotIndex: number,
+  ): string | undefined => {
+    return errors.find((e) => e.date === date && e.slotIndex === slotIndex)
+      ?.message;
   };
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
-    
-    const dateStr = format(date, 'yyyy-MM-dd');
+
+    const dateStr = format(date, "yyyy-MM-dd");
     const existing = overrideHours.find((oh) => oh.date === dateStr);
-    
+
     if (!existing) {
       // Add new date with one time slot
-      onChange([...overrideHours, {
-        date: dateStr,
-        timeSlots: [{ startTime: '8:00 AM', endTime: '11:00 AM' }],
-      }]);
+      onChange([
+        ...overrideHours,
+        {
+          date: dateStr,
+          timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+        },
+      ]);
     } else {
       // Remove date if clicking on an existing one
       onChange(overrideHours.filter((oh) => oh.date !== dateStr));
@@ -175,9 +194,9 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
   const handleAddSlot = (dateStr: string) => {
     const updated = overrideHours.map((oh) => {
       if (oh.date === dateStr) {
-        let newStartTime = '8:00 AM';
-        let newEndTime = '11:00 AM';
-        
+        let newStartTime = "8:00 AM";
+        let newEndTime = "11:00 AM";
+
         // If there are existing slots, calculate based on the last slot
         if (oh.timeSlots.length > 0) {
           const lastSlot = oh.timeSlots[oh.timeSlots.length - 1];
@@ -186,10 +205,13 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
           // New slot ends 1 hour after it starts
           newEndTime = addHoursToTime(newStartTime, 1);
         }
-        
-        return { 
-          ...oh, 
-          timeSlots: [...oh.timeSlots, { startTime: newStartTime, endTime: newEndTime }] 
+
+        return {
+          ...oh,
+          timeSlots: [
+            ...oh.timeSlots,
+            { startTime: newStartTime, endTime: newEndTime },
+          ],
         };
       }
       return oh;
@@ -198,31 +220,40 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
   };
 
   const handleRemoveSlot = (dateStr: string, slotIndex: number) => {
-    const updated = overrideHours.map((oh) => {
-      if (oh.date === dateStr) {
-        const newTimeSlots = oh.timeSlots.filter((_, idx) => idx !== slotIndex);
-        // If no time slots left, remove the entire date
-        if (newTimeSlots.length === 0) {
-          return null;
+    const updated = overrideHours
+      .map((oh) => {
+        if (oh.date === dateStr) {
+          const newTimeSlots = oh.timeSlots.filter(
+            (_, idx) => idx !== slotIndex,
+          );
+          // If no time slots left, remove the entire date
+          if (newTimeSlots.length === 0) {
+            return null;
+          }
+          return { ...oh, timeSlots: newTimeSlots };
         }
-        return { ...oh, timeSlots: newTimeSlots };
-      }
-      return oh;
-    }).filter(Boolean) as OverrideHours[];
-    
+        return oh;
+      })
+      .filter(Boolean) as OverrideHours[];
+
     onChange(updated);
   };
 
-  const handleUpdateSlot = (dateStr: string, slotIndex: number, field: 'startTime' | 'endTime', value: string) => {
+  const handleUpdateSlot = (
+    dateStr: string,
+    slotIndex: number,
+    field: "startTime" | "endTime",
+    value: string,
+  ) => {
     const updated = overrideHours.map((oh) =>
       oh.date === dateStr
         ? {
             ...oh,
             timeSlots: oh.timeSlots.map((slot, idx) =>
-              idx === slotIndex ? { ...slot, [field]: value } : slot
+              idx === slotIndex ? { ...slot, [field]: value } : slot,
             ),
           }
-        : oh
+        : oh,
     );
     onChange(updated);
   };
@@ -258,7 +289,7 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
             onSelect={handleDateSelect}
             disabled={disabled}
             showOutsideDays={false}
-            modifiers={{ 
+            modifiers={{
               today: (date) => {
                 const today = new Date();
                 return date.toDateString() === today.toDateString();
@@ -267,36 +298,48 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
                 const day = date.getDay();
                 const today = new Date();
                 const isToday = date.toDateString() === today.toDateString();
-                const isOverride = getSelectedDates().some(d => d.toDateString() === date.toDateString());
+                const isOverride = getSelectedDates().some(
+                  (d) => d.toDateString() === date.toDateString(),
+                );
                 // Only apply weekday style if it's not today and not an override date
                 return day >= 1 && day <= 5 && !isToday && !isOverride;
               },
               hasOverride: (date) => {
                 const today = new Date();
                 const isToday = date.toDateString() === today.toDateString();
-                const isOverride = getSelectedDates().some(d => d.toDateString() === date.toDateString());
+                const isOverride = getSelectedDates().some(
+                  (d) => d.toDateString() === date.toDateString(),
+                );
                 // Only apply override style if it's not today
                 return isOverride && !isToday;
               },
             }}
             modifiersClassNames={{
-              today: 'bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full hover:from-[#0090DD] hover:to-[#01D4AE] [&_button]:!bg-transparent [&_button]:text-white [&_button]:font-semibold [&_button]:relative [&_button]:after:content-[\'\'] [&_button]:after:absolute [&_button]:after:bottom-1 [&_button]:after:left-1/2 [&_button]:after:-translate-x-1/2 [&_button]:after:w-1 [&_button]:after:h-1 [&_button]:after:bg-white [&_button]:after:rounded-full',
-              hasOverride: 'bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full hover:from-[#0090DD] hover:to-[#01D4AE] [&_button]:!bg-transparent [&_button]:text-white [&_button]:font-medium',
-              weekday: 'bg-[#E8F1FF] rounded-full hover:bg-[#D0E4FF] [&_button]:!bg-transparent [&_button]:text-[#00A8FF] [&_button]:font-medium',
+              today:
+                "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full hover:from-[#0090DD] hover:to-[#01D4AE] [&_button]:!bg-transparent [&_button]:text-white [&_button]:font-semibold [&_button]:relative [&_button]:after:content-[''] [&_button]:after:absolute [&_button]:after:bottom-1 [&_button]:after:left-1/2 [&_button]:after:-translate-x-1/2 [&_button]:after:w-1 [&_button]:after:h-1 [&_button]:after:bg-white [&_button]:after:rounded-full",
+              hasOverride:
+                "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full hover:from-[#0090DD] hover:to-[#01D4AE] [&_button]:!bg-transparent [&_button]:text-white [&_button]:font-medium",
+              weekday:
+                "bg-[#E8F1FF] rounded-full hover:bg-[#D0E4FF] [&_button]:!bg-transparent [&_button]:text-[#00A8FF] [&_button]:font-medium",
             }}
             classNames={{
               caption_label: "text-xl font-semibold font-poppins text-gray-900",
-              button_previous: "h-8 w-8 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors text-blue-600 p-0 flex items-center justify-center cursor-pointer [&_svg]:w-6 [&_svg]:h-6",
-              button_next: "h-8 w-8 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors text-blue-600 p-0 flex items-center justify-center cursor-pointer [&_svg]:w-6 [&_svg]:h-6",
+              button_previous:
+                "h-8 w-8 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors text-blue-600 p-0 flex items-center justify-center cursor-pointer [&_svg]:w-6 [&_svg]:h-6",
+              button_next:
+                "h-8 w-8 bg-blue-100 hover:bg-blue-200 rounded-full transition-colors text-blue-600 p-0 flex items-center justify-center cursor-pointer [&_svg]:w-6 [&_svg]:h-6",
               weekdays: "flex gap-1 justify-around",
-              weekday: "text-gray-600 font-medium text-sm font-poppins flex-1 text-center",
+              weekday:
+                "text-gray-600 font-medium text-sm font-poppins flex-1 text-center",
               week: "mt-2 flex w-full gap-1 justify-around",
               day: "rounded-full flex-1 flex items-center justify-center p-1",
-              day_button: "h-9 w-9 font-normal text-base rounded-full font-poppins hover:bg-gray-100",
+              day_button:
+                "h-9 w-9 font-normal text-base rounded-full font-poppins hover:bg-gray-100",
               today: "!bg-transparent",
               day_today: "!bg-transparent",
               day_outside: "invisible",
-              day_disabled: "text-gray-300 opacity-40 cursor-not-allowed hover:bg-transparent",
+              day_disabled:
+                "text-gray-300 opacity-40 cursor-not-allowed hover:bg-transparent",
             }}
           />
         </div>
@@ -316,13 +359,15 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
                         <Checkbox
                           id={`date-${override.date}`}
                           checked={true}
-                          onCheckedChange={(checked) => handleToggleDate(override.date, !!checked)}
+                          onCheckedChange={(checked) =>
+                            handleToggleDate(override.date, !!checked)
+                          }
                           disabled={disabled}
                           className="w-5 h-5"
                         />
                       )}
                       {slotIndex > 0 && <div className="w-5" />}
-                      
+
                       {slotIndex === 0 && (
                         <label
                           htmlFor={`date-${override.date}`}
@@ -331,38 +376,63 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
                           {formatOverrideDisplayDate(override.date)}
                         </label>
                       )}
-                  {slotIndex > 0 && <div className="min-w-[100px]" />}
-                  
+                      {slotIndex > 0 && <div className="min-w-[100px]" />}
+
                       <Select
                         value={slot.startTime}
-                        onValueChange={(value) => handleUpdateSlot(override.date, slotIndex, 'startTime', value)}
+                        onValueChange={(value) =>
+                          handleUpdateSlot(
+                            override.date,
+                            slotIndex,
+                            "startTime",
+                            value,
+                          )
+                        }
                         disabled={disabled}
                       >
-                        <SelectTrigger className={`flex-1 h-11 rounded-lg border bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400 ${error ? 'border-red-500' : 'border-gray-300'}`}>
+                        <SelectTrigger
+                          className={`flex-1 h-11 rounded-lg border bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400 ${error ? "border-red-500" : "border-gray-300"}`}
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {timeOptions.map((time) => (
-                            <SelectItem key={time} value={time}>{time}</SelectItem>
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      
+
                       <Select
                         value={slot.endTime}
-                        onValueChange={(value) => handleUpdateSlot(override.date, slotIndex, 'endTime', value)}
+                        onValueChange={(value) =>
+                          handleUpdateSlot(
+                            override.date,
+                            slotIndex,
+                            "endTime",
+                            value,
+                          )
+                        }
                         disabled={disabled}
                       >
-                        <SelectTrigger className={`flex-1 h-11 rounded-lg border bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400 ${error ? 'border-red-500' : 'border-gray-300'}`}>
+                        <SelectTrigger
+                          className={`flex-1 h-11 rounded-lg border bg-white px-4 text-sm font-poppins disabled:bg-gray-50 disabled:text-gray-400 ${error ? "border-red-500" : "border-gray-300"}`}
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {getValidEndTimeOptions(slot.startTime, slot.endTime).map((time) => (
-                            <SelectItem key={time} value={time}>{time}</SelectItem>
+                          {getValidEndTimeOptions(
+                            slot.startTime,
+                            slot.endTime,
+                          ).map((time) => (
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      
+
                       {slotIndex === 0 ? (
                         <button
                           type="button"
@@ -375,7 +445,9 @@ const OverrideHoursSection: React.FC<OverrideHoursSectionProps> = ({
                       ) : (
                         <button
                           type="button"
-                          onClick={() => handleRemoveSlot(override.date, slotIndex)}
+                          onClick={() =>
+                            handleRemoveSlot(override.date, slotIndex)
+                          }
                           disabled={disabled}
                           className="flex items-center justify-center w-10 h-10 text-gray-400 hover:text-red-500 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
                         >

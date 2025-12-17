@@ -1,7 +1,4 @@
-import {
-  getServerSession,
-  User,
-} from "next-auth";
+import { getServerSession, User } from "next-auth";
 import logger from "@/utils/logger";
 import { authOptions } from "./nextauth/options";
 import { NextRequest } from "next/server";
@@ -13,11 +10,11 @@ export const getCurrentUser = async (): Promise<User | null> => {
     // getServerSession automatically handles cookies in server components and server actions
     // It should work reliably in Next.js 13+ App Router
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user) {
       return null;
     }
-    
+
     return session.user;
   } catch (error) {
     // Suppress expected errors during build/static generation
@@ -26,14 +23,14 @@ export const getCurrentUser = async (): Promise<User | null> => {
     if (error instanceof Error) {
       const errorMessage = error.message.toLowerCase();
       const errorDigest = (error as any).digest;
-      const isExpectedError = 
-        errorMessage.includes('dynamic server usage') ||
-        errorMessage.includes('couldn\'t be rendered statically') ||
-        errorMessage.includes('headers') ||
-        errorDigest === 'DYNAMIC_SERVER_USAGE';
-      
+      const isExpectedError =
+        errorMessage.includes("dynamic server usage") ||
+        errorMessage.includes("couldn't be rendered statically") ||
+        errorMessage.includes("headers") ||
+        errorDigest === "DYNAMIC_SERVER_USAGE";
+
       // Only log unexpected errors (not during build/static generation)
-      if (!isExpectedError && process.env.NODE_ENV !== 'production') {
+      if (!isExpectedError && process.env.NODE_ENV !== "production") {
         logger.error("Error getting current user:", error);
       }
     }

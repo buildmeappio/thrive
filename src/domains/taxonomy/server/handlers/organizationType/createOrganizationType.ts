@@ -1,5 +1,5 @@
-import organizationTypeService from '../../organizationType.service';
-import { CreateOrganizationTypeInput } from '../../../types/OrganizationType';
+import * as organizationTypeService from "../../organizationType.service";
+import { CreateOrganizationTypeInput } from "../../../types/OrganizationType";
 
 const createOrganizationType = async (data: CreateOrganizationTypeInput) => {
   const result = await organizationTypeService.createOrganizationType(data);
@@ -7,4 +7,3 @@ const createOrganizationType = async (data: CreateOrganizationTypeInput) => {
 };
 
 export default createOrganizationType;
-

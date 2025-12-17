@@ -15,7 +15,10 @@ export default function UpdatesPanel({ items }: Props) {
       <div className="flex items-center gap-3 pb-3 w-full">
         <span className="grid h-[40px] sm:h-[30.5px] w-[40px] sm:w-[30.5px] place-items-center rounded-full bg-[#EEEFFF]">
           {/* gradient bell */}
-          <Bell className="h-[20px] sm:h-[16px] w-[20px] sm:w-[16px]" style={{ color: "#00A8FF" }} />
+          <Bell
+            className="h-[20px] sm:h-[16px] w-[20px] sm:w-[16px]"
+            style={{ color: "#00A8FF" }}
+          />
         </span>
         <h3
           id="updates-heading"
@@ -34,7 +37,9 @@ export default function UpdatesPanel({ items }: Props) {
           >
             {/* gradient dot */}
             <span className="h-[11px] sm:h-[9px] w-[11px] sm:w-[9px] rounded-full bg-[linear-gradient(270deg,#01F4C8_0%,#00A8FF_100%)]" />
-            <p className="text-[17px] sm:text-[13px] tracking-[-0.02em] text-[#444] truncate">{t}</p>
+            <p className="text-[17px] sm:text-[13px] tracking-[-0.02em] text-[#444] truncate">
+              {t}
+            </p>
           </div>
         ))}
       </div>

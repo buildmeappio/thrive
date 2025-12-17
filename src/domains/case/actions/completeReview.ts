@@ -37,13 +37,15 @@ const completeReview = async (caseId: string): Promise<void> => {
     // Update the examination status and set approval timestamp
     await prisma.examination.update({
       where: { id: caseId },
-      data: { 
+      data: {
         statusId: waitingStatus.id,
         approvedAt: new Date(),
       },
     });
 
-    logger.log("✓ Case status updated to Ready to be Appointment with approval timestamp");
+    logger.log(
+      "✓ Case status updated to Ready to be Appointment with approval timestamp",
+    );
   } catch (dbError) {
     logger.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");
@@ -106,7 +108,7 @@ async function sendApprovalEmailToClaimant(caseDetails: CaseDetailDtoType) {
         process.env.NEXT_PUBLIC_APP_URL ||
         "",
     },
-    claimantEmail
+    claimantEmail,
   );
 
   if (!result.success) {

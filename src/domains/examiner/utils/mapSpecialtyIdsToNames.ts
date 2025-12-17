@@ -1,4 +1,4 @@
-import examinationTypeService from "@/domains/taxonomy/server/examinationType.service";
+import * as examinationTypeService from "@/domains/taxonomy/server/examinationType.service";
 import { ExaminerData } from "../types/ExaminerData";
 import logger from "@/utils/logger";
 
@@ -7,7 +7,7 @@ import logger from "@/utils/logger";
  * Handles various UUID formats (with/without spaces, dashes, different cases)
  */
 export async function mapSpecialtyIdsToNames(
-  examiners: ExaminerData[]
+  examiners: ExaminerData[],
 ): Promise<ExaminerData[]> {
   // Fetch all examination types to map specialty IDs to names
   const examTypesMap = new Map<string, string>();

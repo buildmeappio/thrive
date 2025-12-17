@@ -19,7 +19,10 @@ const DeleteUserModal = ({
   onClose,
 }: DeleteUserModalProps) => {
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && !isDeleting && onClose()}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => !open && !isDeleting && onClose()}
+    >
       <DialogContent className="max-w-md rounded-3xl p-0">
         <div className="p-6 sm:p-8 space-y-5">
           <div>
@@ -56,4 +59,3 @@ const DeleteUserModal = ({
 };
 
 export default DeleteUserModal;
-

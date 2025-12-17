@@ -5,6 +5,7 @@ import { DashboardShell } from "@/layouts/dashboard";
 import Section from "@/components/Section";
 import FieldRow from "@/components/FieldRow";
 import { cn } from "@/lib/utils";
+import type { Language } from "@prisma/client";
 import { InterpreterData } from "../types/InterpreterData";
 import { deleteInterpreter, updateInterpreter, getLanguages } from "../actions";
 import { toast } from "sonner";
@@ -12,7 +13,6 @@ import { formatPhoneNumber } from "@/utils/phone";
 import PhoneInput from "@/components/PhoneNumber";
 import { useRouter } from "next/navigation";
 import { Trash2, Edit2, X, Check, ArrowLeft } from "lucide-react";
-import { Language } from "@prisma/client";
 import DeleteInterpreterModal from "./DeleteInterpreterModal";
 import { filterUUIDLanguages } from "@/utils/languageUtils";
 import { capitalizeWords } from "@/utils/text";
@@ -83,10 +83,10 @@ export default function InterpreterDetail({
   const [allLanguages, setAllLanguages] = useState<Language[]>([]);
   const hasAvailability = initialAvailability !== null;
   const [weeklyHours, setWeeklyHours] = useState<WeeklyHoursState>(
-    initialAvailability?.weeklyHours || getDefaultWeeklyHours()
+    initialAvailability?.weeklyHours || getDefaultWeeklyHours(),
   );
   const [overrideHours, setOverrideHours] = useState<OverrideHoursState>(
-    initialAvailability?.overrideHours || []
+    initialAvailability?.overrideHours || [],
   );
 
   // Form state
@@ -236,7 +236,7 @@ export default function InterpreterDetail({
   };
 
   const handleContactPersonChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     let value = e.target.value;
     // Only allow alphabets, spaces, and limit to 25 characters
@@ -296,7 +296,8 @@ export default function InterpreterDetail({
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start gap-4">
         <Link
           href="/interpreter"
-          className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          className="flex items-center gap-2 sm:gap-4 flex-shrink-0"
+        >
           <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
             <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
           </div>
@@ -307,69 +308,73 @@ export default function InterpreterDetail({
           </h1>
         </Link>
         <div className="flex gap-2 w-full sm:w-auto">
-            {!isEditMode ? (
-              <>
-                <button
-                  onClick={handleEdit}
-                  className={cn(
-                    "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
-                    "bg-blue-50 border border-blue-200 text-blue-600",
-                    "hover:bg-blue-100 transition-colors",
-                    "text-sm sm:text-base",
-                    "flex-1 sm:flex-initial"
-                  )}>
-                  <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="text-sm font-medium">Edit</span>
-                </button>
-                <button
-                  onClick={handleDeleteClick}
-                  disabled={isDeleting}
-                  className={cn(
-                    "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
-                    "bg-red-50 border border-red-200 text-red-600",
-                    "hover:bg-red-100 transition-colors",
-                    "disabled:opacity-50 disabled:cursor-not-allowed",
-                    "text-sm sm:text-base",
-                    "flex-1 sm:flex-initial"
-                  )}>
-                  <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="text-sm font-medium">Delete</span>
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className={cn(
-                    "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
-                    "bg-green-50 border border-green-200 text-green-600",
-                    "hover:bg-green-100 transition-colors",
-                    "disabled:opacity-50 disabled:cursor-not-allowed",
-                    "text-sm sm:text-base",
-                    "flex-1 sm:flex-initial"
-                  )}>
-                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="text-sm font-medium">
-                    {isSaving ? "Saving..." : "Save"}
-                  </span>
-                </button>
-                <button
-                  onClick={handleCancel}
-                  disabled={isSaving}
-                  className={cn(
-                    "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
-                    "bg-gray-50 border border-gray-200 text-gray-600",
-                    "hover:bg-gray-100 transition-colors",
-                    "disabled:opacity-50 disabled:cursor-not-allowed",
-                    "text-sm sm:text-base",
-                    "flex-1 sm:flex-initial"
-                  )}>
-                  <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="text-sm font-medium">Cancel</span>
-                </button>
-              </>
-            )}
+          {!isEditMode ? (
+            <>
+              <button
+                onClick={handleEdit}
+                className={cn(
+                  "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
+                  "bg-blue-50 border border-blue-200 text-blue-600",
+                  "hover:bg-blue-100 transition-colors",
+                  "text-sm sm:text-base",
+                  "flex-1 sm:flex-initial",
+                )}
+              >
+                <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="text-sm font-medium">Edit</span>
+              </button>
+              <button
+                onClick={handleDeleteClick}
+                disabled={isDeleting}
+                className={cn(
+                  "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
+                  "bg-red-50 border border-red-200 text-red-600",
+                  "hover:bg-red-100 transition-colors",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "text-sm sm:text-base",
+                  "flex-1 sm:flex-initial",
+                )}
+              >
+                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="text-sm font-medium">Delete</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className={cn(
+                  "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
+                  "bg-green-50 border border-green-200 text-green-600",
+                  "hover:bg-green-100 transition-colors",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "text-sm sm:text-base",
+                  "flex-1 sm:flex-initial",
+                )}
+              >
+                <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="text-sm font-medium">
+                  {isSaving ? "Saving..." : "Save"}
+                </span>
+              </button>
+              <button
+                onClick={handleCancel}
+                disabled={isSaving}
+                className={cn(
+                  "flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full",
+                  "bg-gray-50 border border-gray-200 text-gray-600",
+                  "hover:bg-gray-100 transition-colors",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "text-sm sm:text-base",
+                  "flex-1 sm:flex-initial",
+                )}
+              >
+                <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="text-sm font-medium">Cancel</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -397,7 +402,7 @@ export default function InterpreterDetail({
                             "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all",
                             isOnlySpaces(formData.companyName)
                               ? "border-red-300 focus:ring-red-500"
-                              : "border-gray-300 focus:ring-[#00A8FF]"
+                              : "border-gray-300 focus:ring-[#00A8FF]",
                           )}
                           placeholder="Enter company name (alphabets only, max 25)"
                         />
@@ -421,7 +426,7 @@ export default function InterpreterDetail({
                             "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all",
                             isOnlySpaces(formData.contactPerson)
                               ? "border-red-300 focus:ring-red-500"
-                              : "border-gray-300 focus:ring-[#00A8FF]"
+                              : "border-gray-300 focus:ring-[#00A8FF]",
                           )}
                           placeholder="Enter contact person (alphabets only, max 25)"
                         />
@@ -445,7 +450,7 @@ export default function InterpreterDetail({
                             (formData.email && !isValidEmail(formData.email)) ||
                               isOnlySpaces(formData.email)
                               ? "border-red-300 focus:ring-red-500"
-                              : "border-gray-300 focus:ring-[#00A8FF]"
+                              : "border-gray-300 focus:ring-[#00A8FF]",
                           )}
                           placeholder="Enter email"
                         />
@@ -483,7 +488,8 @@ export default function InterpreterDetail({
                         {allLanguages.map((lang) => (
                           <label
                             key={lang.id}
-                            className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                            className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded"
+                          >
                             <input
                               type="checkbox"
                               checked={formData.languageIds.includes(lang.id)}
@@ -505,8 +511,12 @@ export default function InterpreterDetail({
               <AvailabilityTabs
                 weeklyHours={weeklyStateToArray(weeklyHours)}
                 overrideHours={overrideStateToArray(overrideHours)}
-                onWeeklyHoursChange={(updated) => setWeeklyHours(weeklyArrayToState(updated))}
-                onOverrideHoursChange={(updated) => setOverrideHours(overrideArrayToState(updated))}
+                onWeeklyHoursChange={(updated) =>
+                  setWeeklyHours(weeklyArrayToState(updated))
+                }
+                onOverrideHoursChange={(updated) =>
+                  setOverrideHours(overrideArrayToState(updated))
+                }
                 disabled={false}
               />
             </>
@@ -549,7 +559,8 @@ export default function InterpreterDetail({
                       {interpreter.languages.map((lang) => (
                         <span
                           key={lang.id}
-                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white">
+                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white"
+                        >
                           {lang.name}
                         </span>
                       ))}
@@ -557,7 +568,6 @@ export default function InterpreterDetail({
                   </Section>
                 </div>
               </div>
-
             </>
           )}
         </div>
@@ -574,7 +584,8 @@ export default function InterpreterDetail({
               {(() => {
                 const weeklyHoursArray = weeklyStateToArray(weeklyHours);
                 const overrideHoursArray = overrideStateToArray(overrideHours);
-                const hasWeeklyHours = weeklyHoursArray.filter((wh) => wh.enabled).length > 0;
+                const hasWeeklyHours =
+                  weeklyHoursArray.filter((wh) => wh.enabled).length > 0;
                 const hasOverrideHours = overrideHoursArray.length > 0;
 
                 return (
@@ -665,7 +676,9 @@ export default function InterpreterDetail({
                                 </svg>
                                 <p className="font-poppins font-semibold text-gray-900 text-base">
                                   {(() => {
-                                    const localDate = overrideDateToLocalDate(oh.date);
+                                    const localDate = overrideDateToLocalDate(
+                                      oh.date,
+                                    );
                                     return localDate
                                       ? format(localDate, "EEEE, MMM dd, yyyy")
                                       : formatOverrideDisplayDate(oh.date);

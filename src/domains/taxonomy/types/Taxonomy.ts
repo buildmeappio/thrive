@@ -1,18 +1,20 @@
-export type TaxonomyType = 
-  | 'caseStatus'
-  | 'caseType'
-  | 'claimType'
-  | 'department'
-  | 'examinationType'
-  | 'examinationTypeBenefit'
-  | 'language'
-  | 'organizationType'
-  | 'role'
-  | 'maximumDistanceTravel'
-  | 'yearsOfExperience'
-  | 'configuration';
+export type TaxonomyType =
+  | "caseStatus"
+  | "caseType"
+  | "claimType"
+  | "department"
+  | "examinationType"
+  | "examinationTypeBenefit"
+  | "language"
+  | "organizationType"
+  | "role"
+  | "maximumDistanceTravel"
+  | "yearsOfExperience"
+  | "configuration"
+  | "assessmentType"
+  | "professionalTitle";
 
-export type TaxonomyFieldType = 'text' | 'textarea' | 'select';
+export type TaxonomyFieldType = "text" | "textarea" | "select";
 
 export type TaxonomyField = {
   name: string;
@@ -99,20 +101,32 @@ export type Configuration = BaseTaxonomy & {
   value: number;
 };
 
+export type AssessmentType = BaseTaxonomy & {
+  name: string;
+  description: string | null;
+};
+
+export type ProfessionalTitle = BaseTaxonomy & {
+  name: string;
+  description: string | null;
+};
+
 // Union type for all taxonomies
-export type Taxonomy = 
-  | CaseStatus 
-  | CaseType 
-  | ClaimType 
-  | Department 
-  | ExaminationType 
-  | ExaminationTypeBenefit 
-  | Language 
-  | OrganizationType 
+export type Taxonomy =
+  | CaseStatus
+  | CaseType
+  | ClaimType
+  | Department
+  | ExaminationType
+  | ExaminationTypeBenefit
+  | Language
+  | OrganizationType
   | Role
   | MaximumDistanceTravel
   | YearsOfExperience
-  | Configuration;
+  | Configuration
+  | AssessmentType
+  | ProfessionalTitle;
 
 // For table display
 export type TaxonomyData = {
@@ -128,4 +142,3 @@ export type CreateTaxonomyInput = {
 };
 
 export type UpdateTaxonomyInput = Partial<CreateTaxonomyInput>;
-

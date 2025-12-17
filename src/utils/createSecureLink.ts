@@ -1,7 +1,10 @@
+"use server";
+
 import { randomUUID } from "crypto";
 import prisma from "@/lib/db";
 import { signClaimantApproveToken } from "@/lib/jwt";
 import logger from "@/utils/logger";
+import { SecureLinkStatus } from "@prisma/client";
 
 /**
  * Creates a secure link for claimant availability submission
@@ -11,7 +14,7 @@ import logger from "@/utils/logger";
  */
 const createSecureLink = async (
   examinationId: string,
-  expiresInHours: number = 168
+  expiresInHours: number = 168,
 ): Promise<string> => {
   try {
     // Get examination data to create JWT token with required payload
@@ -49,7 +52,7 @@ const createSecureLink = async (
         caseId: examination.caseId,
         examinationId: examination.id,
       },
-      expiresIn as any
+      expiresIn as any,
     );
 
     // Calculate expiration date based on expiresInHours
@@ -62,12 +65,18 @@ const createSecureLink = async (
     // Store the reference token in the database for tracking purposes
     // Note: The actual JWT token is too long for VarChar(255), so we store a UUID reference instead
     // The JWT token in the URL is verified directly by the claimant availability page
-    const secureLink = await prisma.examinationSecureLink.create({
+    const secureLink = await prisma.secureLink.create({
       data: {
-        examinationId: examination.id,
         token: referenceToken,
         expiresAt,
-        status: "PENDING",
+        status: SecureLinkStatus.PENDING,
+      },
+    });
+
+    await prisma.examinationSecureLink.create({
+      data: {
+        examinationId: examination.id,
+        secureLinkId: secureLink.id,
       },
     });
 
@@ -83,7 +92,7 @@ const createSecureLink = async (
     const link = `${baseUrl}${availabilityUrl}?token=${jwtToken}`;
 
     logger.log(
-      `Created secure link for examination ${examinationId}: ${link} (stored in DB with ID: ${secureLink.id})`
+      `Created secure link for examination ${examinationId}: ${link} (stored in DB with ID: ${secureLink.id})`,
     );
 
     return link;

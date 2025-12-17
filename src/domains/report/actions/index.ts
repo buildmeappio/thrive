@@ -9,4 +9,3 @@ const reportActions = {
 };
 
 export default reportActions;
-

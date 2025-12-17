@@ -26,7 +26,8 @@ const SortableHeader = ({
   return (
     <div
       className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
-      onClick={handleSort}>
+      onClick={handleSort}
+    >
       <span>{children}</span>
       {sortDirection === false && (
         <ArrowUpDown className="h-4 w-4 text-gray-400" />
@@ -129,8 +130,8 @@ const columns: ColumnDef<TransporterData>[] = [
         status === "ACTIVE"
           ? "Active"
           : status === "SUSPENDED"
-          ? "Suspended"
-          : "";
+            ? "Suspended"
+            : "";
       return (
         <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"

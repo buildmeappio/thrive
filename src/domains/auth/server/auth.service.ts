@@ -1,3 +1,4 @@
+"use server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/db";
 import { isAllowedRole } from "@/lib/rbac";
@@ -8,61 +9,48 @@ type AuthUserRecord = (User & UserLoginFlags) & {
   accounts: Array<Account & { role: Role }>;
 };
 
-export class AuthService {
-  /** Fetch user with most-recent account + role. Null if user missing OR no role. */
-  async getUserWithRoleByEmail(email: string) {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      include: {
-        accounts: {
-          include: { role: true },
-          orderBy: { createdAt: "desc" },
-          take: 1,
-        },
+/** Fetch user with most-recent account + role. Null if user missing OR no role. */
+export async function getUserWithRoleByEmail(
+  email: string,
+): Promise<AuthUserRecord | null> {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    include: {
+      accounts: {
+        include: { role: true },
+        orderBy: { createdAt: "desc" },
+        take: 1,
       },
-    });
-    if (!user) return null;
-    return user as AuthUserRecord;
-  }
-
-  /** Verify password against stored hash. */
-  async verifyPassword(email: string, password: string): Promise<boolean> {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { password: true },
-    });
-    if (!user) return false;
-    return bcrypt.compare(password, user.password);
-  }
-
-  // /** Admin-panel login: only SUPER_ADMIN | ADMIN | STAFF. */
-  // async login(email: string, password: string) {
-  //   const authUser = await this.getUserWithRoleByEmail(email);
-  //   if (!authUser) return null;
-  //   if (!isValidRole(authUser.accounts[0].role.name)) return null;
-
-  //   const ok = await this.verifyPassword(email, password);
-  //   if (!ok) return null;
-
-  //   return authUser; // lean object; NextAuth serializes into its JWT
-  // }
-
-  /** Google sign-in: allow only pre-seeded allowed roles. No auto-creation. */
-  async resolveGoogleUser(email: string) {
-    const authUser = await this.getUserWithRoleByEmail(email);
-    if (
-      !authUser ||
-      !authUser.accounts ||
-      authUser.accounts.length === 0 ||
-      !authUser.accounts[0].role ||
-      !authUser.accounts[0].role.name
-    )
-      return null;
-    if (!isAllowedRole(authUser.accounts[0].role.name)) return null;
-    return authUser;
-  }
+    },
+  });
+  if (!user) return null;
+  return user as AuthUserRecord;
 }
 
-const authService = new AuthService();
+/** Verify password against stored hash. */
+export async function verifyPassword(
+  email: string,
+  password: string,
+): Promise<boolean> {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { password: true },
+  });
+  if (!user) return false;
+  return bcrypt.compare(password, user.password);
+}
 
-export default authService;
+/** Google sign-in: allow only pre-seeded allowed roles. No auto-creation. */
+export async function resolveGoogleUser(email: string) {
+  const authUser = await getUserWithRoleByEmail(email);
+  if (
+    !authUser ||
+    !authUser.accounts ||
+    authUser.accounts.length === 0 ||
+    !authUser.accounts[0].role ||
+    !authUser.accounts[0].role.name
+  )
+    return null;
+  if (!isAllowedRole(authUser.accounts[0].role.name)) return null;
+  return authUser;
+}

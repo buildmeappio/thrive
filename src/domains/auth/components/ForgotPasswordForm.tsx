@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Input } from "@/components/ui/input";
@@ -20,23 +19,29 @@ type FormInput = z.infer<typeof schema>;
 
 const Form = () => {
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors, isSubmitting }, setError } =
-    useForm<FormInput>({
-      resolver: zodResolver(schema),
-      defaultValues: { email: "" },
-      mode: "onSubmit",
-    });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<FormInput>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: "" },
+    mode: "onSubmit",
+  });
 
   const onSubmit = async (values: FormInput) => {
     try {
       const formData = new FormData();
       formData.append("email", values.email);
-      
+
       const result = await authActions.forgotPassword(formData);
-      
+
       if (result.success && result.userExists !== false) {
         // Redirect to email sent page with email in query params
-        router.push(`${URLS.PASSWORD_EMAIL_SENT}?email=${encodeURIComponent(values.email)}`);
+        router.push(
+          `${URLS.PASSWORD_EMAIL_SENT}?email=${encodeURIComponent(values.email)}`,
+        );
       } else {
         // Email not registered
         setError("email", {
@@ -56,7 +61,10 @@ const Form = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
       <div>
-        <Label htmlFor="email" className="text-black text-xs sm:text-[13px] md:text-sm">
+        <Label
+          htmlFor="email"
+          className="text-black text-xs sm:text-[13px] md:text-sm"
+        >
           Email<span className="text-red-500">*</span>
         </Label>
         <Input
@@ -71,7 +79,9 @@ const Form = () => {
                       ${errors.email ? "ring-1 ring-red-500" : ""}`}
           {...register("email")}
         />
-        <p className="min-h-[16px] text-sm text-red-500 mt-1">{errors.email?.message}</p>
+        <p className="min-h-[16px] text-sm text-red-500 mt-1">
+          {errors.email?.message}
+        </p>
       </div>
 
       <Button
@@ -85,12 +95,15 @@ const Form = () => {
       </Button>
 
       <div className="flex justify-center pt-1">
-        <Link href={URLS.LOGIN} className="text-xs sm:text-sm font-medium text-[#0069A0] hover:underline">
+        <Link
+          href={URLS.LOGIN}
+          className="text-xs sm:text-sm font-medium text-[#0069A0] hover:underline"
+        >
           Back to Login
         </Link>
       </div>
     </form>
   );
-}
+};
 
 export default Form;

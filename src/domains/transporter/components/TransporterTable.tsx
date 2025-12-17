@@ -27,7 +27,8 @@ export default function TransporterTable({ table }: TransporterTableProps) {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 className="bg-[#F3F3F3] border-b-0"
-                key={headerGroup.id}>
+                key={headerGroup.id}
+              >
                 {headerGroup.headers.map((header) => {
                   const columnDef = columns[header.index];
                   const minWidth = columnDef?.minSize || "auto";
@@ -51,13 +52,14 @@ export default function TransporterTable({ table }: TransporterTableProps) {
                         "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
                         header.index === 0 && "rounded-l-2xl",
                         header.index === headerGroup.headers.length - 1 &&
-                          "rounded-r-2xl"
-                      )}>
+                          "rounded-r-2xl",
+                      )}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -72,7 +74,8 @@ export default function TransporterTable({ table }: TransporterTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="bg-white border-0 border-b-1">
+                  className="bg-white border-0 border-b-1"
+                >
                   {row.getVisibleCells().map((cell) => {
                     const columnIndex = cell.column.getIndex();
                     const columnDef = columns[columnIndex];
@@ -94,10 +97,11 @@ export default function TransporterTable({ table }: TransporterTableProps) {
                           width:
                             typeof width === "number" ? `${width}px` : width,
                         }}
-                        className="px-6 py-3 overflow-hidden align-middle">
+                        className="px-6 py-3 overflow-hidden align-middle"
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </TableCell>
                     );
@@ -108,7 +112,8 @@ export default function TransporterTable({ table }: TransporterTableProps) {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center text-black font-poppins text-[16px] leading-normal">
+                  className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
+                >
                   No Transporters Found
                 </TableCell>
               </TableRow>

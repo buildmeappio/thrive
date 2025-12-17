@@ -1,5 +1,5 @@
 import { UpdateChaperoneInput } from "../../types/Chaperone";
-import chaperoneService from "../chaperone.service";
+import * as chaperoneService from "../chaperone.service";
 
 const updateChaperone = async (id: string, data: UpdateChaperoneInput) => {
   const result = await chaperoneService.updateChaperone(id, data);
@@ -7,4 +7,3 @@ const updateChaperone = async (id: string, data: UpdateChaperoneInput) => {
 };
 
 export default updateChaperone;
-

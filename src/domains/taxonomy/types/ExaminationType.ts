@@ -23,4 +23,3 @@ export type CreateExaminationTypeInput = {
 };
 
 export type UpdateExaminationTypeInput = Partial<CreateExaminationTypeInput>;
-

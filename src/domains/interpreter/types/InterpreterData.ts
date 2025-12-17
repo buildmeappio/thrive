@@ -25,4 +25,3 @@ export type InterpreterFilters = {
   page?: number;
   pageSize?: number;
 };
-

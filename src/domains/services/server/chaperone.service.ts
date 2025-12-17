@@ -1,13 +1,18 @@
-import { HttpError } from '@/utils/httpError';
-import { CreateChaperoneInput, UpdateChaperoneInput, ChaperoneData, ChaperoneWithAvailability } from '../types/Chaperone';
-import { convertTimeToUTC, convertUTCToLocal } from '@/utils/timezone';
-import prisma from '@/lib/db';
-import logger from '@/utils/logger';
+import { HttpError } from "@/utils/httpError";
+import {
+  CreateChaperoneInput,
+  UpdateChaperoneInput,
+  ChaperoneData,
+  ChaperoneWithAvailability,
+} from "../types/Chaperone";
+import { convertTimeToUTC, convertUTCToLocal } from "@/utils/timezone";
+import prisma from "@/lib/db";
+import logger from "@/utils/logger";
 
 export const createChaperone = async (data: CreateChaperoneInput) => {
   try {
-    logger.log('Creating chaperone with data:', JSON.stringify(data, null, 2));
-    
+    logger.log("Creating chaperone with data:", JSON.stringify(data, null, 2));
+
     // Check if email already exists
     const existingChaperone = await prisma.chaperone.findFirst({
       where: {
@@ -17,7 +22,7 @@ export const createChaperone = async (data: CreateChaperoneInput) => {
     });
 
     if (existingChaperone) {
-      throw HttpError.badRequest('A chaperone with this email already exists');
+      throw HttpError.badRequest("A chaperone with this email already exists");
     }
 
     // Create chaperone and availability in a transaction
@@ -33,19 +38,25 @@ export const createChaperone = async (data: CreateChaperoneInput) => {
       });
 
       // Create availability if provided and has data
-      if (data.availability && 
-          ((data.availability.weeklyHours && data.availability.weeklyHours.length > 0) ||
-           (data.availability.overrideHours && data.availability.overrideHours.length > 0))) {
-        
+      if (
+        data.availability &&
+        ((data.availability.weeklyHours &&
+          data.availability.weeklyHours.length > 0) ||
+          (data.availability.overrideHours &&
+            data.availability.overrideHours.length > 0))
+      ) {
         const availabilityProvider = await tx.availabilityProvider.create({
           data: {
-            providerType: 'CHAPERONE',
+            providerType: "CHAPERONE",
             refId: chaperone.id,
           },
         });
 
         // Create weekly hours
-        if (data.availability.weeklyHours && data.availability.weeklyHours.length > 0) {
+        if (
+          data.availability.weeklyHours &&
+          data.availability.weeklyHours.length > 0
+        ) {
           for (const weeklyHour of data.availability.weeklyHours) {
             if (weeklyHour.enabled && weeklyHour.timeSlots.length > 0) {
               const weeklyHourRecord = await tx.providerWeeklyHours.create({
@@ -61,8 +72,16 @@ export const createChaperone = async (data: CreateChaperoneInput) => {
                 await tx.providerWeeklyTimeSlot.create({
                   data: {
                     weeklyHourId: weeklyHourRecord.id,
-                    startTime: convertTimeToUTC(slot.startTime, undefined, new Date()),
-                    endTime: convertTimeToUTC(slot.endTime, undefined, new Date()),
+                    startTime: convertTimeToUTC(
+                      slot.startTime,
+                      undefined,
+                      new Date(),
+                    ),
+                    endTime: convertTimeToUTC(
+                      slot.endTime,
+                      undefined,
+                      new Date(),
+                    ),
                   },
                 });
               }
@@ -71,7 +90,10 @@ export const createChaperone = async (data: CreateChaperoneInput) => {
         }
 
         // Create override hours
-        if (data.availability.overrideHours && data.availability.overrideHours.length > 0) {
+        if (
+          data.availability.overrideHours &&
+          data.availability.overrideHours.length > 0
+        ) {
           for (const overrideHour of data.availability.overrideHours) {
             if (overrideHour.timeSlots.length > 0) {
               const overrideHourRecord = await tx.providerOverrideHours.create({
@@ -87,8 +109,16 @@ export const createChaperone = async (data: CreateChaperoneInput) => {
                 await tx.providerOverrideTimeSlot.create({
                   data: {
                     overrideHourId: overrideHourRecord.id,
-                    startTime: convertTimeToUTC(slot.startTime, undefined, overrideDate),
-                    endTime: convertTimeToUTC(slot.endTime, undefined, overrideDate),
+                    startTime: convertTimeToUTC(
+                      slot.startTime,
+                      undefined,
+                      overrideDate,
+                    ),
+                    endTime: convertTimeToUTC(
+                      slot.endTime,
+                      undefined,
+                      overrideDate,
+                    ),
                   },
                 });
               }
@@ -105,12 +135,15 @@ export const createChaperone = async (data: CreateChaperoneInput) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    logger.error('Error creating chaperone:', error);
+    logger.error("Error creating chaperone:", error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
 
-export const updateChaperone = async (id: string, data: UpdateChaperoneInput) => {
+export const updateChaperone = async (
+  id: string,
+  data: UpdateChaperoneInput,
+) => {
   try {
     // Check if chaperone exists
     const existingChaperone = await prisma.chaperone.findFirst({
@@ -121,7 +154,7 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
     });
 
     if (!existingChaperone) {
-      throw HttpError.notFound('Chaperone not found');
+      throw HttpError.notFound("Chaperone not found");
     }
 
     // If email is being updated, check if it's already in use
@@ -135,23 +168,26 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
       });
 
       if (emailExists) {
-        throw HttpError.badRequest('A chaperone with this email already exists');
+        throw HttpError.badRequest(
+          "A chaperone with this email already exists",
+        );
       }
     }
 
     // Update chaperone and availability in a transaction
     const result = await prisma.$transaction(async (tx) => {
-      const updateData: Partial<{ 
-        firstName: string; 
-        lastName: string; 
-        email: string; 
-        phone: string | null; 
+      const updateData: Partial<{
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone: string | null;
         gender: string | null;
       }> = {};
       if (data.firstName !== undefined) updateData.firstName = data.firstName;
       if (data.lastName !== undefined) updateData.lastName = data.lastName;
       if (data.email !== undefined) updateData.email = data.email;
-      if (data.phone !== undefined) updateData.phone = data.phone ? data.phone : null;
+      if (data.phone !== undefined)
+        updateData.phone = data.phone ? data.phone : null;
       if (data.gender !== undefined) updateData.gender = data.gender || null;
 
       const chaperone = await tx.chaperone.update({
@@ -165,7 +201,7 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
         let availabilityProvider = await tx.availabilityProvider.findFirst({
           where: {
             refId: id,
-            providerType: 'CHAPERONE',
+            providerType: "CHAPERONE",
             deletedAt: null,
           },
         });
@@ -173,7 +209,7 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
         if (!availabilityProvider) {
           availabilityProvider = await tx.availabilityProvider.create({
             data: {
-              providerType: 'CHAPERONE',
+              providerType: "CHAPERONE",
               refId: id,
             },
           });
@@ -206,7 +242,10 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
         });
 
         // Create new weekly hours
-        if (data.availability.weeklyHours && data.availability.weeklyHours.length > 0) {
+        if (
+          data.availability.weeklyHours &&
+          data.availability.weeklyHours.length > 0
+        ) {
           for (const weeklyHour of data.availability.weeklyHours) {
             if (weeklyHour.enabled && weeklyHour.timeSlots.length > 0) {
               const weeklyHourRecord = await tx.providerWeeklyHours.create({
@@ -222,8 +261,16 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
                 await tx.providerWeeklyTimeSlot.create({
                   data: {
                     weeklyHourId: weeklyHourRecord.id,
-                    startTime: convertTimeToUTC(slot.startTime, undefined, new Date()),
-                    endTime: convertTimeToUTC(slot.endTime, undefined, new Date()),
+                    startTime: convertTimeToUTC(
+                      slot.startTime,
+                      undefined,
+                      new Date(),
+                    ),
+                    endTime: convertTimeToUTC(
+                      slot.endTime,
+                      undefined,
+                      new Date(),
+                    ),
                   },
                 });
               }
@@ -232,7 +279,10 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
         }
 
         // Create new override hours
-        if (data.availability.overrideHours && data.availability.overrideHours.length > 0) {
+        if (
+          data.availability.overrideHours &&
+          data.availability.overrideHours.length > 0
+        ) {
           for (const overrideHour of data.availability.overrideHours) {
             if (overrideHour.timeSlots.length > 0) {
               const overrideHourRecord = await tx.providerOverrideHours.create({
@@ -248,8 +298,16 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
                 await tx.providerOverrideTimeSlot.create({
                   data: {
                     overrideHourId: overrideHourRecord.id,
-                    startTime: convertTimeToUTC(slot.startTime, undefined, overrideDate),
-                    endTime: convertTimeToUTC(slot.endTime, undefined, overrideDate),
+                    startTime: convertTimeToUTC(
+                      slot.startTime,
+                      undefined,
+                      overrideDate,
+                    ),
+                    endTime: convertTimeToUTC(
+                      slot.endTime,
+                      undefined,
+                      overrideDate,
+                    ),
                   },
                 });
               }
@@ -266,7 +324,7 @@ export const updateChaperone = async (id: string, data: UpdateChaperoneInput) =>
     if (error instanceof HttpError) {
       throw error;
     }
-    logger.error('Error updating chaperone:', error);
+    logger.error("Error updating chaperone:", error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -278,11 +336,11 @@ export const getChaperones = async (): Promise<ChaperoneData[]> => {
         deletedAt: null,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
-    return chaperones.map(chaperone => ({
+    return chaperones.map((chaperone) => ({
       id: chaperone.id,
       firstName: chaperone.firstName,
       lastName: chaperone.lastName,
@@ -293,12 +351,14 @@ export const getChaperones = async (): Promise<ChaperoneData[]> => {
       createdAt: chaperone.createdAt,
     }));
   } catch (error) {
-    logger.error('Error getting chaperones:', error);
+    logger.error("Error getting chaperones:", error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
 
-export const getChaperoneById = async (id: string): Promise<ChaperoneWithAvailability> => {
+export const getChaperoneById = async (
+  id: string,
+): Promise<ChaperoneWithAvailability> => {
   try {
     const chaperone = await prisma.chaperone.findFirst({
       where: {
@@ -308,14 +368,14 @@ export const getChaperoneById = async (id: string): Promise<ChaperoneWithAvailab
     });
 
     if (!chaperone) {
-      throw HttpError.notFound('Chaperone not found');
+      throw HttpError.notFound("Chaperone not found");
     }
 
     // Fetch availability data
     const availabilityProvider = await prisma.availabilityProvider.findFirst({
       where: {
         refId: id,
-        providerType: 'CHAPERONE',
+        providerType: "CHAPERONE",
         deletedAt: null,
       },
       include: {
@@ -324,7 +384,7 @@ export const getChaperoneById = async (id: string): Promise<ChaperoneWithAvailab
           include: {
             timeSlots: {
               where: { deletedAt: null },
-              orderBy: { startTime: 'asc' },
+              orderBy: { startTime: "asc" },
             },
           },
         },
@@ -333,10 +393,10 @@ export const getChaperoneById = async (id: string): Promise<ChaperoneWithAvailab
           include: {
             timeSlots: {
               where: { deletedAt: null },
-              orderBy: { startTime: 'asc' },
+              orderBy: { startTime: "asc" },
             },
           },
-          orderBy: { date: 'asc' },
+          orderBy: { date: "asc" },
         },
       },
     });
@@ -351,13 +411,17 @@ export const getChaperoneById = async (id: string): Promise<ChaperoneWithAvailab
               enabled: wh.enabled,
               timeSlots: wh.timeSlots.map((ts) => ({
                 id: ts.id,
-                startTime: convertUTCToLocal(ts.startTime, undefined, new Date()),
+                startTime: convertUTCToLocal(
+                  ts.startTime,
+                  undefined,
+                  new Date(),
+                ),
                 endTime: convertUTCToLocal(ts.endTime, undefined, new Date()),
               })),
             })),
             overrideHours: availabilityProvider.overrideHours.map((oh) => ({
               id: oh.id,
-              date: oh.date.toISOString().split('T')[0],
+              date: oh.date.toISOString().split("T")[0],
               timeSlots: oh.timeSlots.map((ts) => ({
                 id: ts.id,
                 startTime: convertUTCToLocal(ts.startTime, undefined, oh.date),
@@ -373,7 +437,7 @@ export const getChaperoneById = async (id: string): Promise<ChaperoneWithAvailab
     if (error instanceof HttpError) {
       throw error;
     }
-    logger.error('Error getting chaperone by id:', error);
+    logger.error("Error getting chaperone by id:", error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
@@ -388,7 +452,7 @@ export const deleteChaperone = async (id: string) => {
     });
 
     if (!existingChaperone) {
-      throw HttpError.notFound('Chaperone not found');
+      throw HttpError.notFound("Chaperone not found");
     }
 
     // Soft delete - set deletedAt timestamp
@@ -404,18 +468,7 @@ export const deleteChaperone = async (id: string) => {
     if (error instanceof HttpError) {
       throw error;
     }
-    logger.error('Error deleting chaperone:', error);
+    logger.error("Error deleting chaperone:", error);
     throw HttpError.internalServerError("Internal server error");
   }
 };
-
-const chaperoneService = {
-  createChaperone,
-  updateChaperone,
-  getChaperones,
-  getChaperoneById,
-  deleteChaperone,
-};
-
-export default chaperoneService;
-

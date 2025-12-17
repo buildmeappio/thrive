@@ -23,7 +23,8 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${degular.variable} ${poppins.variable} font-degular antialiased`}>
+        className={`${degular.variable} ${poppins.variable} font-degular antialiased`}
+      >
         <Provider>{children}</Provider>
       </body>
     </html>

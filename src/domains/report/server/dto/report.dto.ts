@@ -1,4 +1,15 @@
-import { Report, ReportDynamicSection, ReportDocument, Documents, ClaimantBooking, Examination, ExaminationType, CaseStatus, Claimant, Address } from "@prisma/client";
+import {
+  Report,
+  ReportDynamicSection,
+  ReportDocument,
+  Documents,
+  ClaimantBooking,
+  Examination,
+  ExaminationType,
+  CaseStatus,
+  Claimant,
+  Address,
+} from "@prisma/client";
 import { ReportDetailDtoType } from "../../types/ReportDetailDtoType";
 import { generatePresignedUrl } from "@/lib/s3";
 import logger from "@/utils/logger";
@@ -19,7 +30,7 @@ export class ReportDto {
       referralDocuments: (ReportDocument & {
         document: Documents;
       })[];
-    }
+    },
   ): Promise<ReportDetailDtoType> {
     // Generate presigned URLs for referral documents
     const documentsWithUrls = await Promise.all(
@@ -36,7 +47,7 @@ export class ReportDto {
         } catch (error) {
           logger.error(
             `Failed to generate presigned URL for document ${rd.document.name}:`,
-            error
+            error,
           );
           return {
             id: rd.id,
@@ -46,7 +57,7 @@ export class ReportDto {
             },
           };
         }
-      })
+      }),
     );
 
     return {
@@ -102,4 +113,3 @@ export class ReportDto {
     };
   }
 }
-

@@ -40,4 +40,3 @@ export default async function EditBenefitPage({ params }: Props) {
     </DashboardShell>
   );
 }
-

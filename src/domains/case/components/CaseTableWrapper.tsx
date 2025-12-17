@@ -1,10 +1,23 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender, type Row, type Table as TanStackTable } from "@tanstack/react-table";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useMemo, useEffect } from "react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  flexRender,
+  type ColumnDef,
+  type Row,
+} from "@tanstack/react-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { CaseData } from "@/domains/case/types/CaseData";
-import Pagination from "@/components/Pagination";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -20,12 +33,9 @@ interface FilterState {
   };
 }
 
-type Props = {
+type useCaseTableWrapperOptions = {
   data: CaseData[];
-  types?: string[];
-  statuses?: string[];
-  priorityLevels?: string[];
-  searchQuery?: string;
+  searchQuery: string;
   filters?: FilterState;
 };
 
@@ -39,14 +49,14 @@ const ActionButton = ({ id }: { id: string }) => {
   );
 };
 
-const columnsDef = [
+const createColumns = (): ColumnDef<CaseData, unknown>[] => [
   {
     accessorKey: "number",
     header: "Case ID",
-    cell: ({ row }: { row: Row<CaseData> }) => {
+    cell: ({ row }) => {
       const caseNumber = row.getValue("number") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={caseNumber}
         >
@@ -58,10 +68,10 @@ const columnsDef = [
   {
     accessorKey: "organization",
     header: "Company",
-    cell: ({ row }: { row: Row<CaseData> }) => {
+    cell: ({ row }) => {
       const organization = row.getValue("organization") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={organization}
         >
@@ -73,10 +83,10 @@ const columnsDef = [
   {
     accessorKey: "caseType",
     header: "Claim Type",
-    cell: ({ row }: { row: Row<CaseData> }) => {
+    cell: ({ row }) => {
       const caseType = row.getValue("caseType") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={caseType}
         >
@@ -88,10 +98,10 @@ const columnsDef = [
   {
     accessorKey: "submittedAt",
     header: "Date Received",
-    cell: ({ row }: { row: Row<CaseData> }) => {
+    cell: ({ row }) => {
       const dateText = formatDateShort(row.getValue("submittedAt"));
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={dateText}
         >
@@ -103,10 +113,12 @@ const columnsDef = [
   {
     accessorKey: "dueDate",
     header: "Due Date",
-    cell: ({ row }: { row: Row<CaseData> }) => {
-      const dueDateText = row.getValue("dueDate") ? formatDateShort(row.getValue("dueDate")) : "N/A";
+    cell: ({ row }) => {
+      const dueDateText = row.getValue("dueDate")
+        ? formatDateShort(row.getValue("dueDate"))
+        : "N/A";
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={dueDateText}
         >
@@ -118,10 +130,10 @@ const columnsDef = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }: { row: Row<CaseData> }) => {
+    cell: ({ row }) => {
       const status = row.getValue("status") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={status}
         >
@@ -133,10 +145,10 @@ const columnsDef = [
   {
     accessorKey: "urgencyLevel",
     header: "Priority",
-    cell: ({ row }: { row: Row<CaseData> }) => {
+    cell: ({ row }) => {
       const urgencyLevel = row.getValue("urgencyLevel") as string;
       return (
-        <div 
+        <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
           title={urgencyLevel}
         >
@@ -148,23 +160,16 @@ const columnsDef = [
   {
     header: "",
     accessorKey: "id",
-    cell: ({ row }: { row: Row<CaseData> }) => {
+    cell: ({ row }) => {
       return <ActionButton id={row.original.id} />;
     },
-    maxSize: 60,
   },
 ];
 
-// Combined component that handles both table and pagination with shared state
-export default function CaseTableWrapper({ data, searchQuery = "", filters }: Props) {
-  const [query, setQuery] = useState(searchQuery);
+export const useCaseTableWrapper = (props: useCaseTableWrapperOptions) => {
+  const { data, searchQuery, filters } = props;
 
-  // Update internal query when searchQuery prop changes
-  useEffect(() => {
-    setQuery(searchQuery);
-  }, [searchQuery]);
-
-  const filtered = useMemo(() => {
+  const filteredData = useMemo(() => {
     let result = data;
 
     // Filter by claim type
@@ -205,97 +210,103 @@ export default function CaseTableWrapper({ data, searchQuery = "", filters }: Pr
     }
 
     // Filter by search query
-    const q = query.trim().toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
     if (q) {
       result = result.filter((d) =>
         [d.number, d.organization, d.caseType, d.status, d.urgencyLevel]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q))
+          .some((v) => String(v).toLowerCase().includes(q)),
       );
     }
 
     return result;
-  }, [data, query, filters]);
+  }, [data, searchQuery, filters]);
+
+  const columns = useMemo(() => createColumns(), []);
 
   const table = useReactTable({
-    data: filtered,
-    columns: columnsDef,
+    data: filteredData,
+    columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  // reset to first page when searching or filtering
   useEffect(() => {
     table.setPageIndex(0);
-  }, [query, filters, table]);
+  }, [searchQuery, filters, table]);
 
+  return {
+    table,
+    columns,
+  };
+};
+
+type CaseTableWrapperProps = {
+  table: ReturnType<typeof useCaseTableWrapper>["table"];
+  columns: ReturnType<typeof useCaseTableWrapper>["columns"];
+};
+
+const CaseTableWrapper: React.FC<CaseTableWrapperProps> = ({
+  table,
+  columns,
+}) => {
   return (
-    <>
-      {/* Table */}
-      <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
-        <Table className="min-w-[1000px] border-0">
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className={cn(
-                      "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap",
-                      header.index === 0 && "rounded-l-2xl",
-                      header.index === headerGroup.headers.length - 1 &&
-                      "rounded-r-2xl w-[60px]"
-                    )}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
+    <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
+      <Table className="min-w-[1000px] border-0">
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead
+                  key={header.id}
+                  className={cn(
+                    "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap",
+                    header.index === 0 && "rounded-l-2xl",
+                    header.index === headerGroup.headers.length - 1 &&
+                      "rounded-r-2xl w-[60px]",
+                  )}
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
                         header.column.columnDef.header,
-                        header.getContext()
+                        header.getContext(),
                       )}
-                  </TableHead>
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+
+        <TableBody>
+          {table.getRowModel().rows.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+                className="bg-white border-0 border-b-1"
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className="px-6 py-3">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
                 ))}
               </TableRow>
-            ))}
-          </TableHeader>
-
-          <TableBody>
-            {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="bg-white border-0 border-b-1"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="px-6 py-3">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columnsDef.length}
-                  className="h-24 text-center text-black font-poppins text-[16px] leading-none"
-                >
-                  No Cases Found
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      
-      {/* Pagination */}
-      <div className="px-3 sm:px-6 mt-4 overflow-x-hidden">
-        <Pagination table={table} />
-      </div>
-    </>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center text-black font-poppins text-[16px] leading-none"
+              >
+                No Cases Found
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
-}
-// Export pagination separately - now it receives the table instance
-export function CasePagination({ table }: { table: TanStackTable<CaseData> }) {
-  return <Pagination table={table} />;
-}
+};
+
+export default CaseTableWrapper;

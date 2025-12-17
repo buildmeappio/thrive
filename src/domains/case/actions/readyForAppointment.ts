@@ -1,6 +1,6 @@
-'use server'
+"use server";
 import { getCurrentUser } from "@/domains/auth/server/session";
-import caseService from "../server/case.service";
+import * as CaseService from "../server/case.service";
 import { HttpError } from "@/utils/httpError";
 import { CaseStatus } from "../constants/case-status";
 import { sendMail } from "@/lib/email";
@@ -25,14 +25,14 @@ const readyForAppointment = async (caseId: string) => {
       throw HttpError.unauthorized("User not found");
     }
 
-    const caseItem = await caseService.getCaseById(caseId);
+    const caseItem = await CaseService.getCaseById(caseId);
 
-    const updatedItem = await caseService.updateStatus(
+    const updatedItem = await CaseService.updateStatus(
       caseId,
-      CaseStatus.READY_TO_APPOINTMENT
+      CaseStatus.READY_TO_APPOINTMENT,
     );
 
-    const link = await caseService.generateSecureLink(updatedItem.id);
+    const link = await CaseService.generateSecureLink(updatedItem.id);
 
     sendLinkToClaimant(caseItem.claimant.emailAddress, link);
   } catch (error) {
@@ -79,6 +79,6 @@ const readyForAppointmentEmailHtml = (link: string) => {
     </div>
   </div>
   `;
-}
+};
 
 export default readyForAppointment;

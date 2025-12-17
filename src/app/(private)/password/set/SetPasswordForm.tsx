@@ -11,39 +11,48 @@ import authActions from "@/domains/auth/actions";
 import { signOut } from "next-auth/react";
 import logger from "@/utils/logger";
 
-const schema = z.object({
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+const schema = z
+  .object({
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type FormInput = z.infer<typeof schema>;
 
 const SetPasswordForm = () => {
-  const { register, handleSubmit, formState: { errors, isSubmitting } } =
-    useForm<FormInput>({
-      resolver: zodResolver(schema),
-      defaultValues: { password: "", confirmPassword: "" },
-      mode: "onSubmit",
-    });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormInput>({
+    resolver: zodResolver(schema),
+    defaultValues: { password: "", confirmPassword: "" },
+    mode: "onSubmit",
+  });
 
   const onSubmit = async (values: FormInput) => {
     try {
       const result = await authActions.completeTemporaryPassword({
         password: values.password,
       });
-      
+
       if (result.success) {
-        toast.success("Password set successfully! Please log in with your new password.");
-        
+        toast.success(
+          "Password set successfully! Please log in with your new password.",
+        );
+
         // Sign out the user and redirect to login page
         setTimeout(() => {
           signOut({ callbackUrl: "/admin/login", redirect: true });
         }, 1500);
       } else {
-        toast.error(result.error || "Failed to set password. Please try again.");
+        toast.error(
+          result.error || "Failed to set password. Please try again.",
+        );
       }
     } catch (error) {
       logger.error("Error setting password:", error);
@@ -54,7 +63,10 @@ const SetPasswordForm = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
       <div>
-        <Label htmlFor="password" className="text-black text-xs sm:text-[13px] md:text-sm">
+        <Label
+          htmlFor="password"
+          className="text-black text-xs sm:text-[13px] md:text-sm"
+        >
           New Password<span className="text-red-500">*</span>
         </Label>
         <PasswordInput
@@ -68,11 +80,16 @@ const SetPasswordForm = () => {
                       ${errors.password ? "ring-1 ring-red-500" : ""}`}
           {...register("password")}
         />
-        <p className="min-h-[16px] text-xs text-red-500 mt-1">{errors.password?.message}</p>
+        <p className="min-h-[16px] text-xs text-red-500 mt-1">
+          {errors.password?.message}
+        </p>
       </div>
 
       <div>
-        <Label htmlFor="confirmPassword" className="text-black text-xs sm:text-[13px] md:text-sm">
+        <Label
+          htmlFor="confirmPassword"
+          className="text-black text-xs sm:text-[13px] md:text-sm"
+        >
           Confirm Password<span className="text-red-500">*</span>
         </Label>
         <PasswordInput
@@ -86,7 +103,9 @@ const SetPasswordForm = () => {
                       ${errors.confirmPassword ? "ring-1 ring-red-500" : ""}`}
           {...register("confirmPassword")}
         />
-        <p className="min-h-[16px] text-xs text-red-500 mt-1">{errors.confirmPassword?.message}</p>
+        <p className="min-h-[16px] text-xs text-red-500 mt-1">
+          {errors.confirmPassword?.message}
+        </p>
       </div>
 
       <Button
@@ -103,4 +122,3 @@ const SetPasswordForm = () => {
 };
 
 export default SetPasswordForm;
-

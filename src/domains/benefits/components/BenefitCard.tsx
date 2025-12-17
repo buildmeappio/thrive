@@ -10,7 +10,11 @@ type BenefitCardProps = {
   onDelete: (benefit: BenefitData) => void;
 };
 
-export default function BenefitCard({ benefit, onEdit, onDelete }: BenefitCardProps) {
+export default function BenefitCard({
+  benefit,
+  onEdit,
+  onDelete,
+}: BenefitCardProps) {
   return (
     <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-4">
@@ -47,4 +51,3 @@ export default function BenefitCard({ benefit, onEdit, onDelete }: BenefitCardPr
     </div>
   );
 }
-

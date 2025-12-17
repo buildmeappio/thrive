@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Dashboard from "@/domains/dashboard/components/Dashboard";
+import DashboardHeader from "@/domains/dashboard/components/DashboardHeader";
 import { DashboardShell } from "@/layouts/dashboard";
 import {
   getOrganizationCount,
@@ -42,12 +43,7 @@ const Page = async () => {
 
   return (
     <DashboardShell>
-      <div className="mb-4 sm:mb-6 dashboard-zoom-mobile">
-        <h1 className="text-[#000000] text-[28px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-          Welcome To <span className="text-[#00A8FF]">Thrive</span> Admin
-          Dashboard
-        </h1>
-      </div>
+      <DashboardHeader />
       <Dashboard
         caseRows={cases}
         waitingCaseRows={waitingCases}

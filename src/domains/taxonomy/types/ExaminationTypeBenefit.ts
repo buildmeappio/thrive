@@ -20,5 +20,5 @@ export type CreateExaminationTypeBenefitInput = {
   benefit: string;
 };
 
-export type UpdateExaminationTypeBenefitInput = Partial<CreateExaminationTypeBenefitInput>;
-
+export type UpdateExaminationTypeBenefitInput =
+  Partial<CreateExaminationTypeBenefitInput>;

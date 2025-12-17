@@ -13,14 +13,10 @@ const Page = async () => {
   const chaperones = await getChaperones();
 
   if (!chaperones.success) {
-    return (
-      <ChaperonesPageContent chaperoneList={[]} />
-    );
+    return <ChaperonesPageContent chaperoneList={[]} />;
   }
 
-  return (
-    <ChaperonesPageContent chaperoneList={chaperones.result} />
-  );
+  return <ChaperonesPageContent chaperoneList={chaperones.result} />;
 };
 
 export default Page;

@@ -31,7 +31,9 @@ export default function DeleteInterpreterModal({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Delete Interpreter</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Delete Interpreter
+          </h2>
           <button
             onClick={onClose}
             disabled={isDeleting}
@@ -45,10 +47,14 @@ export default function DeleteInterpreterModal({
         <div className="p-6">
           <p className="text-gray-600 mb-2">
             Are you sure you want to delete{" "}
-            <span className="font-semibold text-gray-900">{interpreterName}</span>?
+            <span className="font-semibold text-gray-900">
+              {interpreterName}
+            </span>
+            ?
           </p>
           <p className="text-sm text-red-600">
-            This action cannot be undone. All data associated with this interpreter will be permanently removed.
+            This action cannot be undone. All data associated with this
+            interpreter will be permanently removed.
           </p>
         </div>
 
@@ -60,7 +66,7 @@ export default function DeleteInterpreterModal({
             className={cn(
               "px-4 py-2 rounded-full border border-gray-300 text-gray-700",
               "hover:bg-gray-50 transition-colors",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
+              "disabled:opacity-50 disabled:cursor-not-allowed",
             )}
           >
             Cancel
@@ -71,7 +77,7 @@ export default function DeleteInterpreterModal({
             className={cn(
               "px-4 py-2 rounded-full bg-red-600 text-white",
               "hover:bg-red-700 transition-colors",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
+              "disabled:opacity-50 disabled:cursor-not-allowed",
             )}
           >
             {isDeleting ? "Deleting..." : "Delete"}
@@ -81,4 +87,3 @@ export default function DeleteInterpreterModal({
     </div>
   );
 }
-

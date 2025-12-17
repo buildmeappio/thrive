@@ -71,7 +71,7 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
   };
 
   const handleSubmit = async (
-    data: CreateTaxonomyInput | UpdateTaxonomyInput
+    data: CreateTaxonomyInput | UpdateTaxonomyInput,
   ) => {
     try {
       setIsSubmitting(true);
@@ -79,7 +79,7 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
       if (dialogMode === "create") {
         const response = await createTaxonomy(
           type,
-          data as CreateTaxonomyInput
+          data as CreateTaxonomyInput,
         );
         if (response.success) {
           toast.success(`${config.singularName} created successfully`);
@@ -91,7 +91,7 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
         const response = await updateTaxonomy(
           type,
           selectedTaxonomy.id,
-          data as UpdateTaxonomyInput
+          data as UpdateTaxonomyInput,
         );
         if (response.success) {
           toast.success(`${config.singularName} updated successfully`);
@@ -121,7 +121,9 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
     // Prevent deletion if frequency is greater than 0
     const frequency = taxonomy.frequency ?? 0;
     if (frequency > 0) {
-      toast.error(`Cannot delete ${config.singularName.toLowerCase()}. It is assigned to ${frequency} ${frequency === 1 ? 'person' : 'people'}.`);
+      toast.error(
+        `Cannot delete ${config.singularName.toLowerCase()}. It is assigned to ${frequency} ${frequency === 1 ? "person" : "people"}.`,
+      );
       return;
     }
     setTaxonomyToDelete(taxonomy);
@@ -140,7 +142,10 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
         setTaxonomyToDelete(undefined);
         router.refresh();
       } else {
-        toast.error(response.error || `Failed to delete ${config.singularName.toLowerCase()}`);
+        toast.error(
+          response.error ||
+            `Failed to delete ${config.singularName.toLowerCase()}`,
+        );
       }
     } catch (error: unknown) {
       const errorMessage =
@@ -215,7 +220,8 @@ const TaxonomyPage: React.FC<TaxonomyPageProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {config.singularName}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this {config.singularName.toLowerCase()}? This action cannot be undone.
+              Are you sure you want to delete this{" "}
+              {config.singularName.toLowerCase()}? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

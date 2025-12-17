@@ -18,14 +18,14 @@ function getGoogleDocsAuth() {
 
   if (!clientId || !clientSecret || !refreshToken) {
     throw new Error(
-      "Missing required Google OAuth configuration. Please check DOCS_REFRESH_TOKEN, OAUTH_CLIENT_ID, and OAUTH_CLIENT_SECRET environment variables."
+      "Missing required Google OAuth configuration. Please check DOCS_REFRESH_TOKEN, OAUTH_CLIENT_ID, and OAUTH_CLIENT_SECRET environment variables.",
     );
   }
 
   const oauth2Client = new google.auth.OAuth2(
     clientId,
     clientSecret,
-    "https://developers.google.com/oauthplayground"
+    "https://developers.google.com/oauthplayground",
   );
 
   oauth2Client.setCredentials({ refresh_token: refreshToken });
@@ -43,7 +43,7 @@ function getGoogleDocsAuth() {
 export async function copyTemplate(
   templateId: string,
   name: string,
-  folderId?: string
+  folderId?: string,
 ): Promise<string> {
   try {
     const auth = getGoogleDocsAuth();
@@ -65,9 +65,12 @@ export async function copyTemplate(
   } catch (error) {
     logger.error("Error copying Google Doc template:", error);
     if (error instanceof Error) {
-      if (error.message.includes("File not found") || (error as any).code === 404) {
+      if (
+        error.message.includes("File not found") ||
+        (error as any).code === 404
+      ) {
         throw new Error(
-          `Template not found. Please verify GOOGLE_CONTRACT_TEMPLATE_ID is correct.`
+          `Template not found. Please verify GOOGLE_CONTRACT_TEMPLATE_ID is correct.`,
         );
       }
       if (
@@ -75,12 +78,12 @@ export async function copyTemplate(
         (error as any).code === 403
       ) {
         throw new Error(
-          `Insufficient permissions to copy template. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
+          `Insufficient permissions to copy template. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
         );
       }
     }
     throw new Error(
-      `Failed to copy template: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to copy template: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 }
@@ -93,7 +96,7 @@ export async function copyTemplate(
  */
 export async function replacePlaceholders(
   documentId: string,
-  placeholders: Record<string, string>
+  placeholders: Record<string, string>,
 ): Promise<void> {
   try {
     const auth = getGoogleDocsAuth();
@@ -126,9 +129,12 @@ export async function replacePlaceholders(
   } catch (error) {
     logger.error("Error replacing placeholders:", error);
     if (error instanceof Error) {
-      if (error.message.includes("File not found") || (error as any).code === 404) {
+      if (
+        error.message.includes("File not found") ||
+        (error as any).code === 404
+      ) {
         throw new Error(
-          `Document not found. Please verify the document ID is correct.`
+          `Document not found. Please verify the document ID is correct.`,
         );
       }
       if (
@@ -136,12 +142,12 @@ export async function replacePlaceholders(
         (error as any).code === 403
       ) {
         throw new Error(
-          `Insufficient permissions to update document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
+          `Insufficient permissions to update document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
         );
       }
     }
     throw new Error(
-      `Failed to replace placeholders: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to replace placeholders: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 }
@@ -161,7 +167,7 @@ export async function exportAsHTML(documentId: string): Promise<string> {
         fileId: documentId,
         mimeType: "text/html",
       },
-      { responseType: "text" }
+      { responseType: "text" },
     );
 
     if (!response.data) {
@@ -172,9 +178,12 @@ export async function exportAsHTML(documentId: string): Promise<string> {
   } catch (error) {
     logger.error("Error exporting HTML:", error);
     if (error instanceof Error) {
-      if (error.message.includes("File not found") || (error as any).code === 404) {
+      if (
+        error.message.includes("File not found") ||
+        (error as any).code === 404
+      ) {
         throw new Error(
-          `Document not found. Please verify the document ID is correct.`
+          `Document not found. Please verify the document ID is correct.`,
         );
       }
       if (
@@ -182,12 +191,64 @@ export async function exportAsHTML(documentId: string): Promise<string> {
         (error as any).code === 403
       ) {
         throw new Error(
-          `Insufficient permissions to export document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`
+          `Insufficient permissions to export document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
         );
       }
     }
     throw new Error(
-      `Failed to export HTML: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Failed to export HTML: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
+}
+
+/**
+ * Export a Google Doc as PDF
+ * @param documentId - The ID of the Google Doc to export
+ * @returns Buffer containing the PDF data
+ */
+export async function exportAsPDF(documentId: string): Promise<Buffer> {
+  try {
+    const auth = getGoogleDocsAuth();
+    const drive = google.drive({ version: "v3", auth });
+
+    const response = await drive.files.export(
+      {
+        fileId: documentId,
+        mimeType: "application/pdf",
+      },
+      { responseType: "arraybuffer" },
+    );
+
+    if (!response.data) {
+      throw new Error("Failed to export PDF: No data returned");
+    }
+
+    // Convert ArrayBuffer to Buffer
+    const pdfBuffer = Buffer.from(response.data as ArrayBuffer);
+
+    return pdfBuffer;
+  } catch (error) {
+    logger.error("Error exporting PDF:", error);
+    if (error instanceof Error) {
+      if (
+        error.message.includes("File not found") ||
+        (error as any).code === 404
+      ) {
+        throw new Error(
+          `Document not found. Please verify the document ID is correct.`,
+        );
+      }
+      if (
+        error.message.includes("insufficient permissions") ||
+        (error as any).code === 403
+      ) {
+        throw new Error(
+          `Insufficient permissions to export document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
+        );
+      }
+    }
+    throw new Error(
+      `Failed to export PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 }
@@ -238,7 +299,7 @@ export type ContractData = {
  * Map contract data to Google Doc placeholders
  */
 export function mapContractDataToPlaceholders(
-  data: ContractData
+  data: ContractData,
 ): Record<string, string> {
   return {
     examiner_name: data.examinerName || "",
@@ -267,11 +328,11 @@ export function mapContractDataToPlaceholders(
  */
 export async function generateContractFromTemplate(
   templateId: string,
-  data: ContractData
+  data: ContractData,
 ): Promise<string> {
   if (!ENV.GOOGLE_CONTRACT_TEMPLATE_ID) {
     throw new Error(
-      "GOOGLE_CONTRACT_TEMPLATE_ID environment variable is not set"
+      "GOOGLE_CONTRACT_TEMPLATE_ID environment variable is not set",
     );
   }
 
@@ -279,7 +340,7 @@ export async function generateContractFromTemplate(
   // For sendContract, we don't need to persist the doc in a specific folder
   const documentId = await copyTemplate(
     templateId,
-    `Contract_${data.examinerName.replace(/\s+/g, "_")}_${Date.now()}`
+    `Contract_${data.examinerName.replace(/\s+/g, "_")}_${Date.now()}`,
   );
 
   try {
@@ -310,27 +371,28 @@ export async function generateContractFromTemplate(
 }
 
 /**
- * Copy template to Drive folder, merge placeholders, export HTML, and optionally save HTML to Drive
+ * Copy template to Drive folder, merge placeholders, export HTML and PDF, and optionally save HTML to Drive
  * This is for the acceptExaminer use case where we want to persist the document
  * @param templateId - Google Doc template ID
  * @param folderId - Drive folder ID to save the document
  * @param data - Contract data to merge
  * @param saveHtmlToDrive - Whether to also save the HTML to Drive (default: false)
- * @returns Object with documentId, HTML content, and optional Drive HTML ID
+ * @returns Object with documentId, HTML content, PDF buffer, and optional Drive HTML ID
  */
 export async function createContractDocument(
   templateId: string,
   folderId: string,
   data: ContractData,
-  saveHtmlToDrive: boolean = false
+  saveHtmlToDrive: boolean = false,
 ): Promise<{
   documentId: string;
   htmlContent: string;
+  pdfContent: Buffer;
   driveHtmlId?: string;
 }> {
   if (!ENV.GOOGLE_CONTRACTS_FOLDER_ID) {
     throw new Error(
-      "GOOGLE_CONTRACTS_FOLDER_ID environment variable is not set"
+      "GOOGLE_CONTRACTS_FOLDER_ID environment variable is not set",
     );
   }
 
@@ -338,7 +400,7 @@ export async function createContractDocument(
   const documentId = await copyTemplate(
     templateId,
     `Contract_${data.examinerName.replace(/\s+/g, "_")}_${Date.now()}`,
-    folderId
+    folderId,
   );
 
   try {
@@ -348,8 +410,11 @@ export async function createContractDocument(
     // Replace placeholders
     await replacePlaceholders(documentId, placeholders);
 
-    // Export as HTML
-    const htmlContent = await exportAsHTML(documentId);
+    // Export as HTML and PDF in parallel
+    const [htmlContent, pdfContent] = await Promise.all([
+      exportAsHTML(documentId),
+      exportAsPDF(documentId),
+    ]);
 
     let driveHtmlId: string | undefined;
 
@@ -376,6 +441,7 @@ export async function createContractDocument(
     return {
       documentId,
       htmlContent,
+      pdfContent,
       driveHtmlId,
     };
   } catch (error) {

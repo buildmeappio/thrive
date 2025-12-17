@@ -7,7 +7,13 @@ import { deleteBenefitAction } from "../actions";
 import { toast } from "sonner";
 import { Plus, List, Grid, Table, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import BenefitCard from "./BenefitCard";
 import {
@@ -45,19 +51,24 @@ type BenefitsListProps = {
 type ViewMode = "list" | "grid" | "table";
 type SortOption = "name" | "examType" | "date";
 
-export default function BenefitsList({ benefits, examinationTypes }: BenefitsListProps) {
+export default function BenefitsList({
+  benefits,
+  examinationTypes,
+}: BenefitsListProps) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [sortBy, setSortBy] = useState<SortOption>("name");
   const [selectedExamType, setSelectedExamType] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [benefitToDelete, setBenefitToDelete] = useState<BenefitData | null>(null);
+  const [benefitToDelete, setBenefitToDelete] = useState<BenefitData | null>(
+    null,
+  );
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Get unique exam types from benefits
   const examTypesForFilter = useMemo(() => {
-    const uniqueTypes = new Set(benefits.map(b => b.examinationTypeId));
-    return examinationTypes.filter(et => uniqueTypes.has(et.value));
+    const uniqueTypes = new Set(benefits.map((b) => b.examinationTypeId));
+    return examinationTypes.filter((et) => uniqueTypes.has(et.value));
   }, [benefits, examinationTypes]);
 
   // Filter and sort benefits
@@ -66,7 +77,9 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
 
     // Filter by exam type
     if (selectedExamType) {
-      filtered = filtered.filter(b => b.examinationTypeId === selectedExamType);
+      filtered = filtered.filter(
+        (b) => b.examinationTypeId === selectedExamType,
+      );
     }
 
     // Sort
@@ -77,7 +90,9 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
         case "examType":
           return a.examinationTypeName.localeCompare(b.examinationTypeName);
         case "date":
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         default:
           return 0;
       }
@@ -124,7 +139,7 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
       cell: ({ row }: { row: Row<BenefitData> }) => {
         const examType = row.getValue("examinationTypeName") as string;
         return (
-          <div 
+          <div
             className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
             title={examType}
           >
@@ -142,7 +157,7 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
       cell: ({ row }: { row: Row<BenefitData> }) => {
         const benefit = row.getValue("benefit") as string;
         return (
-          <div 
+          <div
             className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
             title={benefit}
           >
@@ -160,11 +175,15 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
       cell: ({ row }: { row: Row<BenefitData> }) => {
         const description = row.original.description;
         return (
-          <div 
+          <div
             className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
             title={description || undefined}
           >
-            {description ? description : <span className="text-gray-400 italic">N/A</span>}
+            {description ? (
+              description
+            ) : (
+              <span className="text-gray-400 italic">N/A</span>
+            )}
           </div>
         );
       },
@@ -236,7 +255,13 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
         {/* Define SVG gradients */}
         <svg width="0" height="0" className="absolute">
           <defs>
-            <linearGradient id="examTypeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient
+              id="examTypeGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
               <stop offset="0%" stopColor="#01F4C8" />
               <stop offset="100%" stopColor="#00A8FF" />
             </linearGradient>
@@ -253,7 +278,7 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
                 "flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded transition-all flex-1 sm:flex-initial",
                 viewMode === "list"
                   ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-semibold"
-                  : "text-gray-600 hover:text-gray-900"
+                  : "text-gray-600 hover:text-gray-900",
               )}
               title="List View"
             >
@@ -266,7 +291,7 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
                 "flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded transition-all flex-1 sm:flex-initial",
                 viewMode === "grid"
                   ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-semibold"
-                  : "text-gray-600 hover:text-gray-900"
+                  : "text-gray-600 hover:text-gray-900",
               )}
               title="Grid View"
             >
@@ -279,7 +304,7 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
                 "flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded transition-all flex-1 sm:flex-initial",
                 viewMode === "table"
                   ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-semibold"
-                  : "text-gray-600 hover:text-gray-900"
+                  : "text-gray-600 hover:text-gray-900",
               )}
               title="Table View"
             >
@@ -302,8 +327,13 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
         <div className="flex flex-row items-center justify-between gap-2 sm:gap-4 mb-4 sm:mb-6">
           {/* Sort Dropdown - Left */}
           <div className="flex items-center gap-1 sm:gap-2 flex-1 sm:flex-initial min-w-0">
-            <span className="text-xs sm:text-sm text-gray-600 font-normal whitespace-nowrap">Sort</span>
-            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+            <span className="text-xs sm:text-sm text-gray-600 font-normal whitespace-nowrap">
+              Sort
+            </span>
+            <Select
+              value={sortBy}
+              onValueChange={(value) => setSortBy(value as SortOption)}
+            >
               <SelectTrigger className="h-7 sm:h-9 w-[90px] sm:w-[120px] text-xs sm:text-sm px-2 sm:px-3 border-gray-300 rounded-lg bg-white">
                 <SelectValue />
               </SelectTrigger>
@@ -319,14 +349,16 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 min-w-0">
             <Select
               value={selectedExamType || "all"}
-              onValueChange={(value) => setSelectedExamType(value === "all" ? null : value)}
+              onValueChange={(value) =>
+                setSelectedExamType(value === "all" ? null : value)
+              }
             >
               <SelectTrigger
                 className={cn(
                   "h-7 sm:h-9 w-[130px] sm:w-auto min-w-[130px] sm:min-w-[150px] text-xs sm:text-sm pl-2 pr-3 sm:px-6 border rounded-full font-poppins bg-white [&>svg]:hidden",
                   selectedExamType !== null
                     ? "border-[#00A8FF] text-[#00A8FF]"
-                    : "border-gray-200 text-gray-700"
+                    : "border-gray-200 text-gray-700",
                 )}
               >
                 <div className="flex items-center gap-1.5 sm:gap-2 w-full min-w-0">
@@ -405,33 +437,46 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
                 <UITable className="w-full border-0 table-fixed">
                   <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
-                      <TableRow className="bg-[#F3F3F3] border-b-0" key={headerGroup.id}>
+                      <TableRow
+                        className="bg-[#F3F3F3] border-b-0"
+                        key={headerGroup.id}
+                      >
                         {headerGroup.headers.map((header) => {
                           const columnIndex = header.index;
                           const columnDef = columnsDef[columnIndex];
-                          const minWidth = columnDef?.minSize || 'auto';
-                          const maxWidth = columnDef?.maxSize || 'auto';
-                          const width = columnDef?.size || 'auto';
+                          const minWidth = columnDef?.minSize || "auto";
+                          const maxWidth = columnDef?.maxSize || "auto";
+                          const width = columnDef?.size || "auto";
                           return (
                             <TableHead
                               key={header.id}
                               style={{
-                                minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
-                                maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
-                                width: typeof width === 'number' ? `${width}px` : width,
+                                minWidth:
+                                  typeof minWidth === "number"
+                                    ? `${minWidth}px`
+                                    : minWidth,
+                                maxWidth:
+                                  typeof maxWidth === "number"
+                                    ? `${maxWidth}px`
+                                    : maxWidth,
+                                width:
+                                  typeof width === "number"
+                                    ? `${width}px`
+                                    : width,
                               }}
                               className={cn(
                                 "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
                                 header.index === 0 && "rounded-l-2xl",
-                                header.index === headerGroup.headers.length - 1 &&
-                                "rounded-r-2xl"
+                                header.index ===
+                                  headerGroup.headers.length - 1 &&
+                                  "rounded-r-2xl",
                               )}
                             >
                               {header.isPlaceholder
                                 ? null
                                 : flexRender(
                                     header.column.columnDef.header,
-                                    header.getContext()
+                                    header.getContext(),
                                   )}
                             </TableHead>
                           );
@@ -451,20 +496,32 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
                           {row.getVisibleCells().map((cell) => {
                             const columnIndex = cell.column.getIndex();
                             const columnDef = columnsDef[columnIndex];
-                            const minWidth = columnDef?.minSize || 'auto';
-                            const maxWidth = columnDef?.maxSize || 'auto';
-                            const width = columnDef?.size || 'auto';
+                            const minWidth = columnDef?.minSize || "auto";
+                            const maxWidth = columnDef?.maxSize || "auto";
+                            const width = columnDef?.size || "auto";
                             return (
-                              <TableCell 
-                                key={cell.id} 
+                              <TableCell
+                                key={cell.id}
                                 style={{
-                                  minWidth: typeof minWidth === 'number' ? `${minWidth}px` : minWidth,
-                                  maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
-                                  width: typeof width === 'number' ? `${width}px` : width,
+                                  minWidth:
+                                    typeof minWidth === "number"
+                                      ? `${minWidth}px`
+                                      : minWidth,
+                                  maxWidth:
+                                    typeof maxWidth === "number"
+                                      ? `${maxWidth}px`
+                                      : maxWidth,
+                                  width:
+                                    typeof width === "number"
+                                      ? `${width}px`
+                                      : width,
                                 }}
                                 className="px-6 py-3 overflow-hidden align-middle"
                               >
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                {flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext(),
+                                )}
                               </TableCell>
                             );
                           })}
@@ -476,7 +533,9 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
                           colSpan={columnsDef.length}
                           className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
                         >
-                          {selectedExamType ? "No benefits found for selected exam type" : "No benefits found"}
+                          {selectedExamType
+                            ? "No benefits found for selected exam type"
+                            : "No benefits found"}
                         </TableCell>
                       </TableRow>
                     )}
@@ -494,7 +553,9 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
       ) : (
         <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
           <p className="text-gray-500 text-lg">
-            {selectedExamType ? "No benefits found for selected exam type" : "No benefits found"}
+            {selectedExamType
+              ? "No benefits found for selected exam type"
+              : "No benefits found"}
           </p>
         </div>
       )}
@@ -505,7 +566,9 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will delete the benefit <strong>{benefitToDelete?.benefit}</strong>. This action cannot be undone.
+              This will delete the benefit{" "}
+              <strong>{benefitToDelete?.benefit}</strong>. This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -523,4 +586,3 @@ export default function BenefitsList({ benefits, examinationTypes }: BenefitsLis
     </div>
   );
 }
-

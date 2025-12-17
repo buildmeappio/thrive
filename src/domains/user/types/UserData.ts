@@ -5,8 +5,7 @@ export type UserTableRow = {
   email: string;
   gender?: string | null;
   role: string;
-  isLoginEnabled: boolean;
+  isActive: boolean;
   mustResetPassword: boolean;
   createdAt: string;
 };
-

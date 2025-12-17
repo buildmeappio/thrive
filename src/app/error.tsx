@@ -39,7 +39,7 @@ const Error = ({ error, reset }: ErrorProps) => {
               src={`${ENV.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
               alt="Thrive"
               sizes="(max-width: 768px) 100vw, 50vw"
-              width={120}         
+              width={120}
               height={120}
               className="h-[5.5rem] md:h-[6.5rem] w-auto"
             />
@@ -74,12 +74,14 @@ const Error = ({ error, reset }: ErrorProps) => {
           <div className="flex gap-3">
             <Button
               onClick={reset}
-              className="flex-1 rounded-lg bg-[#000093] px-4 py-3 text-sm font-medium text-white transition hover:bg-[#000093]">
+              className="flex-1 rounded-lg bg-[#000093] px-4 py-3 text-sm font-medium text-white transition hover:bg-[#000093]"
+            >
               Try Again
             </Button>
             <Link
               href="/"
-              className="flex-1 rounded-lg bg-gray-200 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-300">
+              className="flex-1 rounded-lg bg-gray-200 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-300"
+            >
               Go Home
             </Link>
           </div>

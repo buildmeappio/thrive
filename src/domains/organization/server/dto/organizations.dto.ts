@@ -39,18 +39,20 @@ export interface OrganizationTypeData {
 export class OrganizationDto {
   static toOrganization(data: OrganizationInputData) {
     // Convert address object to formatted string
-    const formatAddress = (address: OrganizationInputData['address']): string | null => {
+    const formatAddress = (
+      address: OrganizationInputData["address"],
+    ): string | null => {
       if (!address) return null;
-      
+
       const parts = [
         address.suite,
         address.street,
         address.city,
         address.province,
-        address.postalCode
+        address.postalCode,
       ].filter(Boolean);
-      
-      return parts.length > 0 ? parts.join(', ') : address.address;
+
+      return parts.length > 0 ? parts.join(", ") : address.address;
     };
 
     return {
@@ -60,9 +62,9 @@ export class OrganizationDto {
       status: data.status,
       typeName: data.type.name,
       address: formatAddress(data.address),
-      managerName: data.manager[0]?.account?.user ? 
-        `${data.manager[0].account.user.firstName} ${data.manager[0].account.user.lastName}` : 
-        undefined,
+      managerName: data.manager[0]?.account?.user
+        ? `${data.manager[0].account.user.firstName} ${data.manager[0].account.user.lastName}`
+        : undefined,
       managerEmail: data.manager[0]?.account?.user?.email,
       createdAt: data.createdAt.toISOString(),
       updatedAt: data.updatedAt.toISOString(),
@@ -73,6 +75,6 @@ export class OrganizationDto {
     return {
       id: data.id,
       name: data.name,
-    }
+    };
   }
 }

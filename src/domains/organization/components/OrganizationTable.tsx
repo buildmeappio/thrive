@@ -11,13 +11,17 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import columnsDef from "./columns";
 import { cn } from "@/lib/utils";
 
 type Props = { data: OrganizationData[]; types?: string[] };
-
 
 export default function OrganizationTable({ data }: Props) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -54,15 +58,15 @@ export default function OrganizationTable({ data }: Props) {
                     "px-6 py-4 text-left text-sm font-medium text-gray-700",
                     header.index === 0 && "rounded-l-xl",
                     header.index === headerGroup.headers.length - 1 &&
-                    "rounded-r-xl"
+                      "rounded-r-xl",
                   )}
                 >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                 </TableHead>
               ))}
             </TableRow>
@@ -99,4 +103,3 @@ export default function OrganizationTable({ data }: Props) {
     </div>
   );
 }
-

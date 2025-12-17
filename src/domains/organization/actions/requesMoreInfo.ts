@@ -13,9 +13,9 @@ type OrganizationView = {
   id: string;
   name: string;
   manager: Array<{
-    account?: { 
+    account?: {
       id?: string | null;
-      user?: { 
+      user?: {
         id?: string | null;
         email?: string | null;
         firstName?: string | null;
@@ -62,7 +62,10 @@ const requestMoreInfo = async (id: string, message: string) => {
   return org;
 };
 
-async function sendRequestMoreInfoEmail(org: OrganizationView, requestMessage: string) {
+async function sendRequestMoreInfoEmail(
+  org: OrganizationView,
+  requestMessage: string,
+) {
   const manager = org.manager?.[0];
   const firstName = manager?.account?.user?.firstName || "";
   const lastName = manager?.account?.user?.lastName || "";
@@ -93,9 +96,12 @@ async function sendRequestMoreInfoEmail(org: OrganizationView, requestMessage: s
       organizationName: org.name,
       requestMessage,
       resubmitLink,
-      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
+      CDN_URL:
+        process.env.NEXT_PUBLIC_CDN_URL ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        "",
     },
-    email
+    email,
   );
 
   if (!result.success) {
