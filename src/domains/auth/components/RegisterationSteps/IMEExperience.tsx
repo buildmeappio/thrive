@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Label } from "@/components/ui/label";
 import {
   BackButton,
@@ -20,9 +20,13 @@ import {
 import { FormProvider, FormDropdown } from "@/components/form";
 import { Controller } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
-import authActions from "../../actions";
 import { RegStepProps } from "@/domains/auth/types/index";
-import { useSaveApplicationProgress } from "@/domains/auth/hooks/useSaveApplicationProgress";
+import {
+  useAssessmentTypes,
+  useRegistrationFormReset,
+  useFormCompletion,
+  useSaveApplicationProgress,
+} from "@/domains/auth/hooks";
 
 const IMEExperince: React.FC<RegStepProps> = ({
   onNext,
@@ -32,68 +36,34 @@ const IMEExperince: React.FC<RegStepProps> = ({
 }) => {
   const { data, merge } = useRegistrationStore();
   const { saveProgress, isSaving } = useSaveApplicationProgress();
-  const [assessmentTypeOptions, setAssessmentTypeOptions] = useState<
-    { value: string; label: string }[]
-  >([]);
-  const [loadingAssessmentTypes, setLoadingAssessmentTypes] = useState(true);
+  const {
+    assessmentTypes: assessmentTypeOptions,
+    loading: loadingAssessmentTypes,
+  } = useAssessmentTypes();
 
-  // Fetch assessment types from database
-  useEffect(() => {
-    const fetchAssessmentTypes = async () => {
-      try {
-        setLoadingAssessmentTypes(true);
-        const assessmentTypesData = await authActions.getAssessmentTypes();
-        const assessmentTypeOptionsData = assessmentTypesData.map(
-          (type: { id: string; name: string }) => ({
-            value: type.id,
-            label: type.name,
-          }),
-        );
-        setAssessmentTypeOptions(assessmentTypeOptionsData);
-      } catch (error) {
-        console.error("Failed to fetch assessment types:", error);
-        setAssessmentTypeOptions([]);
-      } finally {
-        setLoadingAssessmentTypes(false);
-      }
-    };
-    fetchAssessmentTypes();
-  }, []);
+  const defaultValues = {
+    ...step3InitialValues,
+    imesCompleted: data.imesCompleted || "",
+    currentlyConductingIMEs: data.currentlyConductingIMEs || "",
+    assessmentTypes: data.assessmentTypes || [],
+  };
 
   const form = useForm<Step3IMEExperienceInput>({
     schema: step3IMEExperienceSchema,
-    defaultValues: {
-      ...step3InitialValues,
-      imesCompleted: data.imesCompleted || "",
-      currentlyConductingIMEs: data.currentlyConductingIMEs || "",
-      assessmentTypes: data.assessmentTypes || [],
-      // redactedIMEReport removed - not collected in this step
-    },
+    defaultValues,
     mode: "onSubmit",
   });
 
-  // Watch all required fields to enable/disable continue button
-  const [imesCompleted, currentlyConductingIMEs, assessmentTypes] = form.watch([
-    "imesCompleted",
-    "currentlyConductingIMEs",
-    "assessmentTypes",
-  ]);
-
   // Reset form when store data changes
-  useEffect(() => {
-    form.reset({
-      ...step3InitialValues,
-      imesCompleted: data.imesCompleted || "",
-      currentlyConductingIMEs: data.currentlyConductingIMEs || "",
-      assessmentTypes: data.assessmentTypes || [],
-      // redactedIMEReport removed - not collected in this step
-    });
-  }, [
-    data.imesCompleted,
-    data.currentlyConductingIMEs,
-    data.assessmentTypes,
+  useRegistrationFormReset({
     form,
-  ]);
+    defaultValues,
+    watchFields: [
+      "imesCompleted",
+      "currentlyConductingIMEs",
+      "assessmentTypes",
+    ],
+  });
 
   const onSubmit = (values: Step3IMEExperienceInput) => {
     merge(values as unknown as Partial<RegistrationData>);
@@ -101,20 +71,14 @@ const IMEExperince: React.FC<RegStepProps> = ({
   };
 
   // Check if form is complete
-  const isFormComplete = React.useMemo(() => {
-    const imesValid =
-      imesCompleted &&
-      typeof imesCompleted === "string" &&
-      imesCompleted.trim().length > 0;
-    const conductingValid =
-      currentlyConductingIMEs &&
-      typeof currentlyConductingIMEs === "string" &&
-      currentlyConductingIMEs.trim().length > 0;
-    const assessmentValid =
-      Array.isArray(assessmentTypes) && assessmentTypes.length > 0;
-
-    return imesValid && conductingValid && assessmentValid;
-  }, [imesCompleted, currentlyConductingIMEs, assessmentTypes]);
+  const { isFormComplete } = useFormCompletion({
+    form,
+    requiredFields: [
+      "imesCompleted",
+      "currentlyConductingIMEs",
+      "assessmentTypes",
+    ],
+  });
 
   return (
     <div

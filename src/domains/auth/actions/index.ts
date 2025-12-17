@@ -13,6 +13,7 @@ import getExaminerProfileDetails from "./getExaminerProfileDetails";
 import updateMedicalExaminer from "./updateMedicalExaminer";
 import updateExaminerApplication from "./updateExaminerApplication";
 import getYearsOfExperience from "./getYearsOfExperience";
+import getProfessionalTitles from "./getProfessionalTitles";
 import getMaxTravelDistances from "./getMaxTravelDistances";
 import sendRegistrationEmails from "./sendRegistrationEmails";
 import saveApplicationProgress from "./saveApplicationProgress";
@@ -35,6 +36,7 @@ const authActions = {
   updateMedicalExaminer,
   updateExaminerApplication,
   getYearsOfExperience,
+  getProfessionalTitles,
   getMaxTravelDistances,
   sendRegistrationEmails,
   saveApplicationProgress,

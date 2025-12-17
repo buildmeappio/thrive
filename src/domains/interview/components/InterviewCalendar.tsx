@@ -808,7 +808,9 @@ const InterviewCalendar = ({
                               isSelected
                                 ? "bg-[#00A8FF] text-white shadow-md ring-2 ring-[#00A8FF] ring-offset-1"
                                 : !isAvailable || isPastTime || conflictingSlot
-                                  ? "bg-gray-50 text-gray-400 cursor-not-allowed opacity-60 border border-gray-200"
+                                  ? conflictingSlot
+                                    ? "bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white cursor-not-allowed border-2 border-blue-900/50 shadow-lg opacity-90"
+                                    : "bg-gray-50 text-gray-400 cursor-not-allowed opacity-60 border border-gray-200"
                                   : "bg-white text-[#00A8FF] border border-gray-300 hover:border-[#00A8FF] hover:bg-blue-50 hover:shadow-sm",
                             )}
                             title={
@@ -822,7 +824,7 @@ const InterviewCalendar = ({
                             <span className="flex items-center justify-between w-full">
                               <span>{format(time, "h:mm a")}</span>
                               {conflictingSlot && (
-                                <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded">
+                                <span className="text-xs font-bold text-white bg-blue-900/70 px-2.5 py-1 rounded-md shadow-md border border-blue-950/30">
                                   Booked
                                 </span>
                               )}

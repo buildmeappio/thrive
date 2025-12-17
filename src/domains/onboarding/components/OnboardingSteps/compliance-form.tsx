@@ -1,11 +1,9 @@
 "use client";
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import { useSession } from "next-auth/react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { CircleCheck } from "lucide-react";
-import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
-import { updateComplianceAction } from "../../server/actions";
+import { useComplianceState, useComplianceSubmission } from "../../hooks";
 import type { ComplianceFormProps } from "../../types";
 
 const ComplianceForm: React.FC<ComplianceFormProps> = ({
@@ -17,140 +15,24 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
   onStepEdited,
   isCompleted = false,
   isSettingsPage = false,
+  onDataUpdate,
 }) => {
-  const { update } = useSession();
-  const [loading, setLoading] = useState(false);
+  const { agreements, updateAgreement } = useComplianceState({
+    initialData,
+    isCompleted,
+    onStepEdited,
+  });
 
-  // Use initial data directly
-  const initialAgreements = useMemo(() => {
-    return {
-      phipaCompliance: initialData?.phipaCompliance ?? false,
-      pipedaCompliance: initialData?.pipedaCompliance ?? false,
-      medicalLicenseActive: initialData?.medicalLicenseActive ?? false,
-    };
-  }, [initialData]);
-
-  const [agreements, setAgreements] = useState(initialAgreements);
-
-  // Reset agreements when initialData changes
-  useEffect(() => {
-    setAgreements(initialAgreements);
-  }, [initialAgreements]);
-
-  // Check if form values have changed from initial saved values
-  const hasFormChanged = useMemo(() => {
-    const currentHash = JSON.stringify(agreements);
-    const initialHash = JSON.stringify(initialAgreements);
-    return currentHash !== initialHash;
-  }, [agreements, initialAgreements]);
-
-  // If agreements change and step is completed, mark as incomplete
-  useEffect(() => {
-    if (hasFormChanged && isCompleted && onStepEdited) {
-      onStepEdited();
-    }
-  }, [hasFormChanged, isCompleted, onStepEdited]);
-
-  // Check if all required checkboxes are checked
-  const isFormValid = useMemo(() => {
-    return (
-      agreements.phipaCompliance &&
-      agreements.pipedaCompliance &&
-      agreements.medicalLicenseActive
-    );
-  }, [agreements]);
-
-  const handleSubmit = async () => {
-    if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
-      return;
-    }
-
-    // Validate all checkboxes are checked
-    if (
-      !agreements.phipaCompliance ||
-      !agreements.pipedaCompliance ||
-      !agreements.medicalLicenseActive
-    ) {
-      toast.error("Please acknowledge all required compliance statements");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const result = await updateComplianceAction({
-        examinerProfileId,
-        phipaCompliance: agreements.phipaCompliance,
-        pipedaCompliance: agreements.pipedaCompliance,
-        medicalLicenseActive: agreements.medicalLicenseActive,
-      });
-
-      if (result.success) {
-        toast.success("Compliance acknowledgments saved successfully");
-        onComplete();
-      } else {
-        toast.error(
-          result.message || "Failed to save compliance acknowledgments",
-        );
-      }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle "Mark as Complete" - saves and marks step as complete
-  const handleMarkComplete = async () => {
-    if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
-      return;
-    }
-
-    // Validate all checkboxes are checked
-    if (
-      !agreements.phipaCompliance ||
-      !agreements.pipedaCompliance ||
-      !agreements.medicalLicenseActive
-    ) {
-      toast.error("Please acknowledge all required compliance statements");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const result = await updateComplianceAction({
-        examinerProfileId,
-        phipaCompliance: agreements.phipaCompliance,
-        pipedaCompliance: agreements.pipedaCompliance,
-        medicalLicenseActive: agreements.medicalLicenseActive,
-      });
-
-      if (result.success) {
-        toast.success(
-          "Compliance acknowledgments saved and marked as complete",
-        );
-        // Mark step as complete
-        if (onMarkComplete) {
-          onMarkComplete();
-        }
-        // Close the step
-        onComplete();
-      } else {
-        toast.error(
-          result.message || "Failed to save compliance acknowledgments",
-        );
-      }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { handleSubmit, handleMarkComplete, loading } = useComplianceSubmission(
+    {
+      examinerProfileId,
+      agreements,
+      onComplete,
+      onMarkComplete,
+      onDataUpdate,
+      isSettingsPage,
+    },
+  );
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm relative">
@@ -186,10 +68,7 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
                 id="phipa"
                 checked={agreements.phipaCompliance}
                 onCheckedChange={(checked) =>
-                  setAgreements((prev) => ({
-                    ...prev,
-                    phipaCompliance: checked === true,
-                  }))
+                  updateAgreement("phipaCompliance", checked === true)
                 }
                 className="mt-1"
               />
@@ -207,10 +86,7 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
                 id="pipeda"
                 checked={agreements.pipedaCompliance}
                 onCheckedChange={(checked) =>
-                  setAgreements((prev) => ({
-                    ...prev,
-                    pipedaCompliance: checked === true,
-                  }))
+                  updateAgreement("pipedaCompliance", checked === true)
                 }
                 className="mt-1"
               />
@@ -228,10 +104,7 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
                 id="license"
                 checked={agreements.medicalLicenseActive}
                 onCheckedChange={(checked) =>
-                  setAgreements((prev) => ({
-                    ...prev,
-                    medicalLicenseActive: checked === true,
-                  }))
+                  updateAgreement("medicalLicenseActive", checked === true)
                 }
                 className="mt-1"
               />

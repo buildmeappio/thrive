@@ -1,9 +1,8 @@
 "use client";
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import { toast } from "sonner";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { CircleCheck } from "lucide-react";
-import { updateNotificationsAction } from "../../server/actions";
+import { useNotificationsState, useNotificationsSubmission } from "../../hooks";
 import type { NotificationsFormProps } from "../../types";
 
 interface NotificationSetting {
@@ -47,118 +46,23 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
   onStepEdited,
   isCompleted = false,
   isSettingsPage = false,
+  onDataUpdate,
 }) => {
-  const [loading, setLoading] = useState(false);
+  const { notifications, toggleNotification } = useNotificationsState({
+    initialData,
+    isCompleted,
+    onStepEdited,
+  });
 
-  // No longer using localStorage/store - forms work directly with database data
-  // Use initialData directly from database
-  const initialNotifications = useMemo(() => {
-    return {
-      emailPaymentPayout: initialData?.emailPaymentPayout ?? true,
-      smsNotifications: initialData?.smsNotifications ?? false,
-      emailMarketing: initialData?.emailMarketing ?? false,
-    };
-  }, [initialData]);
-
-  const [notifications, setNotifications] =
-    useState<Record<string, boolean>>(initialNotifications);
-  const isInitializedRef = React.useRef(false);
-
-  // Update state when initialNotifications change (e.g., when data is refetched)
-  useEffect(() => {
-    setNotifications(initialNotifications);
-    if (!isInitializedRef.current) {
-      isInitializedRef.current = true;
-    }
-  }, [initialNotifications]);
-
-  // Check if form values have changed from initial saved values
-  const hasFormChanged = useMemo(() => {
-    if (!isInitializedRef.current) return false;
-    const currentHash = JSON.stringify(notifications);
-    const initialHash = JSON.stringify(initialNotifications);
-    return currentHash !== initialHash;
-  }, [notifications, initialNotifications]);
-
-  // If notifications change and step is completed, mark as incomplete
-  useEffect(() => {
-    if (hasFormChanged && isCompleted && onStepEdited) {
-      onStepEdited();
-    }
-  }, [hasFormChanged, isCompleted, onStepEdited]);
-
-  const toggleNotification = (id: string) => {
-    setNotifications((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const handleSubmit = async () => {
-    if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const result = await updateNotificationsAction({
-        examinerProfileId,
-        emailPaymentPayout: notifications.emailPaymentPayout,
-        smsNotifications: notifications.smsNotifications,
-        emailMarketing: notifications.emailMarketing,
-      });
-
-      if (result.success) {
-        toast.success("Notification settings saved successfully");
-        onComplete();
-      } else {
-        toast.error(result.message || "Failed to save notification settings");
-      }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle "Mark as Complete" - saves and marks step as complete
-  const handleMarkComplete = async () => {
-    if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const result = await updateNotificationsAction({
-        examinerProfileId,
-        emailPaymentPayout: notifications.emailPaymentPayout,
-        smsNotifications: notifications.smsNotifications,
-        emailMarketing: notifications.emailMarketing,
-      });
-
-      if (result.success) {
-        toast.success("Notification settings saved and marked as complete");
-        // Mark step as complete
-        if (onMarkComplete) {
-          onMarkComplete();
-        }
-        // Close the step
-        onComplete();
-      } else {
-        toast.error(result.message || "Failed to save notification settings");
-      }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { handleSubmit, handleMarkComplete, loading } =
+    useNotificationsSubmission({
+      examinerProfileId,
+      notifications,
+      onComplete,
+      onMarkComplete,
+      onDataUpdate,
+      isSettingsPage,
+    });
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm relative">

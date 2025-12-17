@@ -1,55 +1,22 @@
 "use client";
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { FormProvider, FormField } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
-import { CircleCheck, Info } from "lucide-react";
+import { CircleCheck, Info, CheckCircle2 } from "lucide-react";
 import {
   servicesAssessmentSchema,
   ServicesAssessmentInput,
 } from "../../schemas/onboardingSteps.schema";
 import { updateServicesAssessmentAction } from "../../server/actions";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
-  Stethoscope,
-  Brain,
-  Activity,
-  FileText,
-  AlertCircle,
-  CheckCircle2,
-} from "lucide-react";
+  useOnboardingForm,
+  useFormSubmission,
+  useAssessmentTypeFormatting,
+  useTravelRadiusFormatting,
+} from "../../hooks";
 import type { ServicesAssessmentFormProps } from "../../types";
-
-// Icon mapping for assessment types based on name patterns
-const getAssessmentTypeIcon = (name: string): typeof Activity => {
-  const lowerName = name.toLowerCase();
-  if (lowerName.includes("orthopedic") || lowerName.includes("functional")) {
-    return Activity;
-  }
-  if (
-    lowerName.includes("psychological") ||
-    lowerName.includes("psychiatric") ||
-    lowerName.includes("neurological") ||
-    lowerName.includes("neuropsychological")
-  ) {
-    return Brain;
-  }
-  if (lowerName.includes("pain")) {
-    return Stethoscope;
-  }
-  if (lowerName.includes("catastrophic") || lowerName.includes("cat")) {
-    return AlertCircle;
-  }
-  if (
-    lowerName.includes("review") ||
-    lowerName.includes("paper") ||
-    lowerName.includes("file")
-  ) {
-    return FileText;
-  }
-  return FileText; // Default icon
-};
 
 const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
   examinerProfileId,
@@ -62,39 +29,15 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
   onStepEdited,
   isCompleted = false,
   isSettingsPage = false,
+  onDataUpdate,
 }) => {
-  const [loading, setLoading] = useState(false);
   const [hoveredType, setHoveredType] = useState<string | null>(null);
 
-  // No longer using localStorage/store - forms work directly with database data
-
-  // Format assessment types from server with icons
-  const assessmentTypeOptions = React.useMemo(() => {
-    const formattedTypes = assessmentTypesFromServer.map(
-      (type: { id: string; name: string; description: string | null }) => ({
-        id: type.id,
-        label: type.name,
-        icon: getAssessmentTypeIcon(type.name),
-        description: type.description || undefined,
-      }),
-    );
-    // Add "Other" option at the end
-    formattedTypes.push({
-      id: "other",
-      label: "Other",
-      icon: FileText,
-      description: undefined,
-    });
-    return formattedTypes;
-  }, [assessmentTypesFromServer]);
-
-  // Format max travel distances from server
-  const travelRadiusOptions = React.useMemo(() => {
-    return maxTravelDistances.map((distance) => ({
-      value: distance.id,
-      label: distance.name,
-    }));
-  }, [maxTravelDistances]);
+  // Format assessment types and travel radius options
+  const { assessmentTypeOptions } = useAssessmentTypeFormatting(
+    assessmentTypesFromServer,
+  );
+  const { travelRadiusOptions } = useTravelRadiusFormatting(maxTravelDistances);
 
   // Use initialData directly from database (no localStorage merging)
   const defaultValues = useMemo(() => {
@@ -114,36 +57,36 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
     mode: "onSubmit",
   });
 
-  // Track initial form data to detect changes
-  const initialFormDataRef = React.useRef<string | null>(null);
-  const isInitializedRef = React.useRef(false);
+  const { initialFormDataRef } = useOnboardingForm({
+    form,
+    defaultValues,
+    isCompleted,
+    onStepEdited,
+  });
 
-  // Mark as initialized after first render and store initial form data
+  // Track previous initialData to detect changes (for settings page)
+  const previousInitialDataRef = useRef<string | null>(null);
+
+  // Reset form when initialData changes (for settings page to show updated data)
   useEffect(() => {
-    if (!isInitializedRef.current) {
-      isInitializedRef.current = true;
-      initialFormDataRef.current = JSON.stringify(form.getValues());
+    if (!isSettingsPage) return;
+
+    const currentDataHash = JSON.stringify(initialData);
+
+    // Skip if this is the same data we already have
+    if (previousInitialDataRef.current === currentDataHash) return;
+
+    // Reset form with new data
+    form.reset(defaultValues, { keepDefaultValues: false });
+
+    // Update the initial form data reference
+    const currentHash = JSON.stringify(defaultValues);
+    if (initialFormDataRef.current) {
+      initialFormDataRef.current = currentHash;
     }
-  }, [form]);
 
-  // Watch form changes
-  const formValues = form.watch();
-  const isDirty = form.formState.isDirty;
-  const formErrors = form.formState.errors;
-
-  // Check if form values have changed from initial saved values
-  const hasFormChanged = useMemo(() => {
-    if (!initialFormDataRef.current) return false;
-    const currentHash = JSON.stringify(formValues);
-    return currentHash !== initialFormDataRef.current;
-  }, [formValues]);
-
-  // If form is dirty or has changed from initial values, and step is completed, mark as incomplete
-  useEffect(() => {
-    if ((isDirty || hasFormChanged) && isCompleted && onStepEdited) {
-      onStepEdited();
-    }
-  }, [isDirty, hasFormChanged, isCompleted, onStepEdited]);
+    previousInitialDataRef.current = currentDataHash;
+  }, [initialData, defaultValues, form, isSettingsPage, initialFormDataRef]);
 
   const assessmentTypes = form.watch("assessmentTypes");
   const travelToClaimants = form.watch("travelToClaimants");
@@ -151,6 +94,7 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
   const assessmentTypeOther = form.watch("assessmentTypeOther");
   const acceptVirtualAssessments = form.watch("acceptVirtualAssessments");
   const acceptInPersonAssessments = form.watch("acceptInPersonAssessments");
+  const formErrors = form.formState.errors;
 
   // Check if all required fields are filled
   const isFormValid = useMemo(() => {
@@ -187,83 +131,36 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
     form.setValue("assessmentTypes", newTypes, { shouldValidate: true });
   };
 
-  const onSubmit = async (values: ServicesAssessmentInput) => {
-    if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const result = await updateServicesAssessmentAction({
-        examinerProfileId,
-        ...values,
-      });
-
-      if (result.success) {
-        toast.success("Services & Assessment Types updated successfully");
-        onComplete();
-      } else {
-        toast.error(result.message || "Failed to update services");
-      }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle "Mark as Complete" - saves and marks step as complete
-  const handleMarkComplete = async () => {
-    if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
-      return;
-    }
-
-    // TypeScript narrowing: examinerProfileId is now guaranteed to be string
-    const profileId: string = examinerProfileId;
-
-    const isValid = await form.trigger();
-    if (!isValid) {
-      toast.error("Please fix validation errors before marking as complete");
-      return;
-    }
-
-    const values = form.getValues();
-    setLoading(true);
-    try {
-      const result = await updateServicesAssessmentAction({
-        examinerProfileId: profileId,
-        ...values,
-      });
-
-      if (result.success) {
-        // Update initial form data reference to current values so future changes are detected
-        const currentHash = JSON.stringify(values);
+  const { handleSubmit, handleMarkComplete, loading } = useFormSubmission({
+    form,
+    examinerProfileId,
+    updateAction: updateServicesAssessmentAction,
+    onComplete: () => {
+      // Update initial form data reference to current values
+      const values = form.getValues();
+      const currentHash = JSON.stringify(values);
+      if (initialFormDataRef.current) {
         initialFormDataRef.current = currentHash;
-
-        toast.success(
-          "Services & Assessment Types saved and marked as complete",
-        );
-        // Mark step as complete
-        if (onMarkComplete) {
-          onMarkComplete();
-        }
-        // Close the step
-        onComplete();
-      } else {
-        toast.error(result.message || "Failed to update services");
       }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+
+      // Update parent component's data state if callback is provided (for settings page)
+      if (onDataUpdate && isSettingsPage) {
+        onDataUpdate({
+          assessmentTypes: values.assessmentTypes,
+          acceptVirtualAssessments: values.acceptVirtualAssessments,
+          acceptInPersonAssessments: values.acceptInPersonAssessments,
+          travelToClaimants: values.travelToClaimants,
+          travelRadius: values.travelRadius,
+          assessmentTypeOther: values.assessmentTypeOther,
+        });
+      }
+
+      onComplete();
+    },
+    onMarkComplete,
+    successMessage: "Services & Assessment Types updated successfully",
+    errorMessage: "Failed to update services",
+  });
 
   return (
     <div className="bg-white rounded-2xl px-8 py-6 shadow-sm relative">
@@ -296,7 +193,7 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
         )}
       </div>
 
-      <FormProvider form={form} onSubmit={onSubmit} id="services-form">
+      <FormProvider form={form} onSubmit={handleSubmit} id="services-form">
         <div className={`space-y-8 ${isSettingsPage ? "pb-20" : ""}`}>
           {/* Assessment Types Grid */}
           <div>
@@ -525,7 +422,7 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
         <div className="absolute bottom-6 right-6 z-10">
           <Button
             type="button"
-            onClick={() => form.handleSubmit(onSubmit)()}
+            onClick={() => form.handleSubmit(handleSubmit)()}
             className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             disabled={loading}
           >

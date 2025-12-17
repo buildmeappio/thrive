@@ -9,6 +9,7 @@ export interface ProfileInfoFormProps {
   onStepEdited?: () => void;
   isCompleted?: boolean;
   isSettingsPage?: boolean;
+  onDataUpdate?: (data: InitialFormData) => void;
 }
 
 export interface ServicesAssessmentFormProps {
@@ -40,6 +41,14 @@ export interface ServicesAssessmentFormProps {
   onStepEdited?: () => void;
   isCompleted?: boolean;
   isSettingsPage?: boolean;
+  onDataUpdate?: (data: {
+    assessmentTypes?: string[];
+    acceptVirtualAssessments?: boolean;
+    acceptInPersonAssessments?: boolean;
+    travelToClaimants?: boolean;
+    travelRadius?: string;
+    assessmentTypeOther?: string;
+  }) => void;
 }
 
 export interface SpecialtyPreferencesFormProps {
@@ -59,6 +68,7 @@ export interface AvailabilityPreferencesFormProps {
   onStepEdited?: () => void;
   isCompleted?: boolean;
   isSettingsPage?: boolean;
+  onDataUpdate?: (data: InitialFormData) => void;
 }
 
 export interface PayoutDetailsFormProps {
@@ -70,6 +80,7 @@ export interface PayoutDetailsFormProps {
   onStepEdited?: () => void;
   isCompleted?: boolean;
   isSettingsPage?: boolean;
+  onDataUpdate?: (data: InitialFormData) => void;
 }
 
 export interface DocumentsUploadFormProps {
@@ -87,6 +98,13 @@ export interface DocumentsUploadFormProps {
   onStepEdited?: () => void;
   isCompleted?: boolean;
   isSettingsPage?: boolean;
+  onDataUpdate?: (data: {
+    medicalLicenseDocumentIds?: string[];
+    governmentIdDocumentId?: string;
+    resumeDocumentId?: string;
+    insuranceDocumentId?: string;
+    specialtyCertificatesDocumentIds?: string[];
+  }) => void;
 }
 
 export interface ComplianceFormProps {
@@ -102,6 +120,11 @@ export interface ComplianceFormProps {
   onStepEdited?: () => void;
   isCompleted?: boolean;
   isSettingsPage?: boolean;
+  onDataUpdate?: (data: {
+    phipaCompliance?: boolean;
+    pipedaCompliance?: boolean;
+    medicalLicenseActive?: boolean;
+  }) => void;
 }
 
 export interface NotificationsFormProps {
@@ -117,4 +140,9 @@ export interface NotificationsFormProps {
   onStepEdited?: () => void;
   isCompleted?: boolean;
   isSettingsPage?: boolean;
+  onDataUpdate?: (data: {
+    emailPaymentPayout?: boolean;
+    smsNotifications?: boolean;
+    emailMarketing?: boolean;
+  }) => void;
 }

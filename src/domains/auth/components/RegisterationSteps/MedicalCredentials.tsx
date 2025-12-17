@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui";
 import {
   BackButton,
@@ -17,14 +17,16 @@ import {
   RegistrationData,
   useRegistrationStore,
 } from "@/domains/auth/state/useRegistrationStore";
-// import DatePickerInput from "@/components/DatePickerInput";
 import { FormProvider, FormField, FormDropdown } from "@/components/form";
 import { UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { provinces } from "@/constants/options";
-import getExamTypesAction from "@/server/actions/getExamTypes";
-import { ExamTypesResponse, ExamType } from "@/server/types/examTypes";
-import { useSaveApplicationProgress } from "@/domains/auth/hooks/useSaveApplicationProgress";
+import {
+  useExamTypes,
+  useRegistrationFormReset,
+  useFormCompletion,
+  useSaveApplicationProgress,
+} from "@/domains/auth/hooks";
 
 const MedicalCredentials: React.FC<RegStepProps> = ({
   onNext,
@@ -35,97 +37,56 @@ const MedicalCredentials: React.FC<RegStepProps> = ({
   const { data, merge, yearsOfExperience } = useRegistrationStore();
   const { saveProgress, isSaving } = useSaveApplicationProgress();
   const [isClient, setIsClient] = React.useState(false);
-  const [examTypes, setExamTypes] = useState<
-    Array<{ value: string; label: string }>
-  >([]);
-  const [loadingExamTypes, setLoadingExamTypes] = useState(true);
+  const { examTypes, loading: loadingExamTypes } = useExamTypes();
 
   // Ensure component only renders on client to avoid hydration mismatch
   React.useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Fetch exam types from database
-  useEffect(() => {
-    const fetchExamTypes = async () => {
-      try {
-        setLoadingExamTypes(true);
-        const result: ExamTypesResponse = await getExamTypesAction();
-
-        if (result.success) {
-          const formattedExamTypes = result.data.map((examType: ExamType) => ({
-            value: examType.id,
-            label: examType.name,
-          }));
-          setExamTypes(formattedExamTypes);
-        } else {
-          console.error("Failed to fetch exam types:", result.message);
-          setExamTypes([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch exam types:", error);
-        setExamTypes([]);
-      } finally {
-        setLoadingExamTypes(false);
-      }
-    };
-
-    fetchExamTypes();
-  }, []);
+  const defaultValues = {
+    ...step2InitialValues,
+    licenseNumber: data.licenseNumber,
+    licenseIssuingProvince: data.licenseIssuingProvince || "",
+    medicalSpecialty: data.medicalSpecialty || [],
+    yearsOfIMEExperience: data.yearsOfIMEExperience || "",
+    medicalLicense: data.medicalLicense,
+  };
 
   const form = useForm<Step2MedicalCredentialsInput>({
     schema: step2MedicalCredentialsSchema,
-    defaultValues: {
-      ...step2InitialValues,
-      licenseNumber: data.licenseNumber,
-      licenseIssuingProvince: data.licenseIssuingProvince || "",
-      medicalSpecialty: data.medicalSpecialty || [],
-      yearsOfIMEExperience: data.yearsOfIMEExperience || "",
-      // licenseExpiryDate: data.licenseExpiryDate,
-      // Don't set medicalLicense here - it's handled by VerificationDocuments component
-      medicalLicense: data.medicalLicense,
-    },
+    defaultValues,
     mode: "onSubmit",
   });
 
   // Reset form when store data changes
-  useEffect(() => {
-    form.reset({
-      ...step2InitialValues,
-      licenseNumber: data.licenseNumber,
-      licenseIssuingProvince: data.licenseIssuingProvince || "",
-      medicalSpecialty: data.medicalSpecialty || [],
-      yearsOfIMEExperience: data.yearsOfIMEExperience || "",
-      // licenseExpiryDate: data.licenseExpiryDate,
-      // Don't set medicalLicense here - it's handled by VerificationDocuments component
-      medicalLicense: data.medicalLicense,
-    });
-  }, [
-    data.licenseNumber,
-    data.licenseIssuingProvince,
-    data.medicalSpecialty,
-    data.yearsOfIMEExperience,
-    data.medicalLicense,
+  useRegistrationFormReset({
     form,
-  ]);
+    defaultValues,
+    watchFields: [
+      "licenseNumber",
+      "licenseIssuingProvince",
+      "medicalSpecialty",
+      "yearsOfIMEExperience",
+      "medicalLicense",
+    ],
+  });
 
   const onSubmit = (values: Step2MedicalCredentialsInput) => {
     merge(values as Partial<RegistrationData>);
     onNext();
   };
 
-  // Watch all required fields to enable/disable continue button
-  const medicalSpecialty = form.watch("medicalSpecialty");
-  const licenseNumber = form.watch("licenseNumber");
-  const licenseIssuingProvince = form.watch("licenseIssuingProvince");
-  const yearsOfIMEExperience = form.watch("yearsOfIMEExperience");
-
-  const isFormComplete =
-    Array.isArray(medicalSpecialty) &&
-    medicalSpecialty.length > 0 &&
-    licenseNumber?.trim().length > 0 &&
-    licenseIssuingProvince?.trim().length > 0 &&
-    yearsOfIMEExperience?.trim().length > 0;
+  // Check if form is complete
+  const { isFormComplete } = useFormCompletion({
+    form,
+    requiredFields: [
+      "medicalSpecialty",
+      "licenseNumber",
+      "licenseIssuingProvince",
+      "yearsOfIMEExperience",
+    ],
+  });
 
   // Show loading state during hydration
   if (!isClient) {

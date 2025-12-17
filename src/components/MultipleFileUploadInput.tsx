@@ -422,7 +422,7 @@ const MultipleFileUploadInput: React.FC<MultipleFileUploadInputProps> = ({
               ) : previewFileType?.toLowerCase() === "pdf" ||
                 previewUrl.toLowerCase().match(/\.(pdf)$/i) ? (
                 <iframe
-                  src={previewUrl}
+                  src={`${previewUrl}#toolbar=0&navpanes=0`}
                   className="w-full h-full min-h-[600px] border-0"
                   title={previewFileName}
                   onError={() => {

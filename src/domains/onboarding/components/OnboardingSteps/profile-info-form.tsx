@@ -1,13 +1,7 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useMemo, useEffect, useRef } from "react";
 import { Input } from "@/components/ui";
-import {
-  Mail,
-  // MapPin,
-  User,
-  CircleCheck,
-  Briefcase,
-} from "lucide-react";
+import { Mail, User, CircleCheck, Briefcase } from "lucide-react";
 import ProfilePhotoUpload from "@/components/ProfilePhotoUpload";
 import {
   FormProvider,
@@ -17,16 +11,17 @@ import {
 } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
-import { professionalTitleOptions } from "@/constants/options";
-import { updateExaminerProfileAction } from "@/domains/setting/server/actions";
 import {
   profileInfoSchema,
   ProfileInfoInput,
 } from "../../schemas/onboardingSteps.schema";
-import { toast } from "sonner";
-import authActions from "@/domains/auth/actions";
-import { getProfilePhotoUrlAction } from "@/server/actions/getProfilePhotoUrl";
-import { useSession } from "next-auth/react";
+import {
+  useOnboardingForm,
+  useProfilePhoto,
+  useYearsOfExperience,
+  useProfessionalTitles,
+  useProfileFormSubmission,
+} from "../../hooks";
 
 import type { ProfileInfoFormProps } from "../../types";
 
@@ -39,58 +34,8 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
   onStepEdited,
   isCompleted = false,
   isSettingsPage = false,
+  onDataUpdate,
 }) => {
-  const [loading, setLoading] = useState(false);
-  const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
-  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(
-    typeof initialData?.profilePhotoUrl === "string"
-      ? initialData.profilePhotoUrl
-      : null,
-  );
-  const [yearsOfExperienceOptions, setYearsOfExperienceOptions] = useState<
-    Array<{ value: string; label: string }>
-  >([]);
-  const [loadingYears, setLoadingYears] = useState(true);
-  const { update: updateSession } = useSession();
-
-  // Update profilePhotoUrl when initialData changes (e.g., after save or when navigating back)
-  // Always fetch presigned URL if we have a profilePhotoId
-  useEffect(() => {
-    const loadProfilePhoto = async () => {
-      // Always fetch presigned URL if we have a profilePhotoId
-      if (
-        typeof initialData?.profilePhotoId === "string" &&
-        initialData.profilePhotoId.trim() !== ""
-      ) {
-        try {
-          const photoUrl = await getProfilePhotoUrlAction(
-            initialData.profilePhotoId,
-          );
-          if (photoUrl) {
-            setProfilePhotoUrl(photoUrl);
-          } else {
-            // If presigned URL fetch fails, clear the URL
-            setProfilePhotoUrl(null);
-          }
-        } catch (error) {
-          console.error("Failed to fetch profile photo URL:", error);
-          setProfilePhotoUrl(null);
-        }
-      } else {
-        // No photo ID, but don't clear the URL if we already have one (user might have uploaded but not saved yet)
-        // Only clear if we explicitly don't have a photo ID
-        if (!initialData?.profilePhotoId) {
-          // Only clear if we don't have a local photo file either
-          if (!profilePhoto) {
-            setProfilePhotoUrl(null);
-          }
-        }
-      }
-    };
-
-    void loadProfilePhoto();
-  }, [initialData?.profilePhotoId, profilePhoto]);
-
   // Use initial data directly
   const defaultValues = useMemo<ProfileInfoInput>(() => {
     return {
@@ -105,80 +50,87 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
     };
   }, [initialData]);
 
-  // Fetch years of experience options
-  useEffect(() => {
-    const fetchYearsOfExperience = async () => {
-      try {
-        setLoadingYears(true);
-        const years = await authActions.getYearsOfExperience();
-        const formattedYears = years.map((year) => ({
-          value: year.id,
-          label: year.name,
-        }));
-        setYearsOfExperienceOptions(formattedYears);
-      } catch (error) {
-        console.error("Failed to fetch years of experience:", error);
-        toast.error("Failed to load years of experience options");
-      } finally {
-        setLoadingYears(false);
-      }
-    };
-
-    fetchYearsOfExperience();
-  }, []);
-
   const form = useForm<ProfileInfoInput>({
     schema: profileInfoSchema,
     defaultValues,
-    mode: "onChange", // Change to onChange to track isDirty properly
+    mode: "onChange",
   });
 
-  const isDirty = form.formState.isDirty;
-  const formValues = form.watch();
-  const initialFormDataRef = React.useRef<string | null>(null);
-  const isInitializedRef = React.useRef(false);
+  // Custom hooks
+  const { initialFormDataRef } = useOnboardingForm({
+    form,
+    defaultValues,
+    isCompleted,
+    onStepEdited,
+  });
 
-  // Reset form when defaultValues change and update initial data reference
+  const {
+    profilePhoto,
+    profilePhotoUrl,
+    setProfilePhotoUrl,
+    handlePhotoChange,
+    clearProfilePhoto,
+  } = useProfilePhoto({
+    profilePhotoId:
+      typeof initialData?.profilePhotoId === "string"
+        ? initialData.profilePhotoId
+        : null,
+  });
+
+  const { options: yearsOfExperienceOptions, loading: loadingYears } =
+    useYearsOfExperience();
+
+  const { options: professionalTitleOptions, loading: loadingTitles } =
+    useProfessionalTitles({
+      form,
+      initialValue:
+        typeof initialData?.professionalTitle === "string"
+          ? initialData.professionalTitle
+          : null,
+    });
+
+  // Track previous initialData to detect changes (for settings page)
+  const previousInitialDataRef = useRef<string | null>(null);
+
+  // Reset form when initialData changes (for settings page to show updated data)
   useEffect(() => {
-    form.reset(defaultValues);
+    if (!isSettingsPage) return;
 
-    if (!isInitializedRef.current) {
-      isInitializedRef.current = true;
+    const currentDataHash = JSON.stringify(initialData);
+
+    // Skip if this is the same data we already have
+    if (previousInitialDataRef.current === currentDataHash) return;
+
+    // Reset form with new data
+    form.reset(defaultValues, { keepDefaultValues: false });
+
+    // Update the initial form data reference
+    const currentHash = JSON.stringify(defaultValues);
+    if (initialFormDataRef.current) {
+      initialFormDataRef.current = currentHash;
     }
 
-    // Store initial data hash to detect changes - use defaultValues directly
-    // This ensures we compare against the actual initial data, not form values
-    const initialHash = JSON.stringify(defaultValues);
-    initialFormDataRef.current = initialHash;
-  }, [defaultValues, form]);
+    previousInitialDataRef.current = currentDataHash;
+  }, [initialData, defaultValues, form, isSettingsPage, initialFormDataRef]);
 
-  // Check if form values have changed from initial saved values
-  const hasFormChanged = useMemo(() => {
-    if (!initialFormDataRef.current || !isInitializedRef.current) return false;
-    const currentHash = JSON.stringify(formValues);
-    const changed = currentHash !== initialFormDataRef.current;
-
-    if (process.env.NODE_ENV === "development") {
-      console.log("Profile Form Change Detection:", {
-        currentHash,
-        initialHash: initialFormDataRef.current,
-        changed,
-        formValues,
-      });
-    }
-
-    return changed;
-  }, [formValues]);
-
-  // Validation is handled in handleMarkComplete via form.trigger()
-  // Button is always enabled, validation happens on click
-
-  // If form is dirty or has changed from initial values, and step is completed, mark as incomplete
-  useEffect(() => {
-    if ((isDirty || hasFormChanged) && isCompleted && onStepEdited) {
-      onStepEdited();
-    }
-  }, [isDirty, hasFormChanged, isCompleted, onStepEdited]);
+  const { handleSubmit, handleMarkComplete, loading } =
+    useProfileFormSubmission({
+      form,
+      examinerProfileId,
+      initialProfilePhotoId:
+        typeof initialData?.profilePhotoId === "string"
+          ? initialData.profilePhotoId
+          : null,
+      profilePhoto,
+      onComplete: () => {
+        onComplete();
+      },
+      onMarkComplete,
+      onProfilePhotoUpdate: setProfilePhotoUrl,
+      onClearProfilePhoto: clearProfilePhoto,
+      onDataUpdate,
+      isSettingsPage,
+    });
 
   // If profile photo is changed and step is completed, mark as incomplete
   useEffect(() => {
@@ -187,144 +139,16 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
     }
   }, [profilePhoto, isCompleted, onStepEdited]);
 
-  const handlePhotoChange = (file: File | null) => {
-    setProfilePhoto(file);
-  };
-
-  const onSubmit = async (values: ProfileInfoInput) => {
-    if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const result = await updateExaminerProfileAction({
-        examinerProfileId,
-        ...values,
-        profilePhotoId:
-          (typeof initialData?.profilePhotoId === "string"
-            ? initialData.profilePhotoId
-            : undefined) || null,
-        profilePhoto: profilePhoto || undefined,
-      });
-
-      if (result.success) {
-        // Clear the file state since it's now saved
-        setProfilePhoto(null);
-        // Always fetch fresh presigned URL if we have a profilePhotoId (either from result or initialData)
-        const photoIdToFetch =
-          result.data?.profilePhotoId || initialData?.profilePhotoId;
-        if (photoIdToFetch && typeof photoIdToFetch === "string") {
-          try {
-            const photoUrl = await getProfilePhotoUrlAction(photoIdToFetch);
-            if (photoUrl) {
-              setProfilePhotoUrl(photoUrl);
-            } else {
-              setProfilePhotoUrl(null);
-            }
-          } catch (error) {
-            console.error("Failed to fetch profile photo URL:", error);
-            setProfilePhotoUrl(null);
-          }
-        } else {
-          // No photo ID, clear the URL
-          setProfilePhotoUrl(null);
-        }
-        // Refresh session to update profilePhotoId in header
-        await updateSession();
-        toast.success("Profile saved successfully");
-        onComplete();
-      } else {
-        toast.error(result.message || "Failed to update profile");
-      }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle "Mark as Complete" - saves and marks step as complete
-  const handleMarkComplete = async () => {
-    if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
-      return;
-    }
-
-    const isValid = await form.trigger();
-    if (!isValid) {
-      toast.error("Please fix validation errors before marking as complete");
-      return;
-    }
-
-    const values = form.getValues();
-    setLoading(true);
-    try {
-      const result = await updateExaminerProfileAction({
-        examinerProfileId,
-        firstName: values.firstName as string,
-        lastName: values.lastName as string,
-        emailAddress: values.emailAddress as string,
-        professionalTitle: values.professionalTitle as string | undefined,
-        yearsOfExperience: values.yearsOfExperience as string | undefined,
-        clinicName: values.clinicName as string | undefined,
-        clinicAddress: values.clinicAddress as string | undefined,
-        bio: values.bio as string | undefined,
-        profilePhotoId:
-          (typeof initialData?.profilePhotoId === "string"
-            ? initialData.profilePhotoId
-            : undefined) || null,
-        profilePhoto: profilePhoto || undefined,
-      });
-
-      if (result.success) {
-        // Clear the file state since it's now saved
-        setProfilePhoto(null);
-        // Always fetch fresh presigned URL if we have a profilePhotoId (either from result or initialData)
-        const photoIdToFetch =
-          result.data?.profilePhotoId || initialData?.profilePhotoId;
-        if (photoIdToFetch && typeof photoIdToFetch === "string") {
-          try {
-            const photoUrl = await getProfilePhotoUrlAction(photoIdToFetch);
-            if (photoUrl) {
-              setProfilePhotoUrl(photoUrl);
-            } else {
-              setProfilePhotoUrl(null);
-            }
-          } catch (error) {
-            console.error("Failed to fetch profile photo URL:", error);
-            setProfilePhotoUrl(null);
-          }
-        } else {
-          // No photo ID, clear the URL
-          setProfilePhotoUrl(null);
-        }
-        // Refresh session to update profilePhotoId in header
-        await updateSession();
-
-        // Update initial form data reference to current values so future changes are detected
-        const currentHash = JSON.stringify(values);
+  // Handle mark as complete with callback
+  const handleMarkCompleteWithCallback = async () => {
+    const success = await handleMarkComplete();
+    if (success) {
+      // Update initial form data reference to current values
+      const values = form.getValues();
+      const currentHash = JSON.stringify(values);
+      if (initialFormDataRef.current) {
         initialFormDataRef.current = currentHash;
-
-        toast.success("Profile saved and marked as complete");
-        // Mark step as complete
-        if (onMarkComplete) {
-          onMarkComplete();
-        }
-        // Close the step
-        onComplete();
-      } else {
-        toast.error(result.message || "Failed to update profile");
       }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -348,7 +172,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
         {!isSettingsPage && (
           <Button
             type="button"
-            onClick={handleMarkComplete}
+            onClick={handleMarkCompleteWithCallback}
             variant="outline"
             className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
@@ -359,7 +183,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
         )}
       </div>
 
-      <FormProvider form={form} onSubmit={onSubmit} id="profile-form">
+      <FormProvider form={form} onSubmit={handleSubmit} id="profile-form">
         <div className={`space-y-6 ${isSettingsPage ? "pb-20" : ""}`}>
           {/* First Row - First Name, Last Name, Email */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -408,8 +232,9 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
               label="Professional Title"
               required
               options={professionalTitleOptions}
-              placeholder="Select Title"
+              placeholder={loadingTitles ? "Loading titles..." : "Select Title"}
               from="profile-info-form"
+              disabled={loadingTitles}
             />
 
             <FormDropdown
@@ -449,7 +274,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
             {/* Profile Photo */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Profile Photo*
+                Profile Photo<span className="text-red-500">*</span>
               </label>
               <ProfilePhotoUpload
                 currentPhotoUrl={profilePhotoUrl || null}
@@ -483,7 +308,7 @@ const ProfileInfoForm: React.FC<ProfileInfoFormProps> = ({
         <div className="absolute bottom-6 right-6 z-10">
           <Button
             type="button"
-            onClick={() => form.handleSubmit(onSubmit)()}
+            onClick={() => form.handleSubmit(handleSubmit)()}
             className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             disabled={loading}
           >
