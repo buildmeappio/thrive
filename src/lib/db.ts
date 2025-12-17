@@ -6,6 +6,7 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 // Create PostgreSQL connection pool
 const connectionString = process.env.DATABASE_URL;
+
 if (!connectionString) {
   throw new Error("DATABASE_URL environment variable is not set");
 }

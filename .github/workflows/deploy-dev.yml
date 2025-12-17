@@ -41,36 +41,17 @@ jobs:
       - name: Format code
         run: npm run format:check
       
-      - name: Create .env file from secrets
+      - name: Create .env file from AWS Secrets Manager
         run: |
-          cat <<EOF > .env
-          ENVIRONMENT=development
-          NEXT_PUBLIC_ENVIRONMENT=development
-          NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
-          NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
-          NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL=${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}
-          AWS_S3_REGION=${{ secrets.AWS_S3_REGION }}
-          AWS_S3_ACCESS_KEY_ID=${{ secrets.AWS_S3_ACCESS_KEY_ID }}
-          AWS_S3_SECRET_ACCESS_KEY=${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
-          AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
-          NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
-          NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
-          JWT_SET_PASSWORD_SECRET=${{ secrets.JWT_SET_PASSWORD_SECRET }}
-          JWT_EXAMINER_INFO_REQUEST_SECRET=${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}
-          JWT_ORGANIZATION_INFO_REQUEST_SECRET=${{ secrets.JWT_ORGANIZATION_INFO_REQUEST_SECRET }}
-          JWT_CLAIMANT_APPROVE_SECRET=${{ secrets.JWT_CLAIMANT_APPROVE_SECRET }}
-          JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET=${{ secrets.JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET }}
-          DOCS_REFRESH_TOKEN=${{ secrets.DOCS_REFRESH_TOKEN }}
-          GOOGLE_CONTRACT_TEMPLATE_ID=${{ secrets.GOOGLE_CONTRACT_TEMPLATE_ID }}
-          GOOGLE_CONTRACTS_FOLDER_ID=${{ secrets.GOOGLE_CONTRACTS_FOLDER_ID }}
-          EMAIL_REPLY_TO=${{ secrets.EMAIL_REPLY_TO }}
-          NODE_TLS_REJECT_UNAUTHORIZED=${{ secrets.NODE_TLS_REJECT_UNAUTHORIZED || 0 }}
-          OAUTH_USERNAME=${{ secrets.OAUTH_USERNAME }}
-          OAUTH_CLIENT_ID=${{ secrets.OAUTH_CLIENT_ID }}
-          OAUTH_CLIENT_SECRET=${{ secrets.OAUTH_CLIENT_SECRET }}
-          OAUTH_REFRESH_TOKEN=${{ secrets.OAUTH_REFRESH_TOKEN }}
-          EOF
+          # Install jq if not available
+          sudo apt-get update && sudo apt-get install -y jq || true
+
+          # Fetch secrets from AWS Secrets Manager
+          SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/shared --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+          ADMIN_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/admin --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+
+          # Merge secrets (admin overrides shared) and convert JSON to .env format
+          jq -r -n --argjson shared "$SHARED_SECRET" --argjson admin "$ADMIN_SECRET" '$shared * $admin | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
 
       - name: Check build
         run: |
@@ -104,37 +85,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
-      - name: Create .env file from secrets
+      - name: Create .env file from AWS Secrets Manager
         run: |
-          cat <<EOF > .env
-          ENVIRONMENT=${{ needs.select.outputs.target_env }}
-          NEXT_PUBLIC_ENVIRONMENT=${{ needs.select.outputs.target_env }}
-          NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
-          NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
-          NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL=${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}
-          AWS_REGION=${{ vars.AWS_REGION }}
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
-          NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
-          NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
-          JWT_SET_PASSWORD_SECRET=${{ secrets.JWT_SET_PASSWORD_SECRET }}
-          JWT_EXAMINER_INFO_REQUEST_SECRET=${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}
-          JWT_ORGANIZATION_INFO_REQUEST_SECRET=${{ secrets.JWT_ORGANIZATION_INFO_REQUEST_SECRET }}
-          JWT_CLAIMANT_APPROVE_SECRET=${{ secrets.JWT_CLAIMANT_APPROVE_SECRET }}
-          JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET=${{ secrets.JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET }}
-          DOCS_REFRESH_TOKEN=${{ secrets.DOCS_REFRESH_TOKEN }}
-          GOOGLE_CONTRACT_TEMPLATE_ID=${{ secrets.GOOGLE_CONTRACT_TEMPLATE_ID }}
-          GOOGLE_CONTRACTS_FOLDER_ID=${{ secrets.GOOGLE_CONTRACTS_FOLDER_ID }}
-          EMAIL_REPLY_TO=${{ secrets.EMAIL_REPLY_TO }}
-          NODE_TLS_REJECT_UNAUTHORIZED=${{ secrets.NODE_TLS_REJECT_UNAUTHORIZED || 0 }}
-          OAUTH_USERNAME=${{ secrets.OAUTH_USERNAME }}
-          OAUTH_CLIENT_ID=${{ secrets.OAUTH_CLIENT_ID }}
-          OAUTH_CLIENT_SECRET=${{ secrets.OAUTH_CLIENT_SECRET }}
-          OAUTH_REFRESH_TOKEN=${{ secrets.OAUTH_REFRESH_TOKEN }}
-          AWS_S3_ACCESS_KEY_ID=${{ secrets.AWS_S3_ACCESS_KEY_ID }}
-          AWS_S3_SECRET_ACCESS_KEY=${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
-          AWS_S3_REGION=${{ secrets.AWS_S3_REGION }}
-          AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
-          EOF
+          # Install jq if not available
+          sudo apt-get update && sudo apt-get install -y jq || true
+
+          # Fetch secrets from AWS Secrets Manager
+          SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/shared --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+          ADMIN_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/admin --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+
+          # Merge secrets (admin overrides shared) and convert JSON to .env format
+          jq -r -n --argjson shared "$SHARED_SECRET" --argjson admin "$ADMIN_SECRET" '$shared * $admin | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
 
       - name: Build and push Docker image to ECR
         env:
@@ -144,14 +105,10 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64 \
-            --build-arg NEXT_PUBLIC_CDN_URL="${{ secrets.NEXT_PUBLIC_CDN_URL }}" \
-            --build-arg NEXT_PUBLIC_APP_URL="${{ secrets.NEXT_PUBLIC_APP_URL }}" \
-            --build-arg NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL="${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}" \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
             --push \
             .
-
   deploy:
     runs-on: ubuntu-latest
     needs: build-image
@@ -209,43 +166,16 @@ jobs:
             # Pull the latest image from ECR
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
             
-            # Create .env file based on env-example structure with all environment variables from GitHub secrets
-            sudo tee $DEPLOY_PATH/.env > /dev/null << EOF
+            # Install jq if not available
+            sudo apt-get update && sudo apt-get install -y jq || true
 
-            DATABASE_URL="${{ secrets.DATABASE_URL }}"
-            
-            NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
-            NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
-            NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
-            NEXT_PUBLIC_CDN_URL=${{ secrets.NEXT_PUBLIC_CDN_URL }}
-            NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL=${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}
-            
-            # AWS KEYS
-            AWS_S3_ACCESS_KEY_ID=${{ secrets.AWS_S3_ACCESS_KEY_ID }}
-            AWS_S3_SECRET_ACCESS_KEY=${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
-            AWS_S3_REGION=${{ secrets.AWS_S3_REGION }}
-            AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}
-            
-            DOCS_REFRESH_TOKEN=${{ secrets.DOCS_REFRESH_TOKEN }}
-            GOOGLE_CONTRACT_TEMPLATE_ID="${{ secrets.GOOGLE_CONTRACT_TEMPLATE_ID }}"
-            GOOGLE_CONTRACTS_FOLDER_ID="${{ secrets.GOOGLE_CONTRACTS_FOLDER_ID }}"
-            EMAIL_REPLY_TO="${{ secrets.EMAIL_REPLY_TO }}"
-            
-            JWT_SET_PASSWORD_SECRET=${{ secrets.JWT_SET_PASSWORD_SECRET }}
-            JWT_EXAMINER_INFO_REQUEST_SECRET=${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}
-            JWT_ORGANIZATION_INFO_REQUEST_SECRET=${{ secrets.JWT_ORGANIZATION_INFO_REQUEST_SECRET }}
-            JWT_CLAIMANT_APPROVE_SECRET=${{ secrets.JWT_CLAIMANT_APPROVE_SECRET }}
-            JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET=${{ secrets.JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET }}
-            
-            OAUTH_CLIENT_ID=${{ secrets.OAUTH_CLIENT_ID }}
-            OAUTH_CLIENT_SECRET=${{ secrets.OAUTH_CLIENT_SECRET }}
-            OAUTH_REFRESH_TOKEN=${{ secrets.OAUTH_REFRESH_TOKEN }}
-            OAUTH_USERNAME="${{ secrets.OAUTH_USERNAME }}"
-            
-            NODE_ENV=production
-            NODE_TLS_REJECT_UNAUTHORIZED=${{ secrets.NODE_TLS_REJECT_UNAUTHORIZED || 0 }}
-            EOF
-            
+            # Fetch secrets from AWS Secrets Manager
+            SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/shared --region $AWS_REGION --query SecretString --output text)
+            ADMIN_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/admin --region $AWS_REGION --query SecretString --output text)
+
+            # Merge secrets (admin overrides shared) and convert JSON to .env format
+            jq -r -n --argjson shared "$SHARED_SECRET" --argjson admin "$ADMIN_SECRET" '$shared * $admin | to_entries[] | "\(.key)=\(.value | tojson)"' | sudo tee $DEPLOY_PATH/.env > /dev/null
+
             # Change to the deployment directory
             cd $DEPLOY_PATH
 
@@ -253,7 +183,7 @@ jobs:
             git pull origin develop
 
             # Npm Install
-            npm install
+            npm ci --legacy-peer-deps --include=optional
             
             # Export ECR variables for docker-compose to use (full image path)
             export ECR_REGISTRY=$ECR_REGISTRY/$ECR_REPOSITORY
