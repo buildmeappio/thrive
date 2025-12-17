@@ -34,6 +34,21 @@ interface SettingsContentProps {
   notificationsData: NotificationsFormProps["initialData"];
   assessmentTypes: ServicesAssessmentFormProps["assessmentTypes"];
   maxTravelDistances: ServicesAssessmentFormProps["maxTravelDistances"];
+  onServicesDataUpdate?: (
+    data: ServicesAssessmentFormProps["initialData"],
+  ) => void;
+  onProfileDataUpdate?: (data: ProfileInfoFormProps["initialData"]) => void;
+  onAvailabilityDataUpdate?: (
+    data: AvailabilityPreferencesFormProps["initialData"],
+  ) => void;
+  onPayoutDataUpdate?: (data: PayoutDetailsFormProps["initialData"]) => void;
+  onDocumentsDataUpdate?: (
+    data: DocumentsUploadFormProps["initialData"],
+  ) => void;
+  onComplianceDataUpdate?: (data: ComplianceFormProps["initialData"]) => void;
+  onNotificationsDataUpdate?: (
+    data: NotificationsFormProps["initialData"],
+  ) => void;
 }
 
 const SettingsContent: React.FC<SettingsContentProps> = ({
@@ -49,6 +64,13 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
   notificationsData,
   assessmentTypes,
   maxTravelDistances,
+  onServicesDataUpdate,
+  onProfileDataUpdate,
+  onAvailabilityDataUpdate,
+  onPayoutDataUpdate,
+  onDocumentsDataUpdate,
+  onComplianceDataUpdate,
+  onNotificationsDataUpdate,
 }) => {
   const handleComplete = () => {
     // No-op for settings - forms will handle their own save
@@ -69,6 +91,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
             onCancel={handleCancel}
             isCompleted={true}
             isSettingsPage={true}
+            onDataUpdate={onProfileDataUpdate}
           />
         );
 
@@ -83,6 +106,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
             onCancel={handleCancel}
             isCompleted={true}
             isSettingsPage={true}
+            onDataUpdate={onServicesDataUpdate}
           />
         );
 
@@ -95,6 +119,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
             onCancel={handleCancel}
             isCompleted={true}
             isSettingsPage={true}
+            onDataUpdate={onAvailabilityDataUpdate}
           />
         );
 
@@ -107,6 +132,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
             onCancel={handleCancel}
             isCompleted={true}
             isSettingsPage={true}
+            onDataUpdate={onPayoutDataUpdate}
           />
         );
 
@@ -119,6 +145,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
             onCancel={handleCancel}
             isCompleted={true}
             isSettingsPage={true}
+            onDataUpdate={onDocumentsDataUpdate}
           />
         );
 
@@ -131,6 +158,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
             onCancel={handleCancel}
             isCompleted={true}
             isSettingsPage={true}
+            onDataUpdate={onComplianceDataUpdate}
           />
         );
 
@@ -143,6 +171,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
             onCancel={handleCancel}
             isCompleted={true}
             isSettingsPage={true}
+            onDataUpdate={onNotificationsDataUpdate}
           />
         );
 

@@ -36,9 +36,27 @@ const provinceCodeToName: { [key: string]: string } = {
 
 /**
  * Get province code from full province name
+ * Handles case-insensitive matching and variations
  */
 export const getProvinceCode = (provinceName: string): string | null => {
-  return provinceNameToCode[provinceName] || null;
+  if (!provinceName) return null;
+
+  // Try exact match first
+  if (provinceNameToCode[provinceName]) {
+    return provinceNameToCode[provinceName];
+  }
+
+  // Try case-insensitive match
+  const normalizedName = provinceName.trim();
+  const matchingKey = Object.keys(provinceNameToCode).find(
+    (key) => key.toLowerCase() === normalizedName.toLowerCase(),
+  );
+
+  if (matchingKey) {
+    return provinceNameToCode[matchingKey];
+  }
+
+  return null;
 };
 
 /**
@@ -260,7 +278,7 @@ const majorCitiesByProvince: { [key: string]: string[] } = {
 
 /**
  * Get all cities for a given province (only major cities, excluding communities)
- * @param provinceName - Full province name (e.g., "Ontario", "British Columbia")
+ * @param provinceName - Full province name (e.g., "Ontario", "British Columbia", "Newfoundland and Labrador")
  * @param includeExistingCity - Optional: if a city is already selected but not in major cities, include it
  * @returns Array of city options formatted for dropdown
  */
@@ -268,13 +286,34 @@ export const getCitiesByProvince = (
   provinceName: string,
   includeExistingCity?: string,
 ): { value: string; label: string }[] => {
-  if (!provinceName) return [];
+  if (!provinceName || !provinceName.trim()) return [];
 
-  const provinceCode = getProvinceCode(provinceName);
-  if (!provinceCode) return [];
+  // Normalize province name (trim whitespace)
+  const normalizedProvinceName = provinceName.trim();
+
+  const provinceCode = getProvinceCode(normalizedProvinceName);
+  if (!provinceCode) {
+    // Debug: log if province code not found (only in development)
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        `Province code not found for: "${normalizedProvinceName}". Available provinces:`,
+        Object.keys(provinceNameToCode).join(", "),
+      );
+    }
+    return [];
+  }
 
   // Get major cities for the province
   const majorCities = majorCitiesByProvince[provinceCode] || [];
+
+  if (majorCities.length === 0) {
+    // Debug: log if no cities found for province code (only in development)
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        `No cities found for province code: "${provinceCode}" (province: "${normalizedProvinceName}")`,
+      );
+    }
+  }
 
   // If there's an existing city that's not in the major cities list, add it
   const citiesSet = new Set(majorCities);

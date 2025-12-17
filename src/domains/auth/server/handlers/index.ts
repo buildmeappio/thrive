@@ -12,6 +12,7 @@ import getLanguages from "./getLanguages";
 import getExaminerProfileDetails from "./getExaminerProfileDetails";
 import updateMedicalExaminer from "./updateMedicalExaminer";
 import getYearsOfExperience from "./getYearsOfExperience";
+import getProfessionalTitles from "./getProfessionalTitles";
 import getMaxTravelDistances from "./getMaxTravelDistances";
 import getAssessmentTypes from "./getAssessmentTypes";
 import updateExaminerApplication from "./updateExaminerApplication";
@@ -35,6 +36,7 @@ const handlers = {
   updateMedicalExaminer,
   updateExaminerApplication,
   getYearsOfExperience,
+  getProfessionalTitles,
   getMaxTravelDistances,
   getAssessmentTypes,
   saveApplicationProgress,

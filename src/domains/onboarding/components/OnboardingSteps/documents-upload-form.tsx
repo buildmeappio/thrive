@@ -1,16 +1,9 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
-import { useSession } from "next-auth/react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { CircleCheck } from "lucide-react";
-import { toast } from "sonner";
 import { MultipleFileUploadInput } from "@/components";
-import { DocumentFile, ExistingDocument } from "@/components/FileUploadInput";
-import {
-  uploadDocumentAction,
-  getDocumentByIdAction,
-} from "../../server/actions";
-import { updateDocumentsAction } from "../../server/actions/updateDocuments";
+import { useDocumentLoading, useDocumentsFormSubmission } from "../../hooks";
 import type { DocumentsUploadFormProps } from "../../types";
 
 const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
@@ -22,261 +15,35 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
   onStepEdited,
   isCompleted = false,
   isSettingsPage = false,
+  onDataUpdate,
 }) => {
-  const { update } = useSession();
-  const [loading, setLoading] = useState(false);
-  const [allFiles, setAllFiles] = useState<DocumentFile[]>([]);
+  const {
+    allFiles,
+    setAllFiles,
+    loading: loadingDocuments,
+  } = useDocumentLoading({
+    documentIds: initialData?.medicalLicenseDocumentIds,
+  });
 
-  // Use initial data directly - just get all document IDs from medicalLicenseDocumentIds
-  const mergedInitialData = useMemo(() => {
-    return {
-      documentIds: initialData?.medicalLicenseDocumentIds || [],
-    };
-  }, [initialData]);
+  const {
+    handleSubmit,
+    handleMarkComplete,
+    handleFileChange,
+    loading: submitting,
+    isFormValid,
+  } = useDocumentsFormSubmission({
+    examinerProfileId,
+    allFiles,
+    setAllFiles,
+    isCompleted,
+    onStepEdited,
+    onComplete,
+    onMarkComplete,
+    onDataUpdate,
+    isSettingsPage,
+  });
 
-  // Load existing documents from mergedInitialData
-  useEffect(() => {
-    const loadExistingDocuments = async () => {
-      const existingDocs: ExistingDocument[] = [];
-
-      // Load all documents from the single documentIds array
-      if (mergedInitialData?.documentIds?.length) {
-        const loadedDocs = await Promise.all(
-          mergedInitialData.documentIds.map(async (id) => {
-            const result = await getDocumentByIdAction(id);
-            if (result.success && result.data) {
-              return {
-                id,
-                name: result.data.name,
-                displayName: result.data.displayName || result.data.name,
-                type: result.data.name.split(".").pop() || "pdf",
-                size: result.data.size || 0,
-                isExisting: true as const,
-                isFromDatabase: true as const, // Mark as loaded from database
-              };
-            }
-            return null;
-          }),
-        );
-        existingDocs.push(
-          ...(loadedDocs.filter((doc) => doc !== null) as ExistingDocument[]),
-        );
-      }
-
-      setAllFiles(existingDocs);
-    };
-
-    loadExistingDocuments();
-  }, [mergedInitialData]);
-
-  // Track if files have changed from initial state
-  const previousFilesRef = React.useRef<string | null>(null);
-  const initialFilesHashRef = React.useRef<string | null>(null);
-
-  // Store initial files hash on first load
-  useEffect(() => {
-    if (!initialFilesHashRef.current) {
-      const initialHash = JSON.stringify(
-        allFiles.map((f) =>
-          f instanceof File ? f.name : (f as ExistingDocument).id,
-        ),
-      );
-      initialFilesHashRef.current = initialHash;
-      previousFilesRef.current = initialHash;
-    }
-  }, []);
-
-  // Check if files have changed from initial state
-  const hasFormChanged = useMemo(() => {
-    if (!initialFilesHashRef.current) return false;
-    const currentHash = JSON.stringify(
-      allFiles.map((f) =>
-        f instanceof File ? f.name : (f as ExistingDocument).id,
-      ),
-    );
-    return currentHash !== initialFilesHashRef.current;
-  }, [allFiles]);
-
-  useEffect(() => {
-    if (hasFormChanged && isCompleted && onStepEdited) {
-      onStepEdited();
-    }
-  }, [hasFormChanged, isCompleted, onStepEdited]);
-
-  // Check if at least one document is uploaded
-  const isFormValid = useMemo(() => {
-    return allFiles.length > 0;
-  }, [allFiles]);
-
-  // Handle file changes - just update state, don't upload to S3 yet
-  const handleFileChange = (files: DocumentFile[]) => {
-    // Simply update the state - files will be uploaded when "Mark as Complete" is clicked
-    setAllFiles(files);
-  };
-
-  const handleSubmit = async () => {
-    if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
-      return;
-    }
-
-    // Check if at least one document is uploaded
-    if (allFiles.length === 0) {
-      toast.error("Please upload at least one document");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Separate existing documents from new files
-      const existingDocs = allFiles.filter(
-        (file): file is ExistingDocument =>
-          file !== null &&
-          typeof file === "object" &&
-          "isExisting" in file &&
-          file.isExisting === true,
-      );
-
-      const newFiles = allFiles.filter(
-        (file): file is File => file instanceof File,
-      );
-
-      // Upload new files to S3 first
-      const uploadedDocs: ExistingDocument[] = [];
-      if (newFiles.length > 0) {
-        for (const file of newFiles) {
-          const result = await uploadDocumentAction(file);
-          if (result.success && result.data) {
-            uploadedDocs.push({
-              id: result.data.id,
-              name: result.data.name,
-              displayName: file.name,
-              type: file.type || result.data.name.split(".").pop() || "pdf",
-              size: result.data.size || file.size,
-              isExisting: true as const,
-              isFromDatabase: false as const,
-            });
-          } else {
-            throw new Error(
-              (!result.success && "message" in result
-                ? result.message
-                : undefined) || `Failed to upload ${file.name}`,
-            );
-          }
-        }
-      }
-
-      // Get all document IDs (both existing and newly uploaded)
-      const allDocumentIds = [
-        ...existingDocs.map((doc) => doc.id),
-        ...uploadedDocs.map((doc) => doc.id),
-      ].filter(Boolean) as string[];
-
-      // Save all document IDs to medicalLicenseDocumentIds (used as generic document storage)
-      const result = await updateDocumentsAction({
-        examinerProfileId,
-        medicalLicenseDocumentIds: allDocumentIds,
-      });
-
-      if (result.success) {
-        toast.success("Documents uploaded successfully");
-        onComplete();
-      } else {
-        toast.error(result.message || "Failed to save documents");
-      }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle "Mark as Complete" - saves and marks step as complete
-  const handleMarkComplete = async () => {
-    if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
-      return;
-    }
-
-    // Check if at least one document is uploaded
-    if (allFiles.length === 0) {
-      toast.error("Please upload at least one document");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Separate existing documents from new files
-      const existingDocs = allFiles.filter(
-        (file): file is ExistingDocument =>
-          file !== null &&
-          typeof file === "object" &&
-          "isExisting" in file &&
-          file.isExisting === true,
-      );
-
-      const newFiles = allFiles.filter(
-        (file): file is File => file instanceof File,
-      );
-
-      // Upload new files to S3 first
-      const uploadedDocs: ExistingDocument[] = [];
-      if (newFiles.length > 0) {
-        for (const file of newFiles) {
-          const result = await uploadDocumentAction(file);
-          if (result.success && result.data) {
-            uploadedDocs.push({
-              id: result.data.id,
-              name: result.data.name,
-              displayName: file.name,
-              type: file.type || result.data.name.split(".").pop() || "pdf",
-              size: result.data.size || file.size,
-              isExisting: true as const,
-              isFromDatabase: false as const,
-            });
-          } else {
-            throw new Error(
-              (!result.success && "message" in result
-                ? result.message
-                : undefined) || `Failed to upload ${file.name}`,
-            );
-          }
-        }
-      }
-
-      // Get all document IDs (both existing and newly uploaded)
-      const allDocumentIds = [
-        ...existingDocs.map((doc) => doc.id),
-        ...uploadedDocs.map((doc) => doc.id),
-      ].filter(Boolean) as string[];
-
-      // Save all document IDs to medicalLicenseDocumentIds (used as generic document storage)
-      const result = await updateDocumentsAction({
-        examinerProfileId,
-        medicalLicenseDocumentIds: allDocumentIds,
-      });
-
-      if (result.success) {
-        toast.success("Documents uploaded and marked as complete");
-        // Mark step as complete
-        if (onMarkComplete) {
-          onMarkComplete();
-        }
-        // Close the step
-        onComplete();
-      } else {
-        toast.error(result.message || "Failed to save documents");
-      }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading = loadingDocuments || submitting;
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm relative">
