@@ -58,7 +58,7 @@ jobs:
           EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/examiner --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
 
           # Merge secrets (examiner overrides shared) and convert JSON to .env format
-          jq -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\"\(.value)\""' > .env
+          jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
 
       - name: Check build
         run: |
@@ -102,7 +102,7 @@ jobs:
           EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/examiner --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
 
           # Merge secrets (examiner overrides shared) and convert JSON to .env format
-          jq -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\"\(.value)\""' > .env
+          jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
 
           # Add workflow-specific environment variables
           echo "" >> .env
@@ -191,7 +191,7 @@ jobs:
             EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/examiner --region $AWS_REGION --query SecretString --output text)
 
             # Merge secrets (examiner overrides shared) and convert JSON to .env format
-            jq -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\"\(.value)\""' | sudo tee $DEPLOY_PATH/.env > /dev/null
+            jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' | sudo tee $DEPLOY_PATH/.env > /dev/null
 
             # Add workflow-specific environment variables
             echo "" | sudo tee -a $DEPLOY_PATH/.env > /dev/null
