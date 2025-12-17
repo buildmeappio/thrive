@@ -62,7 +62,6 @@ jobs:
 
       - name: Check build
         run: |
-          cat .env
           npm run db:generate
           npm run build
 
@@ -103,14 +102,6 @@ jobs:
 
           # Merge secrets (examiner overrides shared) and convert JSON to .env format
           jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
-
-          # Add workflow-specific environment variables
-          echo "" >> .env
-          echo "# Workflow specific" >> .env
-          echo "ENVIRONMENT=development" >> .env
-          echo "NEXT_PUBLIC_ENVIRONMENT=development" >> .env
-          echo "AWS_REGION=\"${{ vars.AWS_REGION }}\"" >> .env
-          echo "NODE_TLS_REJECT_UNAUTHORIZED=${{ secrets.NODE_TLS_REJECT_UNAUTHORIZED || 0 }}" >> .env
 
       - name: Build and push Docker image to ECR
         env:
@@ -192,14 +183,6 @@ jobs:
 
             # Merge secrets (examiner overrides shared) and convert JSON to .env format
             jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' | sudo tee $DEPLOY_PATH/.env > /dev/null
-
-            # Add workflow-specific environment variables
-            echo "" | sudo tee -a $DEPLOY_PATH/.env > /dev/null
-            echo "# Workflow specific" | sudo tee -a $DEPLOY_PATH/.env > /dev/null
-            echo "NODE_ENV=production" | sudo tee -a $DEPLOY_PATH/.env > /dev/null
-            echo "NODE_TLS_REJECT_UNAUTHORIZED=${{ secrets.NODE_TLS_REJECT_UNAUTHORIZED || 0 }}" | sudo tee -a $DEPLOY_PATH/.env > /dev/null
-
-
 
             # Change to the deployment directory
             cd $DEPLOY_PATH
