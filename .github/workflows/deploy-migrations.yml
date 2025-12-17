@@ -86,6 +86,9 @@ jobs:
               rm .env
             fi
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+            echo "DATABASE_SSL_REQUIRED=false" >> .env
+            echo "NODE_ENV=production" >> .env
+            echo "NODE_TLS_REJECT_UNAUTHORIZED=0" >> .env
             echo "✅ Created .env file with DATABASE_URL"
 
       - name: Run Migrations on EC2
