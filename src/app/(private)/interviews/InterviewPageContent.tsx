@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import InterviewTable, {
   useInterviewTable,
 } from "@/domains/interview/components/InterviewTableWithPagination";
+import InterviewCalendarView from "@/domains/interview/components/InterviewCalendarView";
 import Pagination from "@/components/Pagination";
 import { InterviewData } from "@/domains/interview/types/InterviewData";
 import { DashboardShell } from "@/layouts/dashboard";
-import { Funnel } from "lucide-react";
+import { Funnel, Calendar, Table as TableIcon } from "lucide-react";
 import DateRangeFilter from "@/components/ui/DateRangeFilter";
 
 interface InterviewPageContentProps {
@@ -47,6 +48,7 @@ export default function InterviewPageContent({
     },
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"table" | "calendar">("calendar");
 
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
     setFilters((prev) => ({
@@ -117,13 +119,82 @@ export default function InterviewPageContent({
     filters,
   });
 
+  // Apply filters to data for calendar view
+  const filteredData = useMemo(() => {
+    let result = data;
+
+    // Filter by status
+    if (filters.status && filters.status !== "all") {
+      result = result.filter((d) => d.status === filters.status);
+    }
+
+    // Filter by date range
+    if (filters.dateRange) {
+      const { start, end } = filters.dateRange;
+      if (start) {
+        result = result.filter((d) => {
+          const interviewDate = new Date(d.startTime);
+          const startDate = new Date(start);
+          startDate.setHours(0, 0, 0, 0);
+          return interviewDate >= startDate;
+        });
+      }
+      if (end) {
+        result = result.filter((d) => {
+          const interviewDate = new Date(d.startTime);
+          const endDate = new Date(end);
+          endDate.setHours(23, 59, 59, 999);
+          return interviewDate <= endDate;
+        });
+      }
+    }
+
+    // Filter by search query
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      result = result.filter((d) =>
+        [d.examinerName, d.status]
+          .filter(Boolean)
+          .some((v) => String(v).toLowerCase().includes(q)),
+      );
+    }
+
+    return result;
+  }, [data, searchQuery, filters]);
+
   return (
     <DashboardShell>
       {/* Interviews Heading */}
-      <div className="mb-4 sm:mb-6 dashboard-zoom-mobile">
-        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+      <div className="mb-4 sm:mb-6 dashboard-zoom-mobile flex items-center justify-between">
+        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight wrap-break-word">
           Interviews
         </h1>
+
+        {/* View Toggle */}
+        <div className="flex gap-2 bg-gray-100 rounded-full p-1">
+          <button
+            onClick={() => setViewMode("calendar")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              viewMode === "calendar"
+                ? "bg-white text-[#00A8FF] shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            <span className="hidden sm:inline">Calendar</span>
+          </button>
+          <button
+            onClick={() => setViewMode("table")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              viewMode === "table"
+                ? "bg-white text-[#00A8FF] shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            <TableIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Table</span>
+          </button>
+        </div>
       </div>
 
       {/* SVG for gradient definitions */}
@@ -150,160 +221,170 @@ export default function InterviewPageContent({
         </defs>
       </svg>
       <div className="flex flex-col gap-3 sm:gap-6 mb-20 dashboard-zoom-mobile">
-        {/* Search and Filters Section - Stack on mobile, row on desktop */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center sm:justify-between">
-          {/* Search Bar - Full width on mobile */}
-          <div className="flex-1 sm:max-w-md w-full">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg
-                  className="h-4 w-4 sm:h-5 sm:w-5"
-                  fill="none"
-                  stroke="url(#searchGradient)"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Search by examiner name, date, or status"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-full bg-white text-xs sm:text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* Filter Buttons - Wrap on mobile */}
-          <div className="flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
-            {/* Date Range Filter */}
-            <div className="relative filter-dropdown">
-              <DateRangeFilter
-                onApply={handleDateRangeApply}
-                onClear={handleDateRangeClear}
-                isActive={
-                  filters.dateRange.start !== "" || filters.dateRange.end !== ""
-                }
-                label="Date Range"
-                value={filters.dateRange}
-                className="filter-dropdown"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <div className="relative filter-dropdown">
-              <button
-                onClick={() =>
-                  setActiveDropdown(
-                    activeDropdown === "status" ? null : "status",
-                  )
-                }
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  filters.status !== "all"
-                    ? "border-[#00A8FF] text-[#00A8FF]"
-                    : "border-gray-200 text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <Funnel
-                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                  style={{ stroke: "url(#statusGradient)" }}
+        {/* Search and Filters Section - Only show in table view */}
+        {viewMode === "table" && (
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center sm:justify-between">
+            {/* Search Bar - Full width on mobile */}
+            <div className="flex-1 sm:max-w-md w-full">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg
+                    className="h-4 w-4 sm:h-5 sm:w-5"
+                    fill="none"
+                    stroke="url(#searchGradient)"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search by examiner name, date, or status"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-full bg-white text-xs sm:text-sm font-poppins placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:border-transparent"
                 />
-                <span>
-                  {filters.status !== "all"
-                    ? formatText(filters.status)
-                    : "Status"}
-                </span>
-                <svg
-                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              </div>
+            </div>
+
+            {/* Filter Buttons - Wrap on mobile */}
+            <div className="flex flex-wrap gap-2 sm:gap-3 shrink-0">
+              {/* Date Range Filter */}
+              <div className="relative filter-dropdown">
+                <DateRangeFilter
+                  onApply={handleDateRangeApply}
+                  onClear={handleDateRangeClear}
+                  isActive={
+                    filters.dateRange.start !== "" ||
+                    filters.dateRange.end !== ""
+                  }
+                  label="Date Range"
+                  value={filters.dateRange}
+                  className="filter-dropdown"
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div className="relative filter-dropdown">
+                <button
+                  onClick={() =>
+                    setActiveDropdown(
+                      activeDropdown === "status" ? null : "status",
+                    )
+                  }
+                  className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
+                    filters.status !== "all"
+                      ? "border-[#00A8FF] text-[#00A8FF]"
+                      : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                  }`}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
+                  <Funnel
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                    style={{ stroke: "url(#statusGradient)" }}
                   />
-                </svg>
-              </button>
-              {activeDropdown === "status" && (
-                <div className="absolute top-full right-0 mt-2 w-48 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleFilterChange("status", "all");
-                      }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "all"
-                          ? "bg-gray-100 text-[#00A8FF]"
-                          : ""
-                      }`}
-                    >
-                      All Statuses
-                    </button>
-                    {statuses.map((status) => (
+                  <span>
+                    {filters.status !== "all"
+                      ? formatText(filters.status)
+                      : "Status"}
+                  </span>
+                  <svg
+                    className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+                {activeDropdown === "status" && (
+                  <div className="absolute top-full right-0 mt-2 w-48 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                    <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
                       <button
-                        key={status}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleFilterChange("status", status);
+                          handleFilterChange("status", "all");
                         }}
                         className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          filters.status === status
+                          filters.status === "all"
                             ? "bg-gray-100 text-[#00A8FF]"
                             : ""
                         }`}
                       >
-                        {formatText(status)}
+                        All Statuses
                       </button>
-                    ))}
+                      {statuses.map((status) => (
+                        <button
+                          key={status}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFilterChange("status", status);
+                          }}
+                          className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
+                            filters.status === status
+                              ? "bg-gray-100 text-[#00A8FF]"
+                              : ""
+                          }`}
+                        >
+                          {formatText(status)}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+              </div>
+
+              {/* Clear Filters Button */}
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
+                >
+                  <svg
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                  <span>Clear</span>
+                </button>
               )}
             </div>
-
-            {/* Clear Filters Button */}
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
-              >
-                <svg
-                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-                <span>Clear</span>
-              </button>
-            )}
           </div>
-        </div>
+        )}
 
-        {/* Interviews Table Card */}
-        <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
-          <InterviewTable table={table} columns={columns} />
-        </div>
+        {/* Calendar or Table View */}
+        {viewMode === "calendar" ? (
+          <InterviewCalendarView data={filteredData} />
+        ) : (
+          <>
+            {/* Interviews Table Card */}
+            <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
+              <InterviewTable table={table} columns={columns} />
+            </div>
 
-        {/* Pagination - Outside the card */}
-        <div className="mt-4 px-3 sm:px-6 overflow-x-hidden">
-          <Pagination table={table} />
-        </div>
+            {/* Pagination - Outside the card */}
+            <div className="mt-4 px-3 sm:px-6 overflow-x-hidden">
+              <Pagination table={table} />
+            </div>
+          </>
+        )}
       </div>
     </DashboardShell>
   );
