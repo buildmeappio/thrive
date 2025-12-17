@@ -163,6 +163,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+    
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get ECR login token
+        id: ecr-login
+        run: |
+          ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
+          ECR_PASSWORD=$(aws ecr get-login-password --region ${{ secrets.AWS_REGION }})
+          echo "::add-mask::$ECR_PASSWORD"
+          echo "password=$ECR_PASSWORD" >> $GITHUB_OUTPUT
+          echo "registry=$ECR_REGISTRY" >> $GITHUB_OUTPUT
 
       - name: Deploy Docker image on EC2 using docker-compose
         uses: appleboy/ssh-action@v1.0.3
@@ -170,14 +186,14 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          port: ${{ secrets.EC2_PORT || 22 }}
+          port: ${{ secrets.EC2_PORT || 22 }}          
           script: |
             # Set deployment path and ECR variables
             DEPLOY_PATH="${{ secrets.EC2_DEPLOY_PATH }}"
-            ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
+            ECR_REGISTRY="${{ steps.ecr-login.outputs.registry }}"
             ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY_NAME }}"
             IMAGE_TAG="${{ github.sha }}"
-            AWS_REGION="${{ secrets.AWS_REGION }}"
+            ECR_PASSWORD="${{ steps.ecr-login.outputs.password }}"
 
             # Load nvm and use Node.js version 22
             export NVM_DIR="$HOME/.nvm"
@@ -187,11 +203,9 @@ jobs:
             # Create directory if it doesn't exist
             mkdir -p $DEPLOY_PATH
             
-            # Login to Amazon ECR (EC2 instance should have IAM role with ECR permissions, or use AWS credentials)
-            # If using IAM role (recommended), the following will work automatically
-            # If using credentials, set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in .env or export them
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-            
+            # Login to Amazon ECR using the token from GitHub Actions
+            echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin $ECR_REGISTRY
+             
             # Pull the latest image from ECR
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
             
@@ -244,13 +258,28 @@ jobs:
             # Export ECR variables for docker-compose to use (full image path)
             export ECR_REGISTRY=$ECR_REGISTRY/$ECR_REPOSITORY
             export IMAGE_TAG=$IMAGE_TAG
-            
+
+            # Find the currently running container image before stopping
+            OLD_IMAGE=$(docker ps --filter "ancestor=$ECR_REGISTRY:$IMAGE_TAG" --format "{{.Image}}")
+            if [ -z "$OLD_IMAGE" ]; then
+              # fallback: get the image for the current service(s), might be the previous sha
+              OLD_IMAGE=$(docker ps --filter "name=$(basename $DEPLOY_PATH)" --format "{{.Image}}")
+            fi
+
             # Stop and remove existing containers using docker-compose
             docker-compose down
-            
+
             # Start using docker-compose (will use the ECR image from docker-compose.yml)
             docker-compose up -d
-            
+
             # Show running containers
             docker ps
             docker-compose ps
+
+            # Remove the previously running image, if any, and if the image is different from the currently deployed one
+            if [ -n "$OLD_IMAGE" ] && [ "$OLD_IMAGE" != "$ECR_REGISTRY:$IMAGE_TAG" ]; then
+              echo "Removing old Docker image $OLD_IMAGE"
+              docker rmi "$OLD_IMAGE" || true
+            else
+              echo "No previous image to remove or previous is same as current."
+            fi
