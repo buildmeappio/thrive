@@ -1,5 +1,7 @@
+import env from '@/config/env';
+
 const debug = (...message: unknown[]) => {
-  if (process.env.NODE_ENV === 'development') {
+  if (env.NODE_ENV === 'development') {
     console.log(...message);
   }
 };

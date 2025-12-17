@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
 import { HttpError } from '@/utils/httpError';
 import { notFound } from 'next/navigation';
 import {
@@ -12,57 +12,60 @@ import log from '@/utils/log';
 import { format } from 'date-fns';
 import { signClaimantApprovalToken } from '@/lib/jwt';
 import { getBookingCancellationTime } from '@/services/configuration.service';
+import env from '@/config/env';
 
 const getClaimant = async (token: string) => {
   try {
     // Note: Prisma client needs to be regenerated after schema changes
     // Using type assertion to bypass TypeScript errors until Prisma client is regenerated
-    const link = await (prisma.examinationSecureLink.findFirst as any)({
+    const link = await prisma.secureLink.findFirst({
       where: { token },
       include: {
-        examination: {
+        examinationSecureLink: {
           include: {
-            claimantBookings: {
-              where: { deletedAt: null },
+            examination: {
               include: {
-                claimant: true,
-                examiner: {
+                claimantBookings: {
+                  where: { deletedAt: null },
                   include: {
-                    account: {
+                    claimant: true,
+                    examiner: {
                       include: {
-                        user: true,
+                        account: {
+                          include: {
+                            user: true,
+                          },
+                        },
                       },
                     },
+                    interpreter: true,
+                    chaperone: true,
+                    transporter: true,
                   },
+                  take: 1,
                 },
-                interpreter: true,
-                chaperone: true,
-                transporter: true,
               },
-              take: 1,
             },
           },
         },
       },
     });
 
-    // Commented out expiry logic - links no longer expire
-    // if (!link || link.expiresAt < new Date() || link.status === 'INVALID') {
-    //   notFound();
-    // }
     if (!link || link.status === 'INVALID') {
       notFound();
     }
 
     // Optionally: mark last opened
-    await prisma.examinationSecureLink.update({
+    await prisma.secureLink.update({
       where: { id: link.id },
       data: { lastOpenedAt: new Date() },
     });
 
     // Return booking if exists
-    if (link.examination?.claimantBookings && link.examination.claimantBookings.length > 0) {
-      return link.examination.claimantBookings[0];
+    const examination = link.examinationSecureLink?.[0]?.examination;
+
+    if (examination?.claimantBookings && examination.claimantBookings.length > 0) {
+      return examination.claimantBookings[0];
     }
 
     // No booking found
@@ -324,10 +327,14 @@ const createClaimantBooking = async (data: CreateClaimantBookingData) => {
         );
 
         // Generate cancel and modify URLs
-        const baseUrl = process.env.FRONTEND_URL || 'https://portal-dev.thriveassessmentcare.com';
-        const claimantBasePath = process.env.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL || '/claimant/';
-        const cancelUrl = `${baseUrl}${claimantBasePath}booking/cancel?token=${jwtToken}&bookingId=${result.id}`;
-        const modifyUrl = `${baseUrl}${claimantBasePath}availability?token=${jwtToken}`;
+        const baseUrl = env.NEXT_PUBLIC_APP_URL || 'https://portal-dev.thriveassessmentcare.com';
+        const claimantAvailabilityPath =
+          env.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL || '/claimant/availability';
+        const claimantBookingCancelPath =
+          env.NEXT_PUBLIC_CLAIMANT_BOOKING_CANCEL_URL || '/claimant/booking/cancel';
+
+        const cancelUrl = `${baseUrl}${claimantBookingCancelPath}?token=${jwtToken}&bookingId=${result.id}`;
+        const modifyUrl = `${baseUrl}${claimantAvailabilityPath}?token=${jwtToken}`;
 
         const emailResult = await emailService.sendEmail(
           `Booking Submitted - ${caseNumber}`,

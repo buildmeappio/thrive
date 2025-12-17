@@ -1,17 +1,16 @@
 import ErrorMessages from '@/constants/ErrorMessages';
 import jwt, { type SignOptions, type JwtPayload } from 'jsonwebtoken';
+import env from '@/config/env';
 
-const getJwtSecret = (name: 'otp' | 'password' | 'claimant_approve' | 'org_info_request') => {
-  let secret: string | null = null;
-  if (name === 'otp') {
-    secret = process.env.JWT_OTP_SECRET as string;
-  } else if (name === 'password') {
-    secret = process.env.JWT_SET_PASSWORD_SECRET as string;
-  } else if (name === 'claimant_approve') {
-    secret = process.env.JWT_CLAIMANT_APPROVE_SECRET as string;
-  } else if (name === 'org_info_request') {
-    secret = process.env.JWT_ORGANIZATION_INFO_REQUEST_SECRET as string;
-  }
+const jwtConfig = {
+  otp: env.JWT_OTP_TOKEN_SECRET,
+  password: env.JWT_PASSWORD_TOKEN_SECRET,
+  claimant_approve: env.JWT_CLAIMANT_APPROVE_TOKEN_SECRET,
+  org_info_request: env.JWT_ORGANIZATION_INFO_REQUEST_TOKEN_SECRET,
+} as const;
+
+const getJwtSecret = (name: keyof typeof jwtConfig) => {
+  const secret = jwtConfig[name];
   if (!secret) {
     throw new Error(ErrorMessages.JWT_SECRETS_REQUIRED);
   }

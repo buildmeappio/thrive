@@ -8,8 +8,9 @@ import {
 import { revalidatePath } from 'next/cache';
 import { s3Client } from './s3-client';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import env from '@/config/env';
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
+const BUCKET_NAME = env.AWS_S3_BUCKET_NAME;
 
 export interface UploadedFile {
   name: string;

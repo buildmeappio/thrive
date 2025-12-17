@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
 import { HttpError } from '@/utils/httpError';
 import { uploadFilesToS3, type UploadedFile } from '@/lib/s3-actions';
 

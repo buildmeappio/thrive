@@ -2,6 +2,7 @@
 
 import { cookies } from 'next/headers';
 import authService from '../auth.service';
+import env from '@/config/env';
 
 type VerifyOtpResult = {
   email: string;
@@ -16,7 +17,7 @@ const verifyOtp = async (otp: string, email: string): Promise<VerifyOtpResult> =
 
   cookieStore.set('password_token', result.passwordToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: env.NODE_ENV === 'production',
     sameSite: 'strict',
     path: '/',
     maxAge: 60 * 15,

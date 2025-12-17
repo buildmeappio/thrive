@@ -5,6 +5,7 @@ import Header from '@/layouts/public/Header';
 import { OctagonAlert } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
+import env from '@/config/env';
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -67,7 +68,7 @@ const Error = ({ error, reset }: ErrorProps) => {
           </div>
 
           {/* Dev Mode Details */}
-          {process.env.NODE_ENV === 'development' && error.stack && (
+          {env.NODE_ENV === 'development' && error.stack && (
             <details className="text-left">
               <summary className="cursor-pointer text-sm font-medium text-gray-700">
                 Stack Trace (Dev Only)

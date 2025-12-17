@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
 import { verifyClaimantApprovalToken } from '@/lib/jwt';
 
 const getCaseSummaryByJWT = async (token: string) => {
@@ -20,7 +20,7 @@ const getCaseSummaryByJWT = async (token: string) => {
       examinationId: string;
     };
 
-    // Check secure link status - if SUBMITTED, the link is expired
+    // Check secure link status - if INVALID, the link is expired
     // Note: The token in URL is a JWT, but DB stores a reference token (UUID)
     // So we find by examinationId instead
     const secureLink = await (prisma as any).examinationSecureLink.findFirst({
@@ -37,15 +37,7 @@ const getCaseSummaryByJWT = async (token: string) => {
       return { success: false, message: 'Secure link not found', result: null };
     }
 
-    // Block SUBMITTED and INVALID status
-    if (secureLink.status === 'SUBMITTED') {
-      return {
-        success: false,
-        message: 'This availability link has already been submitted and is no longer active.',
-        result: null,
-      };
-    }
-
+    // Block INVALID status
     if (secureLink.status === 'INVALID') {
       return { success: false, message: 'This link is invalid', result: null };
     }
@@ -53,7 +45,7 @@ const getCaseSummaryByJWT = async (token: string) => {
     // Check if a booking already exists for this examination
     // Exclude DISCARDED bookings (cancelled/modified by claimant)
     // Note: Prisma client needs to be regenerated after schema changes
-    const existingBooking = await (prisma as any).claimantBooking.findFirst({
+    const existingBooking = await prisma.claimantBooking.findFirst({
       where: {
         examinationId,
         deletedAt: null,
@@ -78,7 +70,7 @@ const getCaseSummaryByJWT = async (token: string) => {
     });
 
     // Get the examination with case and claimant information, including approvedAt and caseNumber
-    const examination = (await prisma.examination.findUnique({
+    const examination = await prisma.examination.findUnique({
       where: { id: examinationId },
       select: {
         approvedAt: true,
@@ -92,7 +84,7 @@ const getCaseSummaryByJWT = async (token: string) => {
         },
         claimant: true,
       },
-    })) as any;
+    });
 
     if (!examination) {
       return { success: false, message: 'Examination not found', result: null };

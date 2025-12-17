@@ -3,13 +3,14 @@ import { google } from 'googleapis';
 import fs from 'fs/promises';
 import path from 'path';
 import log from '@/utils/log';
+import env from '@/config/env';
 
 const emailConfig: EmailConfig = {
   oauth: {
-    email: process.env.OAUTH_USERNAME ?? '',
-    clientId: process.env.OAUTH_CLIENT_ID ?? '',
-    clientSecret: process.env.OAUTH_CLIENT_SECRET ?? '',
-    refreshToken: process.env.OAUTH_REFRESH_TOKEN ?? '',
+    email: env.OAUTH_USERNAME ?? '',
+    clientId: env.OAUTH_CLIENT_ID ?? '',
+    clientSecret: env.OAUTH_CLIENT_SECRET ?? '',
+    refreshToken: env.OAUTH_REFRESH_TOKEN ?? '',
   },
 };
 

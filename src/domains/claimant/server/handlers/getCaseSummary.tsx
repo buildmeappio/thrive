@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
 import claimantService from '../claimant.service';
 
 const getCaseSummary = async (token: string) => {

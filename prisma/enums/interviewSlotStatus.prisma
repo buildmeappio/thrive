@@ -1,0 +1,6 @@
+enum InterviewSlotStatus {
+  AVAILABLE
+  BOOKED
+  CANCELLED
+  COMPLETED
+}
