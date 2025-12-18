@@ -15,14 +15,14 @@ const STATUS_COLORS: Record<
   { gradient: string; text: string; legendColor: string }
 > = {
   booked: {
-    gradient: "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]",
+    gradient: "bg-[#00A8FF]",
     text: "text-white",
-    legendColor: "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]",
+    legendColor: "bg-[#00A8FF]",
   },
   completed: {
-    gradient: "bg-gradient-to-r from-[#01F4C8] to-[#00F4A8]",
+    gradient: "bg-[#000080]",
     text: "text-white",
-    legendColor: "bg-gradient-to-r from-[#01F4C8] to-[#00F4A8]",
+    legendColor: "bg-[#000080]",
   },
 };
 
@@ -277,11 +277,11 @@ export default function InterviewCalendarView({
       {/* Status Legend */}
       <div className="flex flex-wrap gap-4 mb-6 text-xs sm:text-sm">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]" />
+          <div className="w-6 h-3 rounded-full bg-[#00A8FF]" />
           <span className="text-gray-700">Booked</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-6 h-3 rounded-full bg-gradient-to-r from-[#01F4C8] to-[#00F4A8]" />
+          <div className="w-6 h-3 rounded-full bg-[#000080]" />
           <span className="text-gray-700">Completed</span>
         </div>
       </div>
