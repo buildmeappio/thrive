@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
+import env from '../config/env';
 
 const SCRIPT_ID = 'google-maps-script';
 
 export const useGoogleMaps = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
+  const API_KEY = env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 
   useEffect(() => {
     if (!API_KEY) {

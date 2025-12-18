@@ -11,7 +11,6 @@ export const metadata: Metadata = {
 };
 const Page = async ({ searchParams }: { searchParams: Promise<{ token: string }> }) => {
   const { token } = await searchParams;
-  const languages = await getLanguages();
 
   if (!token) {
     redirect(
@@ -107,6 +106,8 @@ const Page = async ({ searchParams }: { searchParams: Promise<{ token: string }>
     settings,
     excludeBookingId: existingBooking?.id, // Exclude claimant's own booking so it can be displayed
   });
+
+  const languages = await getLanguages();
 
   return (
     <ClaimantAvailability

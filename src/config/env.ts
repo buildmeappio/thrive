@@ -1,53 +1,49 @@
-import { z } from 'zod';
+const env = {
+  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL: process.env.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL,
+  NEXT_PUBLIC_CLAIMANT_BOOKING_CANCEL_URL: process.env.NEXT_PUBLIC_CLAIMANT_BOOKING_CANCEL_URL,
 
-/**
- * 🟢 Server-only environment variables
- * Never exposed to the client
- */
-const serverSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']),
-  DATABASE_URL: z.string().url(),
-  JWT_SECRET: z.string().min(20, 'JWT_SECRET must be at least 20 characters'),
-  // add more: SMTP_URL, REDIS_URL, STRIPE_SECRET_KEY, etc.
-});
+  DATABASE_URL: process.env.DATABASE_URL,
+  DATABASE_SSL_REQUIRED: process.env.DATABASE_SSL_REQUIRED === 'true' ? true : false,
 
-/**
- * 🔵 Client-exposed environment variables
- * Must start with NEXT_PUBLIC_
- */
-const clientSchema = z.object({
-  NEXT_PUBLIC_API_URL: z.string().url(),
-  NEXT_PUBLIC_APP_NAME: z.string(),
-  // add more client vars here
-});
+  OAUTH_USERNAME: process.env.OAUTH_USERNAME,
+  OAUTH_CLIENT_ID: process.env.OAUTH_CLIENT_ID,
+  OAUTH_CLIENT_SECRET: process.env.OAUTH_CLIENT_SECRET,
+  OAUTH_REFRESH_TOKEN: process.env.OAUTH_REFRESH_TOKEN,
 
-/**
- * Merge schemas for unified validation
- */
-const mergedSchema = serverSchema.merge(clientSchema);
+  AWS_REGION: process.env.AWS_REGION,
 
-const _env = mergedSchema.safeParse(process.env);
+  AWS_S3_ACCESS_KEY_ID: process.env.AWS_S3_ACCESS_KEY_ID,
+  AWS_S3_SECRET_ACCESS_KEY: process.env.AWS_S3_SECRET_ACCESS_KEY,
+  AWS_S3_BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME,
 
-if (!_env.success) {
-  console.error('❌ Invalid environment variables:', _env.error.flatten().fieldErrors);
-  throw new Error('Invalid environment variables');
-}
+  AWS_DYNAMODB_ACCESS_KEY_ID: process.env.AWS_DYNAMODB_ACCESS_KEY_ID,
+  AWS_DYNAMODB_SECRET_ACCESS_KEY: process.env.AWS_DYNAMODB_SECRET_ACCESS_KEY,
+  AWS_DYNAMODB_TABLE_NAME: process.env.AWS_DYNAMODB_TABLE_NAME,
+  AWS_DYNAMODB_INDEX_NAME: process.env.AWS_DYNAMODB_INDEX_NAME,
 
-const envValues = _env.data;
+  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+  NEXTAUTH_URL: process.env.NEXTAUTH_URL,
 
-/**
- * Split exports
- * - env.server.* = for server only
- * - env.client.* = safe for client usage
- */
-export const env = {
-  server: {
-    NODE_ENV: envValues.NODE_ENV,
-    DATABASE_URL: envValues.DATABASE_URL,
-    JWT_SECRET: envValues.JWT_SECRET,
-  },
-  client: {
-    NEXT_PUBLIC_API_URL: envValues.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_APP_NAME: envValues.NEXT_PUBLIC_APP_NAME,
-  },
-} as const;
+  NEXT_PUBLIC_CDN_URL: process.env.NEXT_PUBLIC_CDN_URL,
+
+  JWT_OTP_TOKEN_SECRET: process.env.JWT_OTP_TOKEN_SECRET,
+  JWT_OTP_TOKEN_EXPIRY: process.env.JWT_OTP_TOKEN_EXPIRY,
+
+  JWT_FORGET_PASSWORD_TOKEN_SECRET: process.env.JWT_FORGET_PASSWORD_TOKEN_SECRET,
+  JWT_FORGET_PASSWORD_TOKEN_EXPIRY: process.env.JWT_FORGET_PASSWORD_TOKEN_EXPIRY,
+
+  JWT_CLAIMANT_APPROVE_TOKEN_SECRET: process.env.JWT_CLAIMANT_APPROVE_TOKEN_SECRET,
+  JWT_CLAIMANT_APPROVE_TOKEN_EXPIRY: process.env.JWT_CLAIMANT_APPROVE_TOKEN_EXPIRY,
+
+  JWT_ORGANIZATION_INFO_REQUEST_TOKEN_SECRET:
+    process.env.JWT_ORGANIZATION_INFO_REQUEST_TOKEN_SECRET,
+  JWT_ORGANIZATION_INFO_REQUEST_TOKEN_EXPIRY:
+    process.env.JWT_ORGANIZATION_INFO_REQUEST_TOKEN_EXPIRY,
+
+  NEXT_PUBLIC_GOOGLE_PLACES_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY,
+
+  NODE_ENV: process.env.NODE_ENV,
+};
+
+export default Object.freeze(env);

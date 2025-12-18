@@ -1,5 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import env from '@/config/env';
 
 /**
  * DynamoDB client configuration for slot reservations
@@ -11,13 +12,14 @@ import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 
 // Create the base DynamoDB client
 const clientConfig: any = {
-  region: process.env.AWS_REGION || 'ca-central-1',
+  region: env.AWS_REGION || 'ca-central-1',
 };
 
-if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+if (env.AWS_DYNAMODB_ACCESS_KEY_ID && env.AWS_DYNAMODB_SECRET_ACCESS_KEY) {
+  clientConfig.region = env.AWS_REGION;
   clientConfig.credentials = {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    accessKeyId: env.AWS_DYNAMODB_ACCESS_KEY_ID,
+    secretAccessKey: env.AWS_DYNAMODB_SECRET_ACCESS_KEY,
   };
 }
 
@@ -36,14 +38,14 @@ const dynamodb = DynamoDBDocumentClient.from(client, {
 
 export default dynamodb;
 
-export const SLOT_RESERVATIONS_TABLE = process.env.DYNAMODB_SLOT_RESERVATIONS_TABLE;
+export const SLOT_RESERVATIONS_TABLE = env.AWS_DYNAMODB_TABLE_NAME;
 
-export const EXAMINER_PROFILE_ID_INDEX = process.env.EXAMINER_PROFILE_ID_INDEX;
+export const EXAMINER_PROFILE_ID_INDEX = env.AWS_DYNAMODB_INDEX_NAME;
 
-if (!SLOT_RESERVATIONS_TABLE) {
-  throw new Error('DYNAMODB_SLOT_RESERVATIONS_TABLE environment variable is required');
-}
+// if (!env.AWS_DYNAMODB_TABLE_NAME) {
+//   throw new Error('AWS_DYNAMODB_TABLE_NAME environment variable is required');
+// }
 
-if (!EXAMINER_PROFILE_ID_INDEX) {
-  throw new Error('EXAMINER_PROFILE_ID_INDEX environment variable is required');
-}
+// if (!env.AWS_DYNAMODB_INDEX_NAME) {
+//   throw new Error('AWS_DYNAMODB_INDEX_NAME environment variable is required');
+// }

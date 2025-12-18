@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
 import { HttpError } from '@/utils/httpError';
 import bcrypt from 'bcryptjs';
 import { type CreateOrganizationWithUserData } from '../types/createOrganization';
@@ -12,10 +12,11 @@ import {
   signResetPasswordToken,
 } from '@/lib/jwt';
 import ErrorMessages from '@/constants/ErrorMessages';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import SuccessMessages from '@/constants/SuccessMessages';
 import { Prisma } from '@prisma/client';
 import { getE164PhoneNumber } from '@/utils/formatNumbers';
+import env from '@/config/env';
 
 const getUserByEmail = async (email: string) => {
   try {
@@ -167,7 +168,7 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
       {
         firstName: result.firstName,
         lastName: result.lastName,
-        cdnUrl: process.env.NEXT_PUBLIC_CDN_URL,
+        cdnUrl: env.NEXT_PUBLIC_CDN_URL,
       },
       result.email
     );
@@ -255,7 +256,8 @@ const getExaminationTypes = async () => {
 
 const generateOtpToken = (email: string, otp: string) => {
   try {
-    const token = signOtpToken({ email, otp }, '5m');
+    const expiresIn = env.JWT_OTP_TOKEN_EXPIRY as SignOptions['expiresIn'];
+    const token = signOtpToken({ email, otp }, expiresIn);
     return token;
   } catch (error) {
     console.error('Failed to generate OTP token:', error);
@@ -271,7 +273,7 @@ const sendOtp = async (email: string) => {
     const payload = {
       email: email,
       otp: otp,
-      cdnUrl: process.env.NEXT_PUBLIC_CDN_URL,
+      cdnUrl: env.NEXT_PUBLIC_CDN_URL,
     };
 
     const result = await emailService.sendEmail(
@@ -297,12 +299,12 @@ const verifyOtp = (otp: string, email: string, token: string) => {
       throw HttpError.badRequest('No OTP token found');
     }
 
-    if (!process.env.JWT_OTP_SECRET) {
+    if (!env.JWT_OTP_TOKEN_SECRET) {
       throw HttpError.badRequest(ErrorMessages.JWT_SECRETS_REQUIRED);
     }
 
     // Verify JWT
-    const decoded = jwt.verify(token, process.env.JWT_OTP_SECRET) as { email: string; otp: string };
+    const decoded = jwt.verify(token, env.JWT_OTP_TOKEN_SECRET) as { email: string; otp: string };
 
     // Compare OTP
     if (decoded.otp !== otp) {
@@ -368,14 +370,14 @@ const sendResetPasswordLink = async (email: string) => {
     // Sign the token with user email
     const token = signResetPasswordToken({ email: email });
 
-    const resetLink = `${process.env.FRONTEND_URL}/organization/password/reset?token=${token}`;
+    const resetLink = `${env.NEXT_PUBLIC_APP_URL}/organization/password/reset?token=${token}`;
 
     await emailService.sendEmail(
       'Reset your password - Thrive',
       'reset-link.html',
       {
         resetLink: resetLink,
-        cdnUrl: process.env.NEXT_PUBLIC_CDN_URL,
+        cdnUrl: env.NEXT_PUBLIC_CDN_URL,
       },
       email
     );

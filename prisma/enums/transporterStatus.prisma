@@ -1,0 +1,6 @@
+
+
+enum TransporterStatus {
+  SUSPENDED
+  ACTIVE
+}

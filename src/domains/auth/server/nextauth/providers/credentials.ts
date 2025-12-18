@@ -1,6 +1,6 @@
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { authHandlers } from '../..';
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
 
 export const credentials = CredentialsProvider({
   name: 'credentials',

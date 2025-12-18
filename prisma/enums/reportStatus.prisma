@@ -1,0 +1,11 @@
+
+
+// Report models for IME report preparation
+enum ReportStatus {
+  DRAFT
+  SUBMITTED
+  REVIEWED
+  APPROVED
+  REJECTED
+  PENDING
+}

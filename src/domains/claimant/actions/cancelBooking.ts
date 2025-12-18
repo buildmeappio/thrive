@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
 import { verifyClaimantApprovalToken } from '@/lib/jwt';
 import log from '@/utils/log';
 import emailService from '@/services/emailService';

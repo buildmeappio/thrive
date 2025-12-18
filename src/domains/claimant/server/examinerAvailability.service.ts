@@ -1,5 +1,5 @@
 import { addDays, addMinutes, isAfter, min as minDate } from 'date-fns';
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
 import { HttpError } from '@/utils/httpError';
 import type {
   AvailableChaperone,

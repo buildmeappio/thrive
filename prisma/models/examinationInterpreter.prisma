@@ -1,0 +1,14 @@
+model ExaminationInterpreter {
+  id                   String @id @unique @default(uuid()) @db.Uuid
+  examinationServiceId String @unique @map("examination_service_id") @db.Uuid
+  languageId           String @map("language_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  examinationService ExaminationServices @relation("ExaminationInterpreter", fields: [examinationServiceId], references: [id])
+  language           Language            @relation("ExaminationInterpreter", fields: [languageId], references: [id])
+
+  @@map("examination_interpreter")
+}

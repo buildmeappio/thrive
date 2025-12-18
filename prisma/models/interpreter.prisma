@@ -1,0 +1,16 @@
+model Interpreter {
+  id            String    @id @unique @default(uuid()) @db.Uuid
+  companyName   String    @map("company_name") @db.VarChar(255)
+  contactPerson String    @map("contact_person") @db.VarChar(255)
+  email         String    @unique @map("email") @db.VarChar(255)
+  phone         String?   @map("phone") @db.VarChar(255)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz()
+
+  languages        InterpreterLanguage[] @relation("InterpreterLanguages")
+  claimantBookings ClaimantBooking[]     @relation("ClaimantBookingInterpreter")
+  // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'INTERPRETER' } })
+
+  @@map("interpreters")
+}

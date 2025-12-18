@@ -1,6 +1,6 @@
 'use server';
 import { verifyOrgInfoRequestToken } from '@/lib/jwt';
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
 import { HttpError } from '@/utils/httpError';
 import ErrorMessages from '@/constants/ErrorMessages';
 

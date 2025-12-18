@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
+import env from '@/config/env';
 
 /**
  * Health check endpoint for deployment monitoring
@@ -17,7 +18,7 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       service: 'organization-web',
       basePath: '/organization',
-      environment: process.env.NODE_ENV || 'development',
+      environment: env.NODE_ENV || 'development',
       uptime: typeof process !== 'undefined' && process.uptime ? process.uptime() : undefined,
       database: 'connected',
     };
