@@ -22,6 +22,7 @@ export default function ReportsTable({
 }: ReportsTableProps) {
   return (
     <section
+      data-tour="reports-table"
       className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
       aria-labelledby="reports-heading"
     >

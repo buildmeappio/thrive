@@ -10,6 +10,7 @@ export default function UpdatesPanel({
 }: UpdatesPanelProps) {
   return (
     <section
+      data-tour="recent-updates"
       className="rounded-[29px] w-full bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-5 flex flex-col"
       aria-labelledby="updates-heading"
       style={{ fontFamily: "Poppins, system-ui" }}

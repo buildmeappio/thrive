@@ -19,6 +19,15 @@ import { type ActivationStep, initializeActivationSteps } from "../constants";
 import type { ActivationStepsProps } from "../types";
 import { completeOnboardingAction } from "../server/actions";
 
+// Helper function to map step ID to tour data attribute
+const getStepTourAttribute = (stepId: string): string => {
+  const stepIdMap: Record<string, string> = {
+    profile: "profile-info",
+    services: "services-assessment",
+  };
+  return `step-${stepIdMap[stepId] || stepId}`;
+};
+
 const ActivationSteps: React.FC<ActivationStepsProps> = ({
   initialActivationStep: _initialActivationStep,
   examinerProfileId,
@@ -793,7 +802,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
     return (
       <div className="space-y-4">
         {steps.map((step) => (
-          <div key={step.id} className="space-y-4">
+          <div key={step.id} className="space-y-4" data-tour={getStepTourAttribute(step.id)}>
             {/* Step Button */}
             <button
               onClick={() => handleStepClick(step)}
@@ -827,6 +836,7 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
           <Button
             onClick={handleCompleteOnboarding}
             disabled={completing}
+            data-tour="complete-onboarding-button"
             className="rounded-full bg-[#00A8FF] hover:bg-[#0099E6] text-white px-8 py-2 flex items-center justify-center gap-2"
           >
             <span>Complete Onboarding</span>
@@ -841,27 +851,29 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
   return (
     <div className="space-y-4 mt-8">
       {steps.map((step) => (
-        <button
-          key={step.id}
-          onClick={() => handleStepClick(step)}
-          className={cn(
-            "w-full flex items-center justify-between p-3 rounded-2xl transition-all duration-200",
-            "border-2 bg-white cursor-pointer border-transparent hover:border-[#00A8FF]/20",
-          )}
-        >
-          <div className="flex items-center gap-4 flex-1">
-            {renderStepIcon(step.id)}
-            <span className="text-lg font-medium text-left text-gray-700">
-              {step.title}
-            </span>
-          </div>
-        </button>
+        <div key={step.id} data-tour={getStepTourAttribute(step.id)}>
+          <button
+            onClick={() => handleStepClick(step)}
+            className={cn(
+              "w-full flex items-center justify-between p-3 rounded-2xl transition-all duration-200",
+              "border-2 bg-white cursor-pointer border-transparent hover:border-[#00A8FF]/20",
+            )}
+          >
+            <div className="flex items-center gap-4 flex-1">
+              {renderStepIcon(step.id)}
+              <span className="text-lg font-medium text-left text-gray-700">
+                {step.title}
+              </span>
+            </div>
+          </button>
+        </div>
       ))}
       {/* Complete Onboarding Button */}
       <div className="flex justify-end pt-4 mt-6">
         <Button
           onClick={handleCompleteOnboarding}
           disabled={completing}
+          data-tour="complete-onboarding-button"
           className="rounded-full bg-[#00A8FF] hover:bg-[#0099E6] text-white px-8 py-2 flex items-center justify-center gap-2"
         >
           <span>Complete Onboarding</span>
