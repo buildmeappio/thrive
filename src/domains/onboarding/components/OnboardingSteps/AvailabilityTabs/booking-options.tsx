@@ -13,7 +13,7 @@ interface BookingOptionsProps {
   form: UseFormReturn<AvailabilityPreferencesInput>;
 }
 
-const BookingOptions: React.FC<BookingOptionsProps> = ({ form }) => {
+const BookingOptions: React.FC<BookingOptionsProps> = () => {
   const {
     control,
     formState: { errors },

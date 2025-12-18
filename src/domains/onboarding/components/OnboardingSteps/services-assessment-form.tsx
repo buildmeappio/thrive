@@ -90,38 +90,8 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
 
   const assessmentTypes = form.watch("assessmentTypes");
   const travelToClaimants = form.watch("travelToClaimants");
-  const travelRadius = form.watch("travelRadius");
-  const assessmentTypeOther = form.watch("assessmentTypeOther");
   const acceptVirtualAssessments = form.watch("acceptVirtualAssessments");
   const acceptInPersonAssessments = form.watch("acceptInPersonAssessments");
-  const formErrors = form.formState.errors;
-
-  // Check if all required fields are filled
-  const isFormValid = useMemo(() => {
-    const hasAssessmentTypes =
-      Array.isArray(assessmentTypes) && assessmentTypes.length > 0;
-    const travelValid =
-      !travelToClaimants ||
-      (travelToClaimants && travelRadius && travelRadius.trim().length > 0);
-    const otherValid =
-      !assessmentTypes.includes("other") ||
-      (assessmentTypeOther && assessmentTypeOther.trim().length > 0);
-
-    return (
-      hasAssessmentTypes &&
-      travelValid &&
-      otherValid &&
-      !formErrors.assessmentTypes &&
-      !formErrors.travelRadius &&
-      !formErrors.assessmentTypeOther
-    );
-  }, [
-    assessmentTypes,
-    travelToClaimants,
-    travelRadius,
-    assessmentTypeOther,
-    formErrors,
-  ]);
 
   const toggleAssessmentType = (typeId: string) => {
     const currentTypes = form.getValues("assessmentTypes");

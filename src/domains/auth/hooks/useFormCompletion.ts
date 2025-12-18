@@ -1,6 +1,6 @@
 "use client";
 import { useMemo } from "react";
-import { UseFormReturn, FieldValues, Path } from "@/lib/form";
+import { UseFormReturn, FieldValues } from "@/lib/form";
 
 interface UseFormCompletionOptions<T extends FieldValues> {
   form: UseFormReturn<T>;

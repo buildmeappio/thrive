@@ -46,6 +46,7 @@ export function useDocumentsFormSubmission({
       initialFilesHashRef.current = initialHash;
       previousFilesRef.current = initialHash;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Check if files have changed from initial state

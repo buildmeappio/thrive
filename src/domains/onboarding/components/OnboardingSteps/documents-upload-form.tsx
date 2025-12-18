@@ -30,7 +30,6 @@ const DocumentsUploadForm: React.FC<DocumentsUploadFormProps> = ({
     handleMarkComplete,
     handleFileChange,
     loading: submitting,
-    isFormValid,
   } = useDocumentsFormSubmission({
     examinerProfileId,
     allFiles,

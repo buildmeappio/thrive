@@ -177,8 +177,8 @@ jobs:
             sudo apt-get update && sudo apt-get install -y jq || true
 
             # Fetch secrets from AWS Secrets Manager
-            SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id staging/shared --region $AWS_REGION --query SecretString --output text)
-            EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id staging/examiner --region $AWS_REGION --query SecretString --output text)
+            SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id staging/shared --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+            EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id staging/examiner --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
 
             # Merge secrets (examiner overrides shared) and convert JSON to .env format
             jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' | sudo tee $DEPLOY_PATH/.env > /dev/null

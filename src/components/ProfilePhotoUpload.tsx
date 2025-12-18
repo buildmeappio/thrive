@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef } from "react";
 import { User, Camera, Loader2 } from "lucide-react";
+import logger from "@/utils/logger";
 
 interface ProfilePhotoUploadProps {
   currentPhotoUrl?: string | null;
@@ -170,6 +171,7 @@ const ProfilePhotoUpload: React.FC<ProfilePhotoUploadProps> = ({
     try {
       reader.readAsDataURL(file);
     } catch (err) {
+      logger.error("Failed to read file", err);
       clearTimeout(timeoutId);
       setError("Failed to read file");
       hasLocalPreviewRef.current = false;
