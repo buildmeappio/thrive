@@ -1,5 +1,5 @@
 {
-  "name": "thrive",
+  "name": "organization",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -32,8 +32,10 @@
     "docker:run": "docker build -t examiner:latest . && docker run --env-file .env -d -p 3002:3002 examiner:latest",
     "docker:stop": "docker stop examiner",
     "docker:remove": "docker rm examiner",
-    "docker:up": "docker-compose up --build -d",
-    "docker:down": "docker-compose down -v"
+    "docker:dev:up": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 docker-compose up --build -d",
+    "docker:dev:down": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 docker-compose down -v",
+    "docker:staging:up": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 docker-compose -f docker-compose.staging.yml up --build -d",
+    "docker:staging:down": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 docker-compose -f docker-compose.staging.yml down -v"
   },
   "optionalDependencies": {
     "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",

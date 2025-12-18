@@ -5,11 +5,11 @@ const options: S3ClientConfig = {
   region: 'ca-central-1',
 };
 
-if (env.AWS_REGION && env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY) {
+if (env.AWS_REGION && env.AWS_S3_ACCESS_KEY_ID && env.AWS_S3_SECRET_ACCESS_KEY) {
   options.region = env.AWS_REGION;
   options.credentials = {
-    accessKeyId: env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+    accessKeyId: env.AWS_S3_ACCESS_KEY_ID,
+    secretAccessKey: env.AWS_S3_SECRET_ACCESS_KEY,
   };
 }
 
