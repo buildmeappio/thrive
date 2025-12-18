@@ -1,0 +1,27 @@
+model Organization {
+  id                     String             @id @unique @default(uuid()) @db.Uuid
+  typeId                 String             @map("type_id") @db.Uuid
+  addressId              String             @map("address_id") @db.Uuid
+  address                Address            @relation("Address", fields: [addressId], references: [id])
+  type                   OrganizationType   @relation(name: "OrganizationType", fields: [typeId], references: [id])
+  name                   String             @map("name") @db.VarChar(255)
+  website                String?            @map("website") @db.VarChar(255)
+  isAuthorized           Boolean            @default(false) @map("is_authorized")
+  dataSharingConsent     Boolean            @default(false) @map("data_sharing_consent")
+  agreeToTermsAndPrivacy Boolean            @default(false) @map("agree_to_terms_and_privacy")
+  status                 OrganizationStatus @default(PENDING) @map("status")
+  approvedBy             String?            @map("approved_by") @db.Uuid
+  approvedAt             DateTime?          @map("approved_at") @db.Timestamptz()
+  rejectedBy             String?            @map("rejected_by") @db.Uuid
+  rejectedAt             DateTime?          @map("rejected_at") @db.Timestamptz()
+  rejectedReason         String?            @map("rejected_reason") @db.Text
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  manager OrganizationManager[] @relation("OrganizationManager")
+  cases   Case[]                @relation("OrganizationCases")
+
+  @@map("organizations")
+}

@@ -8,4 +8,3 @@ const getInterpreterById = async (id: string) => {
 };
 
 export default getInterpreterById;
-

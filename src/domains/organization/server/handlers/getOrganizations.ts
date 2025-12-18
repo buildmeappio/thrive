@@ -1,8 +1,10 @@
+"use server";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import { OrganizationDto } from "../dto/organizations.dto";
-import organizationsService from "../organizations.service";
+import * as OrganizationsService from "../organizations.service";
 import { redirect } from "next/navigation";
 import { OrganizationData } from "@/domains/organization/types/OrganizationData";
+import logger from "@/utils/logger";
 
 const getOrganizations = async (): Promise<OrganizationData[]> => {
   const user = await getCurrentUser();
@@ -10,8 +12,8 @@ const getOrganizations = async (): Promise<OrganizationData[]> => {
     redirect("/login");
   }
 
-  const orgs = await organizationsService.listOrganizations();
-  console.log("organization list", orgs)
+  const orgs = await OrganizationsService.listOrganizations();
+  logger.log("organization list", orgs);
   return orgs.map(OrganizationDto.toOrganization);
 };
 

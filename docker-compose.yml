@@ -1,38 +1,22 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      shm_size: '2gb'
-      args:
-        BUILDKIT_INLINE_CACHE: 1
-    platform: linux/amd64  # Use linux/amd64 for production x86_64 deployments
-    container_name: avaweb-app
+    image: ${ECR_REGISTRY:-admin-web}:${IMAGE_TAG:-latest}
+    platform: linux/amd64
+    container_name: admin-web
     restart: unless-stopped
     env_file:
       - .env
     environment:
       - NODE_ENV=production
-    ports:
-      - "3002:3002"
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-0}
+    network_mode: host
     deploy:
       resources:
         limits:
           memory: 2G
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3002/organization/api/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/admin/api/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-
-  nginx:
-    image: nginx:latest
-    container_name: nginx-proxy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - app

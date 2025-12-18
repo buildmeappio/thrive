@@ -1,4 +1,4 @@
-import { LucideIcon, Users } from 'lucide-react';
+import { LucideIcon, Users } from "lucide-react";
 
 export type ServiceConfig = {
   id: string;
@@ -11,11 +11,11 @@ export type ServiceConfig = {
 // Define all available services here
 export const SERVICES: ServiceConfig[] = [
   {
-    id: 'chaperones',
-    label: 'Chaperones',
+    id: "chaperones",
+    label: "Chaperones",
     icon: Users,
-    href: '/dashboard/chaperones',
-    description: 'Manage chaperone registry',
+    href: "/dashboard/chaperones",
+    description: "Manage chaperone registry",
   },
   // Add more services here as needed
   // Example:
@@ -30,12 +30,12 @@ export const SERVICES: ServiceConfig[] = [
 
 // Helper function to get service by id
 export const getServiceById = (id: string): ServiceConfig | undefined => {
-  return SERVICES.find(service => service.id === id);
+  return SERVICES.find((service) => service.id === id);
 };
 
 // Helper function to check if a path matches a service
-export const getServiceByPath = (pathname: string): ServiceConfig | undefined => {
-  return SERVICES.find(service => pathname.startsWith(service.href));
+export const getServiceByPath = (
+  pathname: string,
+): ServiceConfig | undefined => {
+  return SERVICES.find((service) => pathname.startsWith(service.href));
 };
-
-

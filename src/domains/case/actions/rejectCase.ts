@@ -7,11 +7,12 @@ import emailService from "@/services/email.service";
 import caseHandlers from "../server/handlers";
 import prisma from "@/lib/db";
 import { CaseDetailDtoType } from "../types/CaseDetailDtoType";
+import logger from "@/utils/logger";
 
 const rejectCase = async (
   caseId: string,
   messageToClaimant: string,
-  messageToOrganization: string
+  messageToOrganization: string,
 ): Promise<void> => {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
@@ -31,8 +32,8 @@ const rejectCase = async (
   try {
     // Find the "Rejected" status
     const rejectedStatus = await prisma.caseStatus.findFirst({
-      where: { 
-        name: "Rejected"
+      where: {
+        name: "Rejected",
       },
     });
 
@@ -46,19 +47,25 @@ const rejectCase = async (
       data: { statusId: rejectedStatus.id },
     });
 
-    console.log("✓ Case status updated to Rejected");
+    logger.log("✓ Case status updated to Rejected");
   } catch (dbError) {
-    console.error("⚠️ Failed to update case status:", dbError);
+    logger.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");
   }
 
   // Send rejection email to organization if message provided
   if (messageToOrganization?.trim()) {
     try {
-      await sendRejectionEmailToOrganization(caseDetails, messageToOrganization);
-      console.log("✓ Rejection email sent to organization");
+      await sendRejectionEmailToOrganization(
+        caseDetails,
+        messageToOrganization,
+      );
+      logger.log("✓ Rejection email sent to organization");
     } catch (emailError) {
-      console.error("⚠️ Failed to send rejection email to organization:", emailError);
+      logger.error(
+        "⚠️ Failed to send rejection email to organization:",
+        emailError,
+      );
     }
   }
 
@@ -66,9 +73,12 @@ const rejectCase = async (
   if (messageToClaimant?.trim()) {
     try {
       await sendRejectionEmailToClaimant(caseDetails, messageToClaimant);
-      console.log("✓ Rejection email sent to claimant");
+      logger.log("✓ Rejection email sent to claimant");
     } catch (emailError) {
-      console.error("⚠️ Failed to send rejection email to claimant:", emailError);
+      logger.error(
+        "⚠️ Failed to send rejection email to claimant:",
+        emailError,
+      );
     }
   }
 
@@ -78,23 +88,27 @@ const rejectCase = async (
   revalidatePath(`/cases/${caseId}`);
 };
 
-async function sendRejectionEmailToOrganization(caseDetails: CaseDetailDtoType, rejectionMessage: string) {
+async function sendRejectionEmailToOrganization(
+  caseDetails: CaseDetailDtoType,
+  rejectionMessage: string,
+) {
   const organizationEmail = caseDetails.case.organization?.managerEmail;
-  const organizationName = caseDetails.case.organization?.name || "Unknown Organization";
+  const organizationName =
+    caseDetails.case.organization?.name || "Unknown Organization";
   const managerName = caseDetails.case.organization?.managerName || "";
-  const firstName = managerName.split(' ')[0] || "";
-  const lastName = managerName.split(' ').slice(1).join(' ') || "";
+  const firstName = managerName.split(" ")[0] || "";
+  const lastName = managerName.split(" ").slice(1).join(" ") || "";
 
   if (!organizationEmail) {
-    console.error("Organization email not found");
+    logger.error("Organization email not found");
     return;
   }
 
-  const submittedDate = caseDetails.createdAt 
-    ? new Date(caseDetails.createdAt).toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+  const submittedDate = caseDetails.createdAt
+    ? new Date(caseDetails.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       })
     : "Unknown";
 
@@ -108,9 +122,12 @@ async function sendRejectionEmailToOrganization(caseDetails: CaseDetailDtoType, 
       organizationName,
       rejectionMessage,
       submittedDate,
-      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
+      CDN_URL:
+        process.env.NEXT_PUBLIC_CDN_URL ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        "",
     },
-    organizationEmail
+    organizationEmail,
   );
 
   if (!result.success) {
@@ -118,22 +135,26 @@ async function sendRejectionEmailToOrganization(caseDetails: CaseDetailDtoType, 
   }
 }
 
-async function sendRejectionEmailToClaimant(caseDetails: CaseDetailDtoType, rejectionMessage: string) {
+async function sendRejectionEmailToClaimant(
+  caseDetails: CaseDetailDtoType,
+  rejectionMessage: string,
+) {
   const claimantEmail = caseDetails.claimant?.emailAddress;
   const firstName = caseDetails.claimant?.firstName || "";
   const lastName = caseDetails.claimant?.lastName || "";
-  const organizationName = caseDetails.case.organization?.name || "Unknown Organization";
+  const organizationName =
+    caseDetails.case.organization?.name || "Unknown Organization";
 
   if (!claimantEmail) {
-    console.error("Claimant email not found");
+    logger.error("Claimant email not found");
     return;
   }
 
-  const submittedDate = caseDetails.createdAt 
-    ? new Date(caseDetails.createdAt).toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+  const submittedDate = caseDetails.createdAt
+    ? new Date(caseDetails.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       })
     : "Unknown";
 
@@ -147,9 +168,12 @@ async function sendRejectionEmailToClaimant(caseDetails: CaseDetailDtoType, reje
       organizationName,
       rejectionMessage,
       submittedDate,
-      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
+      CDN_URL:
+        process.env.NEXT_PUBLIC_CDN_URL ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        "",
     },
-    claimantEmail
+    claimantEmail,
   );
 
   if (!result.success) {
@@ -158,4 +182,3 @@ async function sendRejectionEmailToClaimant(caseDetails: CaseDetailDtoType, reje
 }
 
 export default rejectCase;
-

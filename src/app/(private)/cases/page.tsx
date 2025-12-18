@@ -37,7 +37,14 @@ const Page = async () => {
     dueDate: c.dueDate ? new Date(c.dueDate).toISOString() : null,
   }));
 
-  return <CasesPageContent data={data} types={types} statuses={statuses} priorityLevels={priorityLevels} />;
+  return (
+    <CasesPageContent
+      data={data}
+      types={types}
+      statuses={statuses}
+      priorityLevels={priorityLevels}
+    />
+  );
 };
 
 export default Page;

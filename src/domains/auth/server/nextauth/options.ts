@@ -2,12 +2,13 @@ import type { NextAuthOptions } from "next-auth";
 import { providers } from "./providers";
 import { callbacks } from "./callbacks";
 
-const useSecureCookies = process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://") ?? false;
+const useSecureCookies =
+  process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://") ?? false;
 const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 
 export const authOptions: NextAuthOptions = {
-  session: { 
-    strategy: "jwt", 
+  session: {
+    strategy: "jwt",
     maxAge: 60 * 60 * 8, // 8 hours
     updateAge: 60 * 60, // Update session every hour
   },

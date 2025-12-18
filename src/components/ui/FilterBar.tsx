@@ -3,7 +3,11 @@
 import LabeledSelect from "./LabeledSelect";
 
 export type FilterOption = { label: string; value: string };
-export type FilterConfig = { key: string; label: string; options: FilterOption[] };
+export type FilterConfig = {
+  key: string;
+  label: string;
+  options: FilterOption[];
+};
 
 export default function FilterBar({
   configs,

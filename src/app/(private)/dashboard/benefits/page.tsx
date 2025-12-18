@@ -1,7 +1,10 @@
 import { Metadata } from "next";
 import { DashboardShell } from "@/layouts/dashboard";
 import BenefitsList from "@/domains/benefits/components/BenefitsList";
-import { getBenefitsAction, getExaminationTypesAction } from "@/domains/benefits/actions";
+import {
+  getBenefitsAction,
+  getExaminationTypesAction,
+} from "@/domains/benefits/actions";
 
 export const metadata: Metadata = {
   title: "Benefits | Thrive Admin",
@@ -33,9 +36,10 @@ const Page = async () => {
     );
   }
 
-  const examinationTypes = examTypesResponse.success && examTypesResponse.data
-    ? examTypesResponse.data
-    : [];
+  const examinationTypes =
+    examTypesResponse.success && examTypesResponse.data
+      ? examTypesResponse.data
+      : [];
 
   return (
     <DashboardShell>
@@ -48,4 +52,3 @@ const Page = async () => {
 };
 
 export default Page;
-

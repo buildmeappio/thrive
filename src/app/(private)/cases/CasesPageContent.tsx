@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import CaseTableWithPagination from "@/domains/case/components/CaseTableWithPagination";
+import CaseTable, {
+  useCaseTable,
+} from "@/domains/case/components/CaseTableWithPagination";
 import Pagination from "@/components/Pagination";
 import { CaseData } from "@/domains/case/types/CaseData";
 import { DashboardShell } from "@/layouts/dashboard";
@@ -136,7 +138,7 @@ export default function CasesPageContent({
         const target = event.target as Element;
         // Check if the click is outside any dropdown container or calendar popover (rendered in a portal)
         const isInsideDropdown = target.closest(
-          ".filter-dropdown, .date-popover-content"
+          ".filter-dropdown, .date-popover-content",
         );
         if (!isInsideDropdown) {
           setActiveDropdown(null);
@@ -153,12 +155,9 @@ export default function CasesPageContent({
     };
   }, [activeDropdown]);
 
-  // Get table and table element from the component
-  const { table, tableElement } = CaseTableWithPagination({
+  // Get table and columns from the hook
+  const { table, columns } = useCaseTable({
     data,
-    types,
-    statuses,
-    priorityLevels,
     searchQuery,
     filters,
   });
@@ -403,7 +402,7 @@ export default function CasesPageContent({
               <button
                 onClick={() =>
                   setActiveDropdown(
-                    activeDropdown === "claimType" ? null : "claimType"
+                    activeDropdown === "claimType" ? null : "claimType",
                   )
                 }
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
@@ -496,7 +495,7 @@ export default function CasesPageContent({
               <button
                 onClick={() =>
                   setActiveDropdown(
-                    activeDropdown === "status" ? null : "status"
+                    activeDropdown === "status" ? null : "status",
                   )
                 }
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
@@ -540,7 +539,7 @@ export default function CasesPageContent({
                 </svg>
               </button>
               {activeDropdown === "status" && (
-                <div className="absolute top-full left-0 mt-2 w-48 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 w-48 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                   <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
                     <button
                       onClick={(e) => {
@@ -581,7 +580,7 @@ export default function CasesPageContent({
               <button
                 onClick={() =>
                   setActiveDropdown(
-                    activeDropdown === "priority" ? null : "priority"
+                    activeDropdown === "priority" ? null : "priority",
                   )
                 }
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
@@ -625,7 +624,7 @@ export default function CasesPageContent({
                 </svg>
               </button>
               {activeDropdown === "priority" && (
-                <div className="absolute top-full left-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <div className="absolute top-full left-0 sm:right-0 sm:left-auto mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                   <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
                     <button
                       onClick={(e) => {
@@ -688,7 +687,7 @@ export default function CasesPageContent({
 
         {/* Cases Table Card */}
         <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
-          {tableElement}
+          <CaseTable table={table} columns={columns} />
         </div>
 
         {/* Pagination - Outside the card */}

@@ -6,4 +6,3 @@ const getExaminerCount = async () => {
 };
 
 export default getExaminerCount;
-

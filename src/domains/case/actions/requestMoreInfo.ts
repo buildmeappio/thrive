@@ -7,10 +7,11 @@ import emailService from "@/services/email.service";
 import caseHandlers from "../server/handlers";
 import prisma from "@/lib/db";
 import { CaseDetailDtoType } from "../types/CaseDetailDtoType";
+import logger from "@/utils/logger";
 
 const requestMoreInfo = async (
   caseId: string,
-  messageToOrganization: string
+  messageToOrganization: string,
 ): Promise<void> => {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
@@ -30,8 +31,8 @@ const requestMoreInfo = async (
   try {
     // Find the "More Information required" status
     const infoRequiredStatus = await prisma.caseStatus.findFirst({
-      where: { 
-        name: "More Information required"
+      where: {
+        name: "More Information required",
       },
     });
 
@@ -45,18 +46,21 @@ const requestMoreInfo = async (
       data: { statusId: infoRequiredStatus.id },
     });
 
-    console.log("✓ Case status updated to More Information required");
+    logger.log("✓ Case status updated to More Information required");
   } catch (dbError) {
-    console.error("⚠️ Failed to update case status:", dbError);
+    logger.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");
   }
 
   // Send request more info email to organization
   try {
-    await sendRequestMoreInfoEmailToOrganization(caseDetails, messageToOrganization);
-    console.log("✓ Request more info email sent to organization");
+    await sendRequestMoreInfoEmailToOrganization(
+      caseDetails,
+      messageToOrganization,
+    );
+    logger.log("✓ Request more info email sent to organization");
   } catch (emailError) {
-    console.error("⚠️ Failed to send request more info email:", emailError);
+    logger.error("⚠️ Failed to send request more info email:", emailError);
     throw emailError;
   }
 
@@ -66,23 +70,27 @@ const requestMoreInfo = async (
   revalidatePath(`/cases/${caseId}`);
 };
 
-async function sendRequestMoreInfoEmailToOrganization(caseDetails: CaseDetailDtoType, requestMessage: string) {
+async function sendRequestMoreInfoEmailToOrganization(
+  caseDetails: CaseDetailDtoType,
+  requestMessage: string,
+) {
   const organizationEmail = caseDetails.case.organization?.managerEmail;
-  const organizationName = caseDetails.case.organization?.name || "Unknown Organization";
+  const organizationName =
+    caseDetails.case.organization?.name || "Unknown Organization";
   const managerName = caseDetails.case.organization?.managerName || "";
-  const firstName = managerName.split(' ')[0] || "";
-  const lastName = managerName.split(' ').slice(1).join(' ') || "";
+  const firstName = managerName.split(" ")[0] || "";
+  const lastName = managerName.split(" ").slice(1).join(" ") || "";
 
   if (!organizationEmail) {
-    console.error("Organization email not found");
+    logger.error("Organization email not found");
     throw new Error("Organization email not found");
   }
 
-  const submittedDate = caseDetails.createdAt 
-    ? new Date(caseDetails.createdAt).toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+  const submittedDate = caseDetails.createdAt
+    ? new Date(caseDetails.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       })
     : "Unknown";
 
@@ -100,9 +108,12 @@ async function sendRequestMoreInfoEmailToOrganization(caseDetails: CaseDetailDto
       requestMessage,
       submittedDate,
       updateLink,
-      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
+      CDN_URL:
+        process.env.NEXT_PUBLIC_CDN_URL ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        "",
     },
-    organizationEmail
+    organizationEmail,
   );
 
   if (!result.success) {
@@ -111,4 +122,3 @@ async function sendRequestMoreInfoEmailToOrganization(caseDetails: CaseDetailDto
 }
 
 export default requestMoreInfo;
-

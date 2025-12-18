@@ -19,11 +19,11 @@ import {
 const formatText = (str: string): string => {
   if (!str) return str;
   return str
-    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
-    .split(' ')
-    .filter(word => word.length > 0)  // Remove empty strings
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+    .replace(/[-_]/g, " ") // Replace - and _ with spaces
+    .split(" ")
+    .filter((word) => word.length > 0) // Remove empty strings
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 };
 
 export type CaseRow = {
@@ -36,11 +36,11 @@ export type CaseRow = {
 };
 
 type Props = {
-  items: CaseDetailDtoType[];                 // rows to show
-  listHref: string;                 // e.g. "/cases"
+  items: CaseDetailDtoType[]; // rows to show
+  listHref: string; // e.g. "/cases"
   buildDetailHref?: (id: string) => string; // defaults to `${listHref}/${id}`
-  title?: string;                   // override title if needed
-  subtitle?: string;                // override subtitle
+  title?: string; // override title if needed
+  subtitle?: string; // override subtitle
 };
 
 export default function NewCases({
@@ -105,11 +105,13 @@ export default function NewCases({
           <TableBody>
             {items?.map((r) => {
               const href = buildDetailHref(r.id);
-              const priorityText = r.urgencyLevel === "HIGH" ? "Urgent" : "Normal";
-              const priorityColor = r.urgencyLevel === "HIGH" ? "text-[#FF0000]" : "text-[#FFB800]";
-              
+              const priorityText =
+                r.urgencyLevel === "HIGH" ? "Urgent" : "Normal";
+              const priorityColor =
+                r.urgencyLevel === "HIGH" ? "text-[#FF0000]" : "text-[#FFB800]";
+
               return (
-                <TableRow 
+                <TableRow
                   key={r.id}
                   className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
                 >
@@ -117,20 +119,32 @@ export default function NewCases({
                     <span className="block">{r.caseNumber}</span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[160px] sm:min-w-0">
-                    <span className="block">{capitalizeWords(r.case.organization?.name || "N/A")}</span>
+                    <span className="block">
+                      {capitalizeWords(r.case.organization?.name || "N/A")}
+                    </span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[160px] sm:min-w-0">
-                    <span className="block">{r.case.caseType?.name ? formatText(r.case.caseType.name) : "N/A"}</span>
+                    <span className="block">
+                      {r.case.caseType?.name
+                        ? formatText(r.case.caseType.name)
+                        : "N/A"}
+                    </span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[140px] sm:min-w-0">
-                    <span className="block">{formatDateShort(r.createdAt)}</span>
+                    <span className="block">
+                      {formatDateShort(r.createdAt)}
+                    </span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[130px] sm:min-w-0">
-                    <span className="block">{r.dueDate ? formatDateShort(r.dueDate) : "N/A"}</span>
+                    <span className="block">
+                      {r.dueDate ? formatDateShort(r.dueDate) : "N/A"}
+                    </span>
                   </TableCell>
                   <TableCell className="py-5 sm:py-3 min-w-[140px] sm:min-w-0">
                     <div className="flex items-center justify-between gap-3">
-                      <span className={`text-[17px] sm:text-[14px] tracking-[-0.01em] font-medium ${priorityColor} font-poppins min-w-0 flex-1`}>
+                      <span
+                        className={`text-[17px] sm:text-[14px] tracking-[-0.01em] font-medium ${priorityColor} font-poppins min-w-0 flex-1`}
+                      >
                         {priorityText}
                       </span>
                       <Link

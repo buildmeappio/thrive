@@ -2,13 +2,12 @@
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import logger from "@/utils/logger";
 
 type FeeStructure = {
-  standardIMEFee: number;
-  virtualIMEFee: number;
+  IMEFee: number;
   recordReviewFee: number;
   hourlyRate?: number;
-  reportTurnaroundDays?: number;
   cancellationFee: number;
   paymentTerms: string;
 };
@@ -23,7 +22,7 @@ type FeeStructure = {
 export async function generateContractPDF(
   examinerName: string,
   province: string,
-  feeStructure: FeeStructure
+  feeStructure: FeeStructure,
 ): Promise<Buffer> {
   try {
     // Create new PDF document
@@ -49,14 +48,14 @@ export async function generateContractPDF(
       fontSize: number = 11,
       fontStyle: string = "normal",
       align: "left" | "center" | "right" = "left",
-      color: number[] = [0, 0, 0]
+      color: number[] = [0, 0, 0],
     ) => {
       doc.setFontSize(fontSize);
       doc.setFont("helvetica", fontStyle);
       doc.setTextColor(color[0], color[1], color[2]);
 
       const lines = doc.splitTextToSize(text, contentWidth);
-      
+
       if (yPosition + lines.length * (fontSize / 3) > pageHeight - margin) {
         doc.addPage();
         yPosition = margin;
@@ -85,9 +84,15 @@ export async function generateContractPDF(
     };
 
     // Header with Title
-    addText("INDEPENDENT MEDICAL EXAMINER AGREEMENT", 20, "bold", "center", [0, 0, 0]);
+    addText(
+      "INDEPENDENT MEDICAL EXAMINER AGREEMENT",
+      20,
+      "bold",
+      "center",
+      [0, 0, 0],
+    );
     addSpace(3);
-    
+
     // Decorative line
     doc.setDrawColor(0, 168, 255);
     doc.setLineWidth(1);
@@ -103,7 +108,7 @@ export async function generateContractPDF(
     addText(
       `This Agreement is made between ${platformName} ("Platform") and Dr. ${examinerName} ("Examiner") located in ${province}.`,
       11,
-      "normal"
+      "normal",
     );
     addSpace(8);
 
@@ -113,7 +118,7 @@ export async function generateContractPDF(
     addSpace(3);
     addText(
       "This Agreement outlines the terms under which the Examiner will provide Independent Medical Examination (IME) services through the Platform to claimants referred by insurance companies, legal firms, and other authorized organizations.",
-      11
+      11,
     );
     addSpace(8);
 
@@ -121,28 +126,29 @@ export async function generateContractPDF(
     checkPageBreak(60);
     addText("2. FEE STRUCTURE", 14, "bold", "left", [0, 0, 0]);
     addSpace(3);
-    addText("The Examiner agrees to provide services at the following rates:", 11);
+    addText(
+      "The Examiner agrees to provide services at the following rates:",
+      11,
+    );
     addSpace(5);
 
     // Fee Structure Table
     const feeTableData: any[][] = [
-      ["Standard IME Fee", `$${feeStructure.standardIMEFee.toFixed(2)}`],
-      ["Virtual IME Fee", `$${feeStructure.virtualIMEFee.toFixed(2)}`],
-      ["Record Review Fee", `$${feeStructure.recordReviewFee.toFixed(2)}`],
+      ["IME Fee", `$${feeStructure.IMEFee.toFixed(2)}`],
+      ["Report Review Fee", `$${feeStructure.recordReviewFee.toFixed(2)}`],
     ];
 
     if (feeStructure.hourlyRate) {
-      feeTableData.push(["Hourly Rate", `$${feeStructure.hourlyRate.toFixed(2)}/hour`]);
-    }
-
-    if (feeStructure.reportTurnaroundDays) {
       feeTableData.push([
-        "Report Turnaround",
-        `${feeStructure.reportTurnaroundDays} ${feeStructure.reportTurnaroundDays === 1 ? "day" : "days"}`,
+        "Hourly Rate",
+        `$${feeStructure.hourlyRate.toFixed(2)}/hour`,
       ]);
     }
 
-    feeTableData.push(["Cancellation Fee", `$${feeStructure.cancellationFee.toFixed(2)}`]);
+    feeTableData.push([
+      "Cancellation Fee",
+      `$${feeStructure.cancellationFee.toFixed(2)}`,
+    ]);
 
     autoTable(doc, {
       startY: yPosition,
@@ -181,7 +187,6 @@ export async function generateContractPDF(
 
     const services = [
       "Conduct thorough and impartial medical examinations of claimants",
-      "Prepare detailed, objective medical reports within the agreed turnaround time",
       "Maintain professional standards in accordance with medical licensing requirements",
       "Be available for testimony or clarification if required",
       "Respond to case assignments in a timely manner",
@@ -216,7 +221,9 @@ export async function generateContractPDF(
       checkPageBreak(10);
       doc.setFontSize(10);
       doc.circle(margin + 2, yPosition - 1, 1, "F");
-      doc.text(obligation, margin + 6, yPosition, { maxWidth: contentWidth - 6 });
+      doc.text(obligation, margin + 6, yPosition, {
+        maxWidth: contentWidth - 6,
+      });
       const lines = doc.splitTextToSize(obligation, contentWidth - 6);
       yPosition += lines.length * 3.5 + 2;
     });
@@ -228,7 +235,7 @@ export async function generateContractPDF(
     addSpace(3);
     addText(
       "The Examiner acknowledges that all information obtained during examinations is confidential and shall:",
-      11
+      11,
     );
     addSpace(3);
 
@@ -255,7 +262,7 @@ export async function generateContractPDF(
     addSpace(3);
     addText(
       "The Examiner is an independent contractor and not an employee of the Platform. The Examiner is responsible for:",
-      11
+      11,
     );
     addSpace(3);
 
@@ -282,7 +289,7 @@ export async function generateContractPDF(
     addSpace(3);
     addText(
       "This Agreement shall remain in effect until terminated by either party with 30 days written notice. The Platform may terminate this Agreement immediately if the Examiner:",
-      11
+      11,
     );
     addSpace(3);
 
@@ -309,7 +316,7 @@ export async function generateContractPDF(
     addSpace(3);
     addText(
       "The Examiner agrees to maintain professional liability insurance with minimum coverage of $2,000,000 and shall indemnify the Platform against any claims arising from the Examiner's professional services or negligence.",
-      11
+      11,
     );
     addSpace(8);
 
@@ -319,7 +326,7 @@ export async function generateContractPDF(
     addSpace(3);
     addText(
       `Any disputes arising from this Agreement shall be resolved through mediation, and if necessary, arbitration in accordance with the laws of the Province of ${province}.`,
-      11
+      11,
     );
     addSpace(8);
 
@@ -358,7 +365,7 @@ export async function generateContractPDF(
       "By accepting cases through the Thrive IME Platform, the Examiner acknowledges that they have read, understood, and agree to be bound by the terms and conditions of this Agreement.",
       10,
       "normal",
-      "center"
+      "center",
     );
     addSpace(8);
 
@@ -368,18 +375,20 @@ export async function generateContractPDF(
       `© ${currentYear} Thrive Assessment & Care. All rights reserved.`,
       pageWidth / 2,
       yPosition,
-      { align: "center" }
+      { align: "center" },
     );
 
     // Generate PDF as buffer
     const pdfArrayBuffer = doc.output("arraybuffer");
     const pdfBuffer = Buffer.from(pdfArrayBuffer);
 
-    console.log("✅ PDF generated successfully with jsPDF");
+    logger.log("✅ PDF generated successfully with jsPDF");
 
     return pdfBuffer;
   } catch (error) {
-    console.error("❌ Error generating PDF:", error);
-    throw new Error(`Failed to generate PDF: ${error instanceof Error ? error.message : "Unknown error"}`);
+    logger.error("❌ Error generating PDF:", error);
+    throw new Error(
+      `Failed to generate PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 }

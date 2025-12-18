@@ -2,6 +2,7 @@
 
 import { verifyExaminerResubmitToken } from "@/lib/jwt";
 import examinerService from "../server/examiner.service";
+import logger from "@/utils/logger";
 
 /**
  * Fetch examiner data using a resubmission token
@@ -42,29 +43,34 @@ export async function getExaminerByToken(token: string) {
         licenseNumber: examiner.licenseNumber || "",
         provinceOfLicensure: examiner.provinceOfLicensure || "",
         licenseExpiryDate: examiner.licenseExpiryDate || null,
-        medicalLicenseDocumentId: examiner.medicalLicenseDocumentId || "",
+        medicalLicenseDocumentIds: examiner.medicalLicenseDocumentIds || [],
         resumeDocumentId: examiner.resumeDocumentId || "",
         // IME Experience
         yearsOfIMEExperience: examiner.yearsOfIMEExperience || "",
-        isForensicAssessmentTrained: examiner.isForensicAssessmentTrained || false,
-        languageIds: examiner.examinerLanguages?.map((el) => el.languageId) || [],
+        isForensicAssessmentTrained:
+          examiner.isForensicAssessmentTrained || false,
+        languageIds:
+          examiner.examinerLanguages?.map((el) => el.languageId) || [],
         // Past experience
         bio: examiner.bio || "",
         // Legal & compliance
-        isConsentToBackgroundVerification: examiner.isConsentToBackgroundVerification || false,
+        isConsentToBackgroundVerification:
+          examiner.isConsentToBackgroundVerification || false,
         agreeToTerms: examiner.agreeToTerms || false,
         ndaDocumentId: examiner.NdaDocumentId || null,
         insuranceDocumentId: examiner.insuranceDocumentId || null,
       },
     };
   } catch (error) {
-    console.error("Error fetching examiner by token:", error);
+    logger.error("Error fetching examiner by token:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to fetch examiner data",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch examiner data",
     };
   }
 }
 
 export default getExaminerByToken;
-

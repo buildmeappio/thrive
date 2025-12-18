@@ -116,7 +116,9 @@ class InterpreterService {
       });
 
       if (existing) {
-        throw HttpError.conflict("An interpreter with this email already exists");
+        throw HttpError.conflict(
+          "An interpreter with this email already exists",
+        );
       }
 
       const interpreter = await prisma.interpreter.create({
@@ -126,7 +128,7 @@ class InterpreterService {
           email: data.email,
           phone: data.phone,
           languages: {
-            create: data.languageIds.map(languageId => ({
+            create: data.languageIds.map((languageId) => ({
               languageId,
             })),
           },
@@ -169,7 +171,9 @@ class InterpreterService {
         });
 
         if (emailExists) {
-          throw HttpError.conflict("An interpreter with this email already exists");
+          throw HttpError.conflict(
+            "An interpreter with this email already exists",
+          );
         }
       }
 
@@ -189,7 +193,7 @@ class InterpreterService {
         });
 
         updateData.languages = {
-          create: data.languageIds.map(languageId => ({
+          create: data.languageIds.map((languageId) => ({
             languageId,
           })),
         };
@@ -244,4 +248,3 @@ class InterpreterService {
 
 const interpreterService = new InterpreterService();
 export default interpreterService;
-

@@ -1,14 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import ExaminerTableWithPagination from "@/domains/examiner/components/ExaminerTableWithPagination";
+import { useState, useEffect, useTransition } from "react";
+import ExaminerTable, {
+  useExaminerTable,
+} from "@/domains/examiner/components/ExaminerTableWithPagination";
 import Pagination from "@/components/Pagination";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
 import { DashboardShell } from "@/layouts/dashboard";
-import { Cross, Funnel } from "lucide-react";
+import { Cross } from "lucide-react";
+import { toggleExaminerStatus } from "@/domains/examiner/actions";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface ExaminerPageContentProps {
-  data: ExaminerData[];
+  examinersData: ExaminerData[];
   specialties: string[];
   statuses: string[];
 }
@@ -17,11 +22,11 @@ interface ExaminerPageContentProps {
 const formatText = (str: string): string => {
   if (!str) return str;
   return str
-    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
-    .split(' ')
-    .filter(word => word.length > 0)  // Remove empty strings
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+    .replace(/[-_]/g, " ") // Replace - and _ with spaces
+    .split(" ")
+    .filter((word) => word.length > 0) // Remove empty strings
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 };
 
 interface FilterState {
@@ -29,31 +34,74 @@ interface FilterState {
   status: string;
 }
 
-export default function ExaminerPageContent({ data, specialties, statuses }: ExaminerPageContentProps) {
+export default function ExaminerPageContent({
+  examinersData,
+  specialties,
+  statuses,
+}: ExaminerPageContentProps) {
+  const router = useRouter();
+  const [examiners, setExaminers] = useState<ExaminerData[]>(examinersData);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({
     specialty: "all",
-    status: "all"
+    status: "all",
   });
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [togglingExaminerId, setTogglingExaminerId] = useState<string | null>(
+    null,
+  );
+  const [, startToggle] = useTransition();
 
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [filterType]: value
+      [filterType]: value,
     }));
     setActiveDropdown(null);
   };
 
-
   const clearFilters = () => {
     setFilters({
       specialty: "all",
-      status: "all"
+      status: "all",
     });
   };
 
-  const hasActiveFilters = filters.specialty !== "all" || filters.status !== "all";
+  // For examiners, only check specialty filter (status filter is hidden)
+  const hasActiveFilters = filters.specialty !== "all";
+
+  const handleToggleStatus = (examinerId: string) => {
+    const previousExaminers = examiners;
+    const examiner = examiners.find((e) => e.id === examinerId);
+    const isActive = examiner?.status === "ACTIVE";
+
+    // Optimistically update the UI
+    setExaminers((prev) =>
+      prev.map((e) =>
+        e.id === examinerId
+          ? { ...e, status: isActive ? "SUSPENDED" : "ACTIVE" }
+          : e,
+      ),
+    );
+    setTogglingExaminerId(examinerId);
+
+    startToggle(async () => {
+      const result = await toggleExaminerStatus(examinerId);
+      if (!result.success) {
+        // Revert on error
+        setExaminers(previousExaminers);
+        toast.error(result.error ?? "Failed to update examiner status.");
+      } else {
+        toast.success(
+          isActive
+            ? "Examiner has been suspended."
+            : "Examiner has been reactivated.",
+        );
+        router.refresh();
+      }
+      setTogglingExaminerId(null);
+    });
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -61,7 +109,7 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
       if (activeDropdown) {
         const target = event.target as Element;
         // Check if the click is outside any dropdown container
-        const isInsideDropdown = target.closest('.filter-dropdown');
+        const isInsideDropdown = target.closest(".filter-dropdown");
         if (!isInsideDropdown) {
           setActiveDropdown(null);
         }
@@ -69,21 +117,22 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
     };
 
     if (activeDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [activeDropdown]);
 
-  // Get table and table element from the component
-  const { table, tableElement } = ExaminerTableWithPagination({
-    data,
-    specialties,
-    statuses,
+  // Get table and columns from the hook
+  const { table, columns } = useExaminerTable({
+    data: examiners,
     searchQuery,
-    filters
+    filters,
+    type: "examiners",
+    togglingExaminerId,
+    onToggleStatus: handleToggleStatus,
   });
 
   return (
@@ -91,7 +140,7 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
       {/* Examiners Heading */}
       <div className="mb-4 sm:mb-6 dashboard-zoom-mobile">
         <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-          New Examiners
+          Examiners
         </h1>
       </div>
 
@@ -102,14 +151,16 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
             <stop offset="0%" stopColor="#01F4C8" />
             <stop offset="100%" stopColor="#00A8FF" />
           </linearGradient>
-          <linearGradient id="specialtyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <linearGradient
+            id="specialtyGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="0%"
+          >
             <stop offset="0%" stopColor="#01F4C8" />
             <stop offset="100%" stopColor="#00A8FF" />
           </linearGradient>
-           <linearGradient id="statusGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-             <stop offset="0%" stopColor="#01F4C8" />
-             <stop offset="100%" stopColor="#00A8FF" />
-           </linearGradient>
         </defs>
       </svg>
       <div className="flex flex-col gap-3 sm:gap-6 mb-20 dashboard-zoom-mobile">
@@ -119,8 +170,18 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
           <div className="flex-1 sm:max-w-md w-full">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="url(#searchGradient)" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg
+                  className="h-4 w-4 sm:h-5 sm:w-5"
+                  fill="none"
+                  stroke="url(#searchGradient)"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
               </div>
               <input
@@ -137,22 +198,43 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
           <div className="flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
             {/* Specialty Filter */}
             <div className="relative filter-dropdown">
-              <button 
-                onClick={() => setActiveDropdown(activeDropdown === "specialty" ? null : "specialty")}
+              <button
+                onClick={() =>
+                  setActiveDropdown(
+                    activeDropdown === "specialty" ? null : "specialty",
+                  )
+                }
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  filters.specialty !== "all" 
-                    ? "border-[#00A8FF] text-[#00A8FF]" 
+                  filters.specialty !== "all"
+                    ? "border-[#00A8FF] text-[#00A8FF]"
                     : "border-gray-200 text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                 <Cross className="w-3.5 h-3.5 sm:w-4 sm:h-4" stroke="url(#specialtyGradient)" />
-                <span>{filters.specialty !== "all" ? formatText(filters.specialty) : "Specialty"}</span>
-                <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "specialty" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <Cross
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                  stroke="url(#specialtyGradient)"
+                />
+                <span>
+                  {filters.specialty !== "all"
+                    ? formatText(filters.specialty)
+                    : "Specialty"}
+                </span>
+                <svg
+                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "specialty" ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
               {activeDropdown === "specialty" && (
-                <div className="absolute top-full left-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <div className="absolute top-full right-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                   <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
                     <button
                       onClick={(e) => {
@@ -160,7 +242,9 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
                         handleFilterChange("specialty", "all");
                       }}
                       className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.specialty === "all" ? "bg-gray-100 text-[#00A8FF]" : ""
+                        filters.specialty === "all"
+                          ? "bg-gray-100 text-[#00A8FF]"
+                          : ""
                       }`}
                     >
                       All Specialties
@@ -173,59 +257,12 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
                           handleFilterChange("specialty", specialty);
                         }}
                         className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          filters.specialty === specialty ? "bg-gray-100 text-[#00A8FF]" : ""
+                          filters.specialty === specialty
+                            ? "bg-gray-100 text-[#00A8FF]"
+                            : ""
                         }`}
                       >
                         {formatText(specialty)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-             {/* Status Filter */}
-            <div className="relative filter-dropdown">
-              <button 
-                onClick={() => setActiveDropdown(activeDropdown === "status" ? null : "status")}
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  filters.status !== "all" 
-                    ? "border-[#00A8FF] text-[#00A8FF]" 
-                    : "border-gray-200 text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                 <Funnel className="w-3.5 h-3.5 sm:w-4 sm:h-4" stroke="url(#statusGradient)" />
-                <span>{filters.status !== "all" ? formatText(filters.status) : "Status"}</span>
-                <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${activeDropdown === "status" ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {activeDropdown === "status" && (
-                <div className="absolute top-full left-0 mt-2 w-40 sm:w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-1.5 sm:py-2 max-h-48 sm:max-h-64 overflow-y-auto">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleFilterChange("status", "all");
-                      }}
-                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                        filters.status === "all" ? "bg-gray-100 text-[#00A8FF]" : ""
-                      }`}
-                    >
-                      All Statuses
-                    </button>
-                    {statuses.map((status) => (
-                      <button
-                        key={status}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleFilterChange("status", status);
-                        }}
-                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          filters.status === status ? "bg-gray-100 text-[#00A8FF]" : ""
-                        }`}
-                      >
-                        {formatText(status)}
                       </button>
                     ))}
                   </div>
@@ -239,8 +276,18 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
                 onClick={clearFilters}
                 className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
               >
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
                 <span>Clear</span>
               </button>
@@ -250,7 +297,7 @@ export default function ExaminerPageContent({ data, specialties, statuses }: Exa
 
         {/* Examiners Table Card */}
         <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
-          {tableElement}
+          <ExaminerTable table={table} columns={columns} />
         </div>
 
         {/* Pagination - Outside the card */}

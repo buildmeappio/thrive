@@ -4,7 +4,7 @@ import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3Client } from "./s3-client";
 import { ENV } from "@/constants/variables";
-
+import logger from "@/utils/logger";
 /**
  * Generate a presigned URL for a document stored in S3
  * @param documentName - The name of the document (stored in the Documents table)
@@ -13,7 +13,7 @@ import { ENV } from "@/constants/variables";
  */
 export async function generatePresignedUrl(
   documentName: string,
-  expiresIn: number = 3600 // 1 hour default
+  expiresIn: number = 3600, // 1 hour default
 ): Promise<string> {
   try {
     if (!ENV.AWS_S3_BUCKET) {
@@ -32,7 +32,7 @@ export async function generatePresignedUrl(
     const url = await getSignedUrl(s3Client, command, { expiresIn });
     return url;
   } catch (error) {
-    console.error("Error generating presigned URL:", error);
+    logger.error("Error generating presigned URL for document:", error);
     throw error;
   }
 }
@@ -45,15 +45,15 @@ export async function generatePresignedUrl(
  */
 export async function generatePresignedUrls(
   documentNames: string[],
-  expiresIn: number = 3600
+  expiresIn: number = 3600,
 ): Promise<string[]> {
   try {
     const urlPromises = documentNames.map((name) =>
-      generatePresignedUrl(name, expiresIn)
+      generatePresignedUrl(name, expiresIn),
     );
     return await Promise.all(urlPromises);
   } catch (error) {
-    console.error("Error generating presigned URLs:", error);
+    logger.error("Error generating presigned URLs for documents:", error);
     throw error;
   }
 }
@@ -69,8 +69,8 @@ export async function generatePresignedUrls(
 export async function uploadToS3(
   buffer: Buffer,
   fileName: string,
-  contentType: string = "application/pdf",
-  folder: string = "contracts"
+  contentType: string = "text/html",
+  folder: string = "contractS",
 ): Promise<string> {
   try {
     if (!ENV.AWS_S3_BUCKET) {
@@ -87,11 +87,11 @@ export async function uploadToS3(
     });
 
     await s3Client.send(command);
-    
-    console.log(`✅ File uploaded to S3: ${s3Key}`);
+
+    logger.log(`✅ File uploaded to S3: ${s3Key}`);
     return s3Key;
   } catch (error) {
-    console.error("Error uploading to S3:", error);
+    logger.error("Error uploading file to S3:", error);
     throw error;
   }
 }
@@ -104,7 +104,7 @@ export async function uploadToS3(
  */
 export async function getS3FileUrl(
   s3Key: string,
-  expiresIn: number = 604800 // 7 days default for contracts
+  expiresIn: number = 604800, // 7 days default for contracts
 ): Promise<string> {
   try {
     if (!ENV.AWS_S3_BUCKET) {
@@ -119,8 +119,7 @@ export async function getS3FileUrl(
     const url = await getSignedUrl(s3Client, command, { expiresIn });
     return url;
   } catch (error) {
-    console.error("Error generating presigned URL:", error);
+    logger.error("Error getting S3 file URL:", error);
     throw error;
   }
 }
-

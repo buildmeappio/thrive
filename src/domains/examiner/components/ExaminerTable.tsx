@@ -79,7 +79,7 @@ export default function ExaminerTable({ data }: ExaminerTableProps) {
       result = result.filter((d) =>
         [d.name, d.email, d.specialties, d.province]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q))
+          .some((v) => String(v).toLowerCase().includes(q)),
       );
     }
 
@@ -121,8 +121,19 @@ export default function ExaminerTable({ data }: ExaminerTableProps) {
           <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
             <SelectTrigger className="w-full sm:w-[180px] h-[44px] rounded-full border border-[#E5E5E5] bg-white px-4 font-poppins text-[14px]">
               <div className="flex items-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 4V12M12 8H4" stroke="#00D4AA" strokeWidth="1.5" strokeLinecap="round"/>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M8 4V12M12 8H4"
+                    stroke="#00D4AA"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
                 </svg>
                 <SelectValue placeholder="Speciality">
                   {specialtyFilter === "all" ? "Speciality" : specialtyFilter}
@@ -145,18 +156,24 @@ export default function ExaminerTable({ data }: ExaminerTableProps) {
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-[#00D4AA]" />
                 <SelectValue placeholder="Status">
-                  {statusFilter === "all" ? "Status" : 
-                   statusFilter === "PENDING" ? "Pending Approval" :
-                   statusFilter === "ACCEPTED" ? "Approved" : 
-                   statusFilter === "INFO_REQUESTED" ? "Information Requested" : 
-                   "Rejected"}
+                  {statusFilter === "all"
+                    ? "Status"
+                    : statusFilter === "PENDING"
+                      ? "Pending Approval"
+                      : statusFilter === "ACCEPTED"
+                        ? "Approved"
+                        : statusFilter === "INFO_REQUESTED"
+                          ? "Information Requested"
+                          : "Rejected"}
                 </SelectValue>
               </div>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Status</SelectItem>
               <SelectItem value="PENDING">Pending Approval</SelectItem>
-              <SelectItem value="INFO_REQUESTED">Information Requested</SelectItem>
+              <SelectItem value="INFO_REQUESTED">
+                Information Requested
+              </SelectItem>
               <SelectItem value="ACCEPTED">Approved</SelectItem>
               <SelectItem value="REJECTED">Rejected</SelectItem>
             </SelectContent>
@@ -174,15 +191,15 @@ export default function ExaminerTable({ data }: ExaminerTableProps) {
                   className={cn(
                     header.index === 0 && "rounded-l-xl",
                     header.index === headerGroup.headers.length - 1 &&
-                    "rounded-r-xl w-[60px]"
+                      "rounded-r-xl w-[60px]",
                   )}
                 >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                 </TableHead>
               ))}
             </TableRow>

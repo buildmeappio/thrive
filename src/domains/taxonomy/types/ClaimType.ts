@@ -20,4 +20,3 @@ export type CreateClaimTypeInput = {
 };
 
 export type UpdateClaimTypeInput = Partial<CreateClaimTypeInput>;
-

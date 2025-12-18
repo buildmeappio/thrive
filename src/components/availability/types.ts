@@ -8,5 +8,3 @@ export type OverrideHoursState = Array<{
   date: string; // MM-DD-YYYY
   timeSlots: TimeSlot[];
 }>;
-
-

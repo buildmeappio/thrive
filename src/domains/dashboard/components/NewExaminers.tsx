@@ -22,10 +22,10 @@ export type ExaminerRow = {
 };
 
 type Props = {
-  items: ExaminerData[];                 // rows to show
-  listHref: string;                     // e.g. "/examiners"
+  items: ExaminerData[]; // rows to show
+  listHref: string; // e.g. "/examiners"
   buildDetailHref?: (id: string) => string; // defaults to `${listHref}/${id}`
-  visibleCount?: number;                // optional slice on dashboard
+  visibleCount?: number; // optional slice on dashboard
   subtitle?: string;
 };
 
@@ -73,81 +73,125 @@ export default function NewExaminers({
               <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[140px] sm:min-w-0">
                 Name
               </TableHead>
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[180px] sm:min-w-0">
-                Email
-              </TableHead>
               <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[160px] sm:min-w-0">
                 Specialties
               </TableHead>
               <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[120px] sm:min-w-0">
                 Province
               </TableHead>
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[130px] sm:min-w-0">
-                Status
+              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[220px] sm:min-w-0">
+                Received At
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map((r) => {
               const href = buildDetailHref(r.id);
-              const statusText = r.status === "PENDING" ? "Pending" : r.status === "ACCEPTED" ? "Approved" : "Rejected";
-              
+
+              // Format: "Dec 4, 2024 at 2:30 PM"
+              const formatReceivedAt = (dateString: string) => {
+                const date = new Date(dateString);
+                const dateStr = date.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                });
+                const timeStr = date.toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                });
+                return `${dateStr} at ${timeStr}`;
+              };
+
               return (
-                <TableRow 
+                <TableRow
                   key={r.id}
                   className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
                 >
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#1A1A1A] font-poppins py-5 sm:py-3 min-w-[140px] sm:min-w-0">
                     <span className="block">{capitalizeWords(r.name)}</span>
                   </TableCell>
-                  <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[180px] sm:min-w-0">
-                    <span className="block">{r.email}</span>
-                  </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[160px] sm:min-w-0">
-                    <span className="block max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap" title={(() => {
-                      const specialties = r.specialties as string | string[] | undefined;
-                      if (Array.isArray(specialties)) {
-                        return specialties.map(specialty => 
-                          specialty.split('-').map(word => 
-                            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                          ).join(' ')
-                        ).join(", ");
-                      } else if (typeof specialties === 'string') {
-                        return specialties.split('-').map(word => 
-                          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                        ).join(' ');
-                      } else {
-                        return '-';
-                      }
-                    })()}>
-                      {(() => {
-                        const specialties = r.specialties as string | string[] | undefined;
-                        let formattedText = '';
+                    <span
+                      className="block max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap"
+                      title={(() => {
+                        const specialties = r.specialties as
+                          | string
+                          | string[]
+                          | undefined;
                         if (Array.isArray(specialties)) {
-                          formattedText = specialties.map(specialty => 
-                            specialty.split('-').map(word => 
-                              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                            ).join(' ')
-                          ).join(", ");
-                        } else if (typeof specialties === 'string') {
-                          formattedText = specialties.split('-').map(word => 
-                            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                          ).join(' ');
+                          return specialties
+                            .map((specialty) =>
+                              specialty
+                                .split("-")
+                                .map(
+                                  (word) =>
+                                    word.charAt(0).toUpperCase() +
+                                    word.slice(1).toLowerCase(),
+                                )
+                                .join(" "),
+                            )
+                            .join(", ");
+                        } else if (typeof specialties === "string") {
+                          return specialties
+                            .split("-")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() +
+                                word.slice(1).toLowerCase(),
+                            )
+                            .join(" ");
                         } else {
-                          return '-';
+                          return "-";
+                        }
+                      })()}
+                    >
+                      {(() => {
+                        const specialties = r.specialties as
+                          | string
+                          | string[]
+                          | undefined;
+                        let formattedText = "";
+                        if (Array.isArray(specialties)) {
+                          formattedText = specialties
+                            .map((specialty) =>
+                              specialty
+                                .split("-")
+                                .map(
+                                  (word) =>
+                                    word.charAt(0).toUpperCase() +
+                                    word.slice(1).toLowerCase(),
+                                )
+                                .join(" "),
+                            )
+                            .join(", ");
+                        } else if (typeof specialties === "string") {
+                          formattedText = specialties
+                            .split("-")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() +
+                                word.slice(1).toLowerCase(),
+                            )
+                            .join(" ");
+                        } else {
+                          return "-";
                         }
                         // Truncate if longer than 40 characters
-                        return formattedText.length > 40 ? formattedText.substring(0, 40) + '...' : formattedText;
+                        return formattedText.length > 40
+                          ? formattedText.substring(0, 40) + "..."
+                          : formattedText;
                       })()}
                     </span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[120px] sm:min-w-0">
                     <span className="block">{r.province}</span>
                   </TableCell>
-                  <TableCell className="py-5 sm:py-3 min-w-[130px] sm:min-w-0">
+                  <TableCell className="py-5 sm:py-3 min-w-[220px] sm:min-w-0">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins min-w-0 flex-1">
-                        {statusText}
+                        {formatReceivedAt(r.createdAt)}
                       </span>
                       <Link
                         href={href}

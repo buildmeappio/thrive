@@ -1,4 +1,4 @@
-import chaperoneService from "../chaperone.service";
+import * as chaperoneService from "../chaperone.service";
 
 const deleteChaperone = async (id: string) => {
   const result = await chaperoneService.deleteChaperone(id);
@@ -6,4 +6,3 @@ const deleteChaperone = async (id: string) => {
 };
 
 export default deleteChaperone;
-

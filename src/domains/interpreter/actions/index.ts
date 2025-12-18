@@ -6,4 +6,3 @@ export { default as deleteInterpreter } from "./deleteInterpreter";
 export { default as getLanguages } from "./getLanguages";
 export { getInterpreterAvailabilityAction } from "./getAvailability";
 export { saveInterpreterAvailabilityAction } from "./saveAvailability";
-

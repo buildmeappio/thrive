@@ -3,9 +3,8 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Edit, Trash2, ChevronLeft } from "lucide-react";
+import { Edit, Trash2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { ChaperoneWithAvailability } from "@/domains/services/types/Chaperone";
 import { deleteChaperone } from "@/domains/services/actions";
 import { format } from "date-fns";
@@ -60,40 +59,33 @@ const ChaperoneDetailsClient: React.FC<ChaperoneDetailsClientProps> = ({
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/dashboard/chaperones"
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
-                <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-              </div>
-            </Link>
-            <div>
-              <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight">
-                {fullName}
-              </h1>
+          <Link
+            href="/dashboard/chaperones"
+            className="flex items-center gap-2 sm:gap-4 flex-shrink-0"
+          >
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+              <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
-          </div>
+            <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight">
+              {fullName}
+            </h1>
+          </Link>
 
-          <div className="flex items-center gap-3">
+          <div className="flex gap-2 w-full sm:w-auto">
             <Link href={`/dashboard/chaperones/${chaperone.id}/edit`}>
-              <Button
-                variant="outline"
-                className="h-[45px] w-[100px] flex items-center gap-2 rounded-full border-gray-300 cursor-pointer"
-              >
-                <Edit size={18} />
-                <span className="text-[16px]">Edit</span>
-              </Button>
+              <button className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-600 hover:bg-blue-100 transition-colors text-sm sm:text-base flex-1 sm:flex-initial">
+                <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="text-sm font-medium">Edit</span>
+              </button>
             </Link>
-            <Button
+            <button
               onClick={() => setIsDeleteDialogOpen(true)}
-              variant="destructive"
-              className="h-[45px] w-[100px] flex items-center gap-2 rounded-full cursor-pointer"
+              disabled={isDeleting}
+              className="flex items-center justify-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base flex-1 sm:flex-initial"
             >
-              <Trash2 size={18} />
-              <span className="text-[16px]">Delete</span>
-            </Button>
+              <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="text-sm font-medium">Delete</span>
+            </button>
           </div>
         </div>
 

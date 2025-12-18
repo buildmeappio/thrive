@@ -1,5 +1,7 @@
-import { transporterAvailabilityService } from "../services/availability.service";
+import { getCompleteAvailability } from "../services/availability.service";
 import { HttpError } from "@/utils/httpError";
+import { convertUTCToLocal } from "@/utils/timezone";
+import logger from "@/utils/logger";
 
 export type GetAvailabilityInput = {
   transporterId: string;
@@ -25,10 +27,7 @@ type OverrideHoursWithTimeSlots = {
 
 const getAvailability = async (payload: GetAvailabilityInput) => {
   try {
-    const availability =
-      await transporterAvailabilityService.getCompleteAvailability(
-        payload.transporterId
-      );
+    const availability = await getCompleteAvailability(payload.transporterId);
 
     // If no data exists, return null to indicate no availability is set
     if (!availability.hasData) {
@@ -57,26 +56,29 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
       weeklyHoursObject[dayKey] = {
         enabled: dayData.enabled,
         timeSlots: dayData.timeSlots.map((slot) => ({
-          startTime: slot.startTime,
-          endTime: slot.endTime,
+          startTime: convertUTCToLocal(slot.startTime, undefined, new Date()),
+          endTime: convertUTCToLocal(slot.endTime, undefined, new Date()),
         })),
       };
     });
 
     const overrideHoursArray = availability.overrideHours.map(
       (override: OverrideHoursWithTimeSlots) => {
-        const date = new Date(override.date);
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        const year = date.getFullYear();
+        const isoDate = override.date.toISOString().split("T")[0];
+        const [year, month, day] = isoDate.split("-");
+
         return {
           date: `${month}-${day}-${year}`,
           timeSlots: override.timeSlots.map((slot) => ({
-            startTime: slot.startTime,
-            endTime: slot.endTime,
+            startTime: convertUTCToLocal(
+              slot.startTime,
+              undefined,
+              override.date,
+            ),
+            endTime: convertUTCToLocal(slot.endTime, undefined, override.date),
           })),
         };
-      }
+      },
     );
 
     return {
@@ -87,9 +89,9 @@ const getAvailability = async (payload: GetAvailabilityInput) => {
       },
     };
   } catch (error) {
-    console.error("Error fetching transporter availability:", error);
+    logger.error("Error fetching transporter availability:", error);
     throw HttpError.internalServerError(
-      "Failed to fetch transporter availability"
+      "Failed to fetch transporter availability",
     );
   }
 };

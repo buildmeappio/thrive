@@ -13,7 +13,6 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
         <SearchProvider>
           <SidebarProvider>{children}</SidebarProvider>
           <Toaster richColors position="top-right" closeButton />
-
         </SearchProvider>
       </SessionProvider>
     </ThemeProvider>

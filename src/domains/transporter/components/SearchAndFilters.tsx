@@ -33,8 +33,8 @@ export default function SearchAndFilters({
       status === "ACTIVE"
         ? "Active"
         : status === "SUSPENDED"
-        ? "Suspended"
-        : status,
+          ? "Suspended"
+          : status,
   }));
 
   return (
@@ -58,7 +58,7 @@ export default function SearchAndFilters({
       </svg>
 
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center sm:justify-between">
+      <div className="flex flex-row gap-2 sm:gap-4 items-center sm:justify-between">
         {/* Search Bar - Full width on mobile */}
         <div className="flex-1 sm:max-w-md w-full">
           <div className="relative">
@@ -67,7 +67,8 @@ export default function SearchAndFilters({
                 className="h-4 w-4 sm:h-5 sm:w-5"
                 fill="none"
                 stroke="url(#searchGradient)"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -86,8 +87,8 @@ export default function SearchAndFilters({
           </div>
         </div>
 
-        {/* Filter Buttons - Wrap on mobile */}
-        <div className="flex flex-wrap gap-2 sm:gap-3 flex-shrink-0">
+        {/* Filter Buttons - On right for mobile */}
+        <div className="flex gap-2 sm:gap-3 flex-shrink-0">
           {/* Status Filter */}
           <FilterDropdown
             label="Status"
@@ -111,12 +112,14 @@ export default function SearchAndFilters({
           {hasActiveFilters && (
             <button
               onClick={onClearFilters}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap">
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
+            >
               <svg
                 className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

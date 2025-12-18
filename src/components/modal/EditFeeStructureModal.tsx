@@ -18,31 +18,109 @@ export default function EditFeeStructureModal({
   title = "Edit Fee Structure",
   isLoading = false,
 }: Props) {
-  const [standardIMEFee, setStandardIMEFee] = useState(initialData?.standardIMEFee?.toString() || "");
-  const [virtualIMEFee, setVirtualIMEFee] = useState(initialData?.virtualIMEFee?.toString() || "");
-  const [recordReviewFee, setRecordReviewFee] = useState(initialData?.recordReviewFee?.toString() || "");
-  const [hourlyRate, setHourlyRate] = useState(initialData?.hourlyRate?.toString() || "");
-  const [reportTurnaroundDays, setReportTurnaroundDays] = useState(initialData?.reportTurnaroundDays?.toString() || "");
-  const [cancellationFee, setCancellationFee] = useState(initialData?.cancellationFee?.toString() || "");
-  
+  const [IMEFee, setIMEFee] = useState(
+    initialData?.IMEFee ? Math.floor(initialData.IMEFee).toString() : "",
+  );
+  const [recordReviewFee, setRecordReviewFee] = useState(
+    initialData?.recordReviewFee
+      ? Math.floor(initialData.recordReviewFee).toString()
+      : "",
+  );
+  const [hourlyRate, setHourlyRate] = useState(
+    initialData?.hourlyRate
+      ? Math.floor(initialData.hourlyRate).toString()
+      : "",
+  );
+  const [cancellationFee, setCancellationFee] = useState(
+    initialData?.cancellationFee
+      ? Math.floor(initialData.cancellationFee).toString()
+      : "",
+  );
+
+  // Helper function to sanitize input to only allow positive integers
+  const sanitizePositiveInteger = (value: string): string => {
+    // Remove all non-digit characters
+    const digitsOnly = value.replace(/\D/g, "");
+    return digitsOnly;
+  };
+
+  // Handler for positive integer input
+  const handleIntegerChange = (
+    value: string,
+    setter: (value: string) => void,
+  ) => {
+    const sanitized = sanitizePositiveInteger(value);
+    setter(sanitized);
+  };
+
+  // Prevent typing negative signs, decimals, and other non-numeric characters
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow: backspace, delete, tab, escape, enter, and arrow keys
+    if (
+      [
+        "Backspace",
+        "Delete",
+        "Tab",
+        "Escape",
+        "Enter",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "ArrowDown",
+      ].includes(e.key)
+    ) {
+      return;
+    }
+    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      ["a", "c", "v", "x"].includes(e.key.toLowerCase())
+    ) {
+      return;
+    }
+    // Prevent: negative sign, decimal point, and any non-numeric character
+    if (
+      e.key === "-" ||
+      e.key === "." ||
+      e.key === "," ||
+      isNaN(Number(e.key))
+    ) {
+      e.preventDefault();
+    }
+  };
+
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (initialData) {
-      setStandardIMEFee(initialData.standardIMEFee?.toString() || "");
-      setVirtualIMEFee(initialData.virtualIMEFee?.toString() || "");
-      setRecordReviewFee(initialData.recordReviewFee?.toString() || "");
-      setHourlyRate(initialData.hourlyRate?.toString() || "");
-      setReportTurnaroundDays(initialData.reportTurnaroundDays?.toString() || "");
-      setCancellationFee(initialData.cancellationFee?.toString() || "");
+      setIMEFee(
+        initialData.IMEFee ? Math.floor(initialData.IMEFee).toString() : "",
+      );
+      setRecordReviewFee(
+        initialData.recordReviewFee
+          ? Math.floor(initialData.recordReviewFee).toString()
+          : "",
+      );
+      setHourlyRate(
+        initialData.hourlyRate
+          ? Math.floor(initialData.hourlyRate).toString()
+          : "",
+      );
+      setCancellationFee(
+        initialData.cancellationFee
+          ? Math.floor(initialData.cancellationFee).toString()
+          : "",
+      );
     }
   }, [initialData]);
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("keydown", onKey);
     const t = setTimeout(() => firstInputRef.current?.focus(), 0);
     const { overflow } = document.body.style;
@@ -55,26 +133,26 @@ export default function EditFeeStructureModal({
   }, [open, onClose]);
 
   const onBackdrop = (e: React.MouseEvent) => {
-    if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
+    if (panelRef.current && !panelRef.current.contains(e.target as Node))
+      onClose();
   };
 
   if (!open) return null;
 
-  const canSubmit = 
-    standardIMEFee.trim().length > 0 &&
-    virtualIMEFee.trim().length > 0 &&
+  const canSubmit =
+    IMEFee.trim().length > 0 &&
     recordReviewFee.trim().length > 0 &&
     cancellationFee.trim().length > 0;
 
   const handleSubmit = () => {
     if (canSubmit) {
       onSubmit({
-        standardIMEFee: parseFloat(standardIMEFee),
-        virtualIMEFee: parseFloat(virtualIMEFee),
-        recordReviewFee: parseFloat(recordReviewFee),
-        hourlyRate: hourlyRate ? parseFloat(hourlyRate) : undefined,
-        reportTurnaroundDays: reportTurnaroundDays ? parseInt(reportTurnaroundDays) : undefined,
-        cancellationFee: parseFloat(cancellationFee),
+        IMEFee: parseInt(IMEFee, 10) || 0,
+        recordReviewFee: parseInt(recordReviewFee, 10) || 0,
+        hourlyRate: hourlyRate
+          ? parseInt(hourlyRate, 10) || undefined
+          : undefined,
+        cancellationFee: parseInt(cancellationFee, 10) || 0,
         paymentTerms: initialData?.paymentTerms || "N/A",
       } as Omit<ExaminerFeeStructure, "id">);
     }
@@ -107,7 +185,12 @@ export default function EditFeeStructureModal({
           onClick={onClose}
           className="absolute right-4 top-4 sm:right-5 sm:top-5 grid h-8 w-8 sm:h-[32px] sm:w-[32px] place-items-center rounded-full bg-[#000093] focus:outline-none focus:ring-2 focus:ring-[#000093]/40"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" className="text-white">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            className="text-white"
+          >
             <path
               fill="currentColor"
               d="M18.3 5.7a1 1 0 0 0-1.4-1.4L12 9.17 7.1 4.3A1 1 0 0 0 5.7 5.7L10.6 10.6 5.7 15.5a1 1 0 1 0 1.4 1.4L12 12.03l4.9 4.87a1 1 0 0 0 1.4-1.4l-4.9-4.87 4.9-4.93Z"
@@ -125,21 +208,22 @@ export default function EditFeeStructureModal({
 
         {/* Form Fields */}
         <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Standard IME Fee */}
+          {/* IME Fee */}
           <div>
             <label
-              htmlFor="standard-ime-fee"
+              htmlFor="ime-fee"
               className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
             >
-              Standard IME Fee ($) <span className="text-red-500">*</span>
+              IME Fee ($) <span className="text-red-500">*</span>
             </label>
             <input
-              id="standard-ime-fee"
+              id="ime-fee"
               ref={firstInputRef}
               type="number"
-              step="0.01"
-              value={standardIMEFee}
-              onChange={(e) => setStandardIMEFee(e.target.value)}
+              min="0"
+              value={IMEFee}
+              onChange={(e) => handleIntegerChange(e.target.value, setIMEFee)}
+              onKeyDown={handleKeyDown}
               className="
                 h-12 w-full
                 rounded-xl sm:rounded-[15px]
@@ -154,48 +238,23 @@ export default function EditFeeStructureModal({
             />
           </div>
 
-          {/* Virtual IME Fee */}
-          <div>
-            <label
-              htmlFor="virtual-ime-fee"
-              className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
-            >
-              Virtual IME Fee ($) <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="virtual-ime-fee"
-              type="number"
-              step="0.01"
-              value={virtualIMEFee}
-              onChange={(e) => setVirtualIMEFee(e.target.value)}
-              className="
-                h-12 w-full
-                rounded-xl sm:rounded-[15px]
-                border border-[#E5E5E5] bg-[#F6F6F6]
-                px-3 sm:px-4 outline-none
-                placeholder:font-[400] placeholder:text-[14px]
-                placeholder:text-[#A4A4A4]
-                font-poppins text-[14px] sm:text-[15px]
-                focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
-              "
-              placeholder="Enter amount"
-            />
-          </div>
-
-          {/* Record Review Fee */}
+          {/* Report Review Fee */}
           <div>
             <label
               htmlFor="record-review-fee"
               className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
             >
-              Record Review Fee ($) <span className="text-red-500">*</span>
+              Report Review Fee ($) <span className="text-red-500">*</span>
             </label>
             <input
               id="record-review-fee"
               type="number"
-              step="0.01"
+              min="0"
               value={recordReviewFee}
-              onChange={(e) => setRecordReviewFee(e.target.value)}
+              onChange={(e) =>
+                handleIntegerChange(e.target.value, setRecordReviewFee)
+              }
+              onKeyDown={handleKeyDown}
               className="
                 h-12 w-full
                 rounded-xl sm:rounded-[15px]
@@ -221,9 +280,12 @@ export default function EditFeeStructureModal({
             <input
               id="hourly-rate"
               type="number"
-              step="0.01"
+              min="0"
               value={hourlyRate}
-              onChange={(e) => setHourlyRate(e.target.value)}
+              onChange={(e) =>
+                handleIntegerChange(e.target.value, setHourlyRate)
+              }
+              onKeyDown={handleKeyDown}
               className="
                 h-12 w-full
                 rounded-xl sm:rounded-[15px]
@@ -238,33 +300,6 @@ export default function EditFeeStructureModal({
             />
           </div>
 
-          {/* Report Turnaround Days (Optional) */}
-          <div>
-            <label
-              htmlFor="report-turnaround-days"
-              className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
-            >
-              Report Turnaround Days
-            </label>
-            <input
-              id="report-turnaround-days"
-              type="number"
-              value={reportTurnaroundDays}
-              onChange={(e) => setReportTurnaroundDays(e.target.value)}
-              className="
-                h-12 w-full
-                rounded-xl sm:rounded-[15px]
-                border border-[#E5E5E5] bg-[#F6F6F6]
-                px-3 sm:px-4 outline-none
-                placeholder:font-[400] placeholder:text-[14px]
-                placeholder:text-[#A4A4A4]
-                font-poppins text-[14px] sm:text-[15px]
-                focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
-              "
-              placeholder="Enter number of days (optional)"
-            />
-          </div>
-
           {/* Cancellation Fee */}
           <div>
             <label
@@ -276,9 +311,12 @@ export default function EditFeeStructureModal({
             <input
               id="cancellation-fee"
               type="number"
-              step="0.01"
+              min="0"
               value={cancellationFee}
-              onChange={(e) => setCancellationFee(e.target.value)}
+              onChange={(e) =>
+                handleIntegerChange(e.target.value, setCancellationFee)
+              }
+              onKeyDown={handleKeyDown}
               className="
                 h-12 w-full
                 rounded-xl sm:rounded-[15px]
@@ -334,4 +372,3 @@ export default function EditFeeStructureModal({
     </div>
   );
 }
-

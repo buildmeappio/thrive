@@ -15,7 +15,7 @@ const Header = ({
     <p
       className={cn(
         "text-left text-black font-poppins font-semibold text-[18px] leading-none py-4 whitespace-nowrap",
-        first && "pl-4"
+        first && "pl-4",
       )}
     >
       {children}
@@ -42,12 +42,13 @@ const Content = ({
   first?: boolean;
   title?: string;
 }) => {
-  const textContent = typeof children === 'string' ? children : String(children);
+  const textContent =
+    typeof children === "string" ? children : String(children);
   return (
     <p
       className={cn(
         "text-left text-black font-poppins text-[#4D4D4D] font-regular text-[16px] leading-normal py-2 whitespace-nowrap overflow-hidden text-ellipsis",
-        first && "pl-4"
+        first && "pl-4",
       )}
       title={title || textContent}
     >
@@ -61,14 +62,22 @@ const columns: ColumnDef<InterpreterData>[] = [
     header: () => <Header first>Company</Header>,
     accessorKey: "companyName",
     cell: ({ row }) => {
-      return <Content first title={row.original.companyName}>{row.original.companyName}</Content>;
+      return (
+        <Content first title={row.original.companyName}>
+          {row.original.companyName}
+        </Content>
+      );
     },
   },
   {
     header: () => <Header>Contact Person</Header>,
     accessorKey: "contactPerson",
     cell: ({ row }) => {
-      return <Content title={row.original.contactPerson}>{row.original.contactPerson}</Content>;
+      return (
+        <Content title={row.original.contactPerson}>
+          {row.original.contactPerson}
+        </Content>
+      );
     },
   },
   {
@@ -83,10 +92,14 @@ const columns: ColumnDef<InterpreterData>[] = [
     accessorKey: "languages",
     cell: ({ row }) => {
       const languages = row.original.languages;
-      const displayText = languages.length > 2
-        ? `${languages.slice(0, 2).map(l => l.name).join(", ")} +${languages.length - 2}`
-        : languages.map(l => l.name).join(", ");
-      const fullText = languages.map(l => l.name).join(", ") || "None";
+      const displayText =
+        languages.length > 2
+          ? `${languages
+              .slice(0, 2)
+              .map((l) => l.name)
+              .join(", ")} +${languages.length - 2}`
+          : languages.map((l) => l.name).join(", ");
+      const fullText = languages.map((l) => l.name).join(", ") || "None";
       return <Content title={fullText}>{displayText || "None"}</Content>;
     },
   },
@@ -109,4 +122,3 @@ const columns: ColumnDef<InterpreterData>[] = [
 ];
 
 export default columns;
-

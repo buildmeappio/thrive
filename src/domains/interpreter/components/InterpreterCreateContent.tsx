@@ -3,50 +3,60 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardShell } from "@/layouts/dashboard";
-import InterpreterForm from "@/domains/interpreter/components/InterpreterForm";
-import { createInterpreter, saveInterpreterAvailabilityAction } from "@/domains/interpreter/actions";
+import InterpreterForm from "./InterpreterForm";
+import {
+  createInterpreter,
+  saveInterpreterAvailabilityAction,
+} from "../actions";
 import { toast } from "sonner";
-import { WeeklyHoursState, OverrideHoursState } from "@/components/availability";
-
-type FormData = {
-  companyName: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  languageIds: string[];
-  weeklyHours: WeeklyHoursState;
-  overrideHours: OverrideHoursState;
-};
+import {
+  InterpreterFormData,
+  isErrorWithMessage,
+} from "../types/interpreterForm.types";
+import logger from "@/utils/logger";
 
 export default function InterpreterCreateContent() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (data: FormData) => {
+  const handleSubmit = async (data: InterpreterFormData) => {
     setIsLoading(true);
     try {
-      const interpreter = await createInterpreter({
+      const result = await createInterpreter({
         companyName: data.companyName,
         contactPerson: data.contactPerson,
         email: data.email,
         phone: data.phone || undefined,
         languageIds: data.languageIds,
       });
-      
+
+      if (!result.success) {
+        const errorMessage =
+          "message" in result && typeof result.message === "string"
+            ? result.message
+            : "Failed to create interpreter.";
+        toast.error(errorMessage);
+        return;
+      }
+
       // Save availability after interpreter is created
-      if (interpreter?.id) {
+      if (result.interpreter?.id) {
         await saveInterpreterAvailabilityAction({
-          interpreterId: interpreter.id,
+          interpreterId: result.interpreter.id,
           weeklyHours: data.weeklyHours,
           overrideHours: data.overrideHours,
         });
       }
-      
+
       toast.success("Interpreter added successfully!");
       router.push("/interpreter");
     } catch (error) {
-      console.error("Failed to create interpreter:", error);
-      toast.error("Failed to create interpreter. Please try again.");
+      logger.error("Failed to create interpreter:", error);
+      if (isErrorWithMessage(error) && error.message) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to create interpreter. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -81,4 +91,3 @@ export default function InterpreterCreateContent() {
     </DashboardShell>
   );
 }
-

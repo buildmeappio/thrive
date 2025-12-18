@@ -6,4 +6,3 @@ const listRecentExaminers = async (limit = 7) => {
 };
 
 export default listRecentExaminers;
-

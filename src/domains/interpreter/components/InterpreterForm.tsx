@@ -2,30 +2,24 @@
 
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Language } from "@prisma/client";
+import type { Language } from "@prisma/client";
 import { getLanguages } from "../actions";
 import { filterUUIDLanguages } from "@/utils/languageUtils";
 import { Check, ChevronDown } from "lucide-react";
 import PhoneInput from "@/components/PhoneNumber";
 import {
-  UnifiedAvailabilitySection,
-  WeeklyHoursState,
-  OverrideHoursState,
+  AvailabilityTabs,
+  weeklyStateToArray,
+  weeklyArrayToState,
+  overrideStateToArray,
+  overrideArrayToState,
 } from "@/components/availability";
-
-type FormData = {
-  companyName: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  languageIds: string[];
-  weeklyHours: WeeklyHoursState;
-  overrideHours: OverrideHoursState;
-};
+import logger from "@/utils/logger";
+import { InterpreterFormData } from "../types/interpreterForm.types";
 
 type Props = {
-  initialData?: FormData;
-  onSubmit: (data: FormData) => Promise<void>;
+  initialData?: InterpreterFormData;
+  onSubmit: (data: InterpreterFormData) => Promise<void>;
   onCancel?: () => void;
   submitLabel?: string;
   isLoading?: boolean;
@@ -40,7 +34,9 @@ export default function InterpreterForm({
 }: Props) {
   const [allLanguages, setAllLanguages] = useState<Language[]>([]);
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
-  const [formData, setFormData] = useState<FormData>(
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const [languageFieldTouched, setLanguageFieldTouched] = useState(false);
+  const [formData, setFormData] = useState<InterpreterFormData>(
     initialData || {
       companyName: "",
       contactPerson: "",
@@ -78,7 +74,7 @@ export default function InterpreterForm({
         },
       },
       overrideHours: [],
-    }
+    },
   );
 
   useEffect(() => {
@@ -89,7 +85,7 @@ export default function InterpreterForm({
         const filteredLanguages = filterUUIDLanguages(languages);
         setAllLanguages(filteredLanguages);
       } catch (error) {
-        console.error("Failed to fetch languages:", error);
+        logger.error("Failed to fetch languages:", error);
       }
     };
     fetchLanguages();
@@ -117,6 +113,7 @@ export default function InterpreterForm({
   }, [languageDropdownOpen]);
 
   const handleLanguageToggle = (languageId: string) => {
+    setLanguageFieldTouched(true);
     setFormData((prev) => ({
       ...prev,
       languageIds: prev.languageIds.includes(languageId)
@@ -144,7 +141,7 @@ export default function InterpreterForm({
   };
 
   const handleContactPersonChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     let value = e.target.value;
     // Only allow alphabets, spaces, and limit to 25 characters
@@ -200,6 +197,7 @@ export default function InterpreterForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setHasAttemptedSubmit(true);
 
     // Validate email
     if (!isValidEmail(formData.email)) {
@@ -219,7 +217,8 @@ export default function InterpreterForm({
     if (
       !trimmedData.companyName ||
       !trimmedData.contactPerson ||
-      !trimmedData.email
+      !trimmedData.email ||
+      trimmedData.languageIds.length === 0
     ) {
       return;
     }
@@ -250,7 +249,7 @@ export default function InterpreterForm({
                 "w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all",
                 isOnlySpaces(formData.companyName)
                   ? "border-red-300 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-[#00A8FF]"
+                  : "border-gray-300 focus:ring-[#00A8FF]",
               )}
               placeholder="Enter company name (alphabets only, max 25)"
             />
@@ -276,7 +275,7 @@ export default function InterpreterForm({
                 "w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all",
                 isOnlySpaces(formData.contactPerson)
                   ? "border-red-300 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-[#00A8FF]"
+                  : "border-gray-300 focus:ring-[#00A8FF]",
               )}
               placeholder="Enter contact person (alphabets only, max 25)"
             />
@@ -301,7 +300,7 @@ export default function InterpreterForm({
                 "w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent transition-all",
                 formData.email && !isValidEmail(formData.email)
                   ? "border-red-300 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-[#00A8FF]"
+                  : "border-gray-300 focus:ring-[#00A8FF]",
               )}
               placeholder="Enter email"
             />
@@ -338,33 +337,39 @@ export default function InterpreterForm({
               <div className="relative language-dropdown">
                 <button
                   type="button"
-                  onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+                  onClick={() => {
+                    setLanguageFieldTouched(true);
+                    setLanguageDropdownOpen(!languageDropdownOpen);
+                  }}
                   className={cn(
                     "w-full px-4 py-3 border rounded-xl text-left focus:outline-none focus:ring-2 focus:border-transparent transition-all",
-                    formData.languageIds.length === 0
+                    formData.languageIds.length === 0 &&
+                      (hasAttemptedSubmit || languageFieldTouched)
                       ? "border-red-300 focus:ring-red-500"
-                      : "border-gray-300 focus:ring-[#00A8FF]"
-                  )}>
+                      : "border-gray-300 focus:ring-[#00A8FF]",
+                  )}
+                >
                   <div className="flex items-center justify-between">
                     <span
                       className={cn(
                         "text-sm",
                         formData.languageIds.length === 0
                           ? "text-gray-400"
-                          : "text-gray-700"
-                      )}>
+                          : "text-gray-700",
+                      )}
+                    >
                       {formData.languageIds.length === 0
                         ? "Select languages..."
                         : formData.languageIds.length === 1
-                        ? allLanguages.find(
-                            (l) => l.id === formData.languageIds[0]
-                          )?.name || "1 language selected"
-                        : `${formData.languageIds.length} languages selected`}
+                          ? allLanguages.find(
+                              (l) => l.id === formData.languageIds[0],
+                            )?.name || "1 language selected"
+                          : `${formData.languageIds.length} languages selected`}
                     </span>
                     <ChevronDown
                       className={cn(
                         "w-5 h-5 text-gray-400 transition-transform",
-                        languageDropdownOpen && "rotate-180"
+                        languageDropdownOpen && "rotate-180",
                       )}
                     />
                   </div>
@@ -374,7 +379,7 @@ export default function InterpreterForm({
                     <div className="py-2">
                       {allLanguages.map((language) => {
                         const isSelected = formData.languageIds.includes(
-                          language.id
+                          language.id,
                         );
                         return (
                           <button
@@ -386,15 +391,17 @@ export default function InterpreterForm({
                             }}
                             className={cn(
                               "w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2",
-                              isSelected ? "bg-gray-50" : ""
-                            )}>
+                              isSelected ? "bg-gray-50" : "",
+                            )}
+                          >
                             <div
                               className={cn(
                                 "w-4 h-4 border-2 rounded flex items-center justify-center transition-colors",
                                 isSelected
                                   ? "border-[#00A8FF] bg-[#00A8FF]"
-                                  : "border-gray-300"
-                              )}>
+                                  : "border-gray-300",
+                              )}
+                            >
                               {isSelected && (
                                 <Check className="w-3 h-3 text-white" />
                               )}
@@ -404,7 +411,8 @@ export default function InterpreterForm({
                                 isSelected
                                   ? "text-[#00A8FF] font-medium"
                                   : "text-gray-700"
-                              }>
+                              }
+                            >
                               {language.name}
                             </span>
                           </button>
@@ -414,27 +422,33 @@ export default function InterpreterForm({
                   </div>
                 )}
               </div>
-              {formData.languageIds.length === 0 && (
-                <p className="text-xs text-red-500 mt-1">
-                  At least one language is required
-                </p>
-              )}
+              {formData.languageIds.length === 0 &&
+                (hasAttemptedSubmit || languageFieldTouched) && (
+                  <p className="text-xs text-red-500 mt-1">
+                    At least one language is required
+                  </p>
+                )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Availability Section */}
-      <UnifiedAvailabilitySection
-        weeklyHours={formData.weeklyHours}
-        overrideHours={formData.overrideHours}
+      <AvailabilityTabs
+        weeklyHours={weeklyStateToArray(formData.weeklyHours)}
+        overrideHours={overrideStateToArray(formData.overrideHours)}
         onWeeklyHoursChange={(weeklyHours) =>
-          setFormData((prev) => ({ ...prev, weeklyHours: weeklyHours as WeeklyHoursState }))
+          setFormData((prev) => ({
+            ...prev,
+            weeklyHours: weeklyArrayToState(weeklyHours),
+          }))
         }
         onOverrideHoursChange={(overrideHours) =>
-          setFormData((prev) => ({ ...prev, overrideHours }))
+          setFormData((prev) => ({
+            ...prev,
+            overrideHours: overrideArrayToState(overrideHours),
+          }))
         }
-        dataFormat="transporter-interpreter"
         disabled={isLoading}
       />
 
@@ -451,8 +465,9 @@ export default function InterpreterForm({
               "hover:bg-gray-100 transition-colors",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               "text-sm sm:text-base",
-              "w-full sm:w-auto"
-            )}>
+              "w-full sm:w-auto",
+            )}
+          >
             Cancel
           </button>
         )}
@@ -475,8 +490,9 @@ export default function InterpreterForm({
             "hover:opacity-90 transition-opacity",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             "text-sm sm:text-base",
-            "w-full sm:w-auto"
-          )}>
+            "w-full sm:w-auto",
+          )}
+        >
           {isLoading ? "Saving..." : submitLabel}
         </button>
       </div>

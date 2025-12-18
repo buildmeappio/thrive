@@ -3,138 +3,205 @@
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { sendMail } from "@/lib/email";
-import { generateContractPDF } from "@/lib/pdf-generator";
+import { signAccountToken, signContractToken } from "@/lib/jwt";
+import { Roles } from "@/domains/auth/constants/roles";
+import { getCurrentUser } from "@/domains/auth/server/session";
+import contractService from "../server/contract.service";
+import { HttpError } from "@/utils/httpError";
+import logger from "@/utils/logger";
+import {
+  generateExaminerContractSentEmail,
+  EXAMINER_CONTRACT_SENT_SUBJECT,
+} from "@/emails/examiner-status-updates";
+import { checkEntityType } from "../utils/checkEntityType";
+import { ExaminerStatus } from "@prisma/client";
 
-export async function sendContract(examinerProfileId: string) {
+export async function sendContract(id: string) {
   try {
-    // Get examiner details
-    const examiner = await prisma.examinerProfile.findUnique({
-      where: { id: examinerProfileId },
-      include: {
-        account: {
-          include: {
-            user: true,
-          },
-        },
-        feeStructure: {
-          where: {
-            deletedAt: null,
-          },
-        },
-      },
-    });
-
-    if (!examiner) {
-      throw new Error("Examiner not found");
+    const user = await getCurrentUser();
+    if (!user) {
+      throw HttpError.unauthorized("You must be logged in to send contract");
     }
 
-    if (!examiner.feeStructure) {
-      throw new Error("Fee structure not found. Please add fee structure before sending contract.");
-    }
+    // Check if it's an application or examiner
+    const entityType = await checkEntityType(id);
 
-    const feeStructure = examiner.feeStructure[0];
-    const examinerName = `${examiner.account.user.firstName} ${examiner.account.user.lastName}`;
-    const examinerEmail = examiner.account.user.email;
+    if (entityType === "application") {
+      // Handle application
+      const application = await prisma.examinerApplication.findUnique({
+        where: { id },
+      });
 
-    // Generate PDF
-    console.log("📄 Generating contract PDF...");
-    const pdfBuffer = await generateContractPDF(
-      examinerName,
-      examiner.provinceOfResidence,
-      {
-        standardIMEFee: Number(feeStructure.standardIMEFee),
-        virtualIMEFee: Number(feeStructure.virtualIMEFee),
-        recordReviewFee: Number(feeStructure.recordReviewFee),
-        hourlyRate: feeStructure.hourlyRate ? Number(feeStructure.hourlyRate) : undefined,
-        reportTurnaroundDays: feeStructure.reportTurnaroundDays ?? undefined,
-        cancellationFee: Number(feeStructure.cancellationFee),
-        paymentTerms: feeStructure.paymentTerms,
+      if (!application) {
+        throw new Error("Application not found");
       }
-    );
 
-    const fileName = `IME_Agreement_${examinerName.replace(/\s+/g, "_")}.pdf`;
+      // Check if fee structure exists
+      if (
+        !application.IMEFee ||
+        !application.recordReviewFee ||
+        !application.cancellationFee ||
+        !application.paymentTerms
+      ) {
+        throw new Error(
+          "Fee structure not found. Please add fee structure before sending contract.",
+        );
+      }
 
-    // Send email with PDF attachment
-    console.log("📧 Sending contract email with PDF attachment...");
+      const firstName = application.firstName || "";
+      const lastName = application.lastName || "";
+      const examinerEmail = application.email;
 
-    await sendMail({
-      to: examinerEmail,
-      subject: "Your Independent Medical Examiner Agreement",
-      html: `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Contract Ready for Review</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-            <div style="text-align: center;">
-              <img src="${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png" alt="Thrive Logo" style="width: 120px;">
-            </div>
-            
-            <div style="margin-top: 20px; font-size: 16px; color: #333333;">
-              <p>Hi Dr. ${examinerName},</p>
-              
-              <p>Your Independent Medical Examiner Agreement is ready for your review. Please find the contract attached to this email as a PDF document.</p>
-              
-              <div style="background-color: #E8F8F5; border-left: 4px solid #01F4C8; padding: 15px; margin: 20px 0;">
-                <p style="margin: 0; color: #00695C; font-weight: 600;">📎 Contract Attached</p>
-                <p style="margin: 5px 0 0 0; color: #00695C;">Your personalized contract PDF is attached to this email.</p>
-              </div>
-              
-              <p><strong>What's included in your contract:</strong></p>
-              <ul style="background-color: #f9f9f9; padding: 15px 15px 15px 35px; margin: 15px 0; border-radius: 5px;">
-                <li>Your fee structure and payment terms</li>
-                <li>Service delivery expectations</li>
-                <li>Professional obligations and standards</li>
-                <li>Confidentiality and privacy requirements</li>
-              </ul>
-              
-              <p style="font-size: 14px; color: #666666;">
-                <strong>Note:</strong> Please review the attached PDF carefully. You can save and print the contract for your records. The PDF can be viewed using any standard PDF reader.
-              </p>
-              
-              <p>If you have any questions or concerns about the contract, please don't hesitate to contact us.</p>
-            </div>
-            
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 14px; color: #777777; text-align: center;">
-              <p>If you have any questions or need assistance, feel free to contact us at 
-                <a href="mailto:support@thrivenetwork.ca" style="color: #00A8FF;">support@thrivenetwork.ca</a>.
-              </p>
-              <p style="font-size: 12px; color: #999999; margin-top: 10px;">
-                © 2025 Thrive Assessment & Care. All rights reserved.
-              </p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `,
-      attachments: [
-        {
-          filename: fileName,
-          content: pdfBuffer,
-          contentType: "application/pdf",
+      // Create contract record using contract service
+      logger.log("📄 Creating contract for application...");
+      const contractResult =
+        await contractService.createAndSendContractForApplication(
+          id,
+          user.accountId,
+        );
+
+      if (!contractResult.success) {
+        throw new Error(contractResult.error || "Failed to create contract");
+      }
+
+      logger.log(
+        "✅ Contract created successfully:",
+        contractResult.contractId,
+      );
+
+      // Generate JWT token for contract signing (using application token)
+      logger.log("🔐 Generating contract signing token...");
+      const token = signContractToken({
+        contractId: contractResult.contractId!,
+        examinerProfileId: "", // Not available yet for applications
+      });
+
+      // Create contract signing link using CONTRACT ID
+      const contractSigningLink = `${process.env.NEXT_PUBLIC_APP_URL}/examiner/contract/${contractResult.contractId}?token=${token}&applicationId=${id}`;
+
+      // Send email with contract signing button
+      logger.log("📧 Sending contract signing email...");
+
+      const htmlTemplate = generateExaminerContractSentEmail({
+        firstName,
+        lastName,
+        contractSigningLink,
+      });
+
+      await sendMail({
+        to: examinerEmail,
+        subject: EXAMINER_CONTRACT_SENT_SUBJECT,
+        html: htmlTemplate,
+      });
+
+      logger.log(`✅ Contract signing email sent to ${examinerEmail}`);
+
+      // Update application status to CONTRACT_SENT
+      await prisma.examinerApplication.update({
+        where: { id },
+        data: {
+          status: ExaminerStatus.CONTRACT_SENT,
         },
-      ],
-    });
+      });
 
-    console.log(`✅ Contract email sent to ${examinerEmail}`);
+      // Revalidate the application page
+      revalidatePath(`/examiner/application/${id}`);
 
-    // Revalidate the examiner page
-    revalidatePath(`/examiner/${examinerProfileId}`);
+      return {
+        success: true,
+        message: "Contract signing link sent successfully",
+      };
+    } else if (entityType === "examiner") {
+      // Handle examiner (existing logic)
+      const examiner = await prisma.examinerProfile.findUnique({
+        where: { id },
+        include: {
+          account: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
 
-    return {
-      success: true,
-      message: "Contract sent successfully",
-    };
+      if (!examiner) {
+        throw new Error("Examiner not found");
+      }
+
+      const firstName = examiner.account.user.firstName;
+      const lastName = examiner.account.user.lastName;
+      const examinerEmail = examiner.account.user.email;
+      const userId = examiner.account.user.id;
+      const accountId = examiner.accountId;
+
+      // Create contract record using contract service (same as approve flow)
+      logger.log("📄 Creating contract for examiner...");
+      const contractResult = await contractService.createAndSendContract(
+        id,
+        user.accountId,
+      );
+
+      if (!contractResult.success) {
+        throw new Error(contractResult.error || "Failed to create contract");
+      }
+
+      logger.log(
+        "✅ Contract created successfully:",
+        contractResult.contractId,
+      );
+
+      // Generate JWT token for contract signing
+      logger.log("🔐 Generating contract signing token...");
+      const token = signAccountToken({
+        email: examinerEmail,
+        id: userId,
+        accountId: accountId,
+        role: Roles.MEDICAL_EXAMINER,
+      });
+
+      // Create contract signing link using CONTRACT ID (not examiner profile ID)
+      const contractSigningLink = `${process.env.NEXT_PUBLIC_APP_URL}/examiner/contract/${contractResult.contractId}?token=${token}`;
+
+      // Send email with contract signing button
+      logger.log("📧 Sending contract signing email...");
+
+      const htmlTemplate = generateExaminerContractSentEmail({
+        firstName,
+        lastName,
+        contractSigningLink,
+      });
+
+      await sendMail({
+        to: examinerEmail,
+        subject: EXAMINER_CONTRACT_SENT_SUBJECT,
+        html: htmlTemplate,
+      });
+
+      logger.log(`✅ Contract signing email sent to ${examinerEmail}`);
+
+      // Update examiner status to CONTRACT_SENT
+      await prisma.examinerProfile.update({
+        where: { id },
+        data: {
+          status: "CONTRACT_SENT",
+        },
+      });
+
+      // Revalidate the examiner page
+      revalidatePath(`/examiner/${id}`);
+
+      return {
+        success: true,
+        message: "Contract signing link sent successfully",
+      };
+    } else {
+      throw new Error("Application or examiner not found");
+    }
   } catch (error) {
-    console.error("Error sending contract:", error);
+    logger.error("Error sending contract:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to send contract",
     };
   }
 }
-

@@ -20,4 +20,3 @@ export type CreateOrganizationTypeInput = {
 };
 
 export type UpdateOrganizationTypeInput = Partial<CreateOrganizationTypeInput>;
-

@@ -6,16 +6,15 @@ import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/PasswordInput";
 import { signIn } from "next-auth/react";
 import { loginSchema, LoginInput } from "@/domains/auth/schemas/auth.schemas";
-import useRouter from "@/hooks/useRouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { URLS } from "@/constants/route";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const LoginForm = () => {
   const router = useRouter();
-
   const {
     register,
     handleSubmit,
@@ -26,21 +25,20 @@ const LoginForm = () => {
     mode: "onSubmit",
   });
 
-
   const onSubmit = async (values: LoginInput) => {
     const res = await signIn("credentials", {
       redirect: false,
       email: values.email,
       password: values.password,
     });
-
     if (res?.ok) {
-      toast.success('Login successful');
-      router.replace(URLS.DASHBOARD);
+      toast.success("Login successful");
+      router.push("/dashboard");
       return;
     }
-
-    toast.error('Invalid email or password. Please try again.');
+    const errorMessage =
+      res?.error ?? "Invalid email or password. Please try again.";
+    toast.error(errorMessage);
   };
 
   return (
@@ -54,8 +52,9 @@ const LoginForm = () => {
           type="email"
           placeholder="Enter your email address"
           disabled={isSubmitting}
-          className={`mt-1 h-11 md:h-12 border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed ${errors.email ? "ring-1 ring-red-500" : ""
-            }`}
+          className={`mt-1 h-11 md:h-12 border-none bg-[#F2F5F6] placeholder:text-[#9EA9AA] focus-visible:ring-1 focus-visible:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed ${
+            errors.email ? "ring-1 ring-red-500" : ""
+          }`}
           {...register("email")}
         />
         <p className="min-h-[16px] text-xs text-red-500">
@@ -71,8 +70,9 @@ const LoginForm = () => {
           id="password"
           placeholder="Enter your password"
           disabled={isSubmitting}
-          className={`h-11 md:h-12 ${errors.password ? "ring-1 ring-red-500" : ""
-            }`}
+          className={`h-11 md:h-12 ${
+            errors.password ? "ring-1 ring-red-500" : ""
+          }`}
           {...register("password")}
         />
         <p className="min-h-[16px] text-xs text-red-500">

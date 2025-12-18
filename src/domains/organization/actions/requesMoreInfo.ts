@@ -7,14 +7,15 @@ import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
 import { signOrganizationResubmitToken } from "@/lib/jwt";
 import emailService from "@/services/email.service";
+import logger from "@/utils/logger";
 
 type OrganizationView = {
   id: string;
   name: string;
   manager: Array<{
-    account?: { 
+    account?: {
       id?: string | null;
-      user?: { 
+      user?: {
         id?: string | null;
         email?: string | null;
         firstName?: string | null;
@@ -38,18 +39,18 @@ const requestMoreInfo = async (id: string, message: string) => {
   // Update organization status to INFO_REQUESTED
   try {
     await handlers.requestMoreInfoOrganization(id);
-    console.log("✓ Organization status updated to INFO_REQUESTED");
+    logger.log("✓ Organization status updated to INFO_REQUESTED");
   } catch (dbError) {
-    console.error("⚠️ Failed to update organization status:", dbError);
+    logger.error("⚠️ Failed to update organization status:", dbError);
     throw new Error("Failed to update organization status in database");
   }
 
   // Send request for more info email
   try {
     await sendRequestMoreInfoEmail(org, message);
-    console.log("✓ Request more info email sent successfully");
+    logger.log("✓ Request more info email sent successfully");
   } catch (emailError) {
-    console.error("⚠️ Failed to send request email:", emailError);
+    logger.error("⚠️ Failed to send request email:", emailError);
     throw emailError;
   }
 
@@ -61,7 +62,10 @@ const requestMoreInfo = async (id: string, message: string) => {
   return org;
 };
 
-async function sendRequestMoreInfoEmail(org: OrganizationView, requestMessage: string) {
+async function sendRequestMoreInfoEmail(
+  org: OrganizationView,
+  requestMessage: string,
+) {
   const manager = org.manager?.[0];
   const firstName = manager?.account?.user?.firstName || "";
   const lastName = manager?.account?.user?.lastName || "";
@@ -92,9 +96,12 @@ async function sendRequestMoreInfoEmail(org: OrganizationView, requestMessage: s
       organizationName: org.name,
       requestMessage,
       resubmitLink,
-      CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || process.env.NEXT_PUBLIC_APP_URL || "",
+      CDN_URL:
+        process.env.NEXT_PUBLIC_CDN_URL ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        "",
     },
-    email
+    email,
   );
 
   if (!result.success) {

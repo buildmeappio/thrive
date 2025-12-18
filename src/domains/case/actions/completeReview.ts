@@ -8,6 +8,7 @@ import caseHandlers from "../server/handlers";
 import prisma from "@/lib/db";
 import { CaseDetailDtoType } from "../types/CaseDetailDtoType";
 import createSecureLink from "@/utils/createSecureLink";
+import logger from "@/utils/logger";
 
 const completeReview = async (caseId: string): Promise<void> => {
   const user = await getCurrentUser();
@@ -36,24 +37,26 @@ const completeReview = async (caseId: string): Promise<void> => {
     // Update the examination status and set approval timestamp
     await prisma.examination.update({
       where: { id: caseId },
-      data: { 
+      data: {
         statusId: waitingStatus.id,
         approvedAt: new Date(),
       },
     });
 
-    console.log("✓ Case status updated to Ready to be Appointment with approval timestamp");
+    logger.log(
+      "✓ Case status updated to Ready to be Appointment with approval timestamp",
+    );
   } catch (dbError) {
-    console.error("⚠️ Failed to update case status:", dbError);
+    logger.error("⚠️ Failed to update case status:", dbError);
     throw new Error("Failed to update case status in database");
   }
 
   // Send approval email to claimant
   try {
     await sendApprovalEmailToClaimant(caseDetails);
-    console.log("✓ Approval email sent to claimant");
+    logger.log("✓ Approval email sent to claimant");
   } catch (emailError) {
-    console.error("⚠️ Failed to send approval email:", emailError);
+    logger.error("⚠️ Failed to send approval email:", emailError);
     throw emailError;
   }
 
@@ -71,7 +74,7 @@ async function sendApprovalEmailToClaimant(caseDetails: CaseDetailDtoType) {
     caseDetails.case.organization?.name || "Unknown Organization";
 
   if (!claimantEmail) {
-    console.error("Claimant email not found");
+    logger.error("Claimant email not found");
     throw new Error("Claimant email not found");
   }
 
@@ -79,7 +82,8 @@ async function sendApprovalEmailToClaimant(caseDetails: CaseDetailDtoType) {
   // This will generate JWT token with correct payload (email, caseId, examinationId)
   // and store reference token in ExaminationSecureLink table
   // caseDetails.id is the examination ID
-  const availabilityLink = await createSecureLink(caseDetails.id, 24);
+  // Link expires in 7 days (168 hours)
+  const availabilityLink = await createSecureLink(caseDetails.id, 168);
 
   const submittedDate = caseDetails.createdAt
     ? new Date(caseDetails.createdAt).toLocaleDateString("en-US", {
@@ -90,7 +94,7 @@ async function sendApprovalEmailToClaimant(caseDetails: CaseDetailDtoType) {
     : "Unknown";
 
   const result = await emailService.sendEmail(
-    `Case ${caseDetails.caseNumber} - Approved! Set Your Availability`,
+    `Select Your Appointment - Thrive`,
     "case-approval.html",
     {
       firstName,
@@ -104,7 +108,7 @@ async function sendApprovalEmailToClaimant(caseDetails: CaseDetailDtoType) {
         process.env.NEXT_PUBLIC_APP_URL ||
         "",
     },
-    claimantEmail
+    claimantEmail,
   );
 
   if (!result.success) {

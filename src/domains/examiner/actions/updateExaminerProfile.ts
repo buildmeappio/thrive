@@ -3,6 +3,7 @@
 import { verifyExaminerResubmitToken } from "@/lib/jwt";
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import logger from "@/utils/logger";
 
 type UpdateExaminerData = {
   // Personal details
@@ -36,7 +37,10 @@ type UpdateExaminerData = {
  * @param token - The resubmission token
  * @param data - The updated examiner data
  */
-export async function updateExaminerProfile(token: string, data: UpdateExaminerData) {
+export async function updateExaminerProfile(
+  token: string,
+  data: UpdateExaminerData,
+) {
   try {
     // Verify and decode the token
     const decoded = verifyExaminerResubmitToken(token);
@@ -63,21 +67,44 @@ export async function updateExaminerProfile(token: string, data: UpdateExaminerD
       const examinerProfile = await tx.examinerProfile.update({
         where: { id: decoded.examinerId },
         data: {
-          ...(data.provinceOfResidence && { provinceOfResidence: data.provinceOfResidence }),
+          ...(data.provinceOfResidence && {
+            provinceOfResidence: data.provinceOfResidence,
+          }),
           ...(data.mailingAddress && { mailingAddress: data.mailingAddress }),
           ...(data.specialties && { specialties: data.specialties }),
           ...(data.licenseNumber && { licenseNumber: data.licenseNumber }),
-          ...(data.provinceOfLicensure && { provinceOfLicensure: data.provinceOfLicensure }),
-          ...(data.licenseExpiryDate !== undefined && { licenseExpiryDate: data.licenseExpiryDate }),
-          ...(data.medicalLicenseDocumentId && { medicalLicenseDocumentId: data.medicalLicenseDocumentId }),
-          ...(data.resumeDocumentId && { resumeDocumentId: data.resumeDocumentId }),
-          ...(data.yearsOfIMEExperience && { yearsOfIMEExperience: data.yearsOfIMEExperience }),
-          ...(data.isForensicAssessmentTrained !== undefined && { isForensicAssessmentTrained: data.isForensicAssessmentTrained }),
+          ...(data.provinceOfLicensure && {
+            provinceOfLicensure: data.provinceOfLicensure,
+          }),
+          ...(data.licenseExpiryDate !== undefined && {
+            licenseExpiryDate: data.licenseExpiryDate,
+          }),
+          ...(data.medicalLicenseDocumentId && {
+            medicalLicenseDocumentId: data.medicalLicenseDocumentId,
+          }),
+          ...(data.resumeDocumentId && {
+            resumeDocumentId: data.resumeDocumentId,
+          }),
+          ...(data.yearsOfIMEExperience && {
+            yearsOfIMEExperience: data.yearsOfIMEExperience,
+          }),
+          ...(data.isForensicAssessmentTrained !== undefined && {
+            isForensicAssessmentTrained: data.isForensicAssessmentTrained,
+          }),
           ...(data.bio && { bio: data.bio }),
-          ...(data.isConsentToBackgroundVerification !== undefined && { isConsentToBackgroundVerification: data.isConsentToBackgroundVerification }),
-          ...(data.agreeToTerms !== undefined && { agreeToTerms: data.agreeToTerms }),
-          ...(data.ndaDocumentId !== undefined && { NdaDocumentId: data.ndaDocumentId }),
-          ...(data.insuranceDocumentId !== undefined && { insuranceDocumentId: data.insuranceDocumentId }),
+          ...(data.isConsentToBackgroundVerification !== undefined && {
+            isConsentToBackgroundVerification:
+              data.isConsentToBackgroundVerification,
+          }),
+          ...(data.agreeToTerms !== undefined && {
+            agreeToTerms: data.agreeToTerms,
+          }),
+          ...(data.ndaDocumentId !== undefined && {
+            NdaDocumentId: data.ndaDocumentId,
+          }),
+          ...(data.insuranceDocumentId !== undefined && {
+            insuranceDocumentId: data.insuranceDocumentId,
+          }),
           // Reset status back to PENDING for admin review
           status: "PENDING",
           // updatedAt is automatically updated by Prisma
@@ -113,13 +140,15 @@ export async function updateExaminerProfile(token: string, data: UpdateExaminerD
       data: result,
     };
   } catch (error) {
-    console.error("Error updating examiner profile:", error);
+    logger.error("Error updating examiner profile:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update examiner profile",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to update examiner profile",
     };
   }
 }
 
 export default updateExaminerProfile;
-

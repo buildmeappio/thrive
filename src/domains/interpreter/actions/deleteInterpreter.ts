@@ -7,4 +7,3 @@ const deleteInterpreter = async (id: string) => {
 };
 
 export default deleteInterpreter;
-

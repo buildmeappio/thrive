@@ -1,220 +1,329 @@
 import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
-import { startOfMonth, endOfMonth } from "date-fns";
 import { ExaminerStatus } from "@prisma/client";
 
-class ExaminerService {
-  // Get count of examiners created this month with specific status
-  async getExaminerCountThisMonth(status: ExaminerStatus = "PENDING"): Promise<number> {
-    const now = new Date();
-    const [from, to] = [startOfMonth(now), endOfMonth(now)];
-    
-    try {
-      return await prisma.examinerProfile.count({
-        where: {
-          createdAt: { gte: from, lte: to },
-          status,
-          deletedAt: null,
-        },
-      });
-    } catch (error) {
-      throw HttpError.fromError(error, "Failed to get examiner count");
-    }
+const includeRelations = {
+  account: {
+    include: {
+      user: true,
+    },
+  },
+  feeStructure: true,
+  address: true,
+  redactedIMEReportDocument: true,
+  resumeDocument: true,
+  ndaDocument: true,
+  insuranceDocument: true,
+  examinerLanguages: {
+    include: {
+      language: true,
+    },
+  },
+  application: {
+    select: {
+      status: true,
+    },
+  },
+};
+
+export const getRecentExaminers = async (
+  limit?: number,
+  status?: string | string[],
+) => {
+  return prisma.examinerProfile.findMany({
+    where: {
+      deletedAt: null,
+      ...(status && {
+        status: Array.isArray(status)
+          ? { in: status as any[] }
+          : (status as any),
+      }),
+    },
+    include: includeRelations,
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: limit || 10,
+  });
+};
+
+export const getExaminerById = async (id: string) => {
+  return prisma.examinerProfile.findUnique({
+    where: { id },
+    include: includeRelations,
+  });
+};
+
+export const approveExaminer = async (id: string, _accountId?: string) => {
+  return prisma.examinerProfile.update({
+    where: { id },
+    data: {
+      status: ExaminerStatus.APPROVED,
+    },
+    include: includeRelations,
+  });
+};
+
+export const rejectExaminer = async (
+  id: string,
+  accountId?: string,
+  rejectionReason?: string,
+) => {
+  return prisma.examinerProfile.update({
+    where: { id },
+    data: {
+      status: ExaminerStatus.REJECTED,
+      rejectedReason: rejectionReason,
+    },
+    include: includeRelations,
+  });
+};
+
+export const requestMoreInfoFromExaminer = async (
+  id: string,
+  _message: string,
+  _documentsRequired: boolean,
+) => {
+  // Note: message and documentsRequired are sent via email but not stored in DB
+  // as these fields don't exist in the schema
+  return prisma.examinerProfile.update({
+    where: { id },
+    data: {
+      status: ExaminerStatus.MORE_INFO_REQUESTED,
+    },
+    include: includeRelations,
+  });
+};
+
+// New status transition methods
+export const moveToReview = async (id: string) => {
+  return prisma.examinerProfile.update({
+    where: { id },
+    data: {
+      status: ExaminerStatus.IN_REVIEW,
+    },
+    include: includeRelations,
+  });
+};
+
+export const scheduleInterview = async (id: string) => {
+  return prisma.examinerProfile.update({
+    where: { id },
+    data: {
+      status: ExaminerStatus.INTERVIEW_SCHEDULED,
+    },
+    include: includeRelations,
+  });
+};
+
+export const markInterviewCompleted = async (id: string) => {
+  return prisma.examinerProfile.update({
+    where: { id },
+    data: {
+      status: ExaminerStatus.INTERVIEW_COMPLETED,
+    },
+    include: includeRelations,
+  });
+};
+
+export const markContractSigned = async (id: string) => {
+  return prisma.examinerProfile.update({
+    where: { id },
+    data: {
+      status: ExaminerStatus.CONTRACT_SIGNED,
+      contractConfirmedByAdminAt: new Date(),
+    },
+    include: includeRelations,
+  });
+};
+
+// Suspend and reactivate methods
+export const suspendExaminer = async (
+  id: string,
+  suspensionReason?: string,
+) => {
+  return prisma.examinerProfile.update({
+    where: { id },
+    data: {
+      status: ExaminerStatus.SUSPENDED,
+      rejectedReason: suspensionReason, // Reuse this field for suspension reason
+    },
+    include: includeRelations,
+  });
+};
+
+export const reactivateExaminer = async (id: string) => {
+  return prisma.examinerProfile.update({
+    where: { id },
+    data: {
+      status: ExaminerStatus.APPROVED, // Return to APPROVED status
+      rejectedReason: null, // Clear any suspension reason
+    },
+    include: includeRelations,
+  });
+};
+
+// Export for getExaminerCountThisMonth used by handlers
+export const getExaminerCountThisMonth = async (status: string | string[]) => {
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  return prisma.examinerProfile.count({
+    where: {
+      status: Array.isArray(status) ? { in: status as any[] } : (status as any),
+      createdAt: {
+        gte: startOfMonth,
+      },
+      deletedAt: null,
+    },
+  });
+};
+
+// Copy data from ExaminerApplication to ExaminerProfile when account is created
+export const createProfileFromApplication = async (
+  applicationId: string,
+  accountId: string,
+) => {
+  // Get the application with all relations
+  const application = await prisma.examinerApplication.findUnique({
+    where: { id: applicationId },
+    include: {
+      address: true,
+    },
+  });
+
+  if (!application) {
+    throw new Error("Application not found");
   }
 
-  // Get recent examiners with full details
-  async getRecentExaminers(
-    limit = 7, 
-    status: ExaminerStatus = "PENDING"
+  // Check if application is deleted
+  if (application.deletedAt) {
+    throw new Error("Application has been deleted");
+  }
+
+  // Validate that the application is APPROVED or CONTRACT_SIGNED before allowing account creation
+  // CONTRACT_SIGNED: Contract has been signed, waiting for admin approval
+  // APPROVED: Application has been approved, ready for account creation
+  if (
+    application.status !== ExaminerStatus.APPROVED &&
+    application.status !== ExaminerStatus.CONTRACT_SIGNED
   ) {
-    try {
-      const examiners = await prisma.examinerProfile.findMany({
-        where: {
-          status,
-          deletedAt: null,
-        },
-        include: {
-          account: {
-            include: {
-              user: true,
-            },
-          },
-          medicalLicenseDocument: true,
-          resumeDocument: true,
-          ndaDocument: true,
-          insuranceDocument: true,
-          examinerLanguages: {
-            include: {
-              language: true,
-            },
-          },
-          feeStructure: {
-            where: {
-              deletedAt: null,
-            },
-            orderBy: {
-              createdAt: "desc",
-            },
-            take: 1,
-          },
-        },
-        orderBy: { createdAt: "desc" },
-        take: limit,
-      });
-      
-      // Filter out examiners with missing user data
-      // Note: Documents can be optional as the DTO will handle missing documents
-      return examiners.filter(examiner => examiner.account?.user);
-    } catch (error) {
-      console.error("Error fetching recent examiners:", error);
-      throw HttpError.fromError(error, "Failed to get recent examiners");
-    }
+    throw new Error(
+      `Application is not approved. Current status: ${application.status}. Application must be APPROVED or CONTRACT_SIGNED to create account.`,
+    );
   }
 
-  // Get examiner by ID (for future detail page)
-  async getExaminerById(id: string) {
-    try {
-      const examiner = await prisma.examinerProfile.findUnique({
-        where: { id },
-        include: {
-          account: {
-            include: {
-              user: true,
-            },
-          },
-          medicalLicenseDocument: true,
-          resumeDocument: true,
-          ndaDocument: true,
-          insuranceDocument: true,
-          examinerLanguages: {
-            include: {
-              language: true,
-            },
-          },
-          feeStructure: {
-            where: {
-              deletedAt: null,
-            },
-          },
-        },
-      });
+  // Check if profile already exists
+  const existingProfile = await prisma.examinerProfile.findUnique({
+    where: { applicationId },
+  });
 
-      if (!examiner) {
-        throw HttpError.notFound("Examiner not found");
-      }
-
-      return examiner;
-    } catch (error) {
-      throw HttpError.fromError(error, "Failed to get examiner");
-    }
+  if (existingProfile) {
+    // Profile already exists, return it
+    return prisma.examinerProfile.findUnique({
+      where: { id: existingProfile.id },
+      include: includeRelations,
+    });
   }
 
-  // Approve an examiner
-  async approveExaminer(id: string, approvedBy: string) {
-    try {
-      const examiner = await prisma.examinerProfile.update({
-        where: { id },
+  // Create ExaminerProfile from ExaminerApplication data and update application status to ACTIVE
+  // This happens when examiner creates their password/account
+  const profile = await prisma.$transaction(async (tx) => {
+    // Create the profile
+    const createdProfile = await tx.examinerProfile.create({
+      data: {
+        applicationId: application.id,
+        accountId: accountId,
+        addressId: application.addressId,
+        provinceOfResidence: application.provinceOfResidence,
+        mailingAddress: application.mailingAddress,
+        specialties: application.specialties,
+        licenseNumber: application.licenseNumber,
+        landlineNumber: application.landlineNumber,
+        assessmentTypes: application.assessmentTypeIds,
+        provinceOfLicensure: application.provinceOfLicensure,
+        licenseExpiryDate: application.licenseExpiryDate,
+        medicalLicenseDocumentIds: application.medicalLicenseDocumentIds,
+        resumeDocumentId: application.resumeDocumentId,
+        NdaDocumentId: application.NdaDocumentId,
+        insuranceDocumentId: application.insuranceDocumentId,
+        isForensicAssessmentTrained: application.isForensicAssessmentTrained,
+        yearsOfIMEExperience: application.yearsOfIMEExperience,
+        imesCompleted: application.imesCompleted,
+        currentlyConductingIMEs: application.currentlyConductingIMEs,
+        insurersOrClinics: application.insurersOrClinics,
+        assessmentTypeOther: application.assessmentTypeOther,
+        redactedIMEReportDocumentId: application.redactedIMEReportDocumentId,
+        bio: application.experienceDetails || "",
+        experienceDetails: application.experienceDetails || "",
+        isConsentToBackgroundVerification:
+          application.isConsentToBackgroundVerification,
+        agreeToTerms: application.agreeToTerms,
+        status: ExaminerStatus.ACTIVE, // Set to ACTIVE when account is created
+      },
+      include: includeRelations,
+    });
+
+    // Create fee structure from application fee structure if it exists
+    if (
+      application.IMEFee !== null &&
+      application.recordReviewFee !== null &&
+      application.cancellationFee !== null &&
+      application.paymentTerms !== null
+    ) {
+      await tx.examinerFeeStructure.create({
         data: {
-          status: "ACCEPTED",
-          approvedBy,
-          approvedAt: new Date(),
-        },
-        include: {
-          account: {
-            include: {
-              user: true,
-            },
-          },
-          medicalLicenseDocument: true,
-          resumeDocument: true,
-          ndaDocument: true,
-          insuranceDocument: true,
-          examinerLanguages: {
-            include: {
-              language: true,
-            },
-          },
+          examinerProfileId: createdProfile.id,
+          IMEFee: application.IMEFee,
+          recordReviewFee: application.recordReviewFee,
+          hourlyRate: application.hourlyRate ?? null,
+          cancellationFee: application.cancellationFee,
+          paymentTerms: application.paymentTerms,
         },
       });
-
-      return examiner;
-    } catch (error) {
-      throw HttpError.fromError(error, "Failed to approve examiner");
-    }
-  }
-
-  // Reject an examiner
-  async rejectExaminer(id: string, rejectedBy: string, rejectionReason: string) {
-    if (!rejectionReason?.trim()) {
-      throw HttpError.badRequest("Rejection reason is required");
     }
 
-    try {
-      const examiner = await prisma.examinerProfile.update({
-        where: { id },
-        data: {
-          status: "REJECTED",
-          rejectedBy,
-          rejectedAt: new Date(),
-          rejectedReason: rejectionReason.trim(),
-        },
-        include: {
-          account: {
-            include: {
-              user: true,
-            },
-          },
-          medicalLicenseDocument: true,
-          resumeDocument: true,
-          ndaDocument: true,
-          insuranceDocument: true,
-          examinerLanguages: {
-            include: {
-              language: true,
-            },
-          },
-        },
-      });
+    // Link any contracts from the application to the new profile
+    await tx.contract.updateMany({
+      where: {
+        applicationId: applicationId,
+        examinerProfileId: null,
+      },
+      data: {
+        examinerProfileId: createdProfile.id,
+        applicationId: null, // Remove application link since we now have a profile
+      },
+    });
 
-      return examiner;
-    } catch (error) {
-      throw HttpError.fromError(error, "Failed to reject examiner");
-    }
-  }
+    // Update application status to ACTIVE when examiner creates account
+    await tx.examinerApplication.update({
+      where: { id: applicationId },
+      data: {
+        status: ExaminerStatus.ACTIVE,
+      },
+    });
 
-  // Request more info from examiner (change status to INFO_REQUESTED)
-  async requestMoreInfoFromExaminer(id: string) {
-    try {
-      const examiner = await prisma.examinerProfile.update({
-        where: { id },
-        data: {
-          status: "INFO_REQUESTED",
-        },
-        include: {
-          account: {
-            include: {
-              user: true,
-            },
-          },
-          medicalLicenseDocument: true,
-          resumeDocument: true,
-          ndaDocument: true,
-          insuranceDocument: true,
-          examinerLanguages: {
-            include: {
-              language: true,
-            },
-          },
-        },
-      });
+    return createdProfile;
+  });
 
-      return examiner;
-    } catch (error) {
-      throw HttpError.fromError(error, "Failed to update examiner status");
-    }
-  }
-}
+  return profile;
+};
 
-const examinerService = new ExaminerService();
+// Default export for backward compatibility
+const examinerService = {
+  getRecentExaminers,
+  getExaminerById,
+  approveExaminer,
+  rejectExaminer,
+  requestMoreInfoFromExaminer,
+  moveToReview,
+  scheduleInterview,
+  markInterviewCompleted,
+  markContractSigned,
+  suspendExaminer,
+  reactivateExaminer,
+  getExaminerCountThisMonth,
+  createProfileFromApplication,
+};
+
 export default examinerService;
-

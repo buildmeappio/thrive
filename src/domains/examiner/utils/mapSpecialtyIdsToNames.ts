@@ -1,12 +1,13 @@
-import examinationTypeService from "@/domains/taxonomy/server/examinationType.service";
+import * as examinationTypeService from "@/domains/taxonomy/server/examinationType.service";
 import { ExaminerData } from "../types/ExaminerData";
+import logger from "@/utils/logger";
 
 /**
  * Maps specialty IDs to examination type names for examiner data
  * Handles various UUID formats (with/without spaces, dashes, different cases)
  */
 export async function mapSpecialtyIdsToNames(
-  examiners: ExaminerData[]
+  examiners: ExaminerData[],
 ): Promise<ExaminerData[]> {
   // Fetch all examination types to map specialty IDs to names
   const examTypesMap = new Map<string, string>();
@@ -37,7 +38,7 @@ export async function mapSpecialtyIdsToNames(
       examTypesMap.set(spacesInsteadOfDashes, et.name);
     });
   } catch (error) {
-    console.error("Failed to fetch examination types:", error);
+    logger.error("Failed to fetch examination types:", error);
   }
 
   // Map specialty IDs to exam type names for all examiners

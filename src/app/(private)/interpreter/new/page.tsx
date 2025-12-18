@@ -1,4 +1,4 @@
-import InterpreterCreateContent from "./InterpreterCreateContent";
+import InterpreterCreateContent from "@/domains/interpreter/components/InterpreterCreateContent";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,4 +13,3 @@ const Page = () => {
 };
 
 export default Page;
-

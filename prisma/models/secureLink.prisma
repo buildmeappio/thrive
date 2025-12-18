@@ -1,0 +1,19 @@
+model SecureLink {
+  id            String                      @id @unique @default(uuid()) @db.Uuid
+  token         String                      @map("token") @db.Text
+  expiresAt     DateTime                    @map("expires_at") @db.Timestamptz()
+  lastOpenedAt  DateTime?                   @map("last_opened_at") @db.Timestamptz()
+  submittedAt   DateTime?                   @map("submitted_at") @db.Timestamptz()
+  status        SecureLinkStatus @default(PENDING) @map("status")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  examinationSecureLink ExaminationSecureLink[] @relation("SecureLinkExamination")
+  applicationSecureLink ApplicationSecureLink[] @relation("SecureLinkApplication")
+
+  @@index([token])
+  @@index([status])
+  @@map("secure_links")
+}

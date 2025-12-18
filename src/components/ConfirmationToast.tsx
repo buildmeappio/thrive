@@ -1,7 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
-
+import logger from "@/utils/logger";
 /**
  * ConfirmationToast Component
  *
@@ -13,7 +13,7 @@ import { toast } from "sonner";
  * showConfirmationToast({
  *   title: "Are you sure?",
  *   description: "This action cannot be undone.",
- *   onConfirm: () => console.log("Confirmed"),
+ *   onConfirm: () => logger.log("Confirmed", "Confirmed"),
  * });
  *
  * @example
@@ -27,7 +27,7 @@ import { toast } from "sonner";
  * showWarningConfirmation(
  *   "Proceed with caution",
  *   "This will affect multiple records.",
- *   () => console.log("Proceeded")
+ *   () => logger.log("Proceeded")
  * );
  */
 
@@ -54,8 +54,8 @@ export const showConfirmationToast = ({
     type === "error"
       ? toast.error
       : type === "warning"
-      ? toast.warning
-      : toast.info;
+        ? toast.warning
+        : toast.info;
 
   return toastFunction(title, {
     description,
@@ -65,7 +65,7 @@ export const showConfirmationToast = ({
         try {
           await onConfirm();
         } catch (error) {
-          console.error("Confirmation action failed:", error);
+          logger.error("Confirmation action failed:", error);
         }
       },
     },
@@ -83,7 +83,7 @@ export const showConfirmationToast = ({
 export const showDeleteConfirmation = (
   itemName: string,
   onDelete: () => void | Promise<void>,
-  options?: Partial<ConfirmationToastProps>
+  options?: Partial<ConfirmationToastProps>,
 ) => {
   return showConfirmationToast({
     title: `Delete "${itemName}"?`,
@@ -99,7 +99,7 @@ export const showWarningConfirmation = (
   title: string,
   description: string,
   onConfirm: () => void | Promise<void>,
-  options?: Partial<ConfirmationToastProps>
+  options?: Partial<ConfirmationToastProps>,
 ) => {
   return showConfirmationToast({
     title,
@@ -115,7 +115,7 @@ export const showInfoConfirmation = (
   title: string,
   description: string,
   onConfirm: () => void | Promise<void>,
-  options?: Partial<ConfirmationToastProps>
+  options?: Partial<ConfirmationToastProps>,
 ) => {
   return showConfirmationToast({
     title,

@@ -1,0 +1,14 @@
+model InterpreterLanguage {
+  id            String   @id @unique @default(uuid()) @db.Uuid
+  interpreterId String   @map("interpreter_id") @db.Uuid
+  languageId    String   @map("language_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  interpreter Interpreter @relation("InterpreterLanguages", fields: [interpreterId], references: [id], onDelete: Cascade)
+  language    Language    @relation(fields: [languageId], references: [id], onDelete: Restrict)
+
+  @@unique([interpreterId, languageId])
+  @@index([languageId])
+  @@map("interpreter_languages")
+}

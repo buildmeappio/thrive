@@ -16,17 +16,24 @@ const validTypes: TaxonomyType[] = [
   "examinationTypeBenefit",
   "language",
   "organizationType",
+  "maximumDistanceTravel",
+  "yearsOfExperience",
+  "configuration",
+  "assessmentType",
+  "professionalTitle",
 ];
 
 type PageProps = {
-  params: {
+  params: Promise<{
     type: string;
-  };
+  }>;
 };
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { type } = await params;
-  
+
   // Validate the type parameter
   if (!validTypes.includes(type as TaxonomyType)) {
     return {
@@ -36,7 +43,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const config = TaxonomyConfigs[type as TaxonomyType];
-  
+
   return {
     title: `${config.name} | Thrive Admin`,
     description: `Manage ${config.name.toLowerCase()}`,
@@ -71,7 +78,6 @@ export default async function TaxonomyDynamicPage({ params }: PageProps) {
                 <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
                   {config.name}
                 </h1>
-                
               </div>
             </div>
             <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
@@ -128,9 +134,8 @@ export default async function TaxonomyDynamicPage({ params }: PageProps) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-                  {config.name}
-                </h1>
-              
+                {config.name}
+              </h1>
             </div>
           </div>
           <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">

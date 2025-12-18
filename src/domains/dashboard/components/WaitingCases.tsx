@@ -19,11 +19,11 @@ import {
 const formatText = (str: string): string => {
   if (!str) return str;
   return str
-    .replace(/[-_]/g, ' ')  // Replace - and _ with spaces
-    .split(' ')
-    .filter(word => word.length > 0)  // Remove empty strings
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+    .replace(/[-_]/g, " ") // Replace - and _ with spaces
+    .split(" ")
+    .filter((word) => word.length > 0) // Remove empty strings
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 };
 
 type Props = {
@@ -38,7 +38,7 @@ export default function WaitingCases({
   items,
   listHref,
   buildDetailHref = (id) => `${listHref}/${id}`,
-  title = "Ready to be Appointment",
+  title = "Waiting to be Scheduled",
   subtitle = "Pending for verification",
 }: Props) {
   return (
@@ -88,18 +88,14 @@ export default function WaitingCases({
               <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[130px] sm:min-w-0">
                 Due Date
               </TableHead>
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins h-16 sm:h-12 whitespace-nowrap min-w-[140px] sm:min-w-0">
-                Status
-              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {items?.map((r) => {
               const href = buildDetailHref(r.id);
-              const statusText = r.status?.name ? formatText(r.status.name) : "N/A";
-              
+
               return (
-                <TableRow 
+                <TableRow
                   key={r.id}
                   className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
                 >
@@ -107,21 +103,26 @@ export default function WaitingCases({
                     <span className="block">{r.caseNumber}</span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[160px] sm:min-w-0">
-                    <span className="block">{capitalizeWords(r.case.organization?.name || "N/A")}</span>
+                    <span className="block">
+                      {capitalizeWords(r.case.organization?.name || "N/A")}
+                    </span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[160px] sm:min-w-0">
-                    <span className="block">{r.case.caseType?.name ? formatText(r.case.caseType.name) : "N/A"}</span>
+                    <span className="block">
+                      {r.case.caseType?.name
+                        ? formatText(r.case.caseType.name)
+                        : "N/A"}
+                    </span>
                   </TableCell>
                   <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[140px] sm:min-w-0">
-                    <span className="block">{formatDateShort(r.createdAt)}</span>
+                    <span className="block">
+                      {formatDateShort(r.createdAt)}
+                    </span>
                   </TableCell>
-                  <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins py-5 sm:py-3 min-w-[130px] sm:min-w-0">
-                    <span className="block">{r.dueDate ? formatDateShort(r.dueDate) : "N/A"}</span>
-                  </TableCell>
-                  <TableCell className="py-5 sm:py-3 min-w-[140px] sm:min-w-0">
+                  <TableCell className="py-5 sm:py-3 min-w-[130px] sm:min-w-0">
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#5B5B5B] font-poppins min-w-0 flex-1">
-                        {statusText}
+                        {r.dueDate ? formatDateShort(r.dueDate) : "N/A"}
                       </span>
                       <Link
                         href={href}

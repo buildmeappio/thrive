@@ -10,7 +10,7 @@ export class HttpError extends Error {
   constructor(
     status: number,
     message = "Error",
-    { code, details }: ExtraProps = {}
+    { code, details }: ExtraProps = {},
   ) {
     super(message);
     this.status = status;
@@ -20,7 +20,7 @@ export class HttpError extends Error {
 
   static unauthorized(
     message = "Unauthorized",
-    { code, details }: ExtraProps = {}
+    { code, details }: ExtraProps = {},
   ) {
     return new HttpError(401, message, {
       code: code || "UNAUTHORIZED",
@@ -34,7 +34,7 @@ export class HttpError extends Error {
 
   static badRequest(
     message = "Bad Request",
-    { code, details }: ExtraProps = {}
+    { code, details }: ExtraProps = {},
   ) {
     return new HttpError(400, message, {
       code: code || "BAD_REQUEST",
@@ -44,7 +44,7 @@ export class HttpError extends Error {
 
   static internalServerError(
     message = "Internal Server Error",
-    { code, details }: ExtraProps = {}
+    { code, details }: ExtraProps = {},
   ) {
     return new HttpError(500, message, {
       code: code || "INTERNAL_SERVER_ERROR",
@@ -63,7 +63,7 @@ export class HttpError extends Error {
   static fromError(
     error: unknown,
     defaultMessage = "Internal Server Error",
-    { code, details }: ExtraProps = {}
+    { code, details }: ExtraProps = {},
   ) {
     if (error instanceof HttpError) {
       return error;

@@ -1,4 +1,4 @@
-import caseStatusService from '../../caseStatus.service';
+import * as caseStatusService from "../../caseStatus.service";
 
 const getCaseStatusById = async (id: string) => {
   const result = await caseStatusService.getCaseStatusById(id);
@@ -6,4 +6,3 @@ const getCaseStatusById = async (id: string) => {
 };
 
 export default getCaseStatusById;
-
