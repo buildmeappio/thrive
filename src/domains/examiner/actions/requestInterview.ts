@@ -6,8 +6,8 @@ import { sendMail } from "@/lib/email";
 import { HttpError } from "@/utils/httpError";
 import logger from "@/utils/logger";
 import {
-  generateExaminerInterviewScheduledEmail,
-  EXAMINER_INTERVIEW_SCHEDULED_SUBJECT,
+  generateExaminerInterviewRequestedEmail,
+  EXAMINER_INTERVIEW_REQUESTED_SUBJECT,
 } from "@/emails/examiner-status-updates";
 import { checkEntityType } from "../utils/checkEntityType";
 import { signExaminerScheduleInterviewToken } from "@/lib/jwt";
@@ -44,7 +44,7 @@ const requestInterview = async (id: string) => {
           token: jwtToken,
         });
 
-        const htmlTemplate = generateExaminerInterviewScheduledEmail({
+        const htmlTemplate = generateExaminerInterviewRequestedEmail({
           firstName: application.firstName,
           lastName: application.lastName,
           scheduleInterviewLink,
@@ -52,7 +52,7 @@ const requestInterview = async (id: string) => {
 
         await sendMail({
           to: application.email,
-          subject: EXAMINER_INTERVIEW_SCHEDULED_SUBJECT,
+          subject: EXAMINER_INTERVIEW_REQUESTED_SUBJECT,
           html: htmlTemplate,
         });
 
