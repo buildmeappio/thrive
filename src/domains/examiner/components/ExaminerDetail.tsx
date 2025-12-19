@@ -691,7 +691,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           <Link
-            href="/examiner"
+            href="/application"
             className="flex items-center gap-2 sm:gap-4 flex-shrink-0"
           >
             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
@@ -1051,23 +1051,6 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                   </Section>
                 )}
 
-              {/* Section 6b: Interview Details - Show message when interview_requested */}
-              {status === "interview_requested" && (
-                <Section title="Interview Details">
-                  <div className="rounded-lg bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 px-6 py-8 text-center">
-                    <Calendar className="w-12 h-12 mx-auto mb-3 text-blue-400" />
-                    <p className="text-gray-700 font-poppins text-base font-medium mb-1">
-                      Interview Slots Requested
-                    </p>
-                    <p className="text-gray-500 font-poppins text-sm">
-                      The examiner has requested interview slots. Use the
-                      &quot;Confirm Interview Slot&quot; button in the Actions
-                      section to review and confirm a slot.
-                    </p>
-                  </div>
-                </Section>
-              )}
-
               {/* Section 7: Actions - Hidden when MORE_INFO_REQUESTED, INFO_REQUESTED, or ACTIVE */}
               {/* Hide actions for approved applications (they're now examiners) and active examiners */}
               {status !== "more_info_requested" &&
@@ -1144,7 +1127,14 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               lineHeight: "100%",
                               fontSize: "14px",
                             }}
-                            disabled={loadingAction !== null}
+                            disabled={
+                              loadingAction !== null ||
+                              !examiner.interviewSlots ||
+                              examiner.interviewSlots.length === 0 ||
+                              !examiner.interviewSlots.some(
+                                (slot) => slot.status === "REQUESTED",
+                              )
+                            }
                             onClick={() => setIsConfirmSlotModalOpen(true)}
                           >
                             Confirm Interview Slot
