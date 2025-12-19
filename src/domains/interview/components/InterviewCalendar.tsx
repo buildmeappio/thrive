@@ -381,10 +381,14 @@ const InterviewCalendar = ({
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
           <div className="p-8 md:p-10">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Confirm Your Interview Preferences
+              {shouldShowCancellationWarning
+                ? "Confirm Interview Rescheduling"
+                : "Confirm Your Interview Preferences"}
             </h2>
             <p className="text-gray-600 mb-8">
-              Please review your selected time slots before submitting
+              {shouldShowCancellationWarning
+                ? "Please review your new time slot preferences. Submitting will cancel your current confirmed interview and change your application status to &ldquo;Interview Requested&rdquo;."
+                : "Please review your selected time slots before submitting. An admin will review your preferences and confirm one of your selected slots."}
             </p>
 
             {/* Warning about cancelling booked slot */}
@@ -439,12 +443,19 @@ const InterviewCalendar = ({
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                      Selected Time Slots
+                      {shouldShowCancellationWarning
+                        ? "New Time Slot Preferences"
+                        : "Selected Time Slots"}
                     </p>
                     <p className="font-semibold text-gray-900">
                       {sorted.length} slot{sorted.length === 1 ? "" : "s"}
                       {selectedTimezone && ` • ${selectedTimezone}`}
                     </p>
+                    {shouldShowCancellationWarning && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        These will replace your current confirmed interview
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -508,11 +519,15 @@ const InterviewCalendar = ({
                 {booking ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Submitting...
+                    {shouldShowCancellationWarning
+                      ? "Cancelling & Submitting..."
+                      : "Submitting..."}
                   </>
                 ) : (
                   <>
-                    Submit Preferences
+                    {shouldShowCancellationWarning
+                      ? "Cancel Current & Submit New Preferences"
+                      : "Submit Preferences"}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}
@@ -693,57 +708,25 @@ const InterviewCalendar = ({
             </h3>
 
             {/* Selected Slots Summary & Submit Button - Top CTA */}
-            {selectedSlots.length > 0 && (
-              <div className="mb-6">
-                <Button
-                  onClick={handleConfirmBooking}
-                  disabled={selectedSlots.length < 2}
-                  className="w-full h-14 bg-[#00A8FF] hover:bg-[#0090D9] text-white font-semibold shadow-lg text-base disabled:opacity-60"
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5" />
-                      <div className="text-left">
-                        <p className="font-semibold">
-                          {(() => {
-                            const sorted = [...selectedSlots].sort(
-                              (a, b) =>
-                                a.startTime.getTime() - b.startTime.getTime(),
-                            );
-                            const first = sorted[0];
-                            return first
-                              ? format(first.startTime, "EEEE, MMMM d, yyyy")
-                              : "Selected slots";
-                          })()}
-                        </p>
-                        <p className="text-sm font-normal opacity-90">
-                          {(() => {
-                            const sorted = [...selectedSlots].sort(
-                              (a, b) =>
-                                a.startTime.getTime() - b.startTime.getTime(),
-                            );
-                            const first = sorted[0];
-                            if (!first) return "";
-                            return `${format(first.startTime, "h:mm a")} - ${format(
-                              addMinutes(first.startTime, first.duration),
-                              "h:mm a",
-                            )} • ${selectedSlots.length} selected`;
-                          })()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span>
-                        {selectedSlots.length < 2
-                          ? "Select 2+ Slots"
-                          : "Review & Submit"}
-                      </span>
-                      <ArrowRight className="h-5 w-5" />
-                    </div>
-                  </div>
-                </Button>
-              </div>
-            )}
+            <div className="mb-6 w-full flex justify-end">
+              <Button
+                onClick={handleConfirmBooking}
+                disabled={selectedSlots.length < 2}
+                className="h-12 px-6 bg-[#00A8FF] hover:bg-[#0090D9] text-white font-semibold shadow-lg text-sm disabled:opacity-60 transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                  <span>
+                    {selectedSlots.length < 2
+                      ? "Select 2+ Slots"
+                      : shouldShowCancellationWarning
+                        ? "Review & Reschedule"
+                        : "Review & Submit"}
+                  </span>
+                  <ArrowRight className="h-4 w-4 flex-shrink-0" />
+                </div>
+              </Button>
+            </div>
 
             {/* Error Message */}
             {bookingError && (
