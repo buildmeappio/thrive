@@ -20,9 +20,9 @@ const STATUS_COLORS: Record<
     legendColor: "bg-[#00A8FF]",
   },
   completed: {
-    gradient: "bg-[#01F4C8]",
+    gradient: "bg-[#000080]",
     text: "text-white",
-    legendColor: "bg-[#01F4C8]",
+    legendColor: "bg-[#000080]",
   },
 };
 
@@ -284,7 +284,7 @@ export default function InterviewCalendarView({
           <span className="text-gray-700">Booked</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-6 h-3 rounded-full bg-[#01F4C8]" />
+          <div className="w-6 h-3 rounded-full bg-[#000080]" />
           <span className="text-gray-700">Completed</span>
         </div>
       </div>
