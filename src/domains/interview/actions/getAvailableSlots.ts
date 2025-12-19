@@ -1,14 +1,14 @@
 "use server";
 
 import prisma from "@/lib/db";
-import { startOfDay, endOfDay, addDays, addMinutes } from "date-fns";
+import { startOfDay, endOfDay, addDays } from "date-fns";
 import configurationService from "@/server/services/configuration.service";
 
 /**
  * Get available time slots for a specific date
  * Returns time suggestions in 15-minute increments and existing booked slots
  */
-export const getAvailableSlots = async (date: Date) => {
+export const getAvailableSlots = async (date: Date, applicationId?: string) => {
   try {
     // Get interview settings for working hours
     const interviewSettings = await configurationService.getInterviewSettings();
@@ -52,66 +52,57 @@ export const getAvailableSlots = async (date: Date) => {
     const endMins = interviewSettings.endWorkingHourUTC % 60;
     endWorkingTime.setUTCHours(endHours, endMins, 0, 0);
 
-    // Generate time suggestions in 15-minute increments within working hours
-    const timeSuggestions: Array<{
-      startTime: Date;
-      isAvailable: boolean;
-      conflictReason?: string;
-    }> = [];
-
-    let currentTime = new Date(startWorkingTime);
-    // Last possible slot start time (end time - 15 minutes to allow for minimum slot)
-    const maxTime = new Date(endWorkingTime);
-    maxTime.setMinutes(maxTime.getMinutes() - 15);
-
-    while (currentTime <= maxTime) {
-      // Check if this time conflicts with any booked slots
-      const conflicts = existingSlots.filter((slot) => {
-        if (slot.status !== "BOOKED") return false;
-        const slotStart = new Date(slot.startTime);
-        const slotEnd = new Date(slot.endTime);
-        // Check if current time falls within any booked slot
-        return currentTime >= slotStart && currentTime < slotEnd;
-      });
-
-      timeSuggestions.push({
-        startTime: new Date(currentTime),
-        isAvailable: conflicts.length === 0,
-        conflictReason:
-          conflicts.length > 0
-            ? "Time conflicts with existing booking"
-            : undefined,
-      });
-
-      // Move to next 15-minute increment
-      currentTime = addMinutes(currentTime, 15);
-    }
-
     return {
       success: true,
-      timeSuggestions,
-      existingSlots: existingSlots.map((slot) => ({
-        id: slot.id,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
-        duration: slot.duration,
-        status: slot.status,
-        isBooked: slot.status === "BOOKED",
-        bookedBy: slot.application
-          ? {
-              firstName: slot.application.firstName,
-              lastName: slot.application.lastName,
-              email: slot.application.email,
-            }
-          : null,
-      })),
+      existingSlots: existingSlots.map((slot) => {
+        const isBooked = slot.status === "BOOKED";
+        const isRequested = slot.status === "REQUESTED";
+        const isCurrentUserRequested =
+          !!applicationId &&
+          isRequested &&
+          slot.applicationId === applicationId;
+
+        return {
+          id: slot.id,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          duration: slot.duration,
+          status: slot.status,
+          isBooked,
+          isRequested,
+          isCurrentUserRequested,
+          bookedBy:
+            isBooked && slot.application
+              ? {
+                  firstName: slot.application.firstName,
+                  lastName: slot.application.lastName,
+                  email: slot.application.email,
+                }
+              : null,
+        };
+      }),
+      currentUserRequestedSlots: applicationId
+        ? existingSlots
+            .filter(
+              (slot) =>
+                slot.status === "REQUESTED" &&
+                slot.applicationId === applicationId,
+            )
+            .map((slot) => ({
+              id: slot.id,
+              startTime: slot.startTime,
+              endTime: slot.endTime,
+              duration: slot.duration,
+              status: slot.status,
+            }))
+        : [],
     };
   } catch (error: any) {
     return {
       success: false,
       error: error.message || "Failed to fetch available slots",
-      timeSuggestions: [],
       existingSlots: [],
+      currentUserRequestedSlots: [],
     };
   }
 };

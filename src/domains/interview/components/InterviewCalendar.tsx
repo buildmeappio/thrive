@@ -1,13 +1,18 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { format, addMinutes, isPast, startOfDay } from "date-fns";
+import { format, addMinutes, isPast, startOfDay, addDays } from "date-fns";
 import { useRouter } from "next/navigation";
 import { getAvailableSlots } from "../actions/getAvailableSlots";
-import { bookInterviewSlot } from "../actions/bookInterviewSlot";
-import { rescheduleInterviewSlot } from "../actions/rescheduleInterviewSlot";
+import { requestInterviewSlots } from "../actions/requestInterviewSlots";
 import {
   Loader2,
   CheckCircle2,
@@ -19,256 +24,233 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  GenerateTimeSlots,
+  isTimeAvailable,
+  parseSlots,
+  ParsedSlot,
+  Slot,
+} from "@/utils/timeslots";
+import {
+  getDuration,
+  parseDate,
+  toUtcMidnightOfLocalDay,
+} from "@/utils/datetime";
+import { InterviewSettings } from "@/server/services/configuration.service";
+import { ApplicationData } from "../actions/verifyInterviewToken";
 
 interface InterviewCalendarProps {
   token: string;
-  applicationId: string;
-  firstName?: string;
-  lastName?: string;
-  bookedSlot?: {
-    id: string;
-    startTime: Date | string;
-    endTime: Date | string;
-  };
-  interviewSettings: {
-    minDaysAhead: number;
-    maxDaysAhead: number;
-    durationOptions: number[];
-    startWorkingHourUTC: number;
-    totalWorkingHours: number;
-    endWorkingHourUTC: number;
-  };
+  application: ApplicationData;
+  interviewSettings: InterviewSettings;
 }
+
+const getDurationFromSlots = (slots: Array<Slot | ParsedSlot>) => {
+  return new Set(slots.map((s) => s.duration)).size === 1
+    ? slots[0]?.duration
+    : undefined;
+};
+
+const getExistingSlots = async (selectedDate: Date, applicationId: string) => {
+  try {
+    const result = await getAvailableSlots(
+      toUtcMidnightOfLocalDay(selectedDate),
+      applicationId,
+    );
+
+    if (!result.success || result.error) {
+      throw new Error(result.error || "Failed to fetch slots");
+    }
+
+    return parseSlots(result.existingSlots);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Failed to fetch slots");
+  }
+};
+
+type InitialState = {
+  date: Date;
+  duration: number;
+  selectedSlots: Array<{ startTime: Date; duration: number }>;
+};
+
+const getToday = () => {
+  return startOfDay(new Date());
+};
+
+const getTomorrow = (minDaysAhead: number) => {
+  const today = getToday();
+  return addDays(today, minDaysAhead);
+};
+
+// Initialize from booked slot if available
+const getInitialState = (
+  application: ApplicationData,
+  interviewSettings: InterviewSettings,
+): InitialState => {
+  const {
+    bookedSlot: initialBookedSlot = undefined,
+    requestedSlots: initialRequestedSlots,
+  } = application;
+  const parsedRequested = parseSlots(initialRequestedSlots || []);
+  const requestedDuration = getDurationFromSlots(parsedRequested);
+  const tomorrow = getTomorrow(interviewSettings.minDaysAhead);
+
+  const initialDate =
+    parsedRequested.length > 0
+      ? startOfDay(parsedRequested[0].startTime)
+      : startOfDay(tomorrow);
+
+  let bookedDuration: number | undefined;
+  if (initialBookedSlot && parsedRequested.length === 0) {
+    const startTime = parseDate(initialBookedSlot.startTime);
+    const endTime = parseDate(initialBookedSlot.endTime);
+    bookedDuration = getDuration(startTime, endTime!);
+  }
+
+  const duration =
+    requestedDuration ||
+    bookedDuration ||
+    interviewSettings.durationOptions[0] ||
+    30;
+
+  return {
+    date: initialDate,
+    duration,
+    selectedSlots: parsedRequested.map((s) => ({
+      startTime: s.startTime,
+      duration: s.duration,
+    })),
+  };
+};
+
+type Action =
+  | { type: "SET_DATE"; date: Date }
+  | { type: "SET_DURATION"; duration: number }
+  | {
+      type: "SET_SELECTED_SLOTS";
+      selectedSlots: Array<{ startTime: Date; duration: number }>;
+    };
+
+const interviewCalendarReducer = (state: InitialState, action: Action) => {
+  switch (action.type) {
+    case "SET_DATE":
+      return { ...state, date: action.date };
+    case "SET_DURATION":
+      return { ...state, duration: action.duration };
+    case "SET_SELECTED_SLOTS":
+      return { ...state, selectedSlots: action.selectedSlots };
+    default:
+      return state;
+  }
+};
+
+const useInterviewCalendar = (
+  application: ApplicationData,
+  interviewSettings: InterviewSettings,
+) => {
+  const [state, dispatch] = useReducer(
+    interviewCalendarReducer,
+    getInitialState(application, interviewSettings),
+  );
+
+  const setSelectedSlots = (
+    arg:
+      | Array<{ startTime: Date; duration: number }>
+      | ((
+          prev: Array<{ startTime: Date; duration: number }>,
+        ) => Array<{ startTime: Date; duration: number }>),
+  ) => {
+    const selectedSlots =
+      typeof arg === "function" ? arg(state.selectedSlots) : arg;
+    dispatch({ type: "SET_SELECTED_SLOTS", selectedSlots: selectedSlots });
+  };
+
+  return {
+    date: state.date,
+    duration: state.duration,
+    selectedSlots: state.selectedSlots,
+    setDate: (date: Date) => dispatch({ type: "SET_DATE", date }),
+    setDuration: (duration: number) =>
+      dispatch({ type: "SET_DURATION", duration }),
+    setSelectedSlots,
+  };
+};
 
 const InterviewCalendar = ({
   token,
-  applicationId: _applicationId,
-  firstName: _firstName,
-  lastName: _lastName,
-  bookedSlot: initialBookedSlot,
+  application,
   interviewSettings,
 }: InterviewCalendarProps) => {
+  const { id: applicationId } = application;
+
   const router = useRouter();
+
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + interviewSettings.minDaysAhead);
 
-  /**
-   * IMPORTANT: We must query slots by the intended "calendar day" consistently.
-   * The UI selects a day in the user's local timezone, but server actions run in
-   * server timezone (often UTC). Passing a local Date directly can cause
-   * startOfDay/endOfDay on the server to shift to the wrong day (commonly for
-   * timezones ahead of UTC), so booked slots appear missing.
-   *
-   * To fix this, we always send "UTC midnight of the selected local Y/M/D".
-   */
-  const toUtcMidnightOfLocalDay = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const day = date.getDate();
-    return new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
-  };
+  const {
+    date: selectedDate,
+    duration: selectedDuration,
+    selectedSlots,
+    setDate: setSelectedDate,
+    setDuration: setSelectedDuration,
+    setSelectedSlots,
+  } = useInterviewCalendar(application, interviewSettings);
 
-  // Initialize from booked slot if available
-  const getInitialState = () => {
-    if (initialBookedSlot) {
-      const startTime =
-        typeof initialBookedSlot.startTime === "string"
-          ? new Date(initialBookedSlot.startTime)
-          : initialBookedSlot.startTime;
-      const endTime =
-        typeof initialBookedSlot.endTime === "string"
-          ? new Date(initialBookedSlot.endTime)
-          : initialBookedSlot.endTime;
-
-      const date = startOfDay(startTime);
-      const duration = Math.round(
-        (endTime.getTime() - startTime.getTime()) / (1000 * 60),
-      );
-
-      return {
-        date,
-        time: startTime,
-        duration: duration || 30,
-      };
-    }
-
-    return {
-      date: startOfDay(tomorrow),
-      time: null as Date | null,
-      duration: interviewSettings.durationOptions[0] || 30,
-    };
-  };
-
-  const initialState = getInitialState();
-
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
-    initialState.date,
-  );
-  const [selectedTime, setSelectedTime] = React.useState<Date | null>(
-    initialState.time,
-  );
-  const [selectedDuration, setSelectedDuration] = React.useState<number>(
-    initialState.duration,
-  );
-  const [selectedTimezone] = React.useState<string>(
+  const [selectedTimezone] = useState<string>(
     Intl.DateTimeFormat().resolvedOptions().timeZone,
   );
-  const [existingSlots, setExistingSlots] = React.useState<
-    Array<{
-      id: string;
-      startTime: Date;
-      endTime: Date;
-      duration: number;
-      status: string;
-      isBooked: boolean;
-    }>
-  >([]);
-  const [loading, setLoading] = React.useState(false);
-  const [booking, setBooking] = React.useState(false);
-  const [bookingError, setBookingError] = React.useState<string | null>(null);
-  const [showConfirmation, setShowConfirmation] = React.useState(false);
+  const [existingSlots, setExistingSlots] = useState<Array<ParsedSlot>>([]);
+  const [loading, setLoading] = useState(false);
+  const [booking, setBooking] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
-  // Track if we're initializing from a booked slot (useRef to avoid refetch loops)
-  const isInitializingFromBookedSlotRef = useRef(!!initialBookedSlot);
-
-  // Fetch time suggestions for the selected date
-  useEffect(() => {
-    if (!selectedDate) return;
-
-    const fetchSlots = async () => {
+  const fetchSlots = useCallback(
+    async (selectedDate: Date) => {
       setLoading(true);
-      // Only reset selectedTime if we're not initializing from a booked slot
-      if (!isInitializingFromBookedSlotRef.current) {
-        setSelectedTime(null);
-      }
       setBookingError(null);
       try {
-        const result = await getAvailableSlots(
-          toUtcMidnightOfLocalDay(selectedDate),
-        );
-        if (result.success) {
-          setExistingSlots(
-            result.existingSlots.map(
-              (slot: {
-                id: string;
-                startTime: Date | string;
-                endTime: Date | string;
-                duration: number;
-                status: string;
-                isBooked: boolean;
-              }) => ({
-                ...slot,
-                startTime:
-                  typeof slot.startTime === "string"
-                    ? new Date(slot.startTime)
-                    : slot.startTime,
-                endTime:
-                  typeof slot.endTime === "string"
-                    ? new Date(slot.endTime)
-                    : slot.endTime,
-              }),
-            ),
-          );
-        } else if (result.error) {
-          // Avoid silent failures (otherwise it looks like "no booked slots exist")
-          console.error("getAvailableSlots failed:", result.error);
-        }
+        const slots = await getExistingSlots(selectedDate, applicationId);
+        setExistingSlots(slots);
       } catch (error) {
-        console.error("Failed to fetch slots:", error);
+        if (error instanceof Error) {
+          setBookingError(error.message);
+        } else {
+          setBookingError("Failed to fetch slots");
+        }
       } finally {
         setLoading(false);
-        isInitializingFromBookedSlotRef.current = false;
       }
-    };
+    },
+    [applicationId],
+  );
 
-    fetchSlots();
-  }, [selectedDate]);
+  useEffect(() => {
+    if (!selectedDate) return;
+    fetchSlots(selectedDate);
+  }, [selectedDate, fetchSlots]);
 
   // Generate time slots dynamically based on selected duration and working hours
-  const generateTimeSlots = React.useMemo(() => {
-    if (!selectedDate) return [];
-
-    const slots: Date[] = [];
-
-    // Get the selected date components in local timezone
-    const year = selectedDate.getFullYear();
-    const month = selectedDate.getMonth();
-    const day = selectedDate.getDate();
-
-    // Create UTC date for the selected day at midnight UTC
-    const dayStartUTC = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
-
-    // Apply UTC working hours to the UTC date
-    const startHours = Math.floor(interviewSettings.startWorkingHourUTC / 60);
-    const startMins = interviewSettings.startWorkingHourUTC % 60;
-    const startWorkingTimeUTC = new Date(dayStartUTC);
-    startWorkingTimeUTC.setUTCHours(startHours, startMins, 0, 0);
-
-    const endHours = Math.floor(interviewSettings.endWorkingHourUTC / 60);
-    const endMins = interviewSettings.endWorkingHourUTC % 60;
-    const endWorkingTimeUTC = new Date(dayStartUTC);
-    endWorkingTimeUTC.setUTCHours(endHours, endMins, 0, 0);
-
-    // Filter slots to only include those that fall on the selected date in local time
-    // This ensures that if UTC time converts to previous/next day in local time, we exclude it
-    let currentTime = new Date(startWorkingTimeUTC);
-    const maxTime = new Date(endWorkingTimeUTC);
-    maxTime.setMinutes(maxTime.getMinutes() - selectedDuration); // Ensure last slot fits
-
-    while (currentTime <= maxTime) {
-      const slotTime = new Date(currentTime);
-      // Only include slots that are on the selected date in local time
-      const slotLocalDate = startOfDay(slotTime);
-      const selectedLocalDate = startOfDay(selectedDate);
-
-      if (slotLocalDate.getTime() === selectedLocalDate.getTime()) {
-        slots.push(slotTime);
-      }
-
-      currentTime = addMinutes(currentTime, selectedDuration);
-    }
-
-    return slots;
-  }, [selectedDate, selectedDuration, interviewSettings]);
-
-  // Check if a time slot conflicts with existing bookings
-  const isTimeAvailable = (time: Date, duration: number): boolean => {
-    const endTime = addMinutes(time, duration);
-
-    // Check if time is in the past
-    if (isPast(time)) {
-      return false;
-    }
-
-    // Check if it conflicts with existing booked slots
-    return !existingSlots.some((slot) => {
-      if (!slot.isBooked) return false;
-
-      // If this is the current user's booked slot, allow it
-      if (initialBookedSlot && slot.id === initialBookedSlot.id) {
-        return false;
-      }
-
-      const slotStart = new Date(slot.startTime);
-      const slotEnd = new Date(slot.endTime);
-
-      // Check for any overlap
-      return (
-        (time >= slotStart && time < slotEnd) ||
-        (endTime > slotStart && endTime <= slotEnd) ||
-        (time <= slotStart && endTime >= slotEnd)
-      );
-    });
-  };
+  const availableTimeSlots = useMemo(() => {
+    return new GenerateTimeSlots()
+      .withSelectedDate(selectedDate || today)
+      .withSelectedDuration(selectedDuration)
+      .withInterviewSettings(interviewSettings)
+      .build()
+      .getSlots();
+  }, [selectedDate, selectedDuration, interviewSettings, today]);
 
   // Check if a time slot is the current user's booked slot
   const checkIsCurrentUserSlot = (time: Date): boolean => {
-    if (!initialBookedSlot) return false;
-    const bookedStart =
-      typeof initialBookedSlot.startTime === "string"
-        ? new Date(initialBookedSlot.startTime)
-        : initialBookedSlot.startTime;
+    if (!application.bookedSlot) return false;
+    const bookedStart = parseDate(application.bookedSlot.startTime);
+    if (!bookedStart) return false;
     return time.getTime() === bookedStart.getTime();
   };
 
@@ -281,26 +263,16 @@ const InterviewCalendar = ({
 
       if (dayStart >= minDate) {
         setSelectedDate(dayStart);
-        // Preserve selectedTime if it's on the same date and we have a booked slot
-        if (initialBookedSlot && selectedTime) {
-          const bookedDate = startOfDay(
-            typeof initialBookedSlot.startTime === "string"
-              ? new Date(initialBookedSlot.startTime)
-              : initialBookedSlot.startTime,
-          );
-          if (dayStart.getTime() === bookedDate.getTime()) {
-            // Keep the selectedTime if it's the same date
-            setBookingError(null);
-            return;
-          }
-        }
-        setSelectedTime(null);
         setBookingError(null);
       }
     }
   };
 
   const handleConfirmBooking = () => {
+    if (selectedSlots.length < 2) {
+      setBookingError("Please select at least 2 time slots.");
+      return;
+    }
     setShowConfirmation(true);
     setBookingError(null);
   };
@@ -310,66 +282,36 @@ const InterviewCalendar = ({
   };
 
   const handleBookSlot = async () => {
-    if (!selectedTime) return;
+    if (selectedSlots.length < 2) return;
 
     setBooking(true);
     setBookingError(null);
 
     try {
-      // Use reschedule if there's already a booked slot, otherwise book new
-      const result = initialBookedSlot
-        ? await rescheduleInterviewSlot(token, selectedTime, selectedDuration)
-        : await bookInterviewSlot(token, selectedTime, selectedDuration);
+      const result = await requestInterviewSlots(
+        token,
+        selectedSlots.map((s) => ({
+          startTime: s.startTime,
+          durationMinutes: s.duration,
+        })),
+      );
 
-      if (result.success && result.slot) {
-        // Navigate to success page
+      if (result.success) {
         router.push(
           `/schedule-interview/success?token=${encodeURIComponent(token)}`,
         );
       } else {
-        // Handle specific error messages better
-        const errorMessage = result.error || "Failed to book slot";
-        if (errorMessage.includes("already booked")) {
-          setBookingError(
-            "This time slot is already booked. Please select another time.",
-          );
-        } else if (errorMessage.includes("conflicts")) {
-          setBookingError(
-            "This time slot conflicts with an existing booking. Please select another time.",
-          );
-        } else {
-          setBookingError(errorMessage);
-        }
+        setBookingError(result.error || "Failed to submit preferences");
 
-        // Refresh slots to show newly booked slots by other examiners
+        // Refresh slots to reflect any changes
         if (selectedDate) {
           try {
             const refreshResult = await getAvailableSlots(
               toUtcMidnightOfLocalDay(selectedDate),
+              applicationId,
             );
             if (refreshResult.success) {
-              setExistingSlots(
-                refreshResult.existingSlots.map(
-                  (slot: {
-                    id: string;
-                    startTime: Date | string;
-                    endTime: Date | string;
-                    duration: number;
-                    status: string;
-                    isBooked: boolean;
-                  }) => ({
-                    ...slot,
-                    startTime:
-                      typeof slot.startTime === "string"
-                        ? new Date(slot.startTime)
-                        : slot.startTime,
-                    endTime:
-                      typeof slot.endTime === "string"
-                        ? new Date(slot.endTime)
-                        : slot.endTime,
-                  }),
-                ),
-              );
+              setExistingSlots(parseSlots(refreshResult.existingSlots));
             } else if (refreshResult.error) {
               console.error(
                 "getAvailableSlots refresh failed:",
@@ -381,49 +323,20 @@ const InterviewCalendar = ({
           }
         }
       }
-    } catch (error: any) {
-      const errorMessage = error.message || "Failed to book slot";
-      if (errorMessage.includes("already booked")) {
-        setBookingError(
-          "This time slot is already booked. Please select another time.",
-        );
-      } else if (errorMessage.includes("conflicts")) {
-        setBookingError(
-          "This time slot conflicts with an existing booking. Please select another time.",
-        );
-      } else {
-        setBookingError(errorMessage);
-      }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to submit preferences";
+      setBookingError(errorMessage);
 
-      // Refresh slots to show newly booked slots by other examiners
+      // Refresh slots to reflect any changes
       if (selectedDate) {
         try {
           const refreshResult = await getAvailableSlots(
             toUtcMidnightOfLocalDay(selectedDate),
+            applicationId,
           );
           if (refreshResult.success) {
-            setExistingSlots(
-              refreshResult.existingSlots.map(
-                (slot: {
-                  id: string;
-                  startTime: Date | string;
-                  endTime: Date | string;
-                  duration: number;
-                  status: string;
-                  isBooked: boolean;
-                }) => ({
-                  ...slot,
-                  startTime:
-                    typeof slot.startTime === "string"
-                      ? new Date(slot.startTime)
-                      : slot.startTime,
-                  endTime:
-                    typeof slot.endTime === "string"
-                      ? new Date(slot.endTime)
-                      : slot.endTime,
-                }),
-              ),
-            );
+            setExistingSlots(parseSlots(refreshResult.existingSlots));
           } else if (refreshResult.error) {
             console.error(
               "getAvailableSlots refresh failed:",
@@ -450,55 +363,64 @@ const InterviewCalendar = ({
   };
 
   // Confirmation State
-  if (showConfirmation && selectedTime) {
+  if (showConfirmation) {
+    const sorted = [...selectedSlots].sort(
+      (a, b) => a.startTime.getTime() - b.startTime.getTime(),
+    );
+
     return (
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
           <div className="p-8 md:p-10">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Confirm Your Interview
+              Confirm Your Interview Preferences
             </h2>
             <p className="text-gray-600 mb-8">
-              Please review the details below before confirming
+              Please review your selected time slots before submitting
             </p>
 
             <div className="space-y-6 mb-8">
               <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-100">
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-[#00A8FF] rounded-lg p-3 text-white flex-shrink-0">
-                      <CalendarIcon className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                        Date
-                      </p>
-                      <p className="font-semibold text-gray-900 text-lg">
-                        {format(selectedTime, "EEEE, MMMM d, yyyy")}
-                      </p>
-                    </div>
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="bg-[#00A8FF] rounded-lg p-3 text-white flex-shrink-0">
+                    <CalendarIcon className="h-5 w-5" />
                   </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      Selected Time Slots
+                    </p>
+                    <p className="font-semibold text-gray-900">
+                      {sorted.length} slot{sorted.length === 1 ? "" : "s"} •{" "}
+                      {selectedTimezone}
+                    </p>
+                  </div>
+                </div>
 
-                  <div className="flex items-start gap-4 pt-4 border-t border-blue-200">
-                    <div className="bg-[#00A8FF] rounded-lg p-3 text-white flex-shrink-0">
-                      <Clock className="h-5 w-5" />
+                <div className="space-y-3">
+                  {sorted.map((s, idx) => (
+                    <div
+                      key={`${s.startTime.toISOString()}-${idx}`}
+                      className="bg-white/70 rounded-lg border border-blue-100 px-4 py-3"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="font-semibold text-gray-900">
+                            {format(s.startTime, "EEEE, MMMM d, yyyy")}
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            {format(s.startTime, "h:mm a")} -{" "}
+                            {format(
+                              addMinutes(s.startTime, s.duration),
+                              "h:mm a",
+                            )}
+                            {" • "}
+                            {s.duration} min
+                          </p>
+                        </div>
+                        <Clock className="h-5 w-5 text-[#00A8FF] flex-shrink-0 mt-1" />
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                        Time
-                      </p>
-                      <p className="font-semibold text-gray-900 text-lg">
-                        {format(selectedTime, "h:mm a")} -{" "}
-                        {format(
-                          addMinutes(selectedTime, selectedDuration),
-                          "h:mm a",
-                        )}
-                      </p>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {selectedDuration} minutes • {selectedTimezone}
-                      </p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -509,7 +431,7 @@ const InterviewCalendar = ({
                   <XCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-semibold text-red-900 text-sm">
-                      Booking Failed
+                      Submission Failed
                     </p>
                     <p className="text-sm text-red-700 mt-1">{bookingError}</p>
                   </div>
@@ -528,19 +450,17 @@ const InterviewCalendar = ({
               </Button>
               <Button
                 onClick={handleBookSlot}
-                disabled={booking}
+                disabled={booking || selectedSlots.length < 2}
                 className="flex-1 h-12 bg-[#00A8FF] hover:bg-[#0090D9] text-white font-semibold"
               >
                 {booking ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Confirming...
+                    Submitting...
                   </>
                 ) : (
                   <>
-                    {initialBookedSlot
-                      ? "Reschedule Interview"
-                      : "Confirm Booking"}
+                    Submit Preferences
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}
@@ -587,7 +507,7 @@ const InterviewCalendar = ({
                         type="button"
                         onClick={() => {
                           setSelectedDuration(duration);
-                          setSelectedTime(null);
+                          setSelectedSlots([]);
                           setBookingError(null);
                         }}
                         className={cn(
@@ -603,6 +523,72 @@ const InterviewCalendar = ({
                   })}
                 </div>
               </div>
+
+              {/* Selected Slots */}
+              <div className="mt-8">
+                <div className="flex items-baseline justify-between gap-4 mb-3">
+                  <p className="text-sm font-semibold text-gray-700">
+                    Selected Slots
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {selectedSlots.length} / 5 (min 2)
+                  </p>
+                </div>
+
+                {selectedSlots.length === 0 ? (
+                  <div className="bg-white rounded-lg border border-gray-200 p-4">
+                    <p className="text-sm text-gray-600">
+                      Select up to 5 time slots so the admin can choose the best
+                      option.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-lg border border-gray-200 p-3 space-y-2">
+                    {[...selectedSlots]
+                      .sort(
+                        (a, b) => a.startTime.getTime() - b.startTime.getTime(),
+                      )
+                      .map((slot) => (
+                        <div
+                          key={slot.startTime.toISOString()}
+                          className="flex items-start justify-between gap-3 rounded-md border border-gray-100 px-3 py-2"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 truncate">
+                              {format(slot.startTime, "EEE, MMM d")}
+                            </p>
+                            <p className="text-xs text-gray-600 truncate">
+                              {format(slot.startTime, "h:mm a")} -{" "}
+                              {format(
+                                addMinutes(slot.startTime, slot.duration),
+                                "h:mm a",
+                              )}{" "}
+                              • {slot.duration} min
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedSlots((prev) =>
+                                prev.filter(
+                                  (s) =>
+                                    s.startTime.getTime() !==
+                                    slot.startTime.getTime(),
+                                ),
+                              );
+                              setBookingError(null);
+                            }}
+                            className="text-gray-400 hover:text-red-600 transition-colors flex-shrink-0"
+                            aria-label="Remove slot"
+                            title="Remove slot"
+                          >
+                            <XCircle className="h-5 w-5" />
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -612,35 +598,51 @@ const InterviewCalendar = ({
               Select a Date & Time
             </h3>
 
-            {/* Selected Time Summary & Confirm Button - Top CTA */}
-            {selectedTime && (
+            {/* Selected Slots Summary & Submit Button - Top CTA */}
+            {selectedSlots.length > 0 && (
               <div className="mb-6">
                 <Button
                   onClick={handleConfirmBooking}
-                  className="w-full h-14 bg-[#00A8FF] hover:bg-[#0090D9] text-white font-semibold shadow-lg text-base"
+                  disabled={selectedSlots.length < 2}
+                  className="w-full h-14 bg-[#00A8FF] hover:bg-[#0090D9] text-white font-semibold shadow-lg text-base disabled:opacity-60"
                 >
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3">
                       <CheckCircle2 className="h-5 w-5" />
                       <div className="text-left">
                         <p className="font-semibold">
-                          {format(selectedTime, "EEEE, MMMM d, yyyy")}
+                          {(() => {
+                            const sorted = [...selectedSlots].sort(
+                              (a, b) =>
+                                a.startTime.getTime() - b.startTime.getTime(),
+                            );
+                            const first = sorted[0];
+                            return first
+                              ? format(first.startTime, "EEEE, MMMM d, yyyy")
+                              : "Selected slots";
+                          })()}
                         </p>
                         <p className="text-sm font-normal opacity-90">
-                          {format(selectedTime, "h:mm a")} -{" "}
-                          {format(
-                            addMinutes(selectedTime, selectedDuration),
-                            "h:mm a",
-                          )}{" "}
-                          • {selectedDuration} min
+                          {(() => {
+                            const sorted = [...selectedSlots].sort(
+                              (a, b) =>
+                                a.startTime.getTime() - b.startTime.getTime(),
+                            );
+                            const first = sorted[0];
+                            if (!first) return "";
+                            return `${format(first.startTime, "h:mm a")} - ${format(
+                              addMinutes(first.startTime, first.duration),
+                              "h:mm a",
+                            )} • ${selectedSlots.length} selected`;
+                          })()}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <span>
-                        {initialBookedSlot
-                          ? "Reschedule Interview"
-                          : "Confirm Booking"}
+                        {selectedSlots.length < 2
+                          ? "Select 2+ Slots"
+                          : "Review & Submit"}
                       </span>
                       <ArrowRight className="h-5 w-5" />
                     </div>
@@ -746,23 +748,26 @@ const InterviewCalendar = ({
                 ) : selectedDate ? (
                   <div className="bg-white border border-gray-200 rounded-lg p-4 w-full flex-1 overflow-y-scroll">
                     <div className="flex flex-col gap-3">
-                      {generateTimeSlots.map((time, index) => {
+                      {availableTimeSlots.map((time, index) => {
                         const isAvailable = isTimeAvailable(
                           time,
                           selectedDuration,
+                          existingSlots,
+                          application.bookedSlot,
                         );
-                        const isSelected =
-                          selectedTime?.getTime() === time.getTime();
+                        const isSelected = selectedSlots.some(
+                          (s) => s.startTime.getTime() === time.getTime(),
+                        );
                         const isPastTime = isPast(time);
                         const isCurrentUserBookedSlot =
                           checkIsCurrentUserSlot(time);
 
-                        // Check if this time conflicts with any booked slot
+                        // Check if this time conflicts with any BOOKED slot
                         const conflictingSlot = existingSlots.find((slot) => {
                           if (!slot.isBooked) return false;
                           if (
                             isCurrentUserBookedSlot &&
-                            slot.id === initialBookedSlot?.id
+                            slot.id === application.bookedSlot?.id
                           )
                             return false;
 
@@ -786,6 +791,33 @@ const InterviewCalendar = ({
                           );
                         });
 
+                        // For display only: show if this time is requested by someone else
+                        const overlapsWith = (slot: {
+                          startTime: Date;
+                          endTime: Date;
+                        }) => {
+                          const slotStart = new Date(slot.startTime);
+                          const slotEnd = new Date(slot.endTime);
+                          const endTime = addMinutes(time, selectedDuration);
+                          return (
+                            time.getTime() === slotStart.getTime() ||
+                            (time >= slotStart && time < slotEnd) ||
+                            (endTime > slotStart && endTime <= slotEnd) ||
+                            (time <= slotStart && endTime >= slotEnd) ||
+                            (time < slotStart && endTime > slotStart)
+                          );
+                        };
+
+                        const requestedOverlapSlot = existingSlots.find(
+                          (slot) =>
+                            !slot.isBooked &&
+                            slot.status === "REQUESTED" &&
+                            slot.isCurrentUserRequested &&
+                            overlapsWith(slot),
+                        );
+                        const isCurrentUserRequestedOverlap =
+                          !!requestedOverlapSlot?.isCurrentUserRequested;
+
                         return (
                           <button
                             key={index}
@@ -794,14 +826,36 @@ const InterviewCalendar = ({
                               !isAvailable || isPastTime || !!conflictingSlot
                             }
                             onClick={() => {
-                              if (
-                                isAvailable &&
-                                !isPastTime &&
-                                !conflictingSlot
-                              ) {
-                                setSelectedTime(time);
+                              if (!isAvailable || isPastTime || conflictingSlot)
+                                return;
+
+                              if (isSelected) {
+                                setSelectedSlots((prev) =>
+                                  prev.filter(
+                                    (s) =>
+                                      s.startTime.getTime() !== time.getTime(),
+                                  ),
+                                );
                                 setBookingError(null);
+                                return;
                               }
+
+                              setSelectedSlots((prev) => {
+                                if (prev.length >= 5) {
+                                  setBookingError(
+                                    "You can select up to 5 time slots.",
+                                  );
+                                  return prev;
+                                }
+                                setBookingError(null);
+                                return [
+                                  ...prev,
+                                  {
+                                    startTime: time,
+                                    duration: selectedDuration,
+                                  },
+                                ];
+                              });
                             }}
                             className={cn(
                               "w-full py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 text-left relative",
@@ -823,11 +877,24 @@ const InterviewCalendar = ({
                           >
                             <span className="flex items-center justify-between w-full">
                               <span>{format(time, "h:mm a")}</span>
-                              {conflictingSlot && (
+                              {conflictingSlot ? (
                                 <span className="text-xs font-bold text-white bg-blue-900/70 px-2.5 py-1 rounded-md shadow-md border border-blue-950/30">
                                   Booked
                                 </span>
-                              )}
+                              ) : requestedOverlapSlot ? (
+                                <span
+                                  className={cn(
+                                    "text-xs font-bold px-2.5 py-1 rounded-md shadow-sm border",
+                                    isCurrentUserRequestedOverlap
+                                      ? "bg-[#00A8FF] text-white border-[#0090D9]"
+                                      : "bg-blue-50 text-blue-800 border-blue-200",
+                                  )}
+                                >
+                                  {isCurrentUserRequestedOverlap
+                                    ? "Your Selection"
+                                    : "Requested"}
+                                </span>
+                              ) : null}
                             </span>
                           </button>
                         );
