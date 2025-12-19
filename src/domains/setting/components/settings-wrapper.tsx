@@ -12,6 +12,7 @@ import type {
   ComplianceFormProps,
   NotificationsFormProps,
 } from "@/domains/onboarding/types/onboarding-forms.types";
+import type { FeeStructureData, ContractData } from "../types";
 
 interface SettingsWrapperProps {
   examinerProfileId: string;
@@ -23,6 +24,9 @@ interface SettingsWrapperProps {
   documentsData: DocumentsUploadFormProps["initialData"];
   complianceData: ComplianceFormProps["initialData"];
   notificationsData: NotificationsFormProps["initialData"];
+  feeStructureData: FeeStructureData | null;
+  contractData: ContractData | null;
+  contractHtml?: string | null;
   assessmentTypes: ServicesAssessmentFormProps["assessmentTypes"];
   maxTravelDistances: ServicesAssessmentFormProps["maxTravelDistances"];
 }
@@ -37,6 +41,9 @@ const SettingsWrapper: React.FC<SettingsWrapperProps> = ({
   documentsData: initialDocumentsData,
   complianceData: initialComplianceData,
   notificationsData: initialNotificationsData,
+  feeStructureData,
+  contractData,
+  contractHtml,
   assessmentTypes,
   maxTravelDistances,
 }) => {
@@ -119,6 +126,9 @@ const SettingsWrapper: React.FC<SettingsWrapperProps> = ({
         documentsData={documentsData}
         complianceData={complianceData}
         notificationsData={notificationsData}
+        feeStructureData={feeStructureData}
+        contractData={contractData}
+        contractHtml={contractHtml}
         assessmentTypes={assessmentTypes}
         maxTravelDistances={maxTravelDistances}
         onServicesDataUpdate={handleServicesDataUpdate}

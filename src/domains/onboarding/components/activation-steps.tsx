@@ -851,9 +851,14 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
         <div className="flex justify-end pt-4 mt-6">
           <Button
             onClick={handleCompleteOnboarding}
-            disabled={completing}
+            disabled={completing || !areAllStepsCompleted()}
             data-tour="complete-onboarding-button"
-            className="rounded-full bg-[#00A8FF] hover:bg-[#0099E6] text-white px-8 py-2 flex items-center justify-center gap-2"
+            className={cn(
+              "rounded-full text-white px-8 py-2 flex items-center justify-center gap-2",
+              areAllStepsCompleted() && !completing
+                ? "bg-[#00A8FF] hover:bg-[#0099E6]"
+                : "bg-gray-300 cursor-not-allowed",
+            )}
           >
             <span>Complete Onboarding</span>
             <CheckCircle2 className="w-5 h-5" />
@@ -888,9 +893,14 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
       <div className="flex justify-end pt-4 mt-6">
         <Button
           onClick={handleCompleteOnboarding}
-          disabled={completing}
+          disabled={completing || !areAllStepsCompleted()}
           data-tour="complete-onboarding-button"
-          className="rounded-full bg-[#00A8FF] hover:bg-[#0099E6] text-white px-8 py-2 flex items-center justify-center gap-2"
+          className={cn(
+            "rounded-full text-white px-8 py-2 flex items-center justify-center gap-2",
+            areAllStepsCompleted() && !completing
+              ? "bg-[#00A8FF] hover:bg-[#0099E6]"
+              : "bg-gray-300 cursor-not-allowed",
+          )}
         >
           <span>Complete Onboarding</span>
           <CheckCircle2 className="w-5 h-5" />
