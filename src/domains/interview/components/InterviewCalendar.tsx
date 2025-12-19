@@ -250,14 +250,6 @@ const InterviewCalendar = ({
       .getSlots();
   }, [selectedDate, selectedDuration, interviewSettings, today]);
 
-  // Check if a time slot is the current user's booked slot
-  const checkIsCurrentUserSlot = (time: Date): boolean => {
-    if (!application.bookedSlot) return false;
-    const bookedStart = parseDate(application.bookedSlot.startTime);
-    if (!bookedStart) return false;
-    return time.getTime() === bookedStart.getTime();
-  };
-
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
       const dayStart = startOfDay(date);
@@ -389,10 +381,14 @@ const InterviewCalendar = ({
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
           <div className="p-8 md:p-10">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Confirm Your Interview Preferences
+              {shouldShowCancellationWarning
+                ? "Confirm Interview Rescheduling"
+                : "Confirm Your Interview Preferences"}
             </h2>
             <p className="text-gray-600 mb-8">
-              Please review your selected time slots before submitting
+              {shouldShowCancellationWarning
+                ? "Please review your new time slot preferences. Submitting will cancel your current confirmed interview and change your application status to &ldquo;Interview Requested&rdquo;."
+                : "Please review your selected time slots before submitting. An admin will review your preferences and confirm one of your selected slots."}
             </p>
 
             {/* Warning about cancelling booked slot */}
@@ -447,12 +443,19 @@ const InterviewCalendar = ({
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-                      Selected Time Slots
+                      {shouldShowCancellationWarning
+                        ? "New Time Slot Preferences"
+                        : "Selected Time Slots"}
                     </p>
                     <p className="font-semibold text-gray-900">
                       {sorted.length} slot{sorted.length === 1 ? "" : "s"}
                       {selectedTimezone && ` • ${selectedTimezone}`}
                     </p>
+                    {shouldShowCancellationWarning && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        These will replace your current confirmed interview
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -516,11 +519,15 @@ const InterviewCalendar = ({
                 {booking ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Submitting...
+                    {shouldShowCancellationWarning
+                      ? "Cancelling & Submitting..."
+                      : "Submitting..."}
                   </>
                 ) : (
                   <>
-                    Submit Preferences
+                    {shouldShowCancellationWarning
+                      ? "Cancel Current & Submit New Preferences"
+                      : "Submit Preferences"}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}
@@ -701,57 +708,25 @@ const InterviewCalendar = ({
             </h3>
 
             {/* Selected Slots Summary & Submit Button - Top CTA */}
-            {selectedSlots.length > 0 && (
-              <div className="mb-6">
-                <Button
-                  onClick={handleConfirmBooking}
-                  disabled={selectedSlots.length < 2}
-                  className="w-full h-14 bg-[#00A8FF] hover:bg-[#0090D9] text-white font-semibold shadow-lg text-base disabled:opacity-60"
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5" />
-                      <div className="text-left">
-                        <p className="font-semibold">
-                          {(() => {
-                            const sorted = [...selectedSlots].sort(
-                              (a, b) =>
-                                a.startTime.getTime() - b.startTime.getTime(),
-                            );
-                            const first = sorted[0];
-                            return first
-                              ? format(first.startTime, "EEEE, MMMM d, yyyy")
-                              : "Selected slots";
-                          })()}
-                        </p>
-                        <p className="text-sm font-normal opacity-90">
-                          {(() => {
-                            const sorted = [...selectedSlots].sort(
-                              (a, b) =>
-                                a.startTime.getTime() - b.startTime.getTime(),
-                            );
-                            const first = sorted[0];
-                            if (!first) return "";
-                            return `${format(first.startTime, "h:mm a")} - ${format(
-                              addMinutes(first.startTime, first.duration),
-                              "h:mm a",
-                            )} • ${selectedSlots.length} selected`;
-                          })()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span>
-                        {selectedSlots.length < 2
-                          ? "Select 2+ Slots"
-                          : "Review & Submit"}
-                      </span>
-                      <ArrowRight className="h-5 w-5" />
-                    </div>
-                  </div>
-                </Button>
-              </div>
-            )}
+            <div className="mb-6 w-full flex justify-end">
+              <Button
+                onClick={handleConfirmBooking}
+                disabled={selectedSlots.length < 2}
+                className="h-12 px-6 bg-[#00A8FF] hover:bg-[#0090D9] text-white font-semibold shadow-lg text-sm disabled:opacity-60 transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                  <span>
+                    {selectedSlots.length < 2
+                      ? "Select 2+ Slots"
+                      : shouldShowCancellationWarning
+                        ? "Review & Reschedule"
+                        : "Review & Submit"}
+                  </span>
+                  <ArrowRight className="h-4 w-4 flex-shrink-0" />
+                </div>
+              </Button>
+            </div>
 
             {/* Error Message */}
             {bookingError && (
@@ -861,15 +836,27 @@ const InterviewCalendar = ({
                           (s) => s.startTime.getTime() === time.getTime(),
                         );
                         const isPastTime = isPast(time);
-                        const isCurrentUserBookedSlot =
-                          checkIsCurrentUserSlot(time);
 
-                        // Check if this time conflicts with any BOOKED slot
+                        // Check if this time matches the current user's booked slot
+                        const currentUserBookedSlotMatch = existingSlots.find(
+                          (slot) => {
+                            if (!slot.isBooked) return false;
+                            if (!application.bookedSlot) return false;
+                            if (slot.id !== application.bookedSlot.id)
+                              return false;
+
+                            const slotStart = new Date(slot.startTime);
+                            return time.getTime() === slotStart.getTime();
+                          },
+                        );
+
+                        // Check if this time conflicts with any BOOKED slot (excluding current user's)
                         const conflictingSlot = existingSlots.find((slot) => {
                           if (!slot.isBooked) return false;
+                          // Exclude current user's booked slot
                           if (
-                            isCurrentUserBookedSlot &&
-                            slot.id === application.bookedSlot?.id
+                            application.bookedSlot &&
+                            slot.id === application.bookedSlot.id
                           )
                             return false;
 
@@ -920,16 +907,21 @@ const InterviewCalendar = ({
                         const isCurrentUserRequestedOverlap =
                           !!requestedOverlapSlot?.isCurrentUserRequested;
 
+                        // Determine if this slot should be disabled
+                        // Current user's booked slot should be shown but not selectable
+                        const isDisabled =
+                          !isAvailable ||
+                          isPastTime ||
+                          !!conflictingSlot ||
+                          !!currentUserBookedSlotMatch;
+
                         return (
                           <button
                             key={index}
                             type="button"
-                            disabled={
-                              !isAvailable || isPastTime || !!conflictingSlot
-                            }
+                            disabled={isDisabled}
                             onClick={() => {
-                              if (!isAvailable || isPastTime || conflictingSlot)
-                                return;
+                              if (isDisabled) return;
 
                               if (isSelected) {
                                 setSelectedSlots((prev) =>
@@ -963,24 +955,34 @@ const InterviewCalendar = ({
                               "w-full py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 text-left relative",
                               isSelected
                                 ? "bg-[#00A8FF] text-white shadow-md ring-2 ring-[#00A8FF] ring-offset-1"
-                                : !isAvailable || isPastTime || conflictingSlot
-                                  ? conflictingSlot
-                                    ? "bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white cursor-not-allowed border-2 border-blue-900/50 shadow-lg opacity-90"
-                                    : "bg-gray-50 text-gray-400 cursor-not-allowed opacity-60 border border-gray-200"
-                                  : "bg-white text-[#00A8FF] border border-gray-300 hover:border-[#00A8FF] hover:bg-blue-50 hover:shadow-sm",
+                                : currentUserBookedSlotMatch
+                                  ? "bg-[#00A8FF] text-white cursor-not-allowed border-2 border-[#0090D9] shadow-lg opacity-95"
+                                  : !isAvailable ||
+                                      isPastTime ||
+                                      conflictingSlot
+                                    ? conflictingSlot
+                                      ? "bg-gray-400 text-white cursor-not-allowed border-2 border-gray-500 shadow-lg opacity-90"
+                                      : "bg-gray-50 text-gray-400 cursor-not-allowed opacity-60 border border-gray-200"
+                                    : "bg-white text-[#00A8FF] border border-gray-300 hover:border-[#00A8FF] hover:bg-blue-50 hover:shadow-sm",
                             )}
                             title={
-                              conflictingSlot
-                                ? "This time slot is already booked"
-                                : isPastTime
-                                  ? "This time has passed"
-                                  : ""
+                              currentUserBookedSlotMatch
+                                ? "This is your confirmed interview slot"
+                                : conflictingSlot
+                                  ? "This time slot is already booked by another user"
+                                  : isPastTime
+                                    ? "This time has passed"
+                                    : ""
                             }
                           >
                             <span className="flex items-center justify-between w-full">
                               <span>{format(time, "h:mm a")}</span>
-                              {conflictingSlot ? (
-                                <span className="text-xs font-bold text-white bg-blue-900/70 px-2.5 py-1 rounded-md shadow-md border border-blue-950/30">
+                              {currentUserBookedSlotMatch ? (
+                                <span className="text-xs font-bold text-white bg-[#0090D9] px-2.5 py-1 rounded-md shadow-md border border-[#0078B8]">
+                                  Your Booking
+                                </span>
+                              ) : conflictingSlot ? (
+                                <span className="text-xs font-bold text-white bg-gray-500 px-2.5 py-1 rounded-md shadow-md border border-gray-600">
                                   Booked
                                 </span>
                               ) : requestedOverlapSlot ? (
