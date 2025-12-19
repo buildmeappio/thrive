@@ -46,8 +46,9 @@ export async function createTourProgressAction(
       success: false,
       data: null,
       message:
-        error instanceof Error ? error.message : "Failed to create tour progress",
+        error instanceof Error
+          ? error.message
+          : "Failed to create tour progress",
     };
   }
 }
-

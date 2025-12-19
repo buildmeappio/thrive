@@ -35,8 +35,9 @@ export async function getTourProgressAction(
       success: false,
       data: null,
       message:
-        error instanceof Error ? error.message : "Failed to fetch tour progress",
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch tour progress",
     };
   }
 }
-

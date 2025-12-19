@@ -91,7 +91,7 @@ export function TourWrapper({
 
       requiredElements.forEach((attr) => {
         const element = document.querySelector(
-          `[data-tour="${attr}"]`
+          `[data-tour="${attr}"]`,
         ) as HTMLElement;
         if (element) {
           const rect = element.getBoundingClientRect();
@@ -111,7 +111,7 @@ export function TourWrapper({
       } else if (retryCount >= maxRetries) {
         console.warn(
           "[Tour] Some elements not found after max retries:",
-          missingElements
+          missingElements,
         );
         // Set to true anyway to allow tour to start - react-joyride will handle missing elements
         setElementsReady(true);
@@ -166,7 +166,7 @@ export function TourWrapper({
             // Check if this div contains form elements
             const hasForm =
               sibling.querySelector(
-                'form, [class*="Form"], [class*="MultipleFileUploadInput"], [class*="bg-white rounded-2xl"], [class*="rounded-2xl p-6"]'
+                'form, [class*="Form"], [class*="MultipleFileUploadInput"], [class*="bg-white rounded-2xl"], [class*="rounded-2xl p-6"]',
               ) !== null;
             if (hasForm) {
               isStepOpen = true;
@@ -211,7 +211,7 @@ export function TourWrapper({
         setIsWaitingForStep(false);
       }
     },
-    [handleStepChange]
+    [handleStepChange],
   );
 
   const handleJoyrideCallback = useCallback(
@@ -295,7 +295,7 @@ export function TourWrapper({
           if (tourAttribute) {
             // Find the element
             let element = document.querySelector(
-              `[data-tour="${tourAttribute}"]`
+              `[data-tour="${tourAttribute}"]`,
             ) as HTMLElement;
 
             if (!element) {
@@ -308,7 +308,7 @@ export function TourWrapper({
               const retryInterval = setInterval(() => {
                 retries++;
                 element = document.querySelector(
-                  `[data-tour="${tourAttribute}"]`
+                  `[data-tour="${tourAttribute}"]`,
                 ) as HTMLElement;
 
                 if (element) {
@@ -340,7 +340,7 @@ export function TourWrapper({
                 } else if (retries >= maxRetries) {
                   clearInterval(retryInterval);
                   console.error(
-                    `Element ${tourAttribute} not found after ${maxRetries} retries`
+                    `Element ${tourAttribute} not found after ${maxRetries} retries`,
                   );
                   setIsWaitingForStep(false);
                   pendingStepRef.current = null;
@@ -360,7 +360,7 @@ export function TourWrapper({
                 // Retry after a short delay
                 setTimeout(() => {
                   const retryElement = document.querySelector(
-                    `[data-tour="${tourAttribute}"]`
+                    `[data-tour="${tourAttribute}"]`,
                   ) as HTMLElement;
                   if (retryElement) {
                     const retryRect = retryElement.getBoundingClientRect();
@@ -397,7 +397,7 @@ export function TourWrapper({
                 console.log(
                   `[Tour] Sidebar element ${tourAttribute} positioned at:`,
                   rect,
-                  `Viewport: ${window.innerHeight}x${window.innerWidth}`
+                  `Viewport: ${window.innerHeight}x${window.innerWidth}`,
                 );
 
                 // Force multiple reflows
@@ -413,7 +413,7 @@ export function TourWrapper({
                   console.log(
                     `[Tour] Element ${tourAttribute} positioned at:`,
                     rect,
-                    `Viewport: ${window.innerHeight}x${window.innerWidth}`
+                    `Viewport: ${window.innerHeight}x${window.innerWidth}`,
                   );
 
                   // Don't scroll - just force reflows to ensure position is calculated
@@ -454,7 +454,7 @@ export function TourWrapper({
                     console.log(
                       `[Tour] Element ${tourAttribute} positioned at:`,
                       finalRect,
-                      `Viewport: ${window.innerHeight}x${window.innerWidth}`
+                      `Viewport: ${window.innerHeight}x${window.innerWidth}`,
                     );
                   });
                 });
@@ -474,20 +474,20 @@ export function TourWrapper({
           if (tourAttribute) {
             // Find the step container (div with data-tour attribute)
             let stepContainer = document.querySelector(
-              `[data-tour="${tourAttribute}"]`
+              `[data-tour="${tourAttribute}"]`,
             ) as HTMLElement;
 
             // If not found, wait a bit and try again (for dynamically rendered content)
             if (!stepContainer) {
               setTimeout(() => {
                 stepContainer = document.querySelector(
-                  `[data-tour="${tourAttribute}"]`
+                  `[data-tour="${tourAttribute}"]`,
                 ) as HTMLElement;
                 if (stepContainer) {
                   handleStepButtonClick(stepContainer, index);
                 } else {
                   console.warn(
-                    `Step container not found for: ${tourAttribute}`
+                    `Step container not found for: ${tourAttribute}`,
                   );
                   document.body.style.overflow = "";
                 }
@@ -545,12 +545,12 @@ export function TourWrapper({
                 if (needsPreScroll) {
                   // Immediate scroll for critical steps - do it RIGHT NOW
                   const nextElement = document.querySelector(
-                    `[data-tour="${tourAttribute}"]`
+                    `[data-tour="${tourAttribute}"]`,
                   ) as HTMLElement;
 
                   if (nextElement) {
                     console.log(
-                      `[Tour] Pre-scrolling next element: ${tourAttribute} (step ${nextStepIndex + 1})`
+                      `[Tour] Pre-scrolling next element: ${tourAttribute} (step ${nextStepIndex + 1})`,
                     );
 
                     // For dashboard tours, disable pre-scrolling - elements are already visible
@@ -558,7 +558,7 @@ export function TourWrapper({
                     if (tourType === "dashboard") {
                       // Don't scroll for dashboard - just force reflows
                       console.log(
-                        `[Tour] Pre-scrolling disabled for dashboard - element ${tourAttribute} should already be visible`
+                        `[Tour] Pre-scrolling disabled for dashboard - element ${tourAttribute} should already be visible`,
                       );
                     } else if (!isSidebarElement) {
                       // For onboarding tours, scroll into view with instant behavior
@@ -593,7 +593,7 @@ export function TourWrapper({
                   // For steps 1-2, use smooth scroll with delay
                   setTimeout(() => {
                     const nextElement = document.querySelector(
-                      `[data-tour="${tourAttribute}"]`
+                      `[data-tour="${tourAttribute}"]`,
                     ) as HTMLElement;
                     if (nextElement) {
                       nextElement.scrollIntoView({
@@ -620,13 +620,13 @@ export function TourWrapper({
         const tourAttribute = targetSelector?.match(/data-tour="([^"]+)"/)?.[1];
 
         console.error(
-          `Tour target not found for step ${index}: ${tourAttribute || targetSelector}`
+          `Tour target not found for step ${index}: ${tourAttribute || targetSelector}`,
         );
 
         // Try to find the element manually and scroll it into view
         if (tourAttribute) {
           const element = document.querySelector(
-            `[data-tour="${tourAttribute}"]`
+            `[data-tour="${tourAttribute}"]`,
           ) as HTMLElement;
           if (element) {
             console.log(`Element found manually: ${tourAttribute}`, element);
@@ -653,7 +653,7 @@ export function TourWrapper({
       steps,
       handleStepButtonClick,
       tourType,
-    ]
+    ],
   );
 
   // Custom styles to match your design system
@@ -866,7 +866,7 @@ export function TourWrapper({
                   `[Tour] getPopper: Checking reference element:`,
                   referenceElement,
                   `tagName: ${referenceElement.tagName}, id: ${referenceElement.id}, classes: ${referenceElement.className}`,
-                  `data-tour: ${referenceElement.getAttribute?.("data-tour")}`
+                  `data-tour: ${referenceElement.getAttribute?.("data-tour")}`,
                 );
               }
 
@@ -881,7 +881,7 @@ export function TourWrapper({
                   if (tourAttribute) {
                     // Check if the reference element matches this step's target
                     const targetElement = document.querySelector(
-                      `[data-tour="${tourAttribute}"]`
+                      `[data-tour="${tourAttribute}"]`,
                     );
 
                     // Multiple ways to check if elements match:
@@ -908,7 +908,7 @@ export function TourWrapper({
                       // 4. Reference is closest to target
                       else if (referenceElement.closest) {
                         const closest = referenceElement.closest(
-                          `[data-tour="${tourAttribute}"]`
+                          `[data-tour="${tourAttribute}"]`,
                         );
                         if (closest === targetElement) {
                           isMatch = true;
@@ -929,7 +929,7 @@ export function TourWrapper({
                       foundStep = true;
                       if (tourType === "dashboard") {
                         console.log(
-                          `[Tour] getPopper: Found step ${i} (${tourAttribute}) from popper reference element`
+                          `[Tour] getPopper: Found step ${i} (${tourAttribute}) from popper reference element`,
                         );
                       }
                       break;
@@ -944,13 +944,13 @@ export function TourWrapper({
             if (!foundStep) {
               // Try multiple ways to find the highlighted element
               const spotlightElement = document.querySelector(
-                ".react-joyride__spotlight"
+                ".react-joyride__spotlight",
               ) as HTMLElement;
 
               if (spotlightElement) {
                 if (tourType === "dashboard") {
                   console.log(
-                    `[Tour] getPopper: Spotlight element found, checking for highlighted element`
+                    `[Tour] getPopper: Spotlight element found, checking for highlighted element`,
                   );
                 }
 
@@ -992,7 +992,7 @@ export function TourWrapper({
                           foundStep = true;
                           if (tourType === "dashboard") {
                             console.log(
-                              `[Tour] getPopper: Found step ${i} (${tourAttribute}) from spotlight position`
+                              `[Tour] getPopper: Found step ${i} (${tourAttribute}) from spotlight position`,
                             );
                           }
                           break;
@@ -1009,7 +1009,7 @@ export function TourWrapper({
             // Final fallback: Use the ref value (might be stale but better than nothing)
             if (!foundStep && tourType === "dashboard") {
               console.log(
-                `[Tour] getPopper: Could not find step from popper/spotlight, using ref value: ${currentIndex}`
+                `[Tour] getPopper: Could not find step from popper/spotlight, using ref value: ${currentIndex}`,
               );
             }
 
@@ -1018,7 +1018,7 @@ export function TourWrapper({
 
             if (tourType === "dashboard") {
               console.log(
-                `[Tour] getPopper processing: origin=${origin}, stepIndex=${currentIndex}, hasStep=${!!currentStep}, stepTarget=${currentStep?.target}`
+                `[Tour] getPopper processing: origin=${origin}, stepIndex=${currentIndex}, hasStep=${!!currentStep}, stepTarget=${currentStep?.target}`,
               );
             }
 
@@ -1039,10 +1039,10 @@ export function TourWrapper({
 
               if (needsExtraCare && tourAttribute) {
                 console.log(
-                  `[Tour] getPopper: Verifying element ${tourAttribute} for step ${currentIndex}`
+                  `[Tour] getPopper: Verifying element ${tourAttribute} for step ${currentIndex}`,
                 );
                 const element = document.querySelector(
-                  `[data-tour="${tourAttribute}"]`
+                  `[data-tour="${tourAttribute}"]`,
                 ) as HTMLElement;
 
                 if (element) {
@@ -1059,12 +1059,12 @@ export function TourWrapper({
                         document.documentElement.clientWidth);
 
                   console.log(
-                    `[Tour] getPopper: Element ${tourAttribute} - inViewport: ${isInViewport}, dimensions: ${rect.width}x${rect.height}, position: (${rect.left}, ${rect.top}), viewport: ${window.innerWidth}x${window.innerHeight}`
+                    `[Tour] getPopper: Element ${tourAttribute} - inViewport: ${isInViewport}, dimensions: ${rect.width}x${rect.height}, position: (${rect.left}, ${rect.top}), viewport: ${window.innerWidth}x${window.innerHeight}`,
                   );
 
                   if (!isInViewport || rect.width === 0 || rect.height === 0) {
                     console.log(
-                      `[Tour] getPopper: Element ${tourAttribute} not ready, scrolling into view`
+                      `[Tour] getPopper: Element ${tourAttribute} not ready, scrolling into view`,
                     );
                     // Element not ready - scroll it into view
                     if (tourAttribute !== "settings-button") {
@@ -1081,7 +1081,7 @@ export function TourWrapper({
                   }
                 } else {
                   console.warn(
-                    `[Tour] getPopper: Element ${tourAttribute} not found in DOM`
+                    `[Tour] getPopper: Element ${tourAttribute} not found in DOM`,
                   );
                 }
               }

@@ -71,8 +71,9 @@ export async function updateTourProgressAction(
       success: false,
       data: null,
       message:
-        error instanceof Error ? error.message : "Failed to update tour progress",
+        error instanceof Error
+          ? error.message
+          : "Failed to update tour progress",
     };
   }
 }
-

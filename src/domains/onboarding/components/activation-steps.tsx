@@ -802,7 +802,11 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
     return (
       <div className="space-y-4">
         {steps.map((step) => (
-          <div key={step.id} className="space-y-4" data-tour={getStepTourAttribute(step.id)}>
+          <div
+            key={step.id}
+            className="space-y-4"
+            data-tour={getStepTourAttribute(step.id)}
+          >
             {/* Step Button */}
             <button
               onClick={() => handleStepClick(step)}
