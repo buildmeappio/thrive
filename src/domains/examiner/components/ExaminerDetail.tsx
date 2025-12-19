@@ -691,7 +691,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           <Link
-            href="/examiner"
+            href="/application"
             className="flex items-center gap-2 sm:gap-4 flex-shrink-0"
           >
             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
