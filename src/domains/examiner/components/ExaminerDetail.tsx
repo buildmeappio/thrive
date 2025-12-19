@@ -788,8 +788,8 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                     <span className="block font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-relaxed tracking-[-0.03em] text-[#000080]">
                       {examiner.specialties && examiner.specialties.length > 0
                         ? examiner.specialties
-                            .map((s) => formatText(s))
-                            .join(", ")
+                          .map((s) => formatText(s))
+                          .join(", ")
                         : "-"}
                     </span>
                   </div>
@@ -808,7 +808,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
               {/* Section 3: Verification Documents */}
               <Section title="Verification Documents">
                 {examiner.medicalLicenseUrls &&
-                examiner.medicalLicenseUrls.length > 0 ? (
+                  examiner.medicalLicenseUrls.length > 0 ? (
                   // Multiple documents - show each file with Preview/Download
                   <div className="max-h-[300px] overflow-y-auto space-y-2">
                     {examiner.medicalLicenseUrls.map((url, index) => (
@@ -853,7 +853,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                         : examiner.imesCompleted.toLowerCase() === "no"
                           ? "No"
                           : examiner.imesCompleted.charAt(0).toUpperCase() +
-                            examiner.imesCompleted.slice(1).toLowerCase()
+                          examiner.imesCompleted.slice(1).toLowerCase()
                       : "-"
                   }
                   type="text"
@@ -867,16 +867,16 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                   label="Assessment Types"
                   value={
                     examiner.assessmentTypes &&
-                    examiner.assessmentTypes.length > 0
+                      examiner.assessmentTypes.length > 0
                       ? examiner.assessmentTypes
-                          .map((type) => formatText(type))
-                          .join(", ")
+                        .map((type) => formatText(type))
+                        .join(", ")
                       : "-"
                   }
                   type="text"
                 />
                 {examiner.assessmentTypeOther &&
-                examiner.assessmentTypeOther.trim() !== "" ? (
+                  examiner.assessmentTypeOther.trim() !== "" ? (
                   <FieldRow
                     label="Other Assessment Type"
                     value={examiner.assessmentTypeOther}
@@ -885,7 +885,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 ) : null}
                 {/* Tell us about your experience */}
                 {examiner.experienceDetails &&
-                examiner.experienceDetails.trim() !== "" ? (
+                  examiner.experienceDetails.trim() !== "" ? (
                   <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[169px] flex flex-col">
                     <h4 className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] mb-3">
                       Tell us about your experience
@@ -998,13 +998,13 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                             value={
                               slot.startTime
                                 ? new Date(slot.startTime).toLocaleDateString(
-                                    "en-US",
-                                    {
-                                      month: "short",
-                                      day: "numeric",
-                                      year: "numeric",
-                                    },
-                                  )
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )
                                 : "N/A"
                             }
                             type="text"
@@ -1018,18 +1018,18 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                             value={
                               slot.startTime && slot.endTime
                                 ? `${new Date(
-                                    slot.startTime,
-                                  ).toLocaleTimeString("en-US", {
-                                    hour: "numeric",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  })} - ${new Date(
-                                    slot.endTime,
-                                  ).toLocaleTimeString("en-US", {
-                                    hour: "numeric",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  })}`
+                                  slot.startTime,
+                                ).toLocaleTimeString("en-US", {
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                })} - ${new Date(
+                                  slot.endTime,
+                                ).toLocaleTimeString("en-US", {
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                })}`
                                 : "N/A"
                             }
                             type="text"
@@ -1050,23 +1050,6 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                     })()}
                   </Section>
                 )}
-
-              {/* Section 6b: Interview Details - Show message when interview_requested */}
-              {status === "interview_requested" && (
-                <Section title="Interview Details">
-                  <div className="rounded-lg bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 px-6 py-8 text-center">
-                    <Calendar className="w-12 h-12 mx-auto mb-3 text-blue-400" />
-                    <p className="text-gray-700 font-poppins text-base font-medium mb-1">
-                      Interview Slots Requested
-                    </p>
-                    <p className="text-gray-500 font-poppins text-sm">
-                      The examiner has requested interview slots. Use the
-                      &quot;Confirm Interview Slot&quot; button in the Actions
-                      section to review and confirm a slot.
-                    </p>
-                  </div>
-                </Section>
-              )}
 
               {/* Section 7: Actions - Hidden when MORE_INFO_REQUESTED, INFO_REQUESTED, or ACTIVE */}
               {/* Hide actions for approved applications (they're now examiners) and active examiners */}
@@ -1144,7 +1127,9 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               lineHeight: "100%",
                               fontSize: "14px",
                             }}
-                            disabled={loadingAction !== null}
+                            disabled={loadingAction !== null || !examiner.interviewSlots || examiner.interviewSlots.length === 0 || !examiner.interviewSlots.some(
+                              (slot) => slot.status === "REQUESTED",
+                            )}
                             onClick={() => setIsConfirmSlotModalOpen(true)}
                           >
                             Confirm Interview Slot
@@ -1530,12 +1515,12 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                     Signed by {capitalizeWords(examiner.name)} on{" "}
                     {examiner.contractSignedByExaminerAt
                       ? new Date(
-                          examiner.contractSignedByExaminerAt,
-                        ).toLocaleDateString("en-US", {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        })
+                        examiner.contractSignedByExaminerAt,
+                      ).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
                       : "N/A"}
                   </p>
                 </div>
