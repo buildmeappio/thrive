@@ -79,7 +79,7 @@ const groupInterviewsByDate = (interviews: InterviewData[]) => {
   Object.keys(grouped).forEach((key) => {
     grouped[key].sort(
       (a, b) =>
-        new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+        new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
     );
   });
 
@@ -96,7 +96,8 @@ const InterviewSlot = ({ interview }: { interview: InterviewData }) => {
 
   const content = (
     <div
-      className={`group relative rounded-lg p-1.5 sm:p-2 mb-1 sm:mb-2 transition-all duration-200 cursor-pointer ${statusColors.gradient} ${statusColors.text} hover:shadow-lg hover:brightness-110`}>
+      className={`group relative rounded-lg p-1.5 sm:p-2 mb-1 sm:mb-2 transition-all duration-200 cursor-pointer ${statusColors.gradient} ${statusColors.text} hover:shadow-lg hover:brightness-110`}
+    >
       <div className="flex flex-col gap-0.5">
         <div className="text-[14px] sm:text-xs font-medium truncate">
           {interview.examinerName}
@@ -145,13 +146,15 @@ const DayCell = ({
     <div
       className={`min-h-[80px] sm:min-h-[120px] border border-gray-200 p-1 sm:p-2 ${
         isCurrentMonth ? "bg-white" : "bg-gray-50"
-      } ${isToday ? "ring-2 ring-blue-400" : ""}`}>
+      } ${isToday ? "ring-2 ring-blue-400" : ""}`}
+    >
       <div
         className={`text-xs sm:text-sm font-semibold mb-1 sm:mb-2 ${
           isToday
             ? "bg-blue-500 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs"
             : "text-gray-900"
-        }`}>
+        }`}
+      >
         {day}
       </div>
       <div className="space-y-1 overflow-y-auto max-h-[120px] sm:max-h-[200px]">
@@ -161,14 +164,16 @@ const DayCell = ({
         {hasMore && !showAll && (
           <button
             onClick={() => setShowAll(true)}
-            className="text-[10px] sm:text-xs text-blue-600 hover:text-blue-800 font-medium">
+            className="text-[10px] sm:text-xs text-blue-600 hover:text-blue-800 font-medium"
+          >
             +{interviews.length - displayLimit} more
           </button>
         )}
         {showAll && hasMore && (
           <button
             onClick={() => setShowAll(false)}
-            className="text-[10px] sm:text-xs text-gray-600 hover:text-gray-800 font-medium">
+            className="text-[10px] sm:text-xs text-gray-600 hover:text-gray-800 font-medium"
+          >
             Show less
           </button>
         )}
@@ -208,19 +213,19 @@ export default function InterviewCalendarView({
       data.filter(
         (interview) =>
           interview.status.toUpperCase() === "BOOKED" ||
-          interview.status.toUpperCase() === "COMPLETED"
+          interview.status.toUpperCase() === "COMPLETED",
       ),
-    [data]
+    [data],
   );
 
   const calendarDays = useMemo(
     () => getCalendarDays(currentYear, currentMonth),
-    [currentYear, currentMonth]
+    [currentYear, currentMonth],
   );
 
   const groupedInterviews = useMemo(
     () => groupInterviewsByDate(filteredData),
-    [filteredData]
+    [filteredData],
   );
 
   const goToPreviousMonth = () => {
@@ -258,13 +263,15 @@ export default function InterviewCalendarView({
           <button
             onClick={goToPreviousMonth}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            aria-label="Previous month">
+            aria-label="Previous month"
+          >
             <ChevronLeft className="w-5 h-5 text-gray-700" />
           </button>
           <button
             onClick={goToNextMonth}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            aria-label="Next month">
+            aria-label="Next month"
+          >
             <ChevronRight className="w-5 h-5 text-gray-700" />
           </button>
         </div>
@@ -290,7 +297,8 @@ export default function InterviewCalendarView({
             {dayNames.map((day) => (
               <div
                 key={day}
-                className="text-center font-semibold text-xs sm:text-sm text-gray-700 py-2 sm:py-3 bg-gray-100 border border-gray-200">
+                className="text-center font-semibold text-xs sm:text-sm text-gray-700 py-2 sm:py-3 bg-gray-100 border border-gray-200"
+              >
                 {day}
               </div>
             ))}
