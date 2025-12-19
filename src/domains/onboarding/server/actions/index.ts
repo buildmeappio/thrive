@@ -13,3 +13,5 @@ export { updateComplianceAction } from "./updateCompliance";
 export { updateNotificationsAction } from "./updateNotifications";
 export { uploadDocumentAction } from "./uploadDocument";
 export { getDocumentByIdAction } from "./getDocumentById";
+export { markStepAsCompleteAction } from "./markStepAsComplete";
+export { unmarkStepAsCompleteAction } from "./unmarkStepAsComplete";

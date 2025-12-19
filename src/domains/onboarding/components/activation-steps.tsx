@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Play, CircleCheck, CheckCircle2 } from "lucide-react";
+import { Play, CircleCheck, CheckCircle2, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -17,7 +17,12 @@ import {
 } from "./OnboardingSteps";
 import { type ActivationStep, initializeActivationSteps } from "../constants";
 import type { ActivationStepsProps } from "../types";
-import { completeOnboardingAction } from "../server/actions";
+import {
+  completeOnboardingAction,
+  markStepAsCompleteAction,
+  unmarkStepAsCompleteAction,
+} from "../server/actions";
+import { parseCompletedSteps } from "../server/utils/activationStep";
 
 // Helper function to map step ID to tour data attribute
 const getStepTourAttribute = (stepId: string): string => {
@@ -29,7 +34,7 @@ const getStepTourAttribute = (stepId: string): string => {
 };
 
 const ActivationSteps: React.FC<ActivationStepsProps> = ({
-  initialActivationStep: _initialActivationStep,
+  initialActivationStep,
   examinerProfileId,
   profileData,
   availabilityData,
@@ -42,15 +47,23 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [steps] = useState<ActivationStep[]>(initializeActivationSteps());
   const [completing, setCompleting] = useState(false);
-  // Track which steps are completed
-  const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
+  // Track which steps are completed - initialized from DB
+  const [completedSteps, setCompletedSteps] = useState<Set<string>>(() => {
+    const completed = parseCompletedSteps(initialActivationStep);
+    return new Set(completed);
+  });
 
   // Check if all steps are completed and redirect to dashboard
   useEffect(() => {
-    if (profileData?.activationStep === "notifications") {
+    // Check if activationStep contains "notifications" (all steps complete)
+    const completed = parseCompletedSteps(initialActivationStep);
+    if (
+      completed.includes("notifications") ||
+      initialActivationStep === "notifications"
+    ) {
       router.push("/dashboard");
     }
-  }, [router, profileData?.activationStep]);
+  }, [router, initialActivationStep]);
 
   const handleStepClick = (step: ActivationStep) => {
     // All steps are always clickable
@@ -64,17 +77,49 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
   };
 
   // Handle step completion - called when "Mark as Complete" is clicked
-  const handleStepComplete = (stepId: string) => {
-    setCompletedSteps((prev) => new Set(prev).add(stepId));
+  const handleStepComplete = async (stepId: string) => {
+    if (!examinerProfileId) {
+      toast.error("Examiner profile ID not found");
+      return;
+    }
+
+    const result = await markStepAsCompleteAction({
+      examinerProfileId,
+      stepId,
+    });
+
+    if (result.success) {
+      setCompletedSteps((prev) => new Set(prev).add(stepId));
+      // Refresh to get updated activationStep from DB
+      router.refresh();
+    } else {
+      toast.error(result.message || "Failed to mark step as complete");
+    }
   };
 
   // Handle step incomplete - called when a completed step is edited
-  const handleStepIncomplete = (stepId: string) => {
-    setCompletedSteps((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(stepId);
-      return newSet;
+  const handleStepIncomplete = async (stepId: string) => {
+    if (!examinerProfileId) {
+      toast.error("Examiner profile ID not found");
+      return;
+    }
+
+    const result = await unmarkStepAsCompleteAction({
+      examinerProfileId,
+      stepId,
     });
+
+    if (result.success) {
+      setCompletedSteps((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(stepId);
+        return newSet;
+      });
+      // Refresh to get updated activationStep from DB
+      router.refresh();
+    } else {
+      toast.error(result.message || "Failed to unmark step as complete");
+    }
   };
 
   // Check if all steps are completed
@@ -184,50 +229,13 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
     }
   };
 
-  // Initialize completed steps based on saved data when component mounts or server data changes
+  // Initialize completed steps from DB when activationStep changes
   useEffect(() => {
-    if (!examinerProfileId || !profileData) return;
-
-    const initialCompletedSteps = new Set<string>();
-    steps.forEach((step) => {
-      if (isStepComplete(step.id)) {
-        initialCompletedSteps.add(step.id);
-      }
-    });
-
-    // Only update if the set has changed to prevent unnecessary re-renders
-    setCompletedSteps((prev) => {
-      const prevArray = Array.from(prev).sort();
-      const newArray = Array.from(initialCompletedSteps).sort();
-      if (
-        prevArray.length !== newArray.length ||
-        prevArray.some((val, idx) => val !== newArray[idx])
-      ) {
-        return initialCompletedSteps;
-      }
-      return prev;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    examinerProfileId,
-    profileData?.firstName,
-    profileData?.profilePhotoId,
-    profileData?.phipaCompliance,
-    profileData?.pipedaCompliance,
-    profileData?.medicalLicenseActive,
-    profileData?.assessmentTypes,
-    profileData?.maxTravelDistance,
-    profileData?.assessmentTypeOther,
-    profileData?.medicalLicenseDocumentIds,
-    profileData?.emailPaymentPayout,
-    profileData?.smsNotifications,
-    profileData?.emailMarketing,
-    availabilityData?.weeklyHours,
-    availabilityData?.bookingOptions,
-    payoutData?.transitNumber,
-    payoutData?.institutionNumber,
-    payoutData?.accountNumber,
-  ]);
+    if (initialActivationStep !== undefined) {
+      const completed = parseCompletedSteps(initialActivationStep);
+      setCompletedSteps(new Set(completed));
+    }
+  }, [initialActivationStep]);
 
   // Check if all required fields are filled (not validated, just filled)
   const areAllFieldsFilled = (): boolean => {
@@ -626,6 +634,10 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
   const renderStepIcon = (stepId: string) => {
     if (completedSteps.has(stepId)) {
       return <CircleCheck className="h-6 w-6 text-green-500 shrink-0" />;
+    }
+    // Show chevron down when step is active (opened), play icon when closed
+    if (activeStep === stepId) {
+      return <ChevronDown className="h-6 w-6 text-[#00A8FF] shrink-0" />;
     }
     return <Play className="h-6 w-6 text-[#00A8FF] shrink-0 fill-[#00A8FF]" />;
   };
