@@ -22,6 +22,7 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -31,13 +32,10 @@ import {
   ParsedSlot,
   Slot,
 } from "@/utils/timeslots";
-import {
-  getDuration,
-  parseDate,
-  toUtcMidnightOfLocalDay,
-} from "@/utils/datetime";
+import { getDuration, parseDate, getLocalDayUtcRange } from "@/utils/datetime";
 import { InterviewSettings } from "@/server/services/configuration.service";
 import { ApplicationData } from "../actions/verifyInterviewToken";
+import { ExaminerStatus } from "@prisma/client";
 
 interface InterviewCalendarProps {
   token: string;
@@ -53,8 +51,10 @@ const getDurationFromSlots = (slots: Array<Slot | ParsedSlot>) => {
 
 const getExistingSlots = async (selectedDate: Date, applicationId: string) => {
   try {
+    const [rangeStartUtc, rangeEndUtc] = getLocalDayUtcRange(selectedDate);
     const result = await getAvailableSlots(
-      toUtcMidnightOfLocalDay(selectedDate),
+      rangeStartUtc,
+      rangeEndUtc,
       applicationId,
     );
 
@@ -189,9 +189,7 @@ const InterviewCalendar = ({
 
   const router = useRouter();
 
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + interviewSettings.minDaysAhead);
+  const today = useMemo(() => new Date(), []);
 
   const {
     date: selectedDate,
@@ -202,9 +200,12 @@ const InterviewCalendar = ({
     setSelectedSlots,
   } = useInterviewCalendar(application, interviewSettings);
 
-  const [selectedTimezone] = useState<string>(
-    Intl.DateTimeFormat().resolvedOptions().timeZone,
-  );
+  const [selectedTimezone, setSelectedTimezone] = useState<string>("");
+
+  // Set timezone client-side only to avoid SSR UTC issue
+  useEffect(() => {
+    setSelectedTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  }, []);
   const [existingSlots, setExistingSlots] = useState<Array<ParsedSlot>>([]);
   const [loading, setLoading] = useState(false);
   const [booking, setBooking] = useState(false);
@@ -238,8 +239,11 @@ const InterviewCalendar = ({
 
   // Generate time slots dynamically based on selected duration and working hours
   const availableTimeSlots = useMemo(() => {
+    const dateToUse = selectedDate || today;
+    const [rangeStartUtc, rangeEndUtc] = getLocalDayUtcRange(dateToUse);
     return new GenerateTimeSlots()
-      .withSelectedDate(selectedDate || today)
+      .withSelectedDate(dateToUse)
+      .withUtcRange(rangeStartUtc, rangeEndUtc)
       .withSelectedDuration(selectedDuration)
       .withInterviewSettings(interviewSettings)
       .build()
@@ -294,6 +298,7 @@ const InterviewCalendar = ({
           startTime: s.startTime,
           durationMinutes: s.duration,
         })),
+        selectedTimezone || undefined,
       );
 
       if (result.success) {
@@ -306,8 +311,11 @@ const InterviewCalendar = ({
         // Refresh slots to reflect any changes
         if (selectedDate) {
           try {
+            const [rangeStartUtc, rangeEndUtc] =
+              getLocalDayUtcRange(selectedDate);
             const refreshResult = await getAvailableSlots(
-              toUtcMidnightOfLocalDay(selectedDate),
+              rangeStartUtc,
+              rangeEndUtc,
               applicationId,
             );
             if (refreshResult.success) {
@@ -331,8 +339,11 @@ const InterviewCalendar = ({
       // Refresh slots to reflect any changes
       if (selectedDate) {
         try {
+          const [rangeStartUtc, rangeEndUtc] =
+            getLocalDayUtcRange(selectedDate);
           const refreshResult = await getAvailableSlots(
-            toUtcMidnightOfLocalDay(selectedDate),
+            rangeStartUtc,
+            rangeEndUtc,
             applicationId,
           );
           if (refreshResult.success) {
@@ -362,6 +373,11 @@ const InterviewCalendar = ({
     return date < minDate || date > maxDate;
   };
 
+  // Check if we should show warning about cancelling booked slot
+  const shouldShowCancellationWarning =
+    application.status === ExaminerStatus.INTERVIEW_SCHEDULED &&
+    application.bookedSlot !== undefined;
+
   // Confirmation State
   if (showConfirmation) {
     const sorted = [...selectedSlots].sort(
@@ -379,6 +395,50 @@ const InterviewCalendar = ({
               Please review your selected time slots before submitting
             </p>
 
+            {/* Warning about cancelling booked slot */}
+            {shouldShowCancellationWarning && application.bookedSlot && (
+              <div className="mb-8 bg-amber-50 border-2 border-amber-200 rounded-xl p-6">
+                <div className="flex items-start gap-4">
+                  <div className="bg-amber-500 rounded-lg p-3 text-white flex-shrink-0">
+                    <AlertTriangle className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-amber-900 mb-2">
+                      Important: Your Confirmed Interview Will Be Cancelled
+                    </h3>
+                    <p className="text-sm text-amber-800 mb-3">
+                      By submitting these new time slot preferences, your
+                      currently confirmed interview will be cancelled and your
+                      application status will change to &ldquo;Interview
+                      Requested&rdquo;.
+                    </p>
+                    <div className="bg-white/70 rounded-lg border border-amber-200 px-4 py-3 mt-3">
+                      <p className="text-xs font-medium text-amber-700 uppercase tracking-wide mb-1">
+                        Current Confirmed Interview
+                      </p>
+                      <p className="text-sm font-semibold text-amber-900">
+                        {format(
+                          parseDate(application.bookedSlot.startTime)!,
+                          "EEEE, MMMM d, yyyy",
+                        )}
+                      </p>
+                      <p className="text-sm text-amber-800">
+                        {format(
+                          parseDate(application.bookedSlot.startTime)!,
+                          "h:mm a",
+                        )}{" "}
+                        -{" "}
+                        {format(
+                          parseDate(application.bookedSlot.endTime)!,
+                          "h:mm a",
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-6 mb-8">
               <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-100">
                 <div className="flex items-start gap-4 mb-4">
@@ -390,8 +450,8 @@ const InterviewCalendar = ({
                       Selected Time Slots
                     </p>
                     <p className="font-semibold text-gray-900">
-                      {sorted.length} slot{sorted.length === 1 ? "" : "s"} •{" "}
-                      {selectedTimezone}
+                      {sorted.length} slot{sorted.length === 1 ? "" : "s"}
+                      {selectedTimezone && ` • ${selectedTimezone}`}
                     </p>
                   </div>
                 </div>
@@ -475,6 +535,48 @@ const InterviewCalendar = ({
   // Main Selection State - Two Panel Layout
   return (
     <div className="max-w-7xl mx-auto">
+      {/* Warning about cancelling booked slot */}
+      {shouldShowCancellationWarning && application.bookedSlot && (
+        <div className="mb-6 bg-amber-50 border-2 border-amber-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="bg-amber-500 rounded-lg p-3 text-white flex-shrink-0">
+              <AlertTriangle className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-amber-900 mb-2">
+                Updating Your Selection Will Cancel Your Confirmed Interview
+              </h3>
+              <p className="text-sm text-amber-800 mb-3">
+                You currently have a confirmed interview scheduled. If you
+                update your selection with new time slot preferences, your
+                confirmed interview will be cancelled and your application
+                status will change from &ldquo;Interview Scheduled&rdquo; to
+                &ldquo;Interview Requested&rdquo;.
+              </p>
+              <div className="bg-white/70 rounded-lg border border-amber-200 px-4 py-3 mt-3">
+                <p className="text-xs font-medium text-amber-700 uppercase tracking-wide mb-1">
+                  Your Current Confirmed Interview
+                </p>
+                <p className="text-sm font-semibold text-amber-900">
+                  {format(
+                    parseDate(application.bookedSlot.startTime)!,
+                    "EEEE, MMMM d, yyyy",
+                  )}
+                </p>
+                <p className="text-sm text-amber-800">
+                  {format(
+                    parseDate(application.bookedSlot.startTime)!,
+                    "h:mm a",
+                  )}{" "}
+                  -{" "}
+                  {format(parseDate(application.bookedSlot.endTime)!, "h:mm a")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
         <div className="flex flex-col lg:flex-row">
           {/* Left Panel - Appointment Details */}

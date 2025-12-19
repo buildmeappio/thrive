@@ -6,6 +6,8 @@ import { startOfDay, addMinutes, isPast } from "date-fns";
 
 type TimeSlotsParams = {
   selectedDate: Date;
+  rangeStartUtc: Date;
+  rangeEndUtc: Date;
   selectedDuration: number;
   interviewSettings: {
     startWorkingHourUTC: number;
@@ -16,6 +18,8 @@ type TimeSlotsParams = {
 export class GenerateTimeSlots {
   private slots: Date[] = [];
   private selectedDate?: Date;
+  private rangeStartUtc?: Date;
+  private rangeEndUtc?: Date;
   private selectedDuration?: number;
   private interviewSettings?: {
     startWorkingHourUTC: number;
@@ -25,6 +29,12 @@ export class GenerateTimeSlots {
   constructor(data?: Partial<TimeSlotsParams>) {
     if (data?.selectedDate) {
       this.selectedDate = data.selectedDate;
+    }
+    if (data?.rangeStartUtc) {
+      this.rangeStartUtc = data.rangeStartUtc;
+    }
+    if (data?.rangeEndUtc) {
+      this.rangeEndUtc = data.rangeEndUtc;
     }
     if (data?.selectedDuration) {
       this.selectedDuration = data.selectedDuration;
@@ -36,6 +46,11 @@ export class GenerateTimeSlots {
 
   withSelectedDate(selectedDate: Date) {
     this.selectedDate = selectedDate;
+    return this;
+  }
+  withUtcRange(rangeStartUtc: Date, rangeEndUtc: Date) {
+    this.rangeStartUtc = rangeStartUtc;
+    this.rangeEndUtc = rangeEndUtc;
     return this;
   }
   withSelectedDuration(selectedDuration: number) {
@@ -54,48 +69,77 @@ export class GenerateTimeSlots {
     const slots: Date[] = [];
 
     const selectedDate = this.selectedDate || new Date();
+    const rangeStartUtc = this.rangeStartUtc || new Date();
+    const rangeEndUtc = this.rangeEndUtc || new Date();
     const selectedDuration = this.selectedDuration || 30;
     const interviewSettings = this.interviewSettings || {
       startWorkingHourUTC: 480,
       endWorkingHourUTC: 960,
     };
 
-    // Get the selected date components in local timezone
-    const year = selectedDate.getFullYear();
-    const month = selectedDate.getMonth();
-    const day = selectedDate.getDate();
+    // Generate slots by intersecting UTC working hours with the UTC range
+    // This handles cases where a local day spans two UTC dates
 
-    // Create UTC date for the selected day at midnight UTC
-    const dayStartUTC = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+    // Get UTC date components for the range start
+    const rangeStartYear = rangeStartUtc.getUTCFullYear();
+    const rangeStartMonth = rangeStartUtc.getUTCMonth();
+    const rangeStartDay = rangeStartUtc.getUTCDate();
 
-    // Apply UTC working hours to the UTC date
-    const startHours = Math.floor(interviewSettings.startWorkingHourUTC / 60);
-    const startMins = interviewSettings.startWorkingHourUTC % 60;
-    const startWorkingTimeUTC = new Date(dayStartUTC);
-    startWorkingTimeUTC.setUTCHours(startHours, startMins, 0, 0);
+    // Start from the beginning of the UTC day containing rangeStartUtc
+    let currentUtcDay = new Date(
+      Date.UTC(rangeStartYear, rangeStartMonth, rangeStartDay, 0, 0, 0, 0),
+    );
 
-    const endHours = Math.floor(interviewSettings.endWorkingHourUTC / 60);
-    const endMins = interviewSettings.endWorkingHourUTC % 60;
-    const endWorkingTimeUTC = new Date(dayStartUTC);
-    endWorkingTimeUTC.setUTCHours(endHours, endMins, 0, 0);
+    // Iterate through UTC days that overlap with the range
+    while (currentUtcDay < rangeEndUtc) {
+      // Calculate working hours for this UTC day
+      const startHours = Math.floor(interviewSettings.startWorkingHourUTC / 60);
+      const startMins = interviewSettings.startWorkingHourUTC % 60;
+      const dayStartWorkingTime = new Date(currentUtcDay);
+      dayStartWorkingTime.setUTCHours(startHours, startMins, 0, 0);
 
-    // Filter slots to only include those that fall on the selected date in local time
-    // This ensures that if UTC time converts to previous/next day in local time, we exclude it
-    let currentTime = new Date(startWorkingTimeUTC);
-    const maxTime = new Date(endWorkingTimeUTC);
-    maxTime.setMinutes(maxTime.getMinutes() - selectedDuration); // Ensure last slot fits
+      const endHours = Math.floor(interviewSettings.endWorkingHourUTC / 60);
+      const endMins = interviewSettings.endWorkingHourUTC % 60;
+      const dayEndWorkingTime = new Date(currentUtcDay);
+      dayEndWorkingTime.setUTCHours(endHours, endMins, 0, 0);
 
-    while (currentTime <= maxTime) {
-      const slotTime = new Date(currentTime);
-      // Only include slots that are on the selected date in local time
-      const slotLocalDate = startOfDay(slotTime);
-      const selectedLocalDate = startOfDay(selectedDate);
+      // Intersect working hours with the UTC range
+      // Only generate slots that are within both the working hours AND the UTC range
+      const slotStartTime =
+        dayStartWorkingTime < rangeStartUtc
+          ? rangeStartUtc
+          : dayStartWorkingTime;
+      const slotEndTime =
+        dayEndWorkingTime > rangeEndUtc ? rangeEndUtc : dayEndWorkingTime;
 
-      if (slotLocalDate.getTime() === selectedLocalDate.getTime()) {
-        slots.push(slotTime);
+      // Only proceed if there's a valid intersection (working hours overlap with the range)
+      if (slotStartTime < slotEndTime) {
+        // Generate slots within the intersected range
+        let currentTime = new Date(slotStartTime);
+        const maxTime = new Date(slotEndTime);
+        maxTime.setMinutes(maxTime.getMinutes() - selectedDuration); // Ensure last slot fits
+
+        // Generate slots strictly within working hours
+        // Check against maxTime (which ensures slots fit) and slotEndTime (working hours boundary)
+        while (currentTime <= maxTime && currentTime < slotEndTime) {
+          const slotTime = new Date(currentTime);
+
+          // Only include slots that fall on the selected date in local time
+          // This ensures slots are displayed in the correct local calendar day
+          const slotLocalDate = startOfDay(slotTime);
+          const selectedLocalDate = startOfDay(selectedDate);
+
+          if (slotLocalDate.getTime() === selectedLocalDate.getTime()) {
+            slots.push(slotTime);
+          }
+
+          currentTime = addMinutes(currentTime, selectedDuration);
+        }
       }
 
-      currentTime = addMinutes(currentTime, selectedDuration);
+      // Move to the next UTC day
+      currentUtcDay = new Date(currentUtcDay);
+      currentUtcDay.setUTCDate(currentUtcDay.getUTCDate() + 1);
     }
 
     return slots;
