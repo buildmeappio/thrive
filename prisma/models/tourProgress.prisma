@@ -1,0 +1,21 @@
+model TourProgress {
+  id                        String    @id @default(uuid()) @db.Uuid
+  examinerProfileId         String    @unique @map("examiner_profile_id") @db.Uuid
+  onboardingTourCompleted   Boolean   @default(false) @map("onboarding_tour_completed")
+  dashboardTourCompleted     Boolean   @default(false) @map("dashboard_tour_completed")
+  onboardingTourSkipped     Boolean   @default(false) @map("onboarding_tour_skipped")
+  dashboardTourSkipped       Boolean   @default(false) @map("dashboard_tour_skipped")
+  onboardingTourCompletedAt  DateTime? @map("onboarding_tour_completed_at") @db.Timestamptz()
+  dashboardTourCompletedAt   DateTime? @map("dashboard_tour_completed_at") @db.Timestamptz()
+  onboardingTourStartedAt    DateTime? @map("onboarding_tour_started_at") @db.Timestamptz()
+  dashboardTourStartedAt     DateTime? @map("dashboard_tour_started_at") @db.Timestamptz()
+  createdAt                  DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt                  DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt                  DateTime? @map("deleted_at") @db.Timestamptz()
+
+  examinerProfile ExaminerProfile @relation("ExaminerTourProgress", fields: [examinerProfileId], references: [id], onDelete: Cascade)
+
+  @@index([examinerProfileId])
+  @@map("tour_progress")
+}
+

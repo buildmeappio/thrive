@@ -9,7 +9,11 @@ const includeRelations = {
   ndaDocument: true,
   insuranceDocument: true,
   redactedIMEReportDocument: true,
-  interviewSlot: true,
+  interviewSlots: {
+    where: {
+      deletedAt: null,
+    },
+  },
 };
 
 export const getRecentApplications = async (
@@ -44,8 +48,8 @@ export const getApplicationById = async (id: string) => {
   if (
     application &&
     application.status === ExaminerStatus.INTERVIEW_REQUESTED &&
-    application.interviewSlot &&
-    application.interviewSlot.status === "BOOKED"
+    application.interviewSlots &&
+    application.interviewSlots.some((slot) => slot.status === "BOOKED")
   ) {
     return prisma.examinerApplication.update({
       where: { id },
@@ -147,27 +151,36 @@ export const scheduleApplicationInterview = async (id: string) => {
 
 export const markApplicationInterviewCompleted = async (id: string) => {
   return prisma.$transaction(async (tx) => {
-    // First, get the application to check for interview slot
+    // First, get the application to check for interview slots
     const existingApplication = await tx.examinerApplication.findUnique({
       where: { id },
-      include: { interviewSlot: true },
+      include: { interviewSlots: true },
     });
 
     if (!existingApplication) {
       throw new Error("Application not found");
     }
 
-    // Update interview slot status to COMPLETED if it exists and is BOOKED
+    // Update all booked interview slots status to COMPLETED
     if (
-      existingApplication.interviewSlot &&
-      existingApplication.interviewSlot.status === "BOOKED"
+      existingApplication.interviewSlots &&
+      existingApplication.interviewSlots.length > 0
     ) {
-      await tx.interviewSlot.update({
-        where: { id: existingApplication.interviewSlot.id },
-        data: {
-          status: "COMPLETED",
-        },
-      });
+      const bookedSlots = existingApplication.interviewSlots.filter(
+        (slot) => slot.status === "BOOKED",
+      );
+
+      if (bookedSlots.length > 0) {
+        await tx.interviewSlot.updateMany({
+          where: {
+            id: { in: bookedSlots.map((slot) => slot.id) },
+            status: "BOOKED",
+          },
+          data: {
+            status: "COMPLETED",
+          },
+        });
+      }
     }
 
     // Update application status

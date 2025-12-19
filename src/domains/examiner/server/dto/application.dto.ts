@@ -12,7 +12,7 @@ type ApplicationWithRelations = ExaminerApplication & {
   ndaDocument: Documents | null;
   insuranceDocument: Documents | null;
   redactedIMEReportDocument: Documents | null;
-  interviewSlot: InterviewSlot | null;
+  interviewSlots: InterviewSlot[];
 };
 
 export class ApplicationDto {
@@ -63,15 +63,15 @@ export class ApplicationDto {
       status: application.status as ExaminerData["status"], // Cast ExaminerStatus to ServerStatus (DRAFT is filtered out in queries)
       createdAt: application.createdAt.toISOString(),
       updatedAt: application.updatedAt.toISOString(),
-      interviewSlot: application.interviewSlot
-        ? {
-            id: application.interviewSlot.id,
-            status: application.interviewSlot.status,
-            startTime: application.interviewSlot.startTime.toISOString(),
-            endTime: application.interviewSlot.endTime.toISOString(),
-            duration: application.interviewSlot.duration,
-          }
-        : null,
+      interviewSlots: application.interviewSlots
+        ? application.interviewSlots.map((slot) => ({
+            id: slot.id,
+            status: slot.status,
+            startTime: slot.startTime.toISOString(),
+            endTime: slot.endTime.toISOString(),
+            duration: slot.duration,
+          }))
+        : undefined,
       feeStructure:
         application.IMEFee !== null &&
         application.recordReviewFee !== null &&
