@@ -30,7 +30,7 @@ export const bookInterviewSlot = async (
     // Verify application exists and email matches
     const application = await prisma.examinerApplication.findUnique({
       where: { id: applicationId },
-      include: { interviewSlot: true },
+      include: { interviewSlots: true },
     });
 
     if (!application) {
@@ -42,7 +42,10 @@ export const bookInterviewSlot = async (
     }
 
     // Check if already booked
-    if (application.interviewSlot) {
+    const bookedSlot = application.interviewSlots.find(
+      (slot) => slot.deletedAt === null && slot.status === "BOOKED",
+    );
+    if (bookedSlot) {
       throw HttpError.badRequest(
         "Application already has a booked interview slot",
       );
