@@ -72,7 +72,7 @@ model ExaminerApplication {
   examinerProfile           ExaminerProfile?        @relation("ExaminerApplicationProfile")
   contracts                 Contract[]              @relation("ApplicationContracts")
   secureLinks               ApplicationSecureLink[] @relation("ApplicationSecureLink")
-  interviewSlot             InterviewSlot?          @relation("ApplicationInterviewSlot")
+  interviewSlots            InterviewSlot[]         @relation("ApplicationInterviewSlot")
 
   @@index([email])
   @@index([status])
