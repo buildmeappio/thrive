@@ -56,6 +56,19 @@ export function generateExaminerInReviewEmail(params: {
 
 export const EXAMINER_IN_REVIEW_SUBJECT = "Your Application is Now In Review";
 
+// Interview Requested
+export function generateExaminerInterviewRequestedEmail(params: {
+  firstName: string;
+  lastName: string;
+  scheduleInterviewLink: string;
+}): string {
+  const template = loadTemplate("examiner-interview-requested");
+  return renderTemplate(template, params);
+}
+
+export const EXAMINER_INTERVIEW_REQUESTED_SUBJECT =
+  "Interview Request - Please Add Your Schedule";
+
 // Interview Scheduled
 export function generateExaminerInterviewScheduledEmail(params: {
   firstName: string;
