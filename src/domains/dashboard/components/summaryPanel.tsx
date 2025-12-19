@@ -29,6 +29,7 @@ export default function SummaryPanel({
 
   return (
     <section
+      data-tour="summary-panel"
       className="rounded-[29px] w-full bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
       aria-labelledby="summary-heading"
     >

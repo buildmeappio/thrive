@@ -26,6 +26,7 @@ export default function AppointmentsTable({
 }: AppointmentsTableProps) {
   return (
     <section
+      data-tour="upcoming-appointments"
       className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
       aria-labelledby="appointments-heading"
     >
