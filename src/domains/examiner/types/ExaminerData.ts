@@ -40,13 +40,13 @@ export type ExaminerData = {
   createdAt: string;
   updatedAt: string;
   feeStructure?: ExaminerFeeStructure;
-  interviewSlot?: {
+  interviewSlots?: {
     id: string;
     status: string;
     startTime?: string;
     endTime?: string;
     duration?: number;
-  } | null;
+  }[];
 };
 
 export type ExaminerFeeStructure = {

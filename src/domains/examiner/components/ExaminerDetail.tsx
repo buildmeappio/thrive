@@ -7,6 +7,7 @@ import FieldRow from "@/components/FieldRow";
 import RequestInfoModal from "@/components/modal/RequestInfoModal";
 import RejectModal from "@/components/modal/RejectModal";
 import EditFeeStructureModal from "@/components/modal/EditFeeStructureModal";
+import ConfirmInterviewSlotModal from "@/components/modal/ConfirmInterviewSlotModal";
 import { cn } from "@/lib/utils";
 import { ExaminerData, ExaminerFeeStructure } from "../types/ExaminerData";
 import {
@@ -18,11 +19,12 @@ import {
   moveToReview,
   scheduleInterview as _scheduleInterview,
   requestInterview,
+  confirmInterviewSlot,
   markInterviewCompleted,
   markContractSigned,
   getExaminerContract,
 } from "../actions";
-import { Check, ArrowLeft } from "lucide-react";
+import { Check, ArrowLeft, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
 import { capitalizeWords } from "@/utils/text";
@@ -117,6 +119,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
   const [isRejectOpen, setIsRejectOpen] = useState(false);
   const [isFeeStructureOpen, setIsFeeStructureOpen] = useState(false);
   const [isContractReviewOpen, setIsContractReviewOpen] = useState(false);
+  const [isConfirmSlotModalOpen, setIsConfirmSlotModalOpen] = useState(false);
   const [contractHtml, setContractHtml] = useState<string | null>(null);
   const [loadingContract, setLoadingContract] = useState(false);
   const [pendingSendContract, setPendingSendContract] = useState(false);
@@ -132,10 +135,12 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     | "moveToReview"
     | "scheduleInterview"
     | "requestInterview"
+    | "confirmInterviewSlot"
     | "markInterviewCompleted"
     | "markContractSigned"
     | null
   >(null);
+  const [confirmingSlotId, setConfirmingSlotId] = useState<string | null>(null);
 
   // Redirect if status is DRAFT - we only show from SUBMITTED onwards
   useEffect(() => {
@@ -373,6 +378,32 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
       toast.error("Failed to mark contract signed. Please try again.");
     } finally {
       setLoadingAction(null);
+    }
+  };
+
+  const handleConfirmInterviewSlot = async (slotId: string) => {
+    setLoadingAction("confirmInterviewSlot");
+    setConfirmingSlotId(slotId);
+    try {
+      const result = await confirmInterviewSlot(slotId, examiner.id);
+      if (result.success) {
+        setStatus("interview_scheduled");
+        toast.success(
+          "Interview slot confirmed. Confirmation email sent to examiner.",
+        );
+        setIsConfirmSlotModalOpen(false);
+        router.refresh();
+      } else {
+        toast.error(
+          result.error || "Failed to confirm interview slot. Please try again.",
+        );
+      }
+    } catch (error) {
+      logger.error("Failed to confirm interview slot:", error);
+      toast.error("Failed to confirm interview slot. Please try again.");
+    } finally {
+      setLoadingAction(null);
+      setConfirmingSlotId(null);
     }
   };
 
@@ -930,10 +961,9 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 />
               </Section>
 
-              {/* Section 6: Interview Details - Show for all statuses after interview is scheduled */}
-              {examiner.interviewSlot &&
-                examiner.interviewSlot.startTime &&
-                examiner.interviewSlot.endTime &&
+              {/* Section 6: Interview Details - Show BOOKED/COMPLETED slots when scheduled */}
+              {examiner.interviewSlots &&
+                examiner.interviewSlots.length > 0 &&
                 [
                   "interview_scheduled",
                   "interview_completed",
@@ -943,45 +973,100 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                   "active",
                 ].includes(status) && (
                   <Section title="Interview Details">
-                    <FieldRow
-                      label="Interview Date"
-                      value={
-                        examiner.interviewSlot.startTime
-                          ? new Date(
-                              examiner.interviewSlot.startTime,
-                            ).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })
-                          : "N/A"
-                      }
-                      type="text"
-                    />
-                    <FieldRow
-                      label="Interview Time"
-                      value={
-                        examiner.interviewSlot.startTime &&
-                        examiner.interviewSlot.endTime
-                          ? `${new Date(
-                              examiner.interviewSlot.startTime,
-                            ).toLocaleTimeString("en-US", {
-                              hour: "numeric",
-                              minute: "2-digit",
-                              hour12: true,
-                            })} - ${new Date(
-                              examiner.interviewSlot.endTime,
-                            ).toLocaleTimeString("en-US", {
-                              hour: "numeric",
-                              minute: "2-digit",
-                              hour12: true,
-                            })}`
-                          : "N/A"
-                      }
-                      type="text"
-                    />
+                    {(() => {
+                      const bookedSlots = examiner.interviewSlots.filter(
+                        (slot) =>
+                          slot.startTime &&
+                          slot.endTime &&
+                          (slot.status === "BOOKED" ||
+                            slot.status === "COMPLETED"),
+                      );
+                      return bookedSlots.map((slot, index) => (
+                        <div
+                          key={slot.id}
+                          className={index > 0 ? "mt-4" : "space-y-2"}
+                        >
+                          {index > 0 && (
+                            <div className="border-t border-gray-200 pt-4 mt-4"></div>
+                          )}
+                          <FieldRow
+                            label={
+                              bookedSlots.length > 1
+                                ? `Interview ${index + 1} Date`
+                                : "Interview Date"
+                            }
+                            value={
+                              slot.startTime
+                                ? new Date(slot.startTime).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    },
+                                  )
+                                : "N/A"
+                            }
+                            type="text"
+                          />
+                          <FieldRow
+                            label={
+                              bookedSlots.length > 1
+                                ? `Interview ${index + 1} Time`
+                                : "Interview Time"
+                            }
+                            value={
+                              slot.startTime && slot.endTime
+                                ? `${new Date(
+                                    slot.startTime,
+                                  ).toLocaleTimeString("en-US", {
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })} - ${new Date(
+                                    slot.endTime,
+                                  ).toLocaleTimeString("en-US", {
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })}`
+                                : "N/A"
+                            }
+                            type="text"
+                          />
+                          {slot.status && (
+                            <FieldRow
+                              label={
+                                bookedSlots.length > 1
+                                  ? `Interview ${index + 1} Status`
+                                  : "Interview Status"
+                              }
+                              value={formatText(slot.status)}
+                              type="text"
+                            />
+                          )}
+                        </div>
+                      ));
+                    })()}
                   </Section>
                 )}
+
+              {/* Section 6b: Interview Details - Show message when interview_requested */}
+              {status === "interview_requested" && (
+                <Section title="Interview Details">
+                  <div className="rounded-lg bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 px-6 py-8 text-center">
+                    <Calendar className="w-12 h-12 mx-auto mb-3 text-blue-400" />
+                    <p className="text-gray-700 font-poppins text-base font-medium mb-1">
+                      Interview Slots Requested
+                    </p>
+                    <p className="text-gray-500 font-poppins text-sm">
+                      The examiner has requested interview slots. Use the
+                      &quot;Confirm Interview Slot&quot; button in the Actions
+                      section to review and confirm a slot.
+                    </p>
+                  </div>
+                </Section>
+              )}
 
               {/* Section 7: Actions - Hidden when MORE_INFO_REQUESTED, INFO_REQUESTED, or ACTIVE */}
               {/* Hide actions for approved applications (they're now examiners) and active examiners */}
@@ -1046,7 +1131,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                         </>
                       )}
 
-                      {/* INTERVIEW_REQUESTED: Interview Held (disabled until scheduled), Reject */}
+                      {/* INTERVIEW_REQUESTED: Confirm Interview Slot, Interview Held (disabled until scheduled), Reject */}
                       {status === "interview_requested" && (
                         <>
                           <button
@@ -1059,10 +1144,28 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               lineHeight: "100%",
                               fontSize: "14px",
                             }}
+                            disabled={loadingAction !== null}
+                            onClick={() => setIsConfirmSlotModalOpen(true)}
+                          >
+                            Confirm Interview Slot
+                          </button>
+                          <button
+                            className={cn(
+                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
                             disabled={
                               loadingAction !== null ||
-                              !examiner.interviewSlot ||
-                              examiner.interviewSlot.status !== "BOOKED"
+                              !examiner.interviewSlots ||
+                              examiner.interviewSlots.length === 0 ||
+                              !examiner.interviewSlots.some(
+                                (slot) => slot.status === "BOOKED",
+                              )
                             }
                             onClick={handleMarkInterviewCompleted}
                           >
@@ -1390,6 +1493,21 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
             examiner.feeStructure ? "Edit Fee Structure" : "Add Fee Structure"
           }
           isLoading={loadingAction === "feeStructure"}
+        />
+
+        {/* Confirm Interview Slot Modal */}
+        <ConfirmInterviewSlotModal
+          open={isConfirmSlotModalOpen}
+          onClose={() => setIsConfirmSlotModalOpen(false)}
+          slots={
+            examiner.interviewSlots?.filter(
+              (slot) =>
+                slot.startTime && slot.endTime && slot.status === "REQUESTED",
+            ) || []
+          }
+          onConfirm={handleConfirmInterviewSlot}
+          confirmingSlotId={confirmingSlotId}
+          isLoading={loadingAction === "confirmInterviewSlot"}
         />
 
         {/* Contract Review Modal */}

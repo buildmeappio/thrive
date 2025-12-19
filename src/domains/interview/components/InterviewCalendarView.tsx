@@ -9,7 +9,7 @@ interface InterviewCalendarViewProps {
   data: InterviewData[];
 }
 
-// Status color mapping - using distinct gradients with app theme
+// Status color mapping - solid colors: primary blue for booked, secondary green for completed
 const STATUS_COLORS: Record<
   string,
   { gradient: string; text: string; legendColor: string }
@@ -20,21 +20,16 @@ const STATUS_COLORS: Record<
     legendColor: "bg-[#00A8FF]",
   },
   completed: {
+<<<<<<< HEAD
     gradient: "bg-[#000080]",
     text: "text-white",
     legendColor: "bg-[#000080]",
+=======
+    gradient: "bg-[#01F4C8]",
+    text: "text-white",
+    legendColor: "bg-[#01F4C8]",
+>>>>>>> 8e48639a15d0e021b89f437437bcece582ca3603
   },
-};
-
-// Utility function to format text from database
-const formatText = (str: string): string => {
-  if (!str) return str;
-  return str
-    .replace(/[-_]/g, " ")
-    .split(" ")
-    .filter((word) => word.length > 0)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
 };
 
 // Format time only
@@ -107,13 +102,13 @@ const InterviewSlot = ({ interview }: { interview: InterviewData }) => {
 
   const content = (
     <div
-      className={`group relative rounded-lg p-1.5 sm:p-2 mb-1 sm:mb-2 hover:opacity-90 transition-opacity cursor-pointer ${statusColors.gradient} ${statusColors.text}`}
+      className={`group relative rounded-lg p-1.5 sm:p-2 mb-1 sm:mb-2 transition-all duration-200 cursor-pointer ${statusColors.gradient} ${statusColors.text} hover:shadow-lg hover:brightness-110`}
     >
       <div className="flex flex-col gap-0.5">
-        <div className="text-[10px] sm:text-xs font-medium truncate">
+        <div className="text-[14px] sm:text-xs font-medium truncate">
           {interview.examinerName}
         </div>
-        <div className="text-[9px] sm:text-[10px] opacity-90 truncate">
+        <div className="text-[12px] sm:text-[12px] font-medium opacity-90 truncate">
           {timeRange}
         </div>
       </div>
@@ -218,12 +213,26 @@ export default function InterviewCalendarView({
 
   const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+  // Filter out REQUESTED slots - only show BOOKED and COMPLETED
+  const filteredData = useMemo(
+    () =>
+      data.filter(
+        (interview) =>
+          interview.status.toUpperCase() === "BOOKED" ||
+          interview.status.toUpperCase() === "COMPLETED",
+      ),
+    [data],
+  );
+
   const calendarDays = useMemo(
     () => getCalendarDays(currentYear, currentMonth),
     [currentYear, currentMonth],
   );
 
-  const groupedInterviews = useMemo(() => groupInterviewsByDate(data), [data]);
+  const groupedInterviews = useMemo(
+    () => groupInterviewsByDate(filteredData),
+    [filteredData],
+  );
 
   const goToPreviousMonth = () => {
     setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
@@ -281,7 +290,11 @@ export default function InterviewCalendarView({
           <span className="text-gray-700">Booked</span>
         </div>
         <div className="flex items-center gap-2">
+<<<<<<< HEAD
           <div className="w-6 h-3 rounded-full bg-[#000080]" />
+=======
+          <div className="w-6 h-3 rounded-full bg-[#01F4C8]" />
+>>>>>>> 8e48639a15d0e021b89f437437bcece582ca3603
           <span className="text-gray-700">Completed</span>
         </div>
       </div>

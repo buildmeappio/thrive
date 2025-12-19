@@ -81,6 +81,21 @@ export function generateExaminerInterviewCompletedEmail(params: {
 export const EXAMINER_INTERVIEW_COMPLETED_SUBJECT =
   "Interview Completed - Application Update";
 
+// Interview Confirmed (Admin confirms requested slot)
+export function generateExaminerInterviewConfirmedEmail(params: {
+  firstName: string;
+  lastName: string;
+  interviewDate: string;
+  interviewTime: string;
+  duration: string;
+}): string {
+  const template = loadTemplate("examiner-interview-confirmed");
+  return renderTemplate(template, params);
+}
+
+export const EXAMINER_INTERVIEW_CONFIRMED_SUBJECT =
+  "Interview Confirmed - Your Application";
+
 // Contract Sent
 export function generateExaminerContractSentEmail(params: {
   firstName: string;
