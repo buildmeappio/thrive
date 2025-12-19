@@ -1,27 +1,36 @@
 "use server";
 
 import prisma from "@/lib/db";
-import { startOfDay, endOfDay, addDays } from "date-fns";
+import { addDays } from "date-fns";
 import configurationService from "@/server/services/configuration.service";
 
 /**
- * Get available time slots for a specific date
- * Returns time suggestions in 15-minute increments and existing booked slots
+ * Get available time slots for a UTC time range (corresponding to a user's local calendar day)
+ *
+ * @param rangeStartUtc - UTC instant representing the start of the user's selected local day
+ * @param rangeEndUtc - UTC instant representing the end of the user's selected local day (exclusive)
+ * @param applicationId - Optional application ID to identify current user's requested slots
+ *
+ * Returns existing slots (booked and requested) within the UTC range.
+ * The range should correspond to a complete local calendar day to ensure
+ * all slots for that day are included, even if the local day spans two UTC dates.
+ * Slots are filtered to only include those within configured working hours.
  */
-export const getAvailableSlots = async (date: Date, applicationId?: string) => {
+export const getAvailableSlots = async (
+  rangeStartUtc: Date,
+  rangeEndUtc: Date,
+  applicationId?: string,
+) => {
   try {
-    // Get interview settings for working hours
+    // Get interview settings for working hours validation
     const interviewSettings = await configurationService.getInterviewSettings();
 
-    const dayStart = startOfDay(date);
-    const dayEnd = endOfDay(date);
-
-    // Get all existing slots (booked and available) for this day
+    // Get all existing slots (booked and available) for this UTC range
     const existingSlots = await prisma.interviewSlot.findMany({
       where: {
         startTime: {
-          gte: dayStart,
-          lt: dayEnd,
+          gte: rangeStartUtc,
+          lt: rangeEndUtc,
         },
         deletedAt: null,
       },
@@ -40,21 +49,41 @@ export const getAvailableSlots = async (date: Date, applicationId?: string) => {
       },
     });
 
-    // Calculate working hours for the selected date in UTC
-    // Convert UTC minutes to actual time for the selected date
-    const startWorkingTime = new Date(dayStart);
-    const startHours = Math.floor(interviewSettings.startWorkingHourUTC / 60);
-    const startMins = interviewSettings.startWorkingHourUTC % 60;
-    startWorkingTime.setUTCHours(startHours, startMins, 0, 0);
+    // Filter slots to only include those within configured working hours
+    const filteredSlots = existingSlots.filter((slot) => {
+      const slotStartUtc = slot.startTime;
+      const slotDateUtc = new Date(
+        Date.UTC(
+          slotStartUtc.getUTCFullYear(),
+          slotStartUtc.getUTCMonth(),
+          slotStartUtc.getUTCDate(),
+          0,
+          0,
+          0,
+          0,
+        ),
+      );
 
-    const endWorkingTime = new Date(dayStart);
-    const endHours = Math.floor(interviewSettings.endWorkingHourUTC / 60);
-    const endMins = interviewSettings.endWorkingHourUTC % 60;
-    endWorkingTime.setUTCHours(endHours, endMins, 0, 0);
+      // Calculate working hours for the UTC day containing this slot
+      const startHours = Math.floor(interviewSettings.startWorkingHourUTC / 60);
+      const startMins = interviewSettings.startWorkingHourUTC % 60;
+      const dayStartWorkingTime = new Date(slotDateUtc);
+      dayStartWorkingTime.setUTCHours(startHours, startMins, 0, 0);
+
+      const endHours = Math.floor(interviewSettings.endWorkingHourUTC / 60);
+      const endMins = interviewSettings.endWorkingHourUTC % 60;
+      const dayEndWorkingTime = new Date(slotDateUtc);
+      dayEndWorkingTime.setUTCHours(endHours, endMins, 0, 0);
+
+      // Check if slot falls within working hours
+      return (
+        slotStartUtc >= dayStartWorkingTime && slotStartUtc < dayEndWorkingTime
+      );
+    });
 
     return {
       success: true,
-      existingSlots: existingSlots.map((slot) => {
+      existingSlots: filteredSlots.map((slot) => {
         const isBooked = slot.status === "BOOKED";
         const isRequested = slot.status === "REQUESTED";
         const isCurrentUserRequested =
@@ -82,7 +111,7 @@ export const getAvailableSlots = async (date: Date, applicationId?: string) => {
         };
       }),
       currentUserRequestedSlots: applicationId
-        ? existingSlots
+        ? filteredSlots
             .filter(
               (slot) =>
                 slot.status === "REQUESTED" &&
