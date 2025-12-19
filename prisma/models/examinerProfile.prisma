@@ -88,6 +88,7 @@ model ExaminerProfile {
   examinerLanguages         ExaminerLanguage[]
   claimantBookings          ClaimantBooking[]      @relation("ClaimantBookingExaminer")
   contracts                 Contract[]             @relation("ExaminerContracts")
+  tourProgress              TourProgress?          @relation("ExaminerTourProgress")
 
   // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'EXAMINER' } })
   @@index([applicationId])
