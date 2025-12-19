@@ -7,6 +7,7 @@ import { CheckCircle2, Calendar as CalendarIcon, Clock } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { getDuration, parseDate } from "@/utils/datetime";
+import { TimezoneDisplay } from "./TimezoneDisplay";
 
 interface PageProps {
   searchParams: Promise<{ token?: string }>;
@@ -190,13 +191,10 @@ const ScheduleInterviewSuccessPage = async ({ searchParams }: PageProps) => {
                         {summary.bookedSlot?.duration} minutes
                       </p>
                     ) : (
-                      <p className="font-semibold text-gray-900">
-                        {Intl.DateTimeFormat().resolvedOptions().timeZone}
-                      </p>
+                      <TimezoneDisplay />
                     )}
                     <p className="text-xs text-gray-500 mt-1">
-                      Timezone:{" "}
-                      {Intl.DateTimeFormat().resolvedOptions().timeZone}
+                      Timezone: <TimezoneDisplay />
                     </p>
                   </div>
                 </div>
