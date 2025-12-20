@@ -59,7 +59,7 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
         )}
       </div>
 
-      <div className={`space-y-4 ${isSettingsPage ? "pb-20" : ""}`}>
+      <div className={`space-y-4 ${isSettingsPage ? "" : ""}`}>
         <div className="border border-gray-200 rounded-lg p-6 bg-[#FCFDFF]">
           <div className="space-y-6">
             {/* PHIPA Compliance */}
@@ -67,12 +67,19 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
               <Checkbox
                 id="phipa"
                 checked={agreements.phipaCompliance}
-                onCheckedChange={(checked) =>
-                  updateAgreement("phipaCompliance", checked === true)
+                onCheckedChange={
+                  isSettingsPage
+                    ? undefined
+                    : (checked) =>
+                        updateAgreement("phipaCompliance", checked === true)
                 }
+                disabled={isSettingsPage}
                 className="mt-1"
               />
-              <label htmlFor="phipa" className="flex-1 cursor-pointer">
+              <label
+                htmlFor="phipa"
+                className={`flex-1 ${isSettingsPage ? "cursor-default" : "cursor-pointer"}`}
+              >
                 <span className="text-sm font-medium text-gray-800">
                   I understand and agree to comply with{" "}
                   <strong>PHIPA (Ontario)</strong> privacy requirements.
@@ -85,12 +92,19 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
               <Checkbox
                 id="pipeda"
                 checked={agreements.pipedaCompliance}
-                onCheckedChange={(checked) =>
-                  updateAgreement("pipedaCompliance", checked === true)
+                onCheckedChange={
+                  isSettingsPage
+                    ? undefined
+                    : (checked) =>
+                        updateAgreement("pipedaCompliance", checked === true)
                 }
+                disabled={isSettingsPage}
                 className="mt-1"
               />
-              <label htmlFor="pipeda" className="flex-1 cursor-pointer">
+              <label
+                htmlFor="pipeda"
+                className={`flex-1 ${isSettingsPage ? "cursor-default" : "cursor-pointer"}`}
+              >
                 <span className="text-sm font-medium text-gray-800">
                   I agree to handle personal health information in accordance
                   with <strong>PIPEDA</strong>.
@@ -103,12 +117,22 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
               <Checkbox
                 id="license"
                 checked={agreements.medicalLicenseActive}
-                onCheckedChange={(checked) =>
-                  updateAgreement("medicalLicenseActive", checked === true)
+                onCheckedChange={
+                  isSettingsPage
+                    ? undefined
+                    : (checked) =>
+                        updateAgreement(
+                          "medicalLicenseActive",
+                          checked === true,
+                        )
                 }
+                disabled={isSettingsPage}
                 className="mt-1"
               />
-              <label htmlFor="license" className="flex-1 cursor-pointer">
+              <label
+                htmlFor="license"
+                className={`flex-1 ${isSettingsPage ? "cursor-default" : "cursor-pointer"}`}
+              >
                 <span className="text-sm font-medium text-gray-800">
                   I confirm that my medical license is active and valid in
                   Canada.
@@ -118,20 +142,6 @@ const ComplianceForm: React.FC<ComplianceFormProps> = ({
           </div>
         </div>
       </div>
-      {/* Save Changes Button - Bottom Right (Settings only) */}
-      {isSettingsPage && (
-        <div className="absolute bottom-6 right-6 z-10">
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-            disabled={loading}
-          >
-            <CircleCheck className="w-5 h-5 text-white" />
-            <span>Save Changes</span>
-          </Button>
-        </div>
-      )}
     </div>
   );
 };

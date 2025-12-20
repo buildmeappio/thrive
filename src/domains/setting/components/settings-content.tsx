@@ -11,6 +11,7 @@ import {
   NotificationsForm,
 } from "@/domains/onboarding/components/OnboardingSteps";
 import ChangePasswordSection from "./change-password-section";
+import FeeStructureSection from "./fee-structure-section";
 import type {
   ProfileInfoFormProps,
   ServicesAssessmentFormProps,
@@ -20,6 +21,7 @@ import type {
   ComplianceFormProps,
   NotificationsFormProps,
 } from "@/domains/onboarding/types/onboarding-forms.types";
+import type { FeeStructureData, ContractData } from "../types";
 
 interface SettingsContentProps {
   activeStep: string;
@@ -32,6 +34,9 @@ interface SettingsContentProps {
   documentsData: DocumentsUploadFormProps["initialData"];
   complianceData: ComplianceFormProps["initialData"];
   notificationsData: NotificationsFormProps["initialData"];
+  feeStructureData: FeeStructureData | null;
+  contractData: ContractData | null;
+  contractHtml?: string | null;
   assessmentTypes: ServicesAssessmentFormProps["assessmentTypes"];
   maxTravelDistances: ServicesAssessmentFormProps["maxTravelDistances"];
   onServicesDataUpdate?: (
@@ -62,6 +67,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
   documentsData,
   complianceData,
   notificationsData,
+  feeStructureData,
+  contractData,
+  contractHtml,
   assessmentTypes,
   maxTravelDistances,
   onServicesDataUpdate,
@@ -159,6 +167,15 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
             isCompleted={true}
             isSettingsPage={true}
             onDataUpdate={onComplianceDataUpdate}
+          />
+        );
+
+      case "fee-structure":
+        return (
+          <FeeStructureSection
+            feeStructure={feeStructureData}
+            contract={contractData}
+            contractHtml={contractHtml}
           />
         );
 

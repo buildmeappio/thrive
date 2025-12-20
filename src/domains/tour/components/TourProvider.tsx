@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { CustomTour } from "./CustomTour";
 import { TourWrapper } from "./TourWrapper";
 import type { Step } from "react-joyride";
 import type { TourType } from "../types/tour";
@@ -30,13 +31,23 @@ export function TourProvider({
   return (
     <>
       {children}
-      <TourWrapper
-        steps={steps}
-        tourType={tourType}
-        examinerProfileId={examinerProfileId}
-        autoStart={autoStart}
-        tourProgress={tourProgress}
-      />
+      {tourType === "dashboard" ? (
+        <CustomTour
+          steps={steps}
+          tourType={tourType}
+          examinerProfileId={examinerProfileId}
+          autoStart={autoStart}
+          tourProgress={tourProgress}
+        />
+      ) : (
+        <TourWrapper
+          steps={steps}
+          tourType={tourType}
+          examinerProfileId={examinerProfileId}
+          autoStart={autoStart}
+          tourProgress={tourProgress}
+        />
+      )}
     </>
   );
 }

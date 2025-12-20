@@ -53,7 +53,7 @@ const FormField = <TFieldValues extends FieldValues>({
           {required && <span className="text-red-500">*</span>}
         </Label>
       )}
-      {children({ ...register(name), error: hasError })}
+      {children({ ...register(name), error: hasError ? true : undefined })}
       {showErrorMessage && (
         <p className="text-xs text-red-500">{errorMessage}</p>
       )}

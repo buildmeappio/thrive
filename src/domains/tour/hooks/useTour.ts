@@ -87,10 +87,11 @@ export function useTour({
     if (shouldAutoStartValue) {
       console.log("[Tour] Starting tour auto-start logic");
 
-      // For onboarding tour, lock scroll at top
+      // For onboarding tour, scroll to top but allow scrolling during tour
       if (tourType === "onboarding") {
         window.scrollTo({ top: 0, behavior: "instant" });
-        document.body.style.overflow = "hidden";
+        // Don't lock scroll - allow users to scroll during onboarding tour
+        document.body.style.overflow = "";
       }
 
       // For dashboard tour, wait longer to ensure all elements are rendered
@@ -103,6 +104,8 @@ export function useTour({
         if (tourType === "onboarding") {
           // Ensure we're still at the top for onboarding
           window.scrollTo({ top: 0, behavior: "instant" });
+          // Keep scroll enabled for onboarding
+          document.body.style.overflow = "";
         }
 
         // Start the tour - let TourWrapper handle element checking

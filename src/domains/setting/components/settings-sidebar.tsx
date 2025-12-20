@@ -10,6 +10,7 @@ import {
   Shield,
   Bell,
   Lock,
+  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -49,6 +50,11 @@ export const SETTINGS_STEPS: SettingsStep[] = [
     id: "compliance",
     label: "Compliance",
     icon: Shield,
+  },
+  {
+    id: "fee-structure",
+    label: "Fee Structure",
+    icon: DollarSign,
   },
   {
     id: "notifications",

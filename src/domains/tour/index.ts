@@ -1,7 +1,10 @@
 export { TourProvider } from "./components/TourProvider";
+export { CustomTour } from "./components/CustomTour";
 export { TourButton } from "./components/TourButton";
 export { TourWrapper } from "./components/TourWrapper";
 export { useTour } from "./hooks/useTour";
+export { useCustomTour } from "./hooks/useCustomTour";
 export { onboardingTourSteps } from "./config/onboardingTour";
+export { dashboardTourSteps } from "./config/dashboardTour";
 export * from "./types/tour";
 export * from "./server/actions";

@@ -7,6 +7,11 @@ import { redirect } from "next/navigation";
 import { Layout } from "@/layouts/dashboard";
 import { URLS } from "@/constants/route";
 import { SuspendedCheckWrapper } from "@/components/SuspendedCheckWrapper";
+import {
+  TourProvider,
+  dashboardTourSteps,
+  getTourProgressAction,
+} from "@/domains/tour";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -41,25 +46,41 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
     ? `${examinerProfile.firstName} ${examinerProfile.lastName}`
     : user.name || "User";
 
+  // Fetch tour progress for dashboard tour (only if examinerProfile exists)
+  const tourProgressResult = examinerProfile
+    ? await getTourProgressAction(examinerProfile.id)
+    : { success: false as const, error: "No examiner profile" };
+  const tourProgress = tourProgressResult.success
+    ? tourProgressResult.data
+    : null;
+
   return (
     <SuspendedCheckWrapper>
       <SidebarProvider>
         <SearchProvider>
-          <Layout
-            isActivationComplete={isActivationComplete}
-            userName={userName}
-            userEmail={examinerProfile?.emailAddress || user.email || ""}
+          <TourProvider
+            steps={dashboardTourSteps}
+            tourType="dashboard"
+            examinerProfileId={examinerProfile?.id || ""}
+            autoStart={true}
+            tourProgress={tourProgress}
           >
-            <Suspense
-              fallback={
-                <div className="flex h-full w-full flex-1 items-center justify-center">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
-                </div>
-              }
+            <Layout
+              isActivationComplete={isActivationComplete}
+              userName={userName}
+              userEmail={examinerProfile?.emailAddress || user.email || ""}
             >
-              {children}
-            </Suspense>
-          </Layout>
+              <Suspense
+                fallback={
+                  <div className="flex h-full w-full flex-1 items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#000093] border-t-transparent"></div>
+                  </div>
+                }
+              >
+                {children}
+              </Suspense>
+            </Layout>
+          </TourProvider>
         </SearchProvider>
       </SidebarProvider>
     </SuspendedCheckWrapper>
