@@ -17,7 +17,7 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const formatCurrency = (
-    value: number | string | null | undefined
+    value: number | string | null | undefined,
   ): string => {
     if (value === null || value === undefined || value === "") {
       return "N/A";
@@ -81,7 +81,7 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
             console.error("Download failed:", errorData);
             toast.error(
               errorData.error ||
-                `Failed to download contract (${response.status})`
+                `Failed to download contract (${response.status})`,
             );
             return;
           }
@@ -234,7 +234,8 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
                 type="button"
                 onClick={handlePreview}
                 disabled={isLoading}
-                className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 flex items-center justify-center gap-2 bg-white">
+                className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 flex items-center justify-center gap-2 bg-white"
+              >
                 <Eye className="w-4 h-4" />
                 <span>Preview</span>
               </Button>
@@ -242,7 +243,8 @@ const FeeStructureSection: React.FC<FeeStructureSectionProps> = ({
                 type="button"
                 onClick={handleDownload}
                 disabled={isLoading}
-                className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 flex items-center justify-center gap-2 bg-white">
+                className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 flex items-center justify-center gap-2 bg-white"
+              >
                 <Download className="w-4 h-4" />
                 <span>Download</span>
               </Button>

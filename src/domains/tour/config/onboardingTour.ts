@@ -58,11 +58,4 @@ export const onboardingTourSteps: Step[] = [
       "Configure your notification preferences for emails and SMS alerts.",
     placement: "top",
   },
-  {
-    target: '[data-tour="complete-onboarding-button"]',
-    content:
-      "Once all steps are complete, click here to finish onboarding and activate your dashboard.",
-    placement: "top",
-    disableScrolling: false,
-  },
 ];

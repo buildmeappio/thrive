@@ -9,10 +9,7 @@ export async function getContractByExaminerProfileIdService(profileId: string) {
 
   // Build where clause to check both examinerProfileId and applicationId
   const whereClause: {
-    OR: Array<
-      | { examinerProfileId: string }
-      | { applicationId: string | null }
-    >;
+    OR: Array<{ examinerProfileId: string } | { applicationId: string | null }>;
   } = {
     OR: [{ examinerProfileId: profileId }],
   };

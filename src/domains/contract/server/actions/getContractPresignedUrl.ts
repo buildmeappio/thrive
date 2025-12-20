@@ -7,7 +7,7 @@ import s3Client from "@/lib/s3-client";
 
 export const getContractPresignedUrlAction = async (
   s3Key: string,
-  forceDownload: boolean = true
+  forceDownload: boolean = true,
 ): Promise<{ success: boolean; url?: string; error?: string }> => {
   try {
     if (!s3Key) {

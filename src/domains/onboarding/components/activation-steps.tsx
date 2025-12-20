@@ -848,7 +848,10 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
           </div>
         ))}
         {/* Complete Onboarding Button */}
-        <div className="flex justify-end pt-4 mt-6">
+        <div
+          className="flex justify-end pt-4 mt-6"
+          data-tour="complete-onboarding-button"
+        >
           <Button
             onClick={handleCompleteOnboarding}
             disabled={completing || !areAllStepsCompleted()}
@@ -890,7 +893,10 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
         </div>
       ))}
       {/* Complete Onboarding Button */}
-      <div className="flex justify-end pt-4 mt-6">
+      <div
+        className="flex justify-end pt-4 mt-6"
+        data-tour="complete-onboarding-button"
+      >
         <Button
           onClick={handleCompleteOnboarding}
           disabled={completing || !areAllStepsCompleted()}

@@ -21,13 +21,13 @@ export async function GET(request: NextRequest) {
       console.error("Download contract: Missing S3 key");
       return NextResponse.json(
         { error: "S3 key is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     console.log(
       "Download contract: Attempting to download from S3 key:",
-      s3Key
+      s3Key,
     );
 
     // Get the file from S3
@@ -46,14 +46,14 @@ export async function GET(request: NextRequest) {
       if (error.name === "NoSuchKey") {
         return NextResponse.json(
           { error: `File not found in S3: ${s3Key}` },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
       if (error.name === "AccessDenied") {
         return NextResponse.json(
           { error: "Access denied to S3 file" },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -69,11 +69,11 @@ export async function GET(request: NextRequest) {
     const buffer = Buffer.from(
       await (
         response.Body as { transformToByteArray: () => Promise<Uint8Array> }
-      ).transformToByteArray()
+      ).transformToByteArray(),
     );
 
     console.log(
-      `Download contract: Successfully downloaded ${buffer.length} bytes`
+      `Download contract: Successfully downloaded ${buffer.length} bytes`,
     );
 
     // Return the file with proper download headers
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
           (error instanceof Error ? error.message : undefined) ||
           "Failed to download contract",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
