@@ -26,6 +26,7 @@ export type SaveAvailabilityInput = {
       value: number;
       unit: "hours" | "days";
     };
+    maxIMEsPerWeek?: string;
   };
   activationStep?: string;
 };
@@ -73,6 +74,10 @@ const saveAvailability = async (payload: SaveAvailabilityInput) => {
           minimumNoticeValue:
             payload.bookingOptions.minimumNotice.value.toString(),
           minimumNoticeUnit: payload.bookingOptions.minimumNotice.unit,
+          // Store maxIMEsPerWeek if provided
+          ...(payload.bookingOptions.maxIMEsPerWeek !== undefined && {
+            maxIMEsPerWeek: payload.bookingOptions.maxIMEsPerWeek || null,
+          }),
         },
       });
     }
