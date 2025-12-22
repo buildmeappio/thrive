@@ -14,6 +14,8 @@ import {
   isErrorWithMessage,
 } from "../types/interpreterForm.types";
 import logger from "@/utils/logger";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 
 export default function InterpreterCreateContent() {
   const router = useRouter();
@@ -69,7 +71,15 @@ export default function InterpreterCreateContent() {
   return (
     <DashboardShell>
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-6 flex items-center gap-4">
+        <Link
+          href="/interpreter"
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+            <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+          </div>
+        </Link>
         <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
           Add New{" "}
           <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
