@@ -3,6 +3,46 @@ import HttpError from "@/utils/httpError";
 import ErrorMessages from "@/constants/ErrorMessages";
 import { ExaminerStatus } from "@prisma/client";
 import { MedicalLicenseDocument } from "@/types/components";
+import { capitalizeFirstLetter } from "@/utils/text";
+import { UserStatus } from "../../constants/userStatus";
+
+/**
+ * Map ExaminerStatus to UserStatus
+ * Note: UserStatus is only for account-level statuses (after account creation)
+ * ExaminerStatus.SUBMITTED and other profile statuses should NOT map to UserStatus
+ */
+const mapExaminerStatusToUserStatus = (
+  examinerStatus: ExaminerStatus,
+): UserStatus => {
+  switch (examinerStatus) {
+    case ExaminerStatus.ACCEPTED:
+    case ExaminerStatus.APPROVED:
+    case ExaminerStatus.ACTIVE:
+      return UserStatus.ACTIVE;
+    case ExaminerStatus.REJECTED:
+      return UserStatus.REJECTED;
+    case ExaminerStatus.SUSPENDED:
+      return UserStatus.SUSPENDED;
+    // Profile-related statuses (SUBMITTED, PENDING, IN_REVIEW, etc.) should NOT update User.status
+    // They are for ExaminerProfile.status only
+    case ExaminerStatus.SUBMITTED:
+    case ExaminerStatus.PENDING:
+    case ExaminerStatus.IN_REVIEW:
+    case ExaminerStatus.INFO_REQUESTED:
+    case ExaminerStatus.MORE_INFO_REQUESTED:
+    case ExaminerStatus.INTERVIEW_REQUESTED:
+    case ExaminerStatus.INTERVIEW_SCHEDULED:
+    case ExaminerStatus.INTERVIEW_COMPLETED:
+    case ExaminerStatus.CONTRACT_SENT:
+    case ExaminerStatus.CONTRACT_SIGNED:
+    case ExaminerStatus.DRAFT:
+    case ExaminerStatus.WITHDRAWN:
+    default:
+      // Don't change User.status for profile-related statuses
+      // Return ACTIVE as default (matches User model default status)
+      return UserStatus.ACTIVE;
+  }
+};
 
 class ExaminerService {
   async getExaminerProfileById(examinerProfileId: string) {
@@ -40,15 +80,30 @@ class ExaminerService {
     approvedBy?: string,
   ) {
     try {
+      // Get examiner profile to find the user
+      const examinerProfile = await prisma.examinerProfile.findUnique({
+        where: { id: examinerProfileId },
+        include: { account: { include: { user: true } } },
+      });
+
+      if (!examinerProfile) {
+        throw HttpError.notFound(ErrorMessages.EXAMINER_PROFILE_NOT_FOUND);
+      }
+
+      // Update user status - map ExaminerStatus to UserStatus
+      const userStatus = mapExaminerStatusToUserStatus(status);
+      await prisma.user.update({
+        where: { id: examinerProfile.account.userId },
+        data: { status: userStatus },
+      });
+
+      // Update examiner profile metadata (approvedBy, approvedAt, etc.)
       const updateData: {
-        status: ExaminerStatus;
         approvedBy?: string | null;
         approvedAt?: Date;
         rejectedBy?: string | null;
         rejectedAt?: Date;
-      } = {
-        status,
-      };
+      } = {};
 
       if (status === ExaminerStatus.ACCEPTED) {
         updateData.approvedBy = approvedBy || null;
@@ -207,13 +262,17 @@ class ExaminerService {
         throw HttpError.notFound(ErrorMessages.EXAMINER_PROFILE_NOT_FOUND);
       }
 
-      // Update user data if provided
+      // Update user data if provided - capitalize first letter of names
       if (data.firstName || data.lastName || data.email || data.phone) {
         await prisma.user.update({
           where: { id: examinerProfile.account.userId },
           data: {
-            ...(data.firstName && { firstName: data.firstName }),
-            ...(data.lastName && { lastName: data.lastName }),
+            ...(data.firstName && {
+              firstName: capitalizeFirstLetter(data.firstName),
+            }),
+            ...(data.lastName && {
+              lastName: capitalizeFirstLetter(data.lastName),
+            }),
             ...(data.email && { email: data.email }),
             ...(data.phone && { phone: data.phone }),
           },
@@ -302,10 +361,11 @@ class ExaminerService {
               connect: { id: data.insuranceProofDocumentId },
             },
           }),
-          // Change status to SUBMITTED when examiner updates their profile
-          status: ExaminerStatus.SUBMITTED,
         },
       });
+
+      // Note: User.status should only be updated for account-level actions (password creation, suspension, etc.)
+      // ExaminerProfile.status should be updated separately when needed for profile submission/approval workflows
 
       // Update languages if provided
       if (data.languagesSpoken && data.languagesSpoken.length > 0) {

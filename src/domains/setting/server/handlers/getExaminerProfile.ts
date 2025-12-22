@@ -71,6 +71,8 @@ const getExaminerProfile = async (payload: GetExaminerProfileInput) => {
       activationStep: profile.activationStep || null,
       assessmentTypes: profile.assessmentTypes || [],
       acceptVirtualAssessments: profile.acceptVirtualAssessments ?? true,
+      acceptInPersonAssessments: profile.acceptInPersonAssessments ?? true,
+      travelToClaimants: profile.travelToClaimants ?? false,
       maxTravelDistance: profile.maxTravelDistance || null,
       assessmentTypeOther: profile.assessmentTypeOther || null,
       // Notification settings - return null if not set, so form can use defaults

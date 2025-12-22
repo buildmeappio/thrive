@@ -3,6 +3,7 @@ import { ExaminerStatus } from "@prisma/client";
 import { emailService } from "@/server";
 import ErrorMessages from "@/constants/ErrorMessages";
 import prisma from "@/lib/db";
+import { capitalizeFirstLetter } from "@/utils/text";
 
 export type UpdateExaminerApplicationInput = {
   applicationId: string;
@@ -123,11 +124,13 @@ const updateExaminerApplication = async (
         id: payload.applicationId,
       },
       data: {
-        // Personal Information
+        // Personal Information - capitalize first letter
         ...(payload.firstName !== undefined && {
-          firstName: payload.firstName,
+          firstName: capitalizeFirstLetter(payload.firstName),
         }),
-        ...(payload.lastName !== undefined && { lastName: payload.lastName }),
+        ...(payload.lastName !== undefined && {
+          lastName: capitalizeFirstLetter(payload.lastName),
+        }),
         ...(payload.email !== undefined && { email: payload.email }),
         ...(payload.phone !== undefined && { phone: payload.phone }),
         ...(payload.landlineNumber !== undefined && {

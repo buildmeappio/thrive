@@ -287,10 +287,12 @@ class DashboardService {
         ...(data.acceptVirtualAssessments !== undefined && {
           acceptVirtualAssessments: data.acceptVirtualAssessments,
         }),
-        // Note: acceptInPersonAssessments is not in the database schema yet
-        // For now, we'll store it implicitly via acceptVirtualAssessments
-        // If both virtual and in-person are false, acceptVirtualAssessments will be false
-        // If either is true, we can set acceptVirtualAssessments accordingly
+        ...(data.acceptInPersonAssessments !== undefined && {
+          acceptInPersonAssessments: data.acceptInPersonAssessments,
+        }),
+        ...(data.travelToClaimants !== undefined && {
+          travelToClaimants: data.travelToClaimants,
+        }),
         ...(data.travelToClaimants !== undefined &&
           data.travelToClaimants &&
           data.travelRadius && {

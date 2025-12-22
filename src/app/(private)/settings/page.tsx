@@ -91,8 +91,8 @@ const SettingsPage = async () => {
   const servicesFormData = {
     assessmentTypes: profileData.assessmentTypes || [],
     acceptVirtualAssessments: profileData.acceptVirtualAssessments ?? true,
-    acceptInPersonAssessments: true, // Default to true
-    travelToClaimants: !!profileData.maxTravelDistance,
+    acceptInPersonAssessments: profileData.acceptInPersonAssessments ?? true,
+    travelToClaimants: profileData.travelToClaimants ?? false,
     travelRadius: profileData.maxTravelDistance || "",
     assessmentTypeOther: profileData.assessmentTypeOther || "",
   };
