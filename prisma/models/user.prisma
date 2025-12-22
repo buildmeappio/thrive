@@ -7,9 +7,10 @@ model User {
   phone                     String?   @map("phone") @db.VarChar(255)
   gender                    String?   @map("gender") @db.VarChar(255)
   dateOfBirth               DateTime? @map("date_of_birth") @db.Timestamptz()
-  profilePhotoId            String?   @map("profile_photo_id") @db.Uuid
-  mustResetPassword         Boolean   @default(false) @map("must_reset_password")
-  temporaryPasswordIssuedAt DateTime? @map("temporary_password_issued_at") @db.Timestamptz()
+  profilePhotoId            String?        @map("profile_photo_id") @db.Uuid
+  mustResetPassword         Boolean        @default(false) @map("must_reset_password")
+  temporaryPasswordIssuedAt DateTime?      @map("temporary_password_issued_at") @db.Timestamptz()
+  status                    UserStatus? @default(PENDING) @map("status")
 
   profilePhoto Documents? @relation(name: "ProfilePhoto", fields: [profilePhotoId], references: [id])
 
