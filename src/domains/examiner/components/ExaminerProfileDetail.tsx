@@ -21,6 +21,68 @@ const formatText = (str: string): string => {
     .join(" ");
 };
 
+// Utility function to format professional title: name in uppercase, description in title case in brackets
+const formatProfessionalTitle = (
+  name?: string,
+  description?: string,
+): string => {
+  if (!name) return "-";
+  const nameUpper = name.toUpperCase();
+  if (description) {
+    const descriptionTitleCase = capitalizeWords(description);
+    return `${nameUpper} (${descriptionTitleCase})`;
+  }
+  return nameUpper;
+};
+
+// Utility function to convert UTC time string (HH:mm) to user's local timezone
+const convertUTCToLocalTime = (utcTimeString: string): string => {
+  try {
+    // Parse UTC time string (HH:mm format)
+    const timeMatch = utcTimeString.trim().match(/^(\d{1,2}):(\d{2})$/);
+    if (!timeMatch) {
+      return utcTimeString; // Return as-is if format doesn't match
+    }
+
+    const hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+
+    // Validate hours and minutes
+    if (
+      isNaN(hours) ||
+      isNaN(minutes) ||
+      hours < 0 ||
+      hours >= 24 ||
+      minutes < 0 ||
+      minutes >= 60
+    ) {
+      return utcTimeString; // Return as-is if invalid
+    }
+
+    // Create a date object with today's date and UTC time
+    const today = new Date();
+    const utcDate = new Date(
+      Date.UTC(
+        today.getUTCFullYear(),
+        today.getUTCMonth(),
+        today.getUTCDate(),
+        hours,
+        minutes,
+      ),
+    );
+
+    // Convert to local time and format
+    return utcDate.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } catch (error) {
+    console.error("Error converting UTC time to local:", error);
+    return utcTimeString; // Return as-is on error
+  }
+};
+
 // Utility function to format years of experience: keep numeric ranges and hyphens intact
 const formatYearsOfExperience = (str: string): string => {
   if (!str) return str;
@@ -112,7 +174,10 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
                 />
                 <FieldRow
                   label="Professional Title"
-                  value={profile.professionalTitle || "-"}
+                  value={formatProfessionalTitle(
+                    profile.professionalTitle,
+                    profile.professionalTitleDescription,
+                  )}
                   type="text"
                 />
                 <FieldRow
@@ -171,7 +236,7 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
                 {profile.assessmentTypeOther && (
                   <FieldRow
                     label="Other Assessment Type"
-                    value={profile.assessmentTypeOther}
+                    value={capitalizeWords(profile.assessmentTypeOther)}
                     type="text"
                   />
                 )}
@@ -243,7 +308,7 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
                                   ? day.timeSlots
                                       .map(
                                         (slot) =>
-                                          `${slot.startTime} - ${slot.endTime}`,
+                                          `${convertUTCToLocalTime(slot.startTime)} - ${convertUTCToLocalTime(slot.endTime)}`,
                                       )
                                       .join(", ")
                                   : "Unavailable"}

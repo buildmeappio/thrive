@@ -19,12 +19,13 @@ import {
   moveToReview,
   scheduleInterview as _scheduleInterview,
   requestInterview,
+  resendInterviewRequest,
   confirmInterviewSlot,
   markInterviewCompleted,
   markContractSigned,
   getExaminerContract,
 } from "../actions";
-import { Check, ArrowLeft, Calendar } from "lucide-react";
+import { Check, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
 import { capitalizeWords } from "@/utils/text";
@@ -135,6 +136,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     | "moveToReview"
     | "scheduleInterview"
     | "requestInterview"
+    | "resendInterviewRequest"
     | "confirmInterviewSlot"
     | "markInterviewCompleted"
     | "markContractSigned"
@@ -346,6 +348,20 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     } catch (error) {
       logger.error("Failed to request interview:", error);
       toast.error("Failed to request interview. Please try again.");
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleResendInterviewRequest = async () => {
+    setLoadingAction("resendInterviewRequest");
+    try {
+      await resendInterviewRequest(examiner.id);
+      toast.success("Interview request email resent successfully.");
+      router.refresh();
+    } catch (error) {
+      logger.error("Failed to resend interview request:", error);
+      toast.error("Failed to resend interview request. Please try again.");
     } finally {
       setLoadingAction(null);
     }
@@ -879,7 +895,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 examiner.assessmentTypeOther.trim() !== "" ? (
                   <FieldRow
                     label="Other Assessment Type"
-                    value={examiner.assessmentTypeOther}
+                    value={capitalizeWords(examiner.assessmentTypeOther)}
                     type="text"
                   />
                 ) : null}
@@ -1114,7 +1130,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                         </>
                       )}
 
-                      {/* INTERVIEW_REQUESTED: Confirm Interview Slot, Interview Held (disabled until scheduled), Reject */}
+                      {/* INTERVIEW_REQUESTED: Confirm Interview Slot, Resend Request Interview, Reject */}
                       {status === "interview_requested" && (
                         <>
                           <button
@@ -1141,7 +1157,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                           </button>
                           <button
                             className={cn(
-                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
+                              "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed",
                             )}
                             style={{
                               fontFamily: "Poppins, sans-serif",
@@ -1149,19 +1165,12 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               lineHeight: "100%",
                               fontSize: "14px",
                             }}
-                            disabled={
-                              loadingAction !== null ||
-                              !examiner.interviewSlots ||
-                              examiner.interviewSlots.length === 0 ||
-                              !examiner.interviewSlots.some(
-                                (slot) => slot.status === "BOOKED",
-                              )
-                            }
-                            onClick={handleMarkInterviewCompleted}
+                            disabled={loadingAction !== null}
+                            onClick={handleResendInterviewRequest}
                           >
-                            {loadingAction === "markInterviewCompleted"
-                              ? "Marking..."
-                              : "Interview Held"}
+                            {loadingAction === "resendInterviewRequest"
+                              ? "Resending..."
+                              : "Resend Request Interview"}
                           </button>
                           <button
                             className={cn(

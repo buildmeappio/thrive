@@ -255,7 +255,12 @@ const createColumns = (
           </div>
         );
       },
-      meta: { minSize: 110, maxSize: 130, size: 110 } as ColumnMeta,
+      meta: {
+        minSize: 110,
+        maxSize: 130,
+        size: 110,
+        align: "center",
+      } as ColumnMeta,
     });
   }
 
@@ -369,7 +374,12 @@ const ExaminerTable: React.FC<ExaminerTableProps> = ({ table, columns }) => {
                       width: meta.size ? `${meta.size}px` : undefined,
                     }}
                     className={cn(
-                      "px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden",
+                      "px-6 py-2 text-base font-medium text-black whitespace-nowrap overflow-hidden",
+                      meta.align === "center"
+                        ? "text-center"
+                        : meta.align === "right"
+                          ? "text-right"
+                          : "text-left",
                       header.index === 0 && "rounded-l-2xl",
                       header.index === headerGroup.headers.length - 1 &&
                         "rounded-r-2xl",
