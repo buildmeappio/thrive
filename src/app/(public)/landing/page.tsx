@@ -27,18 +27,28 @@ const Page: React.FC = () => {
               evaluations.
             </p>
 
-            <form action={createRoute(URLS.REGISTER)}>
-              <button
-                className="mt-8 inline-flex items-center gap-2 cursor-pointer rounded-full px-12 py-4 text-sm font-semibold text-white transition-transform duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40"
-                style={{
-                  background:
-                    "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
-                }}
-              >
-                Let&apos;s Get Started
-                <ArrowRight size={18} strokeWidth={3} className="sm:size-5" />
-              </button>
-            </form>
+            <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <form action={createRoute(URLS.REGISTER)}>
+                <button
+                  className="inline-flex items-center gap-2 cursor-pointer rounded-full px-12 py-4 text-sm font-semibold text-white transition-transform duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40"
+                  style={{
+                    background:
+                      "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
+                  }}
+                >
+                  Let&apos;s Get Started
+                  <ArrowRight size={18} strokeWidth={3} className="sm:size-5" />
+                </button>
+              </form>
+              <form action={createRoute(URLS.LOGIN)}>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 cursor-pointer rounded-full px-12 py-4 text-sm font-semibold text-[#00A8FF] border-2 border-[#00A8FF] bg-transparent transition-all duration-200 hover:bg-[#00A8FF]/10 focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40"
+                >
+                  Login
+                </button>
+              </form>
+            </div>
 
             <div className="mt-8 sm:mt-10">
               <h3 className=" font-bold text-black sm:text-lg">
