@@ -70,6 +70,10 @@ const ActivationSteps: React.FC<ActivationStepsProps> = ({
     // Refresh router to refetch fresh data from database when opening a step
     router.refresh();
     setActiveStep(step.id);
+    // Ensure scrolling is enabled when opening a step
+    document.body.style.overflow = "";
+    document.body.style.overflowX = "";
+    document.body.style.overflowY = "";
   };
 
   const handleStepCancel = () => {

@@ -85,11 +85,45 @@ export function TourWrapper({
     if (!isRunning) {
       // Unlock scroll when tour is not running
       document.body.style.overflow = "";
+      // Also remove any inline styles that might prevent scrolling
+      document.body.style.overflowX = "";
+      document.body.style.overflowY = "";
     }
     // Cleanup: ensure scroll is unlocked on unmount
     return () => {
       document.body.style.overflow = "";
+      document.body.style.overflowX = "";
+      document.body.style.overflowY = "";
     };
+  }, [isRunning]);
+
+  // Additional cleanup: ensure scroll is always enabled after tour finishes
+  useEffect(() => {
+    if (!isRunning) {
+      // Use multiple methods to ensure scrolling is restored
+      const restoreScroll = () => {
+        document.body.style.overflow = "";
+        document.body.style.overflowX = "";
+        document.body.style.overflowY = "";
+        // Also check and remove any CSS classes that might prevent scrolling
+        document.body.classList.remove("overflow-hidden");
+      };
+
+      // Restore immediately
+      restoreScroll();
+
+      // Also restore after a delay to catch any async operations
+      const timeout1 = setTimeout(restoreScroll, 100);
+      const timeout2 = setTimeout(restoreScroll, 500);
+      const timeout3 = setTimeout(restoreScroll, 1000);
+
+      return () => {
+        clearTimeout(timeout1);
+        clearTimeout(timeout2);
+        clearTimeout(timeout3);
+        restoreScroll();
+      };
+    }
   }, [isRunning]);
 
   // Create callback handler

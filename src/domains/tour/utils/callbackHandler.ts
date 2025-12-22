@@ -60,6 +60,10 @@ export function handleJoyrideCallback(options: CallbackHandlerOptions): void {
   if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
     // Explicitly unlock scroll before cleanup
     document.body.style.overflow = "";
+    document.body.style.overflowX = "";
+    document.body.style.overflowY = "";
+    document.body.classList.remove("overflow-hidden");
+    
     if (status === STATUS.FINISHED) {
       handleTourComplete();
     } else {
@@ -68,10 +72,29 @@ export function handleJoyrideCallback(options: CallbackHandlerOptions): void {
     stopTour();
     setIsWaitingForStep(false);
     pendingStepRef.current = null;
-    // Ensure scroll is unlocked after a short delay (in case of async operations)
+    
+    // Ensure scroll is unlocked after multiple delays (in case of async operations)
     setTimeout(() => {
       document.body.style.overflow = "";
+      document.body.style.overflowX = "";
+      document.body.style.overflowY = "";
+      document.body.classList.remove("overflow-hidden");
     }, 100);
+    
+    setTimeout(() => {
+      document.body.style.overflow = "";
+      document.body.style.overflowX = "";
+      document.body.style.overflowY = "";
+      document.body.classList.remove("overflow-hidden");
+    }, 500);
+    
+    setTimeout(() => {
+      document.body.style.overflow = "";
+      document.body.style.overflowX = "";
+      document.body.style.overflowY = "";
+      document.body.classList.remove("overflow-hidden");
+    }, 1000);
+    
     return;
   }
 
