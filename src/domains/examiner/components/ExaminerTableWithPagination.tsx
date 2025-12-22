@@ -44,6 +44,7 @@ type ColumnMeta = {
   minSize?: number;
   maxSize?: number;
   size?: number;
+  align?: "left" | "center" | "right";
 };
 
 const ActionButton = ({
