@@ -273,6 +273,23 @@ const getExaminerProfileById = async (id: string) => {
       }
     }
 
+    // Map professionalTitle UUID to name
+    if (
+      examinerProfile.professionalTitle &&
+      uuidRegex.test(examinerProfile.professionalTitle.replace(/\s/g, ""))
+    ) {
+      try {
+        const professionalTitle = await prisma.professionalTitle.findUnique({
+          where: { id: examinerProfile.professionalTitle },
+        });
+        if (professionalTitle) {
+          examinerProfileData.professionalTitle = professionalTitle.name;
+        }
+      } catch (error) {
+        logger.error("Failed to fetch professional title:", error);
+      }
+    }
+
     return examinerProfileData;
   } catch (error) {
     logger.error("Error fetching examiner profile:", error);

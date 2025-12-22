@@ -179,11 +179,11 @@ export async function sendContract(id: string) {
 
       logger.log(`✅ Contract signing email sent to ${examinerEmail}`);
 
-      // Update examiner status to CONTRACT_SENT
+      // Update ExaminerProfile status to CONTRACT_SENT (workflow status)
       await prisma.examinerProfile.update({
         where: { id },
         data: {
-          status: "CONTRACT_SENT",
+          status: ExaminerStatus.CONTRACT_SENT,
         },
       });
 

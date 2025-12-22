@@ -74,9 +74,10 @@ export class ExaminerDto {
         examiner.contractSignedByExaminerAt?.toISOString() || undefined,
       contractConfirmedByAdminAt:
         examiner.contractConfirmedByAdminAt?.toISOString() || undefined,
-      status: (examiner.status ||
-        examiner.application?.status ||
-        "APPROVED") as ExaminerData["status"], // Prioritize ExaminerProfile status over application status (application is historical record)
+      status: (examiner.account.user.status || // Prioritize User.status (new data)
+        examiner.status || // Fall back to ExaminerProfile.status (legacy data)
+        examiner.application?.status || // Fall back to application status
+        "ACTIVE") as ExaminerData["status"], // Default to ACTIVE
       createdAt: examiner.createdAt.toISOString(),
       updatedAt: examiner.updatedAt.toISOString(),
       feeStructure: feeStructure

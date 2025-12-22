@@ -84,10 +84,10 @@ export class ExaminerProfileDto {
       assessmentTypes: examinerProfile.assessmentTypes || [],
       assessmentTypeOther: examinerProfile.assessmentTypeOther || undefined,
       acceptVirtualAssessments:
-        examinerProfile.acceptVirtualAssessments || undefined,
+        examinerProfile.acceptVirtualAssessments ?? undefined,
       acceptInPersonAssessments:
-        examinerProfile.acceptInPersonAssessments || undefined,
-      travelToClaimants: examinerProfile.travelToClaimants || undefined,
+        examinerProfile.acceptInPersonAssessments ?? undefined,
+      travelToClaimants: examinerProfile.travelToClaimants ?? undefined,
       maxTravelDistance: examinerProfile.maxTravelDistance || undefined,
 
       // Availability Preferences

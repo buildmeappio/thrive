@@ -21,6 +21,35 @@ const formatText = (str: string): string => {
     .join(" ");
 };
 
+// Utility function to format years of experience: keep numeric ranges and hyphens intact
+const formatYearsOfExperience = (str: string): string => {
+  if (!str) return str;
+  const trimmed = str.trim();
+
+  // Match patterns like "2-3", "2 - 3", "2 3", optionally with trailing text (e.g., "Years")
+  const rangeMatch = trimmed.match(/^(\d+)[\s-]+(\d+)(.*)$/i);
+  if (rangeMatch) {
+    const [, start, end, suffix] = rangeMatch;
+    const formattedSuffix = suffix
+      ? ` ${formatText(suffix.trim().replace(/^-+/, ""))}`
+      : "";
+    return `${start}-${end}${formattedSuffix}`.trim();
+  }
+
+  // Match standalone numeric range (no suffix)
+  if (/^\d+-\d+$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Otherwise, format as text (replace hyphens/underscores with spaces and capitalize)
+  return trimmed
+    .replace(/[-_]/g, " ")
+    .split(" ")
+    .filter((word) => word.length > 0)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
+
 const dayOfWeekOrder = [
   "SUNDAY",
   "MONDAY",
@@ -88,7 +117,11 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
                 />
                 <FieldRow
                   label="Years of Experience"
-                  value={formatText(profile.yearsOfIMEExperience)}
+                  value={
+                    profile.yearsOfIMEExperience
+                      ? formatYearsOfExperience(profile.yearsOfIMEExperience)
+                      : "-"
+                  }
                   type="text"
                 />
                 <FieldRow
