@@ -46,6 +46,14 @@ export function useFormSubmission<T extends FieldValues>({
       return;
     }
 
+    // Trigger form validation first to show field-level errors
+    const isValid = await form.trigger();
+    if (!isValid) {
+      // Form validation failed - errors will be shown on fields
+      // Don't proceed with submission
+      return;
+    }
+
     // Custom validation if provided
     if (validateBeforeSubmit) {
       const validationError = validateBeforeSubmit(values);

@@ -233,19 +233,40 @@ export type AvailabilityPreferencesInput = z.infer<
 export const payoutDetailsSchema = z
   .object({
     payoutMethod: z.enum(["direct_deposit"]).optional(),
-    // Direct Deposit fields
+    // Direct Deposit fields - with field-level validation
     transitNumber: z
       .string()
-      .optional()
-      .transform((val) => val?.trim() || ""), // Trim whitespace
+      .transform((val) => val?.trim() || "")
+      .pipe(
+        z
+          .string()
+          .min(1, { message: "Transit number is required" })
+          .refine((val) => val.length === 5, {
+            message: "Transit number must be exactly 5 digits",
+          }),
+      ),
     institutionNumber: z
       .string()
-      .optional()
-      .transform((val) => val?.trim() || ""), // Trim whitespace
+      .transform((val) => val?.trim() || "")
+      .pipe(
+        z
+          .string()
+          .min(1, { message: "Institution number is required" })
+          .refine((val) => val.length === 3, {
+            message: "Institution number must be exactly 3 digits",
+          }),
+      ),
     accountNumber: z
       .string()
-      .optional()
-      .transform((val) => val?.trim() || ""), // Trim whitespace
+      .transform((val) => val?.trim() || "")
+      .pipe(
+        z
+          .string()
+          .min(1, { message: "Account number is required" })
+          .refine((val) => val.length >= 7 && val.length <= 12, {
+            message: "Account number must be between 7 and 12 digits",
+          }),
+      ),
   })
   .refine(
     (data) => {
@@ -278,6 +299,7 @@ export const payoutDetailsSchema = z
     {
       message:
         "Please complete all required fields for direct deposit. Transit number (5 digits), institution number (3 digits), and account number (7-12 digits) are required.",
+      path: ["_root"], // This won't show on individual fields, but field-level errors will
     },
   );
 

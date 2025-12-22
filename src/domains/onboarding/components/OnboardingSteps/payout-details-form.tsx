@@ -4,6 +4,7 @@ import { FormProvider } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
 import { CircleCheck, Shield } from "lucide-react";
+import { toast } from "sonner";
 import { updatePayoutDetailsAction } from "../../server/actions";
 import {
   payoutDetailsSchema,
@@ -48,6 +49,7 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
     schema: payoutDetailsSchema,
     defaultValues,
     mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   const { initialFormDataRef } = useOnboardingForm({
@@ -173,8 +175,8 @@ const PayoutDetailsForm: React.FC<PayoutDetailsFormProps> = ({
       {isSettingsPage && (
         <div className="absolute bottom-6 right-6 z-10">
           <Button
-            type="button"
-            onClick={() => form.handleSubmit(handleSubmit)()}
+            type="submit"
+            form="payout-form"
             className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             disabled={loading}
           >
