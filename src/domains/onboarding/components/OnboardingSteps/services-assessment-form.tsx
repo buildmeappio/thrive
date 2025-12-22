@@ -1,55 +1,22 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { FormProvider, FormField } from "@/components/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { Button } from "@/components/ui/button";
-import { CircleCheck, Info } from "lucide-react";
+import { CircleCheck, Info, CheckCircle2 } from "lucide-react";
 import {
   servicesAssessmentSchema,
   ServicesAssessmentInput,
 } from "../../schemas/onboardingSteps.schema";
 import { updateServicesAssessmentAction } from "../../server/actions";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
-  Stethoscope,
-  Brain,
-  Activity,
-  FileText,
-  AlertCircle,
-  CheckCircle2,
-} from "lucide-react";
+  useOnboardingForm,
+  useFormSubmission,
+  useAssessmentTypeFormatting,
+  useTravelRadiusFormatting,
+} from "../../hooks";
 import type { ServicesAssessmentFormProps } from "../../types";
-
-// Icon mapping for assessment types based on name patterns
-const getAssessmentTypeIcon = (name: string): typeof Activity => {
-  const lowerName = name.toLowerCase();
-  if (lowerName.includes("orthopedic") || lowerName.includes("functional")) {
-    return Activity;
-  }
-  if (
-    lowerName.includes("psychological") ||
-    lowerName.includes("psychiatric") ||
-    lowerName.includes("neurological") ||
-    lowerName.includes("neuropsychological")
-  ) {
-    return Brain;
-  }
-  if (lowerName.includes("pain")) {
-    return Stethoscope;
-  }
-  if (lowerName.includes("catastrophic") || lowerName.includes("cat")) {
-    return AlertCircle;
-  }
-  if (
-    lowerName.includes("review") ||
-    lowerName.includes("paper") ||
-    lowerName.includes("file")
-  ) {
-    return FileText;
-  }
-  return FileText; // Default icon
-};
 
 const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
   examinerProfileId,
@@ -58,50 +25,68 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
   maxTravelDistances,
   onComplete,
   onCancel: _onCancel,
+  onMarkComplete,
+  onStepEdited,
+  isCompleted = false,
+  isSettingsPage = false,
+  onDataUpdate,
 }) => {
-  const [loading, setLoading] = useState(false);
   const [hoveredType, setHoveredType] = useState<string | null>(null);
 
-  // Format assessment types from server with icons
-  const assessmentTypeOptions = React.useMemo(() => {
-    const formattedTypes = assessmentTypesFromServer.map(
-      (type: { id: string; name: string; description: string | null }) => ({
-        id: type.id,
-        label: type.name,
-        icon: getAssessmentTypeIcon(type.name),
-        description: type.description || undefined,
-      }),
-    );
-    // Add "Other" option at the end
-    formattedTypes.push({
-      id: "other",
-      label: "Other",
-      icon: FileText,
-      description: undefined,
-    });
-    return formattedTypes;
-  }, [assessmentTypesFromServer]);
+  // Format assessment types and travel radius options
+  const { assessmentTypeOptions } = useAssessmentTypeFormatting(
+    assessmentTypesFromServer,
+  );
+  const { travelRadiusOptions } = useTravelRadiusFormatting(maxTravelDistances);
 
-  // Format max travel distances from server
-  const travelRadiusOptions = React.useMemo(() => {
-    return maxTravelDistances.map((distance) => ({
-      value: distance.id,
-      label: distance.name,
-    }));
-  }, [maxTravelDistances]);
-
-  const form = useForm<ServicesAssessmentInput>({
-    schema: servicesAssessmentSchema,
-    defaultValues: {
+  // Use initialData directly from database (no localStorage merging)
+  const defaultValues = useMemo(() => {
+    return {
       assessmentTypes: initialData?.assessmentTypes || [],
       acceptVirtualAssessments: initialData?.acceptVirtualAssessments ?? true,
       acceptInPersonAssessments: initialData?.acceptInPersonAssessments ?? true,
       travelToClaimants: initialData?.travelToClaimants ?? false,
       travelRadius: initialData?.travelRadius || "",
       assessmentTypeOther: initialData?.assessmentTypeOther || "",
-    },
+    };
+  }, [initialData]);
+
+  const form = useForm<ServicesAssessmentInput>({
+    schema: servicesAssessmentSchema,
+    defaultValues,
     mode: "onSubmit",
   });
+
+  const { initialFormDataRef } = useOnboardingForm({
+    form,
+    defaultValues,
+    isCompleted,
+    onStepEdited,
+  });
+
+  // Track previous initialData to detect changes (for settings page)
+  const previousInitialDataRef = useRef<string | null>(null);
+
+  // Reset form when initialData changes (for settings page to show updated data)
+  useEffect(() => {
+    if (!isSettingsPage) return;
+
+    const currentDataHash = JSON.stringify(initialData);
+
+    // Skip if this is the same data we already have
+    if (previousInitialDataRef.current === currentDataHash) return;
+
+    // Reset form with new data
+    form.reset(defaultValues, { keepDefaultValues: false });
+
+    // Update the initial form data reference
+    const currentHash = JSON.stringify(defaultValues);
+    if (initialFormDataRef.current) {
+      initialFormDataRef.current = currentHash;
+    }
+
+    previousInitialDataRef.current = currentDataHash;
+  }, [initialData, defaultValues, form, isSettingsPage, initialFormDataRef]);
 
   const assessmentTypes = form.watch("assessmentTypes");
   const travelToClaimants = form.watch("travelToClaimants");
@@ -116,61 +101,81 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
     form.setValue("assessmentTypes", newTypes, { shouldValidate: true });
   };
 
-  const onSubmit = async (values: ServicesAssessmentInput) => {
-    if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const result = await updateServicesAssessmentAction({
-        examinerProfileId,
-        ...values,
-        activationStep: "services", // Mark step 2 as completed
+  const { handleSubmit, handleMarkComplete, loading } = useFormSubmission({
+    form,
+    examinerProfileId,
+    updateAction: async (data) => {
+      // Transform Partial<T> to required fields for the action
+      return await updateServicesAssessmentAction({
+        examinerProfileId: data.examinerProfileId,
+        assessmentTypes: data.assessmentTypes || [],
+        acceptVirtualAssessments: data.acceptVirtualAssessments ?? true,
+        acceptInPersonAssessments: data.acceptInPersonAssessments ?? true,
+        travelToClaimants: data.travelToClaimants ?? false,
+        travelRadius: data.travelRadius,
+        assessmentTypeOther: data.assessmentTypeOther,
       });
-
-      if (result.success) {
-        toast.success("Services & Assessment Types updated successfully");
-        onComplete();
-      } else {
-        toast.error(result.message || "Failed to update services");
+    },
+    onComplete: () => {
+      // Update initial form data reference to current values
+      const values = form.getValues();
+      const currentHash = JSON.stringify(values);
+      if (initialFormDataRef.current) {
+        initialFormDataRef.current = currentHash;
       }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+
+      // Update parent component's data state if callback is provided (for settings page)
+      if (onDataUpdate && isSettingsPage) {
+        onDataUpdate({
+          assessmentTypes: values.assessmentTypes,
+          acceptVirtualAssessments: values.acceptVirtualAssessments,
+          acceptInPersonAssessments: values.acceptInPersonAssessments,
+          travelToClaimants: values.travelToClaimants,
+          travelRadius: values.travelRadius,
+          assessmentTypeOther: values.assessmentTypeOther,
+        });
+      }
+
+      onComplete();
+    },
+    onMarkComplete,
+    successMessage: "Services & Assessment Types updated successfully",
+    errorMessage: "Failed to update services",
+  });
 
   return (
-    <div className="bg-white rounded-2xl px-8 py-6 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div className="bg-white rounded-2xl px-8 py-6 shadow-sm relative">
+      <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-medium">
-            What Assessments Do You Perform?
+            {isSettingsPage
+              ? "Services & Assessments"
+              : "What Assessments Do You Perform?"}
           </h2>
-          <p className="text-sm text-gray-500">
-            Define your capabilities for case matching. Select all assessment
-            types you perform.
-          </p>
+          {!isSettingsPage && (
+            <p className="text-sm text-gray-500">
+              Define your capabilities for case matching. Select all assessment
+              types you perform.
+            </p>
+          )}
         </div>
-        <Button
-          type="submit"
-          form="services-form"
-          variant="outline"
-          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
-          disabled={loading}
-        >
-          <span>Mark as Complete</span>
-          <CircleCheck className="w-5 h-5 text-gray-700" />
-        </Button>
+        {/* Mark as Complete Button - Top Right (Onboarding only) */}
+        {!isSettingsPage && (
+          <Button
+            type="button"
+            onClick={handleMarkComplete}
+            variant="outline"
+            className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading}
+          >
+            <CircleCheck className="w-5 h-5 text-gray-700" />
+            <span>Mark as Complete</span>
+          </Button>
+        )}
       </div>
 
-      <FormProvider form={form} onSubmit={onSubmit} id="services-form">
-        <div className="space-y-8">
+      <FormProvider form={form} onSubmit={handleSubmit} id="services-form">
+        <div className={`space-y-8 ${isSettingsPage ? "pb-20" : ""}`}>
           {/* Assessment Types Grid */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-4">
@@ -393,6 +398,20 @@ const ServicesAssessmentForm: React.FC<ServicesAssessmentFormProps> = ({
           </div>
         </div>
       </FormProvider>
+      {/* Save Changes Button - Bottom Right (Settings only) */}
+      {isSettingsPage && (
+        <div className="absolute bottom-6 right-6 z-10">
+          <Button
+            type="button"
+            onClick={() => form.handleSubmit(handleSubmit)()}
+            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            disabled={loading}
+          >
+            <CircleCheck className="w-5 h-5 text-white" />
+            <span>Save Changes</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

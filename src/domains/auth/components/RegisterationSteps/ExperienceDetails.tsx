@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import {
   BackButton,
   ContinueButton,
@@ -21,7 +21,11 @@ import { step4InitialValues } from "@/domains/auth/constants/initialValues";
 import { FormProvider } from "@/components/form";
 import { Controller } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
-import { useSaveApplicationProgress } from "@/domains/auth/hooks/useSaveApplicationProgress";
+import {
+  useRegistrationFormReset,
+  useFormCompletion,
+  useSaveApplicationProgress,
+} from "@/domains/auth/hooks";
 
 const ExperienceDetails: React.FC<RegStepProps> = ({
   onNext,
@@ -32,33 +36,37 @@ const ExperienceDetails: React.FC<RegStepProps> = ({
   const { data, merge } = useRegistrationStore();
   const { saveProgress, isSaving } = useSaveApplicationProgress();
 
+  const defaultValues = {
+    ...step4InitialValues,
+    experienceDetails: data.experienceDetails,
+  };
+
   const form = useForm<Step4ExperienceDetailsInput>({
     schema: step4ExperienceDetailsSchema,
-    defaultValues: {
-      ...step4InitialValues,
-      experienceDetails: data.experienceDetails,
-    },
+    defaultValues,
     mode: "onSubmit",
   });
 
   // Reset form when store data changes
-  useEffect(() => {
-    form.reset({
-      ...step4InitialValues,
-      experienceDetails: data.experienceDetails,
-    });
-  }, [data.experienceDetails, form]);
+  useRegistrationFormReset({
+    form,
+    defaultValues,
+    watchFields: ["experienceDetails"],
+  });
 
   const onSubmit = (values: Step4ExperienceDetailsInput) => {
     merge(values as Partial<RegistrationData>);
     onNext();
   };
 
-  // Watch experienceDetails to enable/disable continue button and for character count
+  // Watch experienceDetails for character count
   const experienceDetailsValue = form.watch("experienceDetails");
 
   // Check if form has any value (validation for min 50 chars happens on submit)
-  const isFormComplete = experienceDetailsValue?.trim().length > 0;
+  const { isFormComplete } = useFormCompletion({
+    form,
+    requiredFields: ["experienceDetails"],
+  });
 
   return (
     <div

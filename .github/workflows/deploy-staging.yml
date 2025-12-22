@@ -1,0 +1,222 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [staging]
+  pull_request:
+    branches: [staging]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: write
+  actions: write
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check linting
+        run: npm run lint:check
+
+      - name: Format code
+        run: npm run format:check
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Create .env file from AWS Secrets Manager
+        run: |
+          # Install jq if not available
+          sudo apt-get update && sudo apt-get install -y jq || true
+
+          # Fetch secrets from AWS Secrets Manager
+          SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id staging/shared --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+          EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id staging/examiner --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+
+          # Merge secrets (examiner overrides shared) and convert JSON to .env format
+          jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
+
+      - name: Check build
+        run: |
+          npm run db:generate
+          npm run build
+
+  build-image:
+    runs-on: ubuntu-latest
+    needs: ci
+    if: github.event_name != 'pull_request'
+    environment: staging
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env file from AWS Secrets Manager
+        run: |
+          # Install jq if not available
+          sudo apt-get update && sudo apt-get install -y jq || true
+
+          # Fetch secrets from AWS Secrets Manager
+          SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id staging/shared --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+          EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id staging/examiner --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+
+          # Merge secrets (examiner overrides shared) and convert JSON to .env format
+          jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
+
+      - name: Build and push Docker image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            --push \
+            .
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-image
+    if: github.event_name != 'pull_request'
+    environment: staging
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get ECR login token
+        id: ecr-login
+        run: |
+          ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
+          ECR_PASSWORD=$(aws ecr get-login-password --region ${{ secrets.AWS_REGION }})
+          echo "::add-mask::$ECR_PASSWORD"
+          echo "password=$ECR_PASSWORD" >> $GITHUB_OUTPUT
+          echo "registry=$ECR_REGISTRY" >> $GITHUB_OUTPUT
+
+      - name: Deploy Docker image on EC2 using docker-compose
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          script: |
+            # Set deployment path and ECR variables
+            DEPLOY_PATH="${{ secrets.EC2_DEPLOY_PATH }}"
+            ECR_REGISTRY="${{ steps.ecr-login.outputs.registry }}"
+            ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY_NAME }}"
+            IMAGE_TAG="${{ github.sha }}"
+            ECR_PASSWORD="${{ steps.ecr-login.outputs.password }}"
+
+            # Load nvm and use Node.js version 22
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm use 22 || nvm install 22 && nvm use 22
+
+            # Create directory if it doesn't exist
+            mkdir -p $DEPLOY_PATH
+
+            # Login to Amazon ECR using the token from GitHub Actions
+            echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+            # Pull the latest image from ECR
+            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+            # Install jq if not available
+            sudo apt-get update && sudo apt-get install -y jq || true
+
+            # Fetch secrets from AWS Secrets Manager
+            SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id staging/shared --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+            EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id staging/examiner --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+
+            # Merge secrets (examiner overrides shared) and convert JSON to .env format
+            jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' | sudo tee $DEPLOY_PATH/.env > /dev/null
+
+            # Change to the deployment directory
+            cd $DEPLOY_PATH
+
+            git checkout staging
+            git pull origin staging
+
+            # Npm Install
+            npm install
+
+            # Export ECR variables for docker-compose to use (full image path)
+            export ECR_REGISTRY=$ECR_REGISTRY/$ECR_REPOSITORY
+            export IMAGE_TAG=$IMAGE_TAG
+
+            # Find the currently running container image before stopping
+            OLD_IMAGE=$(docker ps --filter "ancestor=$ECR_REGISTRY:$IMAGE_TAG" --format "{{.Image}}")
+            if [ -z "$OLD_IMAGE" ]; then
+              # fallback: get the image for the current service(s), might be the previous sha
+              OLD_IMAGE=$(docker ps --filter "name=$(basename $DEPLOY_PATH)" --format "{{.Image}}")
+            fi
+
+            # Stop and remove existing containers using docker-compose
+            docker-compose down
+
+            # Start using docker-compose (will use the ECR image from docker-compose.yml)
+            docker-compose up -d
+
+            # Show running containers
+            docker ps
+            docker-compose ps
+
+            # Remove the previously running image, if any, and if the image is different from the currently deployed one
+            if [ -n "$OLD_IMAGE" ] && [ "$OLD_IMAGE" != "$ECR_REGISTRY:$IMAGE_TAG" ]; then
+              echo "Removing old Docker image $OLD_IMAGE"
+              docker rmi "$OLD_IMAGE" || true
+            else
+              echo "No previous image to remove or previous is same as current."
+            fi

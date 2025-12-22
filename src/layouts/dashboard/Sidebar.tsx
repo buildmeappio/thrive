@@ -195,6 +195,7 @@ const SideBar = ({
                       : "border border-transparent bg-[#F3F3F3] text-[#9B9B9B] hover:border-[#BCE8FF] hover:bg-[#E9F8FF] hover:text-black"
                   } mb-6`}
                   title={item.label}
+                  data-tour={isSettings ? "settings-button" : undefined}
                 >
                   <div className="flex w-full items-center justify-start space-x-2">
                     <IconComponent

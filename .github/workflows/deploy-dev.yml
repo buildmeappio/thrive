@@ -41,71 +41,24 @@ jobs:
       - name: Format code
         run: npm run format:check
 
-      - name: Create .env file from secrets
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Create .env file from AWS Secrets Manager
         run: |
-          cat <<EOF > .env
-          DATABASE_URL="${{ secrets.DATABASE_URL }}"
-          DATABASE_SSL_REQUIRED="${{ secrets.DATABASE_SSL_REQUIRED }}"
+          # Install jq if not available
+          sudo apt-get update && sudo apt-get install -y jq || true
 
-          # AWS KEYS
-          AWS_S3_ACCESS_KEY_ID="${{ secrets.AWS_S3_ACCESS_KEY_ID }}"
-          AWS_S3_SECRET_ACCESS_KEY="${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}"
-          AWS_S3_REGION="${{ secrets.AWS_S3_REGION }}"
-          AWS_S3_BUCKET_NAME="${{ secrets.AWS_S3_BUCKET_NAME }}"
+          # Fetch secrets from AWS Secrets Manager
+          SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/shared --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+          EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/examiner --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
 
-          # Public CDN URL
-          NEXT_PUBLIC_CDN_URL="${{ secrets.NEXT_PUBLIC_CDN_URL }}"
-
-          SMTP_USER="${{ secrets.SMTP_USER }}"
-          SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
-          SMTP_FROM_EMAIL="${{ secrets.SMTP_FROM_EMAIL }}"
-          SMTP_HOST="${{ secrets.SMTP_HOST }}"
-          SMTP_FROM_NAME="${{ secrets.SMTP_FROM_NAME }}"
-          SMTP_PORT="${{ secrets.SMTP_PORT }}"
-
-          # NEXTAUTH
-          NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
-          NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}"
-          NEXT_PUBLIC_APP_URL="${{ secrets.NEXT_PUBLIC_APP_URL }}"
-
-          # GOOGLE CLOUD CONSOLE
-          OAUTH_CLIENT_ID="${{ secrets.OAUTH_CLIENT_ID }}"
-          OAUTH_CLIENT_SECRET="${{ secrets.OAUTH_CLIENT_SECRET }}"
-          OAUTH_REFRESH_TOKEN="${{ secrets.OAUTH_REFRESH_TOKEN }}"
-          OAUTH_USERNAME="${{ secrets.OAUTH_USERNAME }}"
-          GOOGLE_PLACES_API_KEY="${{ secrets.GOOGLE_PLACES_API_KEY }}"
-
-          # JWT SECRET KEYS
-          JWT_OTP_SECRET="${{ secrets.JWT_OTP_SECRET }}"
-          JWT_OTP_EXPIRY="${{ secrets.JWT_OTP_EXPIRY }}"
-          JWT_SET_PASSWORD_SECRET="${{ secrets.JWT_SET_PASSWORD_SECRET }}"
-          JWT_SET_PASSWORD_EXPIRY="${{ secrets.JWT_SET_PASSWORD_EXPIRY }}"
-          JWT_FORGET_PASSWORD_SECRET="${{ secrets.JWT_FORGET_PASSWORD_SECRET }}"
-          JWT_FORGET_PASSWORD_EXPIRY="${{ secrets.JWT_FORGET_PASSWORD_EXPIRY }}"
-          JWT_EXAMINER_INFO_REQUEST_SECRET="${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}"
-          JWT_EXAMINER_INFO_EXPIRY="${{ secrets.JWT_EXAMINER_INFO_EXPIRY }}"
-          JWT_RESUME_SECRET="${{ secrets.JWT_RESUME_SECRET }}"
-          JWT_CLAIMANT_APPROVE_SECRET="${{ secrets.JWT_CLAIMANT_APPROVE_SECRET }}"
-          JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET="${{ secrets.JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET }}"
-
-          NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL="${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}"
-
-          NEXT_PUBLIC_GOOGLE_PLACES_API_KEY="${{ secrets.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY }}"
-
-          # GOOGLE DOC CONF
-          DOCS_REFRESH_TOKEN="${{ secrets.DOCS_REFRESH_TOKEN }}"
-          GOOGLE_REPORT_TEMPLATE_ID="${{ secrets.GOOGLE_REPORT_TEMPLATE_ID }}"
-          GOOGLE_CONTRACT_FOLDER_ID="${{ secrets.GOOGLE_CONTRACT_FOLDER_ID }}"
-          EMAIL_REPLY_TO="${{ secrets.EMAIL_REPLY_TO }}"
-
-          # ADMIN NOTIFY
-          ADMIN_NOTIFICATION_EMAIL="${{ secrets.ADMIN_NOTIFICATION_EMAIL }}"
-
-          # Workflow specific
-          ENVIRONMENT=development
-          NEXT_PUBLIC_ENVIRONMENT=development
-          NODE_TLS_REJECT_UNAUTHORIZED="${{ secrets.NODE_TLS_REJECT_UNAUTHORIZED || 0 }}"
-          EOF
+          # Merge secrets (examiner overrides shared) and convert JSON to .env format
+          jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
 
       - name: Check build
         run: |
@@ -114,7 +67,7 @@ jobs:
 
   build-image:
     runs-on: ubuntu-latest
-    # needs: ci
+    needs: ci
     if: github.event_name != 'pull_request'
     environment: dev
     permissions:
@@ -138,72 +91,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Create .env file from secrets
+      - name: Create .env file from AWS Secrets Manager
         run: |
-          cat <<EOF > .env
-          DATABASE_URL="${{ secrets.DATABASE_URL }}"
-          DATABASE_SSL_REQUIRED="${{ secrets.DATABASE_SSL_REQUIRED }}"
+          # Install jq if not available
+          sudo apt-get update && sudo apt-get install -y jq || true
 
-          # AWS KEYS
-          AWS_S3_ACCESS_KEY_ID="${{ secrets.AWS_S3_ACCESS_KEY_ID }}"
-          AWS_S3_SECRET_ACCESS_KEY="${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}"
-          AWS_S3_REGION="${{ secrets.AWS_S3_REGION }}"
-          AWS_S3_BUCKET_NAME="${{ secrets.AWS_S3_BUCKET_NAME }}"
+          # Fetch secrets from AWS Secrets Manager
+          SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/shared --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+          EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/examiner --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
 
-          # Public CDN URL
-          NEXT_PUBLIC_CDN_URL="${{ secrets.NEXT_PUBLIC_CDN_URL }}"
-
-          SMTP_USER="${{ secrets.SMTP_USER }}"
-          SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
-          SMTP_FROM_EMAIL="${{ secrets.SMTP_FROM_EMAIL }}"
-          SMTP_HOST="${{ secrets.SMTP_HOST }}"
-          SMTP_FROM_NAME="${{ secrets.SMTP_FROM_NAME }}"
-          SMTP_PORT="${{ secrets.SMTP_PORT }}"
-
-          # NEXTAUTH
-          NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
-          NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}"
-          NEXT_PUBLIC_APP_URL="${{ secrets.NEXT_PUBLIC_APP_URL }}"
-
-          # GOOGLE CLOUD CONSOLE
-          OAUTH_CLIENT_ID="${{ secrets.OAUTH_CLIENT_ID }}"
-          OAUTH_CLIENT_SECRET="${{ secrets.OAUTH_CLIENT_SECRET }}"
-          OAUTH_REFRESH_TOKEN="${{ secrets.OAUTH_REFRESH_TOKEN }}"
-          OAUTH_USERNAME="${{ secrets.OAUTH_USERNAME }}"
-          GOOGLE_PLACES_API_KEY="${{ secrets.GOOGLE_PLACES_API_KEY }}"
-
-          # JWT SECRET KEYS
-          JWT_OTP_SECRET="${{ secrets.JWT_OTP_SECRET }}"
-          JWT_OTP_EXPIRY="${{ secrets.JWT_OTP_EXPIRY }}"
-          JWT_SET_PASSWORD_SECRET="${{ secrets.JWT_SET_PASSWORD_SECRET }}"
-          JWT_SET_PASSWORD_EXPIRY="${{ secrets.JWT_SET_PASSWORD_EXPIRY }}"
-          JWT_FORGET_PASSWORD_SECRET="${{ secrets.JWT_FORGET_PASSWORD_SECRET }}"
-          JWT_FORGET_PASSWORD_EXPIRY="${{ secrets.JWT_FORGET_PASSWORD_EXPIRY }}"
-          JWT_EXAMINER_INFO_REQUEST_SECRET="${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}"
-          JWT_EXAMINER_INFO_EXPIRY="${{ secrets.JWT_EXAMINER_INFO_EXPIRY }}"
-          JWT_RESUME_SECRET="${{ secrets.JWT_RESUME_SECRET }}"
-          JWT_CLAIMANT_APPROVE_SECRET="${{ secrets.JWT_CLAIMANT_APPROVE_SECRET }}"
-          JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET="${{ secrets.JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET }}"
-
-          NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL="${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}"
-
-          NEXT_PUBLIC_GOOGLE_PLACES_API_KEY="${{ secrets.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY }}"
-
-          # GOOGLE DOC CONF
-          DOCS_REFRESH_TOKEN="${{ secrets.DOCS_REFRESH_TOKEN }}"
-          GOOGLE_REPORT_TEMPLATE_ID="${{ secrets.GOOGLE_REPORT_TEMPLATE_ID }}"
-          GOOGLE_CONTRACT_FOLDER_ID="${{ secrets.GOOGLE_CONTRACT_FOLDER_ID }}"
-          EMAIL_REPLY_TO="${{ secrets.EMAIL_REPLY_TO }}"
-
-          # ADMIN NOTIFY
-          ADMIN_NOTIFICATION_EMAIL="${{ secrets.ADMIN_NOTIFICATION_EMAIL }}"
-
-          # Workflow specific
-          ENVIRONMENT=development
-          NEXT_PUBLIC_ENVIRONMENT=development
-          AWS_REGION="${{ vars.AWS_REGION }}"
-          NODE_TLS_REJECT_UNAUTHORIZED="${{ secrets.NODE_TLS_REJECT_UNAUTHORIZED || 0 }}"
-          EOF
+          # Merge secrets (examiner overrides shared) and convert JSON to .env format
+          jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
 
       - name: Build and push Docker image to ECR
         env:
@@ -213,10 +111,6 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64 \
-            --build-arg NEXT_PUBLIC_CDN_URL="${{ secrets.NEXT_PUBLIC_CDN_URL }}" \
-            --build-arg NEXT_PUBLIC_APP_URL="${{ secrets.NEXT_PUBLIC_APP_URL }}" \
-            --build-arg NEXT_PUBLIC_GOOGLE_PLACES_API_KEY="${{ secrets.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY }}" \
-            --build-arg NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL="${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}" \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
             --push \
@@ -234,6 +128,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get ECR login token
+        id: ecr-login
+        run: |
+          ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
+          ECR_PASSWORD=$(aws ecr get-login-password --region ${{ secrets.AWS_REGION }})
+          echo "::add-mask::$ECR_PASSWORD"
+          echo "password=$ECR_PASSWORD" >> $GITHUB_OUTPUT
+          echo "registry=$ECR_REGISTRY" >> $GITHUB_OUTPUT
+
       - name: Deploy Docker image on EC2 using docker-compose
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -244,10 +154,11 @@ jobs:
           script: |
             # Set deployment path and ECR variables
             DEPLOY_PATH="${{ secrets.EC2_DEPLOY_PATH }}"
-            ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
+            ECR_REGISTRY="${{ steps.ecr-login.outputs.registry }}"
             ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY_NAME }}"
             IMAGE_TAG="${{ github.sha }}"
             AWS_REGION="${{ secrets.AWS_REGION }}"
+            ECR_PASSWORD="${{ steps.ecr-login.outputs.password }}"
 
             # Load nvm and use Node.js version 22
             export NVM_DIR="$HOME/.nvm"
@@ -257,80 +168,21 @@ jobs:
             # Create directory if it doesn't exist
             mkdir -p $DEPLOY_PATH
 
-            # Login to Amazon ECR (EC2 instance should have IAM role with ECR permissions, or use AWS credentials)
-            # If using IAM role (recommended), the following will work automatically
-            # If using credentials, set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in .env or export them
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+            # Login to Amazon ECR using the token from GitHub Actions
+            echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin $ECR_REGISTRY
 
             # Pull the latest image from ECR
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-            # Create .env file based on env-example structure with all environment variables from GitHub secrets
-            sudo tee $DEPLOY_PATH/.env > /dev/null << EOF
+            # Install jq if not available
+            sudo apt-get update && sudo apt-get install -y jq || true
 
-            DATABASE_URL="${{ secrets.DATABASE_URL }}"
-            DATABASE_SSL_REQUIRED="${{ secrets.DATABASE_SSL_REQUIRED }}"
+            # Fetch secrets from AWS Secrets Manager
+            SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/shared --region $AWS_REGION --query SecretString --output text)
+            EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/examiner --region $AWS_REGION --query SecretString --output text)
 
-            # AWS KEYS
-            AWS_S3_ACCESS_KEY_ID="${{ secrets.AWS_S3_ACCESS_KEY_ID }}"
-            AWS_S3_SECRET_ACCESS_KEY="${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}"
-            AWS_S3_REGION="${{ secrets.AWS_S3_REGION }}"
-            AWS_S3_BUCKET_NAME="${{ secrets.AWS_S3_BUCKET_NAME }}"
-
-            # Public CDN URL
-            NEXT_PUBLIC_CDN_URL="${{ secrets.NEXT_PUBLIC_CDN_URL }}"
-
-            SMTP_USER="${{ secrets.SMTP_USER }}"
-            SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
-            SMTP_FROM_EMAIL="${{ secrets.SMTP_FROM_EMAIL }}"
-            SMTP_HOST="${{ secrets.SMTP_HOST }}"
-            SMTP_FROM_NAME="${{ secrets.SMTP_FROM_NAME }}"
-            SMTP_PORT="${{ secrets.SMTP_PORT }}"
-
-            # NEXTAUTH
-            NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}"
-            NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}"
-            NEXT_PUBLIC_APP_URL="${{ secrets.NEXT_PUBLIC_APP_URL }}"
-
-            # GOOGLE CLOUD CONSOLE
-            OAUTH_CLIENT_ID="${{ secrets.OAUTH_CLIENT_ID }}"
-            OAUTH_CLIENT_SECRET="${{ secrets.OAUTH_CLIENT_SECRET }}"
-            OAUTH_REFRESH_TOKEN="${{ secrets.OAUTH_REFRESH_TOKEN }}"
-            OAUTH_USERNAME="${{ secrets.OAUTH_USERNAME }}"
-            GOOGLE_PLACES_API_KEY="${{ secrets.GOOGLE_PLACES_API_KEY }}"
-
-            # JWT SECRET KEYS
-            JWT_OTP_SECRET="${{ secrets.JWT_OTP_SECRET }}"
-            JWT_OTP_EXPIRY="${{ secrets.JWT_OTP_EXPIRY }}"
-            JWT_SET_PASSWORD_SECRET="${{ secrets.JWT_SET_PASSWORD_SECRET }}"
-            JWT_SET_PASSWORD_EXPIRY="${{ secrets.JWT_SET_PASSWORD_EXPIRY }}"
-            JWT_FORGET_PASSWORD_SECRET="${{ secrets.JWT_FORGET_PASSWORD_SECRET }}"
-            JWT_FORGET_PASSWORD_EXPIRY="${{ secrets.JWT_FORGET_PASSWORD_EXPIRY }}"
-            JWT_EXAMINER_INFO_REQUEST_SECRET="${{ secrets.JWT_EXAMINER_INFO_REQUEST_SECRET }}"
-            JWT_EXAMINER_INFO_EXPIRY="${{ secrets.JWT_EXAMINER_INFO_EXPIRY }}"
-            JWT_RESUME_SECRET="${{ secrets.JWT_RESUME_SECRET }}"
-            JWT_CLAIMANT_APPROVE_SECRET="${{ secrets.JWT_CLAIMANT_APPROVE_SECRET }}"
-            JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET="${{ secrets.JWT_EXAMINER_SCHEDULE_INTERVIEW_SECRET }}"
-
-            NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL="${{ secrets.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL }}"
-
-            NEXT_PUBLIC_GOOGLE_PLACES_API_KEY="${{ secrets.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY }}"
-
-            # GOOGLE DOC CONF
-            DOCS_REFRESH_TOKEN="${{ secrets.DOCS_REFRESH_TOKEN }}"
-            GOOGLE_REPORT_TEMPLATE_ID="${{ secrets.GOOGLE_REPORT_TEMPLATE_ID }}"
-            GOOGLE_CONTRACT_FOLDER_ID="${{ secrets.GOOGLE_CONTRACT_FOLDER_ID }}"
-            EMAIL_REPLY_TO="${{ secrets.EMAIL_REPLY_TO }}"
-
-            # ADMIN NOTIFY
-            ADMIN_NOTIFICATION_EMAIL="${{ secrets.ADMIN_NOTIFICATION_EMAIL }}"
-
-            # Workflow specific
-            NODE_ENV=production
-            NODE_TLS_REJECT_UNAUTHORIZED=${{ secrets.NODE_TLS_REJECT_UNAUTHORIZED || 0 }}
-            EOF
-
-
+            # Merge secrets (examiner overrides shared) and convert JSON to .env format
+            jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' | sudo tee $DEPLOY_PATH/.env > /dev/null
 
             # Change to the deployment directory
             cd $DEPLOY_PATH
@@ -345,6 +197,13 @@ jobs:
             export ECR_REGISTRY=$ECR_REGISTRY/$ECR_REPOSITORY
             export IMAGE_TAG=$IMAGE_TAG
 
+            # Find the currently running container image before stopping
+            OLD_IMAGE=$(docker ps --filter "ancestor=$ECR_REGISTRY:$IMAGE_TAG" --format "{{.Image}}")
+            if [ -z "$OLD_IMAGE" ]; then
+              # fallback: get the image for the current service(s), might be the previous sha
+              OLD_IMAGE=$(docker ps --filter "name=$(basename $DEPLOY_PATH)" --format "{{.Image}}")
+            fi
+
             # Stop and remove existing containers using docker-compose
             docker-compose down
 
@@ -354,3 +213,11 @@ jobs:
             # Show running containers
             docker ps
             docker-compose ps
+
+            # Remove the previously running image, if any, and if the image is different from the currently deployed one
+            if [ -n "$OLD_IMAGE" ] && [ "$OLD_IMAGE" != "$ECR_REGISTRY:$IMAGE_TAG" ]; then
+              echo "Removing old Docker image $OLD_IMAGE"
+              docker rmi "$OLD_IMAGE" || true
+            else
+              echo "No previous image to remove or previous is same as current."
+            fi

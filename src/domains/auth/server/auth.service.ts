@@ -26,12 +26,12 @@ class AuthService {
       if (!token) {
         return { success: false, message: ErrorMessages.NO_OTP_TOKEN_FOUND };
       }
-      if (!ENV.JWT_OTP_SECRET) {
+      if (!ENV.JWT_OTP_TOKEN_SECRET) {
         throw new Error(ErrorMessages.JWT_SECRETS_REQUIRED);
       }
 
       // Verify JWT
-      const decoded = jwt.verify(token, ENV.JWT_OTP_SECRET) as {
+      const decoded = jwt.verify(token, ENV.JWT_OTP_TOKEN_SECRET) as {
         email: string;
         otp: string;
       };

@@ -10,13 +10,28 @@ import { addMinutes, format } from "date-fns";
 import emailService from "@/server/services/email.service";
 import { ENV } from "@/constants/variables";
 import { ExaminerStatus } from "@prisma/client";
+import {
+  requestInterviewSlots,
+  type InterviewSlotRequestInput,
+} from "./requestInterviewSlots";
 
 export const rescheduleInterviewSlot = async (
   token: string,
-  startTime: Date,
-  durationMinutes: number,
+  startTimeOrSlots: Date | InterviewSlotRequestInput[],
+  durationMinutes?: number,
 ) => {
   try {
+    // New behavior: if an array is provided, treat this as "update requested slots"
+    if (Array.isArray(startTimeOrSlots)) {
+      return await requestInterviewSlots(token, startTimeOrSlots);
+    }
+
+    const startTime = startTimeOrSlots;
+    if (typeof durationMinutes !== "number") {
+      throw HttpError.badRequest("Duration is required");
+    }
+
+    // Legacy behavior: reschedule a BOOKED slot (kept for backward compatibility)
     // Validate duration (must be divisible by 15 and at least 15 minutes)
     if (durationMinutes < 15 || durationMinutes % 15 !== 0) {
       throw HttpError.badRequest(
@@ -31,7 +46,7 @@ export const rescheduleInterviewSlot = async (
     // Verify application exists and email matches
     const application = await prisma.examinerApplication.findUnique({
       where: { id: applicationId },
-      include: { interviewSlot: true },
+      include: { interviewSlots: true },
     });
 
     if (!application) {
@@ -74,12 +89,15 @@ export const rescheduleInterviewSlot = async (
       throw HttpError.badRequest(errorMessage);
     }
 
-    if (!application.interviewSlot) {
+    const bookedSlot = application.interviewSlots.find(
+      (slot) => slot.deletedAt === null && slot.status === "BOOKED",
+    );
+    if (!bookedSlot) {
       throw HttpError.badRequest("No existing interview slot to reschedule");
     }
 
     const endTime = addMinutes(startTime, durationMinutes);
-    const oldSlotId = application.interviewSlot.id;
+    const oldSlotId = bookedSlot.id;
 
     // Reschedule the slot using transaction
     const result = await prisma.$transaction(async (tx) => {

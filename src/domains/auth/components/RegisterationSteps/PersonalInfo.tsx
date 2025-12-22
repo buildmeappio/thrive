@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Input } from "@/components/ui";
 import { Mail, MapPin, User, PhoneCall, Languages } from "lucide-react";
 import {
@@ -28,9 +28,14 @@ import {
 import { UseFormRegisterReturn } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
 import { provinces } from "@/constants/options";
-import getLanguages from "@/domains/auth/actions/getLanguages";
-import { getCitiesByProvince } from "@/utils/canadaData";
-import { useSaveApplicationProgress } from "@/domains/auth/hooks/useSaveApplicationProgress";
+import {
+  useLanguages,
+  useCityProvinceLogic,
+  useRegistrationFormReset,
+  useFormCompletion,
+  useAutofillDetection,
+  useSaveApplicationProgress,
+} from "@/domains/auth/hooks";
 
 const PersonalInfo: React.FC<RegStepProps> = ({
   onNext,
@@ -39,98 +44,44 @@ const PersonalInfo: React.FC<RegStepProps> = ({
 }) => {
   const { data, merge, isEditMode } = useRegistrationStore();
   const { saveProgress, isSaving } = useSaveApplicationProgress();
-  const [languages, setLanguages] = useState<
-    { value: string; label: string }[]
-  >([]);
-  const [loadingLanguages, setLoadingLanguages] = useState(true);
-  const [cityOptions, setCityOptions] = useState<
-    { value: string; label: string }[]
-  >([]);
+  const { languages, loading: loadingLanguages } = useLanguages();
 
-  // Fetch languages from database
-  useEffect(() => {
-    const fetchLanguages = async () => {
-      try {
-        setLoadingLanguages(true);
-        const languagesData = await getLanguages();
-        const languageOptions = languagesData.map(
-          (lang: { id: string; name: string }) => ({
-            value: lang.id,
-            label: lang.name,
-          }),
-        );
-        setLanguages(languageOptions);
-      } catch (error) {
-        console.error("Failed to fetch languages:", error);
-        setLanguages([]);
-      } finally {
-        setLoadingLanguages(false);
-      }
-    };
-    fetchLanguages();
-  }, []);
-
-  // Initialize city options if province is already selected (for edit mode)
-  useEffect(() => {
-    if (data.province) {
-      const cities = getCitiesByProvince(data.province, data.city);
-      setCityOptions(cities);
-    }
-  }, [data.province, data.city]);
+  const defaultValues = {
+    ...step1InitialValues,
+    firstName: data.firstName,
+    lastName: data.lastName,
+    phoneNumber: data.phoneNumber,
+    emailAddress: data.emailAddress,
+    landlineNumber: data.landlineNumber,
+    city: data.city || "",
+    province: data.province || "",
+    languagesSpoken: data.languagesSpoken || [],
+  };
 
   const form = useForm<Step1PersonalInfoInput>({
     schema: step1PersonalInfoSchema,
-    defaultValues: {
-      ...step1InitialValues,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      phoneNumber: data.phoneNumber,
-      emailAddress: data.emailAddress,
-      landlineNumber: data.landlineNumber,
-      city: data.city || "",
-      province: data.province || "",
-      languagesSpoken: data.languagesSpoken || [],
-    },
+    defaultValues,
     mode: "onSubmit",
     reValidateMode: "onSubmit",
     shouldUnregister: false,
   });
 
   // Reset form when store data changes (but preserve errors if form has been submitted)
-  useEffect(() => {
-    const hasBeenSubmitted = form.formState.isSubmitted;
-    form.reset(
-      {
-        ...step1InitialValues,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phoneNumber: data.phoneNumber,
-        emailAddress: data.emailAddress,
-        landlineNumber: data.landlineNumber,
-        city: data.city || "",
-        province: data.province || "",
-        languagesSpoken: data.languagesSpoken || [],
-      },
-      {
-        keepErrors: hasBeenSubmitted, // Keep errors if form has been submitted
-        keepDirty: false,
-        keepIsSubmitted: hasBeenSubmitted,
-        keepTouched: false,
-        keepIsValid: false,
-        keepSubmitCount: hasBeenSubmitted,
-      },
-    );
-  }, [
-    data.firstName,
-    data.lastName,
-    data.phoneNumber,
-    data.emailAddress,
-    data.landlineNumber,
-    data.city,
-    data.province,
-    data.languagesSpoken,
+  useRegistrationFormReset({
     form,
-  ]);
+    defaultValues,
+    watchFields: [
+      "firstName",
+      "lastName",
+      "phoneNumber",
+      "emailAddress",
+      "landlineNumber",
+      "city",
+      "province",
+      "languagesSpoken",
+    ],
+    keepErrors: true,
+  });
 
   const onSubmit = async (values: Step1PersonalInfoInput) => {
     try {
@@ -155,154 +106,45 @@ const PersonalInfo: React.FC<RegStepProps> = ({
     }
   };
 
-  // Watch all required fields to enable/disable continue button
-  const firstName = form.watch("firstName");
-  const lastName = form.watch("lastName");
-  const emailAddress = form.watch("emailAddress");
-  const phoneNumber = form.watch("phoneNumber");
-  const landlineNumber = form.watch("landlineNumber");
-  const city = form.watch("city");
+  // Watch province for city/province logic
   const province = form.watch("province");
-  const languagesSpoken = form.watch("languagesSpoken");
+  const city = form.watch("city");
 
-  // State to force re-render when autofill is detected
-  const [, setAutofillCheck] = useState(0);
-
-  // Update city options when province changes
-  useEffect(() => {
-    if (province) {
-      const currentCity = form.getValues("city");
-      const cities = getCitiesByProvince(province, currentCity);
-      setCityOptions(cities);
-
-      // Reset city if current city is not in the new province's cities
-      if (currentCity && !cities.some((c) => c.value === currentCity)) {
-        form.setValue("city", "");
-      }
-    } else {
-      setCityOptions([]);
-      form.setValue("city", "");
-    }
-  }, [province, form]);
-
-  // Detect autofill specifically for last name and other fields
-  useEffect(() => {
-    // Periodic check for autofill values (especially for lastName)
-    const checkAutofill = setInterval(() => {
-      const formValues = form.getValues();
-      const watchedValues = {
-        firstName,
-        lastName,
-        emailAddress,
-        phoneNumber,
-        landlineNumber,
-        city,
-        province,
-        languagesSpoken,
-      };
-
-      // Check if any form value differs from watched value (indicating autofill)
-      const hasAutofill =
-        (formValues.firstName &&
-          formValues.firstName !== watchedValues.firstName) ||
-        (formValues.lastName &&
-          formValues.lastName !== watchedValues.lastName) ||
-        (formValues.emailAddress &&
-          formValues.emailAddress !== watchedValues.emailAddress) ||
-        (formValues.phoneNumber &&
-          formValues.phoneNumber !== watchedValues.phoneNumber) ||
-        (formValues.landlineNumber &&
-          formValues.landlineNumber !== watchedValues.landlineNumber) ||
-        (formValues.city && formValues.city !== watchedValues.city) ||
-        (formValues.province && formValues.province !== watchedValues.province);
-
-      if (hasAutofill) {
-        form.trigger(); // Trigger validation to update form state
-        setAutofillCheck((prev) => prev + 1); // Force re-render
-      }
-    }, 300); // Check every 300ms
-
-    // Listen for input events on all input fields (autofill triggers these)
-    const handleInput = (e: Event) => {
-      const target = e.target as HTMLInputElement;
-      if (
-        target &&
-        (target.id === "lastName" ||
-          target.id === "firstName" ||
-          target.id === "emailAddress")
-      ) {
-        setTimeout(() => {
-          form.trigger(target.id as "firstName" | "lastName" | "emailAddress");
-          setAutofillCheck((prev) => prev + 1);
-        }, 50);
-      }
-    };
-
-    // Listen for animationstart event (browsers use this for autofill)
-    const handleAutofill = (e: AnimationEvent) => {
-      if (
-        e.animationName === "onAutoFillStart" ||
-        e.animationName === "onAutoFillCancel"
-      ) {
-        setTimeout(() => {
-          form.trigger();
-          setAutofillCheck((prev) => prev + 1);
-        }, 100);
-      }
-    };
-
-    // Add event listeners
-    document.addEventListener("input", handleInput, true);
-    document.addEventListener(
-      "animationstart",
-      handleAutofill as EventListener,
-      true,
-    );
-
-    return () => {
-      clearInterval(checkAutofill);
-      document.removeEventListener("input", handleInput, true);
-      document.removeEventListener(
-        "animationstart",
-        handleAutofill as EventListener,
-        true,
-      );
-    };
-  }, [
+  // Handle city/province dependency
+  const { cityOptions } = useCityProvinceLogic({
     form,
-    firstName,
-    lastName,
-    emailAddress,
-    phoneNumber,
-    landlineNumber,
-    city,
     province,
-    languagesSpoken,
-  ]);
+    currentCity: city,
+  });
 
-  // Get current form values (including autofilled ones) - use getValues as fallback
-  const formValues = form.getValues();
-  const currentFirstName = firstName || formValues.firstName || "";
-  const currentLastName = lastName || formValues.lastName || "";
-  const currentEmailAddress = emailAddress || formValues.emailAddress || "";
-  const currentPhoneNumber = phoneNumber || formValues.phoneNumber || "";
-  const currentLandlineNumber =
-    landlineNumber || formValues.landlineNumber || "";
-  const currentCity = city || formValues.city || "";
-  const currentProvince = province || formValues.province || "";
-  const currentLanguagesSpoken =
-    languagesSpoken || formValues.languagesSpoken || [];
+  // Detect autofill for form fields
+  useAutofillDetection({
+    form,
+    watchedFields: [
+      "firstName",
+      "lastName",
+      "emailAddress",
+      "phoneNumber",
+      "landlineNumber",
+      "city",
+      "province",
+    ],
+  });
 
-  const isFormComplete =
-    currentFirstName?.trim().length > 0 &&
-    currentLastName?.trim().length > 0 &&
-    currentEmailAddress?.trim().length > 0 &&
-    currentPhoneNumber?.trim().length > 0 &&
-    currentLandlineNumber?.trim().length > 0 &&
-    currentCity?.trim().length > 0 &&
-    currentProvince?.trim().length > 0 &&
-    Array.isArray(currentLanguagesSpoken) &&
-    currentLanguagesSpoken.length > 0;
+  // Check if form is complete
+  const { isFormComplete } = useFormCompletion({
+    form,
+    requiredFields: [
+      "firstName",
+      "lastName",
+      "emailAddress",
+      "phoneNumber",
+      "landlineNumber",
+      "city",
+      "province",
+      "languagesSpoken",
+    ],
+  });
 
   return (
     <div

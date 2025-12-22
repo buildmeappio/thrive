@@ -362,13 +362,14 @@ class DashboardService {
       throw new Error("Examiner profile not found");
     }
 
-    // Note: governmentIdDocumentId and specialtyCertificatesDocumentIds
-    // may need to be added to the ExaminerProfile schema
     const updatedProfile = await prisma.examinerProfile.update({
       where: { id: examinerProfileId },
       data: {
         ...(data.medicalLicenseDocumentIds !== undefined && {
           medicalLicenseDocumentIds: data.medicalLicenseDocumentIds,
+        }),
+        ...(data.governmentIdDocumentId !== undefined && {
+          governmentIdDocumentId: data.governmentIdDocumentId,
         }),
         ...(data.resumeDocumentId !== undefined && {
           resumeDocumentId: data.resumeDocumentId,
@@ -376,11 +377,13 @@ class DashboardService {
         ...(data.insuranceDocumentId !== undefined && {
           insuranceDocumentId: data.insuranceDocumentId,
         }),
+        ...(data.specialtyCertificatesDocumentIds !== undefined && {
+          specialtyCertificatesDocumentIds:
+            data.specialtyCertificatesDocumentIds,
+        }),
         ...(data.activationStep && {
           activationStep: data.activationStep,
         }),
-        // TODO: Add governmentIdDocumentId and specialtyCertificatesDocumentIds
-        // to the schema when these fields are added
       },
       include: {
         account: {
@@ -414,16 +417,22 @@ class DashboardService {
       throw new Error("Examiner profile not found");
     }
 
-    // Note: phipaCompliance, pipedaCompliance, and medicalLicenseActive
-    // may need to be added to the ExaminerProfile schema
+    // Update compliance fields
     const updatedProfile = await prisma.examinerProfile.update({
       where: { id: examinerProfileId },
       data: {
         ...(data.activationStep && {
           activationStep: data.activationStep,
         }),
-        // TODO: Add these fields to the schema when they are added:
-        // phipaCompliance, pipedaCompliance, medicalLicenseActive
+        ...(data.phipaCompliance !== undefined && {
+          phipaCompliance: data.phipaCompliance,
+        }),
+        ...(data.pipedaCompliance !== undefined && {
+          pipedaCompliance: data.pipedaCompliance,
+        }),
+        ...(data.medicalLicenseActive !== undefined && {
+          medicalLicenseActive: data.medicalLicenseActive,
+        }),
       },
       include: {
         account: {
@@ -443,8 +452,6 @@ class DashboardService {
   async updateNotifications(
     examinerProfileId: string,
     data: {
-      emailNewIMEs?: boolean;
-      emailInterviewRequests?: boolean;
       emailPaymentPayout?: boolean;
       smsNotifications?: boolean;
       emailMarketing?: boolean;
@@ -459,16 +466,22 @@ class DashboardService {
       throw new Error("Examiner profile not found");
     }
 
-    // Note: notification settings may need to be added to the ExaminerProfile schema
-    // or stored in a separate UserPreferences/NotificationSettings table
+    // Update notification settings
     const updatedProfile = await prisma.examinerProfile.update({
       where: { id: examinerProfileId },
       data: {
         ...(data.activationStep && {
           activationStep: data.activationStep,
         }),
-        // TODO: Add notification fields to the schema when they are added:
-        // emailNewIMEs, emailInterviewRequests, emailPaymentPayout, smsNotifications, emailMarketing
+        ...(data.emailPaymentPayout !== undefined && {
+          emailPaymentPayout: data.emailPaymentPayout,
+        }),
+        ...(data.smsNotifications !== undefined && {
+          smsNotifications: data.smsNotifications,
+        }),
+        ...(data.emailMarketing !== undefined && {
+          emailMarketing: data.emailMarketing,
+        }),
       },
       include: {
         account: {

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useMemo } from "react";
 import {
   BackButton,
   ContinueButton,
@@ -19,7 +19,11 @@ import {
 import { FormProvider } from "@/components/form";
 import { Controller } from "@/lib/form";
 import { useForm } from "@/hooks/use-form-hook";
-import { useSaveApplicationProgress } from "@/domains/auth/hooks/useSaveApplicationProgress";
+import {
+  useRegistrationFormReset,
+  useFormCompletion,
+  useSaveApplicationProgress,
+} from "@/domains/auth/hooks";
 
 const VerificationDocuments: React.FC<RegStepProps> = ({
   onNext,
@@ -34,40 +38,40 @@ const VerificationDocuments: React.FC<RegStepProps> = ({
     (state) => state.data.medicalLicense,
   );
 
-  const form = useForm<VerificationDocumentsInput>({
-    schema: verificationDocumentsSchema,
-    defaultValues: {
+  const defaultValues = useMemo(
+    () => ({
       medicalLicense: Array.isArray(medicalLicense)
         ? medicalLicense
         : medicalLicense
           ? [medicalLicense]
           : [],
-    },
+    }),
+    [medicalLicense],
+  );
+
+  const form = useForm<VerificationDocumentsInput>({
+    schema: verificationDocumentsSchema,
+    defaultValues,
     mode: "onSubmit",
   });
 
   // Reset form when store data changes
-  useEffect(() => {
-    const medicalLicenseValue = Array.isArray(medicalLicense)
-      ? medicalLicense
-      : medicalLicense
-        ? [medicalLicense]
-        : [];
-
-    form.reset({
-      medicalLicense: medicalLicenseValue,
-    });
-  }, [medicalLicense, form]);
+  useRegistrationFormReset({
+    form,
+    defaultValues,
+    watchFields: ["medicalLicense"],
+  });
 
   const onSubmit = (values: VerificationDocumentsInput) => {
     merge(values as Partial<RegistrationData>);
     onNext();
   };
 
-  // Watch the form field value to check if at least one document is uploaded
-  const formMedicalLicense = form.watch("medicalLicense");
-  const isFormComplete =
-    Array.isArray(formMedicalLicense) && formMedicalLicense.length > 0;
+  // Check if form is complete
+  const { isFormComplete } = useFormCompletion({
+    form,
+    requiredFields: ["medicalLicense"],
+  });
 
   return (
     <div

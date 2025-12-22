@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useForm } from "@/hooks/use-form-hook";
 import { FormProvider } from "@/components/form";
@@ -8,99 +8,108 @@ import {
   availabilityPreferencesSchema,
   AvailabilityPreferencesInput,
 } from "../../schemas/onboardingSteps.schema";
-import { availabilityInitialValues } from "../../constants";
 import { WeeklyHours, BookingOptions } from "./AvailabilityTabs";
-import { toast } from "sonner";
 import {
-  convertAvailabilityToUTC,
-  convertAvailabilityToLocal,
-} from "@/utils/timeConversion";
+  useAvailabilityTimeConversion,
+  useAvailabilityFormSubmission,
+} from "../../hooks";
 
 import type { AvailabilityPreferencesFormProps } from "../../types";
 
 const AvailabilityPreferencesForm: React.FC<
   AvailabilityPreferencesFormProps
-> = ({ examinerProfileId, initialData, onComplete, onCancel: _onCancel }) => {
-  const [loading, setLoading] = useState(false);
+> = ({
+  examinerProfileId,
+  initialData,
+  onComplete,
+  onCancel: _onCancel,
+  onMarkComplete,
+  onStepEdited,
+  isCompleted = false,
+  isSettingsPage = false,
+  onDataUpdate,
+}) => {
   const [activeTab, setActiveTab] = useState<
     "weeklyHours" | "overrideHours" | "bookingOptions"
   >("weeklyHours");
 
-  // Convert initial data from UTC to local time for display
-  const localInitialData = useMemo(() => {
-    if (!initialData) {
-      return availabilityInitialValues;
-    }
-
-    // Convert UTC times to local times for form display
-    return convertAvailabilityToLocal(initialData);
-  }, [initialData]);
+  // Handle time conversion and data processing
+  const { ensuredFormData, convertToUTC } =
+    useAvailabilityTimeConversion(initialData);
 
   const form = useForm<AvailabilityPreferencesInput>({
     schema: availabilityPreferencesSchema,
-    defaultValues: localInitialData,
+    defaultValues: ensuredFormData,
     mode: "onSubmit",
   });
 
-  const onSubmit = async (values: AvailabilityPreferencesInput) => {
-    if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
-      return;
+  const {
+    handleSubmit,
+    handleMarkComplete,
+    loading,
+    initialFormDataRef,
+    previousFormDataRef,
+    isInitialMountRef,
+  } = useAvailabilityFormSubmission({
+    form,
+    examinerProfileId,
+    convertToUTC,
+    isCompleted,
+    onStepEdited,
+    onComplete,
+    onMarkComplete,
+    onDataUpdate,
+    isSettingsPage,
+  });
+
+  // Reset form when ensuredFormData changes (only on initial load or when DB data changes)
+  useEffect(() => {
+    const currentHash = JSON.stringify(ensuredFormData);
+
+    // Skip if this is the same data we already have
+    if (previousFormDataRef.current === currentHash) return;
+
+    // Reset form with complete data
+    form.reset(ensuredFormData, { keepDefaultValues: false });
+
+    previousFormDataRef.current = currentHash;
+
+    // Store initial form data hash for comparison
+    if (isInitialMountRef.current) {
+      initialFormDataRef.current = currentHash;
+      isInitialMountRef.current = false;
     }
-
-    setLoading(true);
-    try {
-      // Convert local times to UTC before saving to database
-      const utcValues = convertAvailabilityToUTC(values);
-
-      // Ensure weeklyHours is provided (required by the action)
-      if (!utcValues.weeklyHours) {
-        throw new Error("Weekly hours are required");
-      }
-
-      const { saveAvailabilityAction } = await import("../../server/actions");
-      const result = await saveAvailabilityAction({
-        examinerProfileId,
-        weeklyHours: utcValues.weeklyHours,
-        overrideHours: utcValues.overrideHours,
-        bookingOptions: utcValues.bookingOptions as
-          | {
-              maxIMEsPerWeek: string;
-              minimumNotice: string;
-            }
-          | undefined,
-        activationStep: "availability",
-      });
-
-      if (result.success) {
-        toast.success("Availability preferences saved successfully");
-        onComplete();
-      } else {
-        toast.error(result.message || "Failed to save availability");
-      }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [
+    ensuredFormData,
+    form,
+    previousFormDataRef,
+    initialFormDataRef,
+    isInitialMountRef,
+  ]);
 
   return (
-    <div className="bg-white rounded-2xl px-8 py-4 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 className="text-2xl font-medium">Set Your Availability</h2>
-        <Button
-          type="submit"
-          form="availability-form"
-          variant="outline"
-          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
-          disabled={loading}
-        >
-          <span>Mark as Complete</span>
-          <CircleCheck className="w-5 h-5 text-gray-700" />
-        </Button>
+    <div className="bg-white rounded-2xl px-8 py-4 shadow-sm relative">
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-2xl font-medium">
+            {isSettingsPage
+              ? "Availability Preferences"
+              : "Set Your Availability"}
+          </h2>
+        </div>
+        {/* Mark as Complete Button - Top Right (Onboarding only) */}
+        {!isSettingsPage && (
+          <Button
+            type="button"
+            onClick={handleMarkComplete}
+            variant="outline"
+            className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading}
+          >
+            <span>Mark as Complete</span>
+            <CircleCheck className="w-5 h-5 text-gray-700" />
+          </Button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -150,16 +159,32 @@ const AvailabilityPreferencesForm: React.FC<
         </div>
       </div>
 
-      <FormProvider form={form} onSubmit={onSubmit} id="availability-form">
-        {/* Weekly Hours Tab */}
-        {activeTab === "weeklyHours" && <WeeklyHours form={form} />}
+      <FormProvider form={form} onSubmit={handleSubmit} id="availability-form">
+        <div className={isSettingsPage ? "pb-20" : ""}>
+          {/* Weekly Hours Tab */}
+          {activeTab === "weeklyHours" && <WeeklyHours form={form} />}
 
-        {/* Override Hours Tab */}
-        {/* {activeTab === "overrideHours" && <OverrideHours form={form} />} */}
+          {/* Override Hours Tab */}
+          {/* {activeTab === "overrideHours" && <OverrideHours form={form} />} */}
 
-        {/* Booking Options Tab */}
-        {activeTab === "bookingOptions" && <BookingOptions form={form} />}
+          {/* Booking Options Tab */}
+          {activeTab === "bookingOptions" && <BookingOptions form={form} />}
+        </div>
       </FormProvider>
+      {/* Save Changes Button - Bottom Right (Settings only) */}
+      {isSettingsPage && (
+        <div className="absolute bottom-6 right-6 z-10">
+          <Button
+            type="button"
+            onClick={() => form.handleSubmit(handleSubmit)()}
+            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            disabled={loading}
+          >
+            <span>Save Changes</span>
+            <CircleCheck className="w-5 h-5 text-white" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

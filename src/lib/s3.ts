@@ -1,32 +1,12 @@
 "use server";
 
-import {
-  S3Client,
-  S3ClientConfig,
-  PutObjectCommand,
-  GetObjectCommand,
-} from "@aws-sdk/client-s3";
+import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { revalidatePath } from "next/cache";
 import prisma from "./db";
 import { ENV } from "@/constants/variables";
 import { AppError } from "@/types/common";
-
-// For ECS: Don't pass credentials, let SDK use IAM role automatically
-// For local dev: Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in .env.local
-const s3Config: S3ClientConfig = {
-  region: ENV.AWS_REGION!,
-};
-
-// Add credentials if available (for local development)
-if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
-  s3Config.credentials = {
-    accessKeyId: ENV.AWS_ACCESS_KEY_ID,
-    secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
-  };
-}
-
-const s3Client = new S3Client(s3Config);
+import s3Client from "./s3-client";
 
 const createFileName = (file: File) => {
   const timestamp = Date.now();
@@ -122,13 +102,6 @@ const uploadFileToS3 = async (file: File): Promise<UploadFileToS3Response> => {
         error:
           "AWS configuration is missing. Please check AWS_REGION and AWS_S3_BUCKET_NAME environment variables.",
       };
-    }
-
-    // Check if credentials are available (for local dev) or if we're using IAM role (for production)
-    if (!ENV.AWS_ACCESS_KEY_ID && !ENV.AWS_SECRET_ACCESS_KEY) {
-      console.warn(
-        "AWS credentials not found. Assuming IAM role authentication (production mode).",
-      );
     }
 
     const bytes = await file.arrayBuffer();

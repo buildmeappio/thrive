@@ -6,6 +6,7 @@ import authService from "./auth.service";
 import accountService from "./account.service";
 import languageService from "./language.service";
 import yearsOfExperienceService from "./yearsOfExperience.service";
+import professionalTitleService from "./professionalTitle.service";
 import maximumDistanceTravelService from "./maximumDistanceTravel.service";
 import assessmentTypeService from "./assessmentType.service";
 
@@ -18,6 +19,7 @@ export {
   accountService,
   languageService,
   yearsOfExperienceService,
+  professionalTitleService,
   maximumDistanceTravelService,
   assessmentTypeService,
 };

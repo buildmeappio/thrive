@@ -1,5 +1,6 @@
 export { updateServicesAssessmentAction } from "./updateServicesAssessment";
 export { getSpecialtyPreferencesAction } from "./getSpecialtyPreferences";
+export { completeOnboardingAction } from "./completeOnboarding";
 export { updateSpecialtyPreferencesAction } from "./updateSpecialtyPreferences";
 export { getAvailabilityPreferencesAction } from "./getAvailabilityPreferences";
 export { updateAvailabilityPreferencesAction } from "./updateAvailabilityPreferences";
@@ -12,3 +13,5 @@ export { updateComplianceAction } from "./updateCompliance";
 export { updateNotificationsAction } from "./updateNotifications";
 export { uploadDocumentAction } from "./uploadDocument";
 export { getDocumentByIdAction } from "./getDocumentById";
+export { markStepAsCompleteAction } from "./markStepAsComplete";
+export { unmarkStepAsCompleteAction } from "./unmarkStepAsComplete";

@@ -19,7 +19,30 @@ interface WeeklyHoursProps {
 }
 
 const WeeklyHours: React.FC<WeeklyHoursProps> = ({ form }) => {
-  const weeklyHours = form.watch("weeklyHours");
+  const weeklyHours = form.watch("weeklyHours") || {
+    sunday: { enabled: false, timeSlots: [] },
+    monday: {
+      enabled: true,
+      timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+    },
+    tuesday: {
+      enabled: true,
+      timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+    },
+    wednesday: {
+      enabled: true,
+      timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+    },
+    thursday: {
+      enabled: true,
+      timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+    },
+    friday: {
+      enabled: true,
+      timeSlots: [{ startTime: "8:00 AM", endTime: "11:00 AM" }],
+    },
+    saturday: { enabled: false, timeSlots: [] },
+  };
 
   // Helper function to check if a time slot spans midnight (cross-day)
   const isCrossDaySlot = (startTime: string, endTime: string): boolean => {

@@ -42,21 +42,6 @@ RUN npx prisma generate
 
 # Optional: Prisma migrate if needed
 # RUN npm run db:migrate-deploy
-
-# Build the app with environment variables
-# Build arguments for Next.js public environment variables (needed at build time)
-ARG NEXT_PUBLIC_CDN_URL
-ARG NEXT_PUBLIC_APP_URL
-ARG NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL
-ARG NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
-
-# Set as environment variables for build
-ENV NEXT_PUBLIC_CDN_URL=$NEXT_PUBLIC_CDN_URL
-ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
-ENV NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL=$NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL
-ENV NEXT_PUBLIC_GOOGLE_PLACES_API_KEY=$NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
-
-# Build the app with environment variables
 # Environment variables will be passed via --env-file during docker build
 # Increase Node.js heap size to prevent out of memory errors during build
 ENV NODE_OPTIONS="--max-old-space-size=4096"

@@ -39,8 +39,8 @@ const EmailSentContent = () => {
   };
 
   return (
-    <div className="bg-[#F4FBFF] min-h-screen overflow-hidden">
-      <div className="flex h-screen items-center justify-center px-6">
+    <div className="bg-[#F4FBFF] h-[calc(100vh-120px)] overflow-hidden">
+      <div className="flex h-full items-center justify-center px-6">
         <div className="max-w-[500px] w-full">
           {/* Card Container */}
           <div
@@ -107,7 +107,7 @@ const EmailSentPage = () => {
   return (
     <Suspense
       fallback={
-        <div className="bg-[#F4FBFF] h-screen flex items-center justify-center">
+        <div className="bg-[#F4FBFF] h-[calc(100vh-120px)] flex items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00A8FF] border-t-transparent"></div>
         </div>
       }

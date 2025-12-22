@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { S3Client, PutObjectCommand, S3ClientConfig } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import prisma from "@/lib/db";
 import { ENV } from "@/constants/variables";
 import { log, error, warn } from "@/utils/logger";
+import s3Client from "@/lib/s3-client";
 // Allowed file types for document uploads
 const ALLOWED_FILE_TYPES = [
   // Documents
@@ -43,30 +44,7 @@ const MAX_FILES_PER_REQUEST = 10;
  * Initialize S3 Client with proper credentials
  */
 function initializeS3Client() {
-  log("🔧 Initializing S3 client...");
-
-  if (!ENV.AWS_REGION) {
-    error("❌ AWS_REGION is not configured");
-    throw new Error("AWS_REGION is not configured");
-  }
-
-  log(`✅ AWS Region: ${ENV.AWS_REGION}`);
-
-  const config: S3ClientConfig = {
-    region: ENV.AWS_REGION,
-  };
-
-  if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
-    log("✅ Using AWS credentials from environment");
-    config.credentials = {
-      accessKeyId: ENV.AWS_ACCESS_KEY_ID,
-      secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
-    };
-  } else {
-    warn("⚠️  No AWS credentials provided, using default credential chain");
-  }
-
-  return new S3Client(config);
+  return s3Client;
 }
 
 /**

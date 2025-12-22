@@ -4,8 +4,6 @@ import updateNotificationsHandler from "../handlers/updateNotifications";
 
 export const updateNotificationsAction = async (data: {
   examinerProfileId: string;
-  emailNewIMEs?: boolean;
-  emailInterviewRequests?: boolean;
   emailPaymentPayout?: boolean;
   smsNotifications?: boolean;
   emailMarketing?: boolean;

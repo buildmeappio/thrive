@@ -1,21 +1,8 @@
 import prisma from "@/lib/db";
-import { GetObjectCommand, S3Client, S3ClientConfig } from "@aws-sdk/client-s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { S3StreamChunk } from "@/types/api";
+import s3Client from "@/lib/s3-client";
 import { ENV } from "@/constants/variables";
-
-// S3 client – AWS SDK will auto-resolve credentials from env vars or IAM role
-const s3Config: S3ClientConfig = {
-  region: ENV.AWS_REGION!,
-};
-
-// Add credentials if available (for local development)
-if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
-  s3Config.credentials = {
-    accessKeyId: ENV.AWS_ACCESS_KEY_ID,
-    secretAccessKey: ENV.AWS_SECRET_ACCESS_KEY,
-  };
-}
-const s3Client = new S3Client(s3Config);
 
 async function streamToString(
   body: S3StreamChunk | null | undefined,
@@ -95,7 +82,7 @@ export async function getLatestContract(id: string) {
     const htmlKey = contract.signedHtmlS3Key || contract.unsignedHtmlS3Key;
     if (htmlKey) {
       const htmlCommand = new GetObjectCommand({
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Bucket: ENV.AWS_S3_BUCKET!,
         Key: htmlKey,
       });
       const htmlResponse = await s3Client.send(htmlCommand);

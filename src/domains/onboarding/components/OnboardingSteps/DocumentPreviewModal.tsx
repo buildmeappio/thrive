@@ -31,6 +31,7 @@ export default function DocumentPreviewModal({
   const isImage =
     fileType && ["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(fileType);
   const isPdf = fileType === "pdf";
+  const isHtml = fileType === "html";
 
   return (
     <div
@@ -67,7 +68,15 @@ export default function DocumentPreviewModal({
         </div>
 
         {/* Preview Content */}
-        <div className="h-[calc(90vh-80px)] overflow-auto p-4">
+        <div
+          className={`h-[calc(90vh-80px)] ${
+            isImage
+              ? "overflow-auto p-4"
+              : isPdf || isHtml
+                ? "overflow-hidden px-6 py-4"
+                : "overflow-hidden"
+          }`}
+        >
           {isImage ? (
             <div className="relative w-full flex justify-center">
               <Image
@@ -86,16 +95,26 @@ export default function DocumentPreviewModal({
             </div>
           ) : isPdf ? (
             <iframe
-              src={previewUrl}
-              className="w-full h-full min-h-[600px] border-0"
+              src={`${previewUrl}#toolbar=0&navpanes=0`}
+              className="w-full h-full border-0 rounded"
               title={previewFileName}
               onError={() => {
                 toast.error("Failed to load PDF preview");
                 onClose();
               }}
             />
+          ) : isHtml ? (
+            <iframe
+              src={previewUrl}
+              className="w-full h-full border-0 rounded"
+              title={previewFileName}
+              onError={() => {
+                toast.error("Failed to load HTML preview");
+                onClose();
+              }}
+            />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="flex flex-col items-center justify-center h-full text-center p-4">
               <p className="text-gray-600 mb-4">
                 Preview not available for this file type.
               </p>

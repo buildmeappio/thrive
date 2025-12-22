@@ -140,18 +140,20 @@ function parseSlotDurationOptions(
   return defaultOptions;
 }
 
-/**
- * Fetch interview-specific settings from database configuration
- * Falls back to default settings if any configuration is missing
- */
-export async function getInterviewSettings(): Promise<{
+export type InterviewSettings = {
   minDaysAhead: number;
   maxDaysAhead: number;
   durationOptions: number[];
   startWorkingHourUTC: number;
   totalWorkingHours: number;
   endWorkingHourUTC: number;
-}> {
+};
+
+/**
+ * Fetch interview-specific settings from database configuration
+ * Falls back to default settings if any configuration is missing
+ */
+export async function getInterviewSettings(): Promise<InterviewSettings> {
   try {
     // Fetch all configuration values in one query
     const configs = await prisma.configuration.findMany({

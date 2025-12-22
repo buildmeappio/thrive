@@ -3,15 +3,56 @@
 import { verifyExaminerScheduleInterviewToken } from "@/lib/jwt";
 import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
-import { ExaminerStatus } from "@prisma/client";
+import { ExaminerStatus, InterviewSlotStatus } from "@prisma/client";
 
-export const verifyInterviewToken = async (token: string) => {
+const ERROR_MESSAGES = {
+  APPLICATION_NOT_FOUND: "Application not found",
+  INVALID_TOKEN_FOR_APPLICATION: "Invalid token for this application",
+  INTERVIEW_COMPLETED:
+    "Interview rescheduling is no longer available. Your interview has already been completed.",
+  CONTRACT_SENT:
+    "Interview rescheduling is no longer available. A contract has been sent to you.",
+  CONTRACT_SIGNED:
+    "Interview rescheduling is no longer available. You have already signed the contract.",
+  APPROVED:
+    "Interview rescheduling is no longer available. Your application has been approved.",
+  INVALID_OR_EXPIRED_TOKEN: "Invalid or expired token",
+};
+
+const BLOCKED_STATUSES_MESSAGES = {
+  [ExaminerStatus.INTERVIEW_COMPLETED]: ERROR_MESSAGES.INTERVIEW_COMPLETED,
+  [ExaminerStatus.CONTRACT_SENT]: ERROR_MESSAGES.CONTRACT_SENT,
+  [ExaminerStatus.CONTRACT_SIGNED]: ERROR_MESSAGES.CONTRACT_SIGNED,
+  [ExaminerStatus.APPROVED]: ERROR_MESSAGES.APPROVED,
+};
+
+type RequestedSlot = {
+  id: string;
+  startTime: Date;
+  endTime: Date;
+  duration: number;
+  status: InterviewSlotStatus;
+};
+
+type BookedSlot = {
+  id: string;
+  startTime: Date;
+  endTime: Date;
+};
+
+export type ApplicationData = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+  status: ExaminerStatus;
+  alreadyBooked: boolean;
+  bookedSlot?: BookedSlot;
+  requestedSlots: RequestedSlot[];
+};
+
+const getApplicationById = async (applicationId: string) => {
   try {
-    // Verify the JWT token
-    const { email, applicationId } =
-      verifyExaminerScheduleInterviewToken(token);
-
-    // Fetch application details
     const application = await prisma.examinerApplication.findUnique({
       where: { id: applicationId },
       select: {
@@ -20,65 +61,80 @@ export const verifyInterviewToken = async (token: string) => {
         lastName: true,
         email: true,
         status: true,
-        interviewSlot: {
+        interviewSlots: {
+          where: { deletedAt: null },
           select: {
             id: true,
             startTime: true,
             endTime: true,
+            duration: true,
+            status: true,
           },
+          orderBy: { startTime: "asc" },
         },
       },
     });
 
     if (!application) {
-      throw HttpError.notFound("Application not found");
+      throw HttpError.notFound(ERROR_MESSAGES.APPLICATION_NOT_FOUND);
     }
 
-    // Verify email matches
-    if (application.email !== email) {
-      throw HttpError.unauthorized("Invalid token for this application");
+    return application;
+  } catch (error: any) {
+    if (error instanceof HttpError) {
+      throw error;
     }
+    throw HttpError.badRequest(error.message || "Failed to get application");
+  }
+};
+
+export const verifyInterviewToken = async (token: string) => {
+  try {
+    const { applicationId } = verifyExaminerScheduleInterviewToken(token);
+
+    const application = await getApplicationById(applicationId);
+
+    const bookedSlot = application.interviewSlots.find(
+      (slot) => slot.status === InterviewSlotStatus.BOOKED,
+    );
+    const requestedSlots = application.interviewSlots.filter(
+      (slot) => slot.status === InterviewSlotStatus.REQUESTED,
+    );
 
     // Prepare application data
-    const applicationData = {
+    const applicationData: ApplicationData = {
       id: application.id,
       firstName: application.firstName,
       lastName: application.lastName,
       email: application.email,
       status: application.status,
-      alreadyBooked: !!application.interviewSlot,
-      bookedSlot: application.interviewSlot || undefined,
+      alreadyBooked: !!bookedSlot,
+      bookedSlot: bookedSlot
+        ? {
+            id: bookedSlot.id,
+            startTime: bookedSlot.startTime,
+            endTime: bookedSlot.endTime,
+          }
+        : undefined,
+      requestedSlots: requestedSlots.map((slot) => ({
+        id: slot.id,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        duration: slot.duration,
+        status: slot.status,
+      })),
     };
 
     // Check if application status blocks rescheduling
     const status = application.status;
     if (
-      status === ExaminerStatus.INTERVIEW_COMPLETED ||
-      status === ExaminerStatus.CONTRACT_SENT ||
-      status === ExaminerStatus.CONTRACT_SIGNED ||
-      status === ExaminerStatus.APPROVED
+      status in BLOCKED_STATUSES_MESSAGES &&
+      Object.hasOwn(BLOCKED_STATUSES_MESSAGES, status)
     ) {
-      let errorMessage = "Interview rescheduling is no longer available.";
-
-      switch (status) {
-        case ExaminerStatus.INTERVIEW_COMPLETED:
-          errorMessage =
-            "Interview rescheduling is no longer available. Your interview has already been completed.";
-          break;
-        case ExaminerStatus.CONTRACT_SENT:
-          errorMessage =
-            "Interview rescheduling is no longer available. A contract has been sent to you.";
-          break;
-        case ExaminerStatus.CONTRACT_SIGNED:
-          errorMessage =
-            "Interview rescheduling is no longer available. You have already signed the contract.";
-          break;
-        case ExaminerStatus.APPROVED:
-          errorMessage =
-            "Interview rescheduling is no longer available. Your application has been approved.";
-          break;
-      }
-
+      const errorMessage =
+        BLOCKED_STATUSES_MESSAGES[
+          status as keyof typeof BLOCKED_STATUSES_MESSAGES
+        ];
       return {
         success: true,
         application: applicationData,
@@ -88,7 +144,6 @@ export const verifyInterviewToken = async (token: string) => {
       };
     }
 
-    // Normal flow - interview can be scheduled/rescheduled
     return {
       success: true,
       application: applicationData,

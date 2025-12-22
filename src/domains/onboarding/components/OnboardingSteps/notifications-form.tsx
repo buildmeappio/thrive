@@ -1,15 +1,18 @@
 "use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { CircleCheck } from "lucide-react";
-import { toast } from "sonner";
-import { updateNotificationsAction } from "../../server/actions";
+import { useNotificationsState, useNotificationsSubmission } from "../../hooks";
 import type { NotificationsFormProps } from "../../types";
 
+interface NotificationSettings {
+  emailPaymentPayout: boolean;
+  smsNotifications: boolean;
+  emailMarketing: boolean;
+}
+
 interface NotificationSetting {
-  id: string;
+  id: keyof NotificationSettings;
   label: string;
   description: string;
   enabled: boolean;
@@ -17,20 +20,6 @@ interface NotificationSetting {
 }
 
 const NOTIFICATION_SETTINGS: NotificationSetting[] = [
-  {
-    id: "emailNewIMEs",
-    label: "Email notifications for new IMEs",
-    description: "Receive email alerts when new IME cases are assigned to you",
-    enabled: true,
-    required: false,
-  },
-  {
-    id: "emailInterviewRequests",
-    label: "Email notifications for interview requests",
-    description: "Get notified when claimants request interviews",
-    enabled: true,
-    required: false,
-  },
   {
     id: "emailPaymentPayout",
     label: "Payment/payout notifications",
@@ -59,82 +48,50 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
   initialData,
   onComplete,
   onCancel: _onCancel,
+  onMarkComplete,
+  onStepEdited,
+  isCompleted = false,
+  isSettingsPage = false,
+  onDataUpdate,
 }) => {
-  const router = useRouter();
-  const { update } = useSession();
-  const [loading, setLoading] = useState(false);
-  const [notifications, setNotifications] = useState<Record<string, boolean>>({
-    emailNewIMEs: initialData?.emailNewIMEs ?? true,
-    emailInterviewRequests: initialData?.emailInterviewRequests ?? true,
-    emailPaymentPayout: initialData?.emailPaymentPayout ?? true,
-    smsNotifications: initialData?.smsNotifications ?? false,
-    emailMarketing: initialData?.emailMarketing ?? false,
+  const { notifications, toggleNotification } = useNotificationsState({
+    initialData,
+    isCompleted,
+    onStepEdited,
   });
 
-  const toggleNotification = (id: string) => {
-    setNotifications((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const handleSubmit = async () => {
-    if (!examinerProfileId) {
-      toast.error("Examiner profile ID not found");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const result = await updateNotificationsAction({
-        examinerProfileId,
-        emailNewIMEs: notifications.emailNewIMEs,
-        emailInterviewRequests: notifications.emailInterviewRequests,
-        emailPaymentPayout: notifications.emailPaymentPayout,
-        smsNotifications: notifications.smsNotifications,
-        emailMarketing: notifications.emailMarketing,
-        activationStep: "notifications",
-      });
-
-      if (result.success) {
-        toast.success("Notification settings saved successfully");
-        onComplete();
-
-        // Update session to refresh JWT token with new activationStep
-        await update();
-
-        // Redirect to dashboard after session is updated
-        router.push("/dashboard");
-        router.refresh();
-      } else {
-        toast.error(result.message || "Failed to save notification settings");
-      }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An unexpected error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { handleSubmit, handleMarkComplete, loading } =
+    useNotificationsSubmission({
+      examinerProfileId,
+      notifications,
+      onComplete,
+      onMarkComplete,
+      onDataUpdate,
+      isSettingsPage,
+    });
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 className="text-2xl font-medium">Notification Settings</h2>
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          variant="outline"
-          className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
-          disabled={loading}
-        >
-          <span>Mark as Complete</span>
-          <CircleCheck className="w-5 h-5 text-gray-700" />
-        </Button>
+    <div className="bg-white rounded-2xl p-6 shadow-sm relative">
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-2xl font-medium">Notification Settings</h2>
+        </div>
+        {/* Mark as Complete Button - Top Right (Onboarding only) */}
+        {!isSettingsPage && (
+          <Button
+            type="button"
+            onClick={handleMarkComplete}
+            variant="outline"
+            className="rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 flex items-center justify-center gap-2 shrink-0"
+            disabled={loading}
+          >
+            <span>Mark as Complete</span>
+            <CircleCheck className="w-5 h-5 text-gray-700" />
+          </Button>
+        )}
       </div>
 
-      <div className="space-y-4">
+      <div className={`space-y-4 ${isSettingsPage ? "pb-20" : ""}`}>
         <div className="border border-gray-200 rounded-lg p-6 bg-[#FCFDFF]">
           <div className="space-y-6">
             {NOTIFICATION_SETTINGS.map((setting) => (
@@ -157,15 +114,19 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
                   <button
                     type="button"
                     role="switch"
-                    aria-checked={notifications[setting.id]}
+                    aria-checked={
+                      notifications[setting.id as keyof typeof notifications]
+                    }
                     onClick={() => toggleNotification(setting.id)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#00A8FF] focus:ring-offset-2 ${
-                      notifications[setting.id] ? "bg-[#00A8FF]" : "bg-gray-300"
+                      notifications[setting.id as keyof typeof notifications]
+                        ? "bg-[#00A8FF]"
+                        : "bg-gray-300"
                     }`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        notifications[setting.id]
+                        notifications[setting.id as keyof typeof notifications]
                           ? "translate-x-6"
                           : "translate-x-1"
                       }`}
@@ -177,6 +138,20 @@ const NotificationsForm: React.FC<NotificationsFormProps> = ({
           </div>
         </div>
       </div>
+      {/* Save Changes Button - Bottom Right (Settings only) */}
+      {isSettingsPage && (
+        <div className="absolute bottom-6 right-6 z-10">
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            className="rounded-full bg-[#00A8FF] text-white hover:bg-[#0090d9] px-6 py-2 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            disabled={loading}
+          >
+            <span>Save Changes</span>
+            <CircleCheck className="w-5 h-5 text-white" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
