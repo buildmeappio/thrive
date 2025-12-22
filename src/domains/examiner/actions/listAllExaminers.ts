@@ -7,33 +7,51 @@ import logger from "@/utils/logger";
 
 const listAllExaminers = async () => {
   try {
-    // Get only ACTIVE examiners (those with accounts and ACTIVE status)
-    // When examiner creates password, ExaminerProfile status is set to ACTIVE
+    // Get all examiners with accounts
+    // Check User.status (new), ExaminerProfile.status (legacy), or NULL (migrated records)
     const examiners = await prisma.examinerProfile.findMany({
       where: {
         deletedAt: null,
         account: {
           deletedAt: null, // Only examiners with non-deleted accounts
         },
+        // If an examiner has an account, they should be shown
+        // Check status in User model, ExaminerProfile, or treat NULL as ACTIVE
         OR: [
           {
-            // Primary: Examiners with ACTIVE status (set when account is created)
-            status: "ACTIVE",
-          },
-          {
-            // Include SUSPENDED examiners so they can be reactivated
-            status: "SUSPENDED",
-          },
-          {
-            // Fallback: Examiners with linked application that has ACTIVE status
-            application: {
-              status: "ACTIVE",
-              deletedAt: null,
+            // New data: Check User.status = ACTIVE or SUSPENDED
+            account: {
+              user: {
+                status: {
+                  in: ["ACTIVE", "SUSPENDED"],
+                },
+              },
             },
           },
           {
-            // Legacy: Examiners without linked application (they're active examiners)
-            applicationId: null,
+            // Legacy data: Check ExaminerProfile.status = ACTIVE or SUSPENDED
+            status: {
+              in: ["ACTIVE", "SUSPENDED"],
+            },
+          },
+          {
+            // Migrated records: User.status is NULL and ExaminerProfile.status is NULL
+            // If they have an account, consider them active
+            AND: [
+              {
+                account: {
+                  user: {
+                    status: null,
+                  },
+                },
+              },
+              {
+                OR: [
+                  { status: null },
+                  { status: { not: { in: ["REJECTED", "WITHDRAWN"] } } },
+                ],
+              },
+            ],
           },
         ],
       },

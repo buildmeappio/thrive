@@ -105,8 +105,8 @@ export async function updateExaminerProfile(
           ...(data.insuranceDocumentId !== undefined && {
             insuranceDocumentId: data.insuranceDocumentId,
           }),
-          // Reset status back to PENDING for admin review
-          status: "PENDING",
+          // Reset ExaminerProfile.status back to SUBMITTED for admin review when profile is updated
+          status: "SUBMITTED",
           // updatedAt is automatically updated by Prisma
         },
       });

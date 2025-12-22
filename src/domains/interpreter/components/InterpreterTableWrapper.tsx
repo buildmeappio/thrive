@@ -168,7 +168,7 @@ const InterpreterTable: React.FC<InterpreterTableProps> = ({
   columns,
 }) => {
   return (
-    <div className="overflow-x-auto rounded-md outline-none max-h-[60vh]">
+    <div className="overflow-x-auto rounded-md outline-none">
       <Table className="min-w-[900px] border-0">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
