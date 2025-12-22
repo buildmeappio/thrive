@@ -15,6 +15,7 @@ export { sendContract } from "./sendContract";
 export { default as moveToReview } from "./moveToReview";
 export { default as scheduleInterview } from "./scheduleInterview";
 export { default as requestInterview } from "./requestInterview";
+export { default as resendInterviewRequest } from "./resendInterviewRequest";
 export { default as resendInterviewSchedulingLink } from "./resendInterviewSchedulingLink";
 export { default as confirmInterviewSlot } from "./confirmInterviewSlot";
 export { default as markInterviewCompleted } from "./markInterviewCompleted";
