@@ -149,7 +149,16 @@ const SubmitConfirmation: React.FC<RegStepProps> = ({
       // Check if all medical license uploads succeeded
       const failedUploads = medicalLicenseResults.filter((r) => !r.success);
       if (failedUploads.length > 0) {
-        setErr("Failed to upload some medical license documents");
+        // Get detailed error messages from failed uploads
+        const errorMessages = failedUploads
+          .map((r) => ("error" in r ? r.error : "Unknown error"))
+          .join("; ");
+        const errorMessage =
+          failedUploads.length === medicalLicenseFiles.length
+            ? `Failed to upload medical license documents: ${errorMessages}`
+            : `Failed to upload ${failedUploads.length} of ${medicalLicenseFiles.length} medical license documents: ${errorMessages}`;
+        setErr(errorMessage);
+        error("Medical license upload failures:", failedUploads);
         setLoading(false);
         return;
       }

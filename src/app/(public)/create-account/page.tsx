@@ -7,6 +7,7 @@ import { Metadata } from "next";
 import { getExaminerProfileByAccountId } from "@/domains/contract/server/actions/getExaminerProfileByAccountId.actions";
 import { getContractByExaminerProfileId } from "@/domains/contract/server/actions/getContractByExaminerProfileId.actions";
 import { getAccountById } from "@/domains/contract/server/actions/getAccountById.actions";
+import { UserStatus } from "@/domains/auth/constants/userStatus";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
@@ -113,7 +114,7 @@ const Page = async ({
     // Check if account is already fully set up
     if (
       latestContract?.status === "SIGNED" &&
-      examinerProfile.status === "ACTIVE" &&
+      examinerProfile.account.user.status === UserStatus.ACTIVE &&
       hasPassword
     ) {
       redirect("/create-account/success?error=account_already_created");

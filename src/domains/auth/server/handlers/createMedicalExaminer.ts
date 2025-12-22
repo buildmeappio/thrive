@@ -3,6 +3,7 @@ import HttpError from "@/utils/httpError";
 import { ExaminerStatus, SecureLinkStatus } from "@prisma/client";
 import { emailService } from "@/server";
 import ErrorMessages from "@/constants/ErrorMessages";
+import { capitalizeFirstLetter } from "@/utils/text";
 
 export type CreateMedicalExaminerInput = {
   // step 1
@@ -87,9 +88,9 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
     // Create examiner application (NO user, NO account, NO examiner profile)
     const examinerApplication = await prisma.examinerApplication.create({
       data: {
-        // Personal Information
-        firstName: payload.firstName,
-        lastName: payload.lastName,
+        // Personal Information - capitalize first letter
+        firstName: capitalizeFirstLetter(payload.firstName),
+        lastName: capitalizeFirstLetter(payload.lastName),
         email: payload.email,
         phone: payload.phone || null,
         landlineNumber: payload.landlineNumber || null,
@@ -166,8 +167,8 @@ const createMedicalExaminer = async (payload: CreateMedicalExaminerInput) => {
       "Your Thrive Medical Examiner Application Has Been Received",
       "application-received.html",
       {
-        firstName: payload.firstName,
-        lastName: payload.lastName,
+        firstName: capitalizeFirstLetter(payload.firstName),
+        lastName: capitalizeFirstLetter(payload.lastName),
       },
       payload.email,
     );

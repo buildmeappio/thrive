@@ -4,6 +4,7 @@ import { ExaminerStatus, SecureLinkStatus } from "@prisma/client";
 import { uploadFileToS3 } from "@/lib/s3";
 import ErrorMessages from "@/constants/ErrorMessages";
 import { randomBytes } from "crypto";
+import { capitalizeFirstLetter } from "@/utils/text";
 
 export type SaveApplicationProgressInput = {
   // step 1
@@ -151,9 +152,13 @@ const saveApplicationProgress = async (
 
     // Prepare update/create data
     const applicationData: Record<string, unknown> = {
-      // Personal Information (only update if provided)
-      ...(payload.firstName !== undefined && { firstName: payload.firstName }),
-      ...(payload.lastName !== undefined && { lastName: payload.lastName }),
+      // Personal Information (only update if provided) - capitalize first letter
+      ...(payload.firstName !== undefined && {
+        firstName: capitalizeFirstLetter(payload.firstName),
+      }),
+      ...(payload.lastName !== undefined && {
+        lastName: capitalizeFirstLetter(payload.lastName),
+      }),
       ...(payload.phone !== undefined && { phone: payload.phone || null }),
       ...(payload.landlineNumber !== undefined && {
         landlineNumber: payload.landlineNumber || null,
@@ -244,9 +249,9 @@ const saveApplicationProgress = async (
         data: {
           ...applicationData,
           email: payload.email,
-          // Set defaults for required fields if not provided
-          firstName: payload.firstName || "",
-          lastName: payload.lastName || "",
+          // Set defaults for required fields if not provided - capitalize first letter
+          firstName: capitalizeFirstLetter(payload.firstName || ""),
+          lastName: capitalizeFirstLetter(payload.lastName || ""),
           provinceOfResidence: payload.province || "",
           mailingAddress: payload.address || "",
           licenseNumber: payload.licenseNumber || "",

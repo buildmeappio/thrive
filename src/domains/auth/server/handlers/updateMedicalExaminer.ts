@@ -2,6 +2,7 @@ import HttpError from "@/utils/httpError";
 import { examinerService } from "../services";
 import ErrorMessages from "@/constants/ErrorMessages";
 import { emailService } from "@/server";
+import prisma from "@/lib/db";
 
 export type UpdateMedicalExaminerInput = {
   examinerProfileId: string;
@@ -61,6 +62,12 @@ const updateMedicalExaminer = async (payload: UpdateMedicalExaminerInput) => {
       payload.examinerProfileId,
     );
 
+    // Get user status
+    const user = await prisma.user.findUnique({
+      where: { id: examinerDetails.account.userId },
+      select: { status: true },
+    });
+
     // Send update confirmation email
     await emailService.sendEmail(
       "Your Profile Has Been Updated Successfully",
@@ -77,7 +84,7 @@ const updateMedicalExaminer = async (payload: UpdateMedicalExaminerInput) => {
       message: "Medical examiner profile updated successfully",
       data: {
         examinerProfileId: updatedProfile.id,
-        status: updatedProfile.status,
+        status: user?.status || null,
       },
     };
   } catch (error) {

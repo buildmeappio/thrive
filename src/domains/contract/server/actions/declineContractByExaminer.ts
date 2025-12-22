@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 import { ExaminerStatus } from "@prisma/client";
 import emailService from "@/server/services/email.service";
 import { ENV } from "@/constants/variables";
+import { UserStatus } from "@/domains/auth/constants/userStatus";
 
 /**
  * Action called when examiner declines the contract
@@ -58,13 +59,8 @@ export const declineContractByExaminer = async (
       adminReviewUrl = `${ENV.NEXT_PUBLIC_APP_URL}/admin/examiner/${examinerProfileId}`;
     } else {
       // Fallback: try as examinerProfileId (for backward compatibility)
-      const examinerProfile = await prisma.examinerProfile.update({
+      const examinerProfile = await prisma.examinerProfile.findUnique({
         where: { id: examinerProfileId },
-        data: {
-          contractDeclinedByExaminerAt: new Date(),
-          contractDeclineReason: declineReason,
-          status: ExaminerStatus.REJECTED,
-        },
         include: {
           account: {
             include: {
@@ -72,6 +68,27 @@ export const declineContractByExaminer = async (
             },
           },
           address: true,
+        },
+      });
+
+      if (!examinerProfile) {
+        throw new Error("Examiner profile not found");
+      }
+
+      // Update examiner profile contract fields
+      await prisma.examinerProfile.update({
+        where: { id: examinerProfileId },
+        data: {
+          contractDeclinedByExaminerAt: new Date(),
+          contractDeclineReason: declineReason,
+        },
+      });
+
+      // Update user status
+      await prisma.user.update({
+        where: { id: examinerProfile.account.userId },
+        data: {
+          status: UserStatus.REJECTED,
         },
       });
 

@@ -2,23 +2,24 @@
 
 import { getCurrentUser } from "@/domains/auth/server/session";
 import prisma from "@/lib/db";
+import { UserStatus } from "@/domains/auth/constants/userStatus";
 
 export async function checkExaminerStatus() {
   try {
     const user = await getCurrentUser();
 
-    if (!user?.accountId) {
+    if (!user?.id) {
       return { isSuspended: false };
     }
 
-    const examiner = await prisma.examinerProfile.findFirst({
-      where: { accountId: user.accountId },
+    const userRecord = await prisma.user.findUnique({
+      where: { id: user.id },
       select: { status: true },
     });
 
     return {
-      isSuspended: examiner?.status === "SUSPENDED",
-      status: examiner?.status || null,
+      isSuspended: userRecord?.status === UserStatus.SUSPENDED,
+      status: userRecord?.status || null,
     };
   } catch (error) {
     console.error("Error checking examiner status:", error);

@@ -6,6 +6,8 @@ import { log } from "@/utils/logger";
 import prisma from "@/lib/db";
 import { Roles } from "../../constants/roles";
 import { ExaminerStatus } from "@prisma/client";
+import { capitalizeFirstLetter } from "@/utils/text";
+import { UserStatus } from "../../constants/userStatus";
 
 export type SetPasswordInput = {
   password: string;
@@ -116,14 +118,15 @@ const setPassword = async (payload: SetPasswordInput) => {
       throw HttpError.notFound("Medical examiner role not found");
     }
 
-    // Create User
+    // Create User - capitalize first letter of names
     const user = await prisma.user.create({
       data: {
-        firstName: application.firstName || "",
-        lastName: application.lastName || "",
+        firstName: capitalizeFirstLetter(application.firstName || ""),
+        lastName: capitalizeFirstLetter(application.lastName || ""),
         email: application.email,
         phone: application.phone || "",
         password: hashedPassword,
+        status: UserStatus.ACTIVE, // Set to ACTIVE after password setup
       },
     });
 
@@ -207,7 +210,6 @@ const setPassword = async (payload: SetPasswordInput) => {
         agreeToTerms: application.agreeToTerms,
         isConsentToBackgroundVerification:
           application.isConsentToBackgroundVerification,
-        status: ExaminerStatus.ACTIVE, // Set to ACTIVE after password setup
       },
     });
 

@@ -1,6 +1,7 @@
 import prisma from "@/lib/db";
 import HttpError from "@/utils/httpError";
 import ErrorMessages from "@/constants/ErrorMessages";
+import { UserStatus } from "../../constants/userStatus";
 
 class UserService {
   async getUserById(userId: string) {
@@ -147,14 +148,7 @@ class UserService {
         },
         data: {
           password: hashedPassword,
-        },
-      });
-      await prisma.examinerProfile.updateMany({
-        where: {
-          account: { userId: user.id },
-        },
-        data: {
-          status: "ACTIVE",
+          status: UserStatus.ACTIVE, // Set to ACTIVE after password setup
         },
       });
 

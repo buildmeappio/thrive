@@ -6,6 +6,12 @@ export function capitalizeWords(str: string | null | undefined): string {
     .join(" ");
 }
 
+// Capitalize first letter of a string (e.g., "mahroz" -> "Mahroz")
+export function capitalizeFirstLetter(str: string | null | undefined): string {
+  if (!str || str.length === 0) return str || "";
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
 // Utility function to truncate text with ellipsis
 export function truncateText(
   text: string | null | undefined,
