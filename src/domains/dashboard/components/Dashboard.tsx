@@ -20,6 +20,8 @@ import {
   CalendarCheck,
 } from "lucide-react";
 import { getDueCasesCount } from "@/domains/dashboard/actions/dashboard.actions";
+import type { DashboardMessage } from "../types/messages.types";
+import type { DashboardUpdate } from "../types/updates.types";
 
 type Props = {
   caseRows: CaseDetailDtoType[];
@@ -30,6 +32,9 @@ type Props = {
   examinerCount: number;
   waitingToBeScheduledCount: number;
   dueTodayCount: number;
+  messages: DashboardMessage[];
+  unreadCount: number;
+  updates: DashboardUpdate[];
 };
 
 export default function Dashboard({
@@ -41,6 +46,9 @@ export default function Dashboard({
   examinerCount,
   waitingToBeScheduledCount,
   dueTodayCount,
+  messages,
+  unreadCount,
+  updates,
 }: Props) {
   const [dueCount, setDueCount] = useState(dueTodayCount);
   const [isLoadingDueCount, setIsLoadingDueCount] = useState(false);
@@ -121,28 +129,8 @@ export default function Dashboard({
 
         {/* Right: recent messages + recent updates (stack on small screens) */}
         <div className="w-full xl:w-4/12 flex flex-col gap-3 sm:gap-6 dashboard-zoom-mobile">
-          <MessagesPanel
-            items={[
-              "New insurer onboarded: Maple Life",
-              "Dr. Sarah Ahmed's profile was verified",
-              "John Doe profile was verified",
-              "New client registered: Bright Horizons",
-              "Policy update completed for: Emily",
-            ]}
-          />
-          <UpdatesPanel
-            items={[
-              "New insurer onboarded: Maple Life",
-              "Dr. Sarah Ahmed's profile was verified",
-              "John Doe profile was verified",
-              "New insurer onboarded: Horizon Health",
-              "Dr. Emily Chen's profile was verified",
-              "Jane Smith profile was verified",
-              "New insurer onboarded: Evergreen....",
-              "Dr. Michael Lee's profile was verified",
-              "Robert Brown profile was verified",
-            ]}
-          />
+          <MessagesPanel messages={messages} unreadCount={unreadCount} />
+          <UpdatesPanel updates={updates} />
         </div>
       </div>
     </div>
