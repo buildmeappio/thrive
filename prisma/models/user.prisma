@@ -18,6 +18,7 @@ model User {
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
   accounts  Account[] @relation("AccountUser")
+  messageReadStatuses MessageReadStatus[]
 
   @@map("users")
 }
