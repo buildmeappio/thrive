@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 
 /**
  * Formats a date to short format: "MMM dd, yyyy"
@@ -11,6 +11,32 @@ export function formatDateShort(
   try {
     const dateObj = typeof date === "string" ? new Date(date) : date;
     return format(dateObj, "MMM dd, yyyy");
+  } catch {
+    return "N/A";
+  }
+}
+
+/**
+ * Formats a date as relative time: "2 hours ago", "3 days ago", etc.
+ * Example: "2 hours ago", "3 days ago", "just now"
+ */
+export function formatRelativeTime(
+  date: Date | string | null | undefined,
+): string {
+  if (!date) return "N/A";
+  try {
+    const dateObj = typeof date === "string" ? new Date(date) : date;
+    const now = new Date();
+    const diffInSeconds = Math.floor(
+      (now.getTime() - dateObj.getTime()) / 1000,
+    );
+
+    // If less than 60 seconds, show "just now"
+    if (diffInSeconds < 60) {
+      return "just now";
+    }
+
+    return formatDistanceToNow(dateObj, { addSuffix: true });
   } catch {
     return "N/A";
   }

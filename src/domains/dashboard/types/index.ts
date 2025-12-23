@@ -60,9 +60,39 @@ export type SummaryPanelProps = {
 };
 
 // Updates Panel Types
+export type UpdateType =
+  | "APPOINTMENT_SCHEDULED"
+  | "APPOINTMENT_ACCEPTED"
+  | "APPOINTMENT_DECLINED"
+  | "REPORT_SUBMITTED"
+  | "REPORT_OVERDUE"
+  | "REPORT_DRAFT_CREATED";
+
+export type RecentUpdate = {
+  id: string;
+  type: UpdateType;
+  message: string;
+  caseNumber: string;
+  timestamp: Date;
+  bookingId?: string;
+  reportId?: string;
+};
+
 export type UpdatesPanelProps = {
-  items: string[];
+  items: RecentUpdate[];
   listHref?: string;
+};
+
+// Recent Updates Server Types
+export type GetRecentUpdatesInput = {
+  examinerProfileId: string;
+  limit?: number;
+};
+
+export type GetRecentUpdatesResponse = {
+  success: boolean;
+  data?: RecentUpdate[];
+  message?: string;
 };
 
 // Case Details Types

@@ -11,6 +11,7 @@ const URLS = Object.freeze({
   SETTINGS: "/settings",
   BILLING: "/billing",
   APPOINTMENTS: "/appointments",
+  UPDATES: "/updates",
 });
 
 const PUBLIC_ROUTES = Object.freeze([

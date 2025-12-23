@@ -239,8 +239,11 @@ export default function CasesTableWithPagination({
   ];
 
   const tableElement = (
-    <div className="overflow-x-auto rounded-2xl overflow-hidden">
-      <Table className="w-full border-0 table-fixed">
+    <div className="overflow-x-auto rounded-2xl overflow-hidden -mx-2 px-2 sm:mx-0 sm:px-0">
+      <Table
+        className="w-auto md:w-full border-0 md:table-fixed"
+        style={{ minWidth: "800px" }}
+      >
         <TableHeader>
           <TableRow className="bg-[#F3F3F3] border-none hover:bg-[#F3F3F3]">
             {columns.map((col, index) => (
@@ -252,7 +255,7 @@ export default function CasesTableWithPagination({
                   width: `${col.size}px`,
                 }}
                 className={cn(
-                  "text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden",
+                  "text-xs sm:text-sm md:text-[17px] font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-2 sm:py-2.5 md:py-3 whitespace-nowrap overflow-hidden",
                   index === 0 && "rounded-tl-2xl rounded-bl-2xl",
                   index === columns.length - 1 &&
                     "rounded-tr-2xl rounded-br-2xl",
@@ -324,10 +327,10 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[0].maxSize}px`,
                       width: `${columns[0].size}px`,
                     }}
-                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle"
+                    className="text-xs sm:text-sm md:text-[14px] lg:text-[17px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
                   >
                     <div
-                      className="text-[16px] leading-normal truncate"
+                      className="text-xs sm:text-sm md:text-[14px] lg:text-[16px] leading-normal truncate"
                       title={row.caseNumber}
                     >
                       {truncateText(row.caseNumber, 20)}
@@ -339,10 +342,10 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[1].maxSize}px`,
                       width: `${columns[1].size}px`,
                     }}
-                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle"
+                    className="text-xs sm:text-sm md:text-[14px] lg:text-[17px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
                   >
                     <div
-                      className="text-[16px] leading-normal truncate"
+                      className="text-xs sm:text-sm md:text-[14px] lg:text-[16px] leading-normal truncate"
                       title={row.claimant}
                     >
                       {truncateText(row.claimant, 25)}
@@ -354,10 +357,10 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[2].maxSize}px`,
                       width: `${columns[2].size}px`,
                     }}
-                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle"
+                    className="text-xs sm:text-sm md:text-[14px] lg:text-[17px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
                   >
                     <div
-                      className="text-[16px] leading-normal truncate"
+                      className="text-xs sm:text-sm md:text-[14px] lg:text-[16px] leading-normal truncate"
                       title={capitalizeWords(row.company)}
                     >
                       {truncateText(capitalizeWords(row.company), 25)}
@@ -369,10 +372,10 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[3].maxSize}px`,
                       width: `${columns[3].size}px`,
                     }}
-                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle"
+                    className="text-xs sm:text-sm md:text-[14px] lg:text-[17px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
                   >
                     <div
-                      className="text-[16px] leading-normal truncate"
+                      className="text-xs sm:text-sm md:text-[14px] lg:text-[16px] leading-normal truncate"
                       title={
                         row.appointment
                           ? formatDateTime(row.appointment)
@@ -390,10 +393,10 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[4].maxSize}px`,
                       width: `${columns[4].size}px`,
                     }}
-                    className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle"
+                    className="text-xs sm:text-sm md:text-[14px] lg:text-[17px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
                   >
                     <div
-                      className="text-[16px] leading-normal truncate"
+                      className="text-xs sm:text-sm md:text-[14px] lg:text-[16px] leading-normal truncate"
                       title={row.dueDate ? formatDateShort(row.dueDate) : "N/A"}
                     >
                       {row.dueDate
@@ -407,11 +410,11 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[5].maxSize}px`,
                       width: `${columns[5].size}px`,
                     }}
-                    className="py-5 sm:py-3 overflow-hidden align-middle"
+                    className="py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
                   >
                     <span
                       className={cn(
-                        "text-[17px] sm:text-[14px] tracking-[-0.01em] font-poppins leading-normal",
+                        "text-xs sm:text-sm md:text-[14px] lg:text-[17px] tracking-[-0.01em] font-poppins leading-normal",
                         statusColor,
                       )}
                     >
@@ -424,14 +427,14 @@ export default function CasesTableWithPagination({
                       maxWidth: `${columns[6].maxSize}px`,
                       width: `${columns[6].size}px`,
                     }}
-                    className="py-5 sm:py-3 overflow-hidden align-middle"
+                    className="py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle"
                   >
                     <Link
                       href={`/appointments/${row.id}`}
                       aria-label={`Open ${row.claimant}`}
-                      className="flex-shrink-0 grid h-7 w-7 sm:h-5 sm:w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF] transition-colors"
+                      className="flex-shrink-0 grid h-5 w-5 sm:h-6 sm:w-6 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF] transition-colors"
                     >
-                      <ChevronRight className="h-5 w-5 sm:h-3.5 sm:w-3.5 text-[#00A8FF]" />
+                      <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#00A8FF]" />
                     </Link>
                   </TableCell>
                 </TableRow>
@@ -441,7 +444,7 @@ export default function CasesTableWithPagination({
             <TableRow>
               <TableCell
                 colSpan={columns.length}
-                className="h-24 text-center text-black font-poppins text-[16px] leading-none"
+                className="h-24 text-center text-black font-poppins text-xs sm:text-sm md:text-[16px] leading-none"
               >
                 No data available
               </TableCell>
