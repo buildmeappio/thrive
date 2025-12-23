@@ -37,14 +37,16 @@ const LayoutWrapper = ({
 
         {/* Main Content without sidebar */}
         <div className="pt-20">
-          <main className="flex-1 min-h-[calc(100vh-5rem)]">{children}</main>
+          <main className="flex-1 min-h-[calc(100vh-5rem)]">
+            <div className="max-w-full p-4 md:p-6 lg:p-10">{children}</div>
+          </main>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F4FBFF]">
+    <div className="min-h-screen bg-[#F4FBFF] w-full overflow-x-hidden">
       {/* Fixed Header */}
       <Header
         currentPath={pathname}
@@ -53,7 +55,7 @@ const LayoutWrapper = ({
         isActivationComplete={isActivationComplete}
       />
 
-      <div className="flex pt-20">
+      <div className="flex pt-20 w-full">
         {/* Fixed Sidebar */}
         <SideBar
           isMobileOpen={isSidebarOpen}
@@ -70,10 +72,12 @@ const LayoutWrapper = ({
         )}
 
         {/* Main Content Area */}
-        <div className="flex flex-1 flex-col md:ml-[280px]">
+        <div className="flex flex-1 flex-col md:ml-[280px] w-full min-w-0">
           {/* Scrollable Main Content */}
-          <main className="flex-1 min-h-[calc(100vh-5rem)] bg-[#F4FBFF]">
-            <div className="max-w-full p-10">{children}</div>
+          <main className="flex-1 min-h-[calc(100vh-5rem)] bg-[#F4FBFF] w-full min-w-0">
+            <div className="max-w-full p-4 md:p-6 lg:p-10 w-full min-w-0">
+              {children}
+            </div>
           </main>
         </div>
       </div>

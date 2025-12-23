@@ -9,6 +9,7 @@ import { ReportRow } from "@/domains/dashboard/types";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import { getExaminerProfileAction } from "@/domains/setting/server/actions/getExaminerProfile";
 import { getDashboardBookingsAction } from "@/domains/dashboard/server/actions/getDashboardBookings";
+import { getRecentUpdatesAction } from "@/domains/dashboard/server/actions/getRecentUpdates";
 import { Header } from "@/domains/setting";
 import { URLS } from "@/constants/route";
 
@@ -60,24 +61,22 @@ const DashboardPage = async () => {
   // Empty data for Waiting to be Submitted (to be implemented later)
   const reports: ReportRow[] = [];
 
-  // Dummy data for Recent Updates
-  const updates = [
-    "New appointment scheduled for TRV-2041",
-    "Report for TRV-2037 is overdue",
-    "TRV-2045 accepted by you",
-    "TRV-2045 accepted by you",
-    "New appointment scheduled for TRV-2041",
-    "New appointment scheduled for TRV-2041",
-    "New appointment scheduled for TRV-2041",
-  ];
+  // Fetch recent updates
+  const updatesResult = await getRecentUpdatesAction({
+    examinerProfileId,
+    limit: 7, // Show 7 updates in the panel
+  });
+
+  const updates =
+    updatesResult.success && updatesResult.data ? updatesResult.data : [];
 
   return (
-    <div className="min-h-screen">
+    <>
       <Header userName={fullName} />
-      <div className="max-w-[1800px] mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="w-full max-w-[1800px] mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Left Column - Three Tables */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
             <NewCaseOffers
               items={newCaseOffers}
               listHref="/appointments"
@@ -96,13 +95,13 @@ const DashboardPage = async () => {
           </div>
 
           {/* Right Column - Two Panels */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-4 md:space-y-6">
             <UpdatesPanel items={updates} listHref="/updates" />
             <SummaryPanel earnings="$0" invoiced="$0" totalIMEs={0} />
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

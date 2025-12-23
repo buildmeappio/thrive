@@ -68,13 +68,6 @@ export default function CasesPageContent({
   return (
     // <DashboardShell>
     <>
-      {/* Cases Heading */}
-      <div className="mb-4 sm:mb-6 dashboard-zoom-mobile flex justify-between items-center">
-        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight wrap-break-word">
-          Appointments
-        </h1>
-      </div>
-
       {/* Define SVG gradients */}
       <svg width="0" height="0" className="absolute">
         <defs>
@@ -89,7 +82,7 @@ export default function CasesPageContent({
         </defs>
       </svg>
 
-      <div className="flex flex-col gap-3 sm:gap-6 mb-20 dashboard-zoom-mobile">
+      <div className="flex flex-col gap-3 sm:gap-6 mb-20">
         {/* Search and Filters Section */}
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center sm:justify-between">
           {/* Search Bar */}
@@ -297,12 +290,12 @@ export default function CasesPageContent({
         </div>
 
         {/* Cases Table Card */}
-        <div className="bg-white rounded-[29px] shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-4 w-full">
+        <div className="bg-white rounded-[29px] shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-3 sm:p-4 md:p-6 w-full">
           {tableElement}
         </div>
 
         {/* Pagination */}
-        <div className="mt-4 px-6">
+        <div className="mt-4 px-2 sm:px-4 md:px-6">
           <Pagination {...pagination} />
         </div>
       </div>

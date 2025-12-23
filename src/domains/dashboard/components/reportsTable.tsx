@@ -23,21 +23,21 @@ export default function ReportsTable({
   return (
     <section
       data-tour="reports-table"
-      className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-6"
+      className="rounded-[29px] bg-white shadow-[0_0_36.92px_rgba(0,0,0,0.08)] p-3 sm:p-4 md:p-6"
       aria-labelledby="reports-heading"
     >
       {/* Title + CTA */}
       <div className="flex items-center justify-between gap-2 sm:gap-3">
         <h3
           id="reports-heading"
-          className="font-degular font-[600] text-[26px] sm:text-[24px] md:text-[29.01px] leading-tight tracking-[-0.02em] text-black"
+          className="font-degular font-[600] text-lg sm:text-xl md:text-[24px] lg:text-[29.01px] leading-tight tracking-[-0.02em] text-black"
         >
           {title}
         </h3>
 
         <Link
           href={listHref}
-          className="h-[40px] sm:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-5 sm:px-4 text-white text-[15px] sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0"
+          className="h-[28px] sm:h-[32px] md:h-[34px] rounded-[20px] bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] px-3 sm:px-4 md:px-5 text-white text-xs sm:text-sm font-medium grid place-items-center hover:shadow-lg transition-shadow whitespace-nowrap shrink-0"
         >
           View All
         </Link>
@@ -48,19 +48,19 @@ export default function ReportsTable({
         <Table className="w-full border-0">
           <TableHeader>
             <TableRow className="bg-transparent border-none hover:bg-transparent">
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 rounded-tl-2xl rounded-bl-2xl whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[18%]">
+              <TableHead className="text-xs sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-2 sm:py-2.5 md:py-3 rounded-tl-2xl rounded-bl-2xl whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[18%]">
                 Claimant
               </TableHead>
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[18%]">
+              <TableHead className="text-xs sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-2 sm:py-2.5 md:py-3 whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[18%]">
                 Company
               </TableHead>
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[18%]">
+              <TableHead className="text-xs sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-2 sm:py-2.5 md:py-3 whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[18%]">
                 Due Date
               </TableHead>
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[25%]">
+              <TableHead className="text-xs sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-2 sm:py-2.5 md:py-3 whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[25%]">
                 Reason
               </TableHead>
-              <TableHead className="text-[17px] sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-3 sm:py-2 rounded-tr-2xl rounded-br-2xl whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[21%]">
+              <TableHead className="text-xs sm:text-sm font-medium tracking-[-0.02em] text-[#1A1A1A] font-poppins py-2 sm:py-2.5 md:py-3 rounded-tr-2xl rounded-br-2xl whitespace-nowrap overflow-hidden bg-[#F3F3F3] w-[21%]">
                 Status
               </TableHead>
             </TableRow>
@@ -75,42 +75,42 @@ export default function ReportsTable({
                     key={r.id}
                     className="border-b border-[#EDEDED] hover:bg-[#FAFAFF]"
                   >
-                    <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">
+                    <TableCell className="text-xs sm:text-sm tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle w-[18%]">
                       <div
-                        className="text-[16px] leading-normal truncate"
+                        className="text-xs sm:text-sm leading-normal truncate"
                         title={r.claimant}
                       >
                         {getFirstName(r.claimant)}
                       </div>
                     </TableCell>
-                    <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">
+                    <TableCell className="text-xs sm:text-sm tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle w-[18%]">
                       <div
-                        className="text-[16px] leading-normal truncate"
+                        className="text-xs sm:text-sm leading-normal truncate"
                         title={capitalizeWords(r.company)}
                       >
                         {truncateText(capitalizeWords(r.company), 25)}
                       </div>
                     </TableCell>
-                    <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[18%]">
+                    <TableCell className="text-xs sm:text-sm tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle w-[18%]">
                       <div
-                        className="text-[16px] leading-normal truncate"
+                        className="text-xs sm:text-sm leading-normal truncate"
                         title={formatDateShort(r.dueDate)}
                       >
                         {formatDateShort(r.dueDate)}
                       </div>
                     </TableCell>
-                    <TableCell className="text-[17px] sm:text-[14px] tracking-[-0.01em] text-[#4D4D4D] font-poppins py-5 sm:py-3 overflow-hidden align-middle w-[25%]">
+                    <TableCell className="text-xs sm:text-sm tracking-[-0.01em] text-[#4D4D4D] font-poppins py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle w-[25%]">
                       <div
-                        className="text-[16px] leading-normal truncate"
+                        className="text-xs sm:text-sm leading-normal truncate"
                         title={r.reason}
                       >
                         {truncateText(r.reason, 25)}
                       </div>
                     </TableCell>
-                    <TableCell className="py-5 sm:py-3 overflow-hidden align-middle w-[21%]">
-                      <div className="flex items-center justify-between gap-3">
+                    <TableCell className="py-2 sm:py-2.5 md:py-3 overflow-hidden align-middle w-[21%]">
+                      <div className="flex items-center justify-between gap-2 sm:gap-3">
                         <span
-                          className={`text-[16px] tracking-[-0.01em] font-poppins min-w-0 flex-1 ${
+                          className={`text-xs sm:text-sm tracking-[-0.01em] font-poppins min-w-0 flex-1 ${
                             r.status === "Overdue"
                               ? "text-[#FF0000]"
                               : "text-[#00A8FF]"
@@ -121,9 +121,9 @@ export default function ReportsTable({
                         <Link
                           href={href}
                           aria-label={`Open ${r.claimant}`}
-                          className="flex-shrink-0 grid h-7 w-7 sm:h-5 sm:w-5 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
+                          className="flex-shrink-0 grid h-5 w-5 sm:h-6 sm:w-6 place-items-center rounded-full bg-[#E6F6FF] hover:bg-[#D8F0FF] focus:outline-none focus:ring-2 focus:ring-[#9EDCFF]"
                         >
-                          <ChevronRight className="h-5 w-5 sm:h-3.5 sm:w-3.5 text-[#00A8FF]" />
+                          <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#00A8FF]" />
                         </Link>
                       </div>
                     </TableCell>
@@ -134,7 +134,7 @@ export default function ReportsTable({
               <TableRow>
                 <TableCell
                   colSpan={5}
-                  className="text-center py-12 text-[17px] sm:text-[14px] text-[#5B5B5B] font-poppins"
+                  className="text-center py-8 sm:py-10 md:py-12 text-xs sm:text-sm text-[#5B5B5B] font-poppins"
                 >
                   No data available
                 </TableCell>

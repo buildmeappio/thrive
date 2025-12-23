@@ -140,7 +140,7 @@ const SideBar = ({
 
   return (
     <aside
-      className={`fixed top-20 left-0 z-50 flex h-[calc(100vh-5rem)] w-[280px] transform-gpu flex-col bg-white transition-transform duration-300 ${
+      className={`fixed top-20 left-0 z-50 flex h-[calc(100vh-5rem)] w-[240px] sm:w-[260px] md:w-[280px] transform-gpu flex-col bg-white transition-transform duration-300 ${
         isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       } border-r border-gray-200 rounded-r-[50px] md:pt-6`}
     >
@@ -158,7 +158,7 @@ const SideBar = ({
         {/* Sidebar Content */}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-2">
           {/* Main Navigation - scrollable */}
-          <nav className="flex-1 space-y-5 overflow-y-auto px-8">
+          <nav className="flex-1 space-y-2 sm:space-y-3 md:space-y-5 overflow-y-auto px-3 sm:px-4 md:px-8">
             {medicalExaminerSidebarRoutes.map((item) => {
               const itemIsActive = isActive(item.href);
               const isSelected = selectedBtn === item.index;
@@ -170,13 +170,13 @@ const SideBar = ({
                 return (
                   <div
                     key={item.index}
-                    className="group relative flex w-full items-center justify-start rounded-full px-6 py-3 text-left text-sm font-medium transition-all duration-200 border border-transparent bg-[#F3F3F3] text-[#9B9B9B] opacity-50 cursor-not-allowed mb-6"
+                    className="group relative flex w-full items-center justify-start rounded-full px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 text-left text-xs sm:text-sm font-medium transition-all duration-200 border border-transparent bg-[#F3F3F3] text-[#9B9B9B] opacity-50 cursor-not-allowed mb-3 sm:mb-4 md:mb-6"
                     title="Complete activation steps to unlock"
                   >
                     <div className="flex w-full items-center justify-start space-x-2">
                       <IconComponent
-                        size={20}
-                        className="shrink-0 transition-all duration-200 text-[#9B9B9B]"
+                        size={18}
+                        className="shrink-0 transition-all duration-200 text-[#9B9B9B] sm:w-5 sm:h-5"
                       />
                       <span className="flex-1 text-left">{item.label}</span>
                     </div>
@@ -189,18 +189,18 @@ const SideBar = ({
                   key={item.index}
                   href={item.href}
                   onClick={() => handleLinkClick(item)}
-                  className={`group relative flex w-full items-center justify-start rounded-full px-6 py-3 text-left text-sm font-medium transition-all duration-200 ${
+                  className={`group relative flex w-full items-center justify-start rounded-full px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 text-left text-xs sm:text-sm font-medium transition-all duration-200 ${
                     isSelected || itemIsActive
                       ? "border-2 border-[#BCE8FF] bg-[#E9F8FF] text-black shadow-sm"
                       : "border border-transparent bg-[#F3F3F3] text-[#9B9B9B] hover:border-[#BCE8FF] hover:bg-[#E9F8FF] hover:text-black"
-                  } mb-6`}
+                  } mb-3 sm:mb-4 md:mb-6`}
                   title={item.label}
                   data-tour={isSettings ? "settings-button" : undefined}
                 >
                   <div className="flex w-full items-center justify-start space-x-2">
                     <IconComponent
-                      size={20}
-                      className={`shrink-0 transition-all duration-200 ${
+                      size={18}
+                      className={`shrink-0 transition-all duration-200 sm:w-5 sm:h-5 ${
                         isSelected || itemIsActive
                           ? "text-[#00A8FF]"
                           : "text-[#9B9B9B] group-hover:text-[#00A8FF]"
@@ -214,13 +214,17 @@ const SideBar = ({
           </nav>
 
           {/* Logout Button */}
-          <div className="shrink-0 p-6 mb-12">
+          <div className="shrink-0 p-3 sm:p-4 md:p-6 mb-6 sm:mb-8 md:mb-12">
             <button
               onClick={handleLogout}
-              className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#00A8FF] px-4 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#00A8FF]/90"
+              className="flex w-full cursor-pointer items-center justify-center space-x-2 rounded-full bg-[#00A8FF] px-3 py-2 sm:px-4 sm:py-2.5 md:px-4 md:py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:bg-[#00A8FF]/90"
             >
-              <LogOut size={20} strokeWidth={2} className="text-white" />
-              <span className="text-sm">Logout</span>
+              <LogOut
+                size={18}
+                strokeWidth={2}
+                className="text-white sm:w-5 sm:h-5"
+              />
+              <span className="text-xs sm:text-sm">Logout</span>
             </button>
           </div>
         </div>
