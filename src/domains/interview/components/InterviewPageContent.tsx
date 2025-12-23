@@ -1,116 +1,40 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import InterviewTable, {
+import { useMemo } from "react";
+import {
+  InterviewTable,
   useInterviewTable,
-} from "@/domains/interview/components/InterviewTableWithPagination";
-import InterviewCalendarView from "@/domains/interview/components/InterviewCalendarView";
+  InterviewCalendarView,
+} from "@/domains/interview";
+import { formatText } from "@/domains/interview/utils/format";
+import {
+  filterInterviewsForCalendar,
+  hasActiveFilters,
+} from "@/domains/interview/utils/filter";
+import { useInterviewFilters } from "@/domains/interview/hooks/useInterviewFilters";
 import Pagination from "@/components/Pagination";
-import { InterviewData } from "@/domains/interview/types/InterviewData";
 import { DashboardShell } from "@/layouts/dashboard";
 import { Funnel, Calendar, Table as TableIcon } from "lucide-react";
 import DateRangeFilter from "@/components/ui/DateRangeFilter";
+import type { InterviewPageContentProps } from "../types/page.types";
 
-interface InterviewPageContentProps {
-  data: InterviewData[];
-  statuses: string[];
-}
-
-// Utility function to format text from database: remove _, -, and capitalize each word
-const formatText = (str: string) => {
-  if (!str) return str;
-  return str
-    .replace(/[-_]/g, " ") // Replace - and _ with spaces
-    .split(" ")
-    .filter((word) => word.length > 0) // Remove empty strings
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
-};
-
-interface FilterState {
-  status: string;
-  dateRange: {
-    start: string;
-    end: string;
-  };
-}
-
-export default function InterviewPageContent({
+const InterviewPageContent = ({
   data,
   statuses,
-}: InterviewPageContentProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<FilterState>({
-    status: "all",
-    dateRange: {
-      start: "",
-      end: "",
-    },
-  });
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"table" | "calendar">("calendar");
-
-  const handleFilterChange = (filterType: keyof FilterState, value: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      [filterType]: value,
-    }));
-    setActiveDropdown(null);
-  };
-
-  const handleDateRangeApply = (dateRange: { start: string; end: string }) => {
-    setFilters((prev) => ({
-      ...prev,
-      dateRange,
-    }));
-  };
-
-  const handleDateRangeClear = () => {
-    setFilters((prev) => ({
-      ...prev,
-      dateRange: {
-        start: "",
-        end: "",
-      },
-    }));
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      status: "all",
-      dateRange: {
-        start: "",
-        end: "",
-      },
-    });
-  };
-
-  const hasActiveFilters =
-    filters.status !== "all" ||
-    filters.dateRange.start !== "" ||
-    filters.dateRange.end !== "";
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (activeDropdown) {
-        const target = event.target as Element;
-        // Check if the click is outside any dropdown container
-        const isInsideDropdown = target.closest(".filter-dropdown");
-        if (!isInsideDropdown) {
-          setActiveDropdown(null);
-        }
-      }
-    };
-
-    if (activeDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [activeDropdown]);
+}: InterviewPageContentProps) => {
+  const {
+    searchQuery,
+    setSearchQuery,
+    filters,
+    activeDropdown,
+    setActiveDropdown,
+    viewMode,
+    setViewMode,
+    handleFilterChange,
+    handleDateRangeApply,
+    handleDateRangeClear,
+    clearFilters,
+  } = useInterviewFilters();
 
   // Get table and columns from the hook
   const { table, columns } = useInterviewTable({
@@ -120,47 +44,12 @@ export default function InterviewPageContent({
   });
 
   // Apply filters to data for calendar view
-  const filteredData = useMemo(() => {
-    let result = data;
+  const filteredData = useMemo(
+    () => filterInterviewsForCalendar(data, searchQuery, filters),
+    [data, searchQuery, filters],
+  );
 
-    // Filter by status
-    if (filters.status && filters.status !== "all") {
-      result = result.filter((d) => d.status === filters.status);
-    }
-
-    // Filter by date range
-    if (filters.dateRange) {
-      const { start, end } = filters.dateRange;
-      if (start) {
-        result = result.filter((d) => {
-          const interviewDate = new Date(d.startTime);
-          const startDate = new Date(start);
-          startDate.setHours(0, 0, 0, 0);
-          return interviewDate >= startDate;
-        });
-      }
-      if (end) {
-        result = result.filter((d) => {
-          const interviewDate = new Date(d.startTime);
-          const endDate = new Date(end);
-          endDate.setHours(23, 59, 59, 999);
-          return interviewDate <= endDate;
-        });
-      }
-    }
-
-    // Filter by search query
-    const q = searchQuery.trim().toLowerCase();
-    if (q) {
-      result = result.filter((d) =>
-        [d.examinerName, d.status]
-          .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q)),
-      );
-    }
-
-    return result;
-  }, [data, searchQuery, filters]);
+  const hasFilters = hasActiveFilters(filters);
 
   return (
     <DashboardShell>
@@ -260,11 +149,11 @@ export default function InterviewPageContent({
                   onApply={handleDateRangeApply}
                   onClear={handleDateRangeClear}
                   isActive={
-                    filters.dateRange.start !== "" ||
-                    filters.dateRange.end !== ""
+                    filters.dateRange?.start !== "" ||
+                    filters.dateRange?.end !== ""
                   }
                   label="Date Range"
-                  value={filters.dateRange}
+                  value={filters.dateRange || { start: "", end: "" }}
                   className="filter-dropdown"
                 />
               </div>
@@ -344,7 +233,7 @@ export default function InterviewPageContent({
               </div>
 
               {/* Clear Filters Button */}
-              {hasActiveFilters && (
+              {hasFilters && (
                 <button
                   onClick={clearFilters}
                   className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-50 border border-red-200 rounded-full text-xs sm:text-sm font-poppins text-red-600 hover:bg-red-100 transition-colors whitespace-nowrap"
@@ -388,4 +277,6 @@ export default function InterviewPageContent({
       </div>
     </DashboardShell>
   );
-}
+};
+
+export default InterviewPageContent;

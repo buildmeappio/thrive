@@ -1,5 +1,4 @@
-import interviewActions from "@/domains/interview/actions";
-import InterviewPageContent from "./InterviewPageContent";
+import { interviewActions, InterviewPageContent } from "@/domains/interview";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

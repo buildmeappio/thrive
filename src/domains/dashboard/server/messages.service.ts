@@ -9,10 +9,32 @@ import {
 } from "../types/messages.types";
 import { addDays } from "date-fns";
 import { formatFullName } from "@/utils/text";
+import { getCurrentUser } from "@/domains/auth/server/session";
 
 class MessagesService {
+  // Get read status for messages for current user
+  private async getReadStatuses(
+    messageIds: string[],
+    userId: string,
+  ): Promise<Set<string>> {
+    if (messageIds.length === 0) return new Set();
+
+    const readStatuses = await prisma.messageReadStatus.findMany({
+      where: {
+        userId,
+        messageId: { in: messageIds },
+      },
+      select: { messageId: true },
+    });
+
+    return new Set(readStatuses.map((r) => r.messageId));
+  }
+
   // Get recent messages for dashboard panel (limited to 5)
-  async getRecentMessages(limit = 5): Promise<DashboardMessage[]> {
+  async getRecentMessages(
+    limit = 5,
+    userId?: string,
+  ): Promise<DashboardMessage[]> {
     const messages: DashboardMessage[] = [];
 
     try {
@@ -215,6 +237,17 @@ class MessagesService {
         })
         .slice(0, limit);
 
+      // Update isRead status based on database if userId is provided
+      if (userId && sorted.length > 0) {
+        const messageIds = sorted.map((m) => m.id);
+        const readStatuses = await this.getReadStatuses(messageIds, userId);
+
+        // Update isRead for each message
+        for (const message of sorted) {
+          message.isRead = readStatuses.has(message.id);
+        }
+      }
+
       return sorted;
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -223,14 +256,17 @@ class MessagesService {
   }
 
   // Get messages with pagination and filters
-  async getMessages(filters: MessagesFilters = {}): Promise<MessagesResponse> {
+  async getMessages(
+    filters: MessagesFilters = {},
+    userId?: string,
+  ): Promise<MessagesResponse> {
     const { type, isRead, page = 1, pageSize = 20 } = filters;
 
     const skip = (page - 1) * pageSize;
 
     try {
       // Get all messages (same logic as getRecentMessages but without limit)
-      const allMessages = await this.getRecentMessages(1000); // Get more for filtering
+      const allMessages = await this.getRecentMessages(1000, userId); // Get more for filtering
 
       // Apply filters
       let filtered = allMessages;
@@ -276,13 +312,52 @@ class MessagesService {
   }
 
   // Get unread count
-  async getUnreadCount(): Promise<number> {
+  async getUnreadCount(userId?: string): Promise<number> {
     try {
-      const messages = await this.getRecentMessages(100);
+      const messages = await this.getRecentMessages(100, userId);
       return messages.filter((m) => !m.isRead).length;
     } catch (error) {
       console.error("Error getting unread count:", error);
       return 0;
+    }
+  }
+
+  // Mark message as read for current user
+  async markMessageAsRead(messageId: string, userId: string): Promise<void> {
+    try {
+      await prisma.messageReadStatus.upsert({
+        where: {
+          userId_messageId: {
+            userId,
+            messageId,
+          },
+        },
+        create: {
+          userId,
+          messageId,
+        },
+        update: {
+          readAt: new Date(),
+        },
+      });
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+      throw error;
+    }
+  }
+
+  // Mark message as unread for current user (remove read status)
+  async markMessageAsUnread(messageId: string, userId: string): Promise<void> {
+    try {
+      await prisma.messageReadStatus.deleteMany({
+        where: {
+          userId,
+          messageId,
+        },
+      });
+    } catch (error) {
+      console.error("Error marking message as unread:", error);
+      throw error;
     }
   }
 }
@@ -292,15 +367,34 @@ const messagesService = new MessagesService();
 export async function getRecentMessages(
   limit = 5,
 ): Promise<DashboardMessage[]> {
-  return await messagesService.getRecentMessages(limit);
+  const user = await getCurrentUser();
+  return await messagesService.getRecentMessages(limit, user?.id);
 }
 
 export async function getMessages(
   filters?: MessagesFilters,
 ): Promise<MessagesResponse> {
-  return await messagesService.getMessages(filters);
+  const user = await getCurrentUser();
+  return await messagesService.getMessages(filters, user?.id);
 }
 
 export async function getUnreadMessagesCount(): Promise<number> {
-  return await messagesService.getUnreadCount();
+  const user = await getCurrentUser();
+  return await messagesService.getUnreadCount(user?.id);
+}
+
+export async function markMessageAsRead(messageId: string): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+  return await messagesService.markMessageAsRead(messageId, user.id);
+}
+
+export async function markMessageAsUnread(messageId: string): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+  return await messagesService.markMessageAsUnread(messageId, user.id);
 }

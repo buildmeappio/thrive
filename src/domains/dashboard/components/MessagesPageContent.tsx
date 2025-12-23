@@ -10,9 +10,15 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowLeft,
+  Mail,
+  MailCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import {
+  markMessageAsReadAction,
+  markMessageAsUnreadAction,
+} from "../actions/messages.actions";
 import type { MessagesResponse, MessageType } from "../types/messages.types";
 import { formatDistanceToNow } from "date-fns";
 
@@ -389,10 +395,37 @@ export default function MessagesPageContent({
                 addSuffix: true,
               });
 
+              const handleToggleReadStatus = async (e: React.MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!message.id) return;
+
+                startTransition(async () => {
+                  try {
+                    if (message.isRead) {
+                      await markMessageAsUnreadAction(message.id);
+                    } else {
+                      await markMessageAsReadAction(message.id);
+                    }
+                    // Server action handles revalidation, just refresh to get updated data
+                    router.refresh();
+                  } catch (error) {
+                    console.error(
+                      "Failed to toggle message read status:",
+                      error,
+                    );
+                  }
+                });
+              };
+
               return (
                 <div
                   key={message.id}
-                  className="flex items-start gap-4 p-4 rounded-lg bg-[#F2F2F2] hover:bg-[#E8E8E8] transition-colors"
+                  className={`flex items-start gap-4 p-4 rounded-lg transition-colors ${
+                    message.isRead
+                      ? "bg-[#F8F8F8] hover:bg-[#F0F0F0] opacity-75"
+                      : "bg-[#F2F2F2] hover:bg-[#E8E8E8]"
+                  }`}
                 >
                   <span
                     className={`h-3 w-3 rounded-full mt-2 flex-shrink-0 ${getPriorityColor(message.priority)}`}
@@ -425,14 +458,44 @@ export default function MessagesPageContent({
                           </span>
                         </div>
                       </Link>
-                      {message.actionLabel && message.actionUrl && (
-                        <Link
-                          href={message.actionUrl}
-                          className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-2 w-[40px] h-[40px] flex items-center justify-center hover:opacity-80 transition-opacity flex-shrink-0"
+                      <div className="flex items-center gap-2">
+                        {/* Read/Unread toggle button */}
+                        <button
+                          onClick={handleToggleReadStatus}
+                          disabled={isPending}
+                          className="mt-2 flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 rounded-md hover:bg-gray-100"
+                          aria-label={
+                            message.isRead ? "Mark as unread" : "Mark as read"
+                          }
+                          title={
+                            message.isRead ? "Mark as unread" : "Mark as read"
+                          }
                         >
-                          <ArrowRight className="w-4 h-4 text-white" />
-                        </Link>
-                      )}
+                          {message.isRead ? (
+                            <>
+                              <MailCheck className="h-4 w-4 text-gray-400" />
+                              <span className="text-xs text-gray-600 font-medium whitespace-nowrap">
+                                Mark unread
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <Mail className="h-4 w-4 text-[#00A8FF]" />
+                              <span className="text-xs text-[#00A8FF] font-medium whitespace-nowrap">
+                                Mark read
+                              </span>
+                            </>
+                          )}
+                        </button>
+                        {message.actionLabel && message.actionUrl && (
+                          <Link
+                            href={message.actionUrl}
+                            className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-2 w-[40px] h-[40px] flex items-center justify-center hover:opacity-80 transition-opacity flex-shrink-0"
+                          >
+                            <ArrowRight className="w-4 h-4 text-white" />
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
