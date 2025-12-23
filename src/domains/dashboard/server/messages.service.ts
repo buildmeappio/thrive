@@ -226,16 +226,14 @@ class MessagesService {
         });
       }
 
-      // Sort by priority and date, then limit
-      const sorted = messages
-        .sort((a, b) => {
-          const priorityOrder = { urgent: 0, normal: 1, low: 2 };
-          const priorityDiff =
-            priorityOrder[a.priority] - priorityOrder[b.priority];
-          if (priorityDiff !== 0) return priorityDiff;
-          return b.createdAt.getTime() - a.createdAt.getTime();
-        })
-        .slice(0, limit);
+      // Sort by priority and date
+      const sorted = messages.sort((a, b) => {
+        const priorityOrder = { urgent: 0, normal: 1, low: 2 };
+        const priorityDiff =
+          priorityOrder[a.priority] - priorityOrder[b.priority];
+        if (priorityDiff !== 0) return priorityDiff;
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      });
 
       // Update isRead status based on database if userId is provided
       if (userId && sorted.length > 0) {
@@ -248,7 +246,11 @@ class MessagesService {
         }
       }
 
-      return sorted;
+      // Filter out read messages for dashboard panel
+      const unreadMessages = sorted.filter((m) => !m.isRead);
+
+      // Limit to requested number (only unread messages)
+      return unreadMessages.slice(0, limit);
     } catch (error) {
       console.error("Error fetching messages:", error);
       return [];
