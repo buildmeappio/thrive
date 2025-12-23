@@ -373,6 +373,43 @@ const ContractSigningView = ({
 
   const handleSign = async () => {
     if (isSigning) return;
+
+    // Validate signature is actually drawn
+    if (!signatureImage) {
+      toast.error("Please draw your signature before signing the contract");
+      return;
+    }
+
+    // Additional validation: check if canvas has actual drawing
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        let hasDrawing = false;
+
+        // Check if there are any non-white pixels
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const a = data[i + 3];
+
+          // If pixel is not white/transparent, there's a drawing
+          if (a > 0 && (r < 250 || g < 250 || b < 250)) {
+            hasDrawing = true;
+            break;
+          }
+        }
+
+        if (!hasDrawing) {
+          toast.error("Please draw your signature before signing the contract");
+          return;
+        }
+      }
+    }
+
     setIsSigning(true);
 
     try {
@@ -497,7 +534,35 @@ const ContractSigningView = ({
     const end = () => {
       drawingRef.current = false;
       lastRef.current = null;
-      if (canvas) setSignatureImage(canvas.toDataURL("image/png"));
+      if (canvas) {
+        // Check if canvas has any non-white pixels (actual signature drawn)
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+          let hasDrawing = false;
+
+          // Check if there are any non-white pixels
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const a = data[i + 3];
+
+            // If pixel is not white/transparent, there's a drawing
+            if (a > 0 && (r < 250 || g < 250 || b < 250)) {
+              hasDrawing = true;
+              break;
+            }
+          }
+
+          if (hasDrawing) {
+            setSignatureImage(canvas.toDataURL("image/png"));
+          } else {
+            setSignatureImage(null);
+          }
+        }
+      }
     };
 
     canvas.addEventListener("mousedown", start);
