@@ -8,6 +8,8 @@ model FeeStructure {
   updatedAt   DateTime           @updatedAt @map("updated_at") @db.Timestamptz()
 
   variables FeeStructureVariable[] @relation("FeeStructureVariables")
+  contracts Contract[]             @relation("ContractFeeStructures")
+  templates DocumentTemplate[]     @relation("TemplateFeeStructures")
 
   @@index([status])
   @@map("fee_structures")

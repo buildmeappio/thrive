@@ -7,7 +7,7 @@ import { activateFeeStructure } from "../server/feeStructure.service";
 import { ActionResult } from "../types/feeStructure.types";
 
 export const activateFeeStructureAction = async (
-  id: string
+  id: string,
 ): Promise<ActionResult<{ id: string; status: FeeStructureStatus }>> => {
   try {
     const user = await getCurrentUser();
@@ -29,7 +29,9 @@ export const activateFeeStructureAction = async (
     console.error("Error activating fee structure:", error);
 
     // Check for validation errors with fieldErrors
-    const errorWithFields = error as Error & { fieldErrors?: Record<string, string> };
+    const errorWithFields = error as Error & {
+      fieldErrors?: Record<string, string>;
+    };
     if (errorWithFields.fieldErrors) {
       return {
         success: false,
@@ -40,8 +42,10 @@ export const activateFeeStructureAction = async (
 
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to activate fee structure",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to activate fee structure",
     };
   }
 };
-

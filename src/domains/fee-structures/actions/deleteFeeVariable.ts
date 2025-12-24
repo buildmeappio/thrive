@@ -4,10 +4,13 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import { deleteFeeVariable } from "../server/feeStructure.service";
 import { deleteFeeVariableSchema } from "../schemas/feeStructure.schema";
-import { ActionResult, DeleteFeeVariableInput } from "../types/feeStructure.types";
+import {
+  ActionResult,
+  DeleteFeeVariableInput,
+} from "../types/feeStructure.types";
 
 export const deleteFeeVariableAction = async (
-  input: DeleteFeeVariableInput
+  input: DeleteFeeVariableInput,
 ): Promise<ActionResult<{ success: boolean }>> => {
   try {
     const user = await getCurrentUser();
@@ -23,7 +26,10 @@ export const deleteFeeVariableAction = async (
       };
     }
 
-    const data = await deleteFeeVariable(parsed.data.feeStructureId, parsed.data.variableId);
+    const data = await deleteFeeVariable(
+      parsed.data.feeStructureId,
+      parsed.data.variableId,
+    );
 
     revalidatePath("/dashboard/fee-structures");
     revalidatePath(`/dashboard/fee-structures/${input.feeStructureId}`);
@@ -33,8 +39,8 @@ export const deleteFeeVariableAction = async (
     console.error("Error deleting fee variable:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete variable",
+      error:
+        error instanceof Error ? error.message : "Failed to delete variable",
     };
   }
 };
-

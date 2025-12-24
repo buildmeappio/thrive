@@ -6,7 +6,7 @@ import { duplicateFeeStructure } from "../server/feeStructure.service";
 import { ActionResult } from "../types/feeStructure.types";
 
 export const duplicateFeeStructureAction = async (
-  id: string
+  id: string,
 ): Promise<ActionResult<{ id: string }>> => {
   try {
     const user = await getCurrentUser();
@@ -27,8 +27,10 @@ export const duplicateFeeStructureAction = async (
     console.error("Error duplicating fee structure:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to duplicate fee structure",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to duplicate fee structure",
     };
   }
 };
-

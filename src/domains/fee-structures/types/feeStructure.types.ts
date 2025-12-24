@@ -86,4 +86,3 @@ export type ListFeeStructuresInput = {
 export type ActionResult<T> =
   | { success: true; data: T }
   | { success: false; error: string; fieldErrors?: Record<string, string> };
-

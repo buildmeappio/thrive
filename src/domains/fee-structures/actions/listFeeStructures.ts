@@ -4,10 +4,14 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import { listFeeStructures } from "../server/feeStructure.service";
 import { listFeeStructuresSchema } from "../schemas/feeStructure.schema";
-import { ActionResult, FeeStructureListItem, ListFeeStructuresInput } from "../types/feeStructure.types";
+import {
+  ActionResult,
+  FeeStructureListItem,
+  ListFeeStructuresInput,
+} from "../types/feeStructure.types";
 
 export const listFeeStructuresAction = async (
-  input: ListFeeStructuresInput
+  input: ListFeeStructuresInput,
 ): Promise<ActionResult<FeeStructureListItem[]>> => {
   try {
     const user = await getCurrentUser();
@@ -20,7 +24,10 @@ export const listFeeStructuresAction = async (
       return {
         success: false,
         error: "Invalid input",
-        fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string>,
+        fieldErrors: parsed.error.flatten().fieldErrors as Record<
+          string,
+          string
+        >,
       };
     }
 
@@ -30,8 +37,10 @@ export const listFeeStructuresAction = async (
     console.error("Error listing fee structures:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to list fee structures",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to list fee structures",
     };
   }
 };
-

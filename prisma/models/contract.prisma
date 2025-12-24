@@ -4,8 +4,10 @@ model Contract {
   applicationId        String?        @map("application_id") @db.Uuid
   templateId           String         @map("template_id") @db.Uuid
   templateVersionId    String         @map("template_version_id") @db.Uuid
+  feeStructureId       String?        @map("fee_structure_id") @db.Uuid
   status               ContractStatus @default(DRAFT) @map("status")
   data                 Json           @map("data")
+  fieldValues          Json?          @map("field_values")
   dataHash             String         @map("data_hash") @db.VarChar(64)
   unsignedHtmlS3Key    String?        @map("unsigned_html_s3_key") @db.VarChar(500)
   unsignedHtmlSha256   String?        @map("unsigned_html_sha256") @db.VarChar(64)
@@ -34,12 +36,14 @@ model Contract {
   application     ExaminerApplication? @relation("ApplicationContracts", fields: [applicationId], references: [id], onDelete: Cascade)
   template        DocumentTemplate     @relation("TemplateContracts", fields: [templateId], references: [id])
   templateVersion TemplateVersion      @relation("VersionContracts", fields: [templateVersionId], references: [id])
+  feeStructure    FeeStructure?        @relation("ContractFeeStructures", fields: [feeStructureId], references: [id])
   events          ContractEvent[]      @relation("ContractEvents")
 
   @@index([examinerProfileId])
   @@index([status])
   @@index([templateId])
   @@index([googleDocId])
+  @@index([feeStructureId])
   @@map("contracts")
 }
 

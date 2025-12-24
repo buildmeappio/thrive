@@ -105,6 +105,18 @@ export const routes: Route[] = [
     href: "/dashboard/fee-structures",
     index: 14,
   },
+  {
+    icon: FileText,
+    label: "Contract Templates",
+    href: "/dashboard/contract-templates",
+    index: 15,
+  },
+  {
+    icon: FileText,
+    label: "Contracts",
+    href: "/dashboard/contracts",
+    index: 16,
+  },
   { icon: Users, label: "Users", href: "/users", index: 10 },
   {
     icon: BookText,
@@ -329,8 +341,8 @@ const Sidebar = () => {
                 const isSelected = selectedBtn === item.index;
                 const isActive = item.href
                   ? pathname === item.href ||
-                  (pathname.startsWith(item.href) &&
-                    item.href !== "/dashboard")
+                    (pathname.startsWith(item.href) &&
+                      item.href !== "/dashboard")
                   : false;
                 const isSubActive =
                   hasSubRoutes &&

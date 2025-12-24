@@ -8,4 +8,3 @@ export { activateFeeStructureAction } from "./activateFeeStructure";
 export { createFeeVariableAction } from "./createFeeVariable";
 export { updateFeeVariableAction } from "./updateFeeVariable";
 export { deleteFeeVariableAction } from "./deleteFeeVariable";
-

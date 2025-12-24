@@ -34,11 +34,22 @@ export const feeVariableBaseSchema = z.object({
     .string()
     .min(1, "Key is required")
     .max(64, "Key must be less than 64 characters")
-    .regex(keyRegex, "Key must be snake_case (lowercase letters, numbers, and underscores, starting with a letter)")
+    .regex(
+      keyRegex,
+      "Key must be snake_case (lowercase letters, numbers, and underscores, starting with a letter)",
+    )
     .trim(),
-  type: z.enum([FeeVariableType.MONEY, FeeVariableType.NUMBER, FeeVariableType.TEXT, FeeVariableType.BOOLEAN], {
-    message: "Invalid variable type",
-  }),
+  type: z.enum(
+    [
+      FeeVariableType.MONEY,
+      FeeVariableType.NUMBER,
+      FeeVariableType.TEXT,
+      FeeVariableType.BOOLEAN,
+    ],
+    {
+      message: "Invalid variable type",
+    },
+  ),
   defaultValue: z.unknown().optional(),
   required: z.boolean().default(false),
   currency: z
@@ -61,92 +72,98 @@ export const feeVariableBaseSchema = z.object({
 });
 
 // Custom refinement for variable validation
-export const createFeeVariableSchema = feeVariableBaseSchema.superRefine((data, ctx) => {
-  // Currency only allowed for MONEY type
-  if (data.currency && data.type !== FeeVariableType.MONEY) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Currency is only allowed for MONEY type",
-      path: ["currency"],
-    });
-  }
-
-  // Set default currency for MONEY if not provided
-  if (data.type === FeeVariableType.MONEY && !data.currency) {
-    data.currency = "USD";
-  }
-
-  // Decimals only allowed for MONEY and NUMBER types
-  if (data.decimals !== undefined && data.type !== FeeVariableType.MONEY && data.type !== FeeVariableType.NUMBER) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Decimals is only allowed for MONEY and NUMBER types",
-      path: ["decimals"],
-    });
-  }
-
-  // Set default decimals
-  if (data.decimals === undefined) {
-    if (data.type === FeeVariableType.MONEY) {
-      data.decimals = 2;
-    } else if (data.type === FeeVariableType.NUMBER) {
-      data.decimals = 0;
+export const createFeeVariableSchema = feeVariableBaseSchema.superRefine(
+  (data, ctx) => {
+    // Currency only allowed for MONEY type
+    if (data.currency && data.type !== FeeVariableType.MONEY) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Currency is only allowed for MONEY type",
+        path: ["currency"],
+      });
     }
-  }
 
-  // Validate defaultValue based on type
-  if (data.required && data.defaultValue === undefined) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Default value is required when Required is checked",
-      path: ["defaultValue"],
-    });
-    return;
-  }
+    // Set default currency for MONEY if not provided
+    if (data.type === FeeVariableType.MONEY && !data.currency) {
+      data.currency = "CAD";
+    }
 
-  if (data.defaultValue !== undefined && data.defaultValue !== null) {
-    switch (data.type) {
-      case FeeVariableType.MONEY:
-      case FeeVariableType.NUMBER: {
-        const numValue = Number(data.defaultValue);
-        if (isNaN(numValue)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Default value must be a valid number",
-            path: ["defaultValue"],
-          });
-        }
-        break;
-      }
-      case FeeVariableType.BOOLEAN: {
-        if (typeof data.defaultValue !== "boolean") {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Default value must be a boolean",
-            path: ["defaultValue"],
-          });
-        }
-        break;
-      }
-      case FeeVariableType.TEXT: {
-        if (typeof data.defaultValue !== "string") {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Default value must be a string",
-            path: ["defaultValue"],
-          });
-        } else if (data.required && data.defaultValue.trim() === "") {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Default value cannot be empty when Required is checked",
-            path: ["defaultValue"],
-          });
-        }
-        break;
+    // Decimals only allowed for MONEY and NUMBER types
+    if (
+      data.decimals !== undefined &&
+      data.type !== FeeVariableType.MONEY &&
+      data.type !== FeeVariableType.NUMBER
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Decimals is only allowed for MONEY and NUMBER types",
+        path: ["decimals"],
+      });
+    }
+
+    // Set default decimals
+    if (data.decimals === undefined) {
+      if (data.type === FeeVariableType.MONEY) {
+        data.decimals = 2;
+      } else if (data.type === FeeVariableType.NUMBER) {
+        data.decimals = 0;
       }
     }
-  }
-});
+
+    // Validate defaultValue based on type
+    if (data.required && data.defaultValue === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Default value is required when Required is checked",
+        path: ["defaultValue"],
+      });
+      return;
+    }
+
+    if (data.defaultValue !== undefined && data.defaultValue !== null) {
+      switch (data.type) {
+        case FeeVariableType.MONEY:
+        case FeeVariableType.NUMBER: {
+          const numValue = Number(data.defaultValue);
+          if (isNaN(numValue)) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Default value must be a valid number",
+              path: ["defaultValue"],
+            });
+          }
+          break;
+        }
+        case FeeVariableType.BOOLEAN: {
+          if (typeof data.defaultValue !== "boolean") {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Default value must be a boolean",
+              path: ["defaultValue"],
+            });
+          }
+          break;
+        }
+        case FeeVariableType.TEXT: {
+          if (typeof data.defaultValue !== "string") {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Default value must be a string",
+              path: ["defaultValue"],
+            });
+          } else if (data.required && data.defaultValue.trim() === "") {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Default value cannot be empty when Required is checked",
+              path: ["defaultValue"],
+            });
+          }
+          break;
+        }
+      }
+    }
+  },
+);
 
 export const updateFeeVariableSchema = feeVariableBaseSchema
   .extend({
@@ -163,10 +180,14 @@ export const updateFeeVariableSchema = feeVariableBaseSchema
     }
 
     if (data.type === FeeVariableType.MONEY && !data.currency) {
-      data.currency = "USD";
+      data.currency = "CAD";
     }
 
-    if (data.decimals !== undefined && data.type !== FeeVariableType.MONEY && data.type !== FeeVariableType.NUMBER) {
+    if (
+      data.decimals !== undefined &&
+      data.type !== FeeVariableType.MONEY &&
+      data.type !== FeeVariableType.NUMBER
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Decimals is only allowed for MONEY and NUMBER types",
@@ -241,12 +262,22 @@ export const deleteFeeVariableSchema = z.object({
 });
 
 export const listFeeStructuresSchema = z.object({
-  status: z.enum(["ALL", "DRAFT", "ACTIVE", "ARCHIVED"]).optional().default("ALL"),
+  status: z
+    .enum(["ALL", "DRAFT", "ACTIVE", "ARCHIVED"])
+    .optional()
+    .default("ALL"),
   search: z.string().optional(),
 });
 
-export type CreateFeeStructureSchemaType = z.infer<typeof createFeeStructureSchema>;
-export type UpdateFeeStructureSchemaType = z.infer<typeof updateFeeStructureSchema>;
-export type CreateFeeVariableSchemaType = z.infer<typeof createFeeVariableSchema>;
-export type UpdateFeeVariableSchemaType = z.infer<typeof updateFeeVariableSchema>;
-
+export type CreateFeeStructureSchemaType = z.infer<
+  typeof createFeeStructureSchema
+>;
+export type UpdateFeeStructureSchemaType = z.infer<
+  typeof updateFeeStructureSchema
+>;
+export type CreateFeeVariableSchemaType = z.infer<
+  typeof createFeeVariableSchema
+>;
+export type UpdateFeeVariableSchemaType = z.infer<
+  typeof updateFeeVariableSchema
+>;

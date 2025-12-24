@@ -5,7 +5,7 @@ import { getFeeStructure } from "../server/feeStructure.service";
 import { ActionResult, FeeStructureData } from "../types/feeStructure.types";
 
 export const getFeeStructureAction = async (
-  id: string
+  id: string,
 ): Promise<ActionResult<FeeStructureData>> => {
   try {
     const user = await getCurrentUser();
@@ -23,8 +23,8 @@ export const getFeeStructureAction = async (
     console.error("Error getting fee structure:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get fee structure",
+      error:
+        error instanceof Error ? error.message : "Failed to get fee structure",
     };
   }
 };
-

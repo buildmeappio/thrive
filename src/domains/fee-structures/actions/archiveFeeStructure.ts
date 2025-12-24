@@ -7,7 +7,7 @@ import { archiveFeeStructure } from "../server/feeStructure.service";
 import { ActionResult } from "../types/feeStructure.types";
 
 export const archiveFeeStructureAction = async (
-  id: string
+  id: string,
 ): Promise<ActionResult<{ id: string; status: FeeStructureStatus }>> => {
   try {
     const user = await getCurrentUser();
@@ -29,8 +29,10 @@ export const archiveFeeStructureAction = async (
     console.error("Error archiving fee structure:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to archive fee structure",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to archive fee structure",
     };
   }
 };
-
