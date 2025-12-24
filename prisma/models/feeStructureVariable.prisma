@@ -1,0 +1,22 @@
+model FeeStructureVariable {
+  id             String          @id @default(uuid()) @db.Uuid
+  feeStructureId String          @map("fee_structure_id") @db.Uuid
+  label          String          @db.VarChar(80)
+  key            String          @db.VarChar(64)
+  type           FeeVariableType
+  defaultValue   Json?           @map("default_value")
+  required       Boolean         @default(false)
+  currency       String?         @db.VarChar(3)
+  decimals       Int?
+  unit           String?         @db.VarChar(20)
+  sortOrder      Int             @default(0) @map("sort_order")
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime        @updatedAt @map("updated_at") @db.Timestamptz()
+
+  feeStructure FeeStructure @relation("FeeStructureVariables", fields: [feeStructureId], references: [id], onDelete: Cascade)
+
+  @@unique([feeStructureId, key])
+  @@index([feeStructureId])
+  @@map("fee_structure_variables")
+}
+
