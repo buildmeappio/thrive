@@ -23,6 +23,7 @@ import {
   Calendar,
   Mail,
   FileText,
+  DollarSign,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useSidebar } from "@/providers/Sidebar";
@@ -97,6 +98,12 @@ export const routes: Route[] = [
     label: "Benefits",
     href: "/dashboard/benefits",
     index: 9,
+  },
+  {
+    icon: DollarSign,
+    label: "Fee Structures",
+    href: "/dashboard/fee-structures",
+    index: 14,
   },
   { icon: Users, label: "Users", href: "/users", index: 10 },
   {
@@ -322,8 +329,8 @@ const Sidebar = () => {
                 const isSelected = selectedBtn === item.index;
                 const isActive = item.href
                   ? pathname === item.href ||
-                    (pathname.startsWith(item.href) &&
-                      item.href !== "/dashboard")
+                  (pathname.startsWith(item.href) &&
+                    item.href !== "/dashboard")
                   : false;
                 const isSubActive =
                   hasSubRoutes &&
