@@ -1,11 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { ContractStatus } from "@prisma/client";
+import prisma from "@/lib/db";
 import { getLatestContractService } from "../services/getLatestContract.service";
 import {
   uploadHtmlToS3,
   uploadPdfToS3,
-  updateContractStatus,
 } from "../services/signContract.service";
 
 export interface SignContractInput {
@@ -13,6 +14,7 @@ export interface SignContractInput {
   signerName: string;
   htmlContent: string;
   pdfBase64: string;
+  signatureImage?: string; // Signature image as data URL
   ipAddress?: string;
   userAgent?: string;
 }
@@ -72,13 +74,31 @@ export async function signContractHandler(input: SignContractInput) {
     }
 
     try {
-      await updateContractStatus(contract.id, "SIGNED", {
-        signedHtmlKey: htmlUpload.key,
-        signedHtmlSha256: htmlUpload.sha256,
-        ...(pdfUpload && {
-          signedPdfKey: pdfUpload.key,
-          signedPdfSha256: pdfUpload.sha256,
-        }),
+      // Get existing fieldValues
+      const existingFieldValues = (contract.fieldValues as any) || {};
+
+      // Update fieldValues with signature if provided
+      const updatedFieldValues = {
+        ...existingFieldValues,
+        examiner: {
+          ...(existingFieldValues.examiner || {}),
+          ...(input.signatureImage && { signature: input.signatureImage }),
+        },
+      };
+
+      await prisma.contract.update({
+        where: { id: contract.id },
+        data: {
+          status: "SIGNED" as ContractStatus,
+          signedAt: new Date(),
+          signedHtmlS3Key: htmlUpload.key,
+          signedHtmlSha256: htmlUpload.sha256,
+          ...(pdfUpload && {
+            signedPdfS3Key: pdfUpload.key,
+            signedPdfSha256: pdfUpload.sha256,
+          }),
+          fieldValues: updatedFieldValues,
+        },
       });
     } catch (updateError: unknown) {
       const errorMessage =

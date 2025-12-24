@@ -755,6 +755,7 @@ const InterviewCalendar = ({
                     onSelect={handleDateSelect}
                     disabled={getDisabledDates}
                     defaultMonth={selectedDate}
+                    showOutsideDays={false}
                     className="rounded-lg border-0 p-0 w-full"
                     classNames={{
                       root: "self-center",

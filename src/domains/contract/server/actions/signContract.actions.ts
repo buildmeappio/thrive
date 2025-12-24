@@ -7,6 +7,7 @@ export const signContract = async (
   signerName: string,
   htmlContent: string,
   pdfBase64: string,
+  signatureImage?: string,
   ipAddress?: string,
   userAgent?: string,
 ) => {
@@ -15,6 +16,7 @@ export const signContract = async (
     signerName,
     htmlContent,
     pdfBase64,
+    signatureImage,
     ipAddress,
     userAgent,
   });
