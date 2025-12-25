@@ -26,6 +26,7 @@ import AssessmentTypeSeeder from "./seeders/assessmentType.seeder";
 import DevSuperAdminSeeder from "./seeders/devSuperAdmin.seeder";
 import ProfessionalTitleSeeder from "./seeders/professionalTitle.seeder";
 import EmailTemplateSeeder from "./seeders/emailTemplate.seeder";
+import CustomVariableSeeder from "./seeders/customVariable.seeder";
 
 const seeds = [
   RoleSeeder,
@@ -52,6 +53,7 @@ const seeds = [
   DevSuperAdminSeeder,
   ProfessionalTitleSeeder,
   EmailTemplateSeeder,
+  CustomVariableSeeder,
 ];
 
 async function hasRunSeed(name: string) {

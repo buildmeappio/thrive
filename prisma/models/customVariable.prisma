@@ -1,0 +1,11 @@
+model CustomVariable {
+    id           String   @id @default(uuid())
+    key          String   @unique
+    defaultValue String
+    description  String?
+    isActive     Boolean  @default(true)
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    @@map("custom_variables")
+}
