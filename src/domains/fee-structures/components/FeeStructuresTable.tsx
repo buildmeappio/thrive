@@ -39,7 +39,15 @@ import { FeeStructureListItem } from "../types/feeStructure.types";
 import {
   duplicateFeeStructureAction,
   archiveFeeStructureAction,
+  updateFeeStructureStatusAction,
 } from "../actions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Utility function to format text from database: remove _, -, and capitalize each word
 const formatText = (str: string): string => {
@@ -120,7 +128,53 @@ export default function FeeStructuresTable({
     useState<FeeStructureListItem | null>(null);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [feeStructuresData, setFeeStructuresData] = useState(feeStructures);
   const [sorting, setSorting] = useState<SortingState>([]);
+
+  // Update local state when feeStructures prop changes
+  useEffect(() => {
+    setFeeStructuresData(feeStructures);
+  }, [feeStructures]);
+
+  const handleStatusChange = useCallback(
+    async (feeStructureId: string, newStatus: FeeStructureStatus) => {
+      setUpdatingStatus(feeStructureId);
+      try {
+        const result = await updateFeeStructureStatusAction(
+          feeStructureId,
+          newStatus,
+        );
+
+        if (result.success) {
+          // Update local state optimistically
+          setFeeStructuresData((prev) =>
+            prev.map((fs) =>
+              fs.id === feeStructureId ? { ...fs, status: newStatus } : fs,
+            ),
+          );
+          toast.success(
+            `Fee structure ${newStatus === FeeStructureStatus.ACTIVE ? "activated" : "set to draft"} successfully`,
+          );
+          router.refresh();
+        } else {
+          const errorMessage =
+            "error" in result ? result.error : "Failed to update status";
+          toast.error(errorMessage);
+          // Revert optimistic update
+          setFeeStructuresData(feeStructures);
+        }
+      } catch (error) {
+        console.error("Error updating fee structure status:", error);
+        toast.error("An error occurred while updating status");
+        // Revert optimistic update
+        setFeeStructuresData(feeStructures);
+      } finally {
+        setUpdatingStatus(null);
+      }
+    },
+    [router, feeStructures],
+  );
 
   const handleRowClick = useCallback(
     (id: string) => {
@@ -181,21 +235,6 @@ export default function FeeStructuresTable({
         meta: { minSize: 150, maxSize: 300, size: 200 } as ColumnMeta,
       },
       {
-        accessorKey: "status",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Status</SortableHeader>
-        ),
-        cell: ({ row }) => (
-          <div
-            className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-            title={formatText(row.getValue("status") as string)}
-          >
-            {formatText(row.getValue("status") as string)}
-          </div>
-        ),
-        meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
-      },
-      {
         accessorKey: "variableCount",
         header: ({ column }) => (
           <SortableHeader column={column}>Variables</SortableHeader>
@@ -223,6 +262,64 @@ export default function FeeStructuresTable({
           </div>
         ),
         meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
+      },
+      {
+        accessorKey: "status",
+        header: ({ column }) => (
+          <SortableHeader column={column}>Status</SortableHeader>
+        ),
+        cell: ({ row }) => {
+          const feeStructure = row.original;
+          const isUpdating = updatingStatus === feeStructure.id;
+          const currentStatus = feeStructure.status;
+
+          // Don't show dropdown for archived structures
+          if (currentStatus === FeeStructureStatus.ARCHIVED) {
+            return (
+              <div className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis">
+                {formatText(currentStatus)}
+              </div>
+            );
+          }
+
+          return (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center"
+            >
+              <Select
+                value={currentStatus}
+                onValueChange={(value) => {
+                  const newStatus = value as FeeStructureStatus;
+                  if (newStatus !== currentStatus) {
+                    handleStatusChange(feeStructure.id, newStatus);
+                  }
+                }}
+                disabled={isUpdating}
+              >
+                <SelectTrigger
+                  className={cn(
+                    "w-[120px] h-8 text-sm font-poppins border-gray-200",
+                    isUpdating && "opacity-50 cursor-not-allowed",
+                  )}
+                >
+                  <SelectValue>
+                    {isUpdating ? "Updating..." : formatText(currentStatus)}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={FeeStructureStatus.ACTIVE}>
+                    Active
+                  </SelectItem>
+                  <SelectItem value={FeeStructureStatus.DRAFT}>
+                    Draft
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          );
+        },
+        meta: { minSize: 120, maxSize: 150, size: 130 } as ColumnMeta,
       },
       {
         id: "actions",
@@ -267,11 +364,18 @@ export default function FeeStructuresTable({
         meta: { minSize: 200, maxSize: 300, size: 250 } as ColumnMeta,
       },
     ],
-    [handleRowClick, handleDuplicate, handleArchiveClick, isDuplicating],
+    [
+      handleRowClick,
+      handleDuplicate,
+      handleArchiveClick,
+      isDuplicating,
+      handleStatusChange,
+      updatingStatus,
+    ],
   );
 
   const table = useReactTable({
-    data: feeStructures,
+    data: feeStructuresData,
     columns,
     state: { sorting },
     onSortingChange: setSorting,
@@ -289,7 +393,7 @@ export default function FeeStructuresTable({
   // Reset pagination when data changes
   useEffect(() => {
     table.setPageIndex(0);
-  }, [feeStructures.length, table]);
+  }, [feeStructuresData.length, table]);
 
   // If only showing pagination, return just that
   if (showPaginationOnly) {
@@ -324,7 +428,7 @@ export default function FeeStructuresTable({
     <>
       <div className="bg-white rounded-[28px] shadow-sm px-4 py-4 w-full">
         <div className="dashboard-zoom-mobile">
-          {feeStructures.length === 0 ? (
+          {feeStructuresData.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-[#7B8B91] font-poppins text-[16px]">
                 No fee structures found
@@ -439,7 +543,7 @@ export default function FeeStructuresTable({
       </div>
 
       {/* Pagination - Outside the card */}
-      {!showPaginationOnly && feeStructures.length > 0 && (
+      {!showPaginationOnly && feeStructuresData.length > 0 && (
         <div className="mt-4 px-3 sm:px-6 overflow-x-hidden">
           <Pagination table={table} />
         </div>

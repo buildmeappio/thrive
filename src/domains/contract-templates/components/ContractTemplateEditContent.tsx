@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -12,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Loader2, Save, Eye } from "lucide-react";
+import { ArrowLeft, Loader2, Save } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import type { ContractTemplateData } from "../types/contractTemplate.types";
@@ -31,6 +30,14 @@ import {
   listFeeStructuresAction,
   getFeeStructureAction,
 } from "@/domains/fee-structures/actions";
+import {
+  listCustomVariablesAction,
+  createCustomVariableAction,
+  updateCustomVariableAction,
+  deleteCustomVariableAction,
+} from "@/domains/custom-variables/actions";
+import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
+import CustomVariableDialog from "@/domains/custom-variables/components/CustomVariableDialog";
 import type {
   FeeStructureListItem,
   FeeStructureData,
@@ -48,16 +55,15 @@ export default function ContractTemplateEditContent({ template }: Props) {
     template.currentVersion?.bodyHtml || "",
   );
   const [isSaving, setIsSaving] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
   const [placeholders, setPlaceholders] = useState<string[]>([]);
   const [validation, setValidation] = useState<{
     valid: boolean;
     errors: Array<{ placeholder: string; error: string }>;
     warnings: Array<{ placeholder: string; warning: string }>;
   }>({ valid: true, errors: [], warnings: [] });
-  const [activeTab, setActiveTab] = useState<"variables" | "placeholders">(
-    "variables",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "variables" | "placeholders" | "custom"
+  >("variables");
   const [selectedFeeStructureId, setSelectedFeeStructureId] = useState<string>(
     template.feeStructureId || "",
   );
@@ -72,6 +78,16 @@ export default function ContractTemplateEditContent({ template }: Props) {
     compatible: boolean;
     missingVariables: string[];
   } | null>(null);
+  const [customVariables, setCustomVariables] = useState<CustomVariable[]>([]);
+  const [systemVariables, setSystemVariables] = useState<CustomVariable[]>([]);
+  const [isLoadingCustomVariables, setIsLoadingCustomVariables] =
+    useState(false);
+  const [, setIsLoadingSystemVariables] = useState(false);
+  const [isCustomVariableDialogOpen, setIsCustomVariableDialogOpen] =
+    useState(false);
+  const [editingCustomVariable, setEditingCustomVariable] =
+    useState<CustomVariable | null>(null);
+  const [isSavingCustomVariable, setIsSavingCustomVariable] = useState(false);
   const editorRef = useRef<any>(null);
 
   useEffect(() => {
@@ -116,30 +132,37 @@ export default function ContractTemplateEditContent({ template }: Props) {
     loadFeeStructures();
   }, []);
 
-  const handleSaveDraft = async () => {
-    setIsSaving(true);
-    try {
-      const result = await saveTemplateDraftContentAction({
-        templateId: template.id,
-        content: content,
-      });
-
-      if (result.success) {
-        toast.success("Draft saved successfully");
-        router.refresh();
-      } else {
-        toast.error("error" in result ? result.error : "Failed to save draft");
+  useEffect(() => {
+    const loadVariables = async () => {
+      setIsLoadingCustomVariables(true);
+      setIsLoadingSystemVariables(true);
+      try {
+        const result = await listCustomVariablesAction({ isActive: true });
+        if (result.success && result.data) {
+          // Separate custom variables (custom.*) from system variables (thrive.*, contract.*, etc.)
+          const custom = result.data.filter((v) => v.key.startsWith("custom."));
+          const system = result.data.filter(
+            (v) => !v.key.startsWith("custom."),
+          );
+          setCustomVariables(custom);
+          setSystemVariables(system);
+        } else {
+          const errorMessage =
+            "error" in result ? result.error : "Failed to load variables";
+          console.error("Failed to load variables:", errorMessage);
+        }
+      } catch (error) {
+        console.error("Error loading variables:", error);
+      } finally {
+        setIsLoadingCustomVariables(false);
+        setIsLoadingSystemVariables(false);
       }
-    } catch (error) {
-      console.error("Error saving draft:", error);
-      toast.error("Failed to save draft");
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    };
+    loadVariables();
+  }, []);
 
-  const handlePublish = async () => {
-    // Validate fee structure compatibility before publishing
+  const handleSave = async () => {
+    // Validate fee structure compatibility before saving
     if (selectedFeeStructureData) {
       const requiredFeeVars = extractRequiredFeeVariables(content);
       const compatibility = validateFeeStructureCompatibility(
@@ -159,30 +182,44 @@ export default function ContractTemplateEditContent({ template }: Props) {
     const requiredFeeVars = extractRequiredFeeVariables(content);
     if (requiredFeeVars.size > 0 && !selectedFeeStructureId) {
       toast.error(
-        "Template uses fee variables. Please select a compatible fee structure before publishing.",
+        "Template uses fee variables. Please select a compatible fee structure before saving.",
       );
       return;
     }
 
-    setIsPublishing(true);
+    setIsSaving(true);
     try {
-      const result = await publishTemplateVersionAction({
+      const result = await saveTemplateDraftContentAction({
         templateId: template.id,
+        content: content,
       });
 
       if (result.success) {
-        toast.success(`Version ${result.data.version} published successfully`);
-        router.refresh();
+        // After saving, publish it immediately to make it the current version
+        const publishResult = await publishTemplateVersionAction({
+          templateId: template.id,
+        });
+
+        if (publishResult.success) {
+          toast.success("Template saved successfully");
+          router.refresh();
+        } else {
+          toast.error(
+            "error" in publishResult
+              ? publishResult.error
+              : "Failed to save template",
+          );
+        }
       } else {
         toast.error(
-          "error" in result ? result.error : "Failed to publish version",
+          "error" in result ? result.error : "Failed to save template",
         );
       }
     } catch (error) {
-      console.error("Error publishing version:", error);
-      toast.error("Failed to publish version");
+      console.error("Error saving template:", error);
+      toast.error("Failed to save template");
     } finally {
-      setIsPublishing(false);
+      setIsSaving(false);
     }
   };
 
@@ -193,6 +230,117 @@ export default function ContractTemplateEditContent({ template }: Props) {
         .focus()
         .insertContent(`{{${placeholder}}}`)
         .run();
+    }
+  };
+
+  const handleCreateCustomVariable = async (data: {
+    key: string;
+    defaultValue: string;
+    description?: string | null;
+  }) => {
+    setIsSavingCustomVariable(true);
+    try {
+      const result = await createCustomVariableAction(data);
+      if (result.success) {
+        toast.success("Custom variable created successfully");
+        setIsCustomVariableDialogOpen(false);
+        setEditingCustomVariable(null);
+        // Reload all variables
+        const listResult = await listCustomVariablesAction({ isActive: true });
+        if (listResult.success && listResult.data) {
+          const custom = listResult.data.filter((v) =>
+            v.key.startsWith("custom."),
+          );
+          const system = listResult.data.filter(
+            (v) => !v.key.startsWith("custom."),
+          );
+          setCustomVariables(custom);
+          setSystemVariables(system);
+        }
+      } else {
+        toast.error(
+          "error" in result ? result.error : "Failed to create custom variable",
+        );
+      }
+    } catch (error) {
+      console.error("Error creating custom variable:", error);
+      toast.error("Failed to create custom variable");
+    } finally {
+      setIsSavingCustomVariable(false);
+    }
+  };
+
+  const handleUpdateCustomVariable = async (data: {
+    key: string;
+    defaultValue: string;
+    description?: string | null;
+  }) => {
+    if (!editingCustomVariable) return;
+
+    setIsSavingCustomVariable(true);
+    try {
+      const result = await updateCustomVariableAction({
+        id: editingCustomVariable.id,
+        ...data,
+      });
+      if (result.success) {
+        toast.success("Custom variable updated successfully");
+        setIsCustomVariableDialogOpen(false);
+        setEditingCustomVariable(null);
+        // Reload all variables
+        const listResult = await listCustomVariablesAction({ isActive: true });
+        if (listResult.success && listResult.data) {
+          const custom = listResult.data.filter((v) =>
+            v.key.startsWith("custom."),
+          );
+          const system = listResult.data.filter(
+            (v) => !v.key.startsWith("custom."),
+          );
+          setCustomVariables(custom);
+          setSystemVariables(system);
+        }
+      } else {
+        toast.error(
+          "error" in result ? result.error : "Failed to update custom variable",
+        );
+      }
+    } catch (error) {
+      console.error("Error updating custom variable:", error);
+      toast.error("Failed to update custom variable");
+    } finally {
+      setIsSavingCustomVariable(false);
+    }
+  };
+
+  const handleDeleteCustomVariable = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this custom variable?")) {
+      return;
+    }
+
+    try {
+      const result = await deleteCustomVariableAction({ id });
+      if (result.success) {
+        toast.success("Custom variable deleted successfully");
+        // Reload all variables
+        const listResult = await listCustomVariablesAction({ isActive: true });
+        if (listResult.success && listResult.data) {
+          const custom = listResult.data.filter((v) =>
+            v.key.startsWith("custom."),
+          );
+          const system = listResult.data.filter(
+            (v) => !v.key.startsWith("custom."),
+          );
+          setCustomVariables(custom);
+          setSystemVariables(system);
+        }
+      } else {
+        toast.error(
+          "error" in result ? result.error : "Failed to delete custom variable",
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting custom variable:", error);
+      toast.error("Failed to delete custom variable");
     }
   };
 
@@ -250,42 +398,67 @@ export default function ContractTemplateEditContent({ template }: Props) {
     }
   };
 
-  const availableVariables = useMemo(
-    () => [
-      {
-        namespace: "thrive",
-        vars: ["company_name", "company_address", "logo"],
-      },
-      {
-        namespace: "examiner",
-        vars: [
-          "name",
-          "email",
-          "phone",
-          "address",
-          "province",
-          "city",
-          "postal_code",
-          "signature",
-          "signature_date_time",
-        ],
-      },
-      ...(selectedFeeStructureData?.variables
-        ? [
-            {
-              namespace: "fees",
-              vars: selectedFeeStructureData.variables.map((v) => v.key),
-            },
-          ]
-        : [
-            {
-              namespace: "fees",
-              vars: ["base_exam_fee", "additional_fee", "travel_fee"],
-            },
-          ]),
-    ],
-    [selectedFeeStructureData],
-  );
+  const availableVariables = useMemo(() => {
+    // Group system variables by namespace
+    const systemVarsByNamespace: Record<string, string[]> = {};
+    for (const variable of systemVariables) {
+      const [namespace, ...keyParts] = variable.key.split(".");
+      if (namespace && keyParts.length > 0) {
+        const key = keyParts.join(".");
+        if (!systemVarsByNamespace[namespace]) {
+          systemVarsByNamespace[namespace] = [];
+        }
+        systemVarsByNamespace[namespace].push(key);
+      }
+    }
+
+    // Build variables array
+    const vars: Array<{ namespace: string; vars: string[] }> = [];
+
+    // Add system variables from database (thrive, contract, etc.)
+    Object.entries(systemVarsByNamespace).forEach(([namespace, keys]) => {
+      vars.push({ namespace, vars: keys });
+    });
+
+    // Add examiner variables (hardcoded as they come from contract data)
+    vars.push({
+      namespace: "examiner",
+      vars: [
+        "name",
+        "email",
+        "phone",
+        "address",
+        "province",
+        "city",
+        "postal_code",
+        "signature",
+        "signature_date_time",
+      ],
+    });
+
+    // Add fee structure variables
+    if (selectedFeeStructureData?.variables) {
+      vars.push({
+        namespace: "fees",
+        vars: selectedFeeStructureData.variables.map((v) => v.key),
+      });
+    } else {
+      vars.push({
+        namespace: "fees",
+        vars: ["base_exam_fee", "additional_fee", "travel_fee"],
+      });
+    }
+
+    // Add custom variables
+    if (customVariables.length > 0) {
+      vars.push({
+        namespace: "custom",
+        vars: customVariables.map((v) => v.key.replace("custom.", "")),
+      });
+    }
+
+    return vars;
+  }, [selectedFeeStructureData, customVariables, systemVariables]);
 
   const validVariablesSet = useMemo(
     () =>
@@ -321,9 +494,14 @@ export default function ContractTemplateEditContent({ template }: Props) {
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 w-full sm:w-auto">
           <Button
-            onClick={handleSaveDraft}
-            disabled={isSaving}
-            className="rounded-full bg-[#000080] hover:bg-[#000093] text-white font-semibold px-4 py-2 sm:px-4 sm:py-2 text-sm sm:text-base w-full sm:w-auto"
+            onClick={handleSave}
+            disabled={
+              isSaving ||
+              !validation.valid ||
+              (feeStructureCompatibility &&
+                !feeStructureCompatibility.compatible)
+            }
+            className="px-4 py-2 sm:py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base w-full sm:w-auto"
           >
             {isSaving ? (
               <>
@@ -334,30 +512,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                <span>Save Draft</span>
-              </>
-            )}
-          </Button>
-          <Button
-            onClick={handlePublish}
-            disabled={
-              isPublishing ||
-              !validation.valid ||
-              (feeStructureCompatibility &&
-                !feeStructureCompatibility.compatible)
-            }
-            className="px-4 py-2 sm:py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base w-full sm:w-auto"
-          >
-            {isPublishing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                <span className="hidden sm:inline">Publishing...</span>
-                <span className="sm:hidden">Publishing</span>
-              </>
-            ) : (
-              <>
-                <Eye className="mr-2 h-4 w-4" />
-                <span>Publish</span>
+                <span>Save</span>
               </>
             )}
           </Button>
@@ -404,6 +559,21 @@ export default function ContractTemplateEditContent({ template }: Props) {
                   }`}
                 >
                   Variables
+                </button>
+                <button
+                  onClick={() => setActiveTab("custom")}
+                  className={`px-4 py-2 text-sm font-poppins font-semibold transition-colors border-b-2 cursor-pointer ${
+                    activeTab === "custom"
+                      ? "border-[#00A8FF] text-[#00A8FF]"
+                      : "border-transparent text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  Custom Variables
+                  {customVariables.length > 0 && (
+                    <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-[#00A8FF] rounded-full">
+                      {customVariables.length}
+                    </span>
+                  )}
                 </button>
                 {placeholders.length > 0 && (
                   <button
@@ -522,29 +692,178 @@ export default function ContractTemplateEditContent({ template }: Props) {
                         )}
                     </div>
 
-                    {availableVariables.map((group) => (
-                      <div key={group.namespace}>
-                        <p className="font-semibold text-sm text-gray-700 mb-2 capitalize">
-                          {group.namespace}
-                        </p>
-                        <div className="space-y-1">
-                          {group.vars.map((varName) => {
-                            const fullPlaceholder = `${group.namespace}.${varName}`;
-                            return (
-                              <button
-                                key={fullPlaceholder}
-                                onClick={() =>
-                                  insertPlaceholder(fullPlaceholder)
-                                }
-                                className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-50 border border-gray-200 font-mono transition-colors cursor-pointer"
-                              >
-                                {`{{${fullPlaceholder}}}`}
-                              </button>
-                            );
-                          })}
+                    {availableVariables.map((group) => {
+                      // Check if this namespace has editable system variables
+                      const editableSystemVars = systemVariables.filter((v) =>
+                        v.key.startsWith(`${group.namespace}.`),
+                      );
+
+                      return (
+                        <div key={group.namespace}>
+                          <p className="font-semibold text-sm text-gray-700 mb-2 capitalize">
+                            {group.namespace}
+                          </p>
+                          <div className="space-y-2">
+                            {/* Show editable system variables with edit buttons */}
+                            {editableSystemVars.length > 0 && (
+                              <div className="space-y-2 mb-3">
+                                {editableSystemVars.map((variable) => {
+                                  const keyPart = variable.key.replace(
+                                    `${group.namespace}.`,
+                                    "",
+                                  );
+                                  return (
+                                    <div
+                                      key={variable.id}
+                                      className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
+                                    >
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <button
+                                            onClick={() =>
+                                              insertPlaceholder(variable.key)
+                                            }
+                                            className="font-mono text-sm text-[#00A8FF] hover:underline cursor-pointer break-all"
+                                          >
+                                            {`{{${variable.key}}}`}
+                                          </button>
+                                        </div>
+                                        <p className="text-xs text-gray-600 mb-1 break-words">
+                                          {variable.description ||
+                                            "No description"}
+                                        </p>
+                                        <p className="text-xs text-gray-500 font-mono break-all break-words">
+                                          Default: {variable.defaultValue}
+                                        </p>
+                                      </div>
+                                      <button
+                                        onClick={() => {
+                                          setEditingCustomVariable(variable);
+                                          setIsCustomVariableDialogOpen(true);
+                                        }}
+                                        className="text-xs text-blue-600 hover:text-blue-700 cursor-pointer whitespace-nowrap shrink-0"
+                                      >
+                                        Edit
+                                      </button>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            {/* Show non-editable variables (examiner, fees) */}
+                            {group.vars
+                              .filter((varName) => {
+                                const fullPlaceholder = `${group.namespace}.${varName}`;
+                                // Don't show if it's already displayed as an editable system variable
+                                return !editableSystemVars.some(
+                                  (v) => v.key === fullPlaceholder,
+                                );
+                              })
+                              .map((varName) => {
+                                const fullPlaceholder = `${group.namespace}.${varName}`;
+                                return (
+                                  <button
+                                    key={fullPlaceholder}
+                                    onClick={() =>
+                                      insertPlaceholder(fullPlaceholder)
+                                    }
+                                    className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-50 border border-gray-200 font-mono transition-colors cursor-pointer"
+                                  >
+                                    {`{{${fullPlaceholder}}}`}
+                                  </button>
+                                );
+                              })}
+                          </div>
                         </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Custom Variables Tab */}
+                {activeTab === "custom" && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-sm text-gray-600 font-poppins">
+                        Create and manage custom variables for your templates
+                      </p>
+                      <Button
+                        onClick={() => {
+                          setEditingCustomVariable(null);
+                          setIsCustomVariableDialogOpen(true);
+                        }}
+                        className="h-9 px-4 text-sm bg-[#000080] hover:bg-[#000093] text-white font-semibold"
+                      >
+                        Add Variable
+                      </Button>
+                    </div>
+
+                    {isLoadingCustomVariables ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
                       </div>
-                    ))}
+                    ) : customVariables.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <p className="text-sm font-poppins mb-2">
+                          No custom variables yet
+                        </p>
+                        <p className="text-xs">
+                          Click &quot;Add Variable&quot; to create your first
+                          custom variable
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {customVariables.map((variable) => {
+                          const fullPlaceholder = variable.key; // Already includes "custom."
+                          return (
+                            <div
+                              key={variable.id}
+                              className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
+                            >
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <button
+                                    onClick={() =>
+                                      insertPlaceholder(fullPlaceholder)
+                                    }
+                                    className="font-mono text-sm text-[#00A8FF] hover:underline cursor-pointer break-all"
+                                  >
+                                    {`{{${fullPlaceholder}}}`}
+                                  </button>
+                                </div>
+                                <p className="text-xs text-gray-600 mb-1 break-words">
+                                  {variable.description || "No description"}
+                                </p>
+                                <p className="text-xs text-gray-500 font-mono break-all break-words">
+                                  Default: {variable.defaultValue}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  onClick={() => {
+                                    setEditingCustomVariable(variable);
+                                    setIsCustomVariableDialogOpen(true);
+                                  }}
+                                  className="text-xs text-blue-600 hover:text-blue-700 cursor-pointer whitespace-nowrap"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleDeleteCustomVariable(variable.id)
+                                  }
+                                  className="text-xs text-red-600 hover:text-red-700 cursor-pointer whitespace-nowrap"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -650,6 +969,22 @@ export default function ContractTemplateEditContent({ template }: Props) {
           </div>
         </div>
       }
+
+      {/* Custom Variable Dialog */}
+      <CustomVariableDialog
+        open={isCustomVariableDialogOpen}
+        onClose={() => {
+          setIsCustomVariableDialogOpen(false);
+          setEditingCustomVariable(null);
+        }}
+        onSubmit={
+          editingCustomVariable
+            ? handleUpdateCustomVariable
+            : handleCreateCustomVariable
+        }
+        initialData={editingCustomVariable}
+        isLoading={isSavingCustomVariable}
+      />
     </div>
   );
 }

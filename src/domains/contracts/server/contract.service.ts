@@ -19,8 +19,9 @@ import {
   type ContractData as GoogleDocsContractData,
 } from "@/lib/google-docs";
 import logger from "@/utils/logger";
-import { ENV } from "@/constants/variables";
 import { formatFullName } from "@/utils/text";
+import { getAllVariablesMap } from "@/domains/custom-variables/server/customVariable.service";
+import { uploadToS3 } from "@/lib/s3";
 
 // List contracts with optional filters
 export const listContracts = async (
@@ -438,6 +439,179 @@ export const updateContractFields = async (
   return { id: input.id };
 };
 
+// Update contract fee structure
+export const updateContractFeeStructure = async (
+  contractId: string,
+  feeStructureId: string,
+): Promise<{ id: string }> => {
+  const contract = await prisma.contract.findUnique({
+    where: { id: contractId },
+    include: {
+      templateVersion: {
+        include: {
+          template: true,
+        },
+      },
+    },
+  });
+
+  if (!contract) {
+    throw HttpError.notFound("Contract not found");
+  }
+
+  // Get new fee structure
+  const feeStructure = await prisma.feeStructure.findUnique({
+    where: { id: feeStructureId },
+    include: {
+      variables: {
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      },
+    },
+  });
+
+  if (!feeStructure) {
+    throw HttpError.notFound("Fee structure not found");
+  }
+
+  // Validate fee structure compatibility with template
+  const templateContent = contract.templateVersion.bodyHtml;
+  const requiredFeeVars = extractRequiredFeeVariables(templateContent);
+
+  if (requiredFeeVars.size > 0) {
+    const compatibility = validateFeeStructureCompatibility(
+      requiredFeeVars,
+      feeStructure.variables,
+    );
+
+    if (!compatibility.compatible) {
+      throw HttpError.badRequest(
+        `Fee structure is missing required variables: ${compatibility.missingVariables
+          .map((v) => `fees.${v}`)
+          .join(", ")}`,
+      );
+    }
+  }
+
+  // Get existing field values
+  const existingFieldValues = (contract.fieldValues as any) || {};
+  const existingFeesOverrides = existingFieldValues.fees_overrides || {};
+
+  // Prepare new contract data with updated fee structure
+  const contractData = {
+    examiner: existingFieldValues.examiner || {},
+    contract: existingFieldValues.contract || {},
+    thrive: existingFieldValues.thrive || existingFieldValues.org || {},
+    fees: {},
+  };
+
+  // Add fee structure variables to fees
+  for (const variable of feeStructure.variables) {
+    const overrideValue = existingFeesOverrides[variable.key];
+    contractData.fees[variable.key] =
+      overrideValue !== undefined ? overrideValue : variable.defaultValue;
+  }
+
+  // Prepare examiner-web compatible data structure
+  const feeStructureData: {
+    IMEFee: number;
+    recordReviewFee: number;
+    hourlyRate: number;
+    cancellationFee: number;
+    paymentTerms: string;
+  } = {
+    IMEFee: 0,
+    recordReviewFee: 0,
+    hourlyRate: 0,
+    cancellationFee: 0,
+    paymentTerms: "",
+  };
+
+  // Map fee structure variables to examiner-web format
+  for (const variable of feeStructure.variables) {
+    const overrideValue = existingFeesOverrides[variable.key];
+    const defaultValue =
+      overrideValue !== undefined ? overrideValue : variable.defaultValue;
+    const numValue =
+      typeof defaultValue === "number"
+        ? defaultValue
+        : parseFloat(String(defaultValue || 0));
+
+    const key = variable.key.toLowerCase();
+    if (key.includes("ime") || key.includes("base_exam")) {
+      feeStructureData.IMEFee = numValue;
+    } else if (key.includes("record") || key.includes("review")) {
+      feeStructureData.recordReviewFee = numValue;
+    } else if (key.includes("hourly") || key.includes("rate")) {
+      feeStructureData.hourlyRate = numValue;
+    } else if (key.includes("cancellation") || key.includes("cancel")) {
+      feeStructureData.cancellationFee = numValue;
+    } else if (key.includes("payment") || key.includes("terms")) {
+      feeStructureData.paymentTerms = String(defaultValue || "");
+    }
+  }
+
+  // Get examiner name
+  let examinerName = "";
+  if (contract.examinerProfileId) {
+    const examiner = await prisma.examinerProfile.findUnique({
+      where: { id: contract.examinerProfileId },
+      include: {
+        account: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+    if (examiner?.account?.user) {
+      examinerName = formatFullName(
+        examiner.account.user.firstName,
+        examiner.account.user.lastName,
+      );
+    }
+  } else if (contract.applicationId) {
+    const application = await prisma.examinerApplication.findUnique({
+      where: { id: contract.applicationId },
+    });
+    if (application) {
+      examinerName = formatFullName(
+        application.firstName,
+        application.lastName,
+      );
+    }
+  }
+
+  // Store both formats in data field
+  const fullContractData = {
+    ...contractData,
+    examinerName,
+    province:
+      existingFieldValues.examiner?.province ||
+      existingFieldValues.contract?.province ||
+      "",
+    effectiveDate:
+      existingFieldValues.contract?.effective_date ||
+      new Date().toISOString().split("T")[0],
+    feeStructure: feeStructureData,
+  };
+
+  // Update contract
+  await prisma.contract.update({
+    where: { id: contractId },
+    data: {
+      feeStructureId: feeStructureId,
+      data: fullContractData as any,
+      // Keep existing fieldValues but update fees_overrides if needed
+      fieldValues: {
+        ...existingFieldValues,
+        fees_overrides: existingFeesOverrides,
+      } as any,
+    },
+  });
+
+  return { id: contractId };
+};
+
 // Preview contract (render with placeholders)
 export const previewContract = async (
   contractId: string,
@@ -486,17 +660,22 @@ export const previewContract = async (
       for (const [key, value] of Object.entries(fv.org)) {
         values[`thrive.${key}`] = String(value);
       }
-    } else {
-      // Set default thrive values
-      values["thrive.company_name"] = "Thrive IME Platform";
-      values["thrive.company_address"] = "";
     }
 
-    // Add logo URL from CDN (always add, even if thrive values are provided)
-    if (!values["thrive.logo"]) {
-      values["thrive.logo"] = ENV.NEXT_PUBLIC_CDN_URL
-        ? `${ENV.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`
-        : "";
+    // Add all variables from database (system + custom)
+    const dbVariablesMap = await getAllVariablesMap();
+    Object.assign(values, dbVariablesMap);
+
+    // Override with fieldValues if provided
+    if (fv.thrive) {
+      for (const [key, value] of Object.entries(fv.thrive)) {
+        values[`thrive.${key}`] = String(value);
+      }
+    } else if (fv.org) {
+      // Backward compatibility: support old "org" namespace
+      for (const [key, value] of Object.entries(fv.org)) {
+        values[`thrive.${key}`] = String(value);
+      }
     }
 
     // Add fees values
@@ -533,14 +712,9 @@ export const previewContract = async (
       }
     }
   } else {
-    // No fieldValues, use defaults
-    values["thrive.company_name"] = "Thrive IME Platform";
-    values["thrive.company_address"] = "";
-
-    // Add logo URL from CDN
-    values["thrive.logo"] = ENV.NEXT_PUBLIC_CDN_URL
-      ? `${ENV.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`
-      : "";
+    // No fieldValues, load all variables from database
+    const dbVariablesMap = await getAllVariablesMap();
+    Object.assign(values, dbVariablesMap);
 
     // Add signature date_time from contract.signedAt if available
     if (contract.signedAt) {
@@ -554,6 +728,10 @@ export const previewContract = async (
       }).format(new Date(contract.signedAt));
       values["examiner.signature_date_time"] = signatureDateTime;
     }
+
+    // Add custom variables
+    const customVariablesMap = await getAllVariablesMap();
+    Object.assign(values, customVariablesMap);
 
     if (contract.feeStructure) {
       for (const variable of contract.feeStructure.variables) {
@@ -741,7 +919,6 @@ export const previewContract = async (
   }
 
   // Upload rendered HTML to S3 (always upload to ensure it's available)
-  const { uploadToS3 } = await import("@/lib/s3");
   const htmlBuffer = Buffer.from(renderedHtml, "utf-8");
   const htmlFileName = `contracts/${contractId}/unsigned-${Date.now()}.html`;
   let htmlS3Key: string;

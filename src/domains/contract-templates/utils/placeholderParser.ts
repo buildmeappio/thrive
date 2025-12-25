@@ -27,7 +27,14 @@ export type PlaceholderValidationResult = {
   warnings: Array<{ placeholder: string; warning: string }>;
 };
 
-const ALLOWED_NAMESPACES = ["examiner", "contract", "org", "thrive", "fees"];
+const ALLOWED_NAMESPACES = [
+  "examiner",
+  "contract",
+  "org",
+  "thrive",
+  "fees",
+  "custom",
+];
 
 export function validatePlaceholders(
   placeholders: string[],

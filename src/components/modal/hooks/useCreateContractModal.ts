@@ -8,6 +8,8 @@ import {
   createContractAction,
   previewContractAction,
   sendContractAction,
+  updateContractFeeStructureAction,
+  getContractAction,
 } from "@/domains/contracts/actions";
 import { listFeeStructuresAction } from "@/domains/fee-structures/actions";
 import { ContractTemplateListItem } from "@/domains/contract-templates/types/contractTemplate.types";
@@ -92,6 +94,36 @@ export const useCreateContractModal = (
       console.error("Error loading fee structures:", error);
     }
   };
+
+  // Load existing contract data when resending
+  useEffect(() => {
+    if (open && existingContractId && existingTemplateId) {
+      const loadExistingContract = async () => {
+        try {
+          const contractResult = await getContractAction(existingContractId);
+          if (contractResult.success && contractResult.data) {
+            const contract = contractResult.data;
+            // Set fee structure ID if contract has one
+            if (contract.feeStructureId) {
+              setSelectedFeeStructureId(contract.feeStructureId);
+            }
+          }
+          // Load template content to show fee structure dropdown
+          if (existingTemplateId) {
+            const templateResult =
+              await getContractTemplateAction(existingTemplateId);
+            if (templateResult.success && templateResult.data.currentVersion) {
+              const content = templateResult.data.currentVersion.bodyHtml;
+              setSelectedTemplateContent(content);
+            }
+          }
+        } catch (error) {
+          console.error("Error loading existing contract:", error);
+        }
+      };
+      loadExistingContract();
+    }
+  }, [open, existingContractId, existingTemplateId]);
 
   // Load templates when modal opens
   useEffect(() => {
@@ -293,8 +325,35 @@ export const useCreateContractModal = (
         existingContractId && existingTemplateId !== selectedTemplateId;
 
       if (existingContractId && !templateChanged) {
-        // Same template - use existing contract
-        setContractId(existingContractId); // Set contract ID for sending
+        // Same template - check if fee structure changed
+        const contractResult = await getContractAction(existingContractId);
+        const existingFeeStructureId =
+          contractResult.success && contractResult.data
+            ? contractResult.data.feeStructureId
+            : null;
+
+        // If fee structure changed, update the contract
+        if (
+          selectedFeeStructureId &&
+          existingFeeStructureId !== selectedFeeStructureId
+        ) {
+          const updateResult = await updateContractFeeStructureAction(
+            existingContractId,
+            selectedFeeStructureId,
+          );
+          if (!updateResult.success) {
+            toast.error(
+              "error" in updateResult
+                ? updateResult.error
+                : "Failed to update fee structure",
+            );
+            return;
+          }
+          toast.success("Fee structure updated successfully");
+        }
+
+        // Preview the contract (with updated fee structure if changed)
+        setContractId(existingContractId);
         const previewResult = await previewContractAction(existingContractId);
         if (previewResult.success) {
           setPreviewHtml(previewResult.data.renderedHtml);
