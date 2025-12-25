@@ -6,7 +6,7 @@ import { ArrowLeft, Send, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { previewContractAction, sendContractAction } from "../actions";
 import type { ContractData } from "../types/contract.types";
-import { formatText } from "@/utils/text";
+import { formatText, formatFullName } from "@/utils/text";
 
 type Props = {
   contract: ContractData;
@@ -73,7 +73,9 @@ export default function ContractDetailView({ contract }: Props) {
       return fv.examiner.name;
     }
     if (fv?.examiner?.firstName || fv?.examiner?.lastName) {
-      return `${fv.examiner.firstName || ""} ${fv.examiner.lastName || ""}`.trim();
+      return (
+        formatFullName(fv.examiner.firstName, fv.examiner.lastName) || "N/A"
+      );
     }
     return "N/A";
   };

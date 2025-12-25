@@ -86,7 +86,6 @@ export const listContractTemplates = async (
     id: template.id,
     slug: template.slug,
     displayName: template.displayName,
-    category: template.category,
     isActive: template.isActive,
     currentVersionId: template.currentVersionId,
     currentVersion: template.currentVersion,
@@ -130,7 +129,6 @@ export const getContractTemplate = async (
     id: template.id,
     slug: template.slug,
     displayName: template.displayName,
-    category: template.category,
     isActive: template.isActive,
     currentVersionId: template.currentVersionId,
     feeStructureId: template.feeStructureId,
@@ -179,7 +177,7 @@ export const createContractTemplate = async (
     data: {
       slug: input.slug,
       displayName: input.displayName,
-      category: input.category || "contracts",
+      category: "contracts", // Always use "contracts" as the category
       isActive: true,
       createdBy,
     },

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect, useId, useRef } from "react";
 import {
   Select,
   SelectContent,
@@ -8,245 +7,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { listContractTemplatesAction } from "@/domains/contract-templates/actions";
-import {
-  createContractAction,
-  previewContractAction,
-  sendContractAction,
-} from "@/domains/contracts/actions";
-import { toast } from "sonner";
-import { ContractTemplateListItem } from "@/domains/contract-templates/types/contractTemplate.types";
 import { Loader2 } from "lucide-react";
+import { extractRequiredFeeVariables } from "@/domains/contract-templates/utils/placeholderParser";
+import { useCreateContractModal } from "./hooks/useCreateContractModal";
+import type { CreateContractModalProps } from "./types/createContractModal.types";
 
-type CreateContractModalProps = {
-  open: boolean;
-  onClose: () => void;
-  examinerId?: string;
-  applicationId?: string;
-  examinerName: string;
-  examinerEmail: string;
-  onSuccess?: () => void;
-  existingContractId?: string; // For resending - existing contract ID
-  existingTemplateId?: string; // For resending - existing template ID
-};
-
-export default function CreateContractModal({
-  open,
-  onClose,
-  examinerId,
-  applicationId,
-  examinerName,
-  examinerEmail,
-  onSuccess,
-  existingContractId,
-  existingTemplateId,
-}: CreateContractModalProps) {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [templates, setTemplates] = useState<ContractTemplateListItem[]>([]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingData, setIsLoadingData] = useState(false);
-  const [previewHtml, setPreviewHtml] = useState<string>("");
-  const [contractId, setContractId] = useState<string | null>(null);
-  const titleId = useId();
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  // Load templates
-  useEffect(() => {
-    if (open) {
-      loadTemplates();
-      // Pre-select existing template if resending
-      if (existingTemplateId) {
-        setSelectedTemplateId(existingTemplateId);
-      }
-      // Set existing contract ID if resending
-      if (existingContractId) {
-        setContractId(existingContractId);
-      }
-    } else {
-      // Reset on close
-      setStep(1);
-      setSelectedTemplateId("");
-      setPreviewHtml("");
-      setContractId(null);
-    }
-  }, [open, existingTemplateId, existingContractId]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKey);
-    const { overflow } = document.body.style;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = overflow;
-    };
-  }, [open, onClose]);
-
-  const onBackdrop = (e: React.MouseEvent) => {
-    if (panelRef.current && !panelRef.current.contains(e.target as Node))
-      onClose();
-  };
+export default function CreateContractModal(props: CreateContractModalProps) {
+  const {
+    open,
+    onClose,
+    step,
+    templates,
+    selectedTemplateId,
+    selectedTemplateContent,
+    compatibleFeeStructures,
+    selectedFeeStructureId,
+    isLoading,
+    isLoadingData,
+    isLoadingTemplate,
+    previewHtml,
+    contractId,
+    selectedTemplate,
+    setSelectedTemplateId,
+    setSelectedFeeStructureId,
+    setStep,
+    handleCreateAndPreview,
+    handleSendContract,
+    panelRef,
+    titleId,
+    onBackdrop,
+  } = useCreateContractModal(props);
 
   if (!open) return null;
-
-  const loadTemplates = async () => {
-    setIsLoadingData(true);
-    try {
-      const templatesResult = await listContractTemplatesAction({
-        status: "ACTIVE",
-      });
-
-      if (templatesResult.success) {
-        // Filter to only show templates with linked fee structures and published versions
-        const validTemplates = templatesResult.data.filter(
-          (t) => t.feeStructureId && t.currentVersionId,
-        );
-        setTemplates(validTemplates);
-      } else {
-        toast.error("Failed to load templates");
-      }
-    } catch (error) {
-      console.error("Error loading templates:", error);
-      toast.error("Failed to load templates");
-    } finally {
-      setIsLoadingData(false);
-    }
-  };
-
-  const handleCreateAndPreview = async () => {
-    if (!selectedTemplateId) {
-      toast.error("Please select a contract template");
-      return;
-    }
-
-    const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
-    if (!selectedTemplate) {
-      toast.error("Selected template not found");
-      return;
-    }
-
-    if (!selectedTemplate.currentVersionId) {
-      toast.error("Selected template has no published version");
-      return;
-    }
-
-    if (!selectedTemplate.feeStructureId) {
-      toast.error("Selected template does not have a linked fee structure");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // Check if template changed or if this is a new contract
-      const templateChanged =
-        existingContractId && existingTemplateId !== selectedTemplateId;
-
-      if (existingContractId && !templateChanged) {
-        // Same template - use existing contract
-        setContractId(existingContractId); // Set contract ID for sending
-        const previewResult = await previewContractAction(existingContractId);
-        if (previewResult.success) {
-          setPreviewHtml(previewResult.data.renderedHtml);
-          setStep(2);
-          if (previewResult.data.missingPlaceholders.length > 0) {
-            toast.warning(
-              `Missing placeholders: ${previewResult.data.missingPlaceholders.join(", ")}`,
-            );
-          }
-        } else {
-          toast.error(
-            "error" in previewResult
-              ? previewResult.error
-              : "Failed to preview contract",
-          );
-        }
-      } else {
-        // New contract or template changed - create new contract
-        const createResult = await createContractAction({
-          examinerProfileId: examinerId,
-          applicationId: applicationId,
-          templateVersionId: selectedTemplate.currentVersionId,
-          feeStructureId: selectedTemplate.feeStructureId,
-          fieldValues: {
-            examiner: {
-              name: examinerName,
-              email: examinerEmail,
-            },
-            contract: {
-              effective_date: new Date().toISOString().split("T")[0],
-            },
-          },
-        });
-
-        if (!createResult.success) {
-          toast.error(
-            "error" in createResult
-              ? createResult.error
-              : "Failed to create contract",
-          );
-          return;
-        }
-
-        const newContractId = createResult.data.id;
-        setContractId(newContractId);
-
-        // Generate preview
-        const previewResult = await previewContractAction(newContractId);
-        if (previewResult.success) {
-          setPreviewHtml(previewResult.data.renderedHtml);
-          setStep(2);
-          if (previewResult.data.missingPlaceholders.length > 0) {
-            toast.warning(
-              `Missing placeholders: ${previewResult.data.missingPlaceholders.join(", ")}`,
-            );
-          }
-        } else {
-          toast.error(
-            "error" in previewResult
-              ? previewResult.error
-              : "Failed to preview contract",
-          );
-        }
-      }
-    } catch (error) {
-      console.error("Error creating contract:", error);
-      toast.error("Failed to create contract");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSendContract = async () => {
-    if (!contractId) return;
-
-    setIsLoading(true);
-    try {
-      const sendResult = await sendContractAction(contractId);
-      if (sendResult.success) {
-        toast.success("Contract sent successfully");
-        setStep(3);
-        setTimeout(() => {
-          onSuccess?.();
-          onClose();
-        }, 1500);
-      } else {
-        toast.error(
-          "error" in sendResult ? sendResult.error : "Failed to send contract",
-        );
-      }
-    } catch (error) {
-      console.error("Error sending contract:", error);
-      toast.error("Failed to send contract");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
 
   return (
     <div
@@ -294,7 +86,7 @@ export default function CreateContractModal({
           className="font-[600] text-xl sm:text-[28px] leading-[1.2] tracking-[-0.02em] text-[#1A1A1A] font-degular pr-10"
         >
           {step === 1 &&
-            (existingContractId ? "Resend Contract" : "Send Contract")}
+            (props.existingContractId ? "Resend Contract" : "Send Contract")}
           {step === 2 && "Preview Contract"}
           {step === 3 && "Contract Sent"}
         </h2>
@@ -347,31 +139,107 @@ export default function CreateContractModal({
             </div>
 
             {selectedTemplate && (
-              <div className="p-4 bg-[#F6F6F6] rounded-xl sm:rounded-[15px] border border-[#E5E5E5]">
-                <p className="text-sm sm:text-[15px] font-semibold mb-2 font-poppins text-[#1A1A1A]">
-                  Selected Template:
-                </p>
-                <p className="text-sm sm:text-[15px] font-poppins text-[#1A1A1A]">
-                  {selectedTemplate.displayName}
-                </p>
-                {selectedTemplate.currentVersion && (
-                  <p className="text-xs sm:text-[13px] text-[#7A7A7A] font-poppins mt-1">
-                    Version {selectedTemplate.currentVersion.version}
+              <>
+                <div className="p-4 bg-[#F6F6F6] rounded-xl sm:rounded-[15px] border border-[#E5E5E5]">
+                  <p className="text-sm sm:text-[15px] font-semibold mb-2 font-poppins text-[#1A1A1A]">
+                    Selected Template:
                   </p>
-                )}
-                {existingContractId &&
-                  existingTemplateId === selectedTemplateId && (
-                    <p className="text-xs sm:text-[13px] text-[#7A7A7A] font-poppins mt-1 italic">
-                      (Current contract template)
+                  <p className="text-sm sm:text-[15px] font-poppins text-[#1A1A1A]">
+                    {selectedTemplate.displayName}
+                  </p>
+                  {selectedTemplate.currentVersion && (
+                    <p className="text-xs sm:text-[13px] text-[#7A7A7A] font-poppins mt-1">
+                      Version {selectedTemplate.currentVersion.version}
                     </p>
                   )}
-                {existingContractId &&
-                  existingTemplateId !== selectedTemplateId && (
-                    <p className="text-xs sm:text-[13px] text-[#FF9800] font-poppins mt-1 italic">
-                      (Template changed - will create new contract)
-                    </p>
-                  )}
-              </div>
+                  {props.existingContractId &&
+                    props.existingTemplateId === selectedTemplateId && (
+                      <p className="text-xs sm:text-[13px] text-[#7A7A7A] font-poppins mt-1 italic">
+                        (Current contract template)
+                      </p>
+                    )}
+                  {props.existingContractId &&
+                    props.existingTemplateId !== selectedTemplateId && (
+                      <p className="text-xs sm:text-[13px] text-[#FF9800] font-poppins mt-1 italic">
+                        (Template changed - will create new contract)
+                      </p>
+                    )}
+                </div>
+
+                {/* Fee Structure Selection */}
+                {isLoadingTemplate ? (
+                  <div className="flex items-center gap-2 text-[#7A7A7A] font-poppins">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm sm:text-[15px]">
+                      Loading template details...
+                    </span>
+                  </div>
+                ) : selectedTemplateContent ? (
+                  (() => {
+                    const requiredFeeVars = extractRequiredFeeVariables(
+                      selectedTemplateContent,
+                    );
+                    if (requiredFeeVars.size > 0) {
+                      return (
+                        <div className="space-y-2">
+                          <label
+                            htmlFor="feeStructure"
+                            className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins"
+                          >
+                            Fee Structure *
+                          </label>
+                          <Select
+                            value={selectedFeeStructureId}
+                            onValueChange={setSelectedFeeStructureId}
+                            disabled={isLoadingData || isLoadingTemplate}
+                          >
+                            <SelectTrigger
+                              id="feeStructure"
+                              className="
+                                h-11 sm:h-[46px]
+                                rounded-xl sm:rounded-[15px]
+                                border border-[#E5E5E5] bg-[#F6F6F6]
+                                font-poppins text-[14px] sm:text-[15px]
+                                focus:border-[#000080] focus:ring-1 focus:ring-[#000080]
+                              "
+                            >
+                              <SelectValue placeholder="Select fee structure" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {compatibleFeeStructures.length === 0 ? (
+                                <div className="px-2 py-1.5 text-sm text-red-600 font-poppins">
+                                  No compatible fee structures found. Template
+                                  requires:{" "}
+                                  {Array.from(requiredFeeVars)
+                                    .map((v) => `fees.${v}`)
+                                    .join(", ")}
+                                </div>
+                              ) : (
+                                compatibleFeeStructures.map((fs) => (
+                                  <SelectItem key={fs.id} value={fs.id}>
+                                    {fs.name}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                          {compatibleFeeStructures.length > 0 && (
+                            <p className="text-xs sm:text-[13px] text-[#7A7A7A] font-poppins">
+                              {compatibleFeeStructures.length} compatible fee
+                              structure
+                              {compatibleFeeStructures.length !== 1
+                                ? "s"
+                                : ""}{" "}
+                              available
+                            </p>
+                          )}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()
+                ) : null}
+              </>
             )}
           </div>
         )}
@@ -422,7 +290,7 @@ export default function CreateContractModal({
                 Contract sent successfully!
               </p>
               <p className="text-sm text-[#7A7A7A] font-poppins mt-2">
-                The contract has been sent to {examinerEmail}
+                The contract has been sent to {props.examinerEmail}
               </p>
             </div>
           </div>
@@ -451,7 +319,16 @@ export default function CreateContractModal({
               <button
                 type="button"
                 onClick={handleCreateAndPreview}
-                disabled={isLoading || isLoadingData || !selectedTemplateId}
+                disabled={
+                  isLoading ||
+                  isLoadingData ||
+                  isLoadingTemplate ||
+                  !selectedTemplateId ||
+                  (selectedTemplateContent &&
+                    extractRequiredFeeVariables(selectedTemplateContent).size >
+                      0 &&
+                    !selectedFeeStructureId)
+                }
                 className="
                   h-10 sm:h-[46px]
                   rounded-full

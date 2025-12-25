@@ -16,7 +16,6 @@ export default function NewContractTemplatePage() {
   const router = useRouter();
   const [slug, setSlug] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [category, setCategory] = useState("contracts");
   const [isLoading, setIsLoading] = useState(false);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
@@ -52,7 +51,6 @@ export default function NewContractTemplatePage() {
       const result = await createContractTemplateAction({
         slug,
         displayName,
-        category,
       });
 
       if (result.success) {
@@ -127,19 +125,6 @@ export default function NewContractTemplatePage() {
                 Lowercase letters, numbers, and hyphens only. Auto-generated
                 from display name.
               </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="category" className="font-poppins font-semibold">
-                Category
-              </Label>
-              <Input
-                id="category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                placeholder="e.g., contracts"
-                className="rounded-[14px] font-poppins"
-              />
             </div>
           </div>
 

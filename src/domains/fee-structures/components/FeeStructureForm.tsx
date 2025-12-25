@@ -148,9 +148,9 @@ export default function FeeStructureForm({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 dashboard-zoom-mobile">
       {/* Header */}
-      <div className="mb-4 sm:mb-6 dashboard-zoom-mobile flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           <button
             onClick={() => router.push("/dashboard/fee-structures")}
@@ -166,14 +166,14 @@ export default function FeeStructureForm({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 ml-auto sm:ml-0 flex-wrap">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 w-full sm:w-auto">
           {!isReadOnly && (
             <>
               <Button
                 variant="outline"
                 onClick={() => setArchiveDialogOpen(true)}
                 disabled={isArchiving}
-                className="rounded-full border-gray-200 hover:bg-gray-50"
+                className="rounded-full border-gray-200 hover:bg-gray-50 w-full sm:w-auto text-sm sm:text-base"
               >
                 <Archive className="w-4 h-4 mr-2" />
                 Archive
@@ -182,7 +182,7 @@ export default function FeeStructureForm({
                 <Button
                   onClick={handleActivate}
                   disabled={isActivating || isDirty}
-                  className="rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 transition-opacity font-semibold"
+                  className="rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 transition-opacity font-semibold w-full sm:w-auto text-sm sm:text-base"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
                   {isActivating ? "Activating..." : "Activate"}
@@ -191,7 +191,7 @@ export default function FeeStructureForm({
               <Button
                 onClick={handleSave}
                 disabled={!isDirty || isSaving}
-                className="rounded-full bg-[#000080] hover:bg-[#000093] text-white font-semibold"
+                className="rounded-full bg-[#000080] hover:bg-[#000093] text-white font-semibold w-full sm:w-auto text-sm sm:text-base"
               >
                 <Save className="w-4 h-4 mr-2" />
                 {isSaving ? "Saving..." : "Save"}

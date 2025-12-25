@@ -436,21 +436,22 @@ const getFrequencyCounts = async (
       }
 
       case "maximumDistanceTravel": {
-        // Count examiner profiles where maxTravelDistance matches the name
-        const names = items.map((item) => item.name);
+        // Count examiner profiles where maxTravelDistance matches the ID
+        // Note: maxTravelDistance is stored as UUID (taxonomy ID), not name
+        const ids = items.map((item) => item.id);
         const distanceCounts = await prisma.examinerProfile.groupBy({
           by: ["maxTravelDistance"],
           where: {
-            maxTravelDistance: { in: names },
+            maxTravelDistance: { in: ids },
             deletedAt: null,
           },
           _count: true,
         });
         distanceCounts.forEach((count) => {
           if (count.maxTravelDistance) {
-            // Find the item with matching name
+            // Find the item with matching ID
             const matchingItem = items.find(
-              (item) => item.name === count.maxTravelDistance,
+              (item) => item.id === count.maxTravelDistance,
             );
             if (matchingItem) {
               frequencyMap.set(matchingItem.id, count._count);
@@ -461,23 +462,52 @@ const getFrequencyCounts = async (
       }
 
       case "yearsOfExperience": {
-        // Count examiner profiles where yearsOfIMEExperience matches the name
-        const names = items.map((item) => item.name);
+        // Count examiner profiles where yearsOfIMEExperience matches the ID
+        // Note: yearsOfIMEExperience is stored as UUID (taxonomy ID), not name
+        const ids = items.map((item) => item.id);
         const experienceCounts = await prisma.examinerProfile.groupBy({
           by: ["yearsOfIMEExperience"],
           where: {
-            yearsOfIMEExperience: { in: names },
+            yearsOfIMEExperience: { in: ids },
             deletedAt: null,
           },
           _count: true,
         });
         experienceCounts.forEach((count) => {
-          // Find the item with matching name
-          const matchingItem = items.find(
-            (item) => item.name === count.yearsOfIMEExperience,
-          );
-          if (matchingItem) {
-            frequencyMap.set(matchingItem.id, count._count);
+          if (count.yearsOfIMEExperience) {
+            // Find the item with matching ID
+            const matchingItem = items.find(
+              (item) => item.id === count.yearsOfIMEExperience,
+            );
+            if (matchingItem) {
+              frequencyMap.set(matchingItem.id, count._count);
+            }
+          }
+        });
+        break;
+      }
+
+      case "professionalTitle": {
+        // Count examiner profiles where professionalTitle matches the ID
+        // Note: professionalTitle is stored as UUID (taxonomy ID), not name
+        const ids = items.map((item) => item.id);
+        const titleCounts = await prisma.examinerProfile.groupBy({
+          by: ["professionalTitle"],
+          where: {
+            professionalTitle: { in: ids },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        titleCounts.forEach((count) => {
+          if (count.professionalTitle) {
+            // Find the item with matching ID
+            const matchingItem = items.find(
+              (item) => item.id === count.professionalTitle,
+            );
+            if (matchingItem) {
+              frequencyMap.set(matchingItem.id, count._count);
+            }
           }
         });
         break;

@@ -160,3 +160,58 @@ export function parsePlaceholderKey(placeholder: string): {
     fullKey: placeholder,
   };
 }
+
+/**
+ * Extract required fee variable keys from template content
+ * Returns a Set of fee variable keys (e.g., ["base_exam_fee", "travel_fee"])
+ */
+export function extractRequiredFeeVariables(content: string): Set<string> {
+  const placeholders = parsePlaceholders(content);
+  const feeVariables = new Set<string>();
+
+  for (const placeholder of placeholders) {
+    const parts = placeholder.split(".");
+    if (parts[0] === "fees" && parts.length >= 2) {
+      // Extract the key after "fees."
+      const key = parts.slice(1).join(".");
+      feeVariables.add(key);
+    }
+  }
+
+  return feeVariables;
+}
+
+/**
+ * Validate that a fee structure has all required variables
+ */
+export type FeeStructureCompatibilityResult = {
+  compatible: boolean;
+  missingVariables: string[];
+  extraVariables: string[];
+};
+
+export function validateFeeStructureCompatibility(
+  requiredVariables: Set<string>,
+  feeStructureVariables: Array<{ key: string }>,
+): FeeStructureCompatibilityResult {
+  const feeStructureKeys = new Set(feeStructureVariables.map((v) => v.key));
+
+  const missingVariables: string[] = [];
+  const extraVariables: string[] = [];
+
+  // Check for missing required variables
+  for (const requiredKey of requiredVariables) {
+    if (!feeStructureKeys.has(requiredKey)) {
+      missingVariables.push(requiredKey);
+    }
+  }
+
+  // Note: extraVariables are not an error, just informational
+  // We don't need to check for extra variables as they don't cause issues
+
+  return {
+    compatible: missingVariables.length === 0,
+    missingVariables,
+    extraVariables: [],
+  };
+}

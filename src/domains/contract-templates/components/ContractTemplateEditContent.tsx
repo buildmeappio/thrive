@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,8 @@ import {
 import {
   parsePlaceholders,
   validatePlaceholders,
+  extractRequiredFeeVariables,
+  validateFeeStructureCompatibility,
 } from "../utils/placeholderParser";
 import {
   listFeeStructuresAction,
@@ -34,6 +36,7 @@ import type {
   FeeStructureData,
 } from "@/domains/fee-structures/types/feeStructure.types";
 import RichTextEditor from "@/components/editor/RichTextEditor";
+import StatusBadge from "./StatusBadge";
 
 type Props = {
   template: ContractTemplateData;
@@ -65,6 +68,10 @@ export default function ContractTemplateEditContent({ template }: Props) {
     useState<FeeStructureData | null>(null);
   const [isLoadingFeeStructures, setIsLoadingFeeStructures] = useState(false);
   const [isUpdatingFeeStructure, setIsUpdatingFeeStructure] = useState(false);
+  const [feeStructureCompatibility, setFeeStructureCompatibility] = useState<{
+    compatible: boolean;
+    missingVariables: string[];
+  } | null>(null);
   const editorRef = useRef<any>(null);
 
   useEffect(() => {
@@ -72,7 +79,19 @@ export default function ContractTemplateEditContent({ template }: Props) {
     setPlaceholders(parsed);
     const validationResult = validatePlaceholders(parsed);
     setValidation(validationResult);
-  }, [content]);
+
+    // Validate fee structure compatibility when content or fee structure changes
+    if (selectedFeeStructureData) {
+      const requiredFeeVars = extractRequiredFeeVariables(content);
+      const compatibility = validateFeeStructureCompatibility(
+        requiredFeeVars,
+        selectedFeeStructureData.variables || [],
+      );
+      setFeeStructureCompatibility(compatibility);
+    } else {
+      setFeeStructureCompatibility(null);
+    }
+  }, [content, selectedFeeStructureData]);
 
   useEffect(() => {
     const loadFeeStructures = async () => {
@@ -98,11 +117,6 @@ export default function ContractTemplateEditContent({ template }: Props) {
   }, []);
 
   const handleSaveDraft = async () => {
-    if (!selectedFeeStructureId || selectedFeeStructureId === "none") {
-      toast.error("Please select a fee structure before saving");
-      return;
-    }
-
     setIsSaving(true);
     try {
       const result = await saveTemplateDraftContentAction({
@@ -125,8 +139,28 @@ export default function ContractTemplateEditContent({ template }: Props) {
   };
 
   const handlePublish = async () => {
-    if (!selectedFeeStructureId || selectedFeeStructureId === "none") {
-      toast.error("Please select a fee structure before publishing");
+    // Validate fee structure compatibility before publishing
+    if (selectedFeeStructureData) {
+      const requiredFeeVars = extractRequiredFeeVariables(content);
+      const compatibility = validateFeeStructureCompatibility(
+        requiredFeeVars,
+        selectedFeeStructureData.variables || [],
+      );
+
+      if (!compatibility.compatible) {
+        toast.error(
+          `Fee structure is missing required variables: ${compatibility.missingVariables.join(", ")}`,
+        );
+        return;
+      }
+    }
+
+    // Check if template has fee variables but no fee structure selected
+    const requiredFeeVars = extractRequiredFeeVariables(content);
+    if (requiredFeeVars.size > 0 && !selectedFeeStructureId) {
+      toast.error(
+        "Template uses fee variables. Please select a compatible fee structure before publishing.",
+      );
       return;
     }
 
@@ -184,20 +218,22 @@ export default function ContractTemplateEditContent({ template }: Props) {
   }, [selectedFeeStructureId]);
 
   const handleFeeStructureChange = async (feeStructureId: string) => {
-    if (!feeStructureId) {
-      toast.error("Please select a fee structure");
-      return;
-    }
-
-    setSelectedFeeStructureId(feeStructureId);
+    // Allow clearing fee structure (__none__ value)
+    const actualFeeStructureId =
+      feeStructureId === "__none__" ? "" : feeStructureId;
+    setSelectedFeeStructureId(actualFeeStructureId);
     setIsUpdatingFeeStructure(true);
     try {
       const result = await updateContractTemplateAction({
         id: template.id,
-        feeStructureId: feeStructureId,
+        feeStructureId: actualFeeStructureId || null,
       });
       if (result.success) {
-        toast.success("Fee structure updated successfully");
+        toast.success(
+          feeStructureId
+            ? "Fee structure updated successfully"
+            : "Fee structure removed successfully",
+        );
         router.refresh();
       } else {
         toast.error(
@@ -214,110 +250,117 @@ export default function ContractTemplateEditContent({ template }: Props) {
     }
   };
 
-  const availableVariables = [
-    {
-      namespace: "thrive",
-      vars: ["company_name", "company_address", "logo"],
-    },
-    {
-      namespace: "examiner",
-      vars: [
-        "name",
-        "email",
-        "phone",
-        "address",
-        "province",
-        "city",
-        "postal_code",
-        "signature",
-        "signature_date_time",
-      ],
-    },
-    ...(selectedFeeStructureData?.variables
-      ? [
-          {
-            namespace: "fees",
-            vars: selectedFeeStructureData.variables.map((v) => v.key),
-          },
-        ]
-      : [
-          {
-            namespace: "fees",
-            vars: ["base_exam_fee", "additional_fee", "travel_fee"],
-          },
-        ]),
-  ];
+  const availableVariables = useMemo(
+    () => [
+      {
+        namespace: "thrive",
+        vars: ["company_name", "company_address", "logo"],
+      },
+      {
+        namespace: "examiner",
+        vars: [
+          "name",
+          "email",
+          "phone",
+          "address",
+          "province",
+          "city",
+          "postal_code",
+          "signature",
+          "signature_date_time",
+        ],
+      },
+      ...(selectedFeeStructureData?.variables
+        ? [
+            {
+              namespace: "fees",
+              vars: selectedFeeStructureData.variables.map((v) => v.key),
+            },
+          ]
+        : [
+            {
+              namespace: "fees",
+              vars: ["base_exam_fee", "additional_fee", "travel_fee"],
+            },
+          ]),
+    ],
+    [selectedFeeStructureData],
+  );
+
+  const validVariablesSet = useMemo(
+    () =>
+      new Set(
+        availableVariables.flatMap((group) =>
+          group.vars.map((v) => `${group.namespace}.${v}`),
+        ),
+      ),
+    [availableVariables],
+  );
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Link href="/dashboard/contract-templates">
-            <button className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+            <button className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow flex-shrink-0 cursor-pointer">
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </button>
           </Link>
-          <div>
-            <h1 className="text-2xl font-bold font-degular">
-              {template.displayName}
-            </h1>
-            <p className="text-sm text-gray-500 font-poppins">
-              Edit contract template
-            </p>
+          <div className="min-w-0 flex items-center gap-3">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold font-degular truncate">
+                {template.displayName}
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500 font-poppins">
+                Edit contract template
+              </p>
+            </div>
+            <StatusBadge isActive={template.isActive} />
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 w-full sm:w-auto">
           <Button
             onClick={handleSaveDraft}
-            disabled={isSaving || !selectedFeeStructureId}
-            className="rounded-full bg-[#000080] hover:bg-[#000093] text-white font-semibold"
+            disabled={isSaving}
+            className="rounded-full bg-[#000080] hover:bg-[#000093] text-white font-semibold px-4 py-2 sm:px-4 sm:py-2 text-sm sm:text-base w-full sm:w-auto"
           >
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                <span className="hidden sm:inline">Saving...</span>
+                <span className="sm:hidden">Saving</span>
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Save Draft
+                <span>Save Draft</span>
               </>
             )}
           </Button>
-          <div className="flex flex-col items-end gap-1">
-            <Button
-              onClick={handlePublish}
-              disabled={
-                isPublishing || !validation.valid || !selectedFeeStructureId
-              }
-              className="px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-            >
-              {isPublishing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Publishing...
-                </>
-              ) : (
-                <>
-                  <Eye className="mr-2 h-4 w-4" />
-                  Publish
-                </>
-              )}
-            </Button>
-            {!validation.valid && validation.errors.length > 0 && (
-              <p className="text-xs text-red-500 font-poppins">
-                {validation.errors.length} validation error
-                {validation.errors.length !== 1 ? "s" : ""} - check "Detected"
-                tab
-              </p>
+          <Button
+            onClick={handlePublish}
+            disabled={
+              isPublishing ||
+              !validation.valid ||
+              (feeStructureCompatibility &&
+                !feeStructureCompatibility.compatible)
+            }
+            className="px-4 py-2 sm:py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base w-full sm:w-auto"
+          >
+            {isPublishing ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <span className="hidden sm:inline">Publishing...</span>
+                <span className="sm:hidden">Publishing</span>
+              </>
+            ) : (
+              <>
+                <Eye className="mr-2 h-4 w-4" />
+                <span>Publish</span>
+              </>
             )}
-            {!selectedFeeStructureId && (
-              <p className="text-xs text-red-500 font-poppins">
-                Fee structure is required
-              </p>
-            )}
-          </div>
+          </Button>
         </div>
       </div>
 
@@ -338,6 +381,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
                 onChange={setContent}
                 placeholder="Enter template content with placeholders like {{thrive.company_name}}, {{examiner.name}}, {{fees.base_exam_fee}}, etc."
                 editorRef={editorRef}
+                validVariables={validVariablesSet}
               />
               <p className="text-xs text-gray-500 mt-2 font-poppins">
                 {placeholders.length} placeholder
@@ -353,7 +397,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
               <div className="flex gap-2 mb-6 border-b border-gray-200">
                 <button
                   onClick={() => setActiveTab("variables")}
-                  className={`px-4 py-2 text-sm font-poppins font-semibold transition-colors border-b-2 ${
+                  className={`px-4 py-2 text-sm font-poppins font-semibold transition-colors border-b-2 cursor-pointer ${
                     activeTab === "variables"
                       ? "border-[#00A8FF] text-[#00A8FF]"
                       : "border-transparent text-gray-500 hover:text-gray-700"
@@ -364,7 +408,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
                 {placeholders.length > 0 && (
                   <button
                     onClick={() => setActiveTab("placeholders")}
-                    className={`px-4 py-2 text-sm font-poppins font-semibold transition-colors border-b-2 relative ${
+                    className={`px-4 py-2 text-sm font-poppins font-semibold transition-colors border-b-2 relative cursor-pointer ${
                       activeTab === "placeholders"
                         ? "border-[#00A8FF] text-[#00A8FF]"
                         : "border-transparent text-gray-500 hover:text-gray-700"
@@ -386,15 +430,17 @@ export default function ContractTemplateEditContent({ template }: Props) {
                     {/* Fee Structure Selector */}
                     <div className="space-y-2 pb-4 border-b border-gray-200">
                       <Label className="font-poppins font-semibold text-sm">
-                        Fee Structure <span className="text-red-500">*</span>
+                        Suggested Fee Structure{" "}
+                        <span className="text-gray-400 text-xs font-normal">
+                          (optional)
+                        </span>
                       </Label>
                       <Select
-                        value={selectedFeeStructureId}
+                        value={selectedFeeStructureId || "__none__"}
                         onValueChange={handleFeeStructureChange}
                         disabled={
                           isUpdatingFeeStructure || isLoadingFeeStructures
                         }
-                        required
                       >
                         <SelectTrigger className="rounded-[14px] font-poppins">
                           <SelectValue
@@ -403,17 +449,20 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                 ? "Loading..."
                                 : feeStructures?.length === 0
                                   ? "No fee structures available"
-                                  : "Select fee structure (required)"
+                                  : "Select fee structure (optional)"
                             }
                           />
                         </SelectTrigger>
                         <SelectContent>
                           {feeStructures && feeStructures.length > 0 ? (
-                            feeStructures.map((fs) => (
-                              <SelectItem key={fs.id} value={fs.id}>
-                                {fs.name}
-                              </SelectItem>
-                            ))
+                            <>
+                              <SelectItem value="__none__">None</SelectItem>
+                              {feeStructures.map((fs) => (
+                                <SelectItem key={fs.id} value={fs.id}>
+                                  {fs.name}
+                                </SelectItem>
+                              ))}
+                            </>
                           ) : (
                             <div className="px-2 py-1.5 text-sm text-gray-500">
                               {isLoadingFeeStructures
@@ -426,23 +475,51 @@ export default function ContractTemplateEditContent({ template }: Props) {
                       {!isLoadingFeeStructures &&
                         feeStructures?.length === 0 && (
                           <p className="text-xs text-amber-600 font-poppins">
-                            No active fee structures found. Please create a fee
-                            structure first.
-                          </p>
-                        )}
-                      {!selectedFeeStructureId &&
-                        feeStructures &&
-                        feeStructures.length > 0 && (
-                          <p className="text-xs text-red-500 font-poppins">
-                            Fee structure is required
+                            No active fee structures found. You can still create
+                            a template without a fee structure.
                           </p>
                         )}
                       {selectedFeeStructureData && (
-                        <p className="text-xs text-gray-500 font-poppins">
-                          {selectedFeeStructureData.variables?.length || 0}{" "}
-                          variable(s) available
-                        </p>
+                        <div className="space-y-1">
+                          <p className="text-xs text-gray-500 font-poppins">
+                            {selectedFeeStructureData.variables?.length || 0}{" "}
+                            variable(s) available
+                          </p>
+                          {feeStructureCompatibility && (
+                            <>
+                              {feeStructureCompatibility.compatible ? (
+                                <p className="text-xs text-green-600 font-poppins">
+                                  ✓ Fee structure is compatible with template
+                                  variables
+                                </p>
+                              ) : (
+                                <div className="text-xs text-red-600 font-poppins">
+                                  <p className="font-semibold">
+                                    ✗ Fee structure is missing required
+                                    variables:
+                                  </p>
+                                  <ul className="list-disc list-inside ml-2 mt-1">
+                                    {feeStructureCompatibility.missingVariables.map(
+                                      (v) => (
+                                        <li key={v} className="font-mono">
+                                          fees.{v}
+                                        </li>
+                                      ),
+                                    )}
+                                  </ul>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
                       )}
+                      {!selectedFeeStructureId &&
+                        extractRequiredFeeVariables(content).size > 0 && (
+                          <p className="text-xs text-amber-600 font-poppins">
+                            Template uses fee variables. Select a compatible fee
+                            structure before publishing.
+                          </p>
+                        )}
                     </div>
 
                     {availableVariables.map((group) => (
@@ -459,7 +536,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                 onClick={() =>
                                   insertPlaceholder(fullPlaceholder)
                                 }
-                                className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-50 border border-gray-200 font-mono transition-colors"
+                                className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-50 border border-gray-200 font-mono transition-colors cursor-pointer"
                               >
                                 {`{{${fullPlaceholder}}}`}
                               </button>
@@ -528,18 +605,28 @@ export default function ContractTemplateEditContent({ template }: Props) {
                         const hasWarning = validation.warnings.some(
                           (w) => w.placeholder === placeholder,
                         );
+                        const isValid = validVariablesSet.has(placeholder);
+                        const isInvalid = !isValid && !hasError && !hasWarning;
+
                         return (
                           <div
                             key={placeholder}
-                            className={`text-xs font-mono px-3 py-2 rounded border ${
+                            className={`text-xs font-mono px-3 py-2 rounded border flex items-center justify-between ${
                               hasError
                                 ? "bg-red-50 border-red-200 text-red-700"
-                                : hasWarning
-                                  ? "bg-amber-50 border-amber-200 text-amber-700"
-                                  : "bg-gray-50 border-gray-200"
+                                : isInvalid
+                                  ? "bg-red-50 border-red-200 text-red-700"
+                                  : hasWarning
+                                    ? "bg-amber-50 border-amber-200 text-amber-700"
+                                    : "bg-gray-50 border-gray-200"
                             }`}
                           >
-                            {`{{${placeholder}}}`}
+                            <span>{`{{${placeholder}}}`}</span>
+                            {isInvalid && (
+                              <span className="text-xs text-red-600 font-poppins ml-2">
+                                Invalid variable
+                              </span>
+                            )}
                           </div>
                         );
                       })}

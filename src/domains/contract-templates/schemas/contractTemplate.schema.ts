@@ -7,7 +7,6 @@ export const createContractTemplateSchema = z.object({
     .max(255)
     .regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens"),
   displayName: z.string().min(1).max(255),
-  category: z.string().max(100).optional().default("contracts"),
 });
 
 export const updateContractTemplateSchema = z.object({
@@ -19,7 +18,6 @@ export const updateContractTemplateSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens")
     .optional(),
   displayName: z.string().min(1).max(255).optional(),
-  category: z.string().max(100).optional(),
   isActive: z.boolean().optional(),
 });
 

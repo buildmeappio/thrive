@@ -9,13 +9,18 @@ import {
   PreviewContractResult,
   ListContractsInput,
 } from "../types/contract.types";
-import { parsePlaceholders } from "@/domains/contract-templates/utils/placeholderParser";
+import {
+  parsePlaceholders,
+  extractRequiredFeeVariables,
+  validateFeeStructureCompatibility,
+} from "@/domains/contract-templates/utils/placeholderParser";
 import {
   generateContractFromTemplate,
   type ContractData as GoogleDocsContractData,
 } from "@/lib/google-docs";
 import logger from "@/utils/logger";
 import { ENV } from "@/constants/variables";
+import { formatFullName } from "@/utils/text";
 
 // List contracts with optional filters
 export const listContracts = async (
@@ -90,10 +95,12 @@ export const listContracts = async (
     let examinerName: string | null = null;
     if (contract.examinerProfile?.account?.user) {
       const user = contract.examinerProfile.account.user;
-      examinerName = `${user.firstName} ${user.lastName}`;
+      examinerName = formatFullName(user.firstName, user.lastName);
     } else if (contract.application) {
-      examinerName =
-        `${contract.application.firstName || ""} ${contract.application.lastName || ""}`.trim();
+      examinerName = formatFullName(
+        contract.application.firstName,
+        contract.application.lastName,
+      );
     }
 
     return {
@@ -223,6 +230,25 @@ export const createContract = async (
     throw HttpError.notFound("Fee structure not found");
   }
 
+  // Validate fee structure compatibility with template
+  const templateContent = templateVersion.bodyHtml;
+  const requiredFeeVars = extractRequiredFeeVariables(templateContent);
+
+  if (requiredFeeVars.size > 0) {
+    const compatibility = validateFeeStructureCompatibility(
+      requiredFeeVars,
+      feeStructure.variables,
+    );
+
+    if (!compatibility.compatible) {
+      throw HttpError.badRequest(
+        `Fee structure is missing required variables: ${compatibility.missingVariables
+          .map((v) => `fees.${v}`)
+          .join(", ")}`,
+      );
+    }
+  }
+
   // Get examiner name for contract data
   let examinerName = "";
   if (input.examinerProfileId) {
@@ -237,16 +263,20 @@ export const createContract = async (
       },
     });
     if (examiner?.account?.user) {
-      examinerName =
-        `${examiner.account.user.firstName} ${examiner.account.user.lastName}`.trim();
+      examinerName = formatFullName(
+        examiner.account.user.firstName,
+        examiner.account.user.lastName,
+      );
     }
   } else if (input.applicationId) {
     const application = await prisma.examinerApplication.findUnique({
       where: { id: input.applicationId },
     });
     if (application) {
-      examinerName =
-        `${application.firstName || ""} ${application.lastName || ""}`.trim();
+      examinerName = formatFullName(
+        application.firstName,
+        application.lastName,
+      );
     }
   }
 

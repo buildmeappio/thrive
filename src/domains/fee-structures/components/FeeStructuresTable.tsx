@@ -3,16 +3,19 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { FeeStructureStatus } from "@prisma/client";
-import { Copy, Archive, MoreHorizontal } from "lucide-react";
+import { Pencil, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
   type ColumnDef,
+  type Column,
+  SortingState,
 } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -21,12 +24,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,6 +52,51 @@ const formatText = (str: string): string => {
     .join(" ");
 };
 
+type ColumnMeta = {
+  minSize?: number;
+  maxSize?: number;
+  size?: number;
+  align?: "left" | "center" | "right";
+};
+
+const SortableHeader = ({
+  column,
+  children,
+}: {
+  column: Column<FeeStructureListItem, unknown>;
+  children: React.ReactNode;
+}) => {
+  const sortDirection = column.getIsSorted();
+
+  const handleSort = () => {
+    if (sortDirection === false) {
+      column.toggleSorting(false); // Set to ascending
+    } else if (sortDirection === "asc") {
+      column.toggleSorting(true); // Set to descending
+    } else {
+      column.clearSorting(); // Clear sorting (back to original)
+    }
+  };
+
+  return (
+    <div
+      className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
+      onClick={handleSort}
+    >
+      <span>{children}</span>
+      {sortDirection === false && (
+        <ArrowUpDown className="h-4 w-4 text-gray-400" />
+      )}
+      {sortDirection === "asc" && (
+        <ArrowUp className="h-4 w-4 text-[#000093]" />
+      )}
+      {sortDirection === "desc" && (
+        <ArrowDown className="h-4 w-4 text-[#000093]" />
+      )}
+    </div>
+  );
+};
+
 type FeeStructuresTableProps = {
   feeStructures: FeeStructureListItem[];
   showPaginationOnly?: boolean;
@@ -78,6 +120,7 @@ export default function FeeStructuresTable({
     useState<FeeStructureListItem | null>(null);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const handleRowClick = useCallback(
     (id: string) => {
@@ -124,94 +167,104 @@ export default function FeeStructuresTable({
     () => [
       {
         accessorKey: "name",
-        header: "Name",
+        header: ({ column }) => (
+          <SortableHeader column={column}>Name</SortableHeader>
+        ),
         cell: ({ row }) => (
           <div
-            className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
-            title={row.getValue("name")}
+            className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+            title={row.getValue("name") as string}
           >
             {row.getValue("name")}
           </div>
         ),
+        meta: { minSize: 150, maxSize: 300, size: 200 } as ColumnMeta,
       },
       {
         accessorKey: "status",
-        header: "Status",
+        header: ({ column }) => (
+          <SortableHeader column={column}>Status</SortableHeader>
+        ),
         cell: ({ row }) => (
           <div
             className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
-            title={formatText(row.getValue("status"))}
+            title={formatText(row.getValue("status") as string)}
           >
-            {formatText(row.getValue("status"))}
+            {formatText(row.getValue("status") as string)}
           </div>
         ),
+        meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
       },
       {
         accessorKey: "variableCount",
-        header: "Variables",
-        cell: ({ row }) => (
-          <span className="text-[#4D4D4D] font-poppins text-[16px] leading-normal">
-            {row.getValue("variableCount")}
-          </span>
+        header: ({ column }) => (
+          <SortableHeader column={column}>Variables</SortableHeader>
         ),
+        cell: ({ row }) => (
+          <div className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis">
+            {row.getValue("variableCount")}
+          </div>
+        ),
+        meta: {
+          minSize: 100,
+          maxSize: 150,
+          size: 120,
+          align: "center",
+        } as ColumnMeta,
       },
       {
         accessorKey: "updatedAt",
-        header: "Last Updated",
-        cell: ({ row }) => (
-          <span className="text-[#4D4D4D] font-poppins text-[16px] leading-normal">
-            {formatDate(row.getValue("updatedAt"))}
-          </span>
+        header: ({ column }) => (
+          <SortableHeader column={column}>Last Updated</SortableHeader>
         ),
+        cell: ({ row }) => (
+          <div className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis">
+            {formatDate(row.getValue("updatedAt") as string)}
+          </div>
+        ),
+        meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
       },
       {
         id: "actions",
-        header: "Actions",
+        header: () => <></>,
         cell: ({ row }) => {
           const feeStructure = row.original;
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => e.stopPropagation()}
-                  className="h-8 w-8"
+            <div
+              className="flex items-center gap-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRowClick(feeStructure.id);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                aria-label="Edit fee structure"
+              >
+                <Pencil className="w-4 h-4 text-[#7B8B91]" />
+              </button>
+              <button
+                onClick={(e) => handleDuplicate(e, feeStructure)}
+                disabled={isDuplicating === feeStructure.id}
+                className="font-poppins text-sm text-[#7B8B91] hover:text-[#000000] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDuplicating === feeStructure.id
+                  ? "Duplicating..."
+                  : "Duplicate"}
+              </button>
+              {feeStructure.status !== FeeStructureStatus.ARCHIVED && (
+                <button
+                  onClick={(e) => handleArchiveClick(e, feeStructure)}
+                  className="font-poppins text-sm text-[#7B8B91] hover:text-[#000000] transition-colors cursor-pointer"
                 >
-                  <MoreHorizontal className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRowClick(feeStructure.id);
-                  }}
-                >
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={(e) => handleDuplicate(e, feeStructure)}
-                  disabled={isDuplicating === feeStructure.id}
-                >
-                  <Copy className="w-4 h-4 mr-2" />
-                  {isDuplicating === feeStructure.id
-                    ? "Duplicating..."
-                    : "Duplicate"}
-                </DropdownMenuItem>
-                {feeStructure.status !== FeeStructureStatus.ARCHIVED && (
-                  <DropdownMenuItem
-                    onClick={(e) => handleArchiveClick(e, feeStructure)}
-                    className="text-red-600"
-                  >
-                    <Archive className="w-4 h-4 mr-2" />
-                    Archive
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  Archive
+                </button>
+              )}
+            </div>
           );
         },
+        meta: { minSize: 200, maxSize: 300, size: 250 } as ColumnMeta,
       },
     ],
     [handleRowClick, handleDuplicate, handleArchiveClick, isDuplicating],
@@ -220,7 +273,10 @@ export default function FeeStructuresTable({
   const table = useReactTable({
     data: feeStructures,
     columns,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     initialState: {
       pagination: {
@@ -286,29 +342,42 @@ export default function FeeStructuresTable({
                       key={headerGroup.id}
                       className="bg-[#F3F3F3] border-b-0"
                     >
-                      {headerGroup.headers.map((header, index) => (
-                        <TableHead
-                          key={header.id}
-                          className={`px-6 py-2 text-base font-medium text-black whitespace-nowrap overflow-hidden ${
-                            index === 0 ? "rounded-l-2xl text-left" : ""
-                          } ${
-                            index === headerGroup.headers.length - 1
-                              ? "rounded-r-2xl text-right"
-                              : ""
-                          } ${
-                            header.id === "variableCount"
-                              ? "text-center"
-                              : "text-left"
-                          }`}
-                        >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
-                        </TableHead>
-                      ))}
+                      {headerGroup.headers.map((header) => {
+                        const column = header.column.columnDef;
+                        const meta = (column.meta as ColumnMeta) || {};
+                        return (
+                          <TableHead
+                            key={header.id}
+                            style={{
+                              minWidth: meta.minSize
+                                ? `${meta.minSize}px`
+                                : undefined,
+                              maxWidth: meta.maxSize
+                                ? `${meta.maxSize}px`
+                                : undefined,
+                              width: meta.size ? `${meta.size}px` : undefined,
+                            }}
+                            className={cn(
+                              "px-6 py-2 text-base font-medium text-black whitespace-nowrap overflow-hidden",
+                              meta.align === "center"
+                                ? "text-center"
+                                : meta.align === "right"
+                                  ? "text-right"
+                                  : "text-left",
+                              header.index === 0 && "rounded-l-2xl",
+                              header.index === headerGroup.headers.length - 1 &&
+                                "rounded-r-2xl",
+                            )}
+                          >
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                          </TableHead>
+                        );
+                      })}
                     </TableRow>
                   ))}
                 </TableHeader>
@@ -321,32 +390,37 @@ export default function FeeStructuresTable({
                         onClick={() => handleRowClick(row.original.id)}
                         className="bg-white border-0 border-b transition-colors hover:bg-muted/50 cursor-pointer"
                       >
-                        {row.getVisibleCells().map((cell, index) => (
-                          <TableCell
-                            key={cell.id}
-                            className={`px-6 py-3 overflow-hidden align-middle ${
-                              index === row.getVisibleCells().length - 1
-                                ? "text-right"
-                                : ""
-                            } ${
-                              cell.column.id === "variableCount"
-                                ? "text-center"
-                                : ""
-                            }`}
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </TableCell>
-                        ))}
+                        {row.getVisibleCells().map((cell) => {
+                          const column = cell.column.columnDef;
+                          const meta = (column.meta as ColumnMeta) || {};
+                          return (
+                            <TableCell
+                              key={cell.id}
+                              style={{
+                                minWidth: meta.minSize
+                                  ? `${meta.minSize}px`
+                                  : undefined,
+                                maxWidth: meta.maxSize
+                                  ? `${meta.maxSize}px`
+                                  : undefined,
+                                width: meta.size ? `${meta.size}px` : undefined,
+                              }}
+                              className="px-6 py-3 overflow-hidden align-middle"
+                            >
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                              )}
+                            </TableCell>
+                          );
+                        })}
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
                       <TableCell
                         colSpan={columns.length}
-                        className="h-24 text-center"
+                        className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
                       >
                         <p className="text-[#7B8B91] font-poppins text-[16px]">
                           No fee structures found

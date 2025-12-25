@@ -4,7 +4,6 @@ export type ContractTemplateListItem = {
   id: string;
   slug: string;
   displayName: string;
-  category: string;
   isActive: boolean;
   currentVersionId: string | null;
   currentVersion: {
@@ -34,7 +33,6 @@ export type ContractTemplateData = {
   id: string;
   slug: string;
   displayName: string;
-  category: string;
   isActive: boolean;
   currentVersionId: string | null;
   feeStructureId: string | null;
@@ -61,14 +59,12 @@ export type ContractTemplateData = {
 export type CreateContractTemplateInput = {
   slug: string;
   displayName: string;
-  category?: string;
 };
 
 export type UpdateContractTemplateInput = {
   id: string;
   slug?: string;
   displayName?: string;
-  category?: string;
   isActive?: boolean;
   feeStructureId?: string | null;
 };

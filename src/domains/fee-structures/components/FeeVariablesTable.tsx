@@ -204,98 +204,100 @@ export default function FeeVariablesTable({
           )}
         </div>
       ) : (
-        <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto md:overflow-x-visible">
-          <Table className="w-full border-0 table-fixed">
-            <TableHeader>
-              <TableRow className="bg-[#F3F3F3] border-b-0">
-                <TableHead className="px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden rounded-l-2xl">
-                  Label
-                </TableHead>
-                <TableHead className="px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden">
-                  Key
-                </TableHead>
-                <TableHead className="px-6 py-2 text-left text-base font-medium text-black whitespace-nowrap overflow-hidden">
-                  Default
-                </TableHead>
-                <TableHead className="px-6 py-2 text-center text-base font-medium text-black whitespace-nowrap overflow-hidden">
-                  Required
-                </TableHead>
-                {!isReadOnly && (
-                  <TableHead className="px-6 py-2 text-right text-base font-medium text-black whitespace-nowrap overflow-hidden rounded-r-2xl">
-                    Actions
+        <div className="rounded-md outline-none max-h-[60vh] lg:max-h-none overflow-x-auto">
+          <div className="min-w-[600px] md:min-w-0">
+            <Table className="w-full border-0 md:table-fixed">
+              <TableHeader>
+                <TableRow className="bg-[#F3F3F3] border-b-0">
+                  <TableHead className="px-3 sm:px-6 py-2 text-sm sm:text-base font-medium text-black whitespace-nowrap rounded-l-2xl">
+                    Label
                   </TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {variables.map((variable) => (
-                <TableRow
-                  key={variable.id}
-                  className="bg-white border-0 border-b transition-colors hover:bg-muted/50"
-                >
-                  <TableCell className="px-6 py-3 overflow-hidden align-middle">
-                    <span className="text-[#4D4D4D] font-poppins text-[16px] leading-normal font-medium">
-                      {variable.label}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-6 py-3 overflow-hidden align-middle">
-                    <div className="space-y-1">
-                      <code className="text-sm bg-[#EEF1F3] px-1.5 py-0.5 rounded font-poppins">
-                        {variable.key}
-                      </code>
-                      <p className="text-xs text-[#7B8B91] font-poppins">
-                        {"{{fees." + variable.key + "}}"}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-6 py-3 overflow-hidden align-middle">
-                    <span className="text-[#4D4D4D] font-poppins text-[16px] leading-normal">
-                      {formatDefaultValue(
-                        variable.defaultValue,
-                        variable.currency,
-                        variable.decimals,
-                      )}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-6 py-3 overflow-hidden align-middle text-center">
-                    {variable.required ? (
-                      <span className="text-green-600 font-medium font-poppins text-[16px]">
-                        Yes
-                      </span>
-                    ) : (
-                      <span className="text-gray-400 font-poppins text-[16px]">
-                        No
-                      </span>
-                    )}
-                  </TableCell>
+                  <TableHead className="px-3 sm:px-6 py-2 text-sm sm:text-base font-medium text-black whitespace-nowrap">
+                    Key
+                  </TableHead>
+                  <TableHead className="px-3 sm:px-6 py-2 text-sm sm:text-base font-medium text-black whitespace-nowrap">
+                    Default
+                  </TableHead>
+                  <TableHead className="px-3 sm:px-6 py-2 text-center text-sm sm:text-base font-medium text-black whitespace-nowrap">
+                    Required
+                  </TableHead>
                   {!isReadOnly && (
-                    <TableCell className="px-6 py-3 overflow-hidden align-middle text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditClick(variable)}
-                          title="Edit"
-                          className="h-8 w-8"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteClick(variable)}
-                          title="Delete"
-                          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                    <TableHead className="px-3 sm:px-6 py-2 text-right text-sm sm:text-base font-medium text-black whitespace-nowrap rounded-r-2xl">
+                      Actions
+                    </TableHead>
                   )}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {variables.map((variable) => (
+                  <TableRow
+                    key={variable.id}
+                    className="bg-white border-0 border-b transition-colors hover:bg-muted/50"
+                  >
+                    <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle">
+                      <span className="text-[#4D4D4D] font-poppins text-sm sm:text-[16px] leading-normal font-medium">
+                        {variable.label}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle">
+                      <div className="space-y-1">
+                        <code className="text-xs sm:text-sm bg-[#EEF1F3] px-1.5 py-0.5 rounded font-poppins">
+                          {variable.key}
+                        </code>
+                        <p className="text-xs text-[#7B8B91] font-poppins">
+                          {"{{fees." + variable.key + "}}"}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle">
+                      <span className="text-[#4D4D4D] font-poppins text-sm sm:text-[16px] leading-normal">
+                        {formatDefaultValue(
+                          variable.defaultValue,
+                          variable.currency,
+                          variable.decimals,
+                        )}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle text-center">
+                      {variable.required ? (
+                        <span className="text-green-600 font-medium font-poppins text-sm sm:text-[16px]">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 font-poppins text-sm sm:text-[16px]">
+                          No
+                        </span>
+                      )}
+                    </TableCell>
+                    {!isReadOnly && (
+                      <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditClick(variable)}
+                            title="Edit"
+                            className="h-8 w-8"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteClick(variable)}
+                            title="Delete"
+                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
 

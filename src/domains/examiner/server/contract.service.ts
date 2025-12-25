@@ -8,6 +8,7 @@ import { sha256Buffer, hashContractData } from "@/lib/crypto";
 import { signContractToken } from "@/lib/jwt";
 import { ENV } from "@/constants/variables";
 import logger from "@/utils/logger";
+import { formatFullName } from "@/utils/text";
 
 type ContractData = {
   examinerName: string;
@@ -169,8 +170,10 @@ class ContractService {
         };
       }
 
-      const examinerName =
-        `${application.firstName || ""} ${application.lastName || ""}`.trim();
+      const examinerName = formatFullName(
+        application.firstName,
+        application.lastName,
+      );
       const examinerEmail = application.email;
 
       // 2. Get or create the IME template
@@ -411,7 +414,10 @@ class ContractService {
       }
 
       const feeStructure = examiner.feeStructure[0];
-      const examinerName = `${examiner.account.user.firstName} ${examiner.account.user.lastName}`;
+      const examinerName = formatFullName(
+        examiner.account.user.firstName,
+        examiner.account.user.lastName,
+      );
       const examinerEmail = examiner.account.user.email;
 
       // 2. Get or create the IME template

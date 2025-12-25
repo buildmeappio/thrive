@@ -1,15 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { MoreHorizontal, Eye } from "lucide-react";
+import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import Link from "next/link";
 import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
   type ColumnDef,
+  type Column,
+  SortingState,
 } from "@tanstack/react-table";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -18,12 +23,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import Pagination from "@/components/Pagination";
 import type { ContractListItem } from "../types/contract.types";
 import { formatText } from "@/utils/text";
@@ -40,8 +39,67 @@ const formatDate = (dateString: string): string => {
   });
 };
 
+type ColumnMeta = {
+  minSize?: number;
+  maxSize?: number;
+  size?: number;
+  align?: "left" | "center" | "right";
+};
+
+const ActionButton = ({ id }: { id: string }) => {
+  return (
+    <Link
+      href={`/dashboard/contracts/${id}`}
+      className="w-full h-full cursor-pointer"
+    >
+      <div className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full p-1 w-[30px] h-[30px] flex items-center justify-center hover:opacity-80">
+        <ArrowRight className="w-4 h-4 text-white" />
+      </div>
+    </Link>
+  );
+};
+
+const SortableHeader = ({
+  column,
+  children,
+}: {
+  column: Column<ContractListItem, unknown>;
+  children: React.ReactNode;
+}) => {
+  const sortDirection = column.getIsSorted();
+
+  const handleSort = () => {
+    if (sortDirection === false) {
+      column.toggleSorting(false); // Set to ascending
+    } else if (sortDirection === "asc") {
+      column.toggleSorting(true); // Set to descending
+    } else {
+      column.clearSorting(); // Clear sorting (back to original)
+    }
+  };
+
+  return (
+    <div
+      className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
+      onClick={handleSort}
+    >
+      <span>{children}</span>
+      {sortDirection === false && (
+        <ArrowUpDown className="h-4 w-4 text-gray-400" />
+      )}
+      {sortDirection === "asc" && (
+        <ArrowUp className="h-4 w-4 text-[#000093]" />
+      )}
+      {sortDirection === "desc" && (
+        <ArrowDown className="h-4 w-4 text-[#000093]" />
+      )}
+    </div>
+  );
+};
+
 export default function ContractsTable({ contracts }: Props) {
   const router = useRouter();
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const handleRowClick = useCallback(
     (id: string) => {
@@ -54,82 +112,96 @@ export default function ContractsTable({ contracts }: Props) {
     () => [
       {
         accessorKey: "examinerName",
-        header: "Examiner",
+        header: ({ column }) => (
+          <SortableHeader column={column}>Examiner</SortableHeader>
+        ),
         cell: ({ row }) => (
-          <div className="font-poppins text-sm text-black">
+          <div
+            className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+            title={row.original.examinerName || "N/A"}
+          >
             {row.original.examinerName || "N/A"}
           </div>
         ),
+        meta: { minSize: 150, maxSize: 250, size: 200 } as ColumnMeta,
       },
       {
         accessorKey: "templateName",
-        header: "Template",
+        header: ({ column }) => (
+          <SortableHeader column={column}>Template</SortableHeader>
+        ),
         cell: ({ row }) => (
-          <div className="font-poppins text-sm text-[#7B8B91]">
+          <div
+            className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis"
+            title={row.original.templateName || "N/A"}
+          >
             {row.original.templateName || "N/A"}
           </div>
         ),
+        meta: { minSize: 150, maxSize: 250, size: 200 } as ColumnMeta,
       },
       {
         accessorKey: "status",
-        header: "Status",
+        header: ({ column }) => (
+          <SortableHeader column={column}>Status</SortableHeader>
+        ),
         cell: ({ row }) => (
-          <div className="font-poppins text-sm">
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          <div className="flex items-center justify-center">
+            <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 whitespace-nowrap min-w-[80px]">
               {formatText(row.original.status)}
             </span>
           </div>
         ),
+        meta: {
+          minSize: 120,
+          maxSize: 180,
+          size: 150,
+          align: "center",
+        } as ColumnMeta,
       },
       {
         accessorKey: "updatedAt",
-        header: "Updated",
+        header: ({ column }) => (
+          <SortableHeader column={column}>Updated</SortableHeader>
+        ),
         cell: ({ row }) => (
-          <div className="font-poppins text-sm text-[#7B8B91]">
+          <div className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap overflow-hidden text-ellipsis">
             {formatDate(row.original.updatedAt)}
           </div>
         ),
+        meta: { minSize: 120, maxSize: 180, size: 150 } as ColumnMeta,
       },
       {
         id: "actions",
-        header: "Actions",
+        header: () => <></>,
         cell: ({ row }) => {
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className="p-2 hover:bg-gray-100 rounded-full"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/dashboard/contracts/${row.original.id}`);
-                  }}
-                >
-                  <Eye className="w-4 h-4 mr-2" />
-                  View
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center justify-end"
+            >
+              <ActionButton id={row.original.id} />
+            </div>
           );
         },
+        meta: {
+          minSize: 60,
+          maxSize: 60,
+          size: 60,
+          align: "right",
+        } as ColumnMeta,
       },
     ],
-    [handleRowClick, router],
+    [router],
   );
 
   const table = useReactTable({
     data: contracts,
     columns,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     initialState: {
       pagination: {
@@ -166,45 +238,94 @@ export default function ContractsTable({ contracts }: Props) {
                       key={headerGroup.id}
                       className="bg-[#F3F3F3] border-b-0"
                     >
-                      {headerGroup.headers.map((header, index) => (
-                        <TableHead
-                          key={header.id}
-                          className={`px-6 py-2 text-base font-medium text-black whitespace-nowrap overflow-hidden ${
-                            index === 0 ? "rounded-l-2xl text-left" : ""
-                          } ${
-                            index === headerGroup.headers.length - 1
-                              ? "rounded-r-2xl text-right"
-                              : ""
-                          } text-left`}
-                        >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
-                        </TableHead>
-                      ))}
+                      {headerGroup.headers.map((header) => {
+                        const column = header.column.columnDef;
+                        const meta = (column.meta as ColumnMeta) || {};
+                        return (
+                          <TableHead
+                            key={header.id}
+                            style={{
+                              minWidth: meta.minSize
+                                ? `${meta.minSize}px`
+                                : undefined,
+                              maxWidth: meta.maxSize
+                                ? `${meta.maxSize}px`
+                                : undefined,
+                              width: meta.size ? `${meta.size}px` : undefined,
+                            }}
+                            className={cn(
+                              "px-6 py-2 text-base font-medium text-black whitespace-nowrap overflow-hidden",
+                              meta.align === "center"
+                                ? "text-center"
+                                : meta.align === "right"
+                                  ? "text-right"
+                                  : "text-left",
+                              header.index === 0 && "rounded-l-2xl",
+                              header.index === headerGroup.headers.length - 1 &&
+                                "rounded-r-2xl",
+                            )}
+                          >
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                          </TableHead>
+                        );
+                      })}
                     </TableRow>
                   ))}
                 </TableHeader>
                 <TableBody>
-                  {table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      className="cursor-pointer hover:bg-gray-50 border-b border-gray-100"
-                      onClick={() => handleRowClick(row.original.id)}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="px-6 py-4 text-sm">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      ))}
+                  {table.getRowModel().rows.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        className="cursor-pointer hover:bg-gray-50 border-b border-gray-100"
+                        onClick={() => handleRowClick(row.original.id)}
+                      >
+                        {row.getVisibleCells().map((cell) => {
+                          const column = cell.column.columnDef;
+                          const meta = (column.meta as ColumnMeta) || {};
+                          return (
+                            <TableCell
+                              key={cell.id}
+                              style={{
+                                minWidth: meta.minSize
+                                  ? `${meta.minSize}px`
+                                  : undefined,
+                                maxWidth: meta.maxSize
+                                  ? `${meta.maxSize}px`
+                                  : undefined,
+                                width: meta.size ? `${meta.size}px` : undefined,
+                              }}
+                              className="px-6 py-3 overflow-hidden align-middle"
+                            >
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                              )}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center text-black font-poppins text-[16px] leading-normal"
+                      >
+                        <p className="text-[#7B8B91] font-poppins text-[16px]">
+                          No contracts found
+                        </p>
+                        <p className="text-[#A3ADB3] font-poppins text-[13px] mt-1">
+                          Try adjusting filters or create a new contract.
+                        </p>
+                      </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </div>

@@ -1,8 +1,7 @@
-import { FeeStructureStatus } from "@prisma/client";
-import { Check, FileText, Archive } from "lucide-react";
+import { Check, X } from "lucide-react";
 
 type StatusBadgeProps = {
-  status: FeeStructureStatus;
+  isActive: boolean;
   className?: string;
 };
 
@@ -19,46 +18,7 @@ const GradientIcon = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const statusConfig: Record<
-  FeeStructureStatus,
-  { label: string; icon: React.ReactNode }
-> = {
-  DRAFT: {
-    label: "Draft",
-    icon: (
-      <GradientIcon>
-        <FileText className="w-3 h-3" />
-      </GradientIcon>
-    ),
-  },
-  ACTIVE: {
-    label: "Active",
-    icon: (
-      <GradientIcon>
-        <Check className="w-3 h-3" />
-      </GradientIcon>
-    ),
-  },
-  ARCHIVED: {
-    label: "Archived",
-    icon: (
-      <GradientIcon>
-        <Archive className="w-3 h-3" />
-      </GradientIcon>
-    ),
-  },
-};
-
-export default function StatusBadge({ status, className }: StatusBadgeProps) {
-  const config = statusConfig[status] || {
-    label: status,
-    icon: (
-      <GradientIcon>
-        <FileText className="w-3 h-3" />
-      </GradientIcon>
-    ),
-  };
-
+export default function StatusBadge({ isActive, className }: StatusBadgeProps) {
   return (
     <div
       className={`px-[2px] py-[2px] rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] w-fit ${className || ""}`}
@@ -73,8 +33,21 @@ export default function StatusBadge({ status, className }: StatusBadgeProps) {
           backgroundColor: "#E0F7F4",
         }}
       >
-        {config.icon}
-        <span style={{ color: "#004766" }}>{config.label}</span>
+        {isActive ? (
+          <>
+            <GradientIcon>
+              <Check className="w-3 h-3" />
+            </GradientIcon>
+            <span style={{ color: "#004766" }}>Active</span>
+          </>
+        ) : (
+          <>
+            <GradientIcon>
+              <X className="w-3 h-3" />
+            </GradientIcon>
+            <span style={{ color: "#004766" }}>Inactive</span>
+          </>
+        )}
       </div>
     </div>
   );
