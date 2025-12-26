@@ -4,4 +4,3 @@ export {
   initializeFeeFormValues,
 } from "./FeeStructureFormStep";
 export type { FeeVariable, FeeFormValues } from "./FeeStructureFormStep";
-

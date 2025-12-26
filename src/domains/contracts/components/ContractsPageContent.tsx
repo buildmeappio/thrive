@@ -45,7 +45,7 @@ export default function ContractsPageContent({
   const [search, setSearch] = useState(initialSearch ?? "");
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  const queryString = useMemo(() => { 
+  const queryString = useMemo(() => {
     return buildQuery({ status, search });
   }, [status, search]);
 

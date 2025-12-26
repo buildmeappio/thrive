@@ -834,99 +834,105 @@ export const previewContract = async (
   }
 
   // Always use HTML template from bodyHtml as source of truth
-    const templateHtml = contract.templateVersion.bodyHtml;
+  const templateHtml = contract.templateVersion.bodyHtml;
 
   // Validate that bodyHtml exists and is not empty
-    if (!templateHtml || templateHtml.trim() === "") {
+  if (!templateHtml || templateHtml.trim() === "") {
     logger.warn(`Template bodyHtml is empty for contract ${contractId}`);
-      return {
-        renderedHtml:
-          "<p>Template content is empty. Please add content to the template.</p>",
-        missingPlaceholders: [],
-      };
-    }
+    return {
+      renderedHtml:
+        "<p>Template content is empty. Please add content to the template.</p>",
+      missingPlaceholders: [],
+    };
+  }
 
   // Log the raw HTML to debug styling issues
-  logger.log(`📋 Raw template HTML (first 500 chars): ${templateHtml.substring(0, 500)}`);
+  logger.log(
+    `📋 Raw template HTML (first 500 chars): ${templateHtml.substring(0, 500)}`,
+  );
 
-    // Replace placeholders in template
+  // Replace placeholders in template
   let renderedHtml = templateHtml;
   const missingPlaceholders: string[] = [];
-    const placeholders = parsePlaceholders(renderedHtml);
+  const placeholders = parsePlaceholders(renderedHtml);
 
-    for (const placeholder of placeholders) {
-      // Replace all occurrences of this placeholder
-      const regex = new RegExp(
-        `\\{\\{\\s*${placeholder.replace(/\./g, "\\.")}\\s*\\}\\}`,
-        "g",
-      );
+  for (const placeholder of placeholders) {
+    // Replace all occurrences of this placeholder
+    const regex = new RegExp(
+      `\\{\\{\\s*${placeholder.replace(/\./g, "\\.")}\\s*\\}\\}`,
+      "g",
+    );
 
     // Signature placeholders are optional - replace with underscores if not available
-      const isSignaturePlaceholder =
-        placeholder === "examiner.signature" ||
-        placeholder === "examiner.signature_date_time";
+    const isSignaturePlaceholder =
+      placeholder === "examiner.signature" ||
+      placeholder === "examiner.signature_date_time";
 
-      if (values[placeholder]) {
-        // Special handling for logo and signature - convert to img tag if it's a URL or data URL
-        let replacement: string;
+    if (values[placeholder]) {
+      // Special handling for logo and signature - convert to img tag if it's a URL or data URL
+      let replacement: string;
+      if (
+        placeholder === "thrive.logo" &&
+        values[placeholder] &&
+        typeof values[placeholder] === "string"
+      ) {
+        const logoUrl = String(values[placeholder]).trim();
         if (
-          placeholder === "thrive.logo" &&
-          values[placeholder] &&
-          typeof values[placeholder] === "string"
+          logoUrl &&
+          (logoUrl.startsWith("http://") || logoUrl.startsWith("https://"))
         ) {
-          const logoUrl = String(values[placeholder]).trim();
-          if (
-            logoUrl &&
-            (logoUrl.startsWith("http://") || logoUrl.startsWith("https://"))
-          ) {
-            // Wrap in a div that centers the image and preserves parent alignment
-            replacement = `<div style="text-align: center; display: block;"><img src="${logoUrl}" alt="Thrive Logo" style="max-width: 200px; height: auto; display: inline-block;" /></div>`;
-          } else {
-            replacement = logoUrl;
-          }
-        } else if (
-          placeholder === "examiner.signature" &&
-          values[placeholder] &&
-          typeof values[placeholder] === "string"
-        ) {
-          const signatureUrl = String(values[placeholder]).trim();
-          if (
-            signatureUrl &&
-            (signatureUrl.startsWith("data:image/") ||
-              signatureUrl.startsWith("http://") ||
-              signatureUrl.startsWith("https://"))
-          ) {
-            replacement = `<img src="${signatureUrl}" alt="Examiner Signature" data-signature="examiner" style="max-width: 240px; height: auto; display: inline-block;" />`;
-          } else {
-            replacement = signatureUrl;
-          }
+          // Wrap in a div that centers the image and preserves parent alignment
+          replacement = `<div style="text-align: center; display: block;"><img src="${logoUrl}" alt="Thrive Logo" style="max-width: 200px; height: auto; display: inline-block;" /></div>`;
         } else {
-          replacement = String(values[placeholder]);
+          replacement = logoUrl;
         }
+      } else if (
+        placeholder === "examiner.signature" &&
+        values[placeholder] &&
+        typeof values[placeholder] === "string"
+      ) {
+        const signatureUrl = String(values[placeholder]).trim();
+        if (
+          signatureUrl &&
+          (signatureUrl.startsWith("data:image/") ||
+            signatureUrl.startsWith("http://") ||
+            signatureUrl.startsWith("https://"))
+        ) {
+          replacement = `<img src="${signatureUrl}" alt="Examiner Signature" data-signature="examiner" style="max-width: 240px; height: auto; display: inline-block;" />`;
+        } else {
+          replacement = signatureUrl;
+        }
+      } else {
+        replacement = String(values[placeholder]);
+      }
 
-        renderedHtml = renderedHtml.replace(regex, replacement);
-      } else if (isSignaturePlaceholder) {
+      renderedHtml = renderedHtml.replace(regex, replacement);
+    } else if (isSignaturePlaceholder) {
       // Replace signature placeholders with long underscores if not available (they'll be filled when examiner signs)
       if (placeholder === "examiner.signature") {
         // Wrap in a span with data-signature attribute so examiner-web can identify it
-        const underscoreLine = '<span data-signature="examiner">________________________</span>';
+        const underscoreLine =
+          '<span data-signature="examiner">________________________</span>';
         renderedHtml = renderedHtml.replace(regex, underscoreLine);
       } else {
         // For signature_date_time, just use underscores without the data attribute
         const underscoreLine = "________________________";
         renderedHtml = renderedHtml.replace(regex, underscoreLine);
       }
-      } else {
-        // For other placeholders, mark as missing
-        missingPlaceholders.push(placeholder);
-      }
+    } else {
+      // For other placeholders, mark as missing
+      missingPlaceholders.push(placeholder);
     }
+  }
 
   // Log final rendered HTML for debugging
-  logger.log(`✅ Contract preview HTML generated (${renderedHtml.length} characters)`);
-  const finalPreview = renderedHtml.length > 1000
-    ? `${renderedHtml.substring(0, 500)}...\n...${renderedHtml.substring(renderedHtml.length - 500)}`
-    : renderedHtml;
+  logger.log(
+    `✅ Contract preview HTML generated (${renderedHtml.length} characters)`,
+  );
+  const finalPreview =
+    renderedHtml.length > 1000
+      ? `${renderedHtml.substring(0, 500)}...\n...${renderedHtml.substring(renderedHtml.length - 500)}`
+      : renderedHtml;
   logger.log(`📄 Final preview HTML:\n${finalPreview}`);
 
   // For preview, just return the HTML without uploading to S3
@@ -955,10 +961,13 @@ export const generateAndUploadContractHtml = async (
   }
 
   // Log HTML before uploading
-  logger.log(`📤 Preparing to upload contract HTML to S3 (${previewResult.renderedHtml.length} characters)`);
-  const uploadPreview = previewResult.renderedHtml.length > 1000
-    ? `${previewResult.renderedHtml.substring(0, 500)}...\n...${previewResult.renderedHtml.substring(previewResult.renderedHtml.length - 500)}`
-    : previewResult.renderedHtml;
+  logger.log(
+    `📤 Preparing to upload contract HTML to S3 (${previewResult.renderedHtml.length} characters)`,
+  );
+  const uploadPreview =
+    previewResult.renderedHtml.length > 1000
+      ? `${previewResult.renderedHtml.substring(0, 500)}...\n...${previewResult.renderedHtml.substring(previewResult.renderedHtml.length - 500)}`
+      : previewResult.renderedHtml;
   logger.log(`📄 HTML to upload:\n${uploadPreview}`);
 
   // Upload rendered HTML to S3

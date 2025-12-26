@@ -189,12 +189,15 @@ export async function exportAsHTML(documentId: string): Promise<string> {
     }
 
     const htmlContent = response.data as string;
-    logger.log(`📤 HTML export from Google Docs (${htmlContent.length} characters)`);
-    
+    logger.log(
+      `📤 HTML export from Google Docs (${htmlContent.length} characters)`,
+    );
+
     // Log a preview of the HTML content
-    const preview = htmlContent.length > 1000
-      ? `${htmlContent.substring(0, 500)}...\n...${htmlContent.substring(htmlContent.length - 500)}`
-      : htmlContent;
+    const preview =
+      htmlContent.length > 1000
+        ? `${htmlContent.substring(0, 500)}...\n...${htmlContent.substring(htmlContent.length - 500)}`
+        : htmlContent;
     logger.log(`📄 Raw HTML content:\n${preview}`);
 
     return htmlContent;
@@ -441,9 +444,10 @@ export async function generateContractFromTemplate(
       `✅ HTML exported successfully (${htmlContent.length} characters)`,
     );
     // Log first 500 characters and last 200 characters of HTML for debugging
-    const preview = htmlContent.length > 700
-      ? `${htmlContent.substring(0, 500)}...\n...${htmlContent.substring(htmlContent.length - 200)}`
-      : htmlContent;
+    const preview =
+      htmlContent.length > 700
+        ? `${htmlContent.substring(0, 500)}...\n...${htmlContent.substring(htmlContent.length - 200)}`
+        : htmlContent;
     logger.log(`📄 Exported HTML preview:\n${preview}`);
 
     // Optionally delete the temporary document (or leave it for audit)
@@ -617,7 +621,6 @@ export async function createGoogleDoc(
   }
 }
 
-
 /**
  * Get the URL for opening a Google Doc in the browser
  * @param documentId - The ID of the Google Doc
@@ -646,7 +649,9 @@ export async function deleteGoogleDoc(documentId: string): Promise<void> {
         (error as any).code === 404
       ) {
         // Document doesn't exist, that's fine
-        logger.warn(`Document ${documentId} not found, may have been already deleted`);
+        logger.warn(
+          `Document ${documentId} not found, may have been already deleted`,
+        );
         return;
       }
     }

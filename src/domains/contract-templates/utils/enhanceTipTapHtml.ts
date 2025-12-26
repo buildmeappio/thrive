@@ -11,7 +11,7 @@ export function enhanceTipTapHtml(html: string): string {
   // Use DOMParser to parse and manipulate HTML
   // Since we're in Node.js, we'll use regex-based approach for server-side
   // For client-side, we could use DOMParser
-  
+
   let enhanced = html;
 
   // Add inline styles to tables
@@ -37,7 +37,7 @@ export function enhanceTipTapHtml(html: string): string {
     /<img(?![^>]*style=)([^>]*>)/gi,
     (match, rest) => {
       // Don't add style if it already has width/height attributes that might conflict
-      if (match.includes('width=') || match.includes('height=')) {
+      if (match.includes("width=") || match.includes("height=")) {
         return match;
       }
       return `<img style="max-width: 100%; height: auto; display: inline-block;"${rest}`;
@@ -67,7 +67,7 @@ export function enhanceTipTapHtml(html: string): string {
     /<code(?![^>]*style=)(?![^>]*<\/pre)/gi,
     (match) => {
       // Skip if inside pre tag
-      if (match.includes('</pre')) {
+      if (match.includes("</pre")) {
         return match;
       }
       return '<code style="background: #f3f4f6; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-size: 0.875em; font-family: ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;, monospace;"';
@@ -113,4 +113,3 @@ export function enhanceTipTapHtml(html: string): string {
 
   return enhanced;
 }
-

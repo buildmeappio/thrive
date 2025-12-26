@@ -68,10 +68,7 @@ export const getGoogleDocUrlAction = async (
     return {
       success: false,
       error:
-        error instanceof Error
-          ? error.message
-          : "Failed to get Google Doc URL",
+        error instanceof Error ? error.message : "Failed to get Google Doc URL",
     };
   }
 };
-

@@ -69,9 +69,9 @@ export default function ContractTemplateEditContent({ template }: Props) {
     errors: Array<{ placeholder: string; error: string }>;
     warnings: Array<{ placeholder: string; warning: string }>;
   }>({ valid: true, errors: [], warnings: [] });
-  const [activeTab, setActiveTab] = useState<
-    "variables" | "placeholders"
-  >("variables");
+  const [activeTab, setActiveTab] = useState<"variables" | "placeholders">(
+    "variables",
+  );
   const [selectedFeeStructureId, setSelectedFeeStructureId] = useState<string>(
     template.feeStructureId || "",
   );
@@ -220,7 +220,9 @@ export default function ContractTemplateEditContent({ template }: Props) {
           setGoogleDocUrl(newUrl);
         } else {
           // Reload Google Doc URL from database in case it was updated
-          const urlResult = await getGoogleDocUrlAction({ templateId: template.id });
+          const urlResult = await getGoogleDocUrlAction({
+            templateId: template.id,
+          });
           if (urlResult.success && urlResult.data?.url) {
             setGoogleDocUrl(urlResult.data.url);
           }
@@ -296,9 +298,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
         setShowSyncConfirmDialog(false);
       } else {
         toast.error(
-          "error" in result
-            ? result.error
-            : "Failed to sync from Google Docs",
+          "error" in result ? result.error : "Failed to sync from Google Docs",
         );
         // Close modal on error too
         setShowSyncConfirmDialog(false);
@@ -311,7 +311,6 @@ export default function ContractTemplateEditContent({ template }: Props) {
       setIsSyncingFromGDocs(false);
     }
   };
-
 
   // Load full fee structure data when selected
   useEffect(() => {
@@ -552,20 +551,22 @@ export default function ContractTemplateEditContent({ template }: Props) {
               <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6 border-b border-gray-200 overflow-x-auto">
                 <button
                   onClick={() => setActiveTab("variables")}
-                  className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-poppins font-semibold transition-colors border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "variables"
-                    ? "border-[#00A8FF] text-[#00A8FF]"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                    }`}
+                  className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-poppins font-semibold transition-colors border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                    activeTab === "variables"
+                      ? "border-[#00A8FF] text-[#00A8FF]"
+                      : "border-transparent text-gray-500 hover:text-gray-700"
+                  }`}
                 >
                   Variables
                 </button>
                 {placeholders.length > 0 && (
                   <button
                     onClick={() => setActiveTab("placeholders")}
-                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-poppins font-semibold transition-colors border-b-2 relative cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "placeholders"
-                      ? "border-[#00A8FF] text-[#00A8FF]"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                      }`}
+                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-poppins font-semibold transition-colors border-b-2 relative cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                      activeTab === "placeholders"
+                        ? "border-[#00A8FF] text-[#00A8FF]"
+                        : "border-transparent text-gray-500 hover:text-gray-700"
+                    }`}
                   >
                     Detected
                     <span className="ml-1 sm:ml-1.5 inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 text-[10px] sm:text-xs font-bold text-white bg-[#00A8FF] rounded-full">
@@ -718,7 +719,9 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                       <button
                                         onClick={() => {
                                           // TODO: Implement system variable editing
-                                          toast.info("System variable editing coming soon");
+                                          toast.info(
+                                            "System variable editing coming soon",
+                                          );
                                         }}
                                         className="text-[10px] sm:text-xs text-blue-600 hover:text-blue-700 cursor-pointer whitespace-nowrap shrink-0"
                                       >
@@ -782,7 +785,9 @@ export default function ContractTemplateEditContent({ template }: Props) {
                               className="text-[10px] sm:text-xs text-red-700 font-poppins break-words"
                             >
                               <span className="font-mono font-semibold">{`{{${error.placeholder}}}`}</span>
-                              <span className="ml-1 sm:ml-2">- {error.error}</span>
+                              <span className="ml-1 sm:ml-2">
+                                - {error.error}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -802,7 +807,9 @@ export default function ContractTemplateEditContent({ template }: Props) {
                               className="text-[10px] sm:text-xs text-amber-700 font-poppins break-words"
                             >
                               <span className="font-mono font-semibold">{`{{${warning.placeholder}}}`}</span>
-                              <span className="ml-1 sm:ml-2">- {warning.warning}</span>
+                              <span className="ml-1 sm:ml-2">
+                                - {warning.warning}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -823,14 +830,15 @@ export default function ContractTemplateEditContent({ template }: Props) {
                         return (
                           <div
                             key={placeholder}
-                            className={`text-[10px] sm:text-xs font-mono px-2 sm:px-3 py-1.5 sm:py-2 rounded border flex items-center justify-between gap-2 ${hasError
-                              ? "bg-red-50 border-red-200 text-red-700"
-                              : isInvalid
+                            className={`text-[10px] sm:text-xs font-mono px-2 sm:px-3 py-1.5 sm:py-2 rounded border flex items-center justify-between gap-2 ${
+                              hasError
                                 ? "bg-red-50 border-red-200 text-red-700"
-                                : hasWarning
-                                  ? "bg-amber-50 border-amber-200 text-amber-700"
-                                  : "bg-gray-50 border-gray-200"
-                              }`}
+                                : isInvalid
+                                  ? "bg-red-50 border-red-200 text-red-700"
+                                  : hasWarning
+                                    ? "bg-amber-50 border-amber-200 text-amber-700"
+                                    : "bg-gray-50 border-gray-200"
+                            }`}
                           >
                             <span className="break-all">{`{{${placeholder}}}`}</span>
                             {isInvalid && (
@@ -863,7 +871,12 @@ export default function ContractTemplateEditContent({ template }: Props) {
       }
 
       {/* Sync from Google Docs Confirmation Dialog */}
-      <Dialog open={showSyncConfirmDialog} onOpenChange={(open) => !isSyncingFromGDocs && setShowSyncConfirmDialog(open)}>
+      <Dialog
+        open={showSyncConfirmDialog}
+        onOpenChange={(open) =>
+          !isSyncingFromGDocs && setShowSyncConfirmDialog(open)
+        }
+      >
         <DialogContent className="sm:max-w-[450px] rounded-2xl sm:rounded-[24px] p-0 gap-0 overflow-hidden">
           {isSyncingFromGDocs ? (
             /* Loading State */
@@ -889,8 +902,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                   Sync from Google Docs
                 </DialogTitle>
                 <DialogDescription className="pt-4 text-left font-poppins text-[15px] text-gray-600 leading-relaxed">
-                  This will replace the current editor content with the content from
-                  Google Docs.
+                  This will replace the current editor content with the content
+                  from Google Docs.
                   <span className="block mt-3 font-medium text-amber-700 bg-amber-50 px-3 py-2.5 rounded-lg border border-amber-100">
                     ⚠️ Any unsaved changes in the editor will be lost.
                   </span>

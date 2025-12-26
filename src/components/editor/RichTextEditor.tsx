@@ -350,7 +350,6 @@ export default function RichTextEditor({
     [editor],
   );
 
-
   // Don't render on server to avoid hydration mismatch
   if (!isMounted || !editor) {
     return (
@@ -609,7 +608,10 @@ export default function RichTextEditor({
                         : editor.chain().focus().setColor(c.color).run()
                     }
                     className="w-6 h-6 rounded border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
-                    style={{ backgroundColor: c.color === "inherit" ? "white" : c.color }}
+                    style={{
+                      backgroundColor:
+                        c.color === "inherit" ? "white" : c.color,
+                    }}
                     title={c.name}
                   />
                 ))}
@@ -639,10 +641,10 @@ export default function RichTextEditor({
                       c.color === ""
                         ? editor.chain().focus().unsetHighlight().run()
                         : editor
-                          .chain()
-                          .focus()
-                          .toggleHighlight({ color: c.color })
-                          .run()
+                            .chain()
+                            .focus()
+                            .toggleHighlight({ color: c.color })
+                            .run()
                     }
                     className="w-6 h-6 rounded border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
                     style={{ backgroundColor: c.color || "white" }}
@@ -987,7 +989,9 @@ export default function RichTextEditor({
           padding: 0.125rem 0.25rem;
           border-radius: 0.25rem;
           font-size: 0.875em;
-          font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+          font-family:
+            ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+            "Liberation Mono", monospace;
         }
 
         .ProseMirror h1 {

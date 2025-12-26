@@ -295,8 +295,10 @@ export const saveTemplateDraftContent = async (
 
   // Update or create draft version
   let draftVersion = template.versions[0];
-  let currentGoogleDocId = googleDocTemplateId ?? draftVersion?.googleDocTemplateId ?? null;
-  let currentGoogleDocFolderId = googleDocFolderId ?? draftVersion?.googleDocFolderId ?? null;
+  let currentGoogleDocId =
+    googleDocTemplateId ?? draftVersion?.googleDocTemplateId ?? null;
+  let currentGoogleDocFolderId =
+    googleDocFolderId ?? draftVersion?.googleDocFolderId ?? null;
 
   // Sync to Google Docs if enabled and we have content
   if (syncToGoogleDocs && content && content.trim()) {

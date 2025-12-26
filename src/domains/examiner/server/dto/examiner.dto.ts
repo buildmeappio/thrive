@@ -45,15 +45,16 @@ export class ExaminerDto {
       ) {
         const contractData = contract.data as any;
         const fees = contractData.fees || {};
-        
+
         contractFeeStructure = {
           feeStructureId: contract.feeStructure.id,
           feeStructureName: contract.feeStructure.name,
           variables: contract.feeStructure.variables.map((variable: any) => {
-            const value = fees[variable.key] !== undefined 
-              ? fees[variable.key] 
-              : variable.defaultValue;
-            
+            const value =
+              fees[variable.key] !== undefined
+                ? fees[variable.key]
+                : variable.defaultValue;
+
             return {
               key: variable.key,
               label: variable.label,

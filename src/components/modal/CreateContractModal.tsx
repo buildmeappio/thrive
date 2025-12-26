@@ -128,12 +128,13 @@ export default function CreateContractModal(props: CreateContractModalProps) {
               {[1, 2, 3].map((s) => (
                 <div
                   key={s}
-                  className={`h-1.5 rounded-full transition-all ${s === step
-                    ? "w-6 bg-[#000080]"
-                    : s < step
-                      ? "w-3 bg-[#000080]/50"
-                      : "w-3 bg-[#E5E5E5]"
-                    }`}
+                  className={`h-1.5 rounded-full transition-all ${
+                    s === step
+                      ? "w-6 bg-[#000080]"
+                      : s < step
+                        ? "w-3 bg-[#000080]/50"
+                        : "w-3 bg-[#E5E5E5]"
+                  }`}
                 />
               ))}
             </div>
@@ -223,7 +224,7 @@ export default function CreateContractModal(props: CreateContractModalProps) {
                   ) : selectedTemplateContent ? (
                     (() => {
                       const requiredFeeVars = extractRequiredFeeVariables(
-                        selectedTemplateContent
+                        selectedTemplateContent,
                       );
                       if (requiredFeeVars.size > 0) {
                         return (
@@ -388,7 +389,9 @@ export default function CreateContractModal(props: CreateContractModalProps) {
                       padding: 0.125rem 0.25rem;
                       border-radius: 0.25rem;
                       font-size: 0.875em;
-                      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+                      font-family:
+                        ui-monospace, SFMono-Regular, "SF Mono", Menlo,
+                        Consolas, "Liberation Mono", monospace;
                     }
                     /* Ensure inline styles from TipTap take precedence over prose styles */
                     .prose [style] {

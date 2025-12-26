@@ -1,4 +1,7 @@
-import type { FeeFormValues, FeeVariable } from "../components/FeeStructureFormStep";
+import type {
+  FeeFormValues,
+  FeeVariable,
+} from "../components/FeeStructureFormStep";
 
 export type CreateContractModalProps = {
   open: boolean;

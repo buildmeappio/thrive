@@ -2,7 +2,10 @@
 
 import { getCurrentUser } from "@/domains/auth/server/session";
 import { updateContractFields } from "../server/contract.service";
-import { ActionResult, UpdateContractFieldsInput } from "../types/contract.types";
+import {
+  ActionResult,
+  UpdateContractFieldsInput,
+} from "../types/contract.types";
 
 export const updateContractFieldsAction = async (
   input: UpdateContractFieldsInput,
@@ -19,8 +22,10 @@ export const updateContractFieldsAction = async (
     console.error("Error updating contract fields:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update contract fields",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to update contract fields",
     };
   }
 };
-

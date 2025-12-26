@@ -161,10 +161,11 @@ export default function ContractTemplatesPageContent({
                     activeDropdown === "status" ? null : "status",
                   )
                 }
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${status !== "ALL"
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
+                  status !== "ALL"
                     ? "border-[#00A8FF] text-[#00A8FF]"
                     : "border-gray-200 text-gray-700 hover:bg-gray-50"
-                  }`}
+                }`}
               >
                 <Funnel
                   className="w-3.5 h-3.5 sm:w-4 sm:h-4"
@@ -196,10 +197,11 @@ export default function ContractTemplatesPageContent({
                           setStatus(option.value);
                           setActiveDropdown(null);
                         }}
-                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${status === option.value
+                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
+                          status === option.value
                             ? "bg-gray-100 text-[#00A8FF]"
                             : ""
-                          }`}
+                        }`}
                       >
                         {option.label}
                       </button>

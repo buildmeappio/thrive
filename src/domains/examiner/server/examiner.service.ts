@@ -1,5 +1,10 @@
 import prisma from "@/lib/db";
-import { ExaminerStatus, UserStatus, ContractStatus, Prisma } from "@prisma/client";
+import {
+  ExaminerStatus,
+  UserStatus,
+  ContractStatus,
+  Prisma,
+} from "@prisma/client";
 
 const includeRelations = {
   account: {

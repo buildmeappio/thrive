@@ -33,7 +33,7 @@ import type {
 } from "../types/createContractModal.types";
 
 export const useCreateContractModal = (
-  options: UseCreateContractModalOptions
+  options: UseCreateContractModalOptions,
 ): UseCreateContractModalReturn => {
   const {
     open,
@@ -59,7 +59,7 @@ export const useCreateContractModal = (
 
   // Fee structure state
   const [feeStructures, setFeeStructures] = useState<FeeStructureListItem[]>(
-    []
+    [],
   );
   const [compatibleFeeStructures, setCompatibleFeeStructures] = useState<
     FeeStructureListItem[]
@@ -101,7 +101,7 @@ export const useCreateContractModal = (
 
       if (templatesResult.success) {
         const validTemplates = templatesResult.data.filter(
-          (t) => t.currentVersionId
+          (t) => t.currentVersionId,
         );
         setTemplates(validTemplates);
       } else {
@@ -178,13 +178,15 @@ export const useCreateContractModal = (
             const contract = contractResult.data;
             if (contract.feeStructureId) {
               setSelectedFeeStructureId(contract.feeStructureId);
-              
+
               // Extract fees_overrides from contract.fieldValues if available
               const fieldValues = contract.fieldValues as any;
               const feesOverrides = fieldValues?.fees_overrides || {};
-              
+
               // Load fee structure data and initialize form with existing values
-              const feeStructureResult = await getFeeStructureAction(contract.feeStructureId);
+              const feeStructureResult = await getFeeStructureAction(
+                contract.feeStructureId,
+              );
               if (feeStructureResult.success && feeStructureResult.data) {
                 const data: FeeStructureFullData = {
                   id: feeStructureResult.data.id,
@@ -204,14 +206,17 @@ export const useCreateContractModal = (
                   })),
                 };
                 setFeeStructureData(data);
-                
+
                 // Initialize form values with existing fees_overrides if available, fallback to defaults
                 if (Object.keys(feesOverrides).length > 0) {
                   const initialValues: FeeFormValues = {};
                   for (const variable of data.variables) {
                     if (feesOverrides[variable.key] !== undefined) {
                       initialValues[variable.key] = feesOverrides[variable.key];
-                    } else if (variable.defaultValue !== null && variable.defaultValue !== undefined) {
+                    } else if (
+                      variable.defaultValue !== null &&
+                      variable.defaultValue !== undefined
+                    ) {
                       initialValues[variable.key] = variable.defaultValue;
                     }
                   }
@@ -313,7 +318,7 @@ export const useCreateContractModal = (
                 ) {
                   const compatibility = validateFeeStructureCompatibility(
                     requiredFeeVars,
-                    fsResult.data.variables
+                    fsResult.data.variables,
                   );
                   if (compatibility.compatible) {
                     compatible.push(feeStructure);
@@ -322,7 +327,7 @@ export const useCreateContractModal = (
               } catch (error) {
                 console.error(
                   `Error checking compatibility for ${feeStructure.id}:`,
-                  error
+                  error,
                 );
               }
             }
@@ -332,7 +337,7 @@ export const useCreateContractModal = (
             if (
               templateResult.data.feeStructureId &&
               compatible.some(
-                (fs) => fs.id === templateResult.data.feeStructureId
+                (fs) => fs.id === templateResult.data.feeStructureId,
               )
             ) {
               setSelectedFeeStructureId(templateResult.data.feeStructureId);
@@ -364,7 +369,11 @@ export const useCreateContractModal = (
       setFeeFormValues({});
       setHasLoadedFromExistingContract(false);
     }
-  }, [selectedFeeStructureId, loadFeeStructureData, hasLoadedFromExistingContract]);
+  }, [
+    selectedFeeStructureId,
+    loadFeeStructureData,
+    hasLoadedFromExistingContract,
+  ]);
 
   // Handle continue to fee form step
   const handleContinueToFeeForm = useCallback(() => {
@@ -412,11 +421,11 @@ export const useCreateContractModal = (
     if (feeStructureData && feeStructureData.variables.length > 0) {
       const validation = validateFeeFormValues(
         feeStructureData.variables,
-        feeFormValues
+        feeFormValues,
       );
       if (!validation.valid) {
         toast.error(
-          `Please fill in required fields: ${validation.missingFields.join(", ")}`
+          `Please fill in required fields: ${validation.missingFields.join(", ")}`,
         );
         return;
       }
@@ -447,13 +456,13 @@ export const useCreateContractModal = (
         ) {
           const updateResult = await updateContractFeeStructureAction(
             existingContractId,
-            selectedFeeStructureId
+            selectedFeeStructureId,
           );
           if (!updateResult.success) {
             toast.error(
               "error" in updateResult
                 ? updateResult.error
-                : "Failed to update fee structure"
+                : "Failed to update fee structure",
             );
             return;
           }
@@ -472,7 +481,7 @@ export const useCreateContractModal = (
             toast.error(
               "error" in updateFieldsResult
                 ? updateFieldsResult.error
-                : "Failed to update fee values"
+                : "Failed to update fee values",
             );
             return;
           }
@@ -485,14 +494,14 @@ export const useCreateContractModal = (
           setStep(3);
           if (previewResult.data.missingPlaceholders.length > 0) {
             toast.warning(
-              `Missing placeholders: ${previewResult.data.missingPlaceholders.join(", ")}`
+              `Missing placeholders: ${previewResult.data.missingPlaceholders.join(", ")}`,
             );
           }
         } else {
           toast.error(
             "error" in previewResult
               ? previewResult.error
-              : "Failed to preview contract"
+              : "Failed to preview contract",
           );
         }
       } else {
@@ -523,7 +532,7 @@ export const useCreateContractModal = (
           toast.error(
             "error" in createResult
               ? createResult.error
-              : "Failed to create contract"
+              : "Failed to create contract",
           );
           return;
         }
@@ -537,14 +546,14 @@ export const useCreateContractModal = (
           setStep(3);
           if (previewResult.data.missingPlaceholders.length > 0) {
             toast.warning(
-              `Missing placeholders: ${previewResult.data.missingPlaceholders.join(", ")}`
+              `Missing placeholders: ${previewResult.data.missingPlaceholders.join(", ")}`,
             );
           }
         } else {
           toast.error(
             "error" in previewResult
               ? previewResult.error
-              : "Failed to preview contract"
+              : "Failed to preview contract",
           );
         }
       }
@@ -584,7 +593,7 @@ export const useCreateContractModal = (
         }, 1500);
       } else {
         toast.error(
-          "error" in sendResult ? sendResult.error : "Failed to send contract"
+          "error" in sendResult ? sendResult.error : "Failed to send contract",
         );
       }
     } catch (error) {
@@ -601,7 +610,7 @@ export const useCreateContractModal = (
       if (panelRef.current && !panelRef.current.contains(e.target as Node))
         onClose();
     },
-    [onClose]
+    [onClose],
   );
 
   // Keyboard handler for Escape key

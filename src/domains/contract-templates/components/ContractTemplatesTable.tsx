@@ -2,7 +2,14 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Archive, FileEdit, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  Pencil,
+  Archive,
+  FileEdit,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import { toast } from "sonner";
 import TableActionsDropdown from "@/components/TableActionsDropdown";
 import EditContractTemplateDialog from "./EditContractTemplateDialog";
@@ -283,7 +290,12 @@ export default function ContractTemplatesTable({ templates }: Props) {
             </div>
           );
         },
-        meta: { minSize: 60, maxSize: 80, size: 70, align: "right" } as ColumnMeta,
+        meta: {
+          minSize: 60,
+          maxSize: 80,
+          size: 70,
+          align: "right",
+        } as ColumnMeta,
       },
     ],
     [router, handleStatusChange, updatingStatus],
@@ -356,15 +368,15 @@ export default function ContractTemplatesTable({ templates }: Props) {
                                   : "text-left",
                               header.index === 0 && "rounded-l-2xl",
                               header.index === headerGroup.headers.length - 1 &&
-                              "rounded-r-2xl",
+                                "rounded-r-2xl",
                             )}
                           >
                             {header.isPlaceholder
                               ? null
                               : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
                           </TableHead>
                         );
                       })}

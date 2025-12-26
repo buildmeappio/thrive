@@ -246,7 +246,9 @@ export default function ContractDetailView({ contract }: Props) {
                 padding: 0.125rem 0.25rem;
                 border-radius: 0.25rem;
                 font-size: 0.875em;
-                font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+                font-family:
+                  ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+                  "Liberation Mono", monospace;
               }
               /* Ensure inline styles from TipTap take precedence over prose styles */
               .prose [style] {
