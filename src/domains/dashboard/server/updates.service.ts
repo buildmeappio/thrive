@@ -6,11 +6,7 @@ import {
   UpdatesResponse,
 } from "../types/updates.types";
 import { formatFullName } from "@/utils/text";
-import {
-  startOfDay,
-  endOfDay,
-  subDays,
-} from "date-fns";
+import { startOfDay, endOfDay, subDays } from "date-fns";
 
 class UpdatesService {
   // Get recent updates for dashboard panel (limited to 9)
