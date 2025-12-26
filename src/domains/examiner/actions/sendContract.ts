@@ -61,7 +61,11 @@ export async function sendContract(id: string) {
         );
 
       if (!contractResult.success) {
-        throw new Error(contractResult.error || "Failed to create contract");
+        throw new Error(
+          "error" in contractResult
+            ? contractResult.error
+            : "Failed to create contract",
+        );
       }
 
       logger.log(
@@ -142,7 +146,11 @@ export async function sendContract(id: string) {
       );
 
       if (!contractResult.success) {
-        throw new Error(contractResult.error || "Failed to create contract");
+        throw new Error(
+          "error" in contractResult
+            ? contractResult.error
+            : "Failed to create contract",
+        );
       }
 
       logger.log(

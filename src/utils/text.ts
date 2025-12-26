@@ -7,6 +7,17 @@ export function capitalizeWords(text: string): string {
     .join(" ");
 }
 
+// Utility function to format text from database: remove _, -, and capitalize each word
+export function formatText(str: string): string {
+  if (!str) return str;
+  return str
+    .replace(/[-_]/g, " ") // Replace - and _ with spaces
+    .split(" ")
+    .filter((word) => word.length > 0) // Remove empty strings
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
 // Utility function to format a full name from firstName and lastName
 // Ensures each word in both names is properly capitalized
 export function formatFullName(

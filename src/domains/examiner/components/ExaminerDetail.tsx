@@ -8,6 +8,7 @@ import RequestInfoModal from "@/components/modal/RequestInfoModal";
 import RejectModal from "@/components/modal/RejectModal";
 import EditFeeStructureModal from "@/components/modal/EditFeeStructureModal";
 import ConfirmInterviewSlotModal from "@/components/modal/ConfirmInterviewSlotModal";
+import CreateContractModal from "@/components/modal/CreateContractModal";
 import { cn } from "@/lib/utils";
 import { ExaminerData, ExaminerFeeStructure } from "../types/ExaminerData";
 import {
@@ -25,6 +26,7 @@ import {
   markContractSigned,
   getExaminerContract,
 } from "../actions";
+import { sendContractAction } from "@/domains/contracts/actions";
 import { Check, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
@@ -121,9 +123,17 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
   const [isFeeStructureOpen, setIsFeeStructureOpen] = useState(false);
   const [isContractReviewOpen, setIsContractReviewOpen] = useState(false);
   const [isConfirmSlotModalOpen, setIsConfirmSlotModalOpen] = useState(false);
+  const [isCreateContractModalOpen, setIsCreateContractModalOpen] =
+    useState(false);
   const [contractHtml, setContractHtml] = useState<string | null>(null);
   const [loadingContract, setLoadingContract] = useState(false);
   const [pendingSendContract, setPendingSendContract] = useState(false);
+  const [existingContractId, setExistingContractId] = useState<
+    string | undefined
+  >(undefined);
+  const [existingTemplateId, setExistingTemplateId] = useState<
+    string | undefined
+  >(undefined);
   const [status, setStatus] = useState<
     (typeof mapStatus)[ExaminerData["status"]]
   >(mapStatus[examiner.status]);
@@ -143,6 +153,12 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     | null
   >(null);
   const [confirmingSlotId, setConfirmingSlotId] = useState<string | null>(null);
+
+  // Sync local status with examiner prop when it changes (e.g., after refresh)
+  useEffect(() => {
+    const currentStatus = mapStatus[examiner.status];
+    setStatus(currentStatus);
+  }, [examiner.status]);
 
   // Redirect if status is DRAFT - we only show from SUBMITTED onwards
   useEffect(() => {
@@ -177,33 +193,45 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
   }, []); // Run only once on mount - examiner.id and examiner.status are intentionally not included
 
   const handleApprove = async () => {
-    // Fee structure check commented out - fee structure section removed
-    // if (!examiner.feeStructure) {
-    //   toast.error("Please add the fee structure before approving the examiner.");
-    //   return;
-    // }
-
-    setLoadingAction("approve");
-    try {
-      await approveExaminer(examiner.id);
-      if (isApplication) {
-        toast.success(
-          "Application approved successfully! An email has been sent to the applicant.",
+    // If contract is already sent, approve directly
+    // Otherwise, open contract creation modal first
+    if (status === "contract_sent" || status === "contract_signed") {
+      // Contract is already sent/signed, approve directly
+      setLoadingAction("approve");
+      try {
+        await approveExaminer(examiner.id);
+        if (isApplication) {
+          toast.success(
+            "Application approved successfully! An email has been sent to the applicant.",
+          );
+        } else {
+          toast.success(
+            "Examiner approved successfully! An email has been sent to the examiner.",
+          );
+        }
+        setStatus("approved");
+      } catch (error) {
+        logger.error("Failed to approve:", error);
+        toast.error(
+          `Failed to approve ${isApplication ? "application" : "examiner"}. Please try again.`,
         );
-      } else {
-        toast.success(
-          "Examiner approved successfully! An email has been sent to the examiner.",
-        );
+      } finally {
+        setLoadingAction(null);
       }
-      setStatus("approved");
-    } catch (error) {
-      logger.error("Failed to approve:", error);
-      toast.error(
-        `Failed to approve ${isApplication ? "application" : "examiner"}. Please try again.`,
-      );
-    } finally {
-      setLoadingAction(null);
+    } else {
+      // No contract sent yet, open contract creation modal
+      setIsCreateContractModalOpen(true);
     }
+  };
+
+  const handleContractCreated = async () => {
+    // After contract is created and sent, update status to contract_sent
+    // Don't approve automatically - approval is a separate step
+    // The status will be updated in the database by sendContract action
+    // Force a refresh to get the updated status from the server
+    router.refresh();
+    // Also update local state immediately for better UX
+    setStatus("contract_sent");
   };
 
   const handleRejectSubmit = async (
@@ -275,7 +303,9 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
           router.refresh();
         }
       } else {
-        toast.error(result.error || "Failed to update fee structure.");
+        toast.error(
+          "error" in result ? result.error : "Failed to update fee structure.",
+        );
       }
     } catch (error) {
       logger.error("Failed to update fee structure:", error);
@@ -294,7 +324,9 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
         toast.success("Contract sent successfully to examiner's email.");
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to send contract.");
+        toast.error(
+          "error" in result ? result.error : "Failed to send contract.",
+        );
       }
     } catch (error) {
       logger.error("Failed to send contract:", error);
@@ -323,17 +355,54 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
   };
 
   const handleSendContract = async () => {
-    // Check if fee structure exists
-    if (!examiner.feeStructure) {
-      // Open fee structure modal and set flag to send contract after
-      setPendingSendContract(true);
-      setIsFeeStructureOpen(true);
-      toast.info("Please add the fee structure before sending contract.");
+    // For first-time contract sending, use the contract creation modal
+    if (status === "interview_completed") {
+      setExistingContractId(undefined);
+      setExistingTemplateId(undefined);
+      setIsCreateContractModalOpen(true);
       return;
     }
 
-    // If fee structure exists, send contract directly
-    await handleSendContractAfterFeeStructure();
+    // For re-sending existing contracts, open modal with existing contract info
+    try {
+      // Check if there's an existing contract
+      const contractResult = await getExaminerContract(
+        examiner.id,
+        isApplication,
+      );
+
+      if (contractResult.success && contractResult.contractId) {
+        // Get contract details to get template ID
+        const { getContractAction } =
+          await import("@/domains/contracts/actions");
+        const contractDetails = await getContractAction(
+          contractResult.contractId,
+        );
+
+        if (contractDetails.success && contractDetails.data) {
+          // Set existing contract info
+          setExistingContractId(contractResult.contractId);
+          setExistingTemplateId(contractDetails.data.templateId);
+          setIsCreateContractModalOpen(true);
+        } else {
+          // Fallback: just open modal
+          setExistingContractId(contractResult.contractId);
+          setExistingTemplateId(undefined);
+          setIsCreateContractModalOpen(true);
+        }
+      } else {
+        // No existing contract, open modal to create new one
+        setExistingContractId(undefined);
+        setExistingTemplateId(undefined);
+        setIsCreateContractModalOpen(true);
+      }
+    } catch (error) {
+      logger.error("Failed to load contract info:", error);
+      // Still open modal even if we can't load contract info
+      setExistingContractId(undefined);
+      setExistingTemplateId(undefined);
+      setIsCreateContractModalOpen(true);
+    }
   };
 
   const handleRequestInterview = async () => {
@@ -411,7 +480,9 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
         router.refresh();
       } else {
         toast.error(
-          result.error || "Failed to confirm interview slot. Please try again.",
+          "error" in result
+            ? result.error
+            : "Failed to confirm interview slot. Please try again.",
         );
       }
     } catch (error) {
@@ -1233,9 +1304,8 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                         <>
                           <button
                             onClick={() => {
-                              // Open fee structure modal first, then send contract after saving
-                              setPendingSendContract(true);
-                              setIsFeeStructureOpen(true);
+                              // Open contract creation modal to select fee structure and template
+                              setIsCreateContractModalOpen(true);
                             }}
                             disabled={loadingAction !== null}
                             className={cn(
@@ -1248,9 +1318,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               fontSize: "14px",
                             }}
                           >
-                            {loadingAction === "sendContract"
-                              ? "Sending..."
-                              : "Send Contract"}
+                            Send Contract
                           </button>
                           <button
                             className={cn(
@@ -1270,7 +1338,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                         </>
                       )}
 
-                      {/* CONTRACT_SENT: Review Signed Contract, Re-send Contract (for both applications and examiners) */}
+                      {/* CONTRACT_SENT: Review Signed Contract, Re-send Contract, Reject Application (for both applications and examiners) */}
                       {status === "contract_sent" && (
                         <>
                           <button
@@ -1348,29 +1416,71 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                               ? "Re-sending..."
                               : "Re-send Contract"}
                           </button>
+                          <button
+                            className={cn(
+                              "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed",
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 400,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                            disabled={loadingAction !== null}
+                            onClick={() => setIsRejectOpen(true)}
+                          >
+                            Reject Application
+                          </button>
                         </>
                       )}
 
-                      {/* CONTRACT_SIGNED: Approve Application only */}
-                      {status === "contract_signed" && (
-                        <button
-                          className={cn(
-                            "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
-                          )}
-                          style={{
-                            fontFamily: "Poppins, sans-serif",
-                            fontWeight: 500,
-                            lineHeight: "100%",
-                            fontSize: "14px",
-                          }}
-                          disabled={loadingAction !== null}
-                          onClick={handleApprove}
-                        >
-                          {loadingAction === "approve"
-                            ? "Approving..."
-                            : "Approve Application"}
-                        </button>
-                      )}
+                      {/* CONTRACT_SIGNED: Approve Application only (after admin confirms signed contract) */}
+                      {status === "contract_signed" &&
+                        examiner.contractConfirmedByAdminAt && (
+                          <button
+                            className={cn(
+                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 500,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                            disabled={loadingAction !== null}
+                            onClick={handleApprove}
+                          >
+                            {loadingAction === "approve"
+                              ? "Approving..."
+                              : isApplication
+                                ? "Approve Application"
+                                : "Approve Examiner"}
+                          </button>
+                        )}
+
+                      {/* CONTRACT_SENT: Show Approve button only after admin confirms signed contract */}
+                      {status === "contract_sent" &&
+                        examiner.contractConfirmedByAdminAt && (
+                          <button
+                            className={cn(
+                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
+                            )}
+                            style={{
+                              fontFamily: "Poppins, sans-serif",
+                              fontWeight: 500,
+                              lineHeight: "100%",
+                              fontSize: "14px",
+                            }}
+                            disabled={loadingAction !== null}
+                            onClick={handleApprove}
+                          >
+                            {loadingAction === "approve"
+                              ? "Approving..."
+                              : isApplication
+                                ? "Approve Application"
+                                : "Approve Examiner"}
+                          </button>
+                        )}
 
                       {/* Suspend/Reactivate removed - skipping for now */}
 
@@ -1507,6 +1617,23 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
           onConfirm={handleConfirmInterviewSlot}
           confirmingSlotId={confirmingSlotId}
           isLoading={loadingAction === "confirmInterviewSlot"}
+        />
+
+        {/* Create Contract Modal */}
+        <CreateContractModal
+          open={isCreateContractModalOpen}
+          onClose={() => {
+            setIsCreateContractModalOpen(false);
+            setExistingContractId(undefined);
+            setExistingTemplateId(undefined);
+          }}
+          examinerId={isApplication ? undefined : examiner.id}
+          applicationId={isApplication ? examiner.id : undefined}
+          examinerName={examiner.name || "Examiner"}
+          examinerEmail={examiner.email || ""}
+          onSuccess={handleContractCreated}
+          existingContractId={existingContractId}
+          existingTemplateId={existingTemplateId}
         />
 
         {/* Contract Review Modal */}

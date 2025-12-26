@@ -115,17 +115,29 @@ export async function replacePlaceholders(
     }));
 
     if (requests.length === 0) {
-      console.warn("No placeholders provided to replace");
+      logger.warn("No placeholders provided to replace");
       return;
     }
 
+    logger.log(
+      `🔄 Replacing ${requests.length} placeholders in Google Docs document: ${Object.keys(placeholders).join(", ")}`,
+    );
+
     // Execute batch update
-    await docs.documents.batchUpdate({
+    const response = await docs.documents.batchUpdate({
       documentId,
       requestBody: {
         requests,
       },
     });
+
+    const replacementsMade =
+      response.data.replies?.filter(
+        (r: any) => r.replaceAllText?.occurrencesChanged,
+      ).length || 0;
+    logger.log(
+      `✅ Placeholder replacement completed: ${replacementsMade} replacements made out of ${requests.length} attempts`,
+    );
   } catch (error) {
     logger.error("Error replacing placeholders:", error);
     if (error instanceof Error) {
@@ -266,6 +278,21 @@ function formatContractDate(date: Date | string): string {
 }
 
 /**
+ * Format date and time as "January 15, 2025 at 3:45 PM"
+ */
+function formatContractDateTime(date: Date | string): string {
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(dateObj);
+}
+
+/**
  * Format currency value (CAD)
  */
 function formatCurrency(amount: number | undefined | null): string {
@@ -286,6 +313,9 @@ export type ContractData = {
   examinerName: string;
   province: string;
   effectiveDate: Date | string;
+  signature?: string;
+  examinerSignature?: string;
+  signatureDateTime?: Date | string;
   feeStructure: {
     IMEFee: number;
     recordReviewFee: number;
@@ -297,25 +327,65 @@ export type ContractData = {
 
 /**
  * Map contract data to Google Doc placeholders
+ * Supports both snake_case (examiner_name) and namespace format (examiner.name)
  */
 export function mapContractDataToPlaceholders(
   data: ContractData,
 ): Record<string, string> {
+  const formattedDate = formatContractDate(data.effectiveDate);
+  const imeFee = formatCurrency(data.feeStructure.IMEFee);
+  const recordReviewFee = formatCurrency(data.feeStructure.recordReviewFee);
+  const hourlyRate = data.feeStructure.hourlyRate
+    ? formatCurrency(data.feeStructure.hourlyRate)
+    : "";
+  const cancellationFee = formatCurrency(data.feeStructure.cancellationFee);
+  const paymentTerms = data.feeStructure.paymentTerms || "";
+  const examinerName = data.examinerName || "";
+  const province = data.province || "";
+
+  // Get logo URL from CDN
+  const logoUrl = process.env.NEXT_PUBLIC_CDN_URL
+    ? `${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`
+    : "";
+
+  // Get signature from data if available
+  const signature =
+    (data as any).signature || (data as any).examinerSignature || "";
+  const signatureDateTime = data.signatureDateTime
+    ? formatContractDateTime(data.signatureDateTime)
+    : "";
+
   return {
-    examiner_name: data.examinerName || "",
-    province: data.province || "",
-    start_date: formatContractDate(data.effectiveDate),
-    effective_date: formatContractDate(data.effectiveDate),
-    rate: data.feeStructure.hourlyRate
-      ? formatCurrency(data.feeStructure.hourlyRate)
-      : "",
-    ime_fee: formatCurrency(data.feeStructure.IMEFee),
-    record_review_fee: formatCurrency(data.feeStructure.recordReviewFee),
-    hourly_rate: data.feeStructure.hourlyRate
-      ? formatCurrency(data.feeStructure.hourlyRate)
-      : "",
-    cancellation_fee: formatCurrency(data.feeStructure.cancellationFee),
-    payment_terms: data.feeStructure.paymentTerms || "",
+    // Snake_case format (legacy)
+    examiner_name: examinerName,
+    province: province,
+    start_date: formattedDate,
+    effective_date: formattedDate,
+    rate: hourlyRate,
+    ime_fee: imeFee,
+    record_review_fee: recordReviewFee,
+    hourly_rate: hourlyRate,
+    cancellation_fee: cancellationFee,
+    payment_terms: paymentTerms,
+    examiner_signature: signature,
+    examiner_signature_date_time: signatureDateTime,
+    // Namespace format (new)
+    "thrive.company_name": "Thrive IME Platform",
+    "thrive.company_address": "",
+    "thrive.logo": logoUrl,
+    "examiner.name": examinerName,
+    "examiner.province": province,
+    "examiner.signature": signature,
+    "examiner.signature_date_time": signatureDateTime,
+    "contract.effective_date": formattedDate,
+    "contract.start_date": formattedDate,
+    "fees.ime_fee": imeFee,
+    "fees.base_exam_fee": imeFee,
+    "fees.record_review_fee": recordReviewFee,
+    "fees.records_review_per_hour": recordReviewFee,
+    "fees.hourly_rate": hourlyRate,
+    "fees.cancellation_fee": cancellationFee,
+    "fees.payment_terms": paymentTerms,
   };
 }
 
@@ -346,12 +416,19 @@ export async function generateContractFromTemplate(
   try {
     // Map data to placeholders
     const placeholders = mapContractDataToPlaceholders(data);
+    logger.log(
+      `📝 Mapping ${Object.keys(placeholders).length} placeholders for Google Docs template`,
+    );
 
     // Replace placeholders
     await replacePlaceholders(documentId, placeholders);
+    logger.log(`✅ Placeholders replaced successfully`);
 
     // Export as HTML
     const htmlContent = await exportAsHTML(documentId);
+    logger.log(
+      `✅ HTML exported successfully (${htmlContent.length} characters)`,
+    );
 
     // Optionally delete the temporary document (or leave it for audit)
     // For now, we'll leave it - can be cleaned up later if needed
