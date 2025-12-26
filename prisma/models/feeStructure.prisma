@@ -9,6 +9,7 @@ model FeeStructure {
 
   variables FeeStructureVariable[] @relation("FeeStructureVariables")
   contracts Contract[]             @relation("ContractFeeStructures")
+  templates DocumentTemplate[]     @relation("TemplateFeeStructures")
 
   @@index([status])
   @@map("fee_structures")

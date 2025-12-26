@@ -814,20 +814,41 @@ const ContractSigningView = ({
         normalizedCurrent.includes("date") &&
         !currentText.includes(formattedDate)
       ) {
+        // Replace underscores pattern (from placeholder replacement) with the actual date
+        // Match underscores that are likely from placeholder replacement (10+ underscores)
+        const underscorePattern = /_{10,}/g;
+        const textWithDateReplaced = currentText.replace(
+          underscorePattern,
+          formattedDate,
+        );
+
+        // If underscores were replaced, use that text; otherwise append the date
+        const finalText =
+          textWithDateReplaced !== currentText
+            ? textWithDateReplaced
+            : currentText.trim().endsWith(":")
+              ? `${currentText.trim()} ${formattedDate}`
+              : currentText.trim()
+                ? `${currentText.trim()}: ${formattedDate}`
+                : `Date: ${formattedDate}`;
+
         const dateInput = dateField.querySelector<HTMLElement>(
           "input, span, div, p",
         );
         if (dateInput) {
           const inputText = dateInput.textContent || "";
           if (!inputText.includes(formattedDate)) {
-            if (normalized(inputText).includes("date")) {
+            // Replace underscores in the input text
+            const inputWithDateReplaced = inputText.replace(
+              underscorePattern,
+              formattedDate,
+            );
+            if (inputWithDateReplaced !== inputText) {
+              dateInput.textContent = inputWithDateReplaced;
+            } else {
               dateInput.textContent = inputText.trim().endsWith(":")
                 ? `${inputText.trim()} ${formattedDate}`
                 : `${inputText.trim()}: ${formattedDate}`;
-            } else {
-              dateInput.textContent = inputText.trim()
-                ? `${inputText.trim()} ${formattedDate}`
-                : formattedDate;
             }
           }
         } else {
@@ -838,23 +859,22 @@ const ContractSigningView = ({
             const textNode = textNodes[0] as Text;
             const nodeText = textNode.textContent || "";
             if (!nodeText.includes(formattedDate)) {
-              if (normalized(nodeText).includes("date")) {
+              // Replace underscores in the text node
+              const nodeWithDateReplaced = nodeText.replace(
+                underscorePattern,
+                formattedDate,
+              );
+              if (nodeWithDateReplaced !== nodeText) {
+                textNode.textContent = nodeWithDateReplaced;
+              } else {
                 textNode.textContent = nodeText.trim().endsWith(":")
                   ? `${nodeText.trim()} ${formattedDate}`
                   : `${nodeText.trim()}: ${formattedDate}`;
-              } else {
-                textNode.textContent = nodeText.trim()
-                  ? `${nodeText.trim()} ${formattedDate}`
-                  : formattedDate;
               }
             }
           } else {
             if (!currentText.includes(formattedDate)) {
-              dateField.textContent = currentText.trim().endsWith(":")
-                ? `${currentText.trim()} ${formattedDate}`
-                : currentText.trim()
-                  ? `${currentText.trim()}: ${formattedDate}`
-                  : `Date: ${formattedDate}`;
+              dateField.textContent = finalText;
             }
           }
         }
@@ -987,7 +1007,6 @@ const ContractSigningView = ({
             id="contract"
             className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden bg-white rounded-[20px]"
             style={{
-              fontFamily: "Arial, sans-serif",
               padding: "40px 50px",
               maxWidth: "210mm",
               lineHeight: "1.4",
@@ -997,11 +1016,106 @@ const ContractSigningView = ({
           >
             <div
               id="contract-content"
+              className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none font-poppins"
               dangerouslySetInnerHTML={{
                 __html:
                   contractHtml || "<div>Sample Contract Content Here</div>",
               }}
             />
+            {/* TipTap/ProseMirror styles for proper rendering - matching admin preview exactly */}
+            <style jsx global>{`
+              .prose table {
+                border-collapse: collapse;
+                margin: 1rem 0;
+                overflow: hidden;
+                width: 100%;
+              }
+              .prose table td,
+              .prose table th {
+                border: 1px solid #d1d5db;
+                box-sizing: border-box;
+                min-width: 1em;
+                padding: 0.5rem;
+                position: relative;
+                vertical-align: top;
+              }
+              /* Preserve text-align from inline styles - inline styles have highest specificity */
+              .prose table td[style*="text-align: left"],
+              .prose table th[style*="text-align: left"] {
+                text-align: left !important;
+              }
+              .prose table td[style*="text-align: center"],
+              .prose table th[style*="text-align: center"] {
+                text-align: center !important;
+              }
+              .prose table td[style*="text-align: right"],
+              .prose table th[style*="text-align: right"] {
+                text-align: right !important;
+              }
+              /* Ensure table cells respect alignment attributes */
+              .prose table td[align="left"],
+              .prose table th[align="left"] {
+                text-align: left;
+              }
+              .prose table td[align="center"],
+              .prose table th[align="center"] {
+                text-align: center;
+              }
+              .prose table td[align="right"],
+              .prose table th[align="right"] {
+                text-align: right;
+              }
+              .prose table th {
+                background-color: #f3f4f6;
+                font-weight: 600;
+              }
+              .prose img {
+                max-width: 100%;
+                height: auto;
+                display: inline-block;
+              }
+              .prose ul[data-type="taskList"] {
+                list-style: none;
+                padding: 0;
+              }
+              .prose ul[data-type="taskList"] li {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.5rem;
+              }
+              .prose hr {
+                border: none;
+                border-top: 1px solid #d1d5db;
+                margin: 1rem 0;
+              }
+              .prose blockquote {
+                border-left: 4px solid #d1d5db;
+                padding-left: 1rem;
+                margin: 1rem 0;
+                color: #6b7280;
+                font-style: italic;
+              }
+              .prose pre {
+                background: #f3f4f6;
+                border-radius: 0.5rem;
+                padding: 1rem;
+                margin: 1rem 0;
+                overflow-x: auto;
+              }
+              .prose code {
+                background: #f3f4f6;
+                padding: 0.125rem 0.25rem;
+                border-radius: 0.25rem;
+                font-size: 0.875em;
+                font-family:
+                  ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+                  "Liberation Mono", monospace;
+              }
+              /* Ensure inline styles from TipTap take precedence over prose styles */
+              .prose [style] {
+                /* Inline styles already have highest specificity */
+              }
+            `}</style>
           </div>
 
           {/* RIGHT: Signature Panel */}
