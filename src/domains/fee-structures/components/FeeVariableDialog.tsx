@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FeeVariableData } from "../types/feeStructure.types";
+import { FeeVariableType } from "@prisma/client";
 
 type FeeVariableDialogProps = {
   open: boolean;

@@ -38,7 +38,6 @@ export const publishTemplateVersionAction = async (
     const data = await publishTemplateVersion(
       parsed.data.templateId,
       parsed.data.changeNotes,
-      user.id,
     );
 
     revalidatePath("/dashboard/contract-templates");
