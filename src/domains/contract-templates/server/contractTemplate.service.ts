@@ -13,6 +13,15 @@ import {
   parsePlaceholders,
   validatePlaceholders,
 } from "../utils/placeholderParser";
+import { enhanceTipTapHtml } from "../utils/enhanceTipTapHtml";
+import {
+  createGoogleDoc,
+  exportAsHTML,
+  getGoogleDocUrl,
+  updateGoogleDocWithHtml,
+} from "@/lib/google-docs";
+import { ENV } from "@/constants/variables";
+import logger from "@/utils/logger";
 
 // Helper to format template version data
 const formatTemplateVersion = (version: {
@@ -161,7 +170,7 @@ export const getContractTemplate = async (
 export const createContractTemplate = async (
   input: CreateContractTemplateInput,
   createdBy: string,
-): Promise<{ id: string }> => {
+): Promise<{ id: string; googleDocId?: string }> => {
   // Check if slug already exists
   const existing = await prisma.documentTemplate.findUnique({
     where: { slug: input.slug },
@@ -183,6 +192,26 @@ export const createContractTemplate = async (
     },
   });
 
+  // Try to create a Google Doc for this template
+  let googleDocTemplateId: string | null = null;
+  let googleDocFolderId: string | null = null;
+
+  try {
+    // Use the contracts folder from env if available
+    const folderId = ENV.GOOGLE_CONTRACTS_FOLDER_ID || undefined;
+    googleDocTemplateId = await createGoogleDoc(
+      `Contract Template: ${input.displayName}`,
+      folderId,
+    );
+    googleDocFolderId = folderId || null;
+    logger.log(
+      `✅ Created Google Doc for template "${input.displayName}": ${googleDocTemplateId}`,
+    );
+  } catch (error) {
+    // Log the error but don't fail the template creation
+    logger.error("Failed to create Google Doc for template:", error);
+  }
+
   // Create initial draft version
   await prisma.templateVersion.create({
     data: {
@@ -194,11 +223,13 @@ export const createContractTemplate = async (
       variablesSchema: { type: "object", properties: {} },
       defaultData: {},
       checksumSha256: "",
+      googleDocTemplateId,
+      googleDocFolderId,
       createdBy,
     },
   });
 
-  return { id: template.id };
+  return { id: template.id, googleDocId: googleDocTemplateId || undefined };
 };
 
 // Update contract template metadata
@@ -238,8 +269,9 @@ export const saveTemplateDraftContent = async (
   createdBy: string,
   googleDocTemplateId?: string | null,
   googleDocFolderId?: string | null,
-): Promise<{ id: string }> => {
-  // Get or create draft version
+  syncToGoogleDocs: boolean = true,
+): Promise<{ id: string; googleDocId?: string }> => {
+  // Get template with draft version and current version to find existing Google Doc ID
   const template = await prisma.documentTemplate.findUnique({
     where: { id: templateId },
     include: {
@@ -248,6 +280,12 @@ export const saveTemplateDraftContent = async (
         orderBy: { version: "desc" },
         take: 1,
       },
+      currentVersion: {
+        select: {
+          googleDocTemplateId: true,
+          googleDocFolderId: true,
+        },
+      },
     },
   });
 
@@ -255,27 +293,83 @@ export const saveTemplateDraftContent = async (
     throw HttpError.notFound("Template not found");
   }
 
+  // Also check all versions to find the most recent one with a Google Doc ID
+  // This ensures we preserve the Google Doc ID even if draft/current don't have it
+  const allVersions = await prisma.templateVersion.findMany({
+    where: {
+      templateId,
+      googleDocTemplateId: { not: null },
+    },
+    select: {
+      googleDocTemplateId: true,
+      googleDocFolderId: true,
+    },
+    orderBy: { version: "desc" },
+    take: 1,
+  });
+
+  // Enhance TipTap HTML with inline styles to ensure proper rendering
+  const enhancedContent = enhanceTipTapHtml(content);
+
   // Parse placeholders from content
-  const placeholders = parsePlaceholders(content);
+  const placeholders = parsePlaceholders(enhancedContent);
   const validation = validatePlaceholders(placeholders);
 
   // Update or create draft version
   let draftVersion = template.versions[0];
+
+  // Get Google Doc ID from: parameter > draft version > current version > any version with Google Doc
+  // This ensures we always use the existing Google Doc for the template
+  let currentGoogleDocId =
+    googleDocTemplateId ??
+    draftVersion?.googleDocTemplateId ??
+    template.currentVersion?.googleDocTemplateId ??
+    allVersions[0]?.googleDocTemplateId ??
+    null;
+  let currentGoogleDocFolderId =
+    googleDocFolderId ??
+    draftVersion?.googleDocFolderId ??
+    template.currentVersion?.googleDocFolderId ??
+    allVersions[0]?.googleDocFolderId ??
+    null;
+
+  // Sync to Google Docs if enabled and we have content
+  if (syncToGoogleDocs && content && content.trim()) {
+    try {
+      if (currentGoogleDocId) {
+        // Update existing Google Doc with new content
+        await updateGoogleDocWithHtml(currentGoogleDocId, enhancedContent);
+        logger.log(
+          `✅ Synced template content to Google Docs: ${currentGoogleDocId}`,
+        );
+      } else {
+        // Create new Google Doc if none exists
+        const folderId = ENV.GOOGLE_CONTRACTS_FOLDER_ID || undefined;
+        currentGoogleDocId = await createGoogleDoc(
+          `Contract Template: ${template.displayName}`,
+          folderId,
+        );
+        currentGoogleDocFolderId = folderId || null;
+        // Update the newly created Google Doc with content
+        await updateGoogleDocWithHtml(currentGoogleDocId, enhancedContent);
+        logger.log(
+          `✅ Created and synced template content to Google Docs: ${currentGoogleDocId}`,
+        );
+      }
+    } catch (error) {
+      // Log error but don't fail the save operation
+      logger.error("Failed to sync template to Google Docs:", error);
+    }
+  }
 
   if (draftVersion) {
     // Update existing draft
     await prisma.templateVersion.update({
       where: { id: draftVersion.id },
       data: {
-        bodyHtml: content,
-        googleDocTemplateId:
-          googleDocTemplateId !== undefined
-            ? googleDocTemplateId
-            : draftVersion.googleDocTemplateId,
-        googleDocFolderId:
-          googleDocFolderId !== undefined
-            ? googleDocFolderId
-            : draftVersion.googleDocFolderId,
+        bodyHtml: enhancedContent,
+        googleDocTemplateId: currentGoogleDocId,
+        googleDocFolderId: currentGoogleDocFolderId,
         variablesSchema: {
           type: "object",
           properties: {},
@@ -299,9 +393,9 @@ export const saveTemplateDraftContent = async (
         version: nextVersion,
         status: "DRAFT",
         locale: "en-CA",
-        bodyHtml: content,
-        googleDocTemplateId: googleDocTemplateId || null,
-        googleDocFolderId: googleDocFolderId || null,
+        bodyHtml: enhancedContent,
+        googleDocTemplateId: currentGoogleDocId,
+        googleDocFolderId: currentGoogleDocFolderId,
         variablesSchema: {
           type: "object",
           properties: {},
@@ -319,7 +413,7 @@ export const saveTemplateDraftContent = async (
     throw HttpError.badRequest("Failed to create or update draft version");
   }
 
-  return { id: draftVersion.id };
+  return { id: draftVersion.id, googleDocId: currentGoogleDocId || undefined };
 };
 
 // Publish template version
@@ -392,5 +486,135 @@ export const validateTemplate = async (templateId: string, content: string) => {
     placeholders,
     errors: validation.errors,
     warnings: validation.warnings,
+  };
+};
+
+// Sync template content FROM Google Docs
+export const syncFromGoogleDoc = async (
+  templateId: string,
+  createdBy: string,
+): Promise<{ id: string; content: string }> => {
+  // Get the template with its current version
+  const template = await prisma.documentTemplate.findUnique({
+    where: { id: templateId },
+    include: {
+      versions: {
+        where: { status: "DRAFT" },
+        orderBy: { version: "desc" },
+        take: 1,
+      },
+      currentVersion: true,
+    },
+  });
+
+  if (!template) {
+    throw HttpError.notFound("Template not found");
+  }
+
+  // Get draft or current version
+  const version = template.versions[0] || template.currentVersion;
+
+  if (!version?.googleDocTemplateId) {
+    throw HttpError.badRequest(
+      "No Google Doc linked to this template. Save the template first to create a Google Doc.",
+    );
+  }
+
+  // Export HTML from Google Docs
+  const htmlContent = await exportAsHTML(version.googleDocTemplateId);
+
+  if (!htmlContent) {
+    throw HttpError.badRequest("Failed to export content from Google Docs");
+  }
+
+  // Parse placeholders from the imported content
+  const placeholders = parsePlaceholders(htmlContent);
+  const validation = validatePlaceholders(placeholders);
+
+  // Update or create draft version with the synced content
+  let draftVersion = template.versions[0];
+
+  if (draftVersion) {
+    // Update existing draft
+    await prisma.templateVersion.update({
+      where: { id: draftVersion.id },
+      data: {
+        bodyHtml: htmlContent,
+        variablesSchema: {
+          type: "object",
+          properties: {},
+          placeholders,
+          validation,
+        },
+      },
+    });
+  } else {
+    // Create new draft version
+    const latestVersion = await prisma.templateVersion.findFirst({
+      where: { templateId },
+      orderBy: { version: "desc" },
+    });
+
+    const nextVersion = (latestVersion?.version || 0) + 1;
+
+    draftVersion = await prisma.templateVersion.create({
+      data: {
+        templateId,
+        version: nextVersion,
+        status: "DRAFT",
+        locale: "en-CA",
+        bodyHtml: htmlContent,
+        googleDocTemplateId: version.googleDocTemplateId,
+        googleDocFolderId: version.googleDocFolderId,
+        variablesSchema: {
+          type: "object",
+          properties: {},
+          placeholders,
+          validation,
+        },
+        defaultData: {},
+        checksumSha256: "",
+        createdBy,
+      },
+    });
+  }
+
+  logger.log(
+    `✅ Synced content from Google Docs for template "${template.displayName}"`,
+  );
+
+  return { id: draftVersion.id, content: htmlContent };
+};
+
+// Get Google Doc URL for a template
+export const getTemplateGoogleDocUrl = async (
+  templateId: string,
+): Promise<{ url: string | null; documentId: string | null }> => {
+  const template = await prisma.documentTemplate.findUnique({
+    where: { id: templateId },
+    include: {
+      versions: {
+        where: { status: "DRAFT" },
+        orderBy: { version: "desc" },
+        take: 1,
+      },
+      currentVersion: true,
+    },
+  });
+
+  if (!template) {
+    throw HttpError.notFound("Template not found");
+  }
+
+  const version = template.versions[0] || template.currentVersion;
+  const documentId = version?.googleDocTemplateId;
+
+  if (!documentId) {
+    return { url: null, documentId: null };
+  }
+
+  return {
+    url: getGoogleDocUrl(documentId),
+    documentId,
   };
 };

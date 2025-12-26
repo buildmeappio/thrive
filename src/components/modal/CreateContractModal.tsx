@@ -10,6 +10,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { extractRequiredFeeVariables } from "@/domains/contract-templates/utils/placeholderParser";
 import { useCreateContractModal } from "./hooks/useCreateContractModal";
+import FeeStructureFormStep from "./components/FeeStructureFormStep";
 import type { CreateContractModalProps } from "./types/createContractModal.types";
 
 export default function CreateContractModal(props: CreateContractModalProps) {
@@ -25,13 +26,19 @@ export default function CreateContractModal(props: CreateContractModalProps) {
     isLoading,
     isLoadingData,
     isLoadingTemplate,
+    isLoadingFeeStructure,
     previewHtml,
     contractId,
     selectedTemplate,
+    feeStructureData,
+    feeFormValues,
+    requiresFeeStructure,
     setSelectedTemplateId,
     setSelectedFeeStructureId,
     setStep,
-    handleCreateAndPreview,
+    setFeeFormValues,
+    handleContinueToFeeForm,
+    handleFeeFormSubmit,
     handleSendContract,
     panelRef,
     titleId,
@@ -39,6 +46,31 @@ export default function CreateContractModal(props: CreateContractModalProps) {
   } = useCreateContractModal(props);
 
   if (!open) return null;
+
+  // Determine step titles
+  const getStepTitle = () => {
+    switch (step) {
+      case 1:
+        return props.existingContractId ? "Resend Contract" : "Send Contract";
+      case 2:
+        return "Fee Details";
+      case 3:
+        return "Preview Contract";
+      case 4:
+        return "Contract Sent";
+      default:
+        return "Send Contract";
+    }
+  };
+
+  // Check if continue button should be disabled on step 1
+  const isContinueDisabled =
+    isLoading ||
+    isLoadingData ||
+    isLoadingTemplate ||
+    isLoadingFeeStructure ||
+    !selectedTemplateId ||
+    (requiresFeeStructure && !selectedFeeStructureId);
 
   return (
     <div
@@ -87,15 +119,31 @@ export default function CreateContractModal(props: CreateContractModalProps) {
             id={titleId}
             className="font-[600] text-xl sm:text-[28px] leading-[1.2] tracking-[-0.02em] text-[#1A1A1A] font-degular pr-10"
           >
-            {step === 1 &&
-              (props.existingContractId ? "Resend Contract" : "Send Contract")}
-            {step === 2 && "Preview Contract"}
-            {step === 3 && "Contract Sent"}
+            {getStepTitle()}
           </h2>
+
+          {/* Step Indicator */}
+          {step < 4 && (
+            <div className="flex items-center gap-2 mt-2">
+              {[1, 2, 3].map((s) => (
+                <div
+                  key={s}
+                  className={`h-1.5 rounded-full transition-all ${
+                    s === step
+                      ? "w-6 bg-[#000080]"
+                      : s < step
+                        ? "w-3 bg-[#000080]/50"
+                        : "w-3 bg-[#E5E5E5]"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Content Area - Scrollable */}
         <div className="flex-1 overflow-y-auto p-5 sm:px-[45px] sm:py-6">
+          {/* Step 1: Select Template & Fee Structure */}
           {step === 1 && (
             <div className="space-y-6">
               <div className="space-y-2">
@@ -232,6 +280,14 @@ export default function CreateContractModal(props: CreateContractModalProps) {
                                 available
                               </p>
                             )}
+                            {isLoadingFeeStructure && (
+                              <div className="flex items-center gap-2 text-[#7A7A7A] font-poppins mt-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span className="text-sm sm:text-[13px]">
+                                  Loading fee structure details...
+                                </span>
+                              </div>
+                            )}
                           </div>
                         );
                       }
@@ -243,14 +299,131 @@ export default function CreateContractModal(props: CreateContractModalProps) {
             </div>
           )}
 
-          {step === 2 && (
+          {/* Step 2: Fee Structure Form */}
+          {step === 2 && feeStructureData && (
+            <FeeStructureFormStep
+              variables={feeStructureData.variables}
+              values={feeFormValues}
+              onChange={setFeeFormValues}
+              feeStructureName={feeStructureData.name}
+            />
+          )}
+
+          {/* Step 2 Loading State (if no fee structure data) */}
+          {step === 2 && !feeStructureData && (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex items-center gap-2 text-[#7A7A7A] font-poppins">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm sm:text-[15px]">
+                  Loading fee structure...
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Preview Contract */}
+          {step === 3 && (
             <div className="space-y-4">
               {previewHtml && (
                 <div className="border border-[#E5E5E5] rounded-xl sm:rounded-[15px] p-4 bg-white">
                   <div
+                    className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none min-h-[500px] p-4 font-poppins"
                     dangerouslySetInnerHTML={{ __html: previewHtml }}
-                    className="prose max-w-none"
                   />
+                  {/* TipTap/ProseMirror styles for proper rendering - matching editor exactly */}
+                  <style jsx global>{`
+                    .prose table {
+                      border-collapse: collapse;
+                      margin: 1rem 0;
+                      overflow: hidden;
+                      width: 100%;
+                    }
+                    .prose table td,
+                    .prose table th {
+                      border: 1px solid #d1d5db;
+                      box-sizing: border-box;
+                      min-width: 1em;
+                      padding: 0.5rem;
+                      position: relative;
+                      vertical-align: top;
+                    }
+                    /* Preserve text-align from inline styles - inline styles have highest specificity */
+                    .prose table td[style*="text-align: left"],
+                    .prose table th[style*="text-align: left"] {
+                      text-align: left !important;
+                    }
+                    .prose table td[style*="text-align: center"],
+                    .prose table th[style*="text-align: center"] {
+                      text-align: center !important;
+                    }
+                    .prose table td[style*="text-align: right"],
+                    .prose table th[style*="text-align: right"] {
+                      text-align: right !important;
+                    }
+                    /* Ensure table cells respect alignment attributes */
+                    .prose table td[align="left"],
+                    .prose table th[align="left"] {
+                      text-align: left;
+                    }
+                    .prose table td[align="center"],
+                    .prose table th[align="center"] {
+                      text-align: center;
+                    }
+                    .prose table td[align="right"],
+                    .prose table th[align="right"] {
+                      text-align: right;
+                    }
+                    .prose table th {
+                      background-color: #f3f4f6;
+                      font-weight: 600;
+                    }
+                    .prose img {
+                      max-width: 100%;
+                      height: auto;
+                      display: inline-block;
+                    }
+                    .prose ul[data-type="taskList"] {
+                      list-style: none;
+                      padding: 0;
+                    }
+                    .prose ul[data-type="taskList"] li {
+                      display: flex;
+                      align-items: flex-start;
+                      gap: 0.5rem;
+                    }
+                    .prose hr {
+                      border: none;
+                      border-top: 1px solid #d1d5db;
+                      margin: 1rem 0;
+                    }
+                    .prose blockquote {
+                      border-left: 4px solid #d1d5db;
+                      padding-left: 1rem;
+                      margin: 1rem 0;
+                      color: #6b7280;
+                      font-style: italic;
+                    }
+                    .prose pre {
+                      background: #f3f4f6;
+                      border-radius: 0.5rem;
+                      padding: 1rem;
+                      margin: 1rem 0;
+                      overflow-x: auto;
+                    }
+                    .prose code {
+                      background: #f3f4f6;
+                      padding: 0.125rem 0.25rem;
+                      border-radius: 0.25rem;
+                      font-size: 0.875em;
+                      font-family:
+                        ui-monospace, SFMono-Regular, "SF Mono", Menlo,
+                        Consolas, "Liberation Mono", monospace;
+                    }
+                    /* Ensure inline styles from TipTap take precedence over prose styles */
+                    .prose [style] {
+                      /* Inline styles already have highest specificity */
+                    }
+                  `}</style>
                 </div>
               )}
 
@@ -267,7 +440,8 @@ export default function CreateContractModal(props: CreateContractModalProps) {
             </div>
           )}
 
-          {step === 3 && (
+          {/* Step 4: Contract Sent */}
+          {step === 4 && (
             <div className="space-y-4">
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
@@ -298,6 +472,7 @@ export default function CreateContractModal(props: CreateContractModalProps) {
 
         {/* Footer - Fixed */}
         <div className="flex-shrink-0 p-5 sm:px-[45px] sm:pb-[40px] pt-4 border-t border-gray-200 flex justify-end gap-3">
+          {/* Step 1 Footer */}
           {step === 1 && (
             <>
               <button
@@ -318,17 +493,54 @@ export default function CreateContractModal(props: CreateContractModalProps) {
               </button>
               <button
                 type="button"
-                onClick={handleCreateAndPreview}
-                disabled={
-                  isLoading ||
-                  isLoadingData ||
-                  isLoadingTemplate ||
-                  !selectedTemplateId ||
-                  (selectedTemplateContent &&
-                    extractRequiredFeeVariables(selectedTemplateContent).size >
-                      0 &&
-                    !selectedFeeStructureId)
-                }
+                onClick={handleContinueToFeeForm}
+                disabled={isContinueDisabled}
+                className="
+                  h-10 sm:h-[46px]
+                  rounded-full
+                  bg-[#000080] px-6 sm:px-8 text-white
+                  transition-opacity
+                  disabled:cursor-not-allowed disabled:opacity-50
+                  hover:bg-[#000093]
+                  font-poppins text-[14px] sm:text-[16px] font-[500] tracking-[-0.02em]
+                  flex items-center gap-2
+                "
+              >
+                {isLoading || isLoadingFeeStructure ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Loading...</span>
+                  </>
+                ) : (
+                  "Continue"
+                )}
+              </button>
+            </>
+          )}
+
+          {/* Step 2 Footer */}
+          {step === 2 && (
+            <>
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                disabled={isLoading}
+                className="
+                  h-10 sm:h-[46px]
+                  rounded-full
+                  border border-[#E5E5E5] bg-white px-6 sm:px-8
+                  text-[#1A1A1A] transition-colors
+                  disabled:cursor-not-allowed disabled:opacity-50
+                  hover:bg-gray-50
+                  font-poppins text-[14px] sm:text-[16px] font-[500] tracking-[-0.02em]
+                "
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={handleFeeFormSubmit}
+                disabled={isLoading || !feeStructureData}
                 className="
                   h-10 sm:h-[46px]
                   rounded-full
@@ -343,20 +555,21 @@ export default function CreateContractModal(props: CreateContractModalProps) {
                 {isLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Loading...</span>
+                    <span>Generating Preview...</span>
                   </>
                 ) : (
-                  "Preview"
+                  "Preview Contract"
                 )}
               </button>
             </>
           )}
 
-          {step === 2 && (
+          {/* Step 3 Footer */}
+          {step === 3 && (
             <>
               <button
                 type="button"
-                onClick={() => setStep(1)}
+                onClick={() => setStep(2)}
                 disabled={isLoading}
                 className="
                   h-10 sm:h-[46px]
@@ -397,7 +610,8 @@ export default function CreateContractModal(props: CreateContractModalProps) {
             </>
           )}
 
-          {step === 3 && (
+          {/* Step 4 Footer */}
+          {step === 4 && (
             <button
               type="button"
               onClick={onClose}

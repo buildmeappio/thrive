@@ -24,6 +24,7 @@ model Contract {
   viewedAt             DateTime?      @map("viewed_at") @db.Timestamptz()
   signedAt             DateTime?      @map("signed_at") @db.Timestamptz()
   declinedAt           DateTime?      @map("declined_at") @db.Timestamptz()
+  reviewedAt           DateTime?      @map("reviewed_at") @db.Timestamptz()
   voidReason           String?        @map("void_reason") @db.Text
   accessToken          String?        @map("access_token") @db.Text
   accessTokenExpiresAt DateTime?      @map("access_token_expires_at") @db.Timestamptz()

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useId, useRef } from "react";
+import { useState, useEffect, useId, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { listContractTemplatesAction } from "@/domains/contract-templates/actions";
 import { getContractTemplateAction } from "@/domains/contract-templates/actions/getContractTemplate";
@@ -10,19 +10,41 @@ import {
   sendContractAction,
   updateContractFeeStructureAction,
   getContractAction,
+  updateContractFieldsAction,
 } from "@/domains/contracts/actions";
 import { listFeeStructuresAction } from "@/domains/fee-structures/actions";
+import { getFeeStructureAction } from "@/domains/fee-structures/actions/getFeeStructure";
 import { ContractTemplateListItem } from "@/domains/contract-templates/types/contractTemplate.types";
-import { FeeStructureListItem } from "@/domains/fee-structures/types/feeStructure.types";
+import {
+  FeeStructureListItem,
+  FeeStructureData,
+} from "@/domains/fee-structures/types/feeStructure.types";
 import {
   extractRequiredFeeVariables,
   validateFeeStructureCompatibility,
 } from "@/domains/contract-templates/utils/placeholderParser";
+import {
+  initializeFeeFormValues,
+  validateFeeFormValues,
+} from "../components/FeeStructureFormStep";
+import type { FeeFormValues } from "../components/FeeStructureFormStep";
 import type {
   UseCreateContractModalOptions,
   UseCreateContractModalReturn,
+  ContractModalStep,
+  FeeStructureFullData,
 } from "../types/createContractModal.types";
 
+/**
+ * Custom hook to manage the state and control flow of the Create Contract Modal.
+ *
+ * Key Points for maintainers:
+ * - All data fetches are abortable for modal unmount/close scenarios.
+ * - All state resets on modal close.
+ * - Fee structure compatibility and requirement handled by parsing template body.
+ * - Only single initialization per modal open, guarded by isInitializingRef.
+ * - Outside click/backdrop/Escape closes modal (see contract management guidelines).
+ */
 export const useCreateContractModal = (
   options: UseCreateContractModalOptions,
 ): UseCreateContractModalReturn => {
@@ -38,12 +60,17 @@ export const useCreateContractModal = (
     existingTemplateId,
   } = options;
 
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  // --- Step logic (1: Select, 2: Fee Form, 3: Preview, 4: Sent) ---
+  const [step, setStep] = useState<ContractModalStep>(1);
+
+  // --- Templates ---
   const [templates, setTemplates] = useState<ContractTemplateListItem[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [selectedTemplateContent, setSelectedTemplateContent] = useState<
     string | null
   >(null);
+
+  // --- Fee structures ---
   const [feeStructures, setFeeStructures] = useState<FeeStructureListItem[]>(
     [],
   );
@@ -52,155 +79,139 @@ export const useCreateContractModal = (
   >([]);
   const [selectedFeeStructureId, setSelectedFeeStructureId] =
     useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [feeStructureData, setFeeStructureData] =
+    useState<FeeStructureFullData | null>(null);
+  const [feeFormValues, setFeeFormValues] = useState<FeeFormValues>({});
+
+  // --- Loading ---
+  const [isLoading, setIsLoading] = useState(false); // submit, preview, send
+  const [isLoadingData, setIsLoadingData] = useState(false); // whole modal initialization
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
+  const [isLoadingFeeStructure, setIsLoadingFeeStructure] = useState(false);
+
+  // --- Contract ---
   const [previewHtml, setPreviewHtml] = useState<string>("");
   const [contractId, setContractId] = useState<string | null>(null);
+
+  // --- Misc / references ---
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const isInitializingRef = useRef(false);
 
-  const loadTemplates = async () => {
-    setIsLoadingData(true);
-    try {
-      const templatesResult = await listContractTemplatesAction({
-        status: "ACTIVE",
-      });
+  /**
+   * Checks if the selected template requires a fee structure by parsing for fee variable placeholders.
+   */
+  const requiresFeeStructure = selectedTemplateContent
+    ? extractRequiredFeeVariables(selectedTemplateContent).size > 0
+    : false;
 
-      if (templatesResult.success) {
-        // Filter to only show templates with published versions
-        const validTemplates = templatesResult.data.filter(
-          (t) => t.currentVersionId,
-        );
-        setTemplates(validTemplates);
-      } else {
-        toast.error("Failed to load templates");
-      }
-    } catch (error) {
-      console.error("Error loading templates:", error);
-      toast.error("Failed to load templates");
-    } finally {
-      setIsLoadingData(false);
-    }
-  };
+  /**
+   * Maps backend fee structure data to the form value model.
+   */
+  const transformFeeStructureData = useCallback(
+    (data: FeeStructureData | null) => {
+      if (!data) return null;
+      return {
+        id: data.id,
+        name: data.name,
+        description: data.description,
+        variables: data.variables.map((v) => ({
+          id: v.id,
+          key: v.key,
+          label: v.label,
+          type: v.type,
+          defaultValue: v.defaultValue,
+          required: v.required,
+          currency: v.currency,
+          decimals: v.decimals,
+          unit: v.unit,
+          sortOrder: v.sortOrder,
+        })),
+      } as FeeStructureFullData;
+    },
+    [],
+  );
 
-  const loadFeeStructures = async () => {
-    try {
-      const result = await listFeeStructuresAction({ status: "ACTIVE" });
-      if (result.success && result.data) {
-        setFeeStructures(result.data);
-      }
-    } catch (error) {
-      console.error("Error loading fee structures:", error);
-    }
-  };
-
-  // Load existing contract data when resending
-  useEffect(() => {
-    if (open && existingContractId && existingTemplateId) {
-      const loadExistingContract = async () => {
-        try {
-          const contractResult = await getContractAction(existingContractId);
-          if (contractResult.success && contractResult.data) {
-            const contract = contractResult.data;
-            // Set fee structure ID if contract has one
-            if (contract.feeStructureId) {
-              setSelectedFeeStructureId(contract.feeStructureId);
-            }
-          }
-          // Load template content to show fee structure dropdown
-          if (existingTemplateId) {
-            const templateResult =
-              await getContractTemplateAction(existingTemplateId);
-            if (templateResult.success && templateResult.data.currentVersion) {
-              const content = templateResult.data.currentVersion.bodyHtml;
-              setSelectedTemplateContent(content);
-            }
-          }
-        } catch (error) {
-          console.error("Error loading existing contract:", error);
-        }
-      };
-      loadExistingContract();
-    }
-  }, [open, existingContractId, existingTemplateId]);
-
-  // Load templates when modal opens
-  useEffect(() => {
-    if (open) {
-      loadTemplates();
-      // Pre-select existing template if resending
-      if (existingTemplateId) {
-        setSelectedTemplateId(existingTemplateId);
-      }
-      // Set existing contract ID if resending
-      if (existingContractId) {
-        setContractId(existingContractId);
-      }
-    } else {
-      // Reset on close
-      setStep(1);
-      setSelectedTemplateId("");
-      setSelectedTemplateContent(null);
-      setSelectedFeeStructureId("");
-      setCompatibleFeeStructures([]);
-      setPreviewHtml("");
-      setContractId(null);
-    }
-  }, [open, existingTemplateId, existingContractId]);
-
-  // Load fee structures when modal opens
-  useEffect(() => {
-    if (open) {
-      loadFeeStructures();
-    }
-  }, [open]);
-
-  // When template is selected, load its content and find compatible fee structures
-  useEffect(() => {
-    if (!open || !selectedTemplateId) {
-      if (!selectedTemplateId) {
-        setSelectedTemplateContent(null);
-        setCompatibleFeeStructures([]);
-        setSelectedFeeStructureId("");
-      }
-      return;
-    }
-    const loadTemplateAndFindCompatible = async () => {
-      if (!selectedTemplateId) {
-        setSelectedTemplateContent(null);
-        setCompatibleFeeStructures([]);
-        setSelectedFeeStructureId("");
+  /**
+   * Loads fee structure meta+variables, prepopulating override values if provided (used for draft contract editing).
+   */
+  const loadFeeStructureData = useCallback(
+    async (feeStructureId: string, existingValues?: FeeFormValues) => {
+      if (!feeStructureId) {
+        setFeeStructureData(null);
+        setFeeFormValues({});
         return;
       }
 
+      setIsLoadingFeeStructure(true);
+      try {
+        const result = await getFeeStructureAction(feeStructureId);
+        if ("error" in result) {
+          return;
+        }
+        if (result.data) {
+          const data = transformFeeStructureData(result.data);
+          if (data) {
+            setFeeStructureData(data);
+
+            // Initialize form values: use existing values if provided, otherwise defaults
+            if (existingValues && Object.keys(existingValues).length > 0) {
+              const initialValues: FeeFormValues = {};
+              for (const variable of data.variables) {
+                if (existingValues[variable.key] !== undefined) {
+                  initialValues[variable.key] = existingValues[variable.key];
+                } else if (
+                  variable.defaultValue !== null &&
+                  variable.defaultValue !== undefined
+                ) {
+                  initialValues[variable.key] = variable.defaultValue;
+                }
+              }
+              setFeeFormValues(initialValues);
+            } else {
+              setFeeFormValues(initializeFeeFormValues(data.variables));
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error loading fee structure:", error);
+        toast.error("Failed to load fee structure details");
+      } finally {
+        setIsLoadingFeeStructure(false);
+      }
+    },
+    [transformFeeStructureData],
+  );
+
+  /**
+   * Loads template bodyHtml and determines compatible fee structures.
+   * If required, only compatible fee structures are selectable, and one may be auto-selected.
+   */
+  const loadTemplateAndFindCompatible = useCallback(
+    async (
+      templateId: string,
+      feeStructuresList: FeeStructureListItem[],
+      skipAutoSelect = false,
+    ) => {
       setIsLoadingTemplate(true);
       try {
-        const templateResult =
-          await getContractTemplateAction(selectedTemplateId);
+        const templateResult = await getContractTemplateAction(templateId);
         if (templateResult.success && templateResult.data.currentVersion) {
           const content = templateResult.data.currentVersion.bodyHtml;
           setSelectedTemplateContent(content);
 
-          // Extract required fee variables
           const requiredFeeVars = extractRequiredFeeVariables(content);
 
           if (requiredFeeVars.size === 0) {
-            // No fee variables needed - all fee structures are compatible
-            setCompatibleFeeStructures(feeStructures);
-            // Use suggested fee structure if available
-            if (templateResult.data.feeStructureId) {
+            setCompatibleFeeStructures(feeStructuresList);
+            if (!skipAutoSelect && templateResult.data.feeStructureId) {
               setSelectedFeeStructureId(templateResult.data.feeStructureId);
+              await loadFeeStructureData(templateResult.data.feeStructureId);
             }
           } else {
-            // Find compatible fee structures
             const compatible: FeeStructureListItem[] = [];
-
-            for (const feeStructure of feeStructures) {
-              // Load full fee structure data to check variables
+            for (const feeStructure of feeStructuresList) {
               try {
-                const { getFeeStructureAction } =
-                  await import("@/domains/fee-structures/actions/getFeeStructure");
                 const fsResult = await getFeeStructureAction(feeStructure.id);
                 if (
                   fsResult.success &&
@@ -222,22 +233,28 @@ export const useCreateContractModal = (
                 );
               }
             }
-
             setCompatibleFeeStructures(compatible);
 
-            // Auto-select suggested fee structure if compatible
-            if (
-              templateResult.data.feeStructureId &&
-              compatible.some(
-                (fs) => fs.id === templateResult.data.feeStructureId,
-              )
-            ) {
-              setSelectedFeeStructureId(templateResult.data.feeStructureId);
-            } else if (compatible.length === 1) {
-              // Auto-select if only one compatible
-              setSelectedFeeStructureId(compatible[0].id);
-            } else {
-              setSelectedFeeStructureId("");
+            if (!skipAutoSelect) {
+              let feeStructureToSelect: string | null = null;
+
+              if (
+                templateResult.data.feeStructureId &&
+                compatible.some(
+                  (fs) => fs.id === templateResult.data.feeStructureId,
+                )
+              ) {
+                feeStructureToSelect = templateResult.data.feeStructureId;
+              } else if (compatible.length === 1) {
+                feeStructureToSelect = compatible[0].id;
+              }
+
+              if (feeStructureToSelect) {
+                setSelectedFeeStructureId(feeStructureToSelect);
+                await loadFeeStructureData(feeStructureToSelect);
+              } else {
+                setSelectedFeeStructureId("");
+              }
             }
           }
         }
@@ -247,12 +264,160 @@ export const useCreateContractModal = (
       } finally {
         setIsLoadingTemplate(false);
       }
+    },
+    [loadFeeStructureData],
+  );
+
+  /**
+   * Initializes modal state every time it is opened.
+   * Also supports draft/edit/replace flows as per contract management conventions.
+   */
+  useEffect(() => {
+    if (!open) {
+      // Reset all state on close.
+      setStep(1);
+      setSelectedTemplateId("");
+      setSelectedTemplateContent(null);
+      setSelectedFeeStructureId("");
+      setCompatibleFeeStructures([]);
+      setFeeStructureData(null);
+      setFeeFormValues({});
+      setPreviewHtml("");
+      setContractId(null);
+      isInitializingRef.current = false;
+      return;
+    }
+
+    if (isInitializingRef.current) return;
+    isInitializingRef.current = true;
+
+    const initializeModal = async () => {
+      setIsLoadingData(true);
+
+      try {
+        // Load templates & fee structures concurrently.
+        const [templatesResult, feeStructuresResult] = await Promise.all([
+          listContractTemplatesAction({ status: "ACTIVE" }),
+          listFeeStructuresAction({ status: "ACTIVE" }),
+        ]);
+
+        if (templatesResult.success) {
+          const validTemplates = templatesResult.data.filter(
+            (t) => t.currentVersionId,
+          );
+          setTemplates(validTemplates);
+        } else {
+          toast.error("Failed to load templates");
+        }
+
+        if (feeStructuresResult.success && feeStructuresResult.data) {
+          setFeeStructures(feeStructuresResult.data);
+        }
+
+        // Existing contract edit (resend/draft/replace)
+        if (existingContractId && existingTemplateId) {
+          try {
+            const contractResult = await getContractAction(existingContractId);
+            if (contractResult.success && contractResult.data) {
+              const contract = contractResult.data;
+              setContractId(existingContractId);
+              setSelectedTemplateId(existingTemplateId);
+
+              await loadTemplateAndFindCompatible(
+                existingTemplateId,
+                feeStructuresResult.success && feeStructuresResult.data
+                  ? feeStructuresResult.data
+                  : [],
+                true, // skip auto-select - keep contract's structure
+              );
+
+              if (contract.feeStructureId) {
+                const fieldValues = contract.fieldValues as any;
+                const feesOverrides = fieldValues?.fees_overrides || {};
+
+                // Set fee structure ID and load with existing override values
+                setSelectedFeeStructureId(contract.feeStructureId);
+                await loadFeeStructureData(
+                  contract.feeStructureId,
+                  feesOverrides,
+                );
+              }
+            }
+          } catch (error) {
+            console.error("Error loading existing contract:", error);
+            toast.error("Failed to load existing contract");
+          }
+        } else if (existingTemplateId) {
+          setSelectedTemplateId(existingTemplateId);
+          await loadTemplateAndFindCompatible(
+            existingTemplateId,
+            feeStructuresResult.success && feeStructuresResult.data
+              ? feeStructuresResult.data
+              : [],
+            false, // allow auto-select for new
+          );
+        }
+      } catch (error) {
+        console.error("Error initializing modal:", error);
+        toast.error("Failed to initialize modal");
+      } finally {
+        setIsLoadingData(false);
+        isInitializingRef.current = false;
+      }
     };
 
-    loadTemplateAndFindCompatible();
-  }, [open, selectedTemplateId, feeStructures]);
+    initializeModal();
 
-  const handleCreateAndPreview = async () => {
+    return () => {
+      isInitializingRef.current = false;
+    };
+  }, [
+    open,
+    existingContractId,
+    existingTemplateId,
+    loadTemplateAndFindCompatible,
+    loadFeeStructureData,
+  ]);
+
+  /**
+   * Runs when template selection changes (user driven).
+   * Only re-finds compatible fee structures - does not auto-populate if clearing selection.
+   */
+  const handleTemplateChange = useCallback(
+    async (templateId: string) => {
+      setSelectedTemplateId(templateId);
+      if (templateId) {
+        await loadTemplateAndFindCompatible(templateId, feeStructures);
+      } else {
+        setSelectedTemplateContent(null);
+        setCompatibleFeeStructures([]);
+        setSelectedFeeStructureId("");
+      }
+    },
+    [feeStructures, loadTemplateAndFindCompatible],
+  );
+
+  /**
+   * Runs when fee structure selection changes (user driven).
+   * Clears data/values if deselected.
+   */
+  const handleFeeStructureChange = useCallback(
+    async (feeStructureId: string) => {
+      setSelectedFeeStructureId(feeStructureId);
+      if (feeStructureId) {
+        await loadFeeStructureData(feeStructureId);
+      } else {
+        setFeeStructureData(null);
+        setFeeFormValues({});
+      }
+    },
+    [loadFeeStructureData],
+  );
+
+  /**
+   * Validates current selection before proceeding to fee form step.
+   */
+  const handleContinueToFeeForm = useCallback(() => {
     if (!selectedTemplateId) {
       toast.error("Please select a contract template");
       return;
@@ -269,70 +434,62 @@ export const useCreateContractModal = (
       return;
     }
 
-    // Validate fee structure is selected if template uses fee variables
-    if (selectedTemplateContent) {
-      const requiredFeeVars = extractRequiredFeeVariables(
-        selectedTemplateContent,
+    if (requiresFeeStructure && !selectedFeeStructureId) {
+      toast.error("Please select a compatible fee structure");
+      return;
+    }
+
+    if (selectedFeeStructureId && !feeStructureData) {
+      toast.error("Fee structure data is still loading. Please wait.");
+      return;
+    }
+
+    setStep(2);
+  }, [
+    selectedTemplateId,
+    templates,
+    requiresFeeStructure,
+    selectedFeeStructureId,
+    feeStructureData,
+  ]);
+
+  /**
+   * Validates fees form and creates/updates contract and loads preview.
+   * Ensures compatibility with both new and in-place-update flows.
+   */
+  const handleFeeFormSubmit = useCallback(async () => {
+    if (feeStructureData && feeStructureData.variables.length > 0) {
+      const validation = validateFeeFormValues(
+        feeStructureData.variables,
+        feeFormValues,
       );
-      if (requiredFeeVars.size > 0 && !selectedFeeStructureId) {
+      if (!validation.valid) {
         toast.error(
-          "Please select a compatible fee structure. The template requires fee variables.",
+          `Please fill in required fields: ${validation.missingFields.join(", ")}`,
         );
         return;
       }
+    }
 
-      // Validate compatibility if fee structure is selected
-      if (selectedFeeStructureId) {
-        const selectedFeeStructure = compatibleFeeStructures.find(
-          (fs) => fs.id === selectedFeeStructureId,
-        );
-        if (!selectedFeeStructure) {
-          toast.error(
-            "Selected fee structure is not compatible with this template",
-          );
-          return;
-        }
-
-        // Double-check compatibility by loading full fee structure
-        try {
-          const { getFeeStructureAction } =
-            await import("@/domains/fee-structures/actions/getFeeStructure");
-          const fsResult = await getFeeStructureAction(selectedFeeStructureId);
-          if (fsResult.success && fsResult.data && fsResult.data.variables) {
-            const compatibility = validateFeeStructureCompatibility(
-              requiredFeeVars,
-              fsResult.data.variables,
-            );
-            if (!compatibility.compatible) {
-              toast.error(
-                `Fee structure is missing required variables: ${compatibility.missingVariables.join(", ")}`,
-              );
-              return;
-            }
-          }
-        } catch (error) {
-          console.error("Error validating fee structure:", error);
-          toast.error("Failed to validate fee structure compatibility");
-          return;
-        }
-      }
+    const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
+    if (!selectedTemplate?.currentVersionId) {
+      toast.error("Selected template not found");
+      return;
     }
 
     setIsLoading(true);
     try {
-      // Check if template changed or if this is a new contract
       const templateChanged =
         existingContractId && existingTemplateId !== selectedTemplateId;
 
       if (existingContractId && !templateChanged) {
-        // Same template - check if fee structure changed
+        // In-place update
         const contractResult = await getContractAction(existingContractId);
         const existingFeeStructureId =
           contractResult.success && contractResult.data
             ? contractResult.data.feeStructureId
             : null;
 
-        // If fee structure changed, update the contract
         if (
           selectedFeeStructureId &&
           existingFeeStructureId !== selectedFeeStructureId
@@ -352,12 +509,27 @@ export const useCreateContractModal = (
           toast.success("Fee structure updated successfully");
         }
 
-        // Preview the contract (with updated fee structure if changed)
+        // Update field values (fees_overrides)
+        if (feeFormValues && Object.keys(feeFormValues).length > 0) {
+          const updateFieldsResult = await updateContractFieldsAction({
+            id: existingContractId,
+            fieldValues: { fees_overrides: feeFormValues },
+          });
+          if (!updateFieldsResult.success) {
+            toast.error(
+              "error" in updateFieldsResult
+                ? updateFieldsResult.error
+                : "Failed to update fee values",
+            );
+            return;
+          }
+        }
+
         setContractId(existingContractId);
         const previewResult = await previewContractAction(existingContractId);
         if (previewResult.success) {
           setPreviewHtml(previewResult.data.renderedHtml);
-          setStep(2);
+          setStep(3);
           if (previewResult.data.missingPlaceholders.length > 0) {
             toast.warning(
               `Missing placeholders: ${previewResult.data.missingPlaceholders.join(", ")}`,
@@ -371,7 +543,7 @@ export const useCreateContractModal = (
           );
         }
       } else {
-        // New contract or template changed - create new contract
+        // New contract or template replaced
         if (!selectedFeeStructureId) {
           toast.error("Please select a fee structure");
           return;
@@ -390,6 +562,7 @@ export const useCreateContractModal = (
             contract: {
               effective_date: new Date().toISOString().split("T")[0],
             },
+            fees_overrides: feeFormValues,
           },
         });
 
@@ -405,11 +578,10 @@ export const useCreateContractModal = (
         const newContractId = createResult.data.id;
         setContractId(newContractId);
 
-        // Generate preview
         const previewResult = await previewContractAction(newContractId);
         if (previewResult.success) {
           setPreviewHtml(previewResult.data.renderedHtml);
-          setStep(2);
+          setStep(3);
           if (previewResult.data.missingPlaceholders.length > 0) {
             toast.warning(
               `Missing placeholders: ${previewResult.data.missingPlaceholders.join(", ")}`,
@@ -429,17 +601,31 @@ export const useCreateContractModal = (
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [
+    feeStructureData,
+    feeFormValues,
+    templates,
+    selectedTemplateId,
+    existingContractId,
+    existingTemplateId,
+    selectedFeeStructureId,
+    examinerId,
+    applicationId,
+    examinerName,
+    examinerEmail,
+  ]);
 
-  const handleSendContract = async () => {
+  /**
+   * Finalizes contract by sending it. Sets modal state to "Sent" and closes after a timeout.
+   */
+  const handleSendContract = useCallback(async () => {
     if (!contractId) return;
-
     setIsLoading(true);
     try {
       const sendResult = await sendContractAction(contractId);
       if (sendResult.success) {
         toast.success("Contract sent successfully");
-        setStep(3);
+        setStep(4);
         setTimeout(() => {
           onSuccess?.();
           onClose();
@@ -455,14 +641,22 @@ export const useCreateContractModal = (
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [contractId, onSuccess, onClose]);
 
-  const onBackdrop = (e: React.MouseEvent) => {
-    if (panelRef.current && !panelRef.current.contains(e.target as Node))
-      onClose();
-  };
+  /**
+   * Backdrop handler (click outside closes modal per UX guideline).
+   */
+  const onBackdrop = useCallback(
+    (e: React.MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node))
+        onClose();
+    },
+    [onClose],
+  );
 
-  // Keyboard handler for Escape key
+  /**
+   * Keyboard handler (Escape key closes modal).
+   */
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -479,6 +673,7 @@ export const useCreateContractModal = (
 
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
 
+  // Keep return signature explicit and organized (see contract guidelines).
   return {
     // Props
     open,
@@ -494,15 +689,23 @@ export const useCreateContractModal = (
     isLoading,
     isLoadingData,
     isLoadingTemplate,
+    isLoadingFeeStructure,
     previewHtml,
     contractId,
     selectedTemplate,
 
+    // Fee Structure Form State
+    feeStructureData,
+    feeFormValues,
+    requiresFeeStructure,
+
     // Actions
-    setSelectedTemplateId,
-    setSelectedFeeStructureId,
+    setSelectedTemplateId: handleTemplateChange,
+    setSelectedFeeStructureId: handleFeeStructureChange,
     setStep,
-    handleCreateAndPreview,
+    setFeeFormValues,
+    handleContinueToFeeForm,
+    handleFeeFormSubmit,
     handleSendContract,
     panelRef,
     titleId,

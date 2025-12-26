@@ -14,14 +14,16 @@ import {
   extractRequiredFeeVariables,
   validateFeeStructureCompatibility,
 } from "@/domains/contract-templates/utils/placeholderParser";
-import {
-  generateContractFromTemplate,
-  type ContractData as GoogleDocsContractData,
-} from "@/lib/google-docs";
 import logger from "@/utils/logger";
 import { formatFullName } from "@/utils/text";
 import { getAllVariablesMap } from "@/domains/custom-variables/server/customVariable.service";
 import { uploadToS3 } from "@/lib/s3";
+import {
+  createGoogleDoc,
+  updateGoogleDocWithHtml,
+  getGoogleDocUrl,
+} from "@/lib/google-docs";
+import { ENV } from "@/constants/variables";
 
 // List contracts with optional filters
 export const listContracts = async (
@@ -114,6 +116,7 @@ export const listContracts = async (
       status: contract.status,
       examinerName,
       templateName: contract.template.displayName,
+      reviewedAt: contract.reviewedAt?.toISOString() || null,
       updatedAt: contract.updatedAt.toISOString(),
     };
   });
@@ -166,6 +169,7 @@ export const getContract = async (id: string): Promise<ContractData> => {
     fieldValues: contract.fieldValues || {},
     sentAt: contract.sentAt?.toISOString() || null,
     signedAt: contract.signedAt?.toISOString() || null,
+    reviewedAt: contract.reviewedAt?.toISOString() || null,
     createdAt: contract.createdAt.toISOString(),
     updatedAt: contract.updatedAt.toISOString(),
     template: {
@@ -411,7 +415,9 @@ export const updateContractFields = async (
     include: {
       feeStructure: {
         include: {
-          variables: true,
+          variables: {
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+          },
         },
       },
     },
@@ -426,13 +432,87 @@ export const updateContractFields = async (
   const updatedFieldValues = {
     ...existingFieldValues,
     ...input.fieldValues,
+    // Deep merge fees_overrides to preserve existing values
+    fees_overrides: {
+      ...(existingFieldValues.fees_overrides || {}),
+      ...(input.fieldValues.fees_overrides || {}),
+    },
   };
+
+  // If fees_overrides are being updated, also update contract.data.fees
+  let updatedData = contract.data as any;
+  if (input.fieldValues.fees_overrides && contract.feeStructure) {
+    const existingData = (contract.data as any) || {};
+    const existingFees = existingData.fees || {};
+    const updatedFees = { ...existingFees };
+
+    // Update fees with new override values
+    for (const variable of contract.feeStructure.variables) {
+      const overrideValue = updatedFieldValues.fees_overrides?.[variable.key];
+      updatedFees[variable.key] =
+        overrideValue !== undefined ? overrideValue : variable.defaultValue;
+    }
+
+    // Update contract data with new fees
+    updatedData = {
+      ...existingData,
+      fees: updatedFees,
+    };
+
+    // Also update examiner-web compatible feeStructure format
+    const feeStructureData: {
+      IMEFee: number;
+      recordReviewFee: number;
+      hourlyRate: number;
+      cancellationFee: number;
+      paymentTerms: string;
+    } = {
+      IMEFee: 0,
+      recordReviewFee: 0,
+      hourlyRate: 0,
+      cancellationFee: 0,
+      paymentTerms: "",
+    };
+
+    // Map fee structure variables to examiner-web format
+    if (
+      contract.feeStructure.variables &&
+      Array.isArray(contract.feeStructure.variables) &&
+      contract.feeStructure.variables.length > 0
+    ) {
+      for (const variable of contract.feeStructure.variables) {
+        const overrideValue = updatedFieldValues.fees_overrides?.[variable.key];
+        const defaultValue =
+          overrideValue !== undefined ? overrideValue : variable.defaultValue;
+        const numValue =
+          typeof defaultValue === "number"
+            ? defaultValue
+            : parseFloat(String(defaultValue || 0));
+
+        const key = variable.key.toLowerCase();
+        if (key.includes("ime") || key.includes("base_exam")) {
+          feeStructureData.IMEFee = numValue;
+        } else if (key.includes("record") || key.includes("review")) {
+          feeStructureData.recordReviewFee = numValue;
+        } else if (key.includes("hourly") || key.includes("rate")) {
+          feeStructureData.hourlyRate = numValue;
+        } else if (key.includes("cancellation") || key.includes("cancel")) {
+          feeStructureData.cancellationFee = numValue;
+        } else if (key.includes("payment") || key.includes("terms")) {
+          feeStructureData.paymentTerms = String(defaultValue || "");
+        }
+      }
+    }
+
+    updatedData.feeStructure = feeStructureData;
+  }
 
   // Update contract
   await prisma.contract.update({
     where: { id: input.id },
     data: {
       fieldValues: updatedFieldValues as any,
+      data: updatedData as any,
     },
   });
 
@@ -650,6 +730,27 @@ export const previewContract = async (
       }
     }
 
+    // Add review date from contract.reviewedAt if available
+    if (contract.reviewedAt) {
+      try {
+        const reviewDateObj = new Date(contract.reviewedAt);
+        // Check if date is valid
+        if (!isNaN(reviewDateObj.getTime())) {
+          const reviewDate = new Intl.DateTimeFormat("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }).format(reviewDateObj);
+          values["contract.review_date"] = reviewDate;
+        }
+      } catch (error) {
+        logger.warn(
+          `Failed to format review date for contract ${contract.id}:`,
+          error,
+        );
+      }
+    }
+
     // Add thrive values (defaults)
     if (fv.thrive) {
       for (const [key, value] of Object.entries(fv.thrive)) {
@@ -761,165 +862,156 @@ export const previewContract = async (
     }
   }
 
-  // Check if template uses Google Docs
-  const usesGoogleDocs =
-    contract.templateVersion.googleDocTemplateId &&
-    contract.templateVersion.googleDocFolderId;
+  // Always use HTML template from bodyHtml as source of truth
+  const templateHtml = contract.templateVersion.bodyHtml;
 
-  let renderedHtml: string;
+  // Validate that bodyHtml exists and is not empty
+  if (!templateHtml || templateHtml.trim() === "") {
+    logger.warn(`Template bodyHtml is empty for contract ${contractId}`);
+    return {
+      renderedHtml:
+        "<p>Template content is empty. Please add content to the template.</p>",
+      missingPlaceholders: [],
+    };
+  }
+
+  // Log the raw HTML to debug styling issues
+  logger.log(
+    `📋 Raw template HTML (first 500 chars): ${templateHtml.substring(0, 500)}`,
+  );
+
+  // Replace placeholders in template
+  let renderedHtml = templateHtml;
   const missingPlaceholders: string[] = [];
+  const placeholders = parsePlaceholders(renderedHtml);
 
-  if (usesGoogleDocs) {
-    // Generate preview from Google Docs template
-    try {
-      // Get examiner data for Google Docs format
-      const fv = (contract.fieldValues as any) || {};
-      const examinerName = fv.examiner?.name || "Examiner";
-      const province = fv.examiner?.province || fv.contract?.province || "";
-      const effectiveDate = fv.contract?.effective_date
-        ? new Date(fv.contract.effective_date as string)
-        : new Date();
+  for (const placeholder of placeholders) {
+    // Replace all occurrences of this placeholder
+    const regex = new RegExp(
+      `\\{\\{\\s*${placeholder.replace(/\./g, "\\.")}\\s*\\}\\}`,
+      "g",
+    );
 
-      // Build fee structure for Google Docs (old format)
-      const feeStructure: GoogleDocsContractData["feeStructure"] = {
-        IMEFee: 0,
-        recordReviewFee: 0,
-        cancellationFee: 0,
-        paymentTerms: "",
-      };
+    // Signature placeholders are optional - replace with underscores if not available
+    const isSignaturePlaceholder =
+      placeholder === "examiner.signature" ||
+      placeholder === "examiner.signature_date_time";
 
-      if (contract.feeStructure) {
-        // Map fee structure variables to Google Docs format
-        for (const variable of contract.feeStructure.variables) {
-          const overrideValue = fv.fees_overrides?.[variable.key];
-          const defaultValue =
-            overrideValue !== undefined ? overrideValue : variable.defaultValue;
-          const numValue =
-            typeof defaultValue === "number"
-              ? defaultValue
-              : parseFloat(String(defaultValue || 0));
+    // Review date is optional - only set when admin reviews the contract
+    const isOptionalPlaceholder =
+      isSignaturePlaceholder || placeholder === "contract.review_date";
 
-          // Map common fee variable keys to Google Docs format
-          const key = variable.key.toLowerCase();
-          if (key.includes("ime") || key.includes("base_exam")) {
-            feeStructure.IMEFee = numValue;
-          } else if (key.includes("record") || key.includes("review")) {
-            feeStructure.recordReviewFee = numValue;
-          } else if (key.includes("hourly") || key.includes("rate")) {
-            feeStructure.hourlyRate = numValue;
-          } else if (key.includes("cancellation") || key.includes("cancel")) {
-            feeStructure.cancellationFee = numValue;
-          } else if (key.includes("payment") || key.includes("terms")) {
-            feeStructure.paymentTerms = String(defaultValue || "");
-          }
+    if (values[placeholder]) {
+      // Special handling for logo and signature - convert to img tag if it's a URL or data URL
+      let replacement: string;
+      if (
+        placeholder === "thrive.logo" &&
+        values[placeholder] &&
+        typeof values[placeholder] === "string"
+      ) {
+        const logoUrl = String(values[placeholder]).trim();
+        if (
+          logoUrl &&
+          (logoUrl.startsWith("http://") || logoUrl.startsWith("https://"))
+        ) {
+          // Wrap in a div that centers the image and preserves parent alignment
+          replacement = `<div style="text-align: center; display: block;"><img src="${logoUrl}" alt="Thrive Logo" style="max-width: 200px; height: auto; display: inline-block;" /></div>`;
+        } else {
+          replacement = logoUrl;
         }
+      } else if (
+        placeholder === "examiner.signature" &&
+        values[placeholder] &&
+        typeof values[placeholder] === "string"
+      ) {
+        const signatureUrl = String(values[placeholder]).trim();
+        if (
+          signatureUrl &&
+          (signatureUrl.startsWith("data:image/") ||
+            signatureUrl.startsWith("http://") ||
+            signatureUrl.startsWith("https://"))
+        ) {
+          replacement = `<img src="${signatureUrl}" alt="Examiner Signature" data-signature="examiner" style="max-width: 240px; height: auto; display: inline-block;" />`;
+        } else {
+          replacement = signatureUrl;
+        }
+      } else {
+        replacement = String(values[placeholder]);
       }
 
-      const signature = fv.examiner?.signature || "";
-      const signatureDateTime = contract.signedAt || undefined;
-
-      const googleDocsData: GoogleDocsContractData = {
-        examinerName: String(examinerName),
-        province: String(province),
-        effectiveDate,
-        signature: signature,
-        signatureDateTime: signatureDateTime,
-        feeStructure,
-      };
-
-      // Generate HTML from Google Docs template
-      renderedHtml = await generateContractFromTemplate(
-        contract.templateVersion.googleDocTemplateId!,
-        googleDocsData,
-      );
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      logger.error("Error generating Google Docs preview:", error);
-      return {
-        renderedHtml: `<div style="padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background: #f9f9f9;"><p style="color: #d32f2f; margin: 0;">Error generating preview: ${errorMessage}</p><p style="color: #666; margin-top: 10px; font-size: 14px;">Please check Google Docs configuration and try again.</p></div>`,
-        missingPlaceholders: [],
-      };
-    }
-  } else {
-    // Use HTML template directly
-    const templateHtml = contract.templateVersion.bodyHtml;
-
-    if (!templateHtml || templateHtml.trim() === "") {
-      return {
-        renderedHtml:
-          "<p>Template content is empty. Please add content to the template.</p>",
-        missingPlaceholders: [],
-      };
-    }
-
-    // Replace placeholders in template
-    renderedHtml = templateHtml;
-    const placeholders = parsePlaceholders(renderedHtml);
-
-    for (const placeholder of placeholders) {
-      // Replace all occurrences of this placeholder
-      const regex = new RegExp(
-        `\\{\\{\\s*${placeholder.replace(/\./g, "\\.")}\\s*\\}\\}`,
-        "g",
-      );
-
-      // Signature placeholders are optional - replace with empty string if not available
-      const isSignaturePlaceholder =
-        placeholder === "examiner.signature" ||
-        placeholder === "examiner.signature_date_time";
-
-      if (values[placeholder]) {
-        // Special handling for logo and signature - convert to img tag if it's a URL or data URL
-        let replacement: string;
-        if (
-          placeholder === "thrive.logo" &&
-          values[placeholder] &&
-          typeof values[placeholder] === "string"
-        ) {
-          const logoUrl = String(values[placeholder]).trim();
-          if (
-            logoUrl &&
-            (logoUrl.startsWith("http://") || logoUrl.startsWith("https://"))
-          ) {
-            // Wrap in a div that centers the image and preserves parent alignment
-            replacement = `<div style="text-align: center; display: block;"><img src="${logoUrl}" alt="Thrive Logo" style="max-width: 200px; height: auto; display: inline-block;" /></div>`;
-          } else {
-            replacement = logoUrl;
-          }
-        } else if (
-          placeholder === "examiner.signature" &&
-          values[placeholder] &&
-          typeof values[placeholder] === "string"
-        ) {
-          const signatureUrl = String(values[placeholder]).trim();
-          if (
-            signatureUrl &&
-            (signatureUrl.startsWith("data:image/") ||
-              signatureUrl.startsWith("http://") ||
-              signatureUrl.startsWith("https://"))
-          ) {
-            replacement = `<img src="${signatureUrl}" alt="Examiner Signature" style="max-width: 240px; height: auto; display: inline-block;" />`;
-          } else {
-            replacement = signatureUrl;
-          }
-        } else {
-          replacement = String(values[placeholder]);
-        }
-
-        renderedHtml = renderedHtml.replace(regex, replacement);
-      } else if (isSignaturePlaceholder) {
-        // Replace signature placeholders with empty string if not available (they'll be filled when examiner signs)
+      renderedHtml = renderedHtml.replace(regex, replacement);
+    } else if (isOptionalPlaceholder) {
+      // Handle optional placeholders
+      if (placeholder === "examiner.signature") {
+        // Wrap in a span with data-signature attribute so examiner-web can identify it
+        const underscoreLine =
+          '<span data-signature="examiner">________________________</span>';
+        renderedHtml = renderedHtml.replace(regex, underscoreLine);
+      } else if (placeholder === "contract.review_date") {
+        // For review_date, replace with empty string or "Not reviewed" - it's optional
         renderedHtml = renderedHtml.replace(regex, "");
       } else {
-        // For other placeholders, mark as missing
-        missingPlaceholders.push(placeholder);
+        // For signature_date_time, just use underscores without the data attribute
+        const underscoreLine = "________________________";
+        renderedHtml = renderedHtml.replace(regex, underscoreLine);
       }
+    } else {
+      // For other placeholders, mark as missing
+      missingPlaceholders.push(placeholder);
     }
   }
 
-  // Upload rendered HTML to S3 (always upload to ensure it's available)
-  const htmlBuffer = Buffer.from(renderedHtml, "utf-8");
+  // Log final rendered HTML for debugging
+  logger.log(
+    `✅ Contract preview HTML generated (${renderedHtml.length} characters)`,
+  );
+  const finalPreview =
+    renderedHtml.length > 1000
+      ? `${renderedHtml.substring(0, 500)}...\n...${renderedHtml.substring(renderedHtml.length - 500)}`
+      : renderedHtml;
+  logger.log(`📄 Final preview HTML:\n${finalPreview}`);
+
+  // For preview, just return the HTML without uploading to S3
+  return {
+    renderedHtml,
+    missingPlaceholders,
+  };
+};
+
+// Generate contract HTML and upload to S3 (used when sending contract)
+export const generateAndUploadContractHtml = async (
+  contractId: string,
+): Promise<{ htmlS3Key: string; renderedHtml: string }> => {
+  // First, generate the HTML using previewContract
+  const previewResult = await previewContract(contractId);
+
+  // Filter out optional placeholders - signature placeholders are only available after signing,
+  // and review_date is only set when admin reviews the contract
+  const requiredPlaceholders = previewResult.missingPlaceholders.filter(
+    (p) =>
+      p !== "examiner.signature" &&
+      p !== "examiner.signature_date_time" &&
+      p !== "contract.review_date",
+  );
+
+  if (requiredPlaceholders.length > 0) {
+    throw HttpError.badRequest(
+      `Missing required placeholders: ${requiredPlaceholders.join(", ")}`,
+    );
+  }
+
+  // Log HTML before uploading
+  logger.log(
+    `📤 Preparing to upload contract HTML to S3 (${previewResult.renderedHtml.length} characters)`,
+  );
+  const uploadPreview =
+    previewResult.renderedHtml.length > 1000
+      ? `${previewResult.renderedHtml.substring(0, 500)}...\n...${previewResult.renderedHtml.substring(previewResult.renderedHtml.length - 500)}`
+      : previewResult.renderedHtml;
+  logger.log(`📄 HTML to upload:\n${uploadPreview}`);
+
+  // Upload rendered HTML to S3
+  const htmlBuffer = Buffer.from(previewResult.renderedHtml, "utf-8");
   const htmlFileName = `contracts/${contractId}/unsigned-${Date.now()}.html`;
   let htmlS3Key: string;
   try {
@@ -932,24 +1024,76 @@ export const previewContract = async (
     logger.log(`✅ Contract HTML uploaded to S3: ${htmlS3Key}`);
   } catch (error) {
     logger.error("Failed to upload contract HTML to S3:", error);
-    // Re-throw if upload fails
     throw new Error("Failed to upload contract HTML to S3");
   }
 
-  // Store rendered HTML in data and update unsignedHtmlS3Key
-  await prisma.contract.update({
+  // Get contract to update (including Google Doc info)
+  const contract = await prisma.contract.findUnique({
     where: { id: contractId },
-    data: {
-      data: {
-        ...(contract.data as any),
-        renderedHtml,
-      } as any,
-      unsignedHtmlS3Key: htmlS3Key,
+    select: {
+      data: true,
+      googleDocId: true,
+      templateVersion: {
+        select: {
+          template: {
+            select: {
+              displayName: true,
+            },
+          },
+        },
+      },
     },
   });
 
+  // Create or update Google Doc with rendered HTML content
+  let googleDocId = contract?.googleDocId;
+  try {
+    if (!googleDocId) {
+      // Create a new Google Doc for this contract
+      const folderId = ENV.GOOGLE_CONTRACTS_FOLDER_ID || undefined;
+      const docTitle = `Contract: ${contract?.templateVersion?.template?.displayName || "Contract"} - ${Date.now()}`;
+      googleDocId = await createGoogleDoc(docTitle, folderId);
+      logger.log(`✅ Created Google Doc for contract: ${googleDocId}`);
+    }
+
+    // Update the Google Doc with rendered HTML content
+    await updateGoogleDocWithHtml(googleDocId, previewResult.renderedHtml);
+    logger.log(`✅ Updated Google Doc ${googleDocId} with rendered HTML`);
+
+    // Store rendered HTML in data and update unsignedHtmlS3Key and googleDocId
+    await prisma.contract.update({
+      where: { id: contractId },
+      data: {
+        data: {
+          ...(contract?.data as any),
+          renderedHtml: previewResult.renderedHtml,
+        } as any,
+        unsignedHtmlS3Key: htmlS3Key,
+        googleDocId: googleDocId,
+        googleDocUrl: getGoogleDocUrl(googleDocId),
+      },
+    });
+  } catch (error) {
+    // Log error but don't fail the contract generation
+    logger.error(
+      "Failed to create/update Google Doc for contract (non-fatal):",
+      error,
+    );
+    // Still update the contract with HTML and S3 key
+    await prisma.contract.update({
+      where: { id: contractId },
+      data: {
+        data: {
+          ...(contract?.data as any),
+          renderedHtml: previewResult.renderedHtml,
+        } as any,
+        unsignedHtmlS3Key: htmlS3Key,
+      },
+    });
+  }
+
   return {
-    renderedHtml,
-    missingPlaceholders,
+    htmlS3Key,
+    renderedHtml: previewResult.renderedHtml,
   };
 };

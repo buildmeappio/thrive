@@ -4,3 +4,9 @@ export { createContractTemplateAction } from "./createContractTemplate";
 export { updateContractTemplateAction } from "./updateContractTemplate";
 export { saveTemplateDraftContentAction } from "./saveTemplateDraftContent";
 export { publishTemplateVersionAction } from "./publishTemplateVersion";
+export { syncToGoogleDocsAction } from "./syncToGoogleDocs";
+export {
+  syncFromGoogleDocsAction,
+  getGoogleDocUrlAction,
+} from "./syncFromGoogleDocs";
+export { uploadTemplateImageAction } from "./uploadTemplateImage";

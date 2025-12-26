@@ -13,7 +13,7 @@ import {
 } from "@/emails/examiner-status-updates";
 import { ExaminerStatus } from "@prisma/client";
 import { ActionResult } from "../types/contract.types";
-import { previewContract } from "../server/contract.service";
+import { generateAndUploadContractHtml } from "../server/contract.service";
 
 export const sendContractAction = async (
   contractId: string,
@@ -47,32 +47,16 @@ export const sendContractAction = async (
       return { success: false, error: "Contract not found" };
     }
 
-    // Preview contract to ensure it's renderable and HTML is uploaded to S3
-    const previewResult = await previewContract(contractId);
-
-    // Filter out signature-related placeholders - they're only available after signing
-    const requiredPlaceholders = previewResult.missingPlaceholders.filter(
-      (p) => p !== "examiner.signature" && p !== "examiner.signature_date_time",
-    );
-
-    if (requiredPlaceholders.length > 0) {
-      return {
-        success: false,
-        error: `Missing required placeholders: ${requiredPlaceholders.join(", ")}`,
-      };
-    }
-
-    // Verify that HTML was uploaded to S3
-    const contractAfterPreview = await prisma.contract.findUnique({
-      where: { id: contractId },
-      select: { unsignedHtmlS3Key: true },
-    });
-
-    if (!contractAfterPreview?.unsignedHtmlS3Key) {
+    // Generate contract HTML and upload to S3
+    try {
+      await generateAndUploadContractHtml(contractId);
+    } catch (error) {
       return {
         success: false,
         error:
-          "Failed to generate contract HTML. Please try previewing the contract first.",
+          error instanceof Error
+            ? error.message
+            : "Failed to generate contract HTML. Please try previewing the contract first.",
       };
     }
 

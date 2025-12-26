@@ -2,8 +2,17 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  Pencil,
+  Archive,
+  FileEdit,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import { toast } from "sonner";
+import TableActionsDropdown from "@/components/TableActionsDropdown";
+import EditContractTemplateDialog from "./EditContractTemplateDialog";
 import {
   Select,
   SelectContent,
@@ -97,6 +106,8 @@ export default function ContractTemplatesTable({ templates }: Props) {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [templatesData, setTemplatesData] =
     useState<ContractTemplateListItem[]>(templates);
+  const [editingTemplate, setEditingTemplate] =
+    useState<ContractTemplateListItem | null>(null);
 
   // Update local state when templates prop changes
   useEffect(() => {
@@ -112,24 +123,23 @@ export default function ContractTemplatesTable({ templates }: Props) {
           isActive: newStatus,
         });
 
-        if (result.success) {
-          // Update local state optimistically
-          setTemplatesData((prev) =>
-            prev.map((t) =>
-              t.id === templateId ? { ...t, isActive: newStatus } : t,
-            ),
-          );
-          toast.success(
-            `Template ${newStatus ? "activated" : "deactivated"} successfully`,
-          );
-          router.refresh();
-        } else {
-          const errorMessage =
-            "error" in result ? result.error : "Failed to update status";
+        if ("error" in result) {
+          const errorMessage = result.error ?? "Failed to update status";
           toast.error(errorMessage);
           // Revert optimistic update
           setTemplatesData(templates);
+          return;
         }
+        // Update local state optimistically
+        setTemplatesData((prev) =>
+          prev.map((t) =>
+            t.id === templateId ? { ...t, isActive: newStatus } : t,
+          ),
+        );
+        toast.success(
+          `Template ${newStatus ? "activated" : "deactivated"} successfully`,
+        );
+        router.refresh();
       } catch (error) {
         console.error("Error updating template status:", error);
         toast.error("An error occurred while updating status");
@@ -245,36 +255,46 @@ export default function ContractTemplatesTable({ templates }: Props) {
         id: "actions",
         header: () => <></>,
         cell: ({ row }) => {
+          const template = row.original;
+          const actions = [
+            {
+              label: "Edit",
+              icon: <Pencil className="w-4 h-4" />,
+              onClick: (e: React.MouseEvent) => {
+                e.stopPropagation();
+                setEditingTemplate(template);
+              },
+            },
+            {
+              label: "Update Template",
+              icon: <FileEdit className="w-4 h-4" />,
+              onClick: (e: React.MouseEvent) => {
+                e.stopPropagation();
+                router.push(`/dashboard/contract-templates/${template.id}`);
+              },
+            },
+            {
+              label: "Archive",
+              icon: <Archive className="w-4 h-4" />,
+              onClick: (e: React.MouseEvent) => {
+                e.stopPropagation();
+                // TODO: Implement archive
+              },
+            },
+          ];
+
           return (
-            <div
-              className="flex items-center gap-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  router.push(
-                    `/dashboard/contract-templates/${row.original.id}`,
-                  );
-                }}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                aria-label="Edit template"
-              >
-                <Pencil className="w-4 h-4 text-[#7B8B91]" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // TODO: Implement archive
-                }}
-                className="font-poppins text-sm text-[#7B8B91] hover:text-[#000000] transition-colors cursor-pointer"
-              >
-                Archive
-              </button>
+            <div onClick={(e) => e.stopPropagation()}>
+              <TableActionsDropdown actions={actions} />
             </div>
           );
         },
-        meta: { minSize: 150, maxSize: 200, size: 180 } as ColumnMeta,
+        meta: {
+          minSize: 60,
+          maxSize: 80,
+          size: 70,
+          align: "right",
+        } as ColumnMeta,
       },
     ],
     [router, handleStatusChange, updatingStatus],
@@ -418,6 +438,23 @@ export default function ContractTemplatesTable({ templates }: Props) {
         </div>
       </div>
       {templatesData.length > 0 && <Pagination table={table} />}
+
+      {/* Edit Template Dialog */}
+      {editingTemplate && (
+        <EditContractTemplateDialog
+          open={!!editingTemplate}
+          onClose={() => setEditingTemplate(null)}
+          template={{
+            id: editingTemplate.id,
+            displayName: editingTemplate.displayName,
+            slug: editingTemplate.slug,
+          }}
+          onSuccess={() => {
+            router.refresh();
+            setEditingTemplate(null);
+          }}
+        />
+      )}
     </>
   );
 }

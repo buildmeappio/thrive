@@ -10,6 +10,7 @@ export type ContractListItem = {
   status: ContractStatus;
   examinerName: string | null;
   templateName: string | null;
+  reviewedAt: string | null;
   updatedAt: string;
 };
 
@@ -25,6 +26,7 @@ export type ContractData = {
   fieldValues: unknown;
   sentAt: string | null;
   signedAt: string | null;
+  reviewedAt: string | null;
   createdAt: string;
   updatedAt: string;
   template: {
