@@ -31,6 +31,7 @@ model Contract {
   createdBy            String         @map("created_by") @db.Uuid
   createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt            DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
+  reviewedAt           DateTime?      @map("reviewed_at") @db.Timestamptz()
 
   examinerProfile ExaminerProfile?     @relation("ExaminerContracts", fields: [examinerProfileId], references: [id], onDelete: Cascade)
   application     ExaminerApplication? @relation("ApplicationContracts", fields: [applicationId], references: [id], onDelete: Cascade)
