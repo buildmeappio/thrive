@@ -65,6 +65,25 @@ const SettingsPage = async () => {
   // Fetch contract separately to handle both examinerProfileId and applicationId
   const contract = await getContractByExaminerProfileIdService(profileData.id);
 
+  // Fetch contract with fee structure and variables if contract exists
+  let contractWithFeeStructure = null;
+  if (contract) {
+    contractWithFeeStructure = await prisma.contract.findUnique({
+      where: { id: contract.id },
+      include: {
+        feeStructure: {
+          include: {
+            variables: {
+              orderBy: {
+                sortOrder: "asc",
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   const availability =
     availabilityResult.success && "data" in availabilityResult
       ? availabilityResult.data
@@ -122,15 +141,43 @@ const SettingsPage = async () => {
     emailMarketing: profileData.emailMarketing ?? false,
   };
 
-  // Prepare fee structure data
-  const feeStructureData = feeStructure
-    ? {
-        IMEFee: feeStructure.IMEFee?.toString() || null,
-        recordReviewFee: feeStructure.recordReviewFee?.toString() || null,
-        hourlyRate: feeStructure.hourlyRate?.toString() || null,
-        cancellationFee: feeStructure.cancellationFee?.toString() || null,
-      }
-    : null;
+  // Prepare fee structure data - prioritize contract fee structure with variables
+  let feeStructureData = null;
+
+  if (contractWithFeeStructure?.feeStructure) {
+    // Use contract fee structure with variables (new format)
+    const contractData = contractWithFeeStructure.data as any;
+    const fees = contractData?.fees || {};
+
+    feeStructureData = {
+      variables: contractWithFeeStructure.feeStructure.variables.map(
+        (variable: any) => {
+          const value =
+            fees[variable.key] !== undefined
+              ? fees[variable.key]
+              : variable.defaultValue;
+
+          return {
+            key: variable.key,
+            label: variable.label,
+            value: value,
+            type: variable.type,
+            currency: variable.currency,
+            decimals: variable.decimals,
+            unit: variable.unit,
+          };
+        },
+      ),
+    };
+  } else if (feeStructure) {
+    // Fallback to legacy fee structure format
+    feeStructureData = {
+      IMEFee: feeStructure.IMEFee?.toString() || null,
+      recordReviewFee: feeStructure.recordReviewFee?.toString() || null,
+      hourlyRate: feeStructure.hourlyRate?.toString() || null,
+      cancellationFee: feeStructure.cancellationFee?.toString() || null,
+    };
+  }
 
   // Prepare contract data and fetch HTML if contract exists
   let contractData = null;

@@ -1,6 +1,7 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import login from "@/domains/auth/server/handlers/login";
 import ErrorMessages from "@/constants/ErrorMessages";
+import { formatFullName } from "@/utils/text";
 
 export const credentials = CredentialsProvider({
   name: "credentials",
@@ -16,7 +17,7 @@ export const credentials = CredentialsProvider({
     return {
       id: u.id,
       email: u.email,
-      name: `${u.firstName} ${u.lastName}`,
+      name: formatFullName(u.firstName, u.lastName),
       image: u.profilePhotoId,
       roleName: u.roleName,
       accountId: u.accountId,

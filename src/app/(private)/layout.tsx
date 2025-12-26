@@ -12,6 +12,7 @@ import {
   dashboardTourSteps,
   getTourProgressAction,
 } from "@/domains/tour";
+import { formatFullName } from "@/utils/text";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -43,7 +44,7 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
 
   // Get user's full name from database
   const userName = examinerProfile
-    ? `${examinerProfile.firstName} ${examinerProfile.lastName}`
+    ? formatFullName(examinerProfile.firstName, examinerProfile.lastName)
     : user.name || "User";
 
   // Fetch tour progress for dashboard tour (only if examinerProfile exists)
