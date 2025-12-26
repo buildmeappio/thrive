@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FeeStructureStatus } from "@prisma/client";
 import { Plus, Funnel } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
 import FeeStructuresTable from "./FeeStructuresTable";
+import CreateFeeStructureDialog from "./CreateFeeStructureDialog";
 import type { FeeStructureListItem } from "../types/feeStructure.types";
 
 type Props = {
@@ -44,9 +45,22 @@ export default function FeeStructuresPageContent({
   initialSearch,
 }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<string>(initialStatus ?? "ALL");
   const [search, setSearch] = useState(initialSearch ?? "");
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  // Open dialog if URL has ?new=true
+  useEffect(() => {
+    if (searchParams.get("new") === "true") {
+      setIsCreateDialogOpen(true);
+      // Remove the query param without navigation
+      const url = new URL(window.location.href);
+      url.searchParams.delete("new");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+  }, [searchParams]);
 
   const queryString = useMemo(() => {
     return buildQuery({ status, search });
@@ -106,7 +120,7 @@ export default function FeeStructuresPageContent({
         </div>
 
         <Button
-          onClick={() => router.push("/dashboard/fee-structures/new")}
+          onClick={() => setIsCreateDialogOpen(true)}
           className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white rounded-full px-4 py-2 hover:opacity-90 transition-opacity font-semibold"
         >
           <Plus className="w-4 h-4" />
@@ -247,6 +261,12 @@ export default function FeeStructuresPageContent({
         {/* Table Card */}
         <FeeStructuresTable feeStructures={feeStructures} />
       </div>
+
+      {/* Create Fee Structure Dialog */}
+      <CreateFeeStructureDialog
+        open={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+      />
     </div>
   );
 }
