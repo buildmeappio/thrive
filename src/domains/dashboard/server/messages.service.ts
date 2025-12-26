@@ -4,8 +4,6 @@ import {
   DashboardMessage,
   MessagesFilters,
   MessagesResponse,
-  MessageType,
-  MessagePriority,
 } from "../types/messages.types";
 import { addDays } from "date-fns";
 import { formatFullName } from "@/utils/text";

@@ -6,7 +6,6 @@ import prisma from "@/lib/db";
 import { sendMail } from "@/lib/email";
 import { signAccountToken, signContractToken } from "@/lib/jwt";
 import { Roles } from "@/domains/auth/constants/roles";
-import { HttpError } from "@/utils/httpError";
 import logger from "@/utils/logger";
 import {
   generateExaminerContractSentEmail,

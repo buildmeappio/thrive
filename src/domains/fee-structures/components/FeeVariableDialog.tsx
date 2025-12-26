@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FeeVariableType } from "@prisma/client";
 import {
   Dialog,
   DialogContent,
@@ -57,7 +56,6 @@ export default function FeeVariableDialog({
 
   const isEditing = !!initialData;
   // Always use MONEY type for new variables
-  const type: FeeVariableType = initialData?.type || "MONEY";
 
   // Reset form when dialog opens/closes or initialData changes
   useEffect(() => {

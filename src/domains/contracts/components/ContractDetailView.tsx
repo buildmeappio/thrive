@@ -20,6 +20,7 @@ export default function ContractDetailView({ contract }: Props) {
 
   useEffect(() => {
     loadPreview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contract.id]);
 
   const loadPreview = async () => {

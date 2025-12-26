@@ -4,15 +4,12 @@ import {
   DashboardUpdate,
   UpdatesFilters,
   UpdatesResponse,
-  UpdateType,
 } from "../types/updates.types";
 import { formatFullName } from "@/utils/text";
 import {
   startOfDay,
   endOfDay,
   subDays,
-  startOfWeek,
-  endOfWeek,
 } from "date-fns";
 
 class UpdatesService {

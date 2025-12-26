@@ -3,7 +3,6 @@
 import examinerService from "../server/examiner.service";
 import { ExaminerDto } from "../server/dto/examiner.dto";
 import logger from "@/utils/logger";
-import { HttpError } from "@/utils/httpError";
 import { ExaminerStatus, UserStatus } from "@prisma/client";
 
 export const toggleExaminerStatus = async (

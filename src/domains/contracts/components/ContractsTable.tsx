@@ -192,6 +192,7 @@ export default function ContractsTable({ contracts }: Props) {
         } as ColumnMeta,
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [router],
   );
 

@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { FeeStructureStatus } from "@prisma/client";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import prisma from "@/lib/db";
-import { HttpError } from "@/utils/httpError";
 import { ActionResult } from "../types/feeStructure.types";
 
 export const updateFeeStructureStatusAction = async (

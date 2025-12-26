@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import { listFeeStructures } from "../server/feeStructure.service";
 import { listFeeStructuresSchema } from "../schemas/feeStructure.schema";

@@ -26,7 +26,6 @@ import {
   markContractSigned,
   getExaminerContract,
 } from "../actions";
-import { sendContractAction } from "@/domains/contracts/actions";
 import { Check, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";

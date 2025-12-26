@@ -19,6 +19,7 @@ import {
   ListOrdered,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logger from "@/utils/logger";
 
 type Props = {
   content: string;
@@ -66,7 +67,7 @@ export default function RichTextEditor({
     () =>
       (html: string): string => {
         // First, remove any existing variable highlight spans
-        let cleanedHtml = html.replace(
+        const cleanedHtml = html.replace(
           /<span class="variable-(valid|invalid)[^"]*" data-variable="[^"]*">(.*?)<\/span>/g,
           "$2",
         );
@@ -145,7 +146,7 @@ export default function RichTextEditor({
             try {
               editor.commands.setTextSelection({ from, to });
             } catch (e) {
-              // Selection might be invalid, ignore
+              logger.error("Error restoring selection", e);
             }
           }
         }, 10);

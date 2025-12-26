@@ -708,10 +708,6 @@ export default function ContractTemplateEditContent({ template }: Props) {
                             {editableSystemVars.length > 0 && (
                               <div className="space-y-2 mb-3">
                                 {editableSystemVars.map((variable) => {
-                                  const keyPart = variable.key.replace(
-                                    `${group.namespace}.`,
-                                    "",
-                                  );
                                   return (
                                     <div
                                       key={variable.id}

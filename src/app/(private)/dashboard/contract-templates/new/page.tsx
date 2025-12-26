@@ -6,7 +6,6 @@ import { DashboardShell } from "@/layouts/dashboard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { createContractTemplateAction } from "@/domains/contract-templates/actions";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2 } from "lucide-react";

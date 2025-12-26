@@ -204,7 +204,6 @@ export function validateFeeStructureCompatibility(
   const feeStructureKeys = new Set(feeStructureVariables.map((v) => v.key));
 
   const missingVariables: string[] = [];
-  const extraVariables: string[] = [];
 
   // Check for missing required variables
   for (const requiredKey of requiredVariables) {

@@ -184,7 +184,6 @@ export const createContractTemplate = async (
   });
 
   // Create initial draft version
-  const placeholders = parsePlaceholders("");
   await prisma.templateVersion.create({
     data: {
       templateId: template.id,
@@ -327,7 +326,6 @@ export const saveTemplateDraftContent = async (
 export const publishTemplateVersion = async (
   templateId: string,
   changeNotes: string | undefined,
-  createdBy: string,
 ): Promise<{ id: string; version: number }> => {
   const template = await prisma.documentTemplate.findUnique({
     where: { id: templateId },

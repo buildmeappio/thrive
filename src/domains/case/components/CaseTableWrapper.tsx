@@ -7,7 +7,6 @@ import {
   getPaginationRowModel,
   flexRender,
   type ColumnDef,
-  type Row,
 } from "@tanstack/react-table";
 import {
   Table,

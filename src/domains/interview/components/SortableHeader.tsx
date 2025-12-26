@@ -1,6 +1,4 @@
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import type { Column } from "@tanstack/react-table";
-import type { InterviewData } from "../types/InterviewData";
 import type { SortableHeaderProps } from "../types/table.types";
 
 const SortableHeader = ({ column, children }: SortableHeaderProps) => {

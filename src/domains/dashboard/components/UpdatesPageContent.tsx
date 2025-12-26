@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   Bell,
   Cross,
-  Funnel,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -124,16 +123,6 @@ export default function UpdatesPageContent({ initialData }: Props) {
       default:
         return type;
     }
-  };
-
-  const formatText = (str: string): string => {
-    if (!str) return str;
-    return str
-      .replace(/[-_]/g, " ")
-      .split(" ")
-      .filter((word) => word.length > 0)
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
   };
 
   const typeOptions = [
