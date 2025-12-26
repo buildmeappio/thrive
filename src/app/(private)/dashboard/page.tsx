@@ -12,6 +12,7 @@ import { getDashboardBookingsAction } from "@/domains/dashboard/server/actions/g
 import { getRecentUpdatesAction } from "@/domains/dashboard/server/actions/getRecentUpdates";
 import { Header } from "@/domains/setting";
 import { URLS } from "@/constants/route";
+import { formatFullName } from "@/utils/text";
 
 export const metadata: Metadata = {
   title: "Dashboard | Thrive - Examiner",
@@ -40,7 +41,10 @@ const DashboardPage = async () => {
   const examinerProfile = profileResult.data;
 
   // Get full name from database
-  const fullName = `${examinerProfile.firstName} ${examinerProfile.lastName}`;
+  const fullName = formatFullName(
+    examinerProfile.firstName,
+    examinerProfile.lastName,
+  );
 
   // Fetch dashboard bookings
   const bookingsResult = await getDashboardBookingsAction({

@@ -2,11 +2,24 @@ export interface ChangePasswordSectionProps {
   userId: string;
 }
 
+export interface FeeStructureVariable {
+  key: string;
+  label: string;
+  value: unknown;
+  type: string;
+  currency?: string | null;
+  decimals?: number | null;
+  unit?: string | null;
+}
+
 export interface FeeStructureData {
+  // Legacy format
   IMEFee?: number | string | null;
   recordReviewFee?: number | string | null;
   hourlyRate?: number | string | null;
   cancellationFee?: number | string | null;
+  // New format with variables
+  variables?: FeeStructureVariable[];
 }
 
 export interface ContractData {
