@@ -426,6 +426,7 @@ const ContractSigningView = ({
         sigName,
         htmlContent,
         pdfBase64,
+        signatureImage || undefined, // Pass signature image as data URL
         undefined,
         userAgent,
       );
