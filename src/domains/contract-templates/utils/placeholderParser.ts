@@ -136,7 +136,7 @@ export function replacePlaceholders(
         signatureUrl.startsWith("http://") ||
         signatureUrl.startsWith("https://")
       ) {
-        replacement = `<img src="${signatureUrl}" alt="Examiner Signature" style="max-width: 240px; height: auto; display: inline-block;" />`;
+        replacement = `<img src="${signatureUrl}" alt="Examiner Signature" data-signature="examiner" style="max-width: 240px; height: auto; display: inline-block;" />`;
       } else {
         replacement = signatureUrl;
       }

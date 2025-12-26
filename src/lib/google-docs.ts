@@ -1,6 +1,8 @@
 import { google } from "googleapis";
+import { Readable } from "stream";
 import { ENV } from "@/constants/variables";
 import logger from "@/utils/logger";
+import HTMLtoDOCX from "html-to-docx";
 
 /**
  * Google Docs API service for contract generation
@@ -186,7 +188,16 @@ export async function exportAsHTML(documentId: string): Promise<string> {
       throw new Error("Failed to export HTML: No data returned");
     }
 
-    return response.data as string;
+    const htmlContent = response.data as string;
+    logger.log(`📤 HTML export from Google Docs (${htmlContent.length} characters)`);
+    
+    // Log a preview of the HTML content
+    const preview = htmlContent.length > 1000
+      ? `${htmlContent.substring(0, 500)}...\n...${htmlContent.substring(htmlContent.length - 500)}`
+      : htmlContent;
+    logger.log(`📄 Raw HTML content:\n${preview}`);
+
+    return htmlContent;
   } catch (error) {
     logger.error("Error exporting HTML:", error);
     if (error instanceof Error) {
@@ -429,6 +440,11 @@ export async function generateContractFromTemplate(
     logger.log(
       `✅ HTML exported successfully (${htmlContent.length} characters)`,
     );
+    // Log first 500 characters and last 200 characters of HTML for debugging
+    const preview = htmlContent.length > 700
+      ? `${htmlContent.substring(0, 500)}...\n...${htmlContent.substring(htmlContent.length - 200)}`
+      : htmlContent;
+    logger.log(`📄 Exported HTML preview:\n${preview}`);
 
     // Optionally delete the temporary document (or leave it for audit)
     // For now, we'll leave it - can be cleaned up later if needed
@@ -531,5 +547,111 @@ export async function createContractDocument(
       logger.error("Failed to cleanup document:", cleanupError);
     }
     throw error;
+  }
+}
+
+/**
+ * Create a new blank Google Doc
+ * @param title - Title for the new document
+ * @param folderId - Optional Drive folder ID to create the document in
+ * @returns The document ID of the created document
+ */
+export async function createGoogleDoc(
+  title: string,
+  folderId?: string,
+): Promise<string> {
+  try {
+    const auth = getGoogleDocsAuth();
+    const docs = google.docs({ version: "v1", auth });
+    const drive = google.drive({ version: "v3", auth });
+
+    // Create a new blank document
+    const docResponse = await docs.documents.create({
+      requestBody: {
+        title,
+      },
+    });
+
+    const documentId = docResponse.data.documentId;
+
+    if (!documentId) {
+      throw new Error("Failed to create document: No document ID returned");
+    }
+
+    // If folderId is specified, move the document to that folder
+    if (folderId) {
+      // Get current parent(s)
+      const fileResponse = await drive.files.get({
+        fileId: documentId,
+        fields: "parents",
+      });
+
+      const previousParents = fileResponse.data.parents?.join(",") || "";
+
+      // Move to the specified folder
+      await drive.files.update({
+        fileId: documentId,
+        addParents: folderId,
+        removeParents: previousParents,
+        fields: "id, parents",
+      });
+    }
+
+    logger.log(`✅ Created new Google Doc: ${title} (ID: ${documentId})`);
+    return documentId;
+  } catch (error) {
+    logger.error("Error creating Google Doc:", error);
+    if (error instanceof Error) {
+      if (
+        error.message.includes("insufficient permissions") ||
+        (error as any).code === 403
+      ) {
+        throw new Error(
+          `Insufficient permissions to create document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
+        );
+      }
+    }
+    throw new Error(
+      `Failed to create Google Doc: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
+}
+
+
+/**
+ * Get the URL for opening a Google Doc in the browser
+ * @param documentId - The ID of the Google Doc
+ * @returns URL to open the document
+ */
+export function getGoogleDocUrl(documentId: string): string {
+  return `https://docs.google.com/document/d/${documentId}/edit`;
+}
+
+/**
+ * Delete a Google Doc
+ * @param documentId - The ID of the Google Doc to delete
+ */
+export async function deleteGoogleDoc(documentId: string): Promise<void> {
+  try {
+    const auth = getGoogleDocsAuth();
+    const drive = google.drive({ version: "v3", auth });
+
+    await drive.files.delete({ fileId: documentId });
+    logger.log(`🗑️ Deleted Google Doc: ${documentId}`);
+  } catch (error) {
+    logger.error("Error deleting Google Doc:", error);
+    if (error instanceof Error) {
+      if (
+        error.message.includes("File not found") ||
+        (error as any).code === 404
+      ) {
+        // Document doesn't exist, that's fine
+        logger.warn(`Document ${documentId} not found, may have been already deleted`);
+        return;
+      }
+    }
+    throw new Error(
+      `Failed to delete Google Doc: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 }

@@ -1,3 +1,5 @@
+import type { FeeFormValues, FeeVariable } from "../components/FeeStructureFormStep";
+
 export type CreateContractModalProps = {
   open: boolean;
   onClose: () => void;
@@ -12,13 +14,29 @@ export type CreateContractModalProps = {
 
 export type UseCreateContractModalOptions = CreateContractModalProps;
 
+/**
+ * Step definitions:
+ * 1 - Select Template & Fee Structure
+ * 2 - Fill Fee Structure Form
+ * 3 - Preview Contract
+ * 4 - Contract Sent (Success)
+ */
+export type ContractModalStep = 1 | 2 | 3 | 4;
+
+export type FeeStructureFullData = {
+  id: string;
+  name: string;
+  description: string | null;
+  variables: FeeVariable[];
+};
+
 export type UseCreateContractModalReturn = {
   // Props
   open: boolean;
   onClose: () => void;
 
   // State
-  step: 1 | 2 | 3;
+  step: ContractModalStep;
   templates: Array<{
     id: string;
     displayName: string;
@@ -31,6 +49,7 @@ export type UseCreateContractModalReturn = {
   isLoading: boolean;
   isLoadingData: boolean;
   isLoadingTemplate: boolean;
+  isLoadingFeeStructure: boolean;
   previewHtml: string;
   contractId: string | null;
   selectedTemplate:
@@ -42,13 +61,20 @@ export type UseCreateContractModalReturn = {
       }
     | undefined;
 
+  // Fee Structure Form State
+  feeStructureData: FeeStructureFullData | null;
+  feeFormValues: FeeFormValues;
+  requiresFeeStructure: boolean;
+
   // Actions
   setSelectedTemplateId: (id: string) => void;
   setSelectedFeeStructureId: (id: string) => void;
-  setStep: (step: 1 | 2 | 3) => void;
-  handleCreateAndPreview: () => Promise<void>;
+  setStep: (step: ContractModalStep) => void;
+  setFeeFormValues: (values: FeeFormValues) => void;
+  handleContinueToFeeForm: () => void;
+  handleFeeFormSubmit: () => Promise<void>;
   handleSendContract: () => Promise<void>;
-  panelRef: React.RefObject<HTMLDivElement>;
+  panelRef: React.RefObject<HTMLDivElement | null>;
   titleId: string;
   onBackdrop: (e: React.MouseEvent) => void;
 };

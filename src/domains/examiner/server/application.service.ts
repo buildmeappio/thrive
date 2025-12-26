@@ -1,9 +1,14 @@
 import prisma from "@/lib/db";
 import { HttpError } from "@/utils/httpError";
 import logger from "@/utils/logger";
-import { ExaminerStatus, SecureLinkStatus } from "@prisma/client";
+import {
+  ExaminerStatus,
+  SecureLinkStatus,
+  ContractStatus,
+  Prisma,
+} from "@prisma/client";
 
-const includeRelations = {
+const includeRelations: Prisma.ExaminerApplicationInclude = {
   address: true,
   resumeDocument: true,
   ndaDocument: true,
@@ -13,6 +18,29 @@ const includeRelations = {
     where: {
       deletedAt: null,
     },
+  },
+  contracts: {
+    where: {
+      status: {
+        in: [ContractStatus.DRAFT, ContractStatus.SENT, ContractStatus.SIGNED],
+      },
+    },
+    include: {
+      feeStructure: {
+        include: {
+          variables: {
+            orderBy: [
+              { sortOrder: Prisma.SortOrder.asc },
+              { createdAt: Prisma.SortOrder.asc },
+            ],
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: Prisma.SortOrder.desc,
+    },
+    take: 1, // Get the most recent contract
   },
 };
 

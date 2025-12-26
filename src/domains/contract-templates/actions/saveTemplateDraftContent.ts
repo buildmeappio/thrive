@@ -11,7 +11,7 @@ import {
 
 export const saveTemplateDraftContentAction = async (
   input: SaveTemplateDraftContentInput,
-): Promise<ActionResult<{ id: string }>> => {
+): Promise<ActionResult<{ id: string; googleDocId?: string }>> => {
   try {
     const user = await getCurrentUser();
     if (!user) {

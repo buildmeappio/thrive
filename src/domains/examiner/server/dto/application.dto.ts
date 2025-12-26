@@ -13,12 +13,49 @@ type ApplicationWithRelations = ExaminerApplication & {
   insuranceDocument: Documents | null;
   redactedIMEReportDocument: Documents | null;
   interviewSlots: InterviewSlot[];
+  contracts?: Array<any>; // Optional contracts relation
 };
 
 export class ApplicationDto {
   static toApplicationData(
     application: ApplicationWithRelations,
   ): ExaminerData {
+    // Extract dynamic fee structure from contract if available
+    let contractFeeStructure: ExaminerData["contractFeeStructure"] = undefined;
+    if (application.contracts && application.contracts.length > 0) {
+      const contract = application.contracts[0];
+      if (
+        contract.feeStructure &&
+        contract.data &&
+        contract.feeStructure.variables &&
+        Array.isArray(contract.feeStructure.variables) &&
+        contract.feeStructure.variables.length > 0
+      ) {
+        const contractData = contract.data as any;
+        const fees = contractData.fees || {};
+        
+        contractFeeStructure = {
+          feeStructureId: contract.feeStructure.id,
+          feeStructureName: contract.feeStructure.name,
+          variables: contract.feeStructure.variables.map((variable: any) => {
+            const value = fees[variable.key] !== undefined 
+              ? fees[variable.key] 
+              : variable.defaultValue;
+            
+            return {
+              key: variable.key,
+              label: variable.label,
+              value: value,
+              type: variable.type,
+              currency: variable.currency,
+              decimals: variable.decimals,
+              unit: variable.unit,
+            };
+          }),
+        };
+      }
+    }
+
     return {
       id: application.id,
       name: `${application.firstName || ""} ${application.lastName || ""}`.trim(),
@@ -88,6 +125,7 @@ export class ApplicationDto {
               paymentTerms: application.paymentTerms,
             }
           : undefined,
+      contractFeeStructure,
     };
   }
 

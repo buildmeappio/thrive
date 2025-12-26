@@ -182,10 +182,78 @@ export default function ContractDetailView({ contract }: Props) {
             </div>
           </div>
         ) : previewHtml ? (
-          <div
-            className="prose max-w-none border rounded-lg p-6 bg-white"
-            dangerouslySetInnerHTML={{ __html: previewHtml }}
-          />
+          <div className="border rounded-lg p-6 bg-white">
+            <div
+              className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none min-h-[500px] p-4 font-poppins"
+              dangerouslySetInnerHTML={{ __html: previewHtml }}
+            />
+            {/* TipTap/ProseMirror styles for proper rendering - matching editor exactly */}
+            <style jsx global>{`
+              .prose table {
+                border-collapse: collapse;
+                margin: 1rem 0;
+                overflow: hidden;
+                width: 100%;
+              }
+              .prose table td,
+              .prose table th {
+                border: 1px solid #d1d5db;
+                box-sizing: border-box;
+                min-width: 1em;
+                padding: 0.5rem;
+                position: relative;
+                vertical-align: top;
+              }
+              .prose table th {
+                background-color: #f3f4f6;
+                font-weight: 600;
+              }
+              .prose img {
+                max-width: 100%;
+                height: auto;
+                display: inline-block;
+              }
+              .prose ul[data-type="taskList"] {
+                list-style: none;
+                padding: 0;
+              }
+              .prose ul[data-type="taskList"] li {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.5rem;
+              }
+              .prose hr {
+                border: none;
+                border-top: 1px solid #d1d5db;
+                margin: 1rem 0;
+              }
+              .prose blockquote {
+                border-left: 4px solid #d1d5db;
+                padding-left: 1rem;
+                margin: 1rem 0;
+                color: #6b7280;
+                font-style: italic;
+              }
+              .prose pre {
+                background: #f3f4f6;
+                border-radius: 0.5rem;
+                padding: 1rem;
+                margin: 1rem 0;
+                overflow-x: auto;
+              }
+              .prose code {
+                background: #f3f4f6;
+                padding: 0.125rem 0.25rem;
+                border-radius: 0.25rem;
+                font-size: 0.875em;
+                font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+              }
+              /* Ensure inline styles from TipTap take precedence over prose styles */
+              .prose [style] {
+                /* Inline styles already have highest specificity, but ensure they're not overridden */
+              }
+            `}</style>
+          </div>
         ) : (
           <div className="flex items-center justify-center py-12">
             <div className="text-[#7B8B91] font-poppins">

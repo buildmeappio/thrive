@@ -6,6 +6,7 @@ import { Plus, Funnel } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ContractTemplateListItem } from "../types/contractTemplate.types";
 import ContractTemplatesTable from "./ContractTemplatesTable";
+import CreateContractTemplateDialog from "./CreateContractTemplateDialog";
 
 type Props = {
   templates: ContractTemplateListItem[];
@@ -43,6 +44,7 @@ export default function ContractTemplatesPageContent({
   const [status, setStatus] = useState<string>(initialStatus ?? "ALL");
   const [search, setSearch] = useState(initialSearch ?? "");
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const queryString = useMemo(() => {
     return buildQuery({ status, search });
@@ -95,10 +97,10 @@ export default function ContractTemplatesPageContent({
           </p>
         </div>
         <Button
-          onClick={() => router.push("/dashboard/contract-templates/new")}
-          className="rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 font-poppins text-sm font-medium px-4 sm:px-6 py-2 sm:py-3"
+          onClick={() => setIsCreateDialogOpen(true)}
+          className="rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 font-poppins text-sm font-medium px-5 sm:px-7 py-2.5 sm:py-3 shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
           <span className="hidden sm:inline">New Template</span>
           <span className="sm:hidden">New</span>
         </Button>
@@ -159,11 +161,10 @@ export default function ContractTemplatesPageContent({
                     activeDropdown === "status" ? null : "status",
                   )
                 }
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${
-                  status !== "ALL"
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-white border rounded-full text-xs sm:text-sm font-poppins transition-colors whitespace-nowrap ${status !== "ALL"
                     ? "border-[#00A8FF] text-[#00A8FF]"
                     : "border-gray-200 text-gray-700 hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 <Funnel
                   className="w-3.5 h-3.5 sm:w-4 sm:h-4"
@@ -195,11 +196,10 @@ export default function ContractTemplatesPageContent({
                           setStatus(option.value);
                           setActiveDropdown(null);
                         }}
-                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${
-                          status === option.value
+                        className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-left text-xs sm:text-sm hover:bg-gray-50 ${status === option.value
                             ? "bg-gray-100 text-[#00A8FF]"
                             : ""
-                        }`}
+                          }`}
                       >
                         {option.label}
                       </button>
@@ -237,6 +237,12 @@ export default function ContractTemplatesPageContent({
         {/* Table Card */}
         <ContractTemplatesTable templates={templates} />
       </div>
+
+      {/* Create Contract Template Dialog */}
+      <CreateContractTemplateDialog
+        open={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+      />
     </div>
   );
 }

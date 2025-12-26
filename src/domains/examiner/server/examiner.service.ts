@@ -1,5 +1,5 @@
 import prisma from "@/lib/db";
-import { ExaminerStatus, UserStatus } from "@prisma/client";
+import { ExaminerStatus, UserStatus, ContractStatus, Prisma } from "@prisma/client";
 
 const includeRelations = {
   account: {
@@ -22,6 +22,29 @@ const includeRelations = {
     select: {
       status: true,
     },
+  },
+  contracts: {
+    where: {
+      status: {
+        in: [ContractStatus.DRAFT, ContractStatus.SENT, ContractStatus.SIGNED],
+      },
+    },
+    include: {
+      feeStructure: {
+        include: {
+          variables: {
+            orderBy: [
+              { sortOrder: Prisma.SortOrder.asc },
+              { createdAt: Prisma.SortOrder.asc },
+            ],
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: Prisma.SortOrder.desc,
+    },
+    take: 1, // Get the most recent contract
   },
 };
 
