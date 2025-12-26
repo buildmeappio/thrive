@@ -120,7 +120,7 @@ const ContractSigningView = ({
       const findSafeBreakPoint = (
         startY: number,
         endY: number,
-        canvas: HTMLCanvasElement
+        canvas: HTMLCanvasElement,
       ): number => {
         const ctx = canvas.getContext("2d");
         if (!ctx) return endY;
@@ -129,7 +129,7 @@ const ContractSigningView = ({
           0,
           startY,
           canvas.width,
-          endY - startY
+          endY - startY,
         );
         const data = imageData.data;
         const threshold = 245; // Consider pixels lighter than this as "white"
@@ -201,7 +201,7 @@ const ContractSigningView = ({
       const totalPages = Math.ceil(imgHeight / contentHeight);
 
       console.log(
-        `Generating PDF: ${totalPages} pages, image height: ${imgHeight}mm, content height per page: ${contentHeight}mm`
+        `Generating PDF: ${totalPages} pages, image height: ${imgHeight}mm, content height per page: ${contentHeight}mm`,
       );
 
       // Add content to PDF, splitting across pages at safe break points
@@ -214,14 +214,14 @@ const ContractSigningView = ({
         // Calculate the ideal end position for this page
         const idealEndY = Math.min(
           currentY + pageHeightInPixels,
-          canvas.height
+          canvas.height,
         );
 
         // Find a safe break point near the ideal end position
         // Look for break points within the last 30% of the page (but at least 100px from start)
         const searchStartY = Math.max(
           currentY + 100, // Ensure we have some content before looking for breaks
-          idealEndY - pageHeightInPixels * 0.3
+          idealEndY - pageHeightInPixels * 0.3,
         );
         const safeBreakY = findSafeBreakPoint(searchStartY, idealEndY, canvas);
 
@@ -251,7 +251,7 @@ const ContractSigningView = ({
           // If the safe break is too close to start, use ideal end
           const fallbackEndY = Math.min(
             currentY + pageHeightInPixels,
-            canvas.height
+            canvas.height,
           );
           const fallbackHeight = fallbackEndY - sourceY;
 
@@ -279,7 +279,7 @@ const ContractSigningView = ({
             0,
             0,
             pageCanvas.width,
-            pageCanvas.height
+            pageCanvas.height,
           );
 
           const pageImgData = pageCanvas.toDataURL("image/jpeg", 0.92);
@@ -291,7 +291,7 @@ const ContractSigningView = ({
             margin,
             margin,
             imgWidth,
-            pageImgHeight
+            pageImgHeight,
           );
 
           currentY = fallbackEndY;
@@ -322,7 +322,7 @@ const ContractSigningView = ({
           0,
           0, // Destination x, y
           pageCanvas.width,
-          pageCanvas.height // Destination width, height
+          pageCanvas.height, // Destination width, height
         );
 
         // Convert page canvas to image with compression
@@ -340,7 +340,7 @@ const ContractSigningView = ({
           margin,
           margin,
           imgWidth,
-          pageImgHeight
+          pageImgHeight,
         );
 
         // Update currentY for next page
@@ -355,12 +355,12 @@ const ContractSigningView = ({
       const pdfSizeMB = pdfSizeBytes / (1024 * 1024);
 
       console.log(
-        `PDF generated: ${pdfSizeMB.toFixed(2)} MB, ${totalPages} pages`
+        `PDF generated: ${pdfSizeMB.toFixed(2)} MB, ${totalPages} pages`,
       );
 
       if (pdfSizeMB > 24) {
         console.warn(
-          `⚠️ PDF size (${pdfSizeMB.toFixed(2)} MB) is close to Gmail's 25MB limit`
+          `⚠️ PDF size (${pdfSizeMB.toFixed(2)} MB) is close to Gmail's 25MB limit`,
         );
       }
 
@@ -428,7 +428,7 @@ const ContractSigningView = ({
         pdfBase64,
         signatureImage || undefined, // Pass signature image as data URL
         undefined,
-        userAgent
+        userAgent,
       );
 
       if (!result.success) {
@@ -442,7 +442,7 @@ const ContractSigningView = ({
           examinerProfileId,
           examinerEmail,
           contractId,
-          pdfBase64 // Pass base64 string, server will convert to Buffer
+          pdfBase64, // Pass base64 string, server will convert to Buffer
         );
       } catch (notificationError) {
         console.warn("Failed to send notification emails:", notificationError);
@@ -477,7 +477,7 @@ const ContractSigningView = ({
       const result = await declineContractByExaminer(
         examinerProfileId,
         examinerEmail,
-        declineReason
+        declineReason,
       );
 
       if (!result.success) {
@@ -595,7 +595,7 @@ const ContractSigningView = ({
 
     const updateTargets = (
       selectors: string[],
-      updater: (el: HTMLElement) => void
+      updater: (el: HTMLElement) => void,
     ): boolean => {
       let matched = false;
       selectors.forEach((selector) => {
@@ -636,7 +636,7 @@ const ContractSigningView = ({
     const findSignatureBlock = () => {
       const walker = document.createTreeWalker(
         contractEl,
-        NodeFilter.SHOW_TEXT
+        NodeFilter.SHOW_TEXT,
       );
 
       while (walker.nextNode()) {
@@ -696,7 +696,7 @@ const ContractSigningView = ({
 
       const walker = document.createTreeWalker(
         contractEl,
-        NodeFilter.SHOW_TEXT
+        NodeFilter.SHOW_TEXT,
       );
 
       let foundExaminerSignature = false;
@@ -733,7 +733,7 @@ const ContractSigningView = ({
 
     const ensureDynamicContainer = () => {
       let dynamicContainer = contractEl.querySelector<HTMLElement>(
-        "#contract-dynamic-examiner-signature"
+        "#contract-dynamic-examiner-signature",
       );
 
       if (!dynamicContainer) {
@@ -767,7 +767,7 @@ const ContractSigningView = ({
         } else {
           el.innerHTML = "";
         }
-      }
+      },
     );
 
     const dynamicContainer = hasImageTarget ? null : ensureDynamicContainer();
@@ -781,7 +781,7 @@ const ContractSigningView = ({
     } else if (!hasImageTarget && signatureImage) {
       // Final fallback: append to contract root once (should rarely happen)
       let fallback = contractEl.querySelector<HTMLElement>(
-        "#contract-dynamic-examiner-signature"
+        "#contract-dynamic-examiner-signature",
       );
       if (!fallback) {
         fallback = document.createElement("div");
@@ -796,7 +796,7 @@ const ContractSigningView = ({
       fallback.innerHTML = `<img src="${signatureImage}" alt="Examiner Signature" style="max-width: 240px; height: auto;" />`;
     } else if (!signatureImage) {
       const fallback = contractEl.querySelector<HTMLElement>(
-        "#contract-dynamic-examiner-signature"
+        "#contract-dynamic-examiner-signature",
       );
       fallback?.remove();
     }
@@ -819,7 +819,7 @@ const ContractSigningView = ({
         const underscorePattern = /_{10,}/g;
         const textWithDateReplaced = currentText.replace(
           underscorePattern,
-          formattedDate
+          formattedDate,
         );
 
         // If underscores were replaced, use that text; otherwise append the date
@@ -833,7 +833,7 @@ const ContractSigningView = ({
                 : `Date: ${formattedDate}`;
 
         const dateInput = dateField.querySelector<HTMLElement>(
-          "input, span, div, p"
+          "input, span, div, p",
         );
         if (dateInput) {
           const inputText = dateInput.textContent || "";
@@ -841,7 +841,7 @@ const ContractSigningView = ({
             // Replace underscores in the input text
             const inputWithDateReplaced = inputText.replace(
               underscorePattern,
-              formattedDate
+              formattedDate,
             );
             if (inputWithDateReplaced !== inputText) {
               dateInput.textContent = inputWithDateReplaced;
@@ -853,7 +853,7 @@ const ContractSigningView = ({
           }
         } else {
           const textNodes = Array.from(dateField.childNodes).filter(
-            (node) => node.nodeType === Node.TEXT_NODE
+            (node) => node.nodeType === Node.TEXT_NODE,
           );
           if (textNodes.length > 0) {
             const textNode = textNodes[0] as Text;
@@ -862,7 +862,7 @@ const ContractSigningView = ({
               // Replace underscores in the text node
               const nodeWithDateReplaced = nodeText.replace(
                 underscorePattern,
-                formattedDate
+                formattedDate,
               );
               if (nodeWithDateReplaced !== nodeText) {
                 textNode.textContent = nodeWithDateReplaced;
@@ -889,7 +889,7 @@ const ContractSigningView = ({
       ],
       (el) => {
         el.textContent = sigName || "";
-      }
+      },
     );
 
     updateTargets(
@@ -900,7 +900,7 @@ const ContractSigningView = ({
       ],
       (el) => {
         el.textContent = formattedDate;
-      }
+      },
     );
   }, [
     contractHtml,
@@ -920,14 +920,16 @@ const ContractSigningView = ({
         <div className="max-w-2xl w-full">
           <div
             className="bg-white rounded-[20px] p-8 md:p-12 text-center"
-            style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+            style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+          >
             {/* Declined Icon */}
             <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
               <svg
                 className="w-10 h-10 text-red-600"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -961,14 +963,16 @@ const ContractSigningView = ({
         <div className="max-w-2xl w-full">
           <div
             className="bg-white rounded-[20px] p-8 md:p-12 text-center"
-            style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+            style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+          >
             {/* Success Icon */}
             <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
               <svg
                 className="w-10 h-10 text-green-600"
                 fill="none"
                 stroke="currentColor"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -1008,7 +1012,8 @@ const ContractSigningView = ({
               lineHeight: "1.4",
               boxShadow: "0px 0px 36.35px 0px #00000008",
               height: "calc(100vh - 100px)",
-            }}>
+            }}
+          >
             <div
               id="contract-content"
               className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none font-poppins"
@@ -1118,7 +1123,8 @@ const ContractSigningView = ({
             className="w-full lg:w-96 lg:min-w-[384px] bg-white p-6 md:p-8 rounded-[20px] flex flex-col shrink-0"
             style={{
               boxShadow: "0px 0px 36.35px 0px #00000008",
-            }}>
+            }}
+          >
             <div className="border-b-2 border-[#00A8FF] pb-3 mb-6">
               <h2 className="text-2xl md:text-[24px] font-semibold text-black">
                 Sign Agreement
@@ -1166,7 +1172,8 @@ const ContractSigningView = ({
                 </div>
                 <button
                   onClick={clearSignature}
-                  className="mt-2 text-sm text-[#00A8FF] hover:text-[#0088CC] font-semibold underline transition-colors">
+                  className="mt-2 text-sm text-[#00A8FF] hover:text-[#0088CC] font-semibold underline transition-colors"
+                >
                   Clear Signature
                 </button>
               </div>
@@ -1204,7 +1211,8 @@ const ContractSigningView = ({
                           "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
                       }
                     : {}
-                }>
+                }
+              >
                 {isSigning ? "Processing..." : "Sign Agreement"}
               </button>
 
@@ -1212,7 +1220,8 @@ const ContractSigningView = ({
               <button
                 onClick={() => setShowDeclineModal(true)}
                 disabled={isSigning}
-                className="w-full py-3 px-4 rounded-lg font-semibold text-red-600 text-base transition-all border-2 border-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="w-full py-3 px-4 rounded-lg font-semibold text-red-600 text-base transition-all border-2 border-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Decline Agreement
               </button>
             </div>
@@ -1224,7 +1233,8 @@ const ContractSigningView = ({
           <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center p-4 z-50">
             <div
               className="bg-white rounded-[20px] p-8 max-w-md w-full"
-              style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}>
+              style={{ boxShadow: "0px 0px 36.35px 0px #00000008" }}
+            >
               {/* Modal Header with border */}
               <div className="border-b-2 border-[#00A8FF] pb-3 mb-6">
                 <h3 className="text-2xl font-semibold text-[#140047]">
@@ -1250,7 +1260,8 @@ const ContractSigningView = ({
                     setDeclineReason("");
                   }}
                   disabled={isDeclining}
-                  className="flex-1 py-3 px-4 rounded-[10px] font-semibold text-[#00A8FF] border-2 border-[#00A8FF] bg-white hover:bg-[#F7FCFF] transition-colors disabled:opacity-50">
+                  className="flex-1 py-3 px-4 rounded-[10px] font-semibold text-[#00A8FF] border-2 border-[#00A8FF] bg-white hover:bg-[#F7FCFF] transition-colors disabled:opacity-50"
+                >
                   Cancel
                 </button>
                 <button
@@ -1262,7 +1273,8 @@ const ContractSigningView = ({
                       isDeclining || !declineReason.trim()
                         ? "#9CA3AF"
                         : "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
-                  }}>
+                  }}
+                >
                   {isDeclining ? "Declining..." : "Confirm Decline"}
                 </button>
               </div>
