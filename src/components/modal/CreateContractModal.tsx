@@ -347,6 +347,32 @@ export default function CreateContractModal(props: CreateContractModalProps) {
                       position: relative;
                       vertical-align: top;
                     }
+                    /* Preserve text-align from inline styles - inline styles have highest specificity */
+                    .prose table td[style*="text-align: left"],
+                    .prose table th[style*="text-align: left"] {
+                      text-align: left !important;
+                    }
+                    .prose table td[style*="text-align: center"],
+                    .prose table th[style*="text-align: center"] {
+                      text-align: center !important;
+                    }
+                    .prose table td[style*="text-align: right"],
+                    .prose table th[style*="text-align: right"] {
+                      text-align: right !important;
+                    }
+                    /* Ensure table cells respect alignment attributes */
+                    .prose table td[align="left"],
+                    .prose table th[align="left"] {
+                      text-align: left;
+                    }
+                    .prose table td[align="center"],
+                    .prose table th[align="center"] {
+                      text-align: center;
+                    }
+                    .prose table td[align="right"],
+                    .prose table th[align="right"] {
+                      text-align: right;
+                    }
                     .prose table th {
                       background-color: #f3f4f6;
                       font-weight: 600;

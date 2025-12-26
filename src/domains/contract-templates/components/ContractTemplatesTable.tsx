@@ -123,24 +123,23 @@ export default function ContractTemplatesTable({ templates }: Props) {
           isActive: newStatus,
         });
 
-        if (result.success) {
-          // Update local state optimistically
-          setTemplatesData((prev) =>
-            prev.map((t) =>
-              t.id === templateId ? { ...t, isActive: newStatus } : t,
-            ),
-          );
-          toast.success(
-            `Template ${newStatus ? "activated" : "deactivated"} successfully`,
-          );
-          router.refresh();
-        } else {
-          const errorMessage =
-            "error" in result ? result.error : "Failed to update status";
+        if ("error" in result) {
+          const errorMessage = result.error ?? "Failed to update status";
           toast.error(errorMessage);
           // Revert optimistic update
           setTemplatesData(templates);
+          return;
         }
+        // Update local state optimistically
+        setTemplatesData((prev) =>
+          prev.map((t) =>
+            t.id === templateId ? { ...t, isActive: newStatus } : t,
+          ),
+        );
+        toast.success(
+          `Template ${newStatus ? "activated" : "deactivated"} successfully`,
+        );
+        router.refresh();
       } catch (error) {
         console.error("Error updating template status:", error);
         toast.error("An error occurred while updating status");

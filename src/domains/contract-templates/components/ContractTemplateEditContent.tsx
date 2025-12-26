@@ -120,13 +120,14 @@ export default function ContractTemplateEditContent({ template }: Props) {
       setIsLoadingFeeStructures(true);
       try {
         const result = await listFeeStructuresAction({ status: "ACTIVE" });
-        if (result.success && result.data) {
-          setFeeStructures(result.data);
-        } else {
-          const errorMessage =
-            "error" in result ? result.error : "Failed to load fee structures";
+        if ("error" in result) {
+          const errorMessage = result.error ?? "Failed to load fee structures";
           console.error("Failed to load fee structures:", errorMessage);
           toast.error(errorMessage);
+          return;
+        }
+        if (result.data) {
+          setFeeStructures(result.data);
         }
       } catch (error) {
         console.error("Error loading fee structures:", error);
@@ -146,7 +147,10 @@ export default function ContractTemplateEditContent({ template }: Props) {
         const result = await import("@/domains/custom-variables/actions").then(
           (m) => m.listCustomVariablesAction({ isActive: true }),
         );
-        if (result.success && result.data) {
+        if ("error" in result) {
+          return;
+        }
+        if (result.data) {
           // Only system variables (thrive.*, contract.*, etc.)
           const system = result.data.filter(
             (v) => !v.key.startsWith("custom."),
@@ -168,7 +172,10 @@ export default function ContractTemplateEditContent({ template }: Props) {
       setIsLoadingGoogleDocUrl(true);
       try {
         const result = await getGoogleDocUrlAction({ templateId: template.id });
-        if (result.success && result.data?.url) {
+        if ("error" in result) {
+          return;
+        }
+        if (result.data?.url) {
           setGoogleDocUrl(result.data.url);
         }
       } catch (error) {
@@ -213,41 +220,37 @@ export default function ContractTemplateEditContent({ template }: Props) {
         content: content,
       });
 
-      if (result.success) {
-        // Update Google Doc URL if a new document ID was returned
-        if (result.data?.googleDocId) {
-          const newUrl = `https://docs.google.com/document/d/${result.data.googleDocId}/edit`;
-          setGoogleDocUrl(newUrl);
-        } else {
-          // Reload Google Doc URL from database in case it was updated
-          const urlResult = await getGoogleDocUrlAction({
-            templateId: template.id,
-          });
-          if (urlResult.success && urlResult.data?.url) {
-            setGoogleDocUrl(urlResult.data.url);
-          }
-        }
+      if ("error" in result) {
+        toast.error(result.error ?? "Failed to save template");
+        return;
+      }
 
-        // After saving, publish it immediately to make it the current version
-        const publishResult = await publishTemplateVersionAction({
+      // Update Google Doc URL if a new document ID was returned
+      if (result.data?.googleDocId) {
+        const newUrl = `https://docs.google.com/document/d/${result.data.googleDocId}/edit`;
+        setGoogleDocUrl(newUrl);
+      } else {
+        // Reload Google Doc URL from database in case it was updated
+        const urlResult = await getGoogleDocUrlAction({
           templateId: template.id,
         });
-
-        if (publishResult.success) {
-          toast.success("Template saved successfully");
-          router.refresh();
-        } else {
-          toast.error(
-            "error" in publishResult
-              ? publishResult.error
-              : "Failed to save template",
-          );
+        if (!("error" in urlResult) && urlResult.data?.url) {
+          setGoogleDocUrl(urlResult.data.url);
         }
-      } else {
-        toast.error(
-          "error" in result ? result.error : "Failed to save template",
-        );
       }
+
+      // After saving, publish it immediately to make it the current version
+      const publishResult = await publishTemplateVersionAction({
+        templateId: template.id,
+      });
+
+      if ("error" in publishResult) {
+        toast.error(publishResult.error ?? "Failed to save template");
+        return;
+      }
+
+      toast.success("Template saved successfully");
+      router.refresh();
     } catch (error) {
       console.error("Error saving template:", error);
       toast.error("Failed to save template");
@@ -284,7 +287,13 @@ export default function ContractTemplateEditContent({ template }: Props) {
         templateId: template.id,
       });
 
-      if (result.success && result.data) {
+      if ("error" in result) {
+        toast.error(result.error ?? "Failed to sync from Google Docs");
+        setShowSyncConfirmDialog(false);
+        return;
+      }
+
+      if (result.data) {
         // Update the editor content directly without page refresh
         setContent(result.data.content);
 
@@ -295,12 +304,6 @@ export default function ContractTemplateEditContent({ template }: Props) {
 
         toast.success("Content synced from Google Docs successfully");
         // Close modal on success
-        setShowSyncConfirmDialog(false);
-      } else {
-        toast.error(
-          "error" in result ? result.error : "Failed to sync from Google Docs",
-        );
-        // Close modal on error too
         setShowSyncConfirmDialog(false);
       }
     } catch (error) {
@@ -322,7 +325,10 @@ export default function ContractTemplateEditContent({ template }: Props) {
 
       try {
         const result = await getFeeStructureAction(selectedFeeStructureId);
-        if (result.success && result.data) {
+        if ("error" in result) {
+          return;
+        }
+        if (result.data) {
           setSelectedFeeStructureData(result.data);
         }
       } catch (error) {
@@ -344,19 +350,17 @@ export default function ContractTemplateEditContent({ template }: Props) {
         id: template.id,
         feeStructureId: actualFeeStructureId || null,
       });
-      if (result.success) {
-        toast.success(
-          feeStructureId
-            ? "Fee structure updated successfully"
-            : "Fee structure removed successfully",
-        );
-        router.refresh();
-      } else {
-        toast.error(
-          "error" in result ? result.error : "Failed to update fee structure",
-        );
+      if ("error" in result) {
+        toast.error(result.error ?? "Failed to update fee structure");
         setSelectedFeeStructureId(template.feeStructureId || "");
+        return;
       }
+      toast.success(
+        feeStructureId
+          ? "Fee structure updated successfully"
+          : "Fee structure removed successfully",
+      );
+      router.refresh();
     } catch (error) {
       console.error("Error updating fee structure:", error);
       toast.error("Failed to update fee structure");
@@ -388,6 +392,22 @@ export default function ContractTemplateEditContent({ template }: Props) {
       vars.push({ namespace, vars: keys });
     });
 
+    // Add contract variables that are dynamically calculated (not in DB)
+    // These are calculated from contract data at render time
+    const contractIndex = vars.findIndex((v) => v.namespace === "contract");
+    if (contractIndex >= 0) {
+      // Add review_date if not already present
+      if (!vars[contractIndex].vars.includes("review_date")) {
+        vars[contractIndex].vars.push("review_date");
+      }
+    } else {
+      // Create contract namespace if it doesn't exist
+      vars.push({
+        namespace: "contract",
+        vars: ["review_date"],
+      });
+    }
+
     // Add examiner variables (hardcoded as they come from contract data)
     vars.push({
       namespace: "examiner",
@@ -395,7 +415,6 @@ export default function ContractTemplateEditContent({ template }: Props) {
         "name",
         "email",
         "phone",
-        "address",
         "province",
         "city",
         "postal_code",

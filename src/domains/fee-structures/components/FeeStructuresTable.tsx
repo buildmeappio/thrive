@@ -146,24 +146,23 @@ export default function FeeStructuresTable({
           newStatus,
         );
 
-        if (result.success) {
-          // Update local state optimistically
-          setFeeStructuresData((prev) =>
-            prev.map((fs) =>
-              fs.id === feeStructureId ? { ...fs, status: newStatus } : fs,
-            ),
-          );
-          toast.success(
-            `Fee structure ${newStatus === FeeStructureStatus.ACTIVE ? "activated" : "set to draft"} successfully`,
-          );
-          router.refresh();
-        } else {
-          const errorMessage =
-            "error" in result ? result.error : "Failed to update status";
+        if ("error" in result) {
+          const errorMessage = result.error ?? "Failed to update status";
           toast.error(errorMessage);
           // Revert optimistic update
           setFeeStructuresData(feeStructures);
+          return;
         }
+        // Update local state optimistically
+        setFeeStructuresData((prev) =>
+          prev.map((fs) =>
+            fs.id === feeStructureId ? { ...fs, status: newStatus } : fs,
+          ),
+        );
+        toast.success(
+          `Fee structure ${newStatus === FeeStructureStatus.ACTIVE ? "activated" : "set to draft"} successfully`,
+        );
+        router.refresh();
       } catch (error) {
         console.error("Error updating fee structure status:", error);
         toast.error("An error occurred while updating status");
@@ -191,13 +190,12 @@ export default function FeeStructuresTable({
       try {
         const result = await duplicateFeeStructureAction(feeStructure.id);
 
-        if (result.success) {
-          toast.success("Fee structure duplicated successfully");
-          router.push(`/dashboard/fee-structures/${result.data.id}`);
-        } else {
-          const errorResult = result as { success: false; error: string };
-          toast.error(errorResult.error || "Failed to duplicate fee structure");
+        if ("error" in result) {
+          toast.error(result.error ?? "Failed to duplicate fee structure");
+          return;
         }
+        toast.success("Fee structure duplicated successfully");
+        router.push(`/dashboard/fee-structures/${result.data.id}`);
       } catch {
         toast.error("An error occurred");
       } finally {
@@ -323,7 +321,9 @@ export default function FeeStructuresTable({
       },
       {
         id: "actions",
-        header: () => <></>,
+        header: () => (
+          <div className="text-base font-medium text-black">Actions</div>
+        ),
         cell: ({ row }) => {
           const feeStructure = row.original;
           return (
@@ -408,13 +408,12 @@ export default function FeeStructuresTable({
     try {
       const result = await archiveFeeStructureAction(structureToArchive.id);
 
-      if (result.success) {
-        toast.success("Fee structure archived successfully");
-        router.refresh();
-      } else {
-        const errorResult = result as { success: false; error: string };
-        toast.error(errorResult.error || "Failed to archive fee structure");
+      if ("error" in result) {
+        toast.error(result.error ?? "Failed to archive fee structure");
+        return;
       }
+      toast.success("Fee structure archived successfully");
+      router.refresh();
     } catch {
       toast.error("An error occurred");
     } finally {

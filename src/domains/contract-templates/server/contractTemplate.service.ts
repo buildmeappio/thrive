@@ -18,6 +18,7 @@ import {
   createGoogleDoc,
   exportAsHTML,
   getGoogleDocUrl,
+  updateGoogleDocWithHtml,
 } from "@/lib/google-docs";
 import { ENV } from "@/constants/variables";
 import logger from "@/utils/logger";
@@ -270,7 +271,7 @@ export const saveTemplateDraftContent = async (
   googleDocFolderId?: string | null,
   syncToGoogleDocs: boolean = true,
 ): Promise<{ id: string; googleDocId?: string }> => {
-  // Get or create draft version
+  // Get template with draft version and current version to find existing Google Doc ID
   const template = await prisma.documentTemplate.findUnique({
     where: { id: templateId },
     include: {
@@ -279,12 +280,33 @@ export const saveTemplateDraftContent = async (
         orderBy: { version: "desc" },
         take: 1,
       },
+      currentVersion: {
+        select: {
+          googleDocTemplateId: true,
+          googleDocFolderId: true,
+        },
+      },
     },
   });
 
   if (!template) {
     throw HttpError.notFound("Template not found");
   }
+
+  // Also check all versions to find the most recent one with a Google Doc ID
+  // This ensures we preserve the Google Doc ID even if draft/current don't have it
+  const allVersions = await prisma.templateVersion.findMany({
+    where: {
+      templateId,
+      googleDocTemplateId: { not: null },
+    },
+    select: {
+      googleDocTemplateId: true,
+      googleDocFolderId: true,
+    },
+    orderBy: { version: "desc" },
+    take: 1,
+  });
 
   // Enhance TipTap HTML with inline styles to ensure proper rendering
   const enhancedContent = enhanceTipTapHtml(content);
@@ -295,23 +317,31 @@ export const saveTemplateDraftContent = async (
 
   // Update or create draft version
   let draftVersion = template.versions[0];
+
+  // Get Google Doc ID from: parameter > draft version > current version > any version with Google Doc
+  // This ensures we always use the existing Google Doc for the template
   let currentGoogleDocId =
-    googleDocTemplateId ?? draftVersion?.googleDocTemplateId ?? null;
+    googleDocTemplateId ??
+    draftVersion?.googleDocTemplateId ??
+    template.currentVersion?.googleDocTemplateId ??
+    allVersions[0]?.googleDocTemplateId ??
+    null;
   let currentGoogleDocFolderId =
-    googleDocFolderId ?? draftVersion?.googleDocFolderId ?? null;
+    googleDocFolderId ??
+    draftVersion?.googleDocFolderId ??
+    template.currentVersion?.googleDocFolderId ??
+    allVersions[0]?.googleDocFolderId ??
+    null;
 
   // Sync to Google Docs if enabled and we have content
   if (syncToGoogleDocs && content && content.trim()) {
     try {
       if (currentGoogleDocId) {
         // Update existing Google Doc with new content
-        // const newDocId = await updateGoogleDocFromHtml(
-        //   currentGoogleDocId,
-        //   content,
-        //   currentGoogleDocFolderId || undefined,
-        // );
-        // currentGoogleDocId = newDocId;
-        // logger.log(`✅ Synced template content to Google Docs: ${newDocId}`);
+        await updateGoogleDocWithHtml(currentGoogleDocId, enhancedContent);
+        logger.log(
+          `✅ Synced template content to Google Docs: ${currentGoogleDocId}`,
+        );
       } else {
         // Create new Google Doc if none exists
         const folderId = ENV.GOOGLE_CONTRACTS_FOLDER_ID || undefined;
@@ -320,6 +350,11 @@ export const saveTemplateDraftContent = async (
           folderId,
         );
         currentGoogleDocFolderId = folderId || null;
+        // Update the newly created Google Doc with content
+        await updateGoogleDocWithHtml(currentGoogleDocId, enhancedContent);
+        logger.log(
+          `✅ Created and synced template content to Google Docs: ${currentGoogleDocId}`,
+        );
       }
     } catch (error) {
       // Log error but don't fail the save operation

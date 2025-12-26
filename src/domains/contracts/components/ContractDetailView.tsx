@@ -21,18 +21,18 @@ export default function ContractDetailView({ contract }: Props) {
   useEffect(() => {
     loadPreview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contract.id]);
+  }, [contract.id, contract.reviewedAt]);
 
   const loadPreview = async () => {
     setLoadingPreview(true);
     try {
       const result = await previewContractAction(contract.id);
-      if (result.success && result.data) {
+      if ("error" in result) {
+        toast.error(result.error ?? "Failed to load preview");
+        return;
+      }
+      if (result.data) {
         setPreviewHtml(result.data.renderedHtml);
-      } else {
-        toast.error(
-          "error" in result ? result.error : "Failed to load preview",
-        );
       }
     } catch (error) {
       console.error("Error loading preview:", error);
@@ -52,14 +52,12 @@ export default function ContractDetailView({ contract }: Props) {
     setSending(true);
     try {
       const result = await sendContractAction(contract.id);
-      if (result.success) {
-        toast.success("Contract sent successfully");
-        router.refresh();
-      } else {
-        toast.error(
-          "error" in result ? result.error : "Failed to send contract",
-        );
+      if ("error" in result) {
+        toast.error(result.error ?? "Failed to send contract");
+        return;
       }
+      toast.success("Contract sent successfully");
+      router.refresh();
     } catch (error) {
       console.error("Error sending contract:", error);
       toast.error("Failed to send contract");
@@ -203,6 +201,32 @@ export default function ContractDetailView({ contract }: Props) {
                 padding: 0.5rem;
                 position: relative;
                 vertical-align: top;
+              }
+              /* Preserve text-align from inline styles - inline styles have highest specificity */
+              .prose table td[style*="text-align: left"],
+              .prose table th[style*="text-align: left"] {
+                text-align: left !important;
+              }
+              .prose table td[style*="text-align: center"],
+              .prose table th[style*="text-align: center"] {
+                text-align: center !important;
+              }
+              .prose table td[style*="text-align: right"],
+              .prose table th[style*="text-align: right"] {
+                text-align: right !important;
+              }
+              /* Ensure table cells respect alignment attributes */
+              .prose table td[align="left"],
+              .prose table th[align="left"] {
+                text-align: left;
+              }
+              .prose table td[align="center"],
+              .prose table th[align="center"] {
+                text-align: center;
+              }
+              .prose table td[align="right"],
+              .prose table th[align="right"] {
+                text-align: right;
               }
               .prose table th {
                 background-color: #f3f4f6;

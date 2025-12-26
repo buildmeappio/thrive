@@ -127,6 +127,7 @@ export default function RichTextEditor({
           levels: [1, 2, 3, 4, 5, 6],
         },
         horizontalRule: false, // Use the separate extension
+        hardBreak: false, // Disable hard break to prevent spacebar issues
       }),
       Placeholder.configure({
         placeholder: placeholder || "Start typing...",
@@ -188,7 +189,14 @@ export default function RichTextEditor({
           class: "flex items-start gap-2",
         },
       }),
-      Typography,
+      Typography.configure({
+        openDoubleQuote: false,
+        closeDoubleQuote: false,
+        openSingleQuote: false,
+        closeSingleQuote: false,
+        emDash: false,
+        ellipsis: false,
+      }),
       VariableHighlight.configure({
         validVariables,
       }),
@@ -256,6 +264,22 @@ export default function RichTextEditor({
         class:
           "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none min-h-[500px] p-4 font-poppins",
       },
+      handleDOMEvents: {
+        keydown: (view, event) => {
+          // Prevent spacebar from creating new line
+          if (
+            event.key === " " &&
+            !event.shiftKey &&
+            !event.ctrlKey &&
+            !event.metaKey &&
+            !event.altKey
+          ) {
+            // Allow default spacebar behavior (insert space)
+            return false;
+          }
+          return false;
+        },
+      },
     },
     immediatelyRender: false,
   });
@@ -265,6 +289,11 @@ export default function RichTextEditor({
     if (!editor || !isMounted) return;
 
     const updateHighlighting = () => {
+      // Don't update highlighting while user is typing (check if editor has focus)
+      if (editor.isFocused) {
+        return;
+      }
+
       const currentHtml = editor.getHTML();
       const cleaned = cleanContent(currentHtml);
       const highlighted = processContentForHighlighting(cleaned);

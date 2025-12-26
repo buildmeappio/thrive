@@ -120,10 +120,7 @@ export const useCreateContractModal = (
 
   // Load fee structure data with optional existing values
   const loadFeeStructureData = useCallback(
-    async (
-      feeStructureId: string,
-      existingValues?: FeeFormValues,
-    ) => {
+    async (feeStructureId: string, existingValues?: FeeFormValues) => {
       if (!feeStructureId) {
         setFeeStructureData(null);
         setFeeFormValues({});
@@ -133,11 +130,14 @@ export const useCreateContractModal = (
       setIsLoadingFeeStructure(true);
       try {
         const result = await getFeeStructureAction(feeStructureId);
-        if (result.success && result.data) {
+        if ("error" in result) {
+          return;
+        }
+        if (result.data) {
           const data = transformFeeStructureData(result.data);
           if (data) {
             setFeeStructureData(data);
-            
+
             // Initialize form values: use existing values if provided, otherwise defaults
             if (existingValues && Object.keys(existingValues).length > 0) {
               const initialValues: FeeFormValues = {};
@@ -223,7 +223,7 @@ export const useCreateContractModal = (
             // Only auto-select if not skipping (i.e., not loading from existing contract)
             if (!skipAutoSelect) {
               let feeStructureToSelect: string | null = null;
-              
+
               if (
                 templateResult.data.feeStructureId &&
                 compatible.some(
@@ -234,7 +234,7 @@ export const useCreateContractModal = (
               } else if (compatible.length === 1) {
                 feeStructureToSelect = compatible[0].id;
               }
-              
+
               if (feeStructureToSelect) {
                 setSelectedFeeStructureId(feeStructureToSelect);
                 // Load fee structure data when auto-selecting
@@ -321,10 +321,13 @@ export const useCreateContractModal = (
               if (contract.feeStructureId) {
                 const fieldValues = contract.fieldValues as any;
                 const feesOverrides = fieldValues?.fees_overrides || {};
-                
+
                 // Set fee structure ID and load with existing override values
                 setSelectedFeeStructureId(contract.feeStructureId);
-                await loadFeeStructureData(contract.feeStructureId, feesOverrides);
+                await loadFeeStructureData(
+                  contract.feeStructureId,
+                  feesOverrides,
+                );
               }
             }
           } catch (error) {

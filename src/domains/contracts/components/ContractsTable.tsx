@@ -2,8 +2,16 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Calendar,
+} from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
+import { updateContractReviewDateAction } from "../actions";
 import {
   flexRender,
   getCoreRowModel,
@@ -59,12 +67,82 @@ const ActionButton = ({ id }: { id: string }) => {
   );
 };
 
+const ReviewDateCell = ({ contract }: { contract: ContractListItem }) => {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const handleDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const dateValue = e.target.value;
+    // Create date at midnight UTC to avoid timezone issues
+    // When user selects "2025-01-15", we want to store it as that date, not the previous day
+    const newDate = dateValue ? new Date(dateValue + "T00:00:00.000Z") : null;
+    setIsUpdating(true);
+    try {
+      const result = await updateContractReviewDateAction(contract.id, newDate);
+      if ("error" in result) {
+        toast.error(result.error ?? "Failed to update review date");
+        return;
+      }
+      toast.success(
+        newDate ? "Review date updated successfully" : "Review date cleared",
+      );
+      setShowDatePicker(false);
+      // Refresh the page to show updated data
+      window.location.reload();
+    } catch (error) {
+      toast.error("Failed to update review date");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return (
+    <div
+      className="flex items-center gap-2"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {showDatePicker ? (
+        <input
+          type="date"
+          defaultValue={
+            contract.reviewedAt
+              ? new Date(contract.reviewedAt).toISOString().split("T")[0]
+              : ""
+          }
+          onBlur={() => setShowDatePicker(false)}
+          onChange={handleDateChange}
+          disabled={isUpdating}
+          className="text-[#4D4D4D] font-poppins text-[16px] px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/30"
+          autoFocus
+        />
+      ) : (
+        <div className="flex items-center gap-2 group">
+          <span className="text-[#4D4D4D] font-poppins text-[16px] leading-normal whitespace-nowrap">
+            {contract.reviewedAt
+              ? formatDate(contract.reviewedAt)
+              : "Not reviewed"}
+          </span>
+          <button
+            onClick={() => setShowDatePicker(true)}
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded"
+            title="Set review date"
+          >
+            <Calendar className="w-4 h-4 text-[#7B8B91]" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const SortableHeader = ({
   column,
   children,
+  align,
 }: {
   column: Column<ContractListItem, unknown>;
   children: React.ReactNode;
+  align?: "left" | "center" | "right";
 }) => {
   const sortDirection = column.getIsSorted();
 
@@ -80,7 +158,14 @@ const SortableHeader = ({
 
   return (
     <div
-      className="flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors"
+      className={cn(
+        "flex items-center gap-2 cursor-pointer select-none hover:text-[#000093] transition-colors",
+        align === "center"
+          ? "justify-center"
+          : align === "right"
+            ? "justify-end"
+            : "justify-start",
+      )}
       onClick={handleSort}
     >
       <span>{children}</span>
@@ -142,9 +227,14 @@ export default function ContractsTable({ contracts }: Props) {
       },
       {
         accessorKey: "status",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Status</SortableHeader>
-        ),
+        header: ({ column }) => {
+          const meta = (column.columnDef.meta as ColumnMeta) || {};
+          return (
+            <SortableHeader column={column} align={meta.align}>
+              Status
+            </SortableHeader>
+          );
+        },
         cell: ({ row }) => (
           <div className="flex items-center justify-center">
             <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 whitespace-nowrap min-w-[80px]">
@@ -158,6 +248,14 @@ export default function ContractsTable({ contracts }: Props) {
           size: 150,
           align: "center",
         } as ColumnMeta,
+      },
+      {
+        accessorKey: "reviewedAt",
+        header: ({ column }) => (
+          <SortableHeader column={column}>Review Date</SortableHeader>
+        ),
+        cell: ({ row }) => <ReviewDateCell contract={row.original} />,
+        meta: { minSize: 150, maxSize: 200, size: 180 } as ColumnMeta,
       },
       {
         accessorKey: "updatedAt",
@@ -301,7 +399,14 @@ export default function ContractsTable({ contracts }: Props) {
                                   : undefined,
                                 width: meta.size ? `${meta.size}px` : undefined,
                               }}
-                              className="px-6 py-3 overflow-hidden align-middle"
+                              className={cn(
+                                "px-6 py-3 overflow-hidden align-middle",
+                                meta.align === "center"
+                                  ? "text-center"
+                                  : meta.align === "right"
+                                    ? "text-right"
+                                    : "text-left",
+                              )}
                             >
                               {flexRender(
                                 cell.column.columnDef.cell,

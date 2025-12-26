@@ -660,3 +660,109 @@ export async function deleteGoogleDoc(documentId: string): Promise<void> {
     );
   }
 }
+
+/**
+ * Update a Google Doc with HTML content by replacing all content
+ * This function clears the document and inserts the HTML content as plain text
+ * Note: Google Docs API doesn't support direct HTML insertion, so we convert HTML to plain text
+ * @param documentId - The ID of the Google Doc to update
+ * @param htmlContent - HTML content to insert (will be converted to plain text)
+ */
+export async function updateGoogleDocWithHtml(
+  documentId: string,
+  htmlContent: string,
+): Promise<void> {
+  try {
+    const auth = getGoogleDocsAuth();
+    const docs = google.docs({ version: "v1", auth });
+
+    // First, get the document to find the end index
+    const doc = await docs.documents.get({ documentId });
+    const endIndex =
+      doc.data.body?.content?.[doc.data.body.content.length - 1]?.endIndex;
+
+    if (!endIndex || endIndex < 1) {
+      throw new Error("Invalid document structure");
+    }
+
+    // Convert HTML to plain text (strip HTML tags but preserve structure)
+    // Use a simple HTML to text converter
+    const textContent = htmlContent
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "") // Remove style tags
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "") // Remove script tags
+      .replace(/<br\s*\/?>/gi, "\n") // Convert <br> to newlines
+      .replace(/<\/p>/gi, "\n\n") // Convert </p> to double newlines
+      .replace(/<\/div>/gi, "\n") // Convert </div> to newlines
+      .replace(/<\/h[1-6]>/gi, "\n\n") // Convert headings to double newlines
+      .replace(/<[^>]+>/g, "") // Remove all remaining HTML tags
+      .replace(/&nbsp;/g, " ") // Replace &nbsp; with space
+      .replace(/&amp;/g, "&") // Replace &amp; with &
+      .replace(/&lt;/g, "<") // Replace &lt; with <
+      .replace(/&gt;/g, ">") // Replace &gt; with >
+      .replace(/&quot;/g, '"') // Replace &quot; with "
+      .replace(/&#39;/g, "'") // Replace &#39; with '
+      .replace(/\n{3,}/g, "\n\n") // Replace multiple newlines with double newlines
+      .trim();
+
+    // Build requests array
+    const requests: any[] = [];
+
+    // Only delete content if there's content to delete
+    // endIndex - 1 must be > 1 to have a valid non-empty range
+    const deleteEndIndex = endIndex - 1;
+    if (deleteEndIndex > 1) {
+      requests.push({
+        deleteContentRange: {
+          range: {
+            startIndex: 1,
+            endIndex: deleteEndIndex,
+          },
+        },
+      });
+    }
+
+    // Insert the new content
+    requests.push({
+      insertText: {
+        location: {
+          index: 1,
+        },
+        text: textContent,
+      },
+    });
+
+    await docs.documents.batchUpdate({
+      documentId,
+      requestBody: {
+        requests,
+      },
+    });
+
+    logger.log(
+      `✅ Updated Google Doc ${documentId} with rendered HTML content`,
+    );
+  } catch (error) {
+    logger.error("Error updating Google Doc with HTML:", error);
+    if (error instanceof Error) {
+      if (
+        error.message.includes("File not found") ||
+        (error as any).code === 404
+      ) {
+        throw new Error(
+          `Document not found. Please verify the document ID is correct.`,
+        );
+      }
+      if (
+        error.message.includes("insufficient permissions") ||
+        (error as any).code === 403
+      ) {
+        throw new Error(
+          `Insufficient permissions to update document. Please verify DOCS_REFRESH_TOKEN has proper scopes.`,
+        );
+      }
+    }
+    throw new Error(
+      `Failed to update Google Doc: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
+}

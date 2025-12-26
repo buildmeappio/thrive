@@ -1,6 +1,7 @@
 export { createContractAction } from "./createContract";
 export { previewContractAction } from "./previewContract";
 export { sendContractAction } from "./sendContract";
+export { updateContractReviewDateAction } from "./updateContractReviewDate";
 export { listContractsAction } from "./listContracts";
 export { getContractAction } from "./getContract";
 export { updateContractFeeStructureAction } from "./updateContractFeeStructure";

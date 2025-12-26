@@ -18,6 +18,12 @@ import logger from "@/utils/logger";
 import { formatFullName } from "@/utils/text";
 import { getAllVariablesMap } from "@/domains/custom-variables/server/customVariable.service";
 import { uploadToS3 } from "@/lib/s3";
+import {
+  createGoogleDoc,
+  updateGoogleDocWithHtml,
+  getGoogleDocUrl,
+} from "@/lib/google-docs";
+import { ENV } from "@/constants/variables";
 
 // List contracts with optional filters
 export const listContracts = async (
@@ -110,6 +116,7 @@ export const listContracts = async (
       status: contract.status,
       examinerName,
       templateName: contract.template.displayName,
+      reviewedAt: contract.reviewedAt?.toISOString() || null,
       updatedAt: contract.updatedAt.toISOString(),
     };
   });
@@ -162,6 +169,7 @@ export const getContract = async (id: string): Promise<ContractData> => {
     fieldValues: contract.fieldValues || {},
     sentAt: contract.sentAt?.toISOString() || null,
     signedAt: contract.signedAt?.toISOString() || null,
+    reviewedAt: contract.reviewedAt?.toISOString() || null,
     createdAt: contract.createdAt.toISOString(),
     updatedAt: contract.updatedAt.toISOString(),
     template: {
@@ -722,6 +730,27 @@ export const previewContract = async (
       }
     }
 
+    // Add review date from contract.reviewedAt if available
+    if (contract.reviewedAt) {
+      try {
+        const reviewDateObj = new Date(contract.reviewedAt);
+        // Check if date is valid
+        if (!isNaN(reviewDateObj.getTime())) {
+          const reviewDate = new Intl.DateTimeFormat("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }).format(reviewDateObj);
+          values["contract.review_date"] = reviewDate;
+        }
+      } catch (error) {
+        logger.warn(
+          `Failed to format review date for contract ${contract.id}:`,
+          error,
+        );
+      }
+    }
+
     // Add thrive values (defaults)
     if (fv.thrive) {
       for (const [key, value] of Object.entries(fv.thrive)) {
@@ -868,6 +897,10 @@ export const previewContract = async (
       placeholder === "examiner.signature" ||
       placeholder === "examiner.signature_date_time";
 
+    // Review date is optional - only set when admin reviews the contract
+    const isOptionalPlaceholder =
+      isSignaturePlaceholder || placeholder === "contract.review_date";
+
     if (values[placeholder]) {
       // Special handling for logo and signature - convert to img tag if it's a URL or data URL
       let replacement: string;
@@ -907,13 +940,16 @@ export const previewContract = async (
       }
 
       renderedHtml = renderedHtml.replace(regex, replacement);
-    } else if (isSignaturePlaceholder) {
-      // Replace signature placeholders with long underscores if not available (they'll be filled when examiner signs)
+    } else if (isOptionalPlaceholder) {
+      // Handle optional placeholders
       if (placeholder === "examiner.signature") {
         // Wrap in a span with data-signature attribute so examiner-web can identify it
         const underscoreLine =
           '<span data-signature="examiner">________________________</span>';
         renderedHtml = renderedHtml.replace(regex, underscoreLine);
+      } else if (placeholder === "contract.review_date") {
+        // For review_date, replace with empty string or "Not reviewed" - it's optional
+        renderedHtml = renderedHtml.replace(regex, "");
       } else {
         // For signature_date_time, just use underscores without the data attribute
         const underscoreLine = "________________________";
@@ -949,9 +985,13 @@ export const generateAndUploadContractHtml = async (
   // First, generate the HTML using previewContract
   const previewResult = await previewContract(contractId);
 
-  // Filter out signature-related placeholders - they're only available after signing
+  // Filter out optional placeholders - signature placeholders are only available after signing,
+  // and review_date is only set when admin reviews the contract
   const requiredPlaceholders = previewResult.missingPlaceholders.filter(
-    (p) => p !== "examiner.signature" && p !== "examiner.signature_date_time",
+    (p) =>
+      p !== "examiner.signature" &&
+      p !== "examiner.signature_date_time" &&
+      p !== "contract.review_date",
   );
 
   if (requiredPlaceholders.length > 0) {
@@ -987,23 +1027,70 @@ export const generateAndUploadContractHtml = async (
     throw new Error("Failed to upload contract HTML to S3");
   }
 
-  // Get contract to update
+  // Get contract to update (including Google Doc info)
   const contract = await prisma.contract.findUnique({
     where: { id: contractId },
-    select: { data: true },
-  });
-
-  // Store rendered HTML in data and update unsignedHtmlS3Key
-  await prisma.contract.update({
-    where: { id: contractId },
-    data: {
-      data: {
-        ...(contract?.data as any),
-        renderedHtml: previewResult.renderedHtml,
-      } as any,
-      unsignedHtmlS3Key: htmlS3Key,
+    select: {
+      data: true,
+      googleDocId: true,
+      templateVersion: {
+        select: {
+          template: {
+            select: {
+              displayName: true,
+            },
+          },
+        },
+      },
     },
   });
+
+  // Create or update Google Doc with rendered HTML content
+  let googleDocId = contract?.googleDocId;
+  try {
+    if (!googleDocId) {
+      // Create a new Google Doc for this contract
+      const folderId = ENV.GOOGLE_CONTRACTS_FOLDER_ID || undefined;
+      const docTitle = `Contract: ${contract?.templateVersion?.template?.displayName || "Contract"} - ${Date.now()}`;
+      googleDocId = await createGoogleDoc(docTitle, folderId);
+      logger.log(`✅ Created Google Doc for contract: ${googleDocId}`);
+    }
+
+    // Update the Google Doc with rendered HTML content
+    await updateGoogleDocWithHtml(googleDocId, previewResult.renderedHtml);
+    logger.log(`✅ Updated Google Doc ${googleDocId} with rendered HTML`);
+
+    // Store rendered HTML in data and update unsignedHtmlS3Key and googleDocId
+    await prisma.contract.update({
+      where: { id: contractId },
+      data: {
+        data: {
+          ...(contract?.data as any),
+          renderedHtml: previewResult.renderedHtml,
+        } as any,
+        unsignedHtmlS3Key: htmlS3Key,
+        googleDocId: googleDocId,
+        googleDocUrl: getGoogleDocUrl(googleDocId),
+      },
+    });
+  } catch (error) {
+    // Log error but don't fail the contract generation
+    logger.error(
+      "Failed to create/update Google Doc for contract (non-fatal):",
+      error,
+    );
+    // Still update the contract with HTML and S3 key
+    await prisma.contract.update({
+      where: { id: contractId },
+      data: {
+        data: {
+          ...(contract?.data as any),
+          renderedHtml: previewResult.renderedHtml,
+        } as any,
+        unsignedHtmlS3Key: htmlS3Key,
+      },
+    });
+  }
 
   return {
     htmlS3Key,

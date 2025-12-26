@@ -20,13 +20,15 @@ export function enhanceTipTapHtml(html: string): string {
     '<table style="border-collapse: collapse; margin: 1rem 0; overflow: hidden; width: 100%;"',
   );
 
-  // Add inline styles to table cells (td)
+  // Add inline styles to table cells (td) - preserve existing styles if any
+  // Note: We don't add text-align here to preserve TipTap's alignment settings
   enhanced = enhanced.replace(
     /<td(?![^>]*style=)/gi,
     '<td style="border: 1px solid #d1d5db; box-sizing: border-box; min-width: 1em; padding: 0.5rem; position: relative; vertical-align: top;"',
   );
 
-  // Add inline styles to table header cells (th)
+  // Add inline styles to table header cells (th) - preserve existing styles if any
+  // Note: We don't add text-align here to preserve TipTap's alignment settings
   enhanced = enhanced.replace(
     /<th(?![^>]*style=)/gi,
     '<th style="border: 1px solid #d1d5db; box-sizing: border-box; min-width: 1em; padding: 0.5rem; position: relative; vertical-align: top; background-color: #f3f4f6; font-weight: 600;"',
