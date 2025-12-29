@@ -46,13 +46,17 @@ export const ClaimantDetailsSchema = z.object({
     .string()
     .trim()
     .min(1, ErrorMessages.FIRST_NAME_REQUIRED)
-    .regex(/^[A-Za-zÀ-ÿ']+$/, ErrorMessages.FIRST_NAME_INVALID),
+    .min(4, ErrorMessages.FIRST_NAME_MIN)
+    .regex(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
+    .max(100, ErrorMessages.NAME_TOO_LONG),
 
   lastName: z
     .string()
     .trim()
     .min(1, ErrorMessages.LAST_NAME_REQUIRED)
-    .regex(/^[A-Za-zÀ-ÿ']+$/, ErrorMessages.LAST_NAME_INVALID),
+    .min(4, ErrorMessages.LAST_NAME_MIN)
+    .regex(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
+    .max(100, ErrorMessages.NAME_TOO_LONG),
 
   addressLookup: z.string().min(5, ErrorMessages.ADDRESS_LOOKUP_REQUIRED),
 
@@ -91,9 +95,27 @@ export const ClaimantDetailsSchema = z.object({
     })
     .optional(),
 
-  street: z.string().trim().optional(),
-  suite: z.string().trim().optional(),
-  city: z.string().trim().optional(),
+  street: z
+    .string()
+    .trim()
+    .refine(val => val === '' || val.length >= 5, {
+      message: ErrorMessages.STREET_ADDRESS_MIN,
+    })
+    .optional(),
+  suite: z
+    .string()
+    .trim()
+    .refine(val => val === '' || val.length >= 2, {
+      message: ErrorMessages.SUITE_MIN,
+    })
+    .optional(),
+  city: z
+    .string()
+    .trim()
+    .refine(val => val === '' || val.length >= 5, {
+      message: ErrorMessages.CITY_MIN_OPTIONAL,
+    })
+    .optional(),
 
   postalCode: z
     .string()
@@ -105,11 +127,22 @@ export const ClaimantDetailsSchema = z.object({
   province: z.string().optional(),
 
   // Optional family doctor fields
-  relatedCasesDetails: z.string().trim().optional(),
+  relatedCasesDetails: z
+    .string()
+    .trim()
+    .refine(val => val === '' || val.length >= 10, {
+      message: ErrorMessages.RELATED_CASES_MIN,
+    })
+    .optional(),
   familyDoctorName: z
     .string()
     .trim()
-    .regex(/^[A-Za-zÀ-ÿ]*$/, ErrorMessages.FAMILY_DOCTOR_NAME_INVALID)
+    .refine(val => val === '' || val.length >= 5, {
+      message: ErrorMessages.FAMILY_DOCTOR_NAME_MIN,
+    })
+    .refine(val => val === '' || /^[A-Za-zÀ-ÿ]*$/.test(val), {
+      message: ErrorMessages.FAMILY_DOCTOR_NAME_INVALID,
+    })
     .optional(),
 
   familyDoctorEmail: z
@@ -164,6 +197,7 @@ export const InsuranceDetailsSchema = z.object({
     .string()
     .trim()
     .min(1, 'Insurance company name is required')
+    .min(3, ErrorMessages.COMPANY_NAME_MIN)
     .regex(
       /^[A-Za-z0-9][A-Za-z0-9\s.'-]*$/,
       'Company name can only contain letters, numbers, spaces, hyphens, periods, and apostrophes'
@@ -172,18 +206,50 @@ export const InsuranceDetailsSchema = z.object({
     .string()
     .trim()
     .min(1, 'Adjuster/contact is required')
+    .min(4, ErrorMessages.ADJUSTER_CONTACT_MIN)
     .regex(/^[A-Za-zÀ-ÿ' -]+$/, 'Adjuster/contact is invalid'),
-  insurancePolicyNo: z.string().trim().min(1, 'Policy number is required'),
-  insuranceClaimNo: z.string().trim().min(1, 'Claim number is required'),
+  insurancePolicyNo: z
+    .string()
+    .trim()
+    .min(1, 'Policy number is required')
+    .min(3, ErrorMessages.POLICY_NUMBER_MIN),
+  insuranceClaimNo: z
+    .string()
+    .trim()
+    .min(1, 'Claim number is required')
+    .min(3, ErrorMessages.CLAIM_NUMBER_MIN),
   insuranceDateOfLoss: z.string().min(1, 'Date of loss is required'),
 
   // Optional address fields
   insuranceAddressLookup: z.string().trim().optional(),
-  insurancePostalCode: z.string().optional(),
+  insurancePostalCode: z
+    .string()
+    .refine(val => val === '' || /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(val), {
+      message: ErrorMessages.INVALID_POSTAL_CODE,
+    })
+    .optional(),
   insuranceProvince: z.string().optional(),
-  insuranceStreetAddress: z.string().trim().optional(),
-  insuranceAptUnitSuite: z.string().trim().optional(),
-  insuranceCity: z.string().trim().optional(),
+  insuranceStreetAddress: z
+    .string()
+    .trim()
+    .refine(val => val === '' || val.length >= 5, {
+      message: ErrorMessages.STREET_ADDRESS_MIN,
+    })
+    .optional(),
+  insuranceAptUnitSuite: z
+    .string()
+    .trim()
+    .refine(val => val === '' || val.length >= 2, {
+      message: ErrorMessages.SUITE_MIN,
+    })
+    .optional(),
+  insuranceCity: z
+    .string()
+    .trim()
+    .refine(val => val === '' || val.length >= 5, {
+      message: ErrorMessages.CITY_MIN_OPTIONAL,
+    })
+    .optional(),
 
   insurancePhone: z
     .string()
@@ -229,23 +295,25 @@ export const InsuranceDetailsInitialValues: InsuranceDetails = {
 export const LegalDetailsSchema = z.object({
   // Legal Representative fields - all optional
   legalCompanyName: z
-    .union([
-      z
-        .string()
-        .trim()
-        .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.COMPANY_NAME_INVALID),
-      z.literal(''),
-    ])
+    .string()
+    .trim()
+    .refine(val => val === '' || val.length >= 3, {
+      message: ErrorMessages.LEGAL_COMPANY_NAME_MIN,
+    })
+    .refine(val => val === '' || /^[A-Za-zÀ-ÿ' -]+$/.test(val), {
+      message: ErrorMessages.COMPANY_NAME_INVALID,
+    })
     .optional(),
 
   legalContactPerson: z
-    .union([
-      z
-        .string()
-        .trim()
-        .regex(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.CONTACT_PERSON_INVALID),
-      z.literal(''),
-    ])
+    .string()
+    .trim()
+    .refine(val => val === '' || val.length >= 4, {
+      message: ErrorMessages.LEGAL_CONTACT_PERSON_MIN,
+    })
+    .refine(val => val === '' || /^[A-Za-zÀ-ÿ' -]+$/.test(val), {
+      message: ErrorMessages.CONTACT_PERSON_INVALID,
+    })
     .optional(),
 
   legalPhone: z
@@ -263,9 +331,27 @@ export const LegalDetailsSchema = z.object({
     .optional(),
 
   legalAddressLookup: z.string().trim().optional(),
-  legalStreetAddress: z.string().trim().optional(),
-  legalAptUnitSuite: z.string().trim().optional(),
-  legalCity: z.string().trim().optional(),
+  legalStreetAddress: z
+    .string()
+    .trim()
+    .refine(val => val === '' || val.length >= 5, {
+      message: ErrorMessages.STREET_ADDRESS_MIN,
+    })
+    .optional(),
+  legalAptUnitSuite: z
+    .string()
+    .trim()
+    .refine(val => val === '' || val.length >= 2, {
+      message: ErrorMessages.SUITE_MIN,
+    })
+    .optional(),
+  legalCity: z
+    .string()
+    .trim()
+    .refine(val => val === '' || val.length >= 5, {
+      message: ErrorMessages.CITY_MIN_OPTIONAL,
+    })
+    .optional(),
   legalPostalCode: z
     .union([
       z.string().regex(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/, ErrorMessages.INVALID_POSTAL_CODE),
@@ -298,16 +384,46 @@ const ExaminationServiceSchema = z.object({
   details: z
     .object({
       // Transportation
-      pickupAddress: z.string().optional(),
-      streetAddress: z.string().optional(),
-      aptUnitSuite: z.string().optional(),
-      city: z.string().optional(),
-      postalCode: z.string().optional(),
+      pickupAddress: z
+        .string()
+        .refine(val => val === '' || !val || val.length >= 5, {
+          message: ErrorMessages.PICKUP_ADDRESS_MIN,
+        })
+        .optional(),
+      streetAddress: z
+        .string()
+        .refine(val => val === '' || !val || val.length >= 5, {
+          message: ErrorMessages.STREET_ADDRESS_MIN,
+        })
+        .optional(),
+      aptUnitSuite: z
+        .string()
+        .refine(val => val === '' || !val || val.length >= 2, {
+          message: ErrorMessages.SUITE_MIN,
+        })
+        .optional(),
+      city: z
+        .string()
+        .refine(val => val === '' || !val || val.length >= 5, {
+          message: ErrorMessages.CITY_MIN_OPTIONAL,
+        })
+        .optional(),
+      postalCode: z
+        .string()
+        .refine(val => val === '' || !val || /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(val), {
+          message: ErrorMessages.INVALID_POSTAL_CODE,
+        })
+        .optional(),
       province: z.string().optional(),
       // Interpreter
       language: z.string().optional(),
       // Additional notes
-      notes: z.string().optional(),
+      notes: z
+        .string()
+        .refine(val => val === '' || !val || val.length >= 10, {
+          message: ErrorMessages.NOTES_MIN,
+        })
+        .optional(),
     })
     .optional(),
 });
@@ -317,18 +433,32 @@ const ExaminationDetailsSchema = z.object({
   examinationTypeId: z.string().min(1, 'Examination type is required'),
   urgencyLevel: z.string().min(1, 'Urgency level is required'),
   dueDate: z.string().min(1, 'Due date is required'),
-  instructions: z.string().trim().min(1, 'Instructions are required'),
+  instructions: z
+    .string()
+    .trim()
+    .min(1, 'Instructions are required')
+    .min(10, ErrorMessages.INSTRUCTIONS_MIN),
   selectedBenefits: z.array(z.string()).min(1, 'At least one benefit must be selected'),
   locationType: z.string().min(1, 'Location type is required'),
   services: z.array(ExaminationServiceSchema),
-  additionalNotes: z.string().trim().optional(),
+  additionalNotes: z
+    .string()
+    .trim()
+    .refine(val => val === '' || !val || val.length >= 10, {
+      message: ErrorMessages.ADDITIONAL_NOTES_MIN,
+    })
+    .optional(),
   supportPerson: z.boolean().optional(),
 });
 
 // Main Examination Schema (Step 5)
 export const ExaminationSchema = z
   .object({
-    reasonForReferral: z.string().trim().min(1, 'Reason for referral is required'),
+    reasonForReferral: z
+      .string()
+      .trim()
+      .min(1, 'Reason for referral is required')
+      .min(10, ErrorMessages.REASON_FOR_REFERRAL_MIN),
     examinationType: z.string().min(1, 'Case type is required'),
     examinations: z.array(ExaminationDetailsSchema).min(1, 'At least one examination is required'),
   })

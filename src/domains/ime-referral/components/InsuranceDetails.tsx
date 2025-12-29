@@ -14,7 +14,7 @@ import ProgressIndicator from './ProgressIndicator';
 import { type IMEReferralProps } from '@/types/imeReferralProps';
 import BackButton from '@/components/BackButton';
 import { Label } from '@/components/ui/label';
-import { useEffect } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import CustomDatePicker from '@/components/CustomDatePicker';
 import GoogleMapsInput from '@/components/GoogleMapsInputRHF';
 import PhoneInput from '@/components/PhoneNumber';
@@ -37,6 +37,7 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
   mode,
 }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   const {
     register,
@@ -45,10 +46,53 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
     setValue,
     watch,
     trigger,
+    control,
   } = useForm<InsuranceDetails>({
     resolver: zodResolver(InsuranceDetailsSchema),
     defaultValues: data.step2 || insuranceData || InsuranceDetailsInitialValues,
+    mode: 'onSubmit',
   });
+
+  const watchedValues = watch();
+
+  // Check if all required fields are filled (not empty)
+  // Validation errors will show when user clicks Continue
+  const areAllRequiredFieldsFilled = useMemo(() => {
+    const insuranceCompanyName = watchedValues.insuranceCompanyName?.trim() || '';
+    const insuranceAdjusterContact = watchedValues.insuranceAdjusterContact?.trim() || '';
+    const insurancePolicyNo = watchedValues.insurancePolicyNo?.trim() || '';
+    const insuranceClaimNo = watchedValues.insuranceClaimNo?.trim() || '';
+    const insuranceDateOfLoss = watchedValues.insuranceDateOfLoss?.trim() || '';
+    const insurancePhone = watchedValues.insurancePhone?.trim() || '';
+    const insuranceFaxNo = watchedValues.insuranceFaxNo?.trim() || '';
+    const insuranceEmailAddress = watchedValues.insuranceEmailAddress?.trim() || '';
+    const policyHolderFirstName = watchedValues.policyHolderFirstName?.trim() || '';
+    const policyHolderLastName = watchedValues.policyHolderLastName?.trim() || '';
+
+    return (
+      insuranceCompanyName.length > 0 &&
+      insuranceAdjusterContact.length > 0 &&
+      insurancePolicyNo.length > 0 &&
+      insuranceClaimNo.length > 0 &&
+      insuranceDateOfLoss.length > 0 &&
+      insurancePhone.length > 0 &&
+      insuranceFaxNo.length > 0 &&
+      insuranceEmailAddress.length > 0 &&
+      policyHolderFirstName.length > 0 &&
+      policyHolderLastName.length > 0
+    );
+  }, [
+    watchedValues.insuranceCompanyName,
+    watchedValues.insuranceAdjusterContact,
+    watchedValues.insurancePolicyNo,
+    watchedValues.insuranceClaimNo,
+    watchedValues.insuranceDateOfLoss,
+    watchedValues.insurancePhone,
+    watchedValues.insuranceFaxNo,
+    watchedValues.insuranceEmailAddress,
+    watchedValues.policyHolderFirstName,
+    watchedValues.policyHolderLastName,
+  ]);
 
   const policyHolderSameAsClaimant = watch('policyHolderSameAsClaimant');
 
@@ -111,8 +155,13 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
   };
 
   const onSubmit: SubmitHandler<InsuranceDetails> = values => {
+    setAttemptedSubmit(true);
     setData('step2', values);
     if (onNext) onNext();
+  };
+
+  const onError = () => {
+    setAttemptedSubmit(true);
   };
 
   if (!_hasHydrated) {
@@ -129,7 +178,7 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
         className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[55px] md:py-8"
         style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
+        <form onSubmit={handleSubmit(onSubmit, onError)} className="w-full max-w-full" noValidate>
           <div className="w-full max-w-full">
             <div className="w-full max-w-full space-y-8">
               <div className="w-full max-w-full px-4 md:px-0">
@@ -147,10 +196,10 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('insuranceCompanyName')}
-                      placeholder="WSH"
-                      className={`w-full ${errors.insuranceCompanyName ? 'border-red-500' : ''}`}
+                      placeholder="Enter company name"
+                      className={`w-full ${attemptedSubmit && errors.insuranceCompanyName ? 'border-red-500' : ''}`}
                     />
-                    {errors.insuranceCompanyName && (
+                    {attemptedSubmit && errors.insuranceCompanyName && (
                       <p className="text-sm text-red-500">{errors.insuranceCompanyName.message}</p>
                     )}
                   </div>
@@ -162,10 +211,10 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('insuranceAdjusterContact')}
-                      placeholder="John Doe"
-                      className={`w-full ${errors.insuranceAdjusterContact ? 'border-red-500' : ''}`}
+                      placeholder="Enter adjuster/contact name"
+                      className={`w-full ${attemptedSubmit && errors.insuranceAdjusterContact ? 'border-red-500' : ''}`}
                     />
-                    {errors.insuranceAdjusterContact && (
+                    {attemptedSubmit && errors.insuranceAdjusterContact && (
                       <p className="text-sm text-red-500">
                         {errors.insuranceAdjusterContact.message}
                       </p>
@@ -182,10 +231,10 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('insurancePolicyNo')}
-                      placeholder="12345"
-                      className={`w-full ${errors.insurancePolicyNo ? 'border-red-500' : ''}`}
+                      placeholder="Enter policy number"
+                      className={`w-full ${attemptedSubmit && errors.insurancePolicyNo ? 'border-red-500' : ''}`}
                     />
-                    {errors.insurancePolicyNo && (
+                    {attemptedSubmit && errors.insurancePolicyNo && (
                       <p className="text-sm text-red-500">{errors.insurancePolicyNo.message}</p>
                     )}
                   </div>
@@ -197,10 +246,10 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('insuranceClaimNo')}
-                      placeholder="12345"
-                      className={`w-full ${errors.insuranceClaimNo ? 'border-red-500' : ''}`}
+                      placeholder="Enter policy number"
+                      className={`w-full ${attemptedSubmit && errors.insuranceClaimNo ? 'border-red-500' : ''}`}
                     />
-                    {errors.insuranceClaimNo && (
+                    {attemptedSubmit && errors.insuranceClaimNo && (
                       <p className="text-sm text-red-500">{errors.insuranceClaimNo.message}</p>
                     )}
                   </div>
@@ -220,7 +269,7 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                       }}
                       dateRestriction="past"
                     />
-                    {errors.insuranceDateOfLoss && (
+                    {attemptedSubmit && errors.insuranceDateOfLoss && (
                       <p className="text-sm text-red-500">{errors.insuranceDateOfLoss.message}</p>
                     )}
                   </div>
@@ -232,10 +281,10 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                     name="insuranceAddressLookup"
                     value={watch('insuranceAddressLookup')}
                     label="Address Lookup"
-                    placeholder="150 John Street, Toronto"
+                    placeholder="Enter address"
                     setValue={setValue}
                     trigger={trigger}
-                    error={errors.insuranceAddressLookup}
+                    error={attemptedSubmit ? errors.insuranceAddressLookup : undefined}
                     onPlaceSelect={handlePlaceSelect}
                     className="space-y-2"
                   />
@@ -248,10 +297,10 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('insuranceStreetAddress')}
-                      placeholder="50 Stephanie Street"
+                      placeholder="Enter street address"
                       className="w-full"
                     />
-                    {errors.insuranceStreetAddress && (
+                    {attemptedSubmit && errors.insuranceStreetAddress && (
                       <p className="text-sm text-red-500">
                         {errors.insuranceStreetAddress.message}
                       </p>
@@ -266,10 +315,10 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('insuranceAptUnitSuite')}
-                      placeholder="402"
+                      placeholder="Enter apt/unit/suite"
                       className="w-full"
                     />
-                    {errors.insuranceAptUnitSuite && (
+                    {attemptedSubmit && errors.insuranceAptUnitSuite && (
                       <p className="text-sm text-red-500">{errors.insuranceAptUnitSuite.message}</p>
                     )}
                   </div>
@@ -279,10 +328,10 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('insurancePostalCode')}
-                      placeholder="A1A 1A1"
+                      placeholder="Enter postal code"
                       className="w-full"
                     />
-                    {errors.insurancePostalCode && (
+                    {attemptedSubmit && errors.insurancePostalCode && (
                       <p className="text-sm text-red-500">{errors.insurancePostalCode.message}</p>
                     )}
                   </div>
@@ -299,7 +348,7 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                       options={provinceOptions}
                       placeholder="Select"
                     />
-                    {errors.insuranceProvince && (
+                    {attemptedSubmit && errors.insuranceProvince && (
                       <p className="text-sm text-red-500">{errors.insuranceProvince.message}</p>
                     )}
                   </div>
@@ -309,10 +358,10 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('insuranceCity')}
-                      placeholder="Toronto"
+                      placeholder="Enter city"
                       className="w-full"
                     />
-                    {errors.insuranceCity && (
+                    {attemptedSubmit && errors.insuranceCity && (
                       <p className="text-sm text-red-500">{errors.insuranceCity.message}</p>
                     )}
                   </div>
@@ -331,9 +380,9 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                       onChange={e =>
                         setValue('insurancePhone', e.target.value, { shouldValidate: true })
                       }
-                      className={`w-full ${errors.insurancePhone ? 'border-red-500' : ''}`}
+                      className={`w-full ${attemptedSubmit && errors.insurancePhone ? 'border-red-500' : ''}`}
                     />
-                    {errors.insurancePhone && (
+                    {attemptedSubmit && errors.insurancePhone && (
                       <p className="text-sm text-red-500">{errors.insurancePhone.message}</p>
                     )}
                   </div>
@@ -349,10 +398,11 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                       onChange={e =>
                         setValue('insuranceFaxNo', e.target.value, { shouldValidate: true })
                       }
-                      className={`w-full ${errors.insuranceFaxNo ? 'border-red-500' : ''}`}
+                      placeholder="Enter fax number"
+                      className={`w-full ${attemptedSubmit && errors.insuranceFaxNo ? 'border-red-500' : ''}`}
                       icon={Printer}
                     />
-                    {errors.insuranceFaxNo && (
+                    {attemptedSubmit && errors.insuranceFaxNo && (
                       <p className="text-sm text-red-500">{errors.insuranceFaxNo.message}</p>
                     )}
                   </div>
@@ -365,10 +415,10 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                       disabled={isSubmitting}
                       {...register('insuranceEmailAddress')}
                       type="email"
-                      placeholder="johndoe20@gmail.com"
-                      className={`w-full ${errors.insuranceEmailAddress ? 'border-red-500' : ''}`}
+                      placeholder="Enter email address"
+                      className={`w-full ${attemptedSubmit && errors.insuranceEmailAddress ? 'border-red-500' : ''}`}
                     />
-                    {errors.insuranceEmailAddress && (
+                    {attemptedSubmit && errors.insuranceEmailAddress && (
                       <p className="text-sm text-red-500">{errors.insuranceEmailAddress.message}</p>
                     )}
                   </div>
@@ -396,12 +446,12 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting || policyHolderSameAsClaimant}
                       {...register('policyHolderFirstName')}
-                      placeholder="John"
-                      className={`w-full ${errors.policyHolderFirstName ? 'border-red-500' : ''} ${
+                      placeholder="Enter first name"
+                      className={`w-full ${attemptedSubmit && errors.policyHolderFirstName ? 'border-red-500' : ''} ${
                         policyHolderSameAsClaimant ? 'bg-gray-100' : ''
                       }`}
                     />
-                    {errors.policyHolderFirstName && (
+                    {attemptedSubmit && errors.policyHolderFirstName && (
                       <p className="text-sm text-red-500">{errors.policyHolderFirstName.message}</p>
                     )}
                   </div>
@@ -413,12 +463,12 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting || policyHolderSameAsClaimant}
                       {...register('policyHolderLastName')}
-                      placeholder="Doe"
-                      className={`w-full ${errors.policyHolderLastName ? 'border-red-500' : ''} ${
+                      placeholder="Enter last name"
+                      className={`w-full ${attemptedSubmit && errors.policyHolderLastName ? 'border-red-500' : ''} ${
                         policyHolderSameAsClaimant ? 'bg-gray-100' : ''
                       }`}
                     />
-                    {errors.policyHolderLastName && (
+                    {attemptedSubmit && errors.policyHolderLastName && (
                       <p className="text-sm text-red-500">{errors.policyHolderLastName.message}</p>
                     )}
                   </div>
@@ -439,6 +489,7 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
               isSubmitting={isSubmitting}
               isLastStep={currentStep === totalSteps}
               color="#000080"
+              disabled={!areAllRequiredFieldsFilled}
             />
           </div>
         </form>

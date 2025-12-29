@@ -28,6 +28,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
 
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [showYearPicker, setShowYearPicker] = useState(false);
 
   const calendarRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -187,44 +188,205 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
     return `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
   };
 
+  // Calculate reasonable minimum date (100 years ago from today)
+  const getMinAllowedDate = () => {
+    if (minDate) {
+      return minDate;
+    }
+    if (dateRestriction === 'past') {
+      const minAllowedDate = new Date(today);
+      minAllowedDate.setFullYear(today.getFullYear() - 100);
+      return minAllowedDate;
+    }
+    return null;
+  };
+
+  const minAllowedDate = getMinAllowedDate();
+
+  const canGoToPreviousMonth = () => {
+    if (!minAllowedDate) return true;
+    const previousMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+    return previousMonth >= minAllowedDate;
+  };
+
+  const canGoToNextMonth = () => {
+    if (dateRestriction === 'past') {
+      const nextMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+      return nextMonth <= today;
+    }
+    if (dateRestriction === 'future') {
+      return true; // Can always go forward for future dates
+    }
+    return true;
+  };
+
   const prevMonth = (event?: React.MouseEvent<HTMLButtonElement>) => {
     event?.preventDefault();
     event?.stopPropagation();
+    if (!canGoToPreviousMonth()) return;
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   };
 
   const nextMonth = (event?: React.MouseEvent<HTMLButtonElement>) => {
     event?.preventDefault();
     event?.stopPropagation();
+    if (!canGoToNextMonth()) return;
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
   const toggleCalendar = (event?: React.MouseEvent<HTMLButtonElement>) => {
     event?.preventDefault();
     setShowCalendar(!showCalendar);
+    setShowYearPicker(false);
+  };
+
+  const handleYearMonthClick = () => {
+    setShowYearPicker(!showYearPicker);
+  };
+
+  const selectYear = (year: number) => {
+    setCurrentMonth(new Date(year, currentMonth.getMonth(), 1));
+    setShowYearPicker(false);
+  };
+
+  const selectMonth = (month: number) => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), month, 1));
+    setShowYearPicker(false);
+  };
+
+  const getAvailableYears = () => {
+    const years = [];
+    const startYear = minAllowedDate ? minAllowedDate.getFullYear() : today.getFullYear() - 100;
+    const endYear = dateRestriction === 'past' ? today.getFullYear() : today.getFullYear() + 10;
+
+    for (let year = startYear; year <= endYear; year++) {
+      years.push(year);
+    }
+    return years.reverse(); // Show most recent years first
+  };
+
+  const getAvailableMonths = () => {
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+
+    return months.map((name, index) => ({
+      name,
+      index,
+      isDisabled: false,
+    }));
   };
 
   const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const calendarDays = generateCalendarDays(currentMonth);
 
   const renderCalendar = () => {
+    if (showYearPicker) {
+      const availableYears = getAvailableYears();
+      const availableMonths = getAvailableMonths();
+      const currentYear = currentMonth.getFullYear();
+      const currentMonthIndex = currentMonth.getMonth();
+
+      return (
+        <div className="bg-opacity-50 w-[250px] rounded-3xl border-[1px] bg-white p-4 shadow-lg backdrop-blur-md">
+          <div className="mb-2 flex w-[100%] items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setShowYearPicker(false)}
+              className="rounded p-1 text-gray-600 hover:bg-gray-100"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            <h3 className="font-poppins text-center text-[13.9px] leading-[16.68px] font-bold tracking-[0.26px] text-[#000000]">
+              Select Year
+            </h3>
+            <div className="w-6"></div>
+          </div>
+
+          <div className="mb-2 max-h-[200px] overflow-y-auto">
+            <div className="grid grid-cols-3 gap-1">
+              {availableYears.map(year => (
+                <button
+                  key={year}
+                  type="button"
+                  onClick={() => selectYear(year)}
+                  className={`rounded p-2 text-[11.12px] ${
+                    year === currentYear
+                      ? 'bg-blue-500 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {year}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t pt-2">
+            <div className="mb-1 text-[10px] font-semibold text-gray-500">Select Month</div>
+            <div className="grid grid-cols-3 gap-1">
+              {availableMonths.map(month => (
+                <button
+                  key={month.index}
+                  type="button"
+                  onClick={() => selectMonth(month.index)}
+                  className={`rounded p-1 text-[10px] ${
+                    month.index === currentMonthIndex
+                      ? 'bg-blue-500 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {month.name.substring(0, 3)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="bg-opacity-50 w-[250px] rounded-3xl border-[1px] bg-white p-4 shadow-lg backdrop-blur-md">
         <div className="mb-2 flex w-[100%] items-center justify-between">
           <button
             type="button"
             onClick={prevMonth}
-            className="rounded p-1 text-gray-600 hover:bg-gray-100"
+            disabled={!canGoToPreviousMonth()}
+            className={`rounded p-1 ${
+              canGoToPreviousMonth()
+                ? 'text-gray-600 hover:bg-gray-100'
+                : 'cursor-not-allowed text-gray-300'
+            }`}
           >
             <ChevronLeft className="h-6 w-6" />
           </button>
-          <h3 className="font-poppins text-center text-[13.9px] leading-[16.68px] font-bold tracking-[0.26px] text-[#000000]">
+          <button
+            type="button"
+            onClick={handleYearMonthClick}
+            className="font-poppins cursor-pointer text-center text-[13.9px] leading-[16.68px] font-bold tracking-[0.26px] text-[#000000] hover:text-blue-600"
+          >
             {monthYearString(currentMonth)}
-          </h3>
+          </button>
           <button
             type="button"
             onClick={nextMonth}
-            className="rounded p-1 text-gray-600 hover:bg-gray-100"
+            disabled={!canGoToNextMonth()}
+            className={`rounded p-1 ${
+              canGoToNextMonth()
+                ? 'text-gray-600 hover:bg-gray-100'
+                : 'cursor-not-allowed text-gray-300'
+            }`}
           >
             <ChevronRight className="h-6 w-6" />
           </button>

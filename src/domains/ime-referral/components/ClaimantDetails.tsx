@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
@@ -39,6 +40,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
   mode,
 }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   const {
     register,
@@ -51,17 +53,43 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
   } = useForm<ClaimantDetails>({
     resolver: zodResolver(ClaimantDetailsSchema),
     defaultValues: data.step1 || claimantData || ClaimantDetailsInitialValues,
-    mode: 'onChange',
+    mode: 'onSubmit',
   });
 
   const watchedValues = watch();
 
-  const onSubmit: SubmitHandler<ClaimantDetails> = values => {
+  // Check if all required fields are filled (not empty)
+  // Validation errors will show when user clicks Continue
+  const areAllRequiredFieldsFilled = useMemo(() => {
+    const claimType = watchedValues.claimType?.trim() || '';
+    const firstName = watchedValues.firstName?.trim() || '';
+    const lastName = watchedValues.lastName?.trim() || '';
+    const addressLookup = watchedValues.addressLookup?.trim() || '';
+
+    return (
+      claimType.length > 0 &&
+      firstName.length > 0 &&
+      lastName.length > 0 &&
+      addressLookup.length > 0
+    );
+  }, [
+    watchedValues.claimType,
+    watchedValues.firstName,
+    watchedValues.lastName,
+    watchedValues.addressLookup,
+  ]);
+
+  const onSubmit: SubmitHandler<ClaimantDetails> = async values => {
+    setAttemptedSubmit(true);
     setData('step1', values);
 
     if (onNext) {
       onNext();
     }
+  };
+
+  const onError = () => {
+    setAttemptedSubmit(true);
   };
 
   if (!_hasHydrated) {
@@ -78,7 +106,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
         className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[55px] md:py-8"
         style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
+        <form onSubmit={handleSubmit(onSubmit, onError)} className="w-full max-w-full" noValidate>
           <div className="w-full max-w-full space-y-6">
             <div className="w-full max-w-full px-4 md:px-0">
               <h2 className="mb-6 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
@@ -98,7 +126,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                     placeholder="Select type of claim"
                     icon={false}
                   />
-                  {errors.claimType && (
+                  {attemptedSubmit && errors.claimType && (
                     <p className="text-sm text-red-500">{errors.claimType.message}</p>
                   )}
                 </div>
@@ -113,10 +141,10 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                   <Input
                     disabled={isSubmitting}
                     {...register('firstName')}
-                    placeholder="John"
-                    className={`w-full ${errors.firstName ? 'border-red-500' : ''}`}
+                    placeholder="Enter your first name"
+                    className={`w-full ${attemptedSubmit && errors.firstName ? 'border-red-500' : ''}`}
                   />
-                  {errors.firstName && (
+                  {attemptedSubmit && errors.firstName && (
                     <p className="text-sm text-red-500">{errors.firstName.message}</p>
                   )}
                 </div>
@@ -128,10 +156,10 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                   <Input
                     disabled={isSubmitting}
                     {...register('lastName')}
-                    placeholder="Doe"
-                    className={`w-full ${errors.lastName ? 'border-red-500' : ''}`}
+                    placeholder="Enter your last name"
+                    className={`w-full ${attemptedSubmit && errors.lastName ? 'border-red-500' : ''}`}
                   />
-                  {errors.lastName && (
+                  {attemptedSubmit && errors.lastName && (
                     <p className="text-sm text-red-500">{errors.lastName.message}</p>
                   )}
                 </div>
@@ -148,8 +176,9 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                         setValue('dateOfBirth', date ? date.toISOString().split('T')[0] : '')
                       }
                       dateRestriction="past"
+                      minDate={new Date(new Date().getFullYear() - 100, 0, 1)}
                     />
-                    {errors.dateOfBirth && (
+                    {attemptedSubmit && errors.dateOfBirth && (
                       <p className="text-sm text-red-500">{errors.dateOfBirth.message}</p>
                     )}
                   </div>
@@ -169,7 +198,9 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                     placeholder="Select"
                     icon={false}
                   />
-                  {errors.gender && <p className="text-sm text-red-500">{errors.gender.message}</p>}
+                  {attemptedSubmit && errors.gender && (
+                    <p className="text-sm text-red-500">{errors.gender.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
@@ -181,9 +212,10 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                     onChange={e =>
                       setValue('phoneNumber', e.target.value, { shouldValidate: true })
                     }
-                    className={`w-full ${errors.phoneNumber ? 'border-red-500' : ''}`}
+                    placeholder="Enter your phone number"
+                    className={`w-full ${attemptedSubmit && errors.phoneNumber ? 'border-red-500' : ''}`}
                   />
-                  {errors.phoneNumber && (
+                  {attemptedSubmit && errors.phoneNumber && (
                     <p className="text-sm text-red-500">{errors.phoneNumber.message}</p>
                   )}
                 </div>
@@ -194,10 +226,10 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                     disabled={isSubmitting}
                     {...register('emailAddress')}
                     type="email"
-                    placeholder="johndoe20@gmail.com"
-                    className={`w-full ${errors.emailAddress ? 'border-red-500' : ''}`}
+                    placeholder="Enter your email address"
+                    className={`w-full ${attemptedSubmit && errors.emailAddress ? 'border-red-500' : ''}`}
                   />
-                  {errors.emailAddress && (
+                  {attemptedSubmit && errors.emailAddress && (
                     <p className="text-sm text-red-500">{errors.emailAddress.message}</p>
                   )}
                 </div>
@@ -212,11 +244,11 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                     <GoogleMapsInput
                       name="addressLookup"
                       label="Address Lookup"
-                      placeholder="150 John Street, Toronto"
+                      placeholder="Enter your address"
                       required
                       value={field.value}
                       onChange={field.onChange}
-                      error={fieldState.error}
+                      error={attemptedSubmit ? fieldState.error : undefined}
                       setValue={setValue}
                       trigger={trigger}
                       onPlaceSelect={placeData => {
@@ -280,10 +312,12 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                   <Input
                     disabled={isSubmitting}
                     {...register('street')}
-                    placeholder="50 Stephanie Street"
+                    placeholder="Enter street address"
                     className="w-full"
                   />
-                  {errors.street && <p className="text-sm text-red-500">{errors.street.message}</p>}
+                  {attemptedSubmit && errors.street && (
+                    <p className="text-sm text-red-500">{errors.street.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -294,10 +328,12 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                   <Input
                     disabled={isSubmitting}
                     {...register('suite')}
-                    placeholder="402"
+                    placeholder="Enter apt/unit/suite"
                     className="w-full"
                   />
-                  {errors.suite && <p className="text-sm text-red-500">{errors.suite.message}</p>}
+                  {attemptedSubmit && errors.suite && (
+                    <p className="text-sm text-red-500">{errors.suite.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2 md:col-span-1">
@@ -305,10 +341,10 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                   <Input
                     disabled={isSubmitting}
                     {...register('postalCode')}
-                    placeholder="A1A 1A1"
+                    placeholder="Enter postal code"
                     className="w-full"
                   />
-                  {errors.postalCode && (
+                  {attemptedSubmit && errors.postalCode && (
                     <p className="text-sm text-red-500">{errors.postalCode.message}</p>
                   )}
                 </div>
@@ -322,7 +358,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                     options={provinceOptions}
                     placeholder="Select"
                   />
-                  {errors.province && (
+                  {attemptedSubmit && errors.province && (
                     <p className="text-sm text-red-500">{errors.province.message}</p>
                   )}
                 </div>
@@ -331,10 +367,12 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                   <Input
                     disabled={isSubmitting}
                     {...register('city')}
-                    placeholder="Toronto"
+                    placeholder="Enter city"
                     className="w-full"
                   />
-                  {errors.city && <p className="text-sm text-red-500">{errors.city.message}</p>}
+                  {attemptedSubmit && errors.city && (
+                    <p className="text-sm text-red-500">{errors.city.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -345,10 +383,10 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                   <Textarea
                     disabled={isSubmitting}
                     {...register('relatedCasesDetails')}
-                    placeholder="Type here"
-                    className={`mt-2 min-h-[100px] w-full resize-none rounded-md ${errors.relatedCasesDetails ? 'border-red-500' : ''}`}
+                    placeholder="Enter related cases details"
+                    className={`mt-2 min-h-[100px] w-full resize-none rounded-md ${attemptedSubmit && errors.relatedCasesDetails ? 'border-red-500' : ''}`}
                   />
-                  {errors.relatedCasesDetails && (
+                  {attemptedSubmit && errors.relatedCasesDetails && (
                     <p className="text-sm text-red-500">{errors.relatedCasesDetails.message}</p>
                   )}
                 </div>
@@ -359,10 +397,10 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('familyDoctorName')}
-                      placeholder="Dr. John Doe"
+                      placeholder="Enter family doctor name"
                       className="w-full"
                     />
-                    {errors.familyDoctorName && (
+                    {attemptedSubmit && errors.familyDoctorName && (
                       <p className="text-sm text-red-500">{errors.familyDoctorName.message}</p>
                     )}
                   </div>
@@ -373,10 +411,10 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                       disabled={isSubmitting}
                       {...register('familyDoctorEmail')}
                       type="email"
-                      placeholder="johndoe20@gmail.com"
+                      placeholder="Enter email address"
                       className="w-full"
                     />
-                    {errors.familyDoctorEmail && (
+                    {attemptedSubmit && errors.familyDoctorEmail && (
                       <p className="text-sm text-red-500">{errors.familyDoctorEmail.message}</p>
                     )}
                   </div>
@@ -393,9 +431,10 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                       onChange={e =>
                         setValue('familyDoctorPhone', e.target.value, { shouldValidate: true })
                       }
+                      placeholder="Enter phone number"
                       className="w-full"
                     />
-                    {errors.familyDoctorPhone && (
+                    {attemptedSubmit && errors.familyDoctorPhone && (
                       <p className="text-sm text-red-500">{errors.familyDoctorPhone.message}</p>
                     )}
                   </div>
@@ -409,10 +448,11 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                       onChange={e =>
                         setValue('familyDoctorFax', e.target.value, { shouldValidate: true })
                       }
+                      placeholder="Enter fax number"
                       className="w-full"
                       icon={Printer}
                     />
-                    {errors.familyDoctorFax && (
+                    {attemptedSubmit && errors.familyDoctorFax && (
                       <p className="text-sm text-red-500">{errors.familyDoctorFax.message}</p>
                     )}
                   </div>
@@ -428,6 +468,7 @@ const ClaimantDetailsForm: React.FC<CLaimTypeProps> = ({
                 isSubmitting={isSubmitting}
                 isLastStep={currentStep === totalSteps}
                 color="#000080"
+                disabled={!areAllRequiredFieldsFilled}
               />
             </div>
           </div>
