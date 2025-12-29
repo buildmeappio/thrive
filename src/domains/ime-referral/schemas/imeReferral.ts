@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { DocumentUploadConfig } from '@/config/documentUpload';
 import { formatFileSize } from '@/utils/documentUpload';
 import { validateCanadianPhoneNumber } from '@/utils/formatNumbers';
+import { containsOnlySpecialChars, getFieldValidationPattern } from '@/utils/fieldValidation';
 
 // File validation schema
 const FileSchema = z.instanceof(File).superRefine((file, ctx) => {
@@ -46,6 +47,9 @@ export const ClaimantDetailsSchema = z.object({
     .string()
     .trim()
     .min(1, ErrorMessages.FIRST_NAME_REQUIRED)
+    .refine(val => val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .min(4, ErrorMessages.FIRST_NAME_MIN)
     .regex(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
     .max(100, ErrorMessages.NAME_TOO_LONG),
@@ -54,11 +58,31 @@ export const ClaimantDetailsSchema = z.object({
     .string()
     .trim()
     .min(1, ErrorMessages.LAST_NAME_REQUIRED)
+    .refine(val => val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .min(4, ErrorMessages.LAST_NAME_MIN)
     .regex(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
     .max(100, ErrorMessages.NAME_TOO_LONG),
 
-  addressLookup: z.string().min(5, ErrorMessages.ADDRESS_LOOKUP_REQUIRED),
+  addressLookup: z
+    .string()
+    .min(5, ErrorMessages.ADDRESS_LOOKUP_REQUIRED)
+    .refine(val => val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
+    .refine(val => !containsOnlySpecialChars(val), {
+      message: ErrorMessages.ADDRESS_LOOKUP_INVALID_CHARS,
+    })
+    .refine(
+      val => {
+        const pattern = getFieldValidationPattern('addressLookup');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.ADDRESS_LOOKUP_INVALID_CHARS,
+      }
+    ),
 
   // Optional fields - use .optional() to make them not required
   dateOfBirth: z
@@ -98,23 +122,71 @@ export const ClaimantDetailsSchema = z.object({
   street: z
     .string()
     .trim()
+    .refine(val => val === '' || val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .refine(val => val === '' || val.length >= 5, {
       message: ErrorMessages.STREET_ADDRESS_MIN,
     })
+    .refine(val => val === '' || !containsOnlySpecialChars(val), {
+      message: ErrorMessages.STREET_ADDRESS_INVALID,
+    })
+    .refine(
+      val => {
+        if (val === '') return true;
+        const pattern = getFieldValidationPattern('streetAddress');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.STREET_ADDRESS_INVALID,
+      }
+    )
     .optional(),
   suite: z
     .string()
     .trim()
+    .refine(val => val === '' || val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .refine(val => val === '' || val.length >= 2, {
       message: ErrorMessages.SUITE_MIN,
     })
+    .refine(val => val === '' || !containsOnlySpecialChars(val), {
+      message: ErrorMessages.INVALID_CHARACTERS,
+    })
+    .refine(
+      val => {
+        if (val === '') return true;
+        const pattern = getFieldValidationPattern('aptUnitSuite');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.INVALID_CHARACTERS,
+      }
+    )
     .optional(),
   city: z
     .string()
     .trim()
+    .refine(val => val === '' || val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .refine(val => val === '' || val.length >= 5, {
       message: ErrorMessages.CITY_MIN_OPTIONAL,
     })
+    .refine(val => val === '' || !containsOnlySpecialChars(val), {
+      message: ErrorMessages.CITY_INVALID_CHARS,
+    })
+    .refine(
+      val => {
+        if (val === '') return true;
+        const pattern = getFieldValidationPattern('city');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.CITY_INVALID_CHARS,
+      }
+    )
     .optional(),
 
   postalCode: z
@@ -130,9 +202,25 @@ export const ClaimantDetailsSchema = z.object({
   relatedCasesDetails: z
     .string()
     .trim()
+    .refine(val => val === '' || val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .refine(val => val === '' || val.length >= 10, {
       message: ErrorMessages.RELATED_CASES_MIN,
     })
+    .refine(val => val === '' || !containsOnlySpecialChars(val), {
+      message: ErrorMessages.INVALID_CHARACTERS,
+    })
+    .refine(
+      val => {
+        if (val === '') return true;
+        const pattern = getFieldValidationPattern('relatedCases');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.INVALID_CHARACTERS,
+      }
+    )
     .optional(),
   familyDoctorName: z
     .string()
@@ -197,27 +285,71 @@ export const InsuranceDetailsSchema = z.object({
     .string()
     .trim()
     .min(1, 'Insurance company name is required')
+    .refine(val => val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .min(3, ErrorMessages.COMPANY_NAME_MIN)
-    .regex(
-      /^[A-Za-z0-9][A-Za-z0-9\s.'-]*$/,
-      'Company name can only contain letters, numbers, spaces, hyphens, periods, and apostrophes'
+    .refine(val => !containsOnlySpecialChars(val), {
+      message: ErrorMessages.ORGANIZATION_NAME_INVALID,
+    })
+    .refine(
+      val => {
+        const pattern = getFieldValidationPattern('companyName');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.ORGANIZATION_NAME_INVALID,
+      }
     ),
   insuranceAdjusterContact: z
     .string()
     .trim()
     .min(1, 'Adjuster/contact is required')
+    .refine(val => val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .min(4, ErrorMessages.ADJUSTER_CONTACT_MIN)
     .regex(/^[A-Za-zÀ-ÿ' -]+$/, 'Adjuster/contact is invalid'),
   insurancePolicyNo: z
     .string()
     .trim()
     .min(1, 'Policy number is required')
-    .min(3, ErrorMessages.POLICY_NUMBER_MIN),
+    .refine(val => val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
+    .min(3, ErrorMessages.POLICY_NUMBER_MIN)
+    .refine(val => !containsOnlySpecialChars(val), {
+      message: ErrorMessages.INVALID_CHARACTERS,
+    })
+    .refine(
+      val => {
+        const pattern = getFieldValidationPattern('policyNumber');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.INVALID_CHARACTERS,
+      }
+    ),
   insuranceClaimNo: z
     .string()
     .trim()
     .min(1, 'Claim number is required')
-    .min(3, ErrorMessages.CLAIM_NUMBER_MIN),
+    .refine(val => val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
+    .min(3, ErrorMessages.CLAIM_NUMBER_MIN)
+    .refine(val => !containsOnlySpecialChars(val), {
+      message: ErrorMessages.INVALID_CHARACTERS,
+    })
+    .refine(
+      val => {
+        const pattern = getFieldValidationPattern('claimNumber');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.INVALID_CHARACTERS,
+      }
+    ),
   insuranceDateOfLoss: z.string().min(1, 'Date of loss is required'),
 
   // Optional address fields
@@ -232,23 +364,71 @@ export const InsuranceDetailsSchema = z.object({
   insuranceStreetAddress: z
     .string()
     .trim()
+    .refine(val => val === '' || val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .refine(val => val === '' || val.length >= 5, {
       message: ErrorMessages.STREET_ADDRESS_MIN,
     })
+    .refine(val => val === '' || !containsOnlySpecialChars(val), {
+      message: ErrorMessages.STREET_ADDRESS_INVALID,
+    })
+    .refine(
+      val => {
+        if (val === '') return true;
+        const pattern = getFieldValidationPattern('streetAddress');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.STREET_ADDRESS_INVALID,
+      }
+    )
     .optional(),
   insuranceAptUnitSuite: z
     .string()
     .trim()
+    .refine(val => val === '' || val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .refine(val => val === '' || val.length >= 2, {
       message: ErrorMessages.SUITE_MIN,
     })
+    .refine(val => val === '' || !containsOnlySpecialChars(val), {
+      message: ErrorMessages.INVALID_CHARACTERS,
+    })
+    .refine(
+      val => {
+        if (val === '') return true;
+        const pattern = getFieldValidationPattern('aptUnitSuite');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.INVALID_CHARACTERS,
+      }
+    )
     .optional(),
   insuranceCity: z
     .string()
     .trim()
+    .refine(val => val === '' || val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .refine(val => val === '' || val.length >= 5, {
       message: ErrorMessages.CITY_MIN_OPTIONAL,
     })
+    .refine(val => val === '' || !containsOnlySpecialChars(val), {
+      message: ErrorMessages.CITY_INVALID_CHARS,
+    })
+    .refine(
+      val => {
+        if (val === '') return true;
+        const pattern = getFieldValidationPattern('city');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.CITY_INVALID_CHARS,
+      }
+    )
     .optional(),
 
   insurancePhone: z
@@ -300,9 +480,19 @@ export const LegalDetailsSchema = z.object({
     .refine(val => val === '' || val.length >= 3, {
       message: ErrorMessages.LEGAL_COMPANY_NAME_MIN,
     })
-    .refine(val => val === '' || /^[A-Za-zÀ-ÿ' -]+$/.test(val), {
-      message: ErrorMessages.COMPANY_NAME_INVALID,
+    .refine(val => val === '' || !containsOnlySpecialChars(val), {
+      message: ErrorMessages.ORGANIZATION_NAME_INVALID,
     })
+    .refine(
+      val => {
+        if (val === '') return true;
+        const pattern = getFieldValidationPattern('companyName');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.ORGANIZATION_NAME_INVALID,
+      }
+    )
     .optional(),
 
   legalContactPerson: z
@@ -311,9 +501,19 @@ export const LegalDetailsSchema = z.object({
     .refine(val => val === '' || val.length >= 4, {
       message: ErrorMessages.LEGAL_CONTACT_PERSON_MIN,
     })
-    .refine(val => val === '' || /^[A-Za-zÀ-ÿ' -]+$/.test(val), {
+    .refine(val => val === '' || !containsOnlySpecialChars(val), {
       message: ErrorMessages.CONTACT_PERSON_INVALID,
     })
+    .refine(
+      val => {
+        if (val === '') return true;
+        const pattern = getFieldValidationPattern('contactPerson');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.CONTACT_PERSON_INVALID,
+      }
+    )
     .optional(),
 
   legalPhone: z
@@ -334,23 +534,71 @@ export const LegalDetailsSchema = z.object({
   legalStreetAddress: z
     .string()
     .trim()
+    .refine(val => val === '' || val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .refine(val => val === '' || val.length >= 5, {
       message: ErrorMessages.STREET_ADDRESS_MIN,
     })
+    .refine(val => val === '' || !containsOnlySpecialChars(val), {
+      message: ErrorMessages.STREET_ADDRESS_INVALID,
+    })
+    .refine(
+      val => {
+        if (val === '') return true;
+        const pattern = getFieldValidationPattern('streetAddress');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.STREET_ADDRESS_INVALID,
+      }
+    )
     .optional(),
   legalAptUnitSuite: z
     .string()
     .trim()
+    .refine(val => val === '' || val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .refine(val => val === '' || val.length >= 2, {
       message: ErrorMessages.SUITE_MIN,
     })
+    .refine(val => val === '' || !containsOnlySpecialChars(val), {
+      message: ErrorMessages.INVALID_CHARACTERS,
+    })
+    .refine(
+      val => {
+        if (val === '') return true;
+        const pattern = getFieldValidationPattern('aptUnitSuite');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.INVALID_CHARACTERS,
+      }
+    )
     .optional(),
   legalCity: z
     .string()
     .trim()
+    .refine(val => val === '' || val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .refine(val => val === '' || val.length >= 5, {
       message: ErrorMessages.CITY_MIN_OPTIONAL,
     })
+    .refine(val => val === '' || !containsOnlySpecialChars(val), {
+      message: ErrorMessages.CITY_INVALID_CHARS,
+    })
+    .refine(
+      val => {
+        if (val === '') return true;
+        const pattern = getFieldValidationPattern('city');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.CITY_INVALID_CHARS,
+      }
+    )
     .optional(),
   legalPostalCode: z
     .union([
@@ -386,27 +634,91 @@ const ExaminationServiceSchema = z.object({
       // Transportation
       pickupAddress: z
         .string()
+        .refine(val => val === '' || !val || val.trim().length > 0, {
+          message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+        })
         .refine(val => val === '' || !val || val.length >= 5, {
           message: ErrorMessages.PICKUP_ADDRESS_MIN,
         })
+        .refine(val => val === '' || !val || !containsOnlySpecialChars(val), {
+          message: ErrorMessages.STREET_ADDRESS_INVALID,
+        })
+        .refine(
+          val => {
+            if (val === '' || !val) return true;
+            const pattern = getFieldValidationPattern('pickupAddress');
+            return pattern ? pattern.test(val.trim()) : true;
+          },
+          {
+            message: ErrorMessages.STREET_ADDRESS_INVALID,
+          }
+        )
         .optional(),
       streetAddress: z
         .string()
+        .refine(val => val === '' || !val || val.trim().length > 0, {
+          message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+        })
         .refine(val => val === '' || !val || val.length >= 5, {
           message: ErrorMessages.STREET_ADDRESS_MIN,
         })
+        .refine(val => val === '' || !val || !containsOnlySpecialChars(val), {
+          message: ErrorMessages.STREET_ADDRESS_INVALID,
+        })
+        .refine(
+          val => {
+            if (val === '' || !val) return true;
+            const pattern = getFieldValidationPattern('streetAddress');
+            return pattern ? pattern.test(val.trim()) : true;
+          },
+          {
+            message: ErrorMessages.STREET_ADDRESS_INVALID,
+          }
+        )
         .optional(),
       aptUnitSuite: z
         .string()
+        .refine(val => val === '' || !val || val.trim().length > 0, {
+          message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+        })
         .refine(val => val === '' || !val || val.length >= 2, {
           message: ErrorMessages.SUITE_MIN,
         })
+        .refine(val => val === '' || !val || !containsOnlySpecialChars(val), {
+          message: ErrorMessages.INVALID_CHARACTERS,
+        })
+        .refine(
+          val => {
+            if (val === '' || !val) return true;
+            const pattern = getFieldValidationPattern('aptUnitSuite');
+            return pattern ? pattern.test(val.trim()) : true;
+          },
+          {
+            message: ErrorMessages.INVALID_CHARACTERS,
+          }
+        )
         .optional(),
       city: z
         .string()
+        .refine(val => val === '' || !val || val.trim().length > 0, {
+          message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+        })
         .refine(val => val === '' || !val || val.length >= 5, {
           message: ErrorMessages.CITY_MIN_OPTIONAL,
         })
+        .refine(val => val === '' || !val || !containsOnlySpecialChars(val), {
+          message: ErrorMessages.CITY_INVALID_CHARS,
+        })
+        .refine(
+          val => {
+            if (val === '' || !val) return true;
+            const pattern = getFieldValidationPattern('city');
+            return pattern ? pattern.test(val.trim()) : true;
+          },
+          {
+            message: ErrorMessages.CITY_INVALID_CHARS,
+          }
+        )
         .optional(),
       postalCode: z
         .string()
@@ -420,9 +732,25 @@ const ExaminationServiceSchema = z.object({
       // Additional notes
       notes: z
         .string()
+        .refine(val => val === '' || !val || val.trim().length > 0, {
+          message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+        })
         .refine(val => val === '' || !val || val.length >= 10, {
           message: ErrorMessages.NOTES_MIN,
         })
+        .refine(val => val === '' || !val || !containsOnlySpecialChars(val), {
+          message: ErrorMessages.INVALID_CHARACTERS,
+        })
+        .refine(
+          val => {
+            if (val === '' || !val) return true;
+            const pattern = getFieldValidationPattern('notes');
+            return pattern ? pattern.test(val.trim()) : true;
+          },
+          {
+            message: ErrorMessages.INVALID_CHARACTERS,
+          }
+        )
         .optional(),
     })
     .optional(),
@@ -437,16 +765,47 @@ const ExaminationDetailsSchema = z.object({
     .string()
     .trim()
     .min(1, 'Instructions are required')
-    .min(10, ErrorMessages.INSTRUCTIONS_MIN),
+    .refine(val => val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
+    .min(10, ErrorMessages.INSTRUCTIONS_MIN)
+    .refine(val => !containsOnlySpecialChars(val), {
+      message: ErrorMessages.INVALID_CHARACTERS,
+    })
+    .refine(
+      val => {
+        const pattern = getFieldValidationPattern('instructions');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.INVALID_CHARACTERS,
+      }
+    ),
   selectedBenefits: z.array(z.string()).min(1, 'At least one benefit must be selected'),
   locationType: z.string().min(1, 'Location type is required'),
   services: z.array(ExaminationServiceSchema),
   additionalNotes: z
     .string()
     .trim()
+    .refine(val => val === '' || !val || val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .refine(val => val === '' || !val || val.length >= 10, {
       message: ErrorMessages.ADDITIONAL_NOTES_MIN,
     })
+    .refine(val => val === '' || !val || !containsOnlySpecialChars(val), {
+      message: ErrorMessages.INVALID_CHARACTERS,
+    })
+    .refine(
+      val => {
+        if (val === '' || !val) return true;
+        const pattern = getFieldValidationPattern('notes');
+        return pattern ? pattern.test(val.trim()) : true;
+      },
+      {
+        message: ErrorMessages.INVALID_CHARACTERS,
+      }
+    )
     .optional(),
   supportPerson: z.boolean().optional(),
 });
@@ -458,7 +817,22 @@ export const ExaminationSchema = z
       .string()
       .trim()
       .min(1, 'Reason for referral is required')
-      .min(10, ErrorMessages.REASON_FOR_REFERRAL_MIN),
+      .refine(val => val.trim().length > 0, {
+        message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+      })
+      .min(10, ErrorMessages.REASON_FOR_REFERRAL_MIN)
+      .refine(val => !containsOnlySpecialChars(val), {
+        message: ErrorMessages.INVALID_CHARACTERS,
+      })
+      .refine(
+        val => {
+          const pattern = getFieldValidationPattern('reason');
+          return pattern ? pattern.test(val.trim()) : true;
+        },
+        {
+          message: ErrorMessages.INVALID_CHARACTERS,
+        }
+      ),
     examinationType: z.string().min(1, 'Case type is required'),
     examinations: z.array(ExaminationDetailsSchema).min(1, 'At least one examination is required'),
   })

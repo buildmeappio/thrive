@@ -1,6 +1,7 @@
 import ErrorMessages from '@/constants/ErrorMessages';
 import { ClaimantPreference } from '@prisma/client';
 import { z } from 'zod';
+import { containsOnlySpecialChars, getFieldValidationPattern } from '@/utils/fieldValidation';
 
 // Appointment schema
 export const appointmentSchema = z
@@ -26,27 +27,135 @@ export const claimantAvailabilitySchema = z
     appointments: z.array(appointmentSchema),
 
     preference: z.nativeEnum(ClaimantPreference),
-    accessibilityNotes: z.string().max(200, 'Notes cannot exceed 200 characters').optional(),
+    accessibilityNotes: z
+      .string()
+      .trim()
+      .max(200, 'Notes cannot exceed 200 characters')
+      .refine(val => val === '' || !val || val.trim().length > 0, {
+        message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+      })
+      .refine(val => val === '' || !val || !containsOnlySpecialChars(val), {
+        message: ErrorMessages.INVALID_CHARACTERS,
+      })
+      .optional(),
 
     // Add-on services
     interpreter: z.boolean(),
     interpreterLanguage: z.string().optional(),
 
     transportation: z.boolean(),
-    pickupAddress: z.string().optional(),
-    streetAddress: z.string().optional(),
-    aptUnitSuite: z.string().optional(),
-    city: z.string().optional(),
+    pickupAddress: z
+      .string()
+      .trim()
+      .refine(val => val === '' || !val || val.trim().length > 0, {
+        message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+      })
+      .refine(val => val === '' || !val || !containsOnlySpecialChars(val), {
+        message: ErrorMessages.STREET_ADDRESS_INVALID,
+      })
+      .refine(
+        val => {
+          if (val === '' || !val) return true;
+          const pattern = getFieldValidationPattern('pickupAddress');
+          return pattern ? pattern.test(val.trim()) : true;
+        },
+        {
+          message: ErrorMessages.STREET_ADDRESS_INVALID,
+        }
+      )
+      .optional(),
+    streetAddress: z
+      .string()
+      .trim()
+      .refine(val => val === '' || !val || val.trim().length > 0, {
+        message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+      })
+      .refine(val => val === '' || !val || !containsOnlySpecialChars(val), {
+        message: ErrorMessages.STREET_ADDRESS_INVALID,
+      })
+      .refine(
+        val => {
+          if (val === '' || !val) return true;
+          const pattern = getFieldValidationPattern('streetAddress');
+          return pattern ? pattern.test(val.trim()) : true;
+        },
+        {
+          message: ErrorMessages.STREET_ADDRESS_INVALID,
+        }
+      )
+      .optional(),
+    aptUnitSuite: z
+      .string()
+      .trim()
+      .refine(val => val === '' || !val || val.trim().length > 0, {
+        message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+      })
+      .refine(val => val === '' || !val || !containsOnlySpecialChars(val), {
+        message: ErrorMessages.INVALID_CHARACTERS,
+      })
+      .refine(
+        val => {
+          if (val === '' || !val) return true;
+          const pattern = getFieldValidationPattern('aptUnitSuite');
+          return pattern ? pattern.test(val.trim()) : true;
+        },
+        {
+          message: ErrorMessages.INVALID_CHARACTERS,
+        }
+      )
+      .optional(),
+    city: z
+      .string()
+      .trim()
+      .refine(val => val === '' || !val || val.trim().length > 0, {
+        message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+      })
+      .refine(val => val === '' || !val || !containsOnlySpecialChars(val), {
+        message: ErrorMessages.CITY_INVALID_CHARS,
+      })
+      .refine(
+        val => {
+          if (val === '' || !val) return true;
+          const pattern = getFieldValidationPattern('city');
+          return pattern ? pattern.test(val.trim()) : true;
+        },
+        {
+          message: ErrorMessages.CITY_INVALID_CHARS,
+        }
+      )
+      .optional(),
     postalCode: z
       .string()
-      .regex(/^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/, ErrorMessages.INVALID_POSTAL_CODE)
+      .trim()
+      .refine(val => val === '' || !val || /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(val), {
+        message: ErrorMessages.INVALID_POSTAL_CODE,
+      })
       .optional(),
     province: z.string().optional(),
 
     chaperone: z.boolean(),
 
     additionalNotes: z.boolean(),
-    additionalNotesText: z.string().optional(),
+    additionalNotesText: z
+      .string()
+      .trim()
+      .refine(val => val === '' || !val || val.trim().length > 0, {
+        message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+      })
+      .refine(val => val === '' || !val || !containsOnlySpecialChars(val), {
+        message: ErrorMessages.INVALID_CHARACTERS,
+      })
+      .refine(
+        val => {
+          if (val === '' || !val) return true;
+          const pattern = getFieldValidationPattern('notes');
+          return pattern ? pattern.test(val.trim()) : true;
+        },
+        {
+          message: ErrorMessages.INVALID_CHARACTERS,
+        }
+      )
+      .optional(),
 
     agreement: z.boolean(),
   })

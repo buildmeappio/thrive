@@ -150,7 +150,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
           );
 
           return (
-            <Form>
+            <Form noValidate>
               <div className="space-y-6 px-4 pb-4 md:space-y-10 md:px-0">
                 <div className="pt-1 md:pt-2">
                   <div className="mt-6 space-y-4">

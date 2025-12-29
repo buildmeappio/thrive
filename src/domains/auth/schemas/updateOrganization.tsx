@@ -1,12 +1,16 @@
 import { z } from 'zod';
 import ErrorMessages from '@/constants/ErrorMessages';
 import { validateCanadianPhoneNumber } from '@/utils/formatNumbers';
+import { containsOnlySpecialChars, getFieldValidationPattern } from '@/utils/fieldValidation';
 
 export const updateOrganizationSchema = z.object({
   firstName: z
     .string()
     .trim()
     .min(1, ErrorMessages.FIRST_NAME_REQUIRED)
+    .refine(val => val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .min(4, ErrorMessages.FIRST_NAME_MIN)
     .regex(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
     .max(100, ErrorMessages.NAME_TOO_LONG),
@@ -14,6 +18,9 @@ export const updateOrganizationSchema = z.object({
     .string()
     .trim()
     .min(1, ErrorMessages.LAST_NAME_REQUIRED)
+    .refine(val => val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
     .min(4, ErrorMessages.LAST_NAME_MIN)
     .regex(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
     .max(100, ErrorMessages.NAME_TOO_LONG),
@@ -28,7 +35,22 @@ export const updateOrganizationSchema = z.object({
     .string()
     .trim()
     .min(1, ErrorMessages.ORGANIZATION_NAME_REQUIRED)
-    .min(6, ErrorMessages.ORGANIZATION_NAME_MIN),
+    .refine(val => val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
+    .min(6, ErrorMessages.ORGANIZATION_NAME_MIN)
+    .refine(val => !containsOnlySpecialChars(val), {
+      message: ErrorMessages.ORGANIZATION_NAME_INVALID,
+    })
+    .refine(
+      val => {
+        const pattern = getFieldValidationPattern('organizationName');
+        return pattern ? pattern.test(val) : true;
+      },
+      {
+        message: ErrorMessages.ORGANIZATION_NAME_INVALID,
+      }
+    ),
   website: z
     .string()
     .optional()

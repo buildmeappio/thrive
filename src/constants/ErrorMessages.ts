@@ -173,4 +173,16 @@ export default Object.freeze({
   PICKUP_ADDRESS_MIN: 'Pickup address must be at least 5 characters',
   NOTES_MIN: 'Notes must be at least 10 characters',
   ERROR_SENDING_EMAIL: 'Error sending email',
+  ORGANIZATION_NAME_INVALID:
+    'Organization name contains invalid characters. Only letters, numbers, spaces, hyphens, apostrophes, periods, commas, and ampersands are allowed.',
+  STREET_ADDRESS_INVALID:
+    'Street address contains invalid characters. Only letters, numbers, spaces, and common address characters are allowed.',
+  ADDRESS_LOOKUP_INVALID_CHARS:
+    'Address lookup contains invalid characters. Please enter a valid address.',
+  CITY_INVALID_CHARS:
+    'City contains invalid characters. Only letters, spaces, hyphens, and apostrophes are allowed.',
+  DEPARTMENT_INVALID_CHARS:
+    'Department contains invalid characters. Only letters, numbers, spaces, hyphens, and apostrophes are allowed.',
+  INVALID_CHARACTERS: 'This field contains invalid characters or only special characters.',
+  FIELD_CANNOT_BE_ONLY_SPACES: 'This field cannot contain only spaces',
 });

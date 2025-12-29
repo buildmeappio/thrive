@@ -54,7 +54,7 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
         <ul className="py-1 text-sm text-gray-700">
           <li>
             <a
-              href="/settings"
+              href="/organization/settings"
               className="flex items-center space-x-2 px-3 py-1.5 transition-colors hover:bg-gray-100"
             >
               <Settings size={16} />

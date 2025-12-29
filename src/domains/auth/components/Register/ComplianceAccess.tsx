@@ -1,6 +1,6 @@
 // Step 3
 import { Formik, Form, type FormikHelpers } from 'formik';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import BackButton from '@/components/BackButton';
 import ContinueButton from '@/components/ContinueButton';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -32,7 +32,7 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
   isUpdateMode = false,
   token,
 }) => {
-  const { setData, data, _hasHydrated } = useRegistrationStore();
+  const { setData, data, _hasHydrated, reset } = useRegistrationStore();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showSuccessPage, setShowSuccessPage] = useState(false);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
@@ -43,6 +43,18 @@ const ComplianceAccess: React.FC<OrganizationRegStepProps> = ({
     typeof ComplianceAccessInitialValues
   > | null>(null);
   const router = useRouter();
+
+  // Clear store and localStorage when success page is shown
+  useEffect(() => {
+    if (showSuccessPage) {
+      // Clear the store
+      reset();
+      // Clear localStorage for registration form
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('registration-form');
+      }
+    }
+  }, [showSuccessPage, reset]);
 
   if (!_hasHydrated) {
     return null;
