@@ -1,20 +1,15 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      shm_size: '2gb'
-      args:
-        BUILDKIT_INLINE_CACHE: 1
+    image: ${ECR_REGISTRY}:${IMAGE_TAG}
     platform: linux/amd64 # Use linux/amd64 for production x86_64 deployments
     container_name: organization-web
     restart: unless-stopped
+    network_mode: host
     env_file:
       - .env
     environment:
       - NODE_ENV=production
-    ports:
-      - '3002:3002'
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED:-0}
     deploy:
       resources:
         limits:
