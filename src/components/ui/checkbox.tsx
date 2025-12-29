@@ -26,7 +26,7 @@ function Checkbox({
       )}
       style={{
         backgroundColor: props.checked ? checkedColor : 'transparent',
-        borderColor: props.checked ? checkedColor : '#d1d5db',
+        borderColor: props.checked ? checkedColor : '#000000',
       }}
       {...props}
     >

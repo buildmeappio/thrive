@@ -8,19 +8,23 @@ export const OrganizationInfoSchema = Yup.object({
 
   organizationName: Yup.string()
     .trim()
-    .min(2, ErrorMessages.ADDRESS_LOOKUP_MIN)
+    .min(6, ErrorMessages.ORGANIZATION_NAME_MIN)
     .required(ErrorMessages.ORGANIZATION_NAME_REQUIRED),
 
   addressLookup: Yup.string()
     .min(5, ErrorMessages.ADDRESS_LOOKUP_MIN)
     .required(ErrorMessages.ADDRESS_LOOKUP_REQUIRED),
 
-  streetAddress: Yup.string().trim().required(ErrorMessages.STREET_REQUIRED),
+  streetAddress: Yup.string()
+    .trim()
+    .min(4, ErrorMessages.STREET_MIN)
+    .required(ErrorMessages.STREET_REQUIRED),
 
   aptUnitSuite: Yup.string().trim().optional(),
 
   city: Yup.string()
     .trim()
+    .min(4, ErrorMessages.CITY_MIN)
     .matches(/^[A-Za-z\s]+$/, ErrorMessages.INVALID_NAME)
     .required(ErrorMessages.CITY_REQUIRED),
 
@@ -53,8 +57,19 @@ const nameValidation = Yup.string()
 
 // Step2
 export const OfficeDetailsSchema = Yup.object({
-  firstName: nameValidation.required(ErrorMessages.FIRST_NAME_REQUIRED),
-  lastName: nameValidation.required(ErrorMessages.LAST_NAME_REQUIRED),
+  firstName: Yup.string()
+    .trim()
+    .required(ErrorMessages.FIRST_NAME_REQUIRED)
+    .min(4, ErrorMessages.FIRST_NAME_MIN)
+    .matches(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
+    .max(100, ErrorMessages.NAME_TOO_LONG),
+
+  lastName: Yup.string()
+    .trim()
+    .required(ErrorMessages.LAST_NAME_REQUIRED)
+    .min(4, ErrorMessages.LAST_NAME_MIN)
+    .matches(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
+    .max(100, ErrorMessages.NAME_TOO_LONG),
 
   phoneNumber: Yup.string()
     .required(ErrorMessages.PHONE_REQUIRED)
@@ -67,8 +82,10 @@ export const OfficeDetailsSchema = Yup.object({
     .required(ErrorMessages.EMAIL_REQUIRED),
 
   jobTitle: Yup.string()
-    .matches(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.JOB_TITLE_INVALID)
-    .required(ErrorMessages.JOB_TITLE_REQUIRED),
+    .trim()
+    .required(ErrorMessages.JOB_TITLE_REQUIRED)
+    .min(2, ErrorMessages.JOB_TITLE_MIN)
+    .matches(/^[A-Za-zÀ-ÿ' -]+$/, ErrorMessages.JOB_TITLE_INVALID),
 
   department: Yup.string().required(ErrorMessages.DEPARTMENT_REQUIRED),
 });

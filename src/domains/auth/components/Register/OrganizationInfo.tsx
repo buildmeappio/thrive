@@ -6,7 +6,7 @@ import { Globe } from 'lucide-react';
 import { Input } from '@/components/ui';
 import { provinceOptions } from '@/config/ProvinceOptions';
 import { Dropdown } from '@/components/Dropdown';
-import { Form, Formik } from 'formik';
+import { Form, Formik, type FormikHelpers } from 'formik';
 import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistration';
@@ -14,6 +14,7 @@ import { OrganizationInfoInitialValues, OrganizationInfoSchema } from '../../sch
 import GoogleMapsInput from '@/components/GoogleMapsInput';
 import { checkOrganizationName } from '../../actions';
 import { toast } from 'sonner';
+import { useReactiveValidation } from '@/hooks/useReactiveValidation';
 
 export interface OrganizationTypeOption {
   value: string;
@@ -33,44 +34,83 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
   isUpdateMode = false,
 }) => {
   const { setData, data, _hasHydrated } = useRegistrationStore();
+  const {
+    attemptedSubmit,
+    handleSubmitWithValidation,
+    createReactiveChangeHandler,
+    createReactiveBlurHandler,
+    shouldShowError,
+  } = useReactiveValidation<typeof OrganizationInfoInitialValues>();
 
   if (!_hasHydrated) {
     return null;
   }
 
-  const handleSubmit = async (values: typeof OrganizationInfoInitialValues) => {
-    try {
-      // Skip organization name check in update mode
-      if (!isUpdateMode) {
-        const exists = await checkOrganizationName(values.organizationName);
-        console.log('Organization exists:', exists);
+  // Check if all required fields are filled
+  const areAllRequiredFieldsFilled = (values: typeof OrganizationInfoInitialValues): boolean => {
+    const organizationType = values.organizationType?.trim() || '';
+    const organizationName = values.organizationName?.trim() || '';
+    const addressLookup = values.addressLookup?.trim() || '';
+    const streetAddress = values.streetAddress?.trim() || '';
+    const city = values.city?.trim() || '';
+    const postalCode = values.postalCode?.trim() || '';
 
-        // Check if the action was successful first
-        if (!exists.success) {
-          toast.error(exists.error);
-          return;
+    return !!(
+      organizationType &&
+      organizationName &&
+      addressLookup &&
+      streetAddress &&
+      city &&
+      postalCode
+    );
+  };
+
+  const handleSubmit = async (
+    values: typeof OrganizationInfoInitialValues,
+    formikHelpers: FormikHelpers<typeof OrganizationInfoInitialValues>
+  ) => {
+    await handleSubmitWithValidation(
+      values,
+      formikHelpers,
+      async (vals, helpers) => {
+        try {
+          // Skip organization name check in update mode
+          if (!isUpdateMode) {
+            const exists = await checkOrganizationName(vals.organizationName);
+            console.log('Organization exists:', exists);
+
+            // Check if the action was successful first
+            if (!exists.success) {
+              toast.error(exists.error);
+              helpers.setSubmitting(false);
+              return;
+            }
+
+            // Now TypeScript knows exists.data is available
+            if (exists.data) {
+              toast.error('This organization already exists.');
+              helpers.setSubmitting(false);
+              return;
+            }
+          }
+
+          setData('step1', vals);
+
+          if (onNext) {
+            onNext();
+          }
+        } catch (error) {
+          console.error('Error during submission:', error);
+          helpers.setSubmitting(false);
         }
-
-        // Now TypeScript knows exists.data is available
-        if (exists.data) {
-          toast.error('This organization already exists.');
-          return;
-        }
-      }
-
-      setData('step1', values);
-
-      if (onNext) {
-        onNext();
-      }
-    } catch (error) {
-      console.error('Error during submission:', error);
-    }
+      },
+      ['organizationType'] // Prioritize organizationType validation
+    );
   };
 
   return (
     <div
-      className="mt-4 w-full rounded-[20px] bg-white px-[10px] pb-8 md:mt-6 md:min-h-[600px] md:w-[970px] md:rounded-[30px] md:px-[75px] md:pb-0"
+      className="mt-4 w-full rounded-[20px] bg-white px-[10px] pb-2 md:min-h-[530px] md:w-[970px] md:rounded-[30px] md:px-[75px]"
       style={{
         boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
@@ -84,26 +124,58 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
         enableReinitialize={true}
       >
         {formik => {
-          const { values, errors, handleChange, setFieldValue, isSubmitting } = formik;
+          const {
+            values,
+            errors,
+            handleChange,
+            setFieldValue,
+            isSubmitting,
+            touched,
+            setFieldTouched,
+          } = formik;
+          // Check if all required fields are filled - this will re-compute on every render
+          const isContinueDisabled = !areAllRequiredFieldsFilled(values);
+
+          // Create reactive change handler for organizationName
+          const handleOrganizationNameChange = createReactiveChangeHandler(
+            'organizationName',
+            handleChange,
+            formik
+          );
+
+          const handleOrganizationNameBlur = createReactiveBlurHandler(
+            'organizationName',
+            () => setFieldTouched('organizationName', true),
+            formik
+          );
+
           return (
             <Form>
-              <div className="space-y-6 px-4 md:space-y-14 md:px-0">
-                <div className="pt-1 md:pt-4">
-                  <div className="mt-6 space-y-5 md:mt-8">
+              <div className="space-y-6 px-4 pb-4 md:space-y-10 md:px-0">
+                <div className="pt-1 md:pt-2">
+                  <div className="mt-6 space-y-4">
                     <div className="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2">
                       <div className="space-y-2">
                         <Dropdown
                           id="organizationType"
                           label="Organization Type"
                           value={values.organizationType}
-                          onChange={(value: string) => setFieldValue('organizationType', value)}
+                          onChange={async (value: string) => {
+                            setFieldValue('organizationType', value);
+                            // Validate in real-time after attempted submit
+                            if (attemptedSubmit) {
+                              setFieldTouched('organizationType', true);
+                              await formik.validateField('organizationType');
+                            }
+                          }}
                           options={organizationTypeOptions}
                           required={true}
                           placeholder={'Select Organization Type'}
                         />
-                        {errors.organizationType && (
-                          <p className="text-sm text-red-500">{errors.organizationType}</p>
-                        )}
+                        {shouldShowError('organizationType', touched, errors) &&
+                          errors.organizationType && (
+                            <p className="text-sm text-red-500">{errors.organizationType}</p>
+                          )}
                       </div>
 
                       <div className="space-y-2">
@@ -119,13 +191,15 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                           name="organizationName"
                           placeholder="Desjardins"
                           required
-                          onChange={handleChange}
+                          onChange={handleOrganizationNameChange}
+                          onBlur={handleOrganizationNameBlur}
                           value={values.organizationName}
                           className={isUpdateMode ? 'cursor-not-allowed bg-gray-100' : ''}
                         />
-                        {errors.organizationName && (
-                          <p className="text-sm text-red-500">{errors.organizationName}</p>
-                        )}
+                        {shouldShowError('organizationName', touched, errors) &&
+                          errors.organizationName && (
+                            <p className="text-sm text-red-500">{errors.organizationName}</p>
+                          )}
                       </div>
                     </div>
 
@@ -137,6 +211,16 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                           required
                           from="address"
                           formik={formik}
+                          onReactiveChange={createReactiveChangeHandler(
+                            'addressLookup',
+                            handleChange,
+                            formik
+                          )}
+                          onReactiveBlur={createReactiveBlurHandler(
+                            'addressLookup',
+                            () => setFieldTouched('addressLookup', true),
+                            formik
+                          )}
                           onPlaceSelect={placeData => {
                             // Optionally auto-populate other address fields
                             const components = placeData.components;
@@ -171,22 +255,87 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                               // Auto-populate address fields
                               if (streetNumber && route) {
                                 setFieldValue('streetAddress', `${streetNumber} ${route}`);
+                                // Validate street address after auto-population
+                                if (attemptedSubmit) {
+                                  requestAnimationFrame(() => {
+                                    setTimeout(async () => {
+                                      setFieldTouched('streetAddress', true);
+                                      const error = await formik.validateField('streetAddress');
+                                      const currentErrors = { ...formik.errors };
+                                      if (error === undefined) {
+                                        delete currentErrors.streetAddress;
+                                      } else {
+                                        currentErrors.streetAddress = error;
+                                      }
+                                      formik.setErrors(currentErrors);
+                                    }, 0);
+                                  });
+                                }
                               }
                               if (city) {
                                 setFieldValue('city', city);
+                                // Validate city after auto-population
+                                if (attemptedSubmit) {
+                                  requestAnimationFrame(() => {
+                                    setTimeout(async () => {
+                                      setFieldTouched('city', true);
+                                      const error = await formik.validateField('city');
+                                      const currentErrors = { ...formik.errors };
+                                      if (error === undefined) {
+                                        delete currentErrors.city;
+                                      } else {
+                                        currentErrors.city = error;
+                                      }
+                                      formik.setErrors(currentErrors);
+                                    }, 0);
+                                  });
+                                }
                               }
                               if (postalCode) {
                                 setFieldValue('postalCode', postalCode);
+                                // Validate postal code after auto-population
+                                if (attemptedSubmit) {
+                                  requestAnimationFrame(() => {
+                                    setTimeout(async () => {
+                                      setFieldTouched('postalCode', true);
+                                      const error = await formik.validateField('postalCode');
+                                      const currentErrors = { ...formik.errors };
+                                      if (error === undefined) {
+                                        delete currentErrors.postalCode;
+                                      } else {
+                                        currentErrors.postalCode = error;
+                                      }
+                                      formik.setErrors(currentErrors);
+                                    }, 0);
+                                  });
+                                }
                               }
                               if (province) {
                                 setFieldValue('provinceOfResidence', province);
                               }
                             }
+                            // Validate address lookup after place selection
+                            if (attemptedSubmit) {
+                              requestAnimationFrame(() => {
+                                setTimeout(async () => {
+                                  setFieldTouched('addressLookup', true);
+                                  const error = await formik.validateField('addressLookup');
+                                  const currentErrors = { ...formik.errors };
+                                  if (error === undefined) {
+                                    delete currentErrors.addressLookup;
+                                  } else {
+                                    currentErrors.addressLookup = error;
+                                  }
+                                  formik.setErrors(currentErrors);
+                                }, 0);
+                              });
+                            }
                           }}
                         />
-                        {errors.addressLookup && (
-                          <p className="text-sm text-red-500">{errors.addressLookup}</p>
-                        )}
+                        {shouldShowError('addressLookup', touched, errors) &&
+                          errors.addressLookup && (
+                            <p className="text-sm text-red-500">{errors.addressLookup}</p>
+                          )}
                       </div>
                     </div>
 
@@ -204,12 +353,22 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                           name="streetAddress"
                           placeholder="50 Stephanie Street"
                           required
-                          onChange={handleChange}
+                          onChange={createReactiveChangeHandler(
+                            'streetAddress',
+                            handleChange,
+                            formik
+                          )}
+                          onBlur={createReactiveBlurHandler(
+                            'streetAddress',
+                            () => setFieldTouched('streetAddress', true),
+                            formik
+                          )}
                           value={values.streetAddress}
                         />
-                        {errors.streetAddress && (
-                          <p className="text-sm text-red-500">{errors.streetAddress}</p>
-                        )}
+                        {shouldShowError('streetAddress', touched, errors) &&
+                          errors.streetAddress && (
+                            <p className="text-sm text-red-500">{errors.streetAddress}</p>
+                          )}
                       </div>
 
                       <div className="space-y-2">
@@ -239,10 +398,17 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                           name="city"
                           placeholder="Toronto"
                           required
-                          onChange={handleChange}
+                          onChange={createReactiveChangeHandler('city', handleChange, formik)}
+                          onBlur={createReactiveBlurHandler(
+                            'city',
+                            () => setFieldTouched('city', true),
+                            formik
+                          )}
                           value={values.city}
                         />
-                        {errors.city && <p className="text-sm text-red-500">{errors.city}</p>}
+                        {shouldShowError('city', touched, errors) && errors.city && (
+                          <p className="text-sm text-red-500">{errors.city}</p>
+                        )}
                       </div>
                     </div>
 
@@ -257,10 +423,15 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                           name="postalCode"
                           placeholder="A1A 1A1"
                           required
-                          onChange={handleChange}
+                          onChange={createReactiveChangeHandler('postalCode', handleChange, formik)}
+                          onBlur={createReactiveBlurHandler(
+                            'postalCode',
+                            () => setFieldTouched('postalCode', true),
+                            formik
+                          )}
                           value={values.postalCode}
                         />
-                        {errors.postalCode && (
+                        {shouldShowError('postalCode', touched, errors) && errors.postalCode && (
                           <p className="text-sm text-red-500">{errors.postalCode}</p>
                         )}
                       </div>
@@ -274,9 +445,10 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                           options={provinceOptions}
                           placeholder="Select Province"
                         />
-                        {errors.provinceOfResidence && (
-                          <p className="text-sm text-red-500">{errors.provinceOfResidence}</p>
-                        )}
+                        {shouldShowError('provinceOfResidence', touched, errors) &&
+                          errors.provinceOfResidence && (
+                            <p className="text-sm text-red-500">{errors.provinceOfResidence}</p>
+                          )}
                       </div>
 
                       <div className="space-y-2">
@@ -295,13 +467,23 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                             type="url"
                             placeholder="https://desjardins.com"
                             className="pl-10"
-                            onChange={handleChange}
+                            onChange={createReactiveChangeHandler(
+                              'organizationWebsite',
+                              handleChange,
+                              formik
+                            )}
+                            onBlur={createReactiveBlurHandler(
+                              'organizationWebsite',
+                              () => setFieldTouched('organizationWebsite', true),
+                              formik
+                            )}
                             value={values.organizationWebsite}
                           />
                         </div>
-                        {errors.organizationWebsite && (
-                          <p className="text-sm text-red-500">{errors.organizationWebsite}</p>
-                        )}
+                        {shouldShowError('organizationWebsite', touched, errors) &&
+                          errors.organizationWebsite && (
+                            <p className="text-sm text-red-500">{errors.organizationWebsite}</p>
+                          )}
                       </div>
                     </div>
                   </div>
@@ -312,6 +494,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                     isSubmitting={isSubmitting}
                     isLastStep={currentStep === totalSteps}
                     color="#000080"
+                    disabled={isContinueDisabled}
                   />
                 </div>
               </div>

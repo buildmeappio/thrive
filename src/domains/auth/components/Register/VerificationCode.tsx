@@ -19,8 +19,14 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   const [code, setCode] = useState(['', '', '', '']);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [resending, setResending] = useState(false);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const { setData, data } = useRegistrationStore();
   const email = data.step2?.officialEmailAddress;
+
+  // Check if all required fields are filled
+  const areAllRequiredFieldsFilled = (codeValue: string): boolean => {
+    return codeValue.length === 4;
+  };
 
   const handleInputChange = (
     index: number,
@@ -94,6 +100,24 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
     values: typeof VerificationCodeInitialValues,
     actions: FormikHelpers<typeof VerificationCodeInitialValues>
   ) => {
+    setAttemptedSubmit(true);
+
+    // Validate form
+    const errors = await actions.validateForm();
+
+    // If there are any errors, set errors and touched fields, then return
+    if (Object.keys(errors).length > 0) {
+      // Set errors in Formik state so they can be displayed
+      actions.setErrors(errors);
+
+      // Set all error fields as touched
+      Object.keys(errors).forEach(field => {
+        actions.setFieldTouched(field as keyof typeof VerificationCodeInitialValues, true);
+      });
+      actions.setSubmitting(false);
+      return;
+    }
+
     try {
       setData('step4', values);
 
@@ -138,7 +162,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
 
   return (
     <div
-      className="mt-4 w-full rounded-[20px] bg-white px-[10px] py-6 sm:px-6 md:mt-6 md:min-h-[500px] md:max-w-[970px] md:rounded-[30px] md:px-[75px]"
+      className="mt-4 w-full rounded-[20px] bg-white px-[10px] py-6 pb-8 sm:px-6 md:min-h-[300px] md:max-w-[900px] md:rounded-[30px] md:px-[75px]"
       style={{
         boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
@@ -150,10 +174,13 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
         validateOnChange={false}
         validateOnBlur={false}
       >
-        {({ setFieldValue, errors, setFieldError, isSubmitting }) => {
+        {({ setFieldValue, errors, setFieldError, isSubmitting, touched, values }) => {
+          const isContinueDisabled = !areAllRequiredFieldsFilled(values.code);
+          const showErrors = attemptedSubmit || Object.keys(touched).length > 0;
+
           return (
             <Form>
-              <div className="mt-6 flex min-h-[400px] flex-col items-center justify-center space-y-10 sm:mt-8 sm:space-y-12">
+              <div className="mt-6 flex min-h-[300px] flex-col items-center justify-center space-y-6 sm:mt-8 sm:space-y-12">
                 <div className="text-center">
                   <p className="mt-2 text-base leading-relaxed font-medium text-[#6C7278] sm:text-lg md:text-[20px]">
                     Enter the 4 digit verification code we have sent to {email}
@@ -190,7 +217,9 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                   ))}
                 </div>
 
-                {errors.code && <p className="mt-2 text-sm text-red-500">{errors.code}</p>}
+                {showErrors && errors.code && (
+                  <p className="mt-2 text-sm text-red-500">{errors.code}</p>
+                )}
 
                 {/* Resend link */}
                 <div className="text-center">
@@ -213,6 +242,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                     isSubmitting={isSubmitting}
                     isLastStep={currentStep === totalSteps}
                     color="#000080"
+                    disabled={isContinueDisabled}
                   />
                 </div>
               </div>

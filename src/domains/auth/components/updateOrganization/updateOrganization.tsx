@@ -103,10 +103,12 @@ const UpdateOrganizationInfo = ({
     };
   }, [accountInfo, organizationTypeOptions]);
 
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+
   const form = useForm<UpdateOrganizationInfoForm>({
     resolver: zodResolver(updateOrganizationSchema),
     defaultValues,
-    mode: 'onChange',
+    mode: 'onBlur', // Changed to onBlur to prevent validation on every keystroke initially
   });
 
   const {
@@ -114,9 +116,11 @@ const UpdateOrganizationInfo = ({
     handleSubmit,
     formState: { errors, touchedFields },
     control,
+    trigger,
   } = form;
 
   const onSubmit = async (values: UpdateOrganizationInfoForm) => {
+    setAttemptedSubmit(true);
     setIsSubmitting(true);
 
     try {
@@ -153,6 +157,11 @@ const UpdateOrganizationInfo = ({
     }
   };
 
+  // Helper function to determine if error should be shown
+  const shouldShowError = (fieldName: keyof UpdateOrganizationInfoForm) => {
+    return attemptedSubmit || !!touchedFields[fieldName];
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Official Information Section */}
@@ -163,15 +172,21 @@ const UpdateOrganizationInfo = ({
               htmlFor="firstName"
               className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
             >
-              First Name
+              First Name<span className="text-red-500">*</span>
             </Label>
             <Input
               id="firstName"
               placeholder="Enter first name"
-              {...register('firstName')}
+              {...register('firstName', {
+                onChange: async () => {
+                  if (attemptedSubmit) {
+                    await trigger('firstName');
+                  }
+                },
+              })}
               disabled={isSubmitting}
             />
-            {touchedFields.firstName && errors.firstName && (
+            {shouldShowError('firstName') && errors.firstName && (
               <p className="mt-1 text-xs text-red-500">{errors.firstName.message}</p>
             )}
           </div>
@@ -181,15 +196,21 @@ const UpdateOrganizationInfo = ({
               htmlFor="lastName"
               className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
             >
-              Last Name
+              Last Name<span className="text-red-500">*</span>
             </Label>
             <Input
               id="lastName"
               placeholder="Enter last name"
-              {...register('lastName')}
+              {...register('lastName', {
+                onChange: async () => {
+                  if (attemptedSubmit) {
+                    await trigger('lastName');
+                  }
+                },
+              })}
               disabled={isSubmitting}
             />
-            {touchedFields.lastName && errors.lastName && (
+            {shouldShowError('lastName') && errors.lastName && (
               <p className="mt-1 text-xs text-red-500">{errors.lastName.message}</p>
             )}
           </div>
@@ -201,7 +222,7 @@ const UpdateOrganizationInfo = ({
               htmlFor="email"
               className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
             >
-              Email
+              Email<span className="text-red-500">*</span>
             </Label>
             <Input
               disabled={true}
@@ -210,7 +231,7 @@ const UpdateOrganizationInfo = ({
               placeholder="Enter email address"
               {...register('email')}
             />
-            {touchedFields.email && errors.email && (
+            {shouldShowError('email') && errors.email && (
               <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
             )}
           </div>
@@ -220,7 +241,7 @@ const UpdateOrganizationInfo = ({
               htmlFor="phone"
               className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
             >
-              Phone
+              Phone<span className="text-red-500">*</span>
             </Label>
             <Controller
               name="phone"
@@ -229,13 +250,18 @@ const UpdateOrganizationInfo = ({
                 <PhoneInput
                   name={field.name}
                   value={field.value || ''}
-                  onChange={field.onChange}
+                  onChange={async e => {
+                    field.onChange(e);
+                    if (attemptedSubmit) {
+                      await trigger('phone');
+                    }
+                  }}
                   onBlur={field.onBlur}
                   disabled={isSubmitting}
                 />
               )}
             />
-            {touchedFields.phone && errors.phone && (
+            {shouldShowError('phone') && errors.phone && (
               <p className="mt-1 text-xs text-red-500">{errors.phone.message}</p>
             )}
           </div>
@@ -250,15 +276,21 @@ const UpdateOrganizationInfo = ({
               htmlFor="organizationName"
               className="font-poppins text-[14.78px] leading-[100%] font-normal tracking-[0em]"
             >
-              Organization Name
+              Organization Name<span className="text-red-500">*</span>
             </Label>
             <Input
               id="organizationName"
               placeholder="Enter organization name"
-              {...register('organizationName')}
+              {...register('organizationName', {
+                onChange: async () => {
+                  if (attemptedSubmit) {
+                    await trigger('organizationName');
+                  }
+                },
+              })}
               disabled={isSubmitting}
             />
-            {touchedFields.organizationName && errors.organizationName && (
+            {shouldShowError('organizationName') && errors.organizationName && (
               <p className="mt-1 text-xs text-red-500">{errors.organizationName.message}</p>
             )}
           </div>
@@ -288,7 +320,7 @@ const UpdateOrganizationInfo = ({
             htmlFor="organizationTypeId"
             className="font-poppins text-[14.78px] leading-[150%] font-normal tracking-[0em]"
           >
-            Organization Type
+            Organization Type<span className="text-red-500">*</span>
           </Label>
           <Controller
             name="organizationTypeId"
@@ -298,14 +330,19 @@ const UpdateOrganizationInfo = ({
                 id="organizationTypeId"
                 label=""
                 value={field.value || ''}
-                onChange={field.onChange}
+                onChange={async value => {
+                  field.onChange(value);
+                  if (attemptedSubmit) {
+                    await trigger('organizationTypeId');
+                  }
+                }}
                 options={organizationTypeOptions}
-                required={false}
+                required={true}
                 placeholder="Select Organization Type"
               />
             )}
           />
-          {touchedFields.organizationTypeId && errors.organizationTypeId && (
+          {shouldShowError('organizationTypeId') && errors.organizationTypeId && (
             <p className="mt-1 text-xs text-red-500">{errors.organizationTypeId.message}</p>
           )}
         </div>
