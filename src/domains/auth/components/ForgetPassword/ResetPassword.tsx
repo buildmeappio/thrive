@@ -6,7 +6,7 @@ import { type z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Loader2, Lock, AlertCircle } from 'lucide-react';
+import { Loader2, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useState, useEffect, Suspense } from 'react';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
@@ -25,6 +25,8 @@ const ResetPasswordContent = () => {
   const [isVerifying, setIsVerifying] = useState(true);
   const [isValidToken, setIsValidToken] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -140,15 +142,23 @@ const ResetPasswordContent = () => {
               New Password<span className="text-red-500">*</span>
             </Label>
             <div className="relative">
-              <Lock className="absolute top-4 left-3 h-5 w-5 text-gray-400" />
+              {/* <Lock className="absolute top-4 left-3 h-5 w-5" /> */}
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Enter new password"
-                className="pl-10"
+                className="pr-10 pl-4"
                 {...register('password')}
                 disabled={isSubmitting}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute top-4 right-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+                disabled={isSubmitting}
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
             </div>
             {errors.password && (
               <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
@@ -160,15 +170,22 @@ const ResetPasswordContent = () => {
               Confirm Password<span className="text-red-500">*</span>
             </Label>
             <div className="relative">
-              <Lock className="absolute top-4 left-3 h-5 w-5 text-gray-400" />
               <Input
                 id="confirmPassword"
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Confirm new password"
-                className="pl-10"
+                className="pr-10 pl-4"
                 {...register('confirmPassword')}
                 disabled={isSubmitting}
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute top-4 right-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+                disabled={isSubmitting}
+              >
+                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
             </div>
             {errors.confirmPassword && (
               <p className="mt-1 text-sm text-red-500">{errors.confirmPassword.message}</p>

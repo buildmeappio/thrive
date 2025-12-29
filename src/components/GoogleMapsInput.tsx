@@ -21,6 +21,8 @@ interface GoogleMapsInputProps {
   error?: string | null;
   onPlaceSelect?: (placeData: any) => void;
   from?: string;
+  onReactiveChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onReactiveBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
@@ -34,6 +36,8 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
   className = '',
   error = null,
   onPlaceSelect,
+  onReactiveChange,
+  onReactiveBlur,
 }) => {
   const autoCompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -206,9 +210,27 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
     } else if (onChange) {
       onChange(newValue);
     }
+
+    // Call reactive change handler if provided (for real-time validation)
+    if (onReactiveChange) {
+      onReactiveChange(e);
+    }
   };
 
-  const errorMessage = error || (name && formik?.touched[name] && formik?.errors[name]);
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Call formik handleBlur if available
+    if (formik && name) {
+      formik.handleBlur(e);
+    }
+
+    // Call reactive blur handler if provided (for real-time validation)
+    if (onReactiveBlur) {
+      onReactiveBlur(e);
+    }
+  };
+
+  // Only show error if explicitly passed as prop, not from formik (parent component handles formik errors)
+  const errorMessage = error;
 
   return (
     <div className={className}>
@@ -225,12 +247,13 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
           type="text"
           value={inputValue || ''}
           onChange={handleChange}
+          onBlur={handleBlur}
           placeholder={placeholder}
           className="text-black-2 relative z-10 w-full rounded-xl bg-[#F2F5F6] py-3 pr-4 pl-10 focus:border-[#A6EC0A] focus:outline-none"
-          {...(formik && name && { onBlur: formik.handleBlur })}
         />
       </div>
 
+      {/* Only show error if explicitly passed, parent component handles formik errors */}
       {errorMessage && <span className="mt-1 text-xs text-red-500">{errorMessage}</span>}
     </div>
   );

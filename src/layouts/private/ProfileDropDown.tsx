@@ -2,7 +2,7 @@
 import { type Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import { useEffect, useRef, useState } from 'react';
-import { LogOut, Home, LifeBuoy, UserPlus } from 'lucide-react';
+import { LogOut, LifeBuoy, Settings } from 'lucide-react';
 
 type ProfileDropdownProps = {
   isMobile: boolean;
@@ -54,20 +54,11 @@ const ProfileDropdown = ({ isMobile, session }: ProfileDropdownProps) => {
         <ul className="py-1 text-sm text-gray-700">
           <li>
             <a
-              href="/dashboard"
+              href="/organization/settings"
               className="flex items-center space-x-2 px-3 py-1.5 transition-colors hover:bg-gray-100"
             >
-              <Home size={16} />
-              <span>Dashboard</span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="/organization/dashboard/cases"
-              className="flex items-center space-x-2 px-3 py-1.5 transition-colors hover:bg-gray-100"
-            >
-              <UserPlus size={16} />
-              <span>Cases</span>
+              <Settings size={16} />
+              <span>Settings</span>
             </a>
           </li>
           <li>

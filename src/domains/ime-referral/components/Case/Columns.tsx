@@ -21,9 +21,9 @@ const Header = ({
   return (
     <div
       className={cn(
-        'font-poppins flex items-center gap-2 py-4 text-left text-[18px] leading-none font-semibold text-black',
+        'font-poppins flex items-center gap-2 py-4 text-left text-[15px] leading-none font-normal text-black',
         first && 'pl-4',
-        sortable && 'cursor-pointer transition-colors select-none hover:text-[#000093]'
+        sortable && 'cursor-pointer transition-colors select-none'
       )}
       onClick={sortable ? onClick : undefined}
     >

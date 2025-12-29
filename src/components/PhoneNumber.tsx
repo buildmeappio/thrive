@@ -12,10 +12,11 @@ interface PhoneInputProps {
   disabled?: boolean;
   className?: string;
   icon?: LucideIcon;
+  placeholder?: string;
 }
 
 const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ name, value, onChange, onBlur, disabled, className, icon }, ref) => {
+  ({ name, value, onChange, onBlur, disabled, className, icon, placeholder }, ref) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = e.target.value;
       const digitsOnly = inputValue.replace(/\D/g, '');
@@ -112,7 +113,7 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
         name={name}
         icon={icon || Phone}
         type="tel"
-        placeholder="(234) 956-7890"
+        placeholder={placeholder || '(234) 956-7890'}
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}

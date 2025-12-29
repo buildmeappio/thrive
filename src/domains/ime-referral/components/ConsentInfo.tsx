@@ -7,10 +7,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import ContinueButton from '@/components/ContinueButton';
 import BackButton from '@/components/BackButton';
 import { ConsentSchema, type Consent, ConsentInitialValues } from '../schemas/imeReferral';
-import { ArrowRight, Loader2 } from 'lucide-react';
 import { useIMEReferralStore } from '@/store/useImeReferral';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui';
 import ProgressIndicator from './ProgressIndicator';
 import { createIMEReferral, updateIMEReferral } from '../actions';
 
@@ -33,18 +31,23 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
 }) => {
   const { setData, data, _hasHydrated, reset } = useIMEReferralStore();
 
-  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   const {
     control,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<Consent>({
     resolver: zodResolver(ConsentSchema),
     defaultValues: data.step7 || ConsentInitialValues,
+    mode: 'onSubmit',
   });
 
+  const consentForSubmission = watch('consentForSubmission');
+
   const onSubmit: SubmitHandler<Consent> = async values => {
+    setAttemptedSubmit(true);
     try {
       setData('step7', values);
 
@@ -75,33 +78,8 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
     }
   };
 
-  // Handle draft saving (without validation)
-  const handleSaveDraft = async () => {
-    setIsSavingDraft(true);
-
-    try {
-      // Get current form values without validation
-      const currentValues = {
-        consentForSubmission: control._getWatch('consentForSubmission') || false,
-      };
-
-      setData('step7', currentValues);
-
-      const completeData = {
-        ...data,
-        step7: currentValues,
-      };
-
-      const result = await createIMEReferral(completeData);
-      if (result) {
-        toast.success('Draft saved successfully');
-      }
-    } catch (error) {
-      console.error(error instanceof Error ? error.message : 'Failed to save draft');
-      toast.error('Failed to save draft');
-    } finally {
-      setIsSavingDraft(false);
-    }
+  const onError = () => {
+    setAttemptedSubmit(true);
   };
 
   if (!_hasHydrated) {
@@ -116,7 +94,7 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
       <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
 
       <div className="w-full max-w-full rounded-4xl bg-white p-4 sm:p-6 md:px-[55px] md:py-8">
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-full">
+        <form onSubmit={handleSubmit(onSubmit, onError)} noValidate className="w-full max-w-full">
           <header className="mb-6 w-full max-w-full md:mb-8">
             <h2 className="mb-6 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
               Consent Confirmation
@@ -134,8 +112,8 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
                     id="consentForSubmission"
                     checked={field.value}
                     onCheckedChange={field.onChange}
-                    disabled={isSubmitting || isSavingDraft}
-                    className="mt-1 flex-shrink-0"
+                    disabled={isSubmitting}
+                    className="mt-1 shrink-0"
                   />
                   <label
                     htmlFor="consentForSubmission"
@@ -148,7 +126,7 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
                 </div>
               )}
             />
-            {errors.consentForSubmission && (
+            {attemptedSubmit && errors.consentForSubmission && (
               <p className="mt-2 text-sm text-red-600">{errors.consentForSubmission.message}</p>
             )}
           </div>
@@ -170,50 +148,19 @@ const ConsentInfo: React.FC<ConsentInfoProps> = ({
             <div className="flex items-center justify-between gap-2">
               <BackButton
                 onClick={onPrevious}
-                disabled={currentStep === 1 || isSubmitting || isSavingDraft}
+                disabled={currentStep === 1 || isSubmitting}
                 borderColor="#000080"
                 iconColor="#000080"
-                isSubmitting={isSubmitting || isSavingDraft}
+                isSubmitting={isSubmitting}
               />
 
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  onClick={handleSaveDraft}
-                  disabled={isSavingDraft || isSubmitting}
-                  className="hidden h-[45px] w-[182px] items-center justify-center gap-1.5 rounded-[34px] bg-[#0000BA] px-4 py-3 text-white hover:bg-[#0000BA] hover:opacity-90 disabled:opacity-50 md:flex"
-                >
-                  <span className="truncate">Save as Draft</span>
-                  {isSavingDraft ? (
-                    <Loader2 className="ml-2 h-4 w-4 animate-spin text-white" />
-                  ) : (
-                    <ArrowRight className="cup ml-2 h-4 w-4 text-white transition-all duration-300 ease-in-out" />
-                  )}
-                </Button>
-
-                <ContinueButton
-                  isSubmitting={isSubmitting || isSavingDraft}
-                  isLastStep={currentStep === totalSteps}
-                  color="#000080"
-                  disabled={isSubmitting || isSavingDraft}
-                />
-              </div>
+              <ContinueButton
+                isSubmitting={isSubmitting}
+                isLastStep={currentStep === totalSteps}
+                color="#000080"
+                disabled={!consentForSubmission || isSubmitting}
+              />
             </div>
-
-            {/* Mobile Save Draft */}
-            <Button
-              type="button"
-              onClick={handleSaveDraft}
-              disabled={isSubmitting || isSavingDraft}
-              className="flex h-[40px] w-full items-center justify-center gap-1.5 rounded-[34px] bg-[#0000BA] px-4 py-3 text-white hover:opacity-90 disabled:opacity-50 md:hidden"
-            >
-              <span className="truncate">Save as Draft</span>
-              {isSavingDraft ? (
-                <Loader2 className="ml-2 h-4 w-4 animate-spin text-white" />
-              ) : (
-                <ArrowRight className="cup ml-2 h-4 w-4 text-white transition-all duration-300 ease-in-out" />
-              )}
-            </Button>
           </div>
         </form>
       </div>

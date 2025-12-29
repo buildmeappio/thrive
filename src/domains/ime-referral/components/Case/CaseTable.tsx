@@ -44,7 +44,7 @@ const CaseTable = ({ caseList, caseStatuses, claimTypes, caseTypes }: CaseTableP
 
   const statusOptions: FilterOption[] = useMemo(
     () => [
-      { label: 'All Statuses', value: 'ALL' },
+      { label: 'Status', value: 'ALL' },
       ...(caseStatuses?.map(s => ({ label: s.name, value: s.name })) || []),
     ],
     [caseStatuses]
@@ -52,7 +52,7 @@ const CaseTable = ({ caseList, caseStatuses, claimTypes, caseTypes }: CaseTableP
 
   const typeOptions: FilterOption[] = useMemo(
     () => [
-      { label: 'All Claim Types', value: 'ALL' },
+      { label: 'Claim Types', value: 'ALL' },
       ...(claimTypes?.map(t => ({ label: t.name, value: t.name })) || []),
     ],
     [claimTypes]
@@ -60,7 +60,7 @@ const CaseTable = ({ caseList, caseStatuses, claimTypes, caseTypes }: CaseTableP
 
   const specialtyOptions: FilterOption[] = useMemo(
     () => [
-      { label: 'All Specialties', value: 'ALL' },
+      { label: 'Specialties', value: 'ALL' },
       ...(caseTypes?.map(s => ({ label: s.name, value: s.name })) || []),
     ],
     [caseTypes]
@@ -157,7 +157,6 @@ const CaseTable = ({ caseList, caseStatuses, claimTypes, caseTypes }: CaseTableP
             icon={<Plus className="h-4 w-4 flex-shrink-0 text-blue-900" strokeWidth={2} />}
           />
         </div>
-
         <div className="w-full flex-shrink-0 sm:w-auto">
           <LabeledSelect
             label="Claim Type"
@@ -264,7 +263,7 @@ const CaseTable = ({ caseList, caseStatuses, claimTypes, caseTypes }: CaseTableP
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1 pr-2">
-                        <p className="font-poppins mb-1 text-[12px] text-[#4D4D4D]">Case No.</p>
+                        <p className="font-poppins mb-1 text-[#000000]">Case No.</p>
                         <p className="font-poppins truncate text-[16px] font-semibold text-black">
                           {data.number}
                         </p>

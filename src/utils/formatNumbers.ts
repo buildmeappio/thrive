@@ -48,12 +48,21 @@ export const validateCanadianPhoneNumber = (value: string | undefined): boolean 
 
   try {
     const digitsOnly = value.replace(/\D/g, '');
+
+    // Check if it's a valid length (10 digits for Canadian numbers, or 11 if it starts with 1)
     if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
-      return isValidPhoneNumber(`+${digitsOnly}`, 'CA');
+      // For 11-digit numbers starting with 1, validate the format
+      // The remaining 10 digits should be a valid Canadian number format
+      const remainingDigits = digitsOnly.slice(1);
+      // Check if it's a valid format (not checking actual validity, just format)
+      return /^[2-9]\d{2}[2-9]\d{6}$/.test(remainingDigits);
     }
 
     if (digitsOnly.length === 10) {
-      return isValidPhoneNumber(`+1${digitsOnly}`, 'CA');
+      // For 10-digit numbers, check if it matches Canadian phone number format
+      // Format: NXX-XXXX where N is 2-9 and X is 0-9
+      // This checks the format pattern, not the actual validity
+      return /^[2-9]\d{2}[2-9]\d{6}$/.test(digitsOnly);
     }
 
     return false;

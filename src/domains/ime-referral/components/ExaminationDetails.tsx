@@ -56,6 +56,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [benefitsByType, setBenefitsByType] = useState<
     Record<string, Array<{ id: string; benefit: string }>>
   >({});
@@ -211,6 +212,37 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 
   const watchedValues = watch();
 
+  // Check if all required fields are filled (not empty)
+  // Validation errors will show when user clicks Continue
+  const areAllRequiredFieldsFilled = useMemo(() => {
+    const examinationType = watchedValues.examinationType?.trim() || '';
+    const reasonForReferral = watchedValues.reasonForReferral?.trim() || '';
+    const examinations = watchedValues.examinations || [];
+
+    // Check case information fields - only check if they have values, not minimum length
+    if (!examinationType || !reasonForReferral || reasonForReferral.length === 0) {
+      return false;
+    }
+
+    // Check each examination has all required fields - only check if they have values
+    for (const examination of examinations) {
+      if (
+        !examination.examinationTypeId ||
+        !examination.urgencyLevel ||
+        !examination.dueDate ||
+        !examination.instructions ||
+        examination.instructions.trim().length === 0 ||
+        !examination.selectedBenefits ||
+        examination.selectedBenefits.length === 0 ||
+        !examination.locationType
+      ) {
+        return false;
+      }
+    }
+
+    return examinations.length > 0;
+  }, [watchedValues.examinationType, watchedValues.reasonForReferral, watchedValues.examinations]);
+
   // Handle service toggle changes
   const handleServiceToggle = useCallback(
     (examinationIndex: number, serviceType: ExaminationService['type'], enabled: boolean) => {
@@ -267,7 +299,12 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
         services: updatedServices,
       };
 
-      setValue('examinations', updatedExaminations, { shouldDirty: true });
+      setValue('examinations', updatedExaminations, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      // Manually trigger validation for the specific field path
+      trigger(`examinations.${examinationIndex}.services`);
     },
     [watchedValues.examinations, setValue]
   );
@@ -317,10 +354,33 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
 
   const onSubmit: SubmitHandler<ExaminationData> = useCallback(
     values => {
+      setAttemptedSubmit(true);
       setData('step5', values);
       onNext?.();
     },
     [setData, onNext]
+  );
+
+  const onError = useCallback(
+    (errors: any) => {
+      setAttemptedSubmit(true);
+      // Manually trigger validation for all examination fields and services to ensure errors are set
+      if (watchedValues.examinations) {
+        watchedValues.examinations.forEach((_, index) => {
+          trigger(`examinations.${index}`);
+          trigger(`examinations.${index}.services`);
+          // Trigger validation for each service in the examination
+          const examination = watchedValues.examinations[index];
+          if (examination?.services) {
+            examination.services.forEach((_, serviceIndex) => {
+              trigger(`examinations.${index}.services.${serviceIndex}`);
+              trigger(`examinations.${index}.services.${serviceIndex}.details`);
+            });
+          }
+        });
+      }
+    },
+    [trigger, watchedValues.examinations]
   );
 
   // Helper function to get error message
@@ -343,7 +403,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
             name={`examinations.${examinationIndex}.services.transportation.pickupAddress`}
             value={details.pickupAddress || ''}
             label="Pick-Up Address Lookup"
-            placeholder="150 John Street, Toronto"
+            placeholder="Enter pickup address"
             required
             setValue={(name, value) =>
               handleServiceDetailUpdate(examinationIndex, 'transportation', 'pickupAddress', value)
@@ -352,6 +412,26 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
             onPlaceSelect={placeData =>
               handleTransportationPlaceSelect(examinationIndex, placeData)
             }
+            error={
+              attemptedSubmit && details.pickupAddress && details.pickupAddress.trim().length > 0
+                ? (() => {
+                    const services = examination.services || [];
+                    const transportationServiceIndex = services.findIndex(
+                      (s: any) => s?.type === 'transportation'
+                    );
+                    if (transportationServiceIndex >= 0) {
+                      const servicesErrors = errors.examinations?.[examinationIndex]?.services;
+                      if (
+                        Array.isArray(servicesErrors) &&
+                        servicesErrors[transportationServiceIndex]
+                      ) {
+                        return servicesErrors[transportationServiceIndex]?.details?.pickupAddress;
+                      }
+                    }
+                    return undefined;
+                  })()
+                : undefined
+            }
             className="space-y-2 bg-white"
           />
 
@@ -359,30 +439,62 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
             {[
               {
                 field: 'streetAddress',
-                placeholder: '50 Stephanie Street',
+                placeholder: 'Enter street address',
                 label: 'Street Address',
               },
-              { field: 'aptUnitSuite', placeholder: '402', label: 'Apt / Unit / Suite' },
-              { field: 'city', placeholder: 'Toronto', label: 'City' },
-            ].map(({ field, placeholder, label }) => (
-              <div key={field} className="space-y-2">
-                <Label className="text-sm text-gray-600">{label}</Label>
-                <Input
-                  value={(details[field as keyof typeof details] as string) || ''}
-                  onChange={e =>
-                    handleServiceDetailUpdate(
-                      examinationIndex,
-                      'transportation',
-                      field,
-                      e.target.value
-                    )
-                  }
-                  disabled={isSubmitting}
-                  placeholder={placeholder}
-                  className="w-full bg-white"
-                />
-              </div>
-            ))}
+              {
+                field: 'aptUnitSuite',
+                placeholder: 'Enter apt/unit/suite',
+                label: 'Apt / Unit / Suite',
+              },
+              { field: 'city', placeholder: 'Enter city', label: 'City' },
+            ].map(({ field, placeholder, label }) => {
+              const fieldValue = (details[field as keyof typeof details] as string) || '';
+              // Find the index of the transportation service in the services array
+              const services = examination.services || [];
+              const transportationServiceIndex = services.findIndex(
+                (s: any) => s?.type === 'transportation'
+              );
+
+              // Access error by array index - React Hook Form structures errors by index
+              let serviceError: any = undefined;
+              if (transportationServiceIndex >= 0) {
+                const servicesErrors = errors.examinations?.[examinationIndex]?.services;
+                if (Array.isArray(servicesErrors) && servicesErrors[transportationServiceIndex]) {
+                  serviceError =
+                    servicesErrors[transportationServiceIndex]?.details?.[
+                      field as keyof typeof details
+                    ];
+                }
+              }
+
+              // For optional fields, only show error if value exists but doesn't meet minimum requirement
+              const shouldShowError =
+                attemptedSubmit && serviceError && fieldValue.trim().length > 0;
+
+              return (
+                <div key={field} className="space-y-2">
+                  <Label className="text-sm text-gray-600">{label}</Label>
+                  <Input
+                    value={fieldValue}
+                    onChange={e =>
+                      handleServiceDetailUpdate(
+                        examinationIndex,
+                        'transportation',
+                        field,
+                        e.target.value
+                      )
+                    }
+                    disabled={isSubmitting}
+                    placeholder={placeholder}
+                    className={`w-full bg-white ${shouldShowError ? 'border-red-500' : ''}`}
+                  />
+                  {shouldShowError && (
+                    <p className="text-sm text-red-500">{getErrorMessage(serviceError)}</p>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -399,9 +511,76 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                   )
                 }
                 disabled={isSubmitting}
-                placeholder="A1A 1A1"
-                className="bg-white"
+                placeholder="Enter postal code"
+                className={`bg-white ${
+                  (() => {
+                    const services = examination.services || [];
+                    const transportationServiceIndex = services.findIndex(
+                      (s: any) => s?.type === 'transportation'
+                    );
+                    if (transportationServiceIndex >= 0) {
+                      const servicesErrors = errors.examinations?.[examinationIndex]?.services;
+                      if (
+                        Array.isArray(servicesErrors) &&
+                        servicesErrors[transportationServiceIndex]
+                      ) {
+                        const postalCodeError =
+                          servicesErrors[transportationServiceIndex]?.details?.postalCode;
+                        return (
+                          attemptedSubmit &&
+                          postalCodeError &&
+                          details.postalCode &&
+                          details.postalCode.trim().length > 0
+                        );
+                      }
+                    }
+                    return false;
+                  })()
+                    ? 'border-red-500'
+                    : ''
+                }`}
               />
+              {(() => {
+                const services = examination.services || [];
+                const transportationServiceIndex = services.findIndex(
+                  (s: any) => s?.type === 'transportation'
+                );
+                if (transportationServiceIndex >= 0) {
+                  const servicesErrors = errors.examinations?.[examinationIndex]?.services;
+                  if (Array.isArray(servicesErrors) && servicesErrors[transportationServiceIndex]) {
+                    const postalCodeError =
+                      servicesErrors[transportationServiceIndex]?.details?.postalCode;
+                    return (
+                      attemptedSubmit &&
+                      postalCodeError &&
+                      details.postalCode &&
+                      details.postalCode.trim().length > 0
+                    );
+                  }
+                }
+                return false;
+              })() && (
+                <p className="text-sm text-red-500">
+                  {getErrorMessage(
+                    (() => {
+                      const services = examination.services || [];
+                      const transportationServiceIndex = services.findIndex(
+                        (s: any) => s?.type === 'transportation'
+                      );
+                      if (transportationServiceIndex >= 0) {
+                        const servicesErrors = errors.examinations?.[examinationIndex]?.services;
+                        if (
+                          Array.isArray(servicesErrors) &&
+                          servicesErrors[transportationServiceIndex]
+                        ) {
+                          return servicesErrors[transportationServiceIndex]?.details?.postalCode;
+                        }
+                      }
+                      return undefined;
+                    })()
+                  )}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -422,7 +601,15 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
         </div>
       );
     },
-    [handleServiceDetailUpdate, handleTransportationPlaceSelect, isSubmitting, trigger]
+    [
+      handleServiceDetailUpdate,
+      handleTransportationPlaceSelect,
+      isSubmitting,
+      trigger,
+      attemptedSubmit,
+      errors,
+      getErrorMessage,
+    ]
   );
 
   // Render interpreter fields
@@ -497,7 +684,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
       </h1>
       <ProgressIndicator mode={mode} currentStep={currentStep} totalSteps={totalSteps} />
       <div className="w-full max-w-full md:rounded-[30px]">
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
+        <form onSubmit={handleSubmit(onSubmit, onError)} className="w-full max-w-full" noValidate>
           <div className="w-full max-w-full space-y-6">
             <div className="w-full max-w-full px-4 md:px-0">
               {/* Case Type and Reason for Referral */}
@@ -516,13 +703,18 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                     id="examinationType"
                     label="Case Type"
                     value={watchedValues.examinationType || ''}
-                    onChange={(val: string) => setValue('examinationType', val)}
+                    onChange={(val: string) => {
+                      setValue('examinationType', val, { shouldValidate: true });
+                      if (val && errors.examinationType) {
+                        trigger('examinationType');
+                      }
+                    }}
                     options={examinationTypeOptions}
                     placeholder="Select Examination Type"
                     icon={false}
                     required
                   />
-                  {errors.examinationType && (
+                  {attemptedSubmit && errors.examinationType && !watchedValues.examinationType && (
                     <p className="text-sm text-red-500">
                       {getErrorMessage(errors.examinationType)}
                     </p>
@@ -538,10 +730,10 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                     {...register('reasonForReferral')}
                     placeholder="Type here"
                     className={`mt-2 min-h-[120px] w-full resize-none rounded-md ${
-                      errors.reasonForReferral ? 'border-red-500' : ''
+                      attemptedSubmit && errors.reasonForReferral ? 'border-red-500' : ''
                     }`}
                   />
-                  {errors.reasonForReferral && (
+                  {attemptedSubmit && errors.reasonForReferral && (
                     <p className="text-sm text-red-500">
                       {getErrorMessage(errors.reasonForReferral)}
                     </p>
@@ -602,6 +794,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                 updatedExaminations[index] = { ...examination, urgencyLevel: val };
                                 setValue('examinations', updatedExaminations, {
                                   shouldDirty: true,
+                                  shouldValidate: true,
                                 });
                               }}
                               options={UrgencyLevels}
@@ -610,11 +803,13 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                               icon={false}
                               required
                             />
-                            {errors.examinations?.[index]?.urgencyLevel && (
-                              <p className="text-sm text-red-500">
-                                {getErrorMessage(errors.examinations[index]?.urgencyLevel)}
-                              </p>
-                            )}
+                            {attemptedSubmit &&
+                              errors.examinations?.[index]?.urgencyLevel &&
+                              !examination.urgencyLevel && (
+                                <p className="text-sm text-red-500">
+                                  {getErrorMessage(errors.examinations[index]?.urgencyLevel)}
+                                </p>
+                              )}
                           </div>
 
                           <div className="mt-0 space-y-2">
@@ -635,15 +830,18 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                 };
                                 setValue('examinations', updatedExaminations, {
                                   shouldDirty: true,
+                                  shouldValidate: true,
                                 });
                               }}
                               className="bg-white"
                             />
-                            {errors.examinations?.[index]?.dueDate && (
-                              <p className="text-sm text-red-500">
-                                {getErrorMessage(errors.examinations[index]?.dueDate)}
-                              </p>
-                            )}
+                            {attemptedSubmit &&
+                              errors.examinations?.[index]?.dueDate &&
+                              !examination.dueDate && (
+                                <p className="text-sm text-red-500">
+                                  {getErrorMessage(errors.examinations[index]?.dueDate)}
+                                </p>
+                              )}
                           </div>
 
                           <div className="space-y-2">
@@ -659,6 +857,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                 };
                                 setValue('examinations', updatedExaminations, {
                                   shouldDirty: true,
+                                  shouldValidate: true,
                                 });
                               }}
                               options={locationOptions}
@@ -667,11 +866,13 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                               icon={false}
                               required
                             />
-                            {errors.examinations?.[index]?.locationType && (
-                              <p className="text-sm text-red-500">
-                                {getErrorMessage(errors.examinations[index]?.locationType)}
-                              </p>
-                            )}
+                            {attemptedSubmit &&
+                              errors.examinations?.[index]?.locationType &&
+                              !examination.locationType && (
+                                <p className="text-sm text-red-500">
+                                  {getErrorMessage(errors.examinations[index]?.locationType)}
+                                </p>
+                              )}
                           </div>
                         </div>
 
@@ -688,18 +889,29 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                 ...examination,
                                 instructions: e.target.value,
                               };
-                              setValue('examinations', updatedExaminations, { shouldDirty: true });
+                              setValue('examinations', updatedExaminations, {
+                                shouldDirty: true,
+                                shouldValidate: true,
+                              });
                             }}
-                            placeholder="Type here"
+                            placeholder="Enter instructions"
                             className={`mt-2 min-h-[100px] w-full rounded-md bg-white ${
-                              errors.examinations?.[index]?.instructions ? 'border-red-500' : ''
+                              attemptedSubmit &&
+                              errors.examinations?.[index]?.instructions &&
+                              (!examination.instructions ||
+                                examination.instructions.trim().length < 10)
+                                ? 'border-red-500'
+                                : ''
                             }`}
                           />
-                          {errors.examinations?.[index]?.instructions && (
-                            <p className="text-sm text-red-500">
-                              {getErrorMessage(errors.examinations[index]?.instructions)}
-                            </p>
-                          )}
+                          {attemptedSubmit &&
+                            errors.examinations?.[index]?.instructions &&
+                            (!examination.instructions ||
+                              examination.instructions.trim().length < 10) && (
+                              <p className="text-sm text-red-500">
+                                {getErrorMessage(errors.examinations[index]?.instructions)}
+                              </p>
+                            )}
                         </div>
 
                         <div className="mt-4 space-y-2">
@@ -716,16 +928,22 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                 ...examination,
                                 selectedBenefits: selectedIds,
                               };
-                              setValue('examinations', updatedExaminations, { shouldDirty: true });
+                              setValue('examinations', updatedExaminations, {
+                                shouldDirty: true,
+                                shouldValidate: true,
+                              });
                             }}
                             disabled={isSubmitting}
                             loadingBenefits={loadingBenefits}
                           />
-                          {errors.examinations?.[index]?.selectedBenefits && (
-                            <p className="text-sm text-red-500">
-                              {getErrorMessage(errors.examinations[index]?.selectedBenefits)}
-                            </p>
-                          )}
+                          {attemptedSubmit &&
+                            errors.examinations?.[index]?.selectedBenefits &&
+                            (!examination.selectedBenefits ||
+                              examination.selectedBenefits.length === 0) && (
+                              <p className="text-sm text-red-500">
+                                {getErrorMessage(errors.examinations[index]?.selectedBenefits)}
+                              </p>
+                            )}
                         </div>
 
                         {/* Add-On Services */}
@@ -782,13 +1000,29 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                                 ...examination,
                                 additionalNotes: e.target.value,
                               };
-                              setValue('examinations', updatedExaminations, { shouldDirty: true });
+                              setValue('examinations', updatedExaminations, {
+                                shouldDirty: true,
+                                shouldValidate: true,
+                              });
                             }}
-                            placeholder="Type here"
+                            placeholder="Enter additional notes"
                             className={`mt-2 min-h-[100px] w-full resize-none rounded-md bg-white ${
-                              errors.examinations?.[index]?.additionalNotes ? 'border-red-500' : ''
+                              attemptedSubmit &&
+                              errors.examinations?.[index]?.additionalNotes &&
+                              examination.additionalNotes &&
+                              examination.additionalNotes.trim().length < 10
+                                ? 'border-red-500'
+                                : ''
                             }`}
                           />
+                          {attemptedSubmit &&
+                            errors.examinations?.[index]?.additionalNotes &&
+                            examination.additionalNotes &&
+                            examination.additionalNotes.trim().length < 10 && (
+                              <p className="text-sm text-red-500">
+                                {getErrorMessage(errors.examinations[index]?.additionalNotes)}
+                              </p>
+                            )}
                         </div>
                       </CollapsibleContent>
                     </Collapsible>
@@ -809,6 +1043,7 @@ const ExaminationDetailsComponent: React.FC<ExaminationProps> = ({
                 isSubmitting={isSubmitting}
                 isLastStep={currentStep === totalSteps}
                 color="#000080"
+                disabled={!areAllRequiredFieldsFilled}
               />
             </div>
           </div>

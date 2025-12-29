@@ -1,5 +1,6 @@
 // Step 4
-import { useState, useRef } from 'react';
+'use client';
+import { useState, useRef, useEffect } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
@@ -19,8 +20,21 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
   const [code, setCode] = useState(['', '', '', '']);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [resending, setResending] = useState(false);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(60); // Start with 60 seconds cooldown
   const { setData, data } = useRegistrationStore();
   const email = data.step2?.officialEmailAddress;
+
+  // Initialize cooldown timer when component mounts
+  useEffect(() => {
+    // Start 60 second cooldown when user first lands on this page
+    setResendCooldown(60);
+  }, []);
+
+  // Check if all required fields are filled
+  const areAllRequiredFieldsFilled = (codeValue: string): boolean => {
+    return codeValue.length === 4;
+  };
 
   const handleInputChange = (
     index: number,
@@ -41,7 +55,22 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
     }
   };
 
+  // Countdown timer effect
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+
+    const timer = setTimeout(() => {
+      setResendCooldown(prev => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
   const onResendCode = async () => {
+    if (resendCooldown > 0 || resending) {
+      return; // Prevent multiple clicks during cooldown
+    }
+
     try {
       setResending(true);
       if (!email) {
@@ -54,6 +83,8 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
       }
 
       toast.success(SuccessMessages.OTP_RESENT);
+      // Start 60 second cooldown
+      setResendCooldown(60);
     } catch (error) {
       log.error('Error in onResendCode:', error);
       let message = 'An error occurred while resending the code';
@@ -94,6 +125,24 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
     values: typeof VerificationCodeInitialValues,
     actions: FormikHelpers<typeof VerificationCodeInitialValues>
   ) => {
+    setAttemptedSubmit(true);
+
+    // Validate form
+    const errors = await actions.validateForm();
+
+    // If there are any errors, set errors and touched fields, then return
+    if (Object.keys(errors).length > 0) {
+      // Set errors in Formik state so they can be displayed
+      actions.setErrors(errors);
+
+      // Set all error fields as touched
+      Object.keys(errors).forEach(field => {
+        actions.setFieldTouched(field as keyof typeof VerificationCodeInitialValues, true);
+      });
+      actions.setSubmitting(false);
+      return;
+    }
+
     try {
       setData('step4', values);
 
@@ -106,7 +155,11 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
       const otpVerificationResult = await verifyOtp(otp, email);
 
       if (!otpVerificationResult.success) {
-        throw new Error(otpVerificationResult.error);
+        // Handle OTP verification errors specifically - show only in toast
+        const errorMessage = otpVerificationResult.error || 'Invalid verification code';
+        toast.error(errorMessage);
+        actions.setSubmitting(false);
+        return;
       }
 
       const updatedData = {
@@ -117,20 +170,20 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
       const registerOrganizationResult = await registerOrganization(updatedData);
 
       if (!registerOrganizationResult.success) {
-        throw new Error(registerOrganizationResult.error);
+        const errorMsg = registerOrganizationResult.error || ErrorMessages.REGISTRATION_FAILED;
+        throw new Error(errorMsg);
       }
 
       if (onNext) onNext();
     } catch (error) {
       log.error('Error in handleSubmit:', error);
-      let message = 'An error occurred during registration';
+      let message: string = ErrorMessages.REGISTRATION_FAILED;
       if (error instanceof Error) {
         message = error.message;
       } else if (typeof error === 'string') {
         message = error;
       }
       toast.error(message);
-      toast.error(ErrorMessages.REGISTRATION_FAILED);
     } finally {
       actions.setSubmitting(false);
     }
@@ -138,7 +191,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
 
   return (
     <div
-      className="mt-4 w-full rounded-[20px] bg-white px-[10px] py-6 sm:px-6 md:mt-6 md:min-h-[500px] md:max-w-[970px] md:rounded-[30px] md:px-[75px]"
+      className="mt-4 w-full rounded-[20px] bg-white px-[10px] py-6 pb-8 sm:px-6 md:min-h-[300px] md:max-w-[900px] md:rounded-[30px] md:px-[75px]"
       style={{
         boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
@@ -149,11 +202,15 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}
+        enableReinitialize={true}
       >
-        {({ setFieldValue, errors, setFieldError, isSubmitting }) => {
+        {({ setFieldValue, errors, setFieldError, isSubmitting, touched, values }) => {
+          const isContinueDisabled = !areAllRequiredFieldsFilled(values.code);
+          const showErrors = attemptedSubmit || Object.keys(touched).length > 0;
+
           return (
             <Form>
-              <div className="mt-6 flex min-h-[400px] flex-col items-center justify-center space-y-10 sm:mt-8 sm:space-y-12">
+              <div className="mt-6 flex min-h-[300px] flex-col items-center justify-center space-y-6 sm:mt-8 sm:space-y-12">
                 <div className="text-center">
                   <p className="mt-2 text-base leading-relaxed font-medium text-[#6C7278] sm:text-lg md:text-[20px]">
                     Enter the 4 digit verification code we have sent to {email}
@@ -190,19 +247,29 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                   ))}
                 </div>
 
-                {errors.code && <p className="mt-2 text-sm text-red-500">{errors.code}</p>}
+                {showErrors && errors.code && (
+                  <p className="mt-2 text-sm text-red-500">{errors.code}</p>
+                )}
 
                 {/* Resend link */}
                 <div className="text-center">
                   <p className="text-base font-normal text-[#000000] sm:text-lg">
                     Didn&apos;t get OTP?{' '}
                     <button
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || resending || resendCooldown > 0}
                       type="button"
                       onClick={onResendCode}
-                      className="font-medium text-[#0B0BB0] underline hover:text-[#0088cc]"
+                      className={`font-medium underline ${
+                        resendCooldown > 0 || isSubmitting || resending
+                          ? 'cursor-not-allowed text-gray-400'
+                          : 'text-[#0B0BB0] hover:text-[#0088cc]'
+                      }`}
                     >
-                      {resending ? 'Resending...' : 'Resend Code'}
+                      {resending
+                        ? 'Resending...'
+                        : resendCooldown > 0
+                          ? `Resend Code (${resendCooldown}s)`
+                          : 'Resend Code'}
                     </button>
                   </p>
                 </div>
@@ -213,6 +280,7 @@ const VerificationCode: React.FC<OrganizationRegStepProps> = ({
                     isSubmitting={isSubmitting}
                     isLastStep={currentStep === totalSteps}
                     color="#000080"
+                    disabled={isContinueDisabled}
                   />
                 </div>
               </div>

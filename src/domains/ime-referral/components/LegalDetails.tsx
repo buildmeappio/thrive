@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
@@ -36,6 +37,7 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
   mode,
 }) => {
   const { data, setData, _hasHydrated } = useIMEReferralStore();
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   const {
     register,
@@ -47,6 +49,7 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
   } = useForm<LegalDetails>({
     resolver: zodResolver(LegalDetailsSchema),
     defaultValues: data.step3 || legalData || LegalDetailsInitialValues,
+    mode: 'onSubmit',
   });
 
   const watchedValues = watch();
@@ -100,8 +103,13 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
   };
 
   const onSubmit: SubmitHandler<LegalDetails> = values => {
+    setAttemptedSubmit(true);
     setData('step3', values);
     if (onNext) onNext();
+  };
+
+  const onError = () => {
+    setAttemptedSubmit(true);
   };
 
   if (!_hasHydrated) {
@@ -118,7 +126,7 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
         className="w-full max-w-full rounded-[20px] bg-white py-4 md:rounded-[30px] md:px-[55px] md:py-8"
         style={{ boxShadow: '0px 0px 36.35px 0px #00000008' }}
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-full">
+        <form onSubmit={handleSubmit(onSubmit, onError)} className="w-full max-w-full" noValidate>
           <div className="w-full max-w-full">
             <div className="w-full max-w-full space-y-8">
               <div className="w-full max-w-full px-4 md:px-0">
@@ -134,10 +142,10 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('legalCompanyName')}
-                      placeholder="WSH"
+                      placeholder="Enter company name"
                       className="w-full"
                     />
-                    {errors.legalCompanyName && (
+                    {attemptedSubmit && errors.legalCompanyName && (
                       <p className="text-sm text-red-500">{errors.legalCompanyName.message}</p>
                     )}
                   </div>
@@ -147,10 +155,10 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('legalContactPerson')}
-                      placeholder="John Doe"
+                      placeholder="Enter contact person name"
                       className="w-full"
                     />
-                    {errors.legalContactPerson && (
+                    {attemptedSubmit && errors.legalContactPerson && (
                       <p className="text-sm text-red-500">{errors.legalContactPerson.message}</p>
                     )}
                   </div>
@@ -169,7 +177,7 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
                       }
                       className="w-full"
                     />
-                    {errors.legalPhone && (
+                    {attemptedSubmit && errors.legalPhone && (
                       <p className="text-sm text-red-500">{errors.legalPhone.message}</p>
                     )}
                   </div>
@@ -183,10 +191,11 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
                       onChange={e =>
                         setValue('legalFaxNo', e.target.value, { shouldValidate: true })
                       }
+                      placeholder="Enter fax number"
                       className="w-full"
                       icon={Printer}
                     />
-                    {errors.legalFaxNo && (
+                    {attemptedSubmit && errors.legalFaxNo && (
                       <p className="text-sm text-red-500">{errors.legalFaxNo.message}</p>
                     )}
                   </div>
@@ -198,10 +207,10 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
                     name="legalAddressLookup"
                     value={watch('legalAddressLookup')}
                     label="Address Lookup"
-                    placeholder="150 John Street, Toronto"
+                    placeholder="Enter address"
                     setValue={setValue}
                     trigger={trigger}
-                    error={errors.legalAddressLookup}
+                    error={attemptedSubmit ? errors.legalAddressLookup : undefined}
                     onPlaceSelect={handlePlaceSelect}
                     className="space-y-2"
                   />
@@ -214,10 +223,10 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('legalStreetAddress')}
-                      placeholder="50 Stephanie Street"
+                      placeholder="Enter street address"
                       className="w-full"
                     />
-                    {errors.legalStreetAddress && (
+                    {attemptedSubmit && errors.legalStreetAddress && (
                       <p className="text-sm text-red-500">{errors.legalStreetAddress.message}</p>
                     )}
                   </div>
@@ -230,10 +239,10 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('legalAptUnitSuite')}
-                      placeholder="402"
+                      placeholder="Enter apt/unit/suite"
                       className="w-full"
                     />
-                    {errors.legalAptUnitSuite && (
+                    {attemptedSubmit && errors.legalAptUnitSuite && (
                       <p className="text-sm text-red-500">{errors.legalAptUnitSuite.message}</p>
                     )}
                   </div>
@@ -243,10 +252,10 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('legalPostalCode')}
-                      placeholder="A1A 1A1"
+                      placeholder="Enter postal code"
                       className="w-full"
                     />
-                    {errors.legalPostalCode && (
+                    {attemptedSubmit && errors.legalPostalCode && (
                       <p className="text-sm text-red-500">{errors.legalPostalCode.message}</p>
                     )}
                   </div>
@@ -260,7 +269,7 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
                       options={provinceOptions}
                       placeholder="Select"
                     />
-                    {errors.legalProvinceState && (
+                    {attemptedSubmit && errors.legalProvinceState && (
                       <p className="text-sm text-red-500">{errors.legalProvinceState.message}</p>
                     )}
                   </div>
@@ -270,10 +279,10 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
                     <Input
                       disabled={isSubmitting}
                       {...register('legalCity')}
-                      placeholder="Toronto"
+                      placeholder="Enter city"
                       className="w-full"
                     />
-                    {errors.legalCity && (
+                    {attemptedSubmit && errors.legalCity && (
                       <p className="text-sm text-red-500">{errors.legalCity.message}</p>
                     )}
                   </div>

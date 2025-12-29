@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Upload, X, FileText, Loader2, Download, Eye } from 'lucide-react';
@@ -45,6 +45,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
   const [deletedDocuments, setDeletedDocuments] = useState<string[]>([]);
   const [deletingDoc, setDeletingDoc] = useState<string | null>(null);
   const [initialExistingCount, setInitialExistingCount] = useState(0);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   const {
     handleSubmit,
@@ -60,9 +61,18 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
       deletedDocuments: [],
       existingDocumentsCount: 0,
     },
+    mode: 'onSubmit',
   });
 
   const files = watch('files');
+  const existingDocumentsCount = watch('existingDocumentsCount');
+
+  // Check if at least one document exists (new files or remaining existing documents)
+  const hasDocuments = useMemo(() => {
+    const newFilesCount = files.length;
+    const remainingExistingCount = existingDocumentsCount - deletedDocuments.length;
+    return newFilesCount + remainingExistingCount >= 1;
+  }, [files.length, existingDocumentsCount, deletedDocuments.length]);
 
   // Load existing documents from database
   useEffect(() => {
@@ -174,7 +184,12 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = event.target.files ? Array.from(event.target.files) : [];
-    setValue('files', [...files, ...newFiles], { shouldValidate: true });
+    const updatedFiles = [...files, ...newFiles];
+    setValue('files', updatedFiles, { shouldValidate: true });
+    // Clear errors when files are added
+    if (updatedFiles.length > 0 && errors.files) {
+      clearErrors('files');
+    }
   };
 
   const handleRemoveFile = (file: File) => {
@@ -186,11 +201,16 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
   };
 
   const onSubmit = (values: DocumentUploadFormData) => {
+    setAttemptedSubmit(true);
     setData('step6', {
       ...values,
       deletedDocuments,
     });
     onNext();
+  };
+
+  const onError = (_errors: any) => {
+    setAttemptedSubmit(true);
   };
 
   if (!_hasHydrated) {
@@ -203,11 +223,8 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
         {mode === 'edit' ? 'Edit Case Request' : 'New Case Request'}
       </h1>
       <ProgressIndicator mode={mode} currentStep={currentStep} totalSteps={totalSteps} />
-      <div
-        style={{ minHeight: '530px' }}
-        className="rounded-4xl bg-white p-4 sm:p-6 md:px-[55px] md:py-8"
-      >
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <div className="rounded-4xl bg-white p-4 sm:p-6 md:px-[55px] md:py-8 md:pb-6">
+        <form onSubmit={handleSubmit(onSubmit, onError)} noValidate>
           <h2 className="mb-6 text-[24px] leading-[36.02px] font-semibold tracking-[-0.02em] md:text-[36.02px]">
             Document Upload
           </h2>
@@ -293,7 +310,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
           )}
 
           {/* Upload Box */}
-          <div className="mb-6 flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-[#F9FAFB] px-6 py-12 text-center">
+          <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-[#F9FAFB] px-6 py-12 text-center">
             <Upload className="mb-3 h-12 w-12 text-indigo-600" />
             <p className="font-medium text-gray-700">
               Drag & drop files or{' '}
@@ -312,7 +329,16 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
             <p className="mt-2 text-sm text-gray-500">
               Supported formats: JPEG, PNG, GIF, MP4, PDF, PSD, AI, Word, PPT
             </p>
-            {errors.files && <p className="mt-2 text-sm text-red-600">{errors.files.message}</p>}
+            {attemptedSubmit && errors.files && (
+              <p className="mt-2 text-sm text-red-600">{errors.files.message}</p>
+            )}
+          </div>
+
+          {/* Note Message */}
+          <div className="mb-6">
+            <p className="text-sm text-gray-600">
+              <span className="font-semibold">Note:</span> You must upload at least one document.
+            </p>
           </div>
 
           {/* Newly Selected Files */}
@@ -348,7 +374,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
           )}
 
           {/* Navigation Buttons */}
-          <div className="mt-24 flex flex-row justify-between gap-4 px-4 md:px-0">
+          <div className="mt-8 flex flex-row justify-between gap-4 px-4 md:px-0 md:pb-0">
             <BackButton
               isSubmitting={isSubmitting || loadingDocs}
               onClick={onPrevious}
@@ -361,7 +387,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
               isSubmitting={isSubmitting || loadingDocs}
               isLastStep={currentStep === totalSteps}
               color="#000080"
-              disabled={isSubmitting || loadingDocs}
+              disabled={!hasDocuments || isSubmitting || loadingDocs}
             />
           </div>
         </form>
