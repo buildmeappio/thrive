@@ -1,8 +1,9 @@
+import env from '@/config/env';
 import GoogleProvider from 'next-auth/providers/google';
 
 export const google = GoogleProvider({
-  clientId: process.env.OAUTH_CLIENT_ID || '',
-  clientSecret: process.env.OAUTH_CLIENT_SECRET || '',
+  clientId: env.OAUTH_CLIENT_ID || '',
+  clientSecret: env.OAUTH_CLIENT_SECRET || '',
 });
 
 export async function handleGoogleSignIn(email?: string | null) {

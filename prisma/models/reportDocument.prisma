@@ -1,0 +1,17 @@
+model ReportDocument {
+  id         String @id @unique @default(uuid()) @db.Uuid
+  reportId   String @map("report_id") @db.Uuid
+  documentId String @map("document_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  report   Report    @relation("ReportReferralDocuments", fields: [reportId], references: [id], onDelete: Cascade)
+  document Documents @relation("ReportReferralDocuments", fields: [documentId], references: [id])
+
+  @@unique([reportId, documentId])
+  @@index([reportId])
+  @@index([documentId])
+  @@map("report_documents")
+}

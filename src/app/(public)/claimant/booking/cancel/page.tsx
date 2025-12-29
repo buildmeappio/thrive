@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { cancelBooking, getBookingDetails } from '@/domains/claimant/actions/cancelBooking';
+import env from '@/config/env';
 
 function CancelBookingContent() {
   const searchParams = useSearchParams();
@@ -130,7 +131,7 @@ function CancelBookingContent() {
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
         <div className="mb-6 text-center">
           <Image
-            src={`${process.env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
+            src={`${env.NEXT_PUBLIC_CDN_URL}/images/thriveLogo.png`}
             alt="Thrive Logo"
             width={64}
             height={64}

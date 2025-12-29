@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 // import { getCurrentUser } from '@/domains/auth/server/session'; // Commented out - not currently used
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
 import emailService from '@/services/emailService';
 import createSecureLink from '@/utils/createSecureLink';
 import log from '@/utils/log';
+import env from '@/config/env';
 
 /**
  * API endpoint to approve an examination and send approval link to claimant
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         caseNumber,
         organizationName,
         approvalLink: secureLink,
-        dashboardUrl: process.env.FRONTEND_URL,
+        dashboardUrl: env.NEXT_PUBLIC_APP_URL,
       },
       claimant.emailAddress ?? ''
     );

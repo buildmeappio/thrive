@@ -22,6 +22,7 @@ export interface OrganizationTypeOption {
 
 type OrganizationInfoProps = OrganizationRegStepProps & {
   organizationTypes: OrganizationTypeOption[];
+  isUpdateMode?: boolean;
 };
 
 const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
@@ -29,6 +30,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
   currentStep = 1,
   totalSteps = 3,
   organizationTypes: organizationTypeOptions,
+  isUpdateMode = false,
 }) => {
   const { setData, data, _hasHydrated } = useRegistrationStore();
 
@@ -38,19 +40,22 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
 
   const handleSubmit = async (values: typeof OrganizationInfoInitialValues) => {
     try {
-      const exists = await checkOrganizationName(values.organizationName);
-      console.log('Organization exists:', exists);
+      // Skip organization name check in update mode
+      if (!isUpdateMode) {
+        const exists = await checkOrganizationName(values.organizationName);
+        console.log('Organization exists:', exists);
 
-      // Check if the action was successful first
-      if (!exists.success) {
-        toast.error(exists.error);
-        return;
-      }
+        // Check if the action was successful first
+        if (!exists.success) {
+          toast.error(exists.error);
+          return;
+        }
 
-      // Now TypeScript knows exists.data is available
-      if (exists.data) {
-        toast.error('This organization already exists.');
-        return;
+        // Now TypeScript knows exists.data is available
+        if (exists.data) {
+          toast.error('This organization already exists.');
+          return;
+        }
       }
 
       setData('step1', values);
@@ -109,13 +114,14 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                           Organization Name<span className="text-red-500">*</span>
                         </Label>
                         <Input
-                          disabled={isSubmitting}
+                          disabled={isSubmitting || isUpdateMode}
                           id="organizationName"
                           name="organizationName"
                           placeholder="Desjardins"
                           required
                           onChange={handleChange}
                           value={values.organizationName}
+                          className={isUpdateMode ? 'cursor-not-allowed bg-gray-100' : ''}
                         />
                         {errors.organizationName && (
                           <p className="text-sm text-red-500">{errors.organizationName}</p>

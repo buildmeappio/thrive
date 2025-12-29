@@ -1,17 +1,16 @@
 import type { NextConfig } from 'next';
 
-const frontendURL = process.env.FRONTEND_URL;
+const frontendURL = process.env.NEXT_PUBLIC_APP_URL;
 
 if (!frontendURL) {
-  throw new Error('FRONTEND_URL is not set');
+  throw new Error('NEXT_PUBLIC_APP_URL is not set');
 }
 
-// Provide a default BASE_PATH for local development if not set
-const basePath = process.env.BASE_PATH || '/organization';
+const basePath = '/organization';
 
 const nextConfig: NextConfig = {
   /* config options here */
-  basePath,
+  basePath: '/organization',
   images: {
     remotePatterns: [
       {
@@ -29,7 +28,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/claimant/:path*',
-        destination: `${frontendURL}${basePath}/claimant/:path*`,
+        destination: `${frontendURL}/${basePath}/claimant/:path*`,
         basePath: false,
       },
     ];

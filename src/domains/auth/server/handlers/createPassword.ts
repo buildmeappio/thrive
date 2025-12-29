@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
 import authService from '../auth.service';
 import { HttpError } from '@/utils/httpError';
 import ErrorMessages from '@/constants/ErrorMessages';

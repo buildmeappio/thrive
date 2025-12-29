@@ -90,3 +90,17 @@ export const checkOrganizationName = async (name: string) => {
     'Failed to check organization name'
   );
 };
+
+export const updateOrganizationData = async (token: string, data: FormData) => {
+  return await handleAction(
+    async () => await authHandlers.updateOrganizationData(token, data),
+    'Failed to update organization data'
+  );
+};
+
+export const verifyAndGetOrganizationInfo = async (token: string) => {
+  return await handleAction(
+    async () => await authHandlers.verifyAndGetOrganizationInfo(token),
+    'Failed to verify token and get organization information'
+  );
+};

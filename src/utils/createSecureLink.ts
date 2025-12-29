@@ -1,7 +1,8 @@
 import { randomUUID } from 'crypto';
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
 import log from '@/utils/log';
 import { signClaimantApprovalToken } from '@/lib/jwt';
+import env from '@/config/env';
 
 const createSecureLink = async (
   examinationId: string,
@@ -54,20 +55,24 @@ const createSecureLink = async (
     const referenceToken = randomUUID();
 
     // Store the reference token in the database for tracking purposes
-    // Note: The actual JWT token is too long for VarChar(255), so we store a UUID reference instead
-    // The JWT token in the URL is verified directly by getCaseSummaryByJWT
-    const secureLink = await prisma.examinationSecureLink.create({
+    const secureLink = await prisma.secureLink.create({
       data: {
-        examinationId: examination.id,
         token: referenceToken,
         expiresAt,
         status: 'PENDING',
       },
     });
 
+    await prisma.examinationSecureLink.create({
+      data: {
+        examinationId: examination.id,
+        secureLinkId: secureLink.id,
+      },
+    });
+
     // Generate the secure link URL with token as query parameter
-    const baseUrl = process.env.FRONTEND_URL || 'https://portal-dev.thriveassessmentcare.com';
-    const link = `${baseUrl}/claimant/availability?token=${jwtToken}`;
+    const baseUrl = env.NEXT_PUBLIC_APP_URL || 'https://portal-dev.thriveassessmentcare.com';
+    const link = `${baseUrl}${env.NEXT_PUBLIC_CLAIMANT_AVAILABILITY_URL}?token=${jwtToken}`;
 
     log.info(
       `Created secure link for examination ${examinationId}: ${link} (stored in DB with ID: ${secureLink.id})`
