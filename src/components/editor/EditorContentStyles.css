@@ -1,0 +1,493 @@
+/* Shared styles for editor content (.ProseMirror, .editor-content) and preview content (.page-content) */
+
+/* Base typography */
+.ProseMirror.editor-content,
+.editor-content,
+.page-content {
+  font-family: 'Poppins', Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Headings */
+.ProseMirror.editor-content h1,
+.editor-content h1,
+.page-content h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin-top: 0.67em;
+  margin-bottom: 0.67em;
+  color: #333;
+}
+
+.ProseMirror.editor-content h2,
+.editor-content h2,
+.page-content h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-top: 0.83em;
+  margin-bottom: 0.83em;
+  color: #333;
+}
+
+.ProseMirror.editor-content h3,
+.editor-content h3,
+.page-content h3 {
+  font-size: 1.17em;
+  font-weight: bold;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  color: #333;
+}
+
+.ProseMirror.editor-content h4,
+.editor-content h4,
+.page-content h4 {
+  font-size: 1em;
+  font-weight: bold;
+  margin-top: 1.33em;
+  margin-bottom: 1.33em;
+  color: #333;
+}
+
+.ProseMirror.editor-content h5,
+.editor-content h5,
+.page-content h5 {
+  font-size: 0.83em;
+  font-weight: bold;
+  margin-top: 1.67em;
+  margin-bottom: 1.67em;
+  color: #333;
+}
+
+.ProseMirror.editor-content h6,
+.editor-content h6,
+.page-content h6 {
+  font-size: 0.67em;
+  font-weight: bold;
+  margin-top: 2.33em;
+  margin-bottom: 2.33em;
+  color: #333;
+}
+
+/* Paragraphs */
+.ProseMirror.editor-content p,
+.editor-content p,
+.page-content p {
+  margin-bottom: 1rem;
+  min-height: 1.5em; /* Ensure empty paragraphs have height */
+}
+
+/* Ensure empty paragraphs are visible */
+.ProseMirror.editor-content p:empty::before,
+.editor-content p:empty::before,
+.page-content p:empty::before {
+  content: '\00A0'; /* Non-breaking space to preserve height */
+  display: inline-block;
+}
+
+/* Lists */
+.ProseMirror.editor-content ul,
+.ProseMirror.editor-content ol,
+.editor-content ul,
+.editor-content ol,
+.page-content ul,
+.page-content ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.ProseMirror.editor-content li,
+.editor-content li,
+.page-content li {
+  margin-bottom: 0.5rem;
+}
+
+/* Task Lists */
+.ProseMirror.editor-content ul[data-type="taskList"],
+.editor-content ul[data-type="taskList"],
+.page-content ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+}
+
+.ProseMirror.editor-content ul[data-type="taskList"] li,
+.editor-content ul[data-type="taskList"] li,
+.page-content ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.ProseMirror.editor-content ul[data-type="taskList"] li > label,
+.editor-content ul[data-type="taskList"] li > label,
+.page-content ul[data-type="taskList"] li > label {
+  flex: 0 0 auto;
+  margin-top: 0.25rem;
+  user-select: none;
+}
+
+.ProseMirror.editor-content ul[data-type="taskList"] li > div,
+.editor-content ul[data-type="taskList"] li > div,
+.page-content ul[data-type="taskList"] li > div {
+  flex: 1 1 auto;
+}
+
+/* Blockquotes */
+.ProseMirror.editor-content blockquote,
+.editor-content blockquote,
+.page-content blockquote {
+  border-left: 4px solid #d1d5db;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Code */
+.ProseMirror.editor-content code,
+.editor-content code,
+.page-content code {
+  background: #f3f4f6;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  color: #d63384;
+}
+
+.ProseMirror.editor-content pre,
+.editor-content pre,
+.page-content pre {
+  background: #f3f4f6;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.ProseMirror.editor-content pre code,
+.editor-content pre code,
+.page-content pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.875rem;
+  color: inherit;
+}
+
+/* Horizontal Rules */
+.ProseMirror.editor-content hr,
+.editor-content hr,
+.page-content hr {
+  border: none;
+  border-top: 1px solid #d1d5db;
+  margin: 1rem 0;
+}
+
+/* Links */
+.ProseMirror.editor-content a,
+.editor-content a,
+.page-content a {
+  color: #3b82f6;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ProseMirror.editor-content a:hover,
+.editor-content a:hover,
+.page-content a:hover {
+  color: #2563eb;
+}
+
+/* Images */
+.ProseMirror.editor-content img,
+.editor-content img,
+.page-content img {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+}
+
+/* Tables */
+.ProseMirror.editor-content table,
+.editor-content table,
+.page-content table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.ProseMirror.editor-content table td,
+.ProseMirror.editor-content table th,
+.editor-content table td,
+.editor-content table th,
+.page-content table td,
+.page-content table th {
+  border: 1px solid #d1d5db;
+  box-sizing: border-box;
+  min-width: 1em;
+  padding: 0.5rem;
+  position: relative;
+  vertical-align: top;
+}
+
+.ProseMirror.editor-content table th,
+.editor-content table th,
+.page-content table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+}
+
+.ProseMirror.editor-content table .selectedCell:after,
+.editor-content table .selectedCell:after,
+.page-content table .selectedCell:after {
+  background: rgba(59, 130, 246, 0.1);
+  content: "";
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.ProseMirror.editor-content table .column-resize-handle,
+.editor-content table .column-resize-handle,
+.page-content table .column-resize-handle {
+  background-color: #3b82f6;
+  bottom: 0;
+  position: absolute;
+  right: -2px;
+  top: 0;
+  width: 4px;
+  pointer-events: none;
+}
+
+/* Highlight */
+.ProseMirror.editor-content mark,
+.editor-content mark,
+.page-content mark {
+  background-color: #fef08a;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+/* Text Alignment */
+.ProseMirror.editor-content .text-align-left,
+.editor-content .text-align-left,
+.page-content .text-align-left {
+  text-align: left !important;
+}
+
+.ProseMirror.editor-content .text-align-center,
+.editor-content .text-align-center,
+.page-content .text-align-center {
+  text-align: center !important;
+}
+
+.ProseMirror.editor-content .text-align-right,
+.editor-content .text-align-right,
+.page-content .text-align-right {
+  text-align: right !important;
+}
+
+.ProseMirror.editor-content .text-align-justify,
+.editor-content .text-align-justify,
+.page-content .text-align-justify {
+  text-align: justify !important;
+}
+
+/* Ensure headings respect text alignment - explicit rules for headings */
+.ProseMirror.editor-content h1.text-align-left,
+.ProseMirror.editor-content h2.text-align-left,
+.ProseMirror.editor-content h3.text-align-left,
+.ProseMirror.editor-content h4.text-align-left,
+.ProseMirror.editor-content h5.text-align-left,
+.ProseMirror.editor-content h6.text-align-left,
+.editor-content h1.text-align-left,
+.editor-content h2.text-align-left,
+.editor-content h3.text-align-left,
+.editor-content h4.text-align-left,
+.editor-content h5.text-align-left,
+.editor-content h6.text-align-left,
+.page-content h1.text-align-left,
+.page-content h2.text-align-left,
+.page-content h3.text-align-left,
+.page-content h4.text-align-left,
+.page-content h5.text-align-left,
+.page-content h6.text-align-left {
+  text-align: left !important;
+}
+
+.ProseMirror.editor-content h1.text-align-center,
+.ProseMirror.editor-content h2.text-align-center,
+.ProseMirror.editor-content h3.text-align-center,
+.ProseMirror.editor-content h4.text-align-center,
+.ProseMirror.editor-content h5.text-align-center,
+.ProseMirror.editor-content h6.text-align-center,
+.editor-content h1.text-align-center,
+.editor-content h2.text-align-center,
+.editor-content h3.text-align-center,
+.editor-content h4.text-align-center,
+.editor-content h5.text-align-center,
+.editor-content h6.text-align-center,
+.page-content h1.text-align-center,
+.page-content h2.text-align-center,
+.page-content h3.text-align-center,
+.page-content h4.text-align-center,
+.page-content h5.text-align-center,
+.page-content h6.text-align-center {
+  text-align: center !important;
+}
+
+.ProseMirror.editor-content h1.text-align-right,
+.ProseMirror.editor-content h2.text-align-right,
+.ProseMirror.editor-content h3.text-align-right,
+.ProseMirror.editor-content h4.text-align-right,
+.ProseMirror.editor-content h5.text-align-right,
+.ProseMirror.editor-content h6.text-align-right,
+.editor-content h1.text-align-right,
+.editor-content h2.text-align-right,
+.editor-content h3.text-align-right,
+.editor-content h4.text-align-right,
+.editor-content h5.text-align-right,
+.editor-content h6.text-align-right,
+.page-content h1.text-align-right,
+.page-content h2.text-align-right,
+.page-content h3.text-align-right,
+.page-content h4.text-align-right,
+.page-content h5.text-align-right,
+.page-content h6.text-align-right {
+  text-align: right !important;
+}
+
+.ProseMirror.editor-content h1.text-align-justify,
+.ProseMirror.editor-content h2.text-align-justify,
+.ProseMirror.editor-content h3.text-align-justify,
+.ProseMirror.editor-content h4.text-align-justify,
+.ProseMirror.editor-content h5.text-align-justify,
+.ProseMirror.editor-content h6.text-align-justify,
+.editor-content h1.text-align-justify,
+.editor-content h2.text-align-justify,
+.editor-content h3.text-align-justify,
+.editor-content h4.text-align-justify,
+.editor-content h5.text-align-justify,
+.editor-content h6.text-align-justify,
+.page-content h1.text-align-justify,
+.page-content h2.text-align-justify,
+.page-content h3.text-align-justify,
+.page-content h4.text-align-justify,
+.page-content h5.text-align-justify,
+.page-content h6.text-align-justify {
+  text-align: justify !important;
+}
+
+/* Ensure headings default to left alignment if no alignment class is present */
+.ProseMirror.editor-content h1,
+.ProseMirror.editor-content h2,
+.ProseMirror.editor-content h3,
+.ProseMirror.editor-content h4,
+.ProseMirror.editor-content h5,
+.ProseMirror.editor-content h6,
+.editor-content h1,
+.editor-content h2,
+.editor-content h3,
+.editor-content h4,
+.editor-content h5,
+.editor-content h6,
+.page-content h1,
+.page-content h2,
+.page-content h3,
+.page-content h4,
+.page-content h5,
+.page-content h6 {
+  text-align: left;
+}
+
+
+/* Page Break */
+.ProseMirror.editor-content .page-break,
+.editor-content .page-break,
+.page-content .page-break {
+  height: 32px;
+  margin: 1.5rem 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  user-select: none;
+}
+
+.ProseMirror.editor-content .page-break::before,
+.editor-content .page-break::before,
+.page-content .page-break::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: repeating-linear-gradient(
+    to right,
+    #E9EDEE 0px,
+    #E9EDEE 8px,
+    transparent 8px,
+    transparent 16px
+  );
+  transform: translateY(-50%);
+}
+
+.ProseMirror.editor-content .page-break::after,
+.editor-content .page-break::after,
+.page-content .page-break::after {
+  content: 'Page Break';
+  position: relative;
+  background: white;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #6B7280;
+  border-radius: 6px;
+  border: 1px solid #E9EDEE;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  letter-spacing: 0.3px;
+  z-index: 1;
+  transition: all 0.2s ease;
+}
+
+.ProseMirror.editor-content .page-break:hover::after,
+.editor-content .page-break:hover::after,
+.page-content .page-break:hover::after {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #4B5563;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Variable highlighting */
+.ProseMirror.editor-content .variable-valid,
+.editor-content .variable-valid,
+.page-content .variable-valid {
+  background-color: #E0F7FA;
+  color: #006064;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.875rem;
+}
+
+.ProseMirror.editor-content .variable-invalid,
+.editor-content .variable-invalid,
+.page-content .variable-invalid {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.875rem;
+}
+

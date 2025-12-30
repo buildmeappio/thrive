@@ -22,6 +22,7 @@ import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import Typography from "@tiptap/extension-typography";
 import { VariableHighlight } from "./VariableHighlight";
+import "./EditorContentStyles.css";
 import {
   Bold,
   Italic,
@@ -52,6 +53,9 @@ import {
   TableCellsSplit,
   Code,
   Quote,
+  FileBoxIcon,
+  Hash,
+  Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,6 +73,7 @@ import {
 import { Input } from "@/components/ui/input";
 import ImageUploader from "./ImageUploader";
 import logger from "@/utils/logger";
+import PageBreakExtension from "./extension/PageBreakExtension";
 
 type Props = {
   content: string;
@@ -76,6 +81,7 @@ type Props = {
   placeholder?: string;
   editorRef?: React.MutableRefObject<any>;
   validVariables?: Set<string>;
+  availableVariables?: Array<{ namespace: string; vars: string[] }>;
 };
 
 // Color palette for text and highlight colors
@@ -110,13 +116,17 @@ export default function RichTextEditor({
   placeholder,
   editorRef,
   validVariables = new Set(),
+  availableVariables = [],
 }: Props) {
   const [isMounted, setIsMounted] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [showImageUploader, setShowImageUploader] = useState(false);
 
+
+
   useEffect(() => {
+    console.log("content", content);
     setIsMounted(true);
   }, []);
 
@@ -197,6 +207,7 @@ export default function RichTextEditor({
         emDash: false,
         ellipsis: false,
       }),
+      PageBreakExtension,
       VariableHighlight.configure({
         validVariables,
       }),
@@ -282,7 +293,7 @@ export default function RichTextEditor({
 
   const editor = useEditor({
     extensions,
-    content: processContentForHighlighting(content),
+    content: content,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       const cleaned = cleanContent(html);
@@ -291,7 +302,7 @@ export default function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none min-h-[500px] p-4 font-poppins",
+          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none min-h-[500px] p-4 font-poppins editor-content",
       },
       handleDOMEvents: {
         keydown: (view, event) => {
@@ -408,6 +419,294 @@ export default function RichTextEditor({
     [editor],
   );
 
+  // Print handler
+  const handlePrint = useCallback(() => {
+    if (!editor) return;
+
+    // Clean content before printing (remove variable highlight spans)
+    const htmlContent = cleanContent(editor.getHTML());
+
+    // Create a print-friendly HTML document
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      console.error('Failed to open print window');
+      return;
+    }
+
+    // Create print HTML with A4 page layout
+    const printHTML = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Print Template</title>
+          <style>
+            @page {
+              size: A4;
+              margin: 0;
+            }
+            
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            
+            body {
+              font-family: 'Poppins', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              background: white;
+              padding: 0;
+              margin: 0;
+            }
+            
+            .print-content {
+              width: 714px; /* A4 width (794px) minus margins (40px each side) */
+              margin: 0 auto;
+              padding: 40px;
+              word-wrap: break-word;
+              page-break-inside: auto;
+            }
+            
+            /* Headings */
+            h1 {
+              font-size: 2em;
+              font-weight: bold;
+              margin-top: 0.67em;
+              margin-bottom: 0.67em;
+              color: #333;
+            }
+            
+            h2 {
+              font-size: 1.5em;
+              font-weight: bold;
+              margin-top: 0.83em;
+              margin-bottom: 0.83em;
+              color: #333;
+            }
+            
+            h3 {
+              font-size: 1.17em;
+              font-weight: bold;
+              margin-top: 1em;
+              margin-bottom: 1em;
+              color: #333;
+            }
+            
+            h4 {
+              font-size: 1em;
+              font-weight: bold;
+              margin-top: 1.33em;
+              margin-bottom: 1.33em;
+              color: #333;
+            }
+            
+            h5 {
+              font-size: 0.83em;
+              font-weight: bold;
+              margin-top: 1.67em;
+              margin-bottom: 1.67em;
+              color: #333;
+            }
+            
+            h6 {
+              font-size: 0.67em;
+              font-weight: bold;
+              margin-top: 2em;
+              margin-bottom: 2em;
+              color: #333;
+            }
+            
+            p {
+              margin: 1em 0;
+            }
+            
+            /* Lists */
+            ul, ol {
+              margin: 1em 0;
+              padding-left: 2em;
+            }
+            
+            li {
+              margin: 0.5em 0;
+            }
+            
+            /* Blockquote */
+            blockquote {
+              border-left: 4px solid #ddd;
+              padding-left: 1em;
+              margin: 1em 0;
+              color: #666;
+              font-style: italic;
+            }
+            
+            /* Code */
+            code {
+              background-color: #f4f4f4;
+              padding: 2px 4px;
+              border-radius: 3px;
+              font-family: 'Courier New', monospace;
+              font-size: 0.9em;
+            }
+            
+            pre {
+              background-color: #f4f4f4;
+              padding: 1em;
+              border-radius: 4px;
+              overflow-x: auto;
+              margin: 1em 0;
+            }
+            
+            pre code {
+              background: none;
+              padding: 0;
+            }
+            
+            /* Links */
+            a {
+              color: #0066cc;
+              text-decoration: underline;
+            }
+            
+            /* Images */
+            img {
+              max-width: 100%;
+              height: auto;
+              display: block;
+              margin: 1em auto;
+            }
+            
+            /* Tables */
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 1em 0;
+              page-break-inside: avoid;
+            }
+            
+            table td, table th {
+              border: 1px solid #ddd;
+              padding: 8px;
+              text-align: left;
+            }
+            
+            table th {
+              background-color: #f2f2f2;
+              font-weight: bold;
+            }
+            
+            table tr:nth-child(even) {
+              background-color: #f9f9f9;
+            }
+            
+            /* Horizontal rule */
+            hr {
+              border: none;
+              border-top: 1px solid #ddd;
+              margin: 2em 0;
+            }
+            
+            /* Text formatting */
+            strong {
+              font-weight: bold;
+            }
+            
+            em {
+              font-style: italic;
+            }
+            
+            u {
+              text-decoration: underline;
+            }
+            
+            s {
+              text-decoration: line-through;
+            }
+            
+            mark {
+              background-color: #fef08a;
+              padding: 2px 4px;
+            }
+            
+            /* Task list */
+            ul[data-type="taskList"] {
+              list-style: none;
+              padding-left: 0;
+            }
+            
+            ul[data-type="taskList"] li {
+              display: flex;
+              align-items: flex-start;
+              margin: 0.5em 0;
+            }
+            
+            ul[data-type="taskList"] li input[type="checkbox"] {
+              margin-right: 0.5em;
+              margin-top: 0.2em;
+            }
+            
+            /* Page break */
+            .page-break {
+              page-break-after: always;
+              break-after: page;
+            }
+            
+            /* Print-specific styles */
+            @media print {
+              body {
+                margin: 0;
+                padding: 0;
+              }
+              
+              .print-content {
+                margin: 0;
+                padding: 40px;
+              }
+              
+              /* Avoid breaking inside these elements */
+              h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid;
+                break-after: avoid;
+              }
+              
+              p, li {
+                orphans: 3;
+                widows: 3;
+              }
+              
+              /* Ensure tables don't break awkwardly */
+              table {
+                page-break-inside: avoid;
+              }
+              
+              tr {
+                page-break-inside: avoid;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-content">
+            ${htmlContent}
+          </div>
+          <script>
+            window.onload = function() {
+              // Wait a bit for styles to apply
+              setTimeout(function() {
+                window.print();
+              }, 250);
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.writeln(printHTML);
+    printWindow.document.close();
+  }, [editor, cleanContent]);
+
+
   // Don't render on server to avoid hydration mismatch
   if (!isMounted || !editor) {
     return (
@@ -416,6 +715,7 @@ export default function RichTextEditor({
       </div>
     );
   }
+
 
   // Toolbar button component
   const ToolbarButton = ({
@@ -699,10 +999,10 @@ export default function RichTextEditor({
                       c.color === ""
                         ? editor.chain().focus().unsetHighlight().run()
                         : editor
-                            .chain()
-                            .focus()
-                            .toggleHighlight({ color: c.color })
-                            .run()
+                          .chain()
+                          .focus()
+                          .toggleHighlight({ color: c.color })
+                          .run()
                     }
                     className="w-6 h-6 rounded border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
                     style={{ backgroundColor: c.color || "white" }}
@@ -809,6 +1109,57 @@ export default function RichTextEditor({
           </ToolbarButton>
         </div>
 
+        {/* Variables Menu */}
+        {availableVariables.length > 0 && (
+          <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-xs"
+                  title="Insert Variable"
+                >
+                  <Hash className="h-4 w-4 mr-1" />
+                  Variables
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="max-h-[400px] overflow-y-auto min-w-[250px]">
+                {availableVariables.map((group, groupIndex) => (
+                  <div key={group.namespace}>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                      {group.namespace}
+                    </div>
+                    {group.vars.map((varName) => {
+                      const fullVariable = `${group.namespace}.${varName}`;
+                      return (
+                        <DropdownMenuItem
+                          key={fullVariable}
+                          onClick={() => {
+                            editor
+                              .chain()
+                              .focus()
+                              .insertContent(`{{${fullVariable}}}`)
+                              .run();
+                          }}
+                          className="font-mono text-xs"
+                        >
+                          {`{{${fullVariable}}}`}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                    {groupIndex < availableVariables.length - 1 && (
+                      <DropdownMenuSeparator />
+                    )}
+                  </div>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
+
         {/* Insert Menu */}
         <div className="flex gap-1">
           <DropdownMenu>
@@ -845,6 +1196,12 @@ export default function RichTextEditor({
               >
                 <Minus className="mr-2 h-4 w-4" />
                 Horizontal Line
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => editor.chain().focus().setPageBreak().run()}
+              >
+                <FileBoxIcon className="mr-2 h-4 w-4" />
+                Page Break
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -924,6 +1281,16 @@ export default function RichTextEditor({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+
+          {/* Print Button */}
+          <div className="flex gap-1 border-l border-gray-200 pl-2 ml-2">
+            <ToolbarButton
+              onClick={handlePrint}
+              title="Print Template"
+            >
+              <Printer className="h-4 w-4" />
+            </ToolbarButton>
+          </div>
         </div>
       </div>
 
@@ -940,158 +1307,11 @@ export default function RichTextEditor({
         onInsert={handleInsertImage}
       />
 
-      {/* Editor Styles */}
+      {/* Editor-specific styles (ProseMirror wrapper) */}
       <style jsx global>{`
-        .ProseMirror table {
-          border-collapse: collapse;
-          margin: 1rem 0;
-          overflow: hidden;
-          width: 100%;
-        }
-
-        .ProseMirror table td,
-        .ProseMirror table th {
-          border: 1px solid #d1d5db;
-          box-sizing: border-box;
-          min-width: 1em;
-          padding: 0.5rem;
-          position: relative;
-          vertical-align: top;
-        }
-
-        .ProseMirror table th {
-          background-color: #f3f4f6;
-          font-weight: 600;
-        }
-
-        .ProseMirror table .selectedCell:after {
-          background: rgba(59, 130, 246, 0.1);
-          content: "";
-          left: 0;
-          right: 0;
-          top: 0;
-          bottom: 0;
-          pointer-events: none;
-          position: absolute;
-          z-index: 2;
-        }
-
-        .ProseMirror table .column-resize-handle {
-          background-color: #3b82f6;
-          bottom: 0;
-          position: absolute;
-          right: -2px;
-          top: 0;
-          width: 4px;
-          pointer-events: none;
-        }
-
-        .ProseMirror img {
-          max-width: 100%;
-          height: auto;
-          display: inline-block;
-        }
-
-        .ProseMirror ul[data-type="taskList"] {
-          list-style: none;
-          padding: 0;
-        }
-
-        .ProseMirror ul[data-type="taskList"] li {
-          display: flex;
-          align-items: flex-start;
-          gap: 0.5rem;
-        }
-
-        .ProseMirror ul[data-type="taskList"] li > label {
-          flex: 0 0 auto;
-          margin-top: 0.25rem;
-          user-select: none;
-        }
-
-        .ProseMirror ul[data-type="taskList"] li > div {
-          flex: 1 1 auto;
-        }
-
-        .ProseMirror hr {
-          border: none;
-          border-top: 1px solid #d1d5db;
-          margin: 1rem 0;
-        }
-
-        .ProseMirror blockquote {
-          border-left: 4px solid #d1d5db;
-          padding-left: 1rem;
-          margin: 1rem 0;
-          color: #6b7280;
-          font-style: italic;
-        }
-
-        .ProseMirror pre {
-          background: #f3f4f6;
-          border-radius: 0.5rem;
-          padding: 1rem;
-          margin: 1rem 0;
-          overflow-x: auto;
-        }
-
-        .ProseMirror pre code {
-          background: transparent;
-          padding: 0;
-          border-radius: 0;
-          font-size: 0.875rem;
-        }
-
-        .ProseMirror code {
-          background: #f3f4f6;
-          padding: 0.125rem 0.25rem;
-          border-radius: 0.25rem;
-          font-size: 0.875em;
-          font-family:
-            ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-            "Liberation Mono", monospace;
-        }
-
-        .ProseMirror h1 {
-          font-size: 2em;
-          font-weight: bold;
-          margin-top: 0.67em;
-          margin-bottom: 0.67em;
-        }
-
-        .ProseMirror h2 {
-          font-size: 1.5em;
-          font-weight: bold;
-          margin-top: 0.83em;
-          margin-bottom: 0.83em;
-        }
-
-        .ProseMirror h3 {
-          font-size: 1.17em;
-          font-weight: bold;
-          margin-top: 1em;
-          margin-bottom: 1em;
-        }
-
-        .ProseMirror h4 {
-          font-size: 1em;
-          font-weight: bold;
-          margin-top: 1.33em;
-          margin-bottom: 1.33em;
-        }
-
-        .ProseMirror h5 {
-          font-size: 0.83em;
-          font-weight: bold;
-          margin-top: 1.67em;
-          margin-bottom: 1.67em;
-        }
-
-        .ProseMirror h6 {
-          font-size: 0.67em;
-          font-weight: bold;
-          margin-top: 2.33em;
-          margin-bottom: 2.33em;
+        /* ProseMirror wrapper uses editor-content class for shared styles */
+        .ProseMirror.editor-content {
+          /* Shared styles are in EditorContentStyles.css */
         }
       `}</style>
     </div>

@@ -25,6 +25,8 @@ import {
   RefreshCw,
   ExternalLink,
   FileText,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -52,6 +54,7 @@ import type {
 } from "@/domains/fee-structures/types/feeStructure.types";
 import RichTextEditor from "@/components/editor/RichTextEditor";
 import StatusBadge from "./StatusBadge";
+import PageRender from "@/components/editor/PageRender";
 
 type Props = {
   template: ContractTemplateData;
@@ -72,6 +75,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
   const [activeTab, setActiveTab] = useState<"variables" | "placeholders">(
     "variables",
   );
+  const [isVariablesPanelOpen, setIsVariablesPanelOpen] = useState(true);
   const [selectedFeeStructureId, setSelectedFeeStructureId] = useState<string>(
     template.feeStructureId || "",
   );
@@ -460,7 +464,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:gap-4">
+      <div className="flex flex-row justify-between gap-3 sm:gap-4">
         <div className="flex items-center gap-2 sm:gap-4">
           <Link href="/dashboard/contract-templates">
             <button className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow flex-shrink-0 cursor-pointer">
@@ -468,7 +472,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
             </button>
           </Link>
           <div className="min-w-0 flex items-center gap-2 sm:gap-3 flex-1">
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0">
               <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold font-degular truncate">
                 {template.displayName}
               </h1>
@@ -545,58 +549,104 @@ export default function ContractTemplateEditContent({ template }: Props) {
         </div>
       )}
 
-      {/* HTML Template Editor */}
-      {
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          {/* Editor */}
-          <div className="md:col-span-2 space-y-4">
-            <div className="rounded-xl sm:rounded-2xl md:rounded-[28px] border border-[#E9EDEE] bg-white p-4 sm:p-5 md:p-6">
-              <Label
-                htmlFor="template-content"
-                className="font-poppins font-semibold mb-2 block text-sm sm:text-base"
-              >
-                Template Content
-              </Label>
-              <RichTextEditor
-                content={content}
-                onChange={setContent}
-                placeholder="Enter template content with placeholders like {{thrive.company_name}}, {{examiner.name}}, {{fees.base_exam_fee}}, etc."
-                editorRef={editorRef}
-                validVariables={validVariablesSet}
-              />
-              <p className="text-xs text-gray-500 mt-2 font-poppins">
-                {placeholders.length} placeholder
-                {placeholders.length !== 1 ? "s" : ""} detected
-              </p>
+      {/* Main Content Area */}
+      <div className="space-y-4 sm:space-y-6">
+        {/* Editor and Preview - 50/50 Split */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:min-h-[600px]">
+          {/* Editor Section */}
+          <div className="flex flex-col max-h-[100vh] min-h-[500px] lg:min-h-0">
+            <div className="rounded-xl sm:rounded-2xl md:rounded-[28px] border border-[#E9EDEE] bg-white p-4 sm:p-5 md:p-6 flex flex-col h-full">
+              <div className="flex items-center justify-between mb-3 sm:mb-4 flex-shrink-0">
+                <Label
+                  htmlFor="template-content"
+                  className="font-poppins font-semibold text-sm sm:text-base"
+                >
+                  Template Content
+                </Label>
+                <div className="flex items-center gap-2 text-xs text-gray-500 font-poppins">
+                  <span className="hidden sm:inline">
+                    {placeholders.length} placeholder
+                    {placeholders.length !== 1 ? "s" : ""} detected
+                  </span>
+                  <span className="sm:hidden">{placeholders.length}</span>
+                </div>
+              </div>
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <RichTextEditor
+                  content={content}
+                  onChange={setContent}
+                  placeholder="Enter template content with placeholders like {{thrive.company_name}}, {{examiner.name}}, {{fees.base_exam_fee}}, etc."
+                  editorRef={editorRef}
+                  validVariables={validVariablesSet}
+                  availableVariables={availableVariables}
+                />
+              </div>
             </div>
           </div>
 
-          {/* Combined Section with Tabs */}
-          <div>
-            <div className="rounded-xl sm:rounded-2xl md:rounded-[28px] border border-[#E9EDEE] bg-white p-4 sm:p-5 md:p-6">
+          {/* Preview Section */}
+          <div className="flex flex-col max-h-[100vh] min-h-[500px] lg:min-h-0">
+            <div className="rounded-xl sm:rounded-2xl md:rounded-[28px] border border-[#E9EDEE] bg-white p-4 sm:p-5 md:p-6 flex flex-col h-full">
+              <Label className="font-poppins font-semibold mb-3 sm:mb-4 block text-sm sm:text-base flex-shrink-0">
+                Page Preview
+              </Label>
+              <div className="flex-1 min-h-0 overflow-auto">
+                <PageRender
+                  content={content}
+                  headers={{ left: '', center: '', right: '' }}
+                  footers={{ left: '', center: '', right: '' }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Variables and Placeholders Panel - Collapsible */}
+        <div className="rounded-xl sm:rounded-2xl md:rounded-[28px] border border-[#E9EDEE] bg-white overflow-hidden">
+          {/* Panel Header - Collapsible */}
+          <button
+            onClick={() => setIsVariablesPanelOpen(!isVariablesPanelOpen)}
+            className="w-full px-4 sm:px-5 md:px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <h3 className="font-poppins font-semibold text-sm sm:text-base text-gray-900">
+                Variables & Placeholders
+              </h3>
+              <span className="text-xs text-gray-500 font-poppins">
+                ({placeholders.length} detected)
+              </span>
+            </div>
+            {isVariablesPanelOpen ? (
+              <ChevronUp className="h-5 w-5 text-gray-400" />
+            ) : (
+              <ChevronDown className="h-5 w-5 text-gray-400" />
+            )}
+          </button>
+
+          {/* Panel Content */}
+          {isVariablesPanelOpen && (
+            <div className="px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6 border-t border-gray-100">
               {/* Tabs Navigation */}
-              <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6 border-b border-gray-200 overflow-x-auto">
+              <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6 border-b border-gray-200 overflow-x-auto pt-4">
                 <button
                   onClick={() => setActiveTab("variables")}
-                  className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-poppins font-semibold transition-colors border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${
-                    activeTab === "variables"
-                      ? "border-[#00A8FF] text-[#00A8FF]"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
+                  className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "variables"
+                    ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                    }`}
                 >
                   Variables
                 </button>
                 {placeholders.length > 0 && (
                   <button
                     onClick={() => setActiveTab("placeholders")}
-                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-poppins font-semibold transition-colors border-b-2 relative cursor-pointer whitespace-nowrap flex-shrink-0 ${
-                      activeTab === "placeholders"
-                        ? "border-[#00A8FF] text-[#00A8FF]"
-                        : "border-transparent text-gray-500 hover:text-gray-700"
-                    }`}
+                    className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 relative cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "placeholders"
+                      ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                      }`}
                   >
                     Detected
-                    <span className="ml-1 sm:ml-1.5 inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 text-[10px] sm:text-xs font-bold text-white bg-[#00A8FF] rounded-full">
+                    <span className="ml-1.5 sm:ml-2 inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 text-[10px] sm:text-xs font-bold text-white bg-[#00A8FF] rounded-full">
                       {placeholders.length}
                     </span>
                   </button>
@@ -604,12 +654,12 @@ export default function ContractTemplateEditContent({ template }: Props) {
               </div>
 
               {/* Tab Content */}
-              <div className="min-h-[250px] sm:min-h-[300px]">
+              <div className="max-h-[500px] overflow-y-auto">
                 {/* Variables Tab */}
                 {activeTab === "variables" && (
-                  <div className="space-y-3 sm:space-y-4">
+                  <div className="space-y-4 sm:space-y-5">
                     {/* Fee Structure Selector */}
-                    <div className="space-y-2 pb-3 sm:pb-4 border-b border-gray-200">
+                    <div className="space-y-2.5 pb-4 sm:pb-5 border-b border-gray-200">
                       <Label className="font-poppins font-semibold text-xs sm:text-sm">
                         Suggested Fee Structure{" "}
                         <span className="text-gray-400 text-xs font-normal">
@@ -710,10 +760,15 @@ export default function ContractTemplateEditContent({ template }: Props) {
                       );
 
                       return (
-                        <div key={group.namespace}>
-                          <p className="font-semibold text-sm text-gray-700 mb-2 capitalize">
-                            {group.namespace}
-                          </p>
+                        <div key={group.namespace} className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-sm text-gray-800 capitalize">
+                              {group.namespace}
+                            </p>
+                            <span className="text-xs text-gray-400 font-normal">
+                              ({group.vars.length})
+                            </span>
+                          </div>
                           <div className="space-y-2">
                             {/* Show editable system variables with edit buttons */}
                             {editableSystemVars.length > 0 && (
@@ -792,29 +847,31 @@ export default function ContractTemplateEditContent({ template }: Props) {
 
                 {/* Detected Placeholders Tab */}
                 {activeTab === "placeholders" && placeholders.length > 0 && (
-                  <div className="space-y-2 sm:space-y-3">
-                    <p className="text-xs text-gray-500 mb-3 sm:mb-4 font-poppins">
-                      {placeholders.length} placeholder
-                      {placeholders.length !== 1 ? "s" : ""} detected in your
-                      template
-                    </p>
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-3">
+                      <p className="text-xs sm:text-sm text-blue-800 font-poppins font-medium">
+                        {placeholders.length} placeholder
+                        {placeholders.length !== 1 ? "s" : ""} detected in your template
+                      </p>
+                    </div>
 
                     {/* Validation Errors */}
                     {validation.errors.length > 0 && (
-                      <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-[10px] sm:text-xs font-semibold text-red-800 mb-1.5 sm:mb-2 font-poppins">
-                          Validation Errors ({validation.errors.length}):
+                      <div className="p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-xs sm:text-sm font-semibold text-red-800 mb-2 font-poppins flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-red-200 flex items-center justify-center text-red-800 text-xs font-bold">
+                            !
+                          </span>
+                          Validation Errors ({validation.errors.length})
                         </p>
-                        <div className="space-y-1">
+                        <div className="space-y-1.5 mt-2">
                           {validation.errors.map((error, idx) => (
                             <div
                               key={idx}
-                              className="text-[10px] sm:text-xs text-red-700 font-poppins break-words"
+                              className="text-xs sm:text-sm text-red-700 font-poppins break-words pl-7"
                             >
                               <span className="font-mono font-semibold">{`{{${error.placeholder}}}`}</span>
-                              <span className="ml-1 sm:ml-2">
-                                - {error.error}
-                              </span>
+                              <span className="ml-2">- {error.error}</span>
                             </div>
                           ))}
                         </div>
@@ -823,27 +880,28 @@ export default function ContractTemplateEditContent({ template }: Props) {
 
                     {/* Validation Warnings */}
                     {validation.warnings.length > 0 && (
-                      <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                        <p className="text-[10px] sm:text-xs font-semibold text-amber-800 mb-1.5 sm:mb-2 font-poppins">
-                          Warnings ({validation.warnings.length}):
+                      <div className="p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p className="text-xs sm:text-sm font-semibold text-amber-800 mb-2 font-poppins flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 text-xs font-bold">
+                            ⚠
+                          </span>
+                          Warnings ({validation.warnings.length})
                         </p>
-                        <div className="space-y-1">
+                        <div className="space-y-1.5 mt-2">
                           {validation.warnings.map((warning, idx) => (
                             <div
                               key={idx}
-                              className="text-[10px] sm:text-xs text-amber-700 font-poppins break-words"
+                              className="text-xs sm:text-sm text-amber-700 font-poppins break-words pl-7"
                             >
                               <span className="font-mono font-semibold">{`{{${warning.placeholder}}}`}</span>
-                              <span className="ml-1 sm:ml-2">
-                                - {warning.warning}
-                              </span>
+                              <span className="ml-2">- {warning.warning}</span>
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
 
-                    <div className="space-y-1 max-h-[300px] sm:max-h-[400px] overflow-y-auto">
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto">
                       {placeholders.map((placeholder) => {
                         const hasError = validation.errors.some(
                           (e) => e.placeholder === placeholder,
@@ -857,20 +915,19 @@ export default function ContractTemplateEditContent({ template }: Props) {
                         return (
                           <div
                             key={placeholder}
-                            className={`text-[10px] sm:text-xs font-mono px-2 sm:px-3 py-1.5 sm:py-2 rounded border flex items-center justify-between gap-2 ${
-                              hasError
-                                ? "bg-red-50 border-red-200 text-red-700"
-                                : isInvalid
-                                  ? "bg-red-50 border-red-200 text-red-700"
-                                  : hasWarning
-                                    ? "bg-amber-50 border-amber-200 text-amber-700"
-                                    : "bg-gray-50 border-gray-200"
-                            }`}
+                            className={`text-xs sm:text-sm font-mono px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border flex items-center justify-between gap-2 transition-colors ${hasError
+                              ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                              : isInvalid
+                                ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                                : hasWarning
+                                  ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
+                                  : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                              }`}
                           >
                             <span className="break-all">{`{{${placeholder}}}`}</span>
                             {isInvalid && (
-                              <span className="text-[10px] sm:text-xs text-red-600 font-poppins ml-1 sm:ml-2 whitespace-nowrap flex-shrink-0">
-                                Invalid variable
+                              <span className="text-xs text-red-600 font-poppins ml-2 whitespace-nowrap flex-shrink-0 font-medium">
+                                Invalid
                               </span>
                             )}
                           </div>
@@ -882,20 +939,23 @@ export default function ContractTemplateEditContent({ template }: Props) {
 
                 {/* Empty state for placeholders */}
                 {activeTab === "placeholders" && placeholders.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <p className="text-sm font-poppins">
+                  <div className="text-center py-12 text-gray-500">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                      <FileText className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <p className="text-sm font-poppins font-medium mb-1">
                       No placeholders detected yet
                     </p>
-                    <p className="text-xs mt-1">
+                    <p className="text-xs text-gray-400">
                       Add variables to your template to see them here
                     </p>
                   </div>
                 )}
               </div>
             </div>
-          </div>
+          )}
         </div>
-      }
+      </div>
 
       {/* Sync from Google Docs Confirmation Dialog */}
       <Dialog
