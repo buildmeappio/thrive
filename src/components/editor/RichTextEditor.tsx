@@ -953,10 +953,11 @@ export default function RichTextEditor({
             
             /* Tick Box */
             .tick-box-container {
-              display: flex;
+              display: inline-flex;
               align-items: center;
               justify-content: flex-start;
-              margin: 0.5em 0;
+              margin: 0 0.5em 0.5em 0;
+              vertical-align: middle;
             }
             
             .tick-box {

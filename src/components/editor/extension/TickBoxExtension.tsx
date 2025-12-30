@@ -50,21 +50,34 @@ const TickBoxComponent: React.FC<ReactNodeViewProps> = ({
 
         // If checking this box, uncheck all others in the same group
         if (!attrs.checked && attrs.group) {
+            const positionsToUpdate: number[] = [];
+
             doc.descendants((node, nodePos) => {
                 if (
                     node.type.name === "tickBox" &&
                     nodePos !== pos &&
-                    node.attrs.group === attrs.group
+                    node.attrs.group === attrs.group &&
+                    node.attrs.checked
                 ) {
-                    editor.commands.command(({ tr }) => {
-                        tr.setNodeMarkup(nodePos, undefined, {
-                            ...node.attrs,
-                            checked: false,
-                        });
-                        return true;
-                    });
+                    positionsToUpdate.push(nodePos);
                 }
             });
+
+            // Update all other tick boxes in the group in a single transaction
+            if (positionsToUpdate.length > 0) {
+                editor.commands.command(({ tr }) => {
+                    positionsToUpdate.forEach((nodePos) => {
+                        const node = doc.nodeAt(nodePos);
+                        if (node) {
+                            tr.setNodeMarkup(nodePos, undefined, {
+                                ...node.attrs,
+                                checked: false,
+                            });
+                        }
+                    });
+                    return true;
+                });
+            }
         }
 
         updateAttributes({
@@ -154,6 +167,21 @@ export default Node.create({
     parseHTML() {
         return [
             {
+                tag: 'span.tick-box-container',
+                getAttrs: (element) => {
+                    if (typeof element === "string") return false;
+                    const tickBoxEl = element.querySelector(".tick-box");
+                    const labelEl = element.querySelector(".tick-box-label");
+
+                    return {
+                        tickBoxId: tickBoxEl?.getAttribute("data-tick-box-id") || `tick-box-${Date.now()}`,
+                        checked: tickBoxEl?.getAttribute("data-checked") === "true",
+                        label: labelEl?.textContent || "Tick Box",
+                        group: tickBoxEl?.getAttribute("data-group") || "",
+                    };
+                },
+            },
+            {
                 tag: 'div.tick-box-container',
                 getAttrs: (element) => {
                     if (typeof element === "string") return false;
@@ -217,7 +245,7 @@ export default Node.create({
                     },
             setTickBoxGroup:
                 (options: { labels: string[]; group?: string }) =>
-                    ({ commands, tr }) => {
+                    ({ commands }) => {
                         const group = options.group || `tick-group-${Date.now()}`;
                         const labels = options.labels.filter((l) => l.trim());
 
