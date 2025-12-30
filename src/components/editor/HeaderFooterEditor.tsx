@@ -86,7 +86,12 @@ export default function HeaderFooterEditor({
                 heading: false, // Disable headings in header/footer
                 blockquote: false, // Disable blockquote
                 codeBlock: false, // Disable code block
-                hardBreak: false,
+                hardBreak: {
+                    HTMLAttributes: {
+                        class: "hard-break",
+                    },
+                },
+
             }),
             TextAlign.configure({
                 types: ["paragraph"],

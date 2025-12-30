@@ -1588,7 +1588,7 @@ export default function RichTextEditor({
       {/* Editor Content */}
       <EditorContent
         editor={editor}
-        className="min-h-[500px] max-h-[800px] overflow-y-auto"
+        className="min-h-[500px] max-h-[77vh] overflow-y-auto"
       />
 
       {/* Hidden file input for image upload */}

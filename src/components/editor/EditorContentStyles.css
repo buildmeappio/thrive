@@ -1,7 +1,7 @@
 /* Shared styles for editor content (.ProseMirror, .editor-content) and preview content (.page-content, .header-content, .footer-content) */
 
 :root {
-  --var-line-height: 1.5;
+  --var-line-height: 1.;
 }
 
 
@@ -125,7 +125,7 @@
 .ProseMirror.editor-content p,
 .editor-content p,
 .page-content p {
-  margin-bottom: 1rem;
+  margin-bottom: 0.65em;
 }
 
 /* Ensure empty paragraphs are visible */
@@ -139,17 +139,22 @@
 
 /* Lists */
 .ProseMirror.editor-content ul,
-.ProseMirror.editor-content ol,
 .editor-content ul,
-.editor-content ol,
 .page-content ul,
-.page-content ol,
 .header-content ul,
+.footer-content ul {
+  margin-bottom: 1rem;
+  padding-left: 2.5rem;
+  list-style-type: disc;
+}
+
+.ProseMirror.editor-content ol,
+.editor-content ol,
+.page-content ol,
 .header-content ol,
-.footer-content ul,
 .footer-content ol {
   margin-bottom: 1rem;
-  padding-left: 1.5rem;
+  padding-left: 2.5rem;
 }
 
 .ProseMirror.editor-content li,

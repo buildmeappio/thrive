@@ -600,8 +600,8 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, header, footer }) 
                         : ''
 
                     // Calculate content area positioning
-                    const contentTop = headerHeight + 40 // 40px top margin + header height
-                    const contentBottom = footerHeight + 40 // 40px bottom margin + footer height
+                    const contentTop = headerHeight + 10 // 40px top margin + header height
+                    const contentBottom = footerHeight + 10 // 40px bottom margin + footer height
                     const contentAreaHeight = CONTENT_HEIGHT_PX - headerHeight - footerHeight
 
                     return (

@@ -2,6 +2,7 @@ import type {
   FeeFormValues,
   FeeVariable,
 } from "../components/FeeStructureFormStep";
+import { FooterConfig, HeaderConfig } from "@/components/editor/types";
 
 export type CreateContractModalProps = {
   open: boolean;
@@ -47,6 +48,8 @@ export type UseCreateContractModalReturn = {
   }>;
   selectedTemplateId: string;
   selectedTemplateContent: string | null;
+  selectedTemplateHeaderContent: HeaderConfig | null;
+  selectedTemplateFooterContent: FooterConfig | null;
   compatibleFeeStructures: Array<{ id: string; name: string }>;
   selectedFeeStructureId: string;
   isLoading: boolean;

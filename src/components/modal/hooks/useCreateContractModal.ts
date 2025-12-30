@@ -34,6 +34,7 @@ import type {
   ContractModalStep,
   FeeStructureFullData,
 } from "../types/createContractModal.types";
+import { FooterConfig, HeaderConfig } from "@/components/editor/types";
 
 /**
  * Custom hook to manage the state and control flow of the Create Contract Modal.
@@ -68,6 +69,12 @@ export const useCreateContractModal = (
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [selectedTemplateContent, setSelectedTemplateContent] = useState<
     string | null
+  >(null);
+  const [selectedTemplateHeaderContent, setSelectedTemplateHeaderContent] = useState<
+    HeaderConfig | null
+  >(null);
+  const [selectedTemplateFooterContent, setSelectedTemplateFooterContent] = useState<
+    FooterConfig | null
   >(null);
 
   // --- Fee structures ---
@@ -196,10 +203,12 @@ export const useCreateContractModal = (
       setIsLoadingTemplate(true);
       try {
         const templateResult = await getContractTemplateAction(templateId);
+        console.log("templateResult", templateResult);
         if (templateResult.success && templateResult.data.currentVersion) {
           const content = templateResult.data.currentVersion.bodyHtml;
           setSelectedTemplateContent(content);
-
+          setSelectedTemplateHeaderContent(templateResult.data.currentVersion.headerConfig);
+          setSelectedTemplateFooterContent(templateResult.data.currentVersion.footerConfig);
           const requiredFeeVars = extractRequiredFeeVariables(content);
 
           if (requiredFeeVars.size === 0) {
@@ -278,6 +287,8 @@ export const useCreateContractModal = (
       setStep(1);
       setSelectedTemplateId("");
       setSelectedTemplateContent(null);
+      setSelectedTemplateHeaderContent(null);
+      setSelectedTemplateFooterContent(null);
       setSelectedFeeStructureId("");
       setCompatibleFeeStructures([]);
       setFeeStructureData(null);
@@ -390,6 +401,8 @@ export const useCreateContractModal = (
         await loadTemplateAndFindCompatible(templateId, feeStructures);
       } else {
         setSelectedTemplateContent(null);
+        setSelectedTemplateHeaderContent(null);
+        setSelectedTemplateFooterContent(null);
         setCompatibleFeeStructures([]);
         setSelectedFeeStructureId("");
       }
@@ -684,6 +697,8 @@ export const useCreateContractModal = (
     templates,
     selectedTemplateId,
     selectedTemplateContent,
+    selectedTemplateHeaderContent,
+    selectedTemplateFooterContent,
     compatibleFeeStructures,
     selectedFeeStructureId,
     isLoading,

@@ -67,7 +67,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 8px 40px;
+  /* padding: 8px 40px; */
   font-size: 12px;
   color: #6c757d;
   font-weight: 500;
