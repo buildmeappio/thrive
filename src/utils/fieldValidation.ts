@@ -142,7 +142,7 @@ export const getFieldMinLength = (fieldName: string): number => {
   const normalizedName = fieldName.toLowerCase().trim();
 
   if (normalizedName.includes('first') || normalizedName.includes('last')) {
-    return 4;
+    return 2;
   }
   if (normalizedName.includes('organization') || normalizedName.includes('company')) {
     return 6;
