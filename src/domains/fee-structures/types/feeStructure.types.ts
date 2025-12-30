@@ -6,6 +6,8 @@ export type FeeStructureListItem = {
   status: FeeStructureStatus;
   updatedAt: string;
   variableCount: number;
+  contractCount: number;
+  templateCount: number;
 };
 
 export type FeeVariableData = {

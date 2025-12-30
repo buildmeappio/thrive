@@ -9,6 +9,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import TableActionsDropdown from "@/components/TableActionsDropdown";
@@ -39,9 +40,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import Pagination from "@/components/Pagination";
 import type { ContractTemplateListItem } from "../types/contractTemplate.types";
-import { updateContractTemplateAction } from "../actions";
+import {
+  updateContractTemplateAction,
+  deleteContractTemplateAction,
+} from "../actions";
 
 type Props = {
   templates: ContractTemplateListItem[];
@@ -108,6 +122,10 @@ export default function ContractTemplatesTable({ templates }: Props) {
     useState<ContractTemplateListItem[]>(templates);
   const [editingTemplate, setEditingTemplate] =
     useState<ContractTemplateListItem | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] =
+    useState<ContractTemplateListItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Update local state when templates prop changes
   useEffect(() => {
@@ -273,14 +291,19 @@ export default function ContractTemplatesTable({ templates }: Props) {
                 router.push(`/dashboard/contract-templates/${template.id}`);
               },
             },
-            {
-              label: "Archive",
-              icon: <Archive className="w-4 h-4" />,
-              onClick: (e: React.MouseEvent) => {
-                e.stopPropagation();
-                // TODO: Implement archive
-              },
-            },
+            ...(template.contractCount === 0
+              ? [
+                  {
+                    label: "Delete",
+                    icon: <Trash2 className="w-4 h-4" />,
+                    onClick: (e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      setTemplateToDelete(template);
+                      setDeleteDialogOpen(true);
+                    },
+                  },
+                ]
+              : []),
           ];
 
           return (
@@ -320,6 +343,29 @@ export default function ContractTemplatesTable({ templates }: Props) {
   useEffect(() => {
     table.setPageIndex(0);
   }, [templatesData.length, table]);
+
+  const handleDelete = async () => {
+    if (!templateToDelete) return;
+
+    setIsDeleting(true);
+
+    try {
+      const result = await deleteContractTemplateAction(templateToDelete.id);
+
+      if ("error" in result) {
+        toast.error(result.error ?? "Failed to delete contract template");
+        return;
+      }
+      toast.success("Contract template deleted successfully");
+      router.refresh();
+    } catch {
+      toast.error("An error occurred");
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setTemplateToDelete(null);
+    }
+  };
 
   return (
     <>
@@ -455,6 +501,31 @@ export default function ContractTemplatesTable({ templates }: Props) {
           }}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Contract Template</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{" "}
+              <strong>{templateToDelete?.displayName}</strong>? This action
+              cannot be undone. The contract template and all its versions will
+              be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
