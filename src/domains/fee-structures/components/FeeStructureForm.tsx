@@ -58,6 +58,32 @@ export default function FeeStructureForm({
     name.trim() !== feeStructure.name.trim() ||
     (description.trim() || "") !== (feeStructure.description?.trim() || "");
 
+  // Helper function to check if name contains at least one letter
+  const hasAtLeastOneLetter = (value: string): boolean => {
+    return /[a-zA-Z]/.test(value.trim());
+  };
+
+  // Validate name
+  const validateName = (value: string): string | null => {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) {
+      return "Name is required";
+    }
+    if (trimmed.length < 2) {
+      return "Name must be at least 2 characters";
+    }
+    if (trimmed.length > 255) {
+      return "Name must be less than 255 characters";
+    }
+    if (!/^[a-zA-Z0-9\s\-'.,()&]+$/.test(trimmed)) {
+      return "Name can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands";
+    }
+    if (!hasAtLeastOneLetter(trimmed)) {
+      return "Name must contain at least one letter";
+    }
+    return null;
+  };
+
   // Reset form when feeStructure changes
   useEffect(() => {
     setName(feeStructure.name);
@@ -69,6 +95,14 @@ export default function FeeStructureForm({
   const handleSave = async () => {
     setIsSaving(true);
     setFieldErrors({});
+
+    // Validate name before submission
+    const nameError = validateName(name);
+    if (nameError) {
+      setFieldErrors({ name: nameError });
+      setIsSaving(false);
+      return;
+    }
 
     try {
       const result = await updateFeeStructureAction({
@@ -233,7 +267,17 @@ export default function FeeStructureForm({
             <Input
               id="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                // Clear name error when user starts typing
+                if (fieldErrors.name) {
+                  setFieldErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors.name;
+                    return newErrors;
+                  });
+                }
+              }}
               placeholder="Enter fee structure name"
               disabled={isReadOnly}
               maxLength={255}

@@ -4,12 +4,26 @@ import { FeeVariableType } from "@prisma/client";
 // Key format: snake_case starting with lowercase letter
 const keyRegex = /^[a-z][a-z0-9_]*$/;
 
+// Helper function to check if name contains at least one letter
+const hasAtLeastOneLetter = (value: string): boolean => {
+  return /[a-zA-Z]/.test(value.trim());
+};
+
 export const feeStructureSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
-    .max(255, "Name must be less than 255 characters")
-    .trim(),
+    .trim()
+    .refine((val) => val.length >= 2, "Name must be at least 2 characters")
+    .refine((val) => val.length <= 255, "Name must be less than 255 characters")
+    .refine(
+      (val) => /^[a-zA-Z0-9\s\-'.,()&]+$/.test(val),
+      "Name can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands",
+    )
+    .refine(
+      (val) => hasAtLeastOneLetter(val),
+      "Name must contain at least one letter",
+    ),
   description: z
     .string()
     .max(5000, "Description must be less than 5000 characters")
@@ -28,8 +42,17 @@ export const feeVariableBaseSchema = z.object({
   label: z
     .string()
     .min(1, "Label is required")
-    .max(80, "Label must be less than 80 characters")
-    .trim(),
+    .trim()
+    .refine((val) => val.length >= 2, "Label must be at least 2 characters")
+    .refine((val) => val.length <= 80, "Label must be less than 80 characters")
+    .refine(
+      (val) => /^[a-zA-Z0-9\s\-'.,()&]+$/.test(val),
+      "Label can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands",
+    )
+    .refine(
+      (val) => hasAtLeastOneLetter(val),
+      "Label must contain at least one letter",
+    ),
   key: z
     .string()
     .min(1, "Key is required")
@@ -131,6 +154,18 @@ export const createFeeVariableSchema = feeVariableBaseSchema.superRefine(
               message: "Default value must be a valid number",
               path: ["defaultValue"],
             });
+          } else if (numValue < 0) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Default value cannot be negative",
+              path: ["defaultValue"],
+            });
+          } else if (numValue > 999999999.99) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Default value cannot exceed 999,999,999.99",
+              path: ["defaultValue"],
+            });
           }
           break;
         }
@@ -221,6 +256,18 @@ export const updateFeeVariableSchema = feeVariableBaseSchema
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
               message: "Default value must be a valid number",
+              path: ["defaultValue"],
+            });
+          } else if (numValue < 0) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Default value cannot be negative",
+              path: ["defaultValue"],
+            });
+          } else if (numValue > 999999999.99) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Default value cannot exceed 999,999,999.99",
               path: ["defaultValue"],
             });
           }

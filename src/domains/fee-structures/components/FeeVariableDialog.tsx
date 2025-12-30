@@ -58,6 +58,68 @@ export default function FeeVariableDialog({
   const isEditing = !!initialData;
   // Always use MONEY type for new variables
 
+  // Helper function to check if label contains at least one letter
+  const hasAtLeastOneLetter = (value: string): boolean => {
+    return /[a-zA-Z]/.test(value.trim());
+  };
+
+  // Validate label
+  const validateLabel = (value: string): string | null => {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) {
+      return "Label is required";
+    }
+    if (trimmed.length < 2) {
+      return "Label must be at least 2 characters";
+    }
+    if (trimmed.length > 80) {
+      return "Label must be less than 80 characters";
+    }
+    if (!/^[a-zA-Z0-9\s\-'.,()&]+$/.test(trimmed)) {
+      return "Label can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands";
+    }
+    if (!hasAtLeastOneLetter(trimmed)) {
+      return "Label must contain at least one letter";
+    }
+    return null;
+  };
+
+  // Validate key
+  const validateKey = (value: string): string | null => {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) {
+      return "Variable key is required";
+    }
+    if (trimmed.length > 64) {
+      return "Variable key must be less than 64 characters";
+    }
+    if (!/^[a-z][a-z0-9_]*$/.test(trimmed)) {
+      return "Variable key must be snake_case (lowercase letters, numbers, and underscores, starting with a letter)";
+    }
+    return null;
+  };
+
+  // Validate amount
+  const validateAmount = (value: string): string | null => {
+    if (value.trim() === "") {
+      if (required) {
+        return "Default value is required";
+      }
+      return null;
+    }
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) {
+      return "Default value must be a valid number";
+    }
+    if (numValue < 0) {
+      return "Default value cannot be negative";
+    }
+    if (numValue > 999999999.99) {
+      return "Default value cannot exceed 999,999,999.99";
+    }
+    return null;
+  };
+
   // Reset form when dialog opens/closes or initialData changes
   useEffect(() => {
     if (open) {
@@ -97,6 +159,27 @@ export default function FeeVariableDialog({
 
   const handleSubmit = async () => {
     setFieldErrors({});
+
+    // Validate label
+    const labelError = validateLabel(label);
+    if (labelError) {
+      setFieldErrors({ label: labelError });
+      return;
+    }
+
+    // Validate key
+    const keyError = validateKey(key);
+    if (keyError) {
+      setFieldErrors({ key: keyError });
+      return;
+    }
+
+    // Validate amount
+    const amountError = validateAmount(defaultValue);
+    if (amountError) {
+      setFieldErrors({ defaultValue: amountError });
+      return;
+    }
 
     // Prepare default value - always treat as numeric amount
     let finalDefaultValue: number | undefined = undefined;
@@ -138,7 +221,10 @@ export default function FeeVariableDialog({
   const canSubmit =
     label.trim() !== "" &&
     key.trim() !== "" &&
-    /^[a-z][a-z0-9_]*$/.test(key.trim());
+    /^[a-z][a-z0-9_]*$/.test(key.trim()) &&
+    validateLabel(label) === null &&
+    validateKey(key) === null &&
+    (defaultValue.trim() === "" || validateAmount(defaultValue) === null);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
@@ -158,7 +244,17 @@ export default function FeeVariableDialog({
             <Input
               id="label"
               value={label}
-              onChange={(e) => setLabel(e.target.value)}
+              onChange={(e) => {
+                setLabel(e.target.value);
+                // Clear label error when user starts typing
+                if (fieldErrors.label) {
+                  setFieldErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors.label;
+                    return newErrors;
+                  });
+                }
+              }}
               placeholder="e.g., Base Examination Fee"
               maxLength={80}
               className="rounded-[14px] border-gray-200 font-poppins"
@@ -179,8 +275,21 @@ export default function FeeVariableDialog({
               id="key"
               value={key}
               onChange={(e) => {
-                setKey(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""));
+                const sanitized = e.target.value
+                  .toLowerCase()
+                  .replace(/[^a-z0-9_]/g, "");
+                // Ensure it starts with a letter
+                const finalValue = sanitized.replace(/^[^a-z]/, "");
+                setKey(finalValue);
                 setKeyEdited(true);
+                // Clear key error when user starts typing
+                if (fieldErrors.key) {
+                  setFieldErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors.key;
+                    return newErrors;
+                  });
+                }
               }}
               placeholder="e.g., base_exam_fee"
               maxLength={64}
@@ -210,8 +319,20 @@ export default function FeeVariableDialog({
               type="number"
               step="0.01"
               min="0"
+              max="999999999.99"
               value={defaultValue}
-              onChange={(e) => setDefaultValue(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setDefaultValue(value);
+                // Clear defaultValue error when user starts typing
+                if (fieldErrors.defaultValue) {
+                  setFieldErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors.defaultValue;
+                    return newErrors;
+                  });
+                }
+              }}
               placeholder="e.g., 150.00"
               className="rounded-[14px] border-gray-200 font-poppins"
             />

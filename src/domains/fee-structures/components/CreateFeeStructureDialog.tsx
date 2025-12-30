@@ -29,6 +29,32 @@ export default function CreateFeeStructureDialog({ open, onClose }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
+  // Helper function to check if name contains at least one letter
+  const hasAtLeastOneLetter = (value: string): boolean => {
+    return /[a-zA-Z]/.test(value.trim());
+  };
+
+  // Validate name
+  const validateName = (value: string): string | null => {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) {
+      return "Name is required";
+    }
+    if (trimmed.length < 2) {
+      return "Name must be at least 2 characters";
+    }
+    if (trimmed.length > 255) {
+      return "Name must be less than 255 characters";
+    }
+    if (!/^[a-zA-Z0-9\s\-'.,()&]+$/.test(trimmed)) {
+      return "Name can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands";
+    }
+    if (!hasAtLeastOneLetter(trimmed)) {
+      return "Name must contain at least one letter";
+    }
+    return null;
+  };
+
   // Reset form when dialog opens
   useEffect(() => {
     if (open) {
@@ -38,12 +64,20 @@ export default function CreateFeeStructureDialog({ open, onClose }: Props) {
     }
   }, [open]);
 
-  const canSubmit = name.trim().length > 0;
+  const canSubmit = name.trim().length > 0 && validateName(name) === null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setFieldErrors({});
+
+    // Validate name before submission
+    const nameError = validateName(name);
+    if (nameError) {
+      setFieldErrors({ name: nameError });
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const result = await createFeeStructureAction({
@@ -101,7 +135,17 @@ export default function CreateFeeStructureDialog({ open, onClose }: Props) {
               id="name"
               className="rounded-[14px] border-gray-200 font-poppins"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                // Clear name error when user starts typing
+                if (fieldErrors.name) {
+                  setFieldErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors.name;
+                    return newErrors;
+                  });
+                }
+              }}
               placeholder="e.g., Standard Examiner Rates 2025"
               maxLength={255}
               autoFocus

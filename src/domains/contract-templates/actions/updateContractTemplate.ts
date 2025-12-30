@@ -2,6 +2,7 @@
 
 import { getCurrentUser } from "@/domains/auth/server/session";
 import { updateContractTemplate } from "../server/contractTemplate.service";
+import { updateContractTemplateSchema } from "../schemas/contractTemplate.schema";
 import {
   ActionResult,
   UpdateContractTemplateInput,
@@ -16,7 +17,24 @@ export const updateContractTemplateAction = async (
       return { success: false, error: "Unauthorized" };
     }
 
-    const data = await updateContractTemplate(input);
+    const parsed = updateContractTemplateSchema.safeParse(input);
+    if (!parsed.success) {
+      const fieldErrors: Record<string, string> = {};
+      for (const [key, value] of Object.entries(
+        parsed.error.flatten().fieldErrors,
+      )) {
+        if (Array.isArray(value) && value.length > 0) {
+          fieldErrors[key] = value[0];
+        }
+      }
+      return {
+        success: false,
+        error: "Validation failed",
+        fieldErrors,
+      };
+    }
+
+    const data = await updateContractTemplate(parsed.data);
     return { success: true, data };
   } catch (error) {
     console.error("Error updating contract template:", error);
