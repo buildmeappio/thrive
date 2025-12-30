@@ -7,6 +7,7 @@ import {
 } from "../types/Taxonomy";
 import prisma from "@/lib/db";
 import logger from "@/utils/logger";
+import { normalizeTaxonomyName } from "../utils/normalizeTaxonomyName";
 
 // Map taxonomy type to Prisma model
 const getPrismaModel = (type: TaxonomyType) => {
@@ -99,15 +100,53 @@ export const createTaxonomy = async (
 
     // Check for unique name constraint (except for examinationTypeBenefit)
     if (type !== "examinationTypeBenefit" && data.name) {
-      const existing = await model.findFirst({
+      // Fetch all existing taxonomies to check for normalized duplicates
+      const existingTaxonomies = await model.findMany({
         where: {
-          name: data.name,
           deletedAt: null,
+        },
+        select: {
+          id: true,
+          name: true,
         },
       });
 
-      if (existing) {
-        throw HttpError.badRequest(`A ${type} with this name already exists`);
+      const normalizedInputName = normalizeTaxonomyName(data.name);
+      const duplicate = existingTaxonomies.find(
+        (taxonomy) =>
+          normalizeTaxonomyName(taxonomy.name) === normalizedInputName,
+      );
+
+      if (duplicate) {
+        throw HttpError.badRequest(
+          `A ${type} with this name already exists (duplicate names are not allowed, even with different spacing)`,
+        );
+      }
+    }
+
+    // Check for duplicate benefit in examinationTypeBenefit
+    if (type === "examinationTypeBenefit" && data.benefit) {
+      const existingBenefits = await model.findMany({
+        where: {
+          deletedAt: null,
+          examinationTypeId: data.examinationTypeId,
+        },
+        select: {
+          id: true,
+          benefit: true,
+        },
+      });
+
+      const normalizedInputBenefit = normalizeTaxonomyName(data.benefit);
+      const duplicate = existingBenefits.find(
+        (benefit) =>
+          normalizeTaxonomyName(benefit.benefit) === normalizedInputBenefit,
+      );
+
+      if (duplicate) {
+        throw HttpError.badRequest(
+          `A benefit with this name already exists for this examination type (duplicate names are not allowed, even with different spacing)`,
+        );
       }
     }
 
@@ -191,16 +230,62 @@ export const updateTaxonomy = async (
       data.name &&
       data.name !== existing.name
     ) {
-      const nameExists = await model.findFirst({
+      // Fetch all existing taxonomies (excluding current one) to check for normalized duplicates
+      const existingTaxonomies = await model.findMany({
         where: {
-          name: data.name,
           id: { not: id },
           deletedAt: null,
         },
+        select: {
+          id: true,
+          name: true,
+        },
       });
 
-      if (nameExists) {
-        throw HttpError.badRequest(`A ${type} with this name already exists`);
+      const normalizedInputName = normalizeTaxonomyName(data.name);
+      const duplicate = existingTaxonomies.find(
+        (taxonomy) =>
+          normalizeTaxonomyName(taxonomy.name) === normalizedInputName,
+      );
+
+      if (duplicate) {
+        throw HttpError.badRequest(
+          `A ${type} with this name already exists (duplicate names are not allowed, even with different spacing)`,
+        );
+      }
+    }
+
+    // Check for duplicate benefit in examinationTypeBenefit if benefit is being updated
+    if (
+      type === "examinationTypeBenefit" &&
+      data.benefit &&
+      data.benefit !== existing.benefit
+    ) {
+      const existingBenefits = await model.findMany({
+        where: {
+          id: { not: id },
+          deletedAt: null,
+          examinationTypeId:
+            data.examinationTypeId !== undefined
+              ? data.examinationTypeId
+              : existing.examinationTypeId,
+        },
+        select: {
+          id: true,
+          benefit: true,
+        },
+      });
+
+      const normalizedInputBenefit = normalizeTaxonomyName(data.benefit);
+      const duplicate = existingBenefits.find(
+        (benefit) =>
+          normalizeTaxonomyName(benefit.benefit) === normalizedInputBenefit,
+      );
+
+      if (duplicate) {
+        throw HttpError.badRequest(
+          `A benefit with this name already exists for this examination type (duplicate names are not allowed, even with different spacing)`,
+        );
       }
     }
 

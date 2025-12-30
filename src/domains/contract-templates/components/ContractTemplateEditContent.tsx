@@ -261,11 +261,19 @@ export default function ContractTemplateEditContent({ template }: Props) {
 
   const insertPlaceholder = (placeholder: string) => {
     if (editorRef.current) {
-      editorRef.current
-        .chain()
-        .focus()
-        .insertContent(`{{${placeholder}}}`)
-        .run();
+      const editor = editorRef.current;
+      const placeholderText = `{{${placeholder}}}`;
+      const isValid = validVariablesSet.has(placeholder);
+
+      // Insert the placeholder text with the highlight span already applied
+      // This ensures the color shows immediately
+      const className = isValid
+        ? "variable-valid bg-[#E0F7FA] text-[#006064] px-1 py-0.5 rounded font-mono text-sm"
+        : "variable-invalid bg-red-100 text-red-700 px-1 py-0.5 rounded font-mono text-sm";
+
+      const highlightedHtml = `<span class="${className}" data-variable="${placeholder}" data-is-valid="${isValid}">${placeholderText}</span>`;
+
+      editor.chain().focus().insertContent(highlightedHtml).run();
     }
   };
 
