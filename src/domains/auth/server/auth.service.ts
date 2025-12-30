@@ -162,20 +162,20 @@ const createOrganizationWithUser = async (data: CreateOrganizationWithUserData) 
   });
 
   try {
-    const emailResult = await emailService.sendEmail(
-      'Welcome to Our Platform!',
-      'welcome.html',
-      {
-        firstName: result.firstName,
-        lastName: result.lastName,
-        cdnUrl: env.NEXT_PUBLIC_CDN_URL,
-      },
-      result.email
-    );
+    // const emailResult = await emailService.sendEmail(
+    //   'Welcome to Our Platform!',
+    //   'welcome.html',
+    //   {
+    //     firstName: result.firstName,
+    //     lastName: result.lastName,
+    //     cdnUrl: env.NEXT_PUBLIC_CDN_URL,
+    //   },
+    //   result.email
+    // );
 
-    if (!emailResult.success) {
-      throw HttpError.internal(emailResult.error);
-    }
+    // if (!emailResult.success) {
+    //   throw HttpError.internal(emailResult.error);
+    // }
 
     return result;
   } catch (error) {
