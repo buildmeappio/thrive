@@ -171,6 +171,7 @@ const LegalRepresentativeComponent: React.FC<InsuranceProps> = ({
                     <PhoneInput
                       disabled={isSubmitting}
                       name="legalPhone"
+                      placeholder="Enter your phone number"
                       value={watch('legalPhone') || ''}
                       onChange={e =>
                         setValue('legalPhone', e.target.value, { shouldValidate: true })

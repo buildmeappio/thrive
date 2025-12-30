@@ -189,7 +189,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                           disabled={isSubmitting || isUpdateMode}
                           id="organizationName"
                           name="organizationName"
-                          placeholder="Desjardins"
+                          placeholder="Enter your organization name"
                           required
                           onChange={handleOrganizationNameChange}
                           onBlur={handleOrganizationNameBlur}
@@ -208,6 +208,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                         <GoogleMapsInput
                           name="addressLookup"
                           label="Address Lookup"
+                          placeholder="Enter your address"
                           required
                           from="address"
                           formik={formik}
@@ -351,7 +352,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                           disabled={isSubmitting}
                           id="streetAddress"
                           name="streetAddress"
-                          placeholder="50 Stephanie Street"
+                          placeholder="Enter your street address"
                           required
                           onChange={createReactiveChangeHandler(
                             'streetAddress',
@@ -382,7 +383,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                           disabled={isSubmitting}
                           id="aptUnitSuite"
                           name="aptUnitSuite"
-                          placeholder="402"
+                          placeholder="Your apt/unit/suite"
                           onChange={handleChange}
                           value={values.aptUnitSuite}
                         />
@@ -396,7 +397,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                           disabled={isSubmitting}
                           id="city"
                           name="city"
-                          placeholder="Toronto"
+                          placeholder="Your city"
                           required
                           onChange={createReactiveChangeHandler('city', handleChange, formik)}
                           onBlur={createReactiveBlurHandler(
@@ -421,7 +422,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                           disabled={isSubmitting}
                           id="postalCode"
                           name="postalCode"
-                          placeholder="A1A 1A1"
+                          placeholder="Enter your postal code"
                           required
                           onChange={createReactiveChangeHandler('postalCode', handleChange, formik)}
                           onBlur={createReactiveBlurHandler(
@@ -465,7 +466,7 @@ const OrganizationInfo: React.FC<OrganizationInfoProps> = ({
                             id="organizationWebsite"
                             name="organizationWebsite"
                             type="url"
-                            placeholder="https://desjardins.com"
+                            placeholder="Enter your organization website"
                             className="pl-10"
                             onChange={createReactiveChangeHandler(
                               'organizationWebsite',

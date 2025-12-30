@@ -53,22 +53,25 @@
 
       .button {
         display: inline-block;
-        padding: 12px 30px;
-        margin: 10px;
+        padding: 16px 32px;
+        margin: 8px;
         text-decoration: none;
-        border-radius: 5px;
+        border-radius: 8px;
         font-size: 16px;
-        font-weight: bold;
-        transition: background-color 0.3s;
+        font-weight: 600;
+        transition: opacity 0.3s ease;
+        border: none;
+        cursor: pointer;
+        text-align: center;
       }
 
       .button-modify {
-        background-color: #64748b;
+        background: linear-gradient(90deg, #00a8ff 0%, #01f4c8 100%);
         color: #ffffff;
       }
 
       .button-modify:hover {
-        background-color: #475569;
+        opacity: 0.9;
       }
 
       .button-cancel {
@@ -78,6 +81,7 @@
 
       .button-cancel:hover {
         background-color: #b91c1c;
+        opacity: 0.9;
       }
     </style>
   </head>
