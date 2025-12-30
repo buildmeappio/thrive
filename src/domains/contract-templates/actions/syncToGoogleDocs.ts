@@ -34,6 +34,8 @@ export const syncToGoogleDocsAction = async (
       user.id,
       undefined, // googleDocTemplateId - will use existing or create new
       undefined, // googleDocFolderId - will use existing or create new
+      null, // headerConfig
+      null, // footerConfig
       true, // syncToGoogleDocs = true
     );
 
