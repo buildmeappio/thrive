@@ -24,7 +24,6 @@ export const medicalExaminerSidebarRoutes = [
   { icon: Home, label: 'Dashboard', href: '/dashboard', index: 0 },
   { icon: FileText, label: 'All Cases', href: '/dashboard/cases', index: 1 },
   { icon: LifeBuoy, label: 'Support', href: '/dashboard/support', index: 2 },
-  { icon: Settings, label: 'Settings', href: '/settings', index: 3 },
 ];
 
 interface SideBarProps {
@@ -115,9 +114,8 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   const handleLinkClick = (item: (typeof medicalExaminerSidebarRoutes)[0]) => {
     const isDashboard = item.href === '/dashboard';
     const isSupport = item.href === '/dashboard/support';
-    const isSettings = item.href === '/settings';
-    // Allow Dashboard, Support, and Settings even when organization status is pending
-    if (isOrgStatusPending && !isDashboard && !isSupport && !isSettings) return;
+    // Allow Dashboard and Support even when organization status is pending
+    if (isOrgStatusPending && !isDashboard && !isSupport) return;
     setSelectedSidebarIndex(item.index);
     if (onMobileClose) {
       onMobileClose();
@@ -192,10 +190,8 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
               const IconComponent = item.icon;
               const isDashboard = item.href === '/dashboard';
               const isSupport = item.href === '/dashboard/support';
-              const isSettings = item.href === '/settings';
-              // Allow Dashboard, Support, and Settings even when organization status is pending
-              const isItemDisabled =
-                isOrgStatusPending && !isDashboard && !isSupport && !isSettings;
+              // Allow Dashboard and Support even when organization status is pending
+              const isItemDisabled = isOrgStatusPending && !isDashboard && !isSupport;
 
               return (
                 <Link
@@ -230,7 +226,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
             })}
           </nav>
 
-          {/* Logout Button */}
+          {/* Settings and Logout Buttons */}
           <div className="flex-shrink-0 p-4 px-6 md:px-4">
             <button
               onClick={() => router.push('/settings')}
