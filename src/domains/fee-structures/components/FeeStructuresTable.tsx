@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { FeeStructureStatus } from "@prisma/client";
-import { Pencil, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Pencil, ArrowUpDown, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   flexRender,
@@ -40,6 +40,7 @@ import {
   duplicateFeeStructureAction,
   archiveFeeStructureAction,
   updateFeeStructureStatusAction,
+  deleteFeeStructureAction,
 } from "../actions";
 import {
   Select,
@@ -127,6 +128,10 @@ export default function FeeStructuresTable({
   const [structureToArchive, setStructureToArchive] =
     useState<FeeStructureListItem | null>(null);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [structureToDelete, setStructureToDelete] =
+    useState<FeeStructureListItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState<string | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [feeStructuresData, setFeeStructuresData] = useState(feeStructures);
@@ -210,6 +215,15 @@ export default function FeeStructuresTable({
       e.stopPropagation();
       setStructureToArchive(feeStructure);
       setArchiveDialogOpen(true);
+    },
+    [],
+  );
+
+  const handleDeleteClick = useCallback(
+    (e: React.MouseEvent, feeStructure: FeeStructureListItem) => {
+      e.stopPropagation();
+      setStructureToDelete(feeStructure);
+      setDeleteDialogOpen(true);
     },
     [],
   );
@@ -351,12 +365,24 @@ export default function FeeStructuresTable({
                   : "Duplicate"}
               </button>
               {feeStructure.status !== FeeStructureStatus.ARCHIVED && (
-                <button
-                  onClick={(e) => handleArchiveClick(e, feeStructure)}
-                  className="font-poppins text-sm text-[#7B8B91] hover:text-[#000000] transition-colors cursor-pointer"
-                >
-                  Archive
-                </button>
+                <>
+                  <button
+                    onClick={(e) => handleArchiveClick(e, feeStructure)}
+                    className="font-poppins text-sm text-[#7B8B91] hover:text-[#000000] transition-colors cursor-pointer"
+                  >
+                    Archive
+                  </button>
+                  {feeStructure.contractCount === 0 &&
+                    feeStructure.templateCount === 0 && (
+                      <button
+                        onClick={(e) => handleDeleteClick(e, feeStructure)}
+                        className="p-2 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
+                        aria-label="Delete fee structure"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </button>
+                    )}
+                </>
               )}
             </div>
           );
@@ -420,6 +446,29 @@ export default function FeeStructuresTable({
       setIsArchiving(false);
       setArchiveDialogOpen(false);
       setStructureToArchive(null);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!structureToDelete) return;
+
+    setIsDeleting(true);
+
+    try {
+      const result = await deleteFeeStructureAction(structureToDelete.id);
+
+      if ("error" in result) {
+        toast.error(result.error ?? "Failed to delete fee structure");
+        return;
+      }
+      toast.success("Fee structure deleted successfully");
+      router.refresh();
+    } catch {
+      toast.error("An error occurred");
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setStructureToDelete(null);
     }
   };
 
@@ -567,6 +616,30 @@ export default function FeeStructuresTable({
               className="bg-gray-600 hover:bg-gray-700"
             >
               {isArchiving ? "Archiving..." : "Archive"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Fee Structure</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{" "}
+              <strong>{structureToDelete?.name}</strong>? This action cannot be
+              undone. The fee structure will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

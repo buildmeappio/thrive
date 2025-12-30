@@ -87,6 +87,11 @@ export const listContractTemplates = async (
           status: true,
         },
       },
+      _count: {
+        select: {
+          contracts: true,
+        },
+      },
     },
     orderBy: { updatedAt: "desc" },
   });
@@ -100,6 +105,7 @@ export const listContractTemplates = async (
     currentVersion: template.currentVersion,
     feeStructureId: template.feeStructureId,
     updatedAt: template.updatedAt.toISOString(),
+    contractCount: template._count.contracts,
   }));
 };
 
@@ -617,4 +623,43 @@ export const getTemplateGoogleDocUrl = async (
     url: getGoogleDocUrl(documentId),
     documentId,
   };
+};
+
+// Delete a contract template
+export const deleteContractTemplate = async (
+  id: string,
+): Promise<{ id: string }> => {
+  const existing = await prisma.documentTemplate.findUnique({
+    where: { id },
+    include: {
+      versions: true,
+    },
+  });
+
+  if (!existing) {
+    throw HttpError.notFound("Contract template not found");
+  }
+
+  // Check if template is used by any contracts
+  const contractCount = await prisma.contract.count({
+    where: { templateId: id },
+  });
+
+  if (contractCount > 0) {
+    throw HttpError.badRequest(
+      `Cannot delete contract template that is used by ${contractCount} contract${contractCount === 1 ? "" : "s"}. Please delete or reassign the contracts first.`,
+    );
+  }
+
+  // Delete all versions first (cascade)
+  await prisma.templateVersion.deleteMany({
+    where: { templateId: id },
+  });
+
+  // Delete the template
+  await prisma.documentTemplate.delete({
+    where: { id },
+  });
+
+  return { id };
 };

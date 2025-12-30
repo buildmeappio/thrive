@@ -12,6 +12,7 @@ export type ContractTemplateListItem = {
   } | null;
   feeStructureId: string | null;
   updatedAt: string;
+  contractCount: number;
 };
 
 export type TemplateVersionData = {

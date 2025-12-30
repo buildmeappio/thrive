@@ -69,7 +69,11 @@ export const listFeeStructures = async (
     where,
     include: {
       _count: {
-        select: { variables: true },
+        select: {
+          variables: true,
+          contracts: true,
+          templates: true,
+        },
       },
     },
     orderBy: { updatedAt: "desc" },
@@ -81,6 +85,8 @@ export const listFeeStructures = async (
     status: fs.status,
     updatedAt: fs.updatedAt.toISOString(),
     variableCount: fs._count.variables,
+    contractCount: fs._count.contracts,
+    templateCount: fs._count.templates,
   }));
 };
 
@@ -522,4 +528,51 @@ export const deleteFeeVariable = async (
   });
 
   return { success: true };
+};
+
+// Delete a fee structure
+export const deleteFeeStructure = async (
+  id: string,
+): Promise<{ id: string }> => {
+  const existing = await prisma.feeStructure.findUnique({
+    where: { id },
+  });
+
+  if (!existing) {
+    throw HttpError.notFound("Fee structure not found");
+  }
+
+  // Check if fee structure is used by any contracts
+  const contractCount = await prisma.contract.count({
+    where: { feeStructureId: id },
+  });
+
+  if (contractCount > 0) {
+    throw HttpError.badRequest(
+      `Cannot delete fee structure that is used by ${contractCount} contract${contractCount === 1 ? "" : "s"}. Please delete or reassign the contracts first.`,
+    );
+  }
+
+  // Check if fee structure is used by any templates
+  const templateCount = await prisma.documentTemplate.count({
+    where: { feeStructureId: id },
+  });
+
+  if (templateCount > 0) {
+    throw HttpError.badRequest(
+      `Cannot delete fee structure that is used by ${templateCount} contract template${templateCount === 1 ? "" : "s"}. Please reassign or delete the templates first.`,
+    );
+  }
+
+  // Delete all variables first (cascade)
+  await prisma.feeStructureVariable.deleteMany({
+    where: { feeStructureId: id },
+  });
+
+  // Delete the fee structure
+  await prisma.feeStructure.delete({
+    where: { id },
+  });
+
+  return { id };
 };

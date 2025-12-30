@@ -6,6 +6,7 @@ export { duplicateFeeStructureAction } from "./duplicateFeeStructure";
 export { archiveFeeStructureAction } from "./archiveFeeStructure";
 export { activateFeeStructureAction } from "./activateFeeStructure";
 export { updateFeeStructureStatusAction } from "./updateFeeStructureStatus";
+export { deleteFeeStructureAction } from "./deleteFeeStructure";
 export { createFeeVariableAction } from "./createFeeVariable";
 export { updateFeeVariableAction } from "./updateFeeVariable";
 export { deleteFeeVariableAction } from "./deleteFeeVariable";
