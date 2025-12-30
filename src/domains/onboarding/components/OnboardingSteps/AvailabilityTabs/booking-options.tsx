@@ -22,6 +22,10 @@ const BookingOptions: React.FC<BookingOptionsProps> = () => {
   const maxIMEsError = errors.bookingOptions?.maxIMEsPerWeek;
   const minimumNoticeError = errors.bookingOptions?.minimumNotice;
 
+  const formValues = useFormContext<AvailabilityPreferencesInput>().watch();
+  const maxValue = formValues.bookingOptions?.maxIMEsPerWeek;
+  const noticeValue = formValues.bookingOptions?.minimumNotice;
+
   return (
     <div className="mt-2 pl-3 py-6">
       <div className="w-full md:max-w-[50%] border border-gray-300 rounded-lg p-6 bg-[#FCFDFF]">
@@ -40,12 +44,24 @@ const BookingOptions: React.FC<BookingOptionsProps> = () => {
                 control={control}
                 render={({ field }) => (
                   <select
-                    {...field}
                     value={field.value || ""}
-                    onChange={(e) => field.onChange(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Don't save empty string (placeholder) as a value - convert to empty string for form state
+                      // Validation will prevent empty strings from being submitted
+                      field.onChange(value === "" ? "" : value);
+                    }}
+                    onBlur={field.onBlur}
                     className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[180px]"
+                    style={{
+                      color: !field.value ? "#9CA3AF" : undefined,
+                    }}
                   >
-                    <option value="">Select maximum</option>
+                    {!maxValue && (
+                      <option value="" disabled>
+                        Select maximum
+                      </option>
+                    )}
                     {MAX_IMES_PER_WEEK_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
@@ -76,12 +92,24 @@ const BookingOptions: React.FC<BookingOptionsProps> = () => {
                 control={control}
                 render={({ field }) => (
                   <select
-                    {...field}
                     value={field.value || ""}
-                    onChange={(e) => field.onChange(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Don't save empty string (placeholder) as a value - convert to empty string for form state
+                      // Validation will prevent empty strings from being submitted
+                      field.onChange(value === "" ? "" : value);
+                    }}
+                    onBlur={field.onBlur}
                     className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#00A8FF] min-w-[180px]"
+                    style={{
+                      color: !field.value ? "#9CA3AF" : undefined,
+                    }}
                   >
-                    <option value="">Select notice</option>
+                    {!noticeValue && (
+                      <option value="" disabled>
+                        Select notice
+                      </option>
+                    )}
                     {MINIMUM_NOTICE_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
