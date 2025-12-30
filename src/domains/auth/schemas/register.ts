@@ -119,7 +119,7 @@ export const OfficeDetailsSchema = Yup.object({
     .test('not-only-spaces', ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES, value => {
       return value ? value.trim().length > 0 : false;
     })
-    .min(4, ErrorMessages.FIRST_NAME_MIN)
+    .min(2, ErrorMessages.FIRST_NAME_MIN)
     .matches(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
     .max(100, ErrorMessages.NAME_TOO_LONG),
 
@@ -129,7 +129,7 @@ export const OfficeDetailsSchema = Yup.object({
     .test('not-only-spaces', ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES, value => {
       return value ? value.trim().length > 0 : false;
     })
-    .min(4, ErrorMessages.LAST_NAME_MIN)
+    .min(2, ErrorMessages.LAST_NAME_MIN)
     .matches(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
     .max(100, ErrorMessages.NAME_TOO_LONG),
 

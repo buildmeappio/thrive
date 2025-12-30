@@ -50,7 +50,7 @@ export const ClaimantDetailsSchema = z.object({
     .refine(val => val.trim().length > 0, {
       message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
     })
-    .min(4, ErrorMessages.FIRST_NAME_MIN)
+    .min(2, ErrorMessages.FIRST_NAME_MIN)
     .regex(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
     .max(100, ErrorMessages.NAME_TOO_LONG),
 
@@ -61,7 +61,7 @@ export const ClaimantDetailsSchema = z.object({
     .refine(val => val.trim().length > 0, {
       message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
     })
-    .min(4, ErrorMessages.LAST_NAME_MIN)
+    .min(2, ErrorMessages.LAST_NAME_MIN)
     .regex(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
     .max(100, ErrorMessages.NAME_TOO_LONG),
 
@@ -445,8 +445,16 @@ export const InsuranceDetailsSchema = z.object({
 
   // Policy Holder fields
   policyHolderSameAsClaimant: z.boolean().optional(),
-  policyHolderFirstName: z.string().trim().min(1, 'First name is required'),
-  policyHolderLastName: z.string().trim().min(1, 'Last name is required'),
+  policyHolderFirstName: z
+    .string()
+    .trim()
+    .min(1, 'First name is required')
+    .min(2, ErrorMessages.FIRST_NAME_MIN),
+  policyHolderLastName: z
+    .string()
+    .trim()
+    .min(1, 'Last name is required')
+    .min(2, ErrorMessages.LAST_NAME_MIN),
 });
 
 export type InsuranceDetails = z.infer<typeof InsuranceDetailsSchema>;

@@ -11,7 +11,7 @@ export const updateOrganizationSchema = z.object({
     .refine(val => val.trim().length > 0, {
       message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
     })
-    .min(4, ErrorMessages.FIRST_NAME_MIN)
+    .min(2, ErrorMessages.FIRST_NAME_MIN)
     .regex(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
     .max(100, ErrorMessages.NAME_TOO_LONG),
   lastName: z
@@ -21,7 +21,7 @@ export const updateOrganizationSchema = z.object({
     .refine(val => val.trim().length > 0, {
       message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
     })
-    .min(4, ErrorMessages.LAST_NAME_MIN)
+    .min(2, ErrorMessages.LAST_NAME_MIN)
     .regex(/^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/, ErrorMessages.NAME_INVALID)
     .max(100, ErrorMessages.NAME_TOO_LONG),
   email: z.string().email(ErrorMessages.INVALID_EMAIL).min(1, ErrorMessages.EMAIL_REQUIRED),
