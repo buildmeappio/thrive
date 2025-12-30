@@ -41,6 +41,8 @@ export const saveTemplateDraftContentAction = async (
       user.id,
       parsed.data.googleDocTemplateId,
       parsed.data.googleDocFolderId,
+      parsed.data.headerConfig,
+      parsed.data.footerConfig,
     );
 
     revalidatePath(`/dashboard/contract-templates/${parsed.data.templateId}`);

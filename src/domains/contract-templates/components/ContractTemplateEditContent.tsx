@@ -55,6 +55,7 @@ import type {
 import RichTextEditor from "@/components/editor/RichTextEditor";
 import StatusBadge from "./StatusBadge";
 import PageRender from "@/components/editor/PageRender";
+import type { HeaderConfig, FooterConfig } from "@/components/editor/types";
 
 type Props = {
   template: ContractTemplateData;
@@ -64,6 +65,12 @@ export default function ContractTemplateEditContent({ template }: Props) {
   const router = useRouter();
   const [content, setContent] = useState(
     template.currentVersion?.bodyHtml || "",
+  );
+  const [headerConfig, setHeaderConfig] = useState<HeaderConfig | undefined>(
+    template.currentVersion?.headerConfig as HeaderConfig | undefined
+  );
+  const [footerConfig, setFooterConfig] = useState<FooterConfig | undefined>(
+    template.currentVersion?.footerConfig as FooterConfig | undefined
   );
   const [isSaving, setIsSaving] = useState(false);
   const [placeholders, setPlaceholders] = useState<string[]>([]);
@@ -222,6 +229,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
       const result = await saveTemplateDraftContentAction({
         templateId: template.id,
         content: content,
+        headerConfig: headerConfig || null,
+        footerConfig: footerConfig || null,
       });
 
       if ("error" in result) {
@@ -575,10 +584,14 @@ export default function ContractTemplateEditContent({ template }: Props) {
                 <RichTextEditor
                   content={content}
                   onChange={setContent}
-                  placeholder="Enter template content with placeholders like {{thrive.company_name}}, {{examiner.name}}, {{fees.base_exam_fee}}, etc."
+                  placeholder="Enter template content with placeholders like {{thrive.company_name}}, {{examiner.name}}, {{fees.base_exam_fee}}, etc. (Use Shift + Enter for new line)"
                   editorRef={editorRef}
                   validVariables={validVariablesSet}
                   availableVariables={availableVariables}
+                  headerConfig={headerConfig}
+                  footerConfig={footerConfig}
+                  onHeaderChange={setHeaderConfig}
+                  onFooterChange={setFooterConfig}
                 />
               </div>
             </div>
@@ -593,8 +606,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
               <div className="flex-1 min-h-0 overflow-auto">
                 <PageRender
                   content={content}
-                  headers={{ left: '', center: '', right: '' }}
-                  footers={{ left: '', center: '', right: '' }}
+                  header={headerConfig}
+                  footer={footerConfig}
                 />
               </div>
             </div>

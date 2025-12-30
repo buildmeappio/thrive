@@ -24,7 +24,6 @@ model Contract {
   viewedAt             DateTime?      @map("viewed_at") @db.Timestamptz()
   signedAt             DateTime?      @map("signed_at") @db.Timestamptz()
   declinedAt           DateTime?      @map("declined_at") @db.Timestamptz()
-  reviewedAt           DateTime?      @map("reviewed_at") @db.Timestamptz()
   voidReason           String?        @map("void_reason") @db.Text
   accessToken          String?        @map("access_token") @db.Text
   accessTokenExpiresAt DateTime?      @map("access_token_expires_at") @db.Timestamptz()
@@ -32,6 +31,7 @@ model Contract {
   createdBy            String         @map("created_by") @db.Uuid
   createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt            DateTime       @updatedAt @map("updated_at") @db.Timestamptz()
+  reviewedAt           DateTime?      @map("reviewed_at") @db.Timestamptz()
 
   examinerProfile ExaminerProfile?     @relation("ExaminerContracts", fields: [examinerProfileId], references: [id], onDelete: Cascade)
   application     ExaminerApplication? @relation("ApplicationContracts", fields: [applicationId], references: [id], onDelete: Cascade)

@@ -4,6 +4,12 @@ import { z } from "zod";
 const hasAtLeastOneLetter = (value: string): boolean => {
   return /[a-zA-Z]/.test(value.trim());
 };
+// Schema for HeaderConfig and FooterConfig
+export const headerFooterConfigSchema = z.object({
+  content: z.string(),
+  height: z.number().min(0).max(200),
+  frequency: z.enum(["all", "even", "odd", "first"]),
+});
 
 export const createContractTemplateSchema = z.object({
   slug: z
@@ -70,6 +76,8 @@ export const saveTemplateDraftContentSchema = z.object({
   content: z.string(), // Allow empty content for drafts
   googleDocTemplateId: z.string().optional().nullable(),
   googleDocFolderId: z.string().optional().nullable(),
+  headerConfig: headerFooterConfigSchema.optional().nullable(),
+  footerConfig: headerFooterConfigSchema.optional().nullable(),
 });
 
 export const publishTemplateVersionSchema = z.object({

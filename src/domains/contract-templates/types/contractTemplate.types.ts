@@ -1,4 +1,5 @@
 import { TemplateVersionStatus } from "@prisma/client";
+import { HeaderConfig, FooterConfig } from "@/components/editor/types";
 
 export type ContractTemplateListItem = {
   id: string;
@@ -27,6 +28,8 @@ export type TemplateVersionData = {
   changeNotes: string | null;
   googleDocTemplateId: string | null;
   googleDocFolderId: string | null;
+  headerConfig?: HeaderConfig;
+  footerConfig?: FooterConfig;
   createdAt: string;
 };
 
@@ -75,6 +78,8 @@ export type SaveTemplateDraftContentInput = {
   content: string;
   googleDocTemplateId?: string | null;
   googleDocFolderId?: string | null;
+  headerConfig?: HeaderConfig | null;
+  footerConfig?: FooterConfig | null;
 };
 
 export type ValidateTemplateResult = {

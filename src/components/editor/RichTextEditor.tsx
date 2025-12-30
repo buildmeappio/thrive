@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -11,7 +11,7 @@ import { Table } from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
-import Image from "@tiptap/extension-image";
+import ResizableImageExtension from "./extension/ResizableImageExtension";
 import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import Highlight from "@tiptap/extension-highlight";
@@ -71,9 +71,17 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import ImageUploader from "./ImageUploader";
+import { toast } from "sonner";
 import logger from "@/utils/logger";
 import PageBreakExtension from "./extension/PageBreakExtension";
+import HeaderFooterModal from "./HeaderFooterModal";
+import type { HeaderConfig, FooterConfig } from "./types";
+import {
+  shouldShowHeader,
+  shouldShowFooter,
+  processPlaceholders,
+} from "./types";
+import { FileText } from "lucide-react";
 
 type Props = {
   content: string;
@@ -82,6 +90,10 @@ type Props = {
   editorRef?: React.MutableRefObject<any>;
   validVariables?: Set<string>;
   availableVariables?: Array<{ namespace: string; vars: string[] }>;
+  headerConfig?: HeaderConfig;
+  footerConfig?: FooterConfig;
+  onHeaderChange?: (config: HeaderConfig | undefined) => void;
+  onFooterChange?: (config: FooterConfig | undefined) => void;
 };
 
 // Color palette for text and highlight colors
@@ -117,16 +129,39 @@ export default function RichTextEditor({
   editorRef,
   validVariables = new Set(),
   availableVariables = [],
+  headerConfig: externalHeaderConfig,
+  footerConfig: externalFooterConfig,
+  onHeaderChange,
+  onFooterChange,
 }: Props) {
   const [isMounted, setIsMounted] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [showLinkInput, setShowLinkInput] = useState(false);
-  const [showImageUploader, setShowImageUploader] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [internalHeaderConfig, setInternalHeaderConfig] = useState<HeaderConfig | undefined>(externalHeaderConfig);
+  const [internalFooterConfig, setInternalFooterConfig] = useState<FooterConfig | undefined>(externalFooterConfig);
+  const [showHeaderModal, setShowHeaderModal] = useState(false);
+  const [showFooterModal, setShowFooterModal] = useState(false);
 
+  // Use external configs if provided, otherwise use internal state
+  const headerConfig = externalHeaderConfig !== undefined ? externalHeaderConfig : internalHeaderConfig;
+  const footerConfig = externalFooterConfig !== undefined ? externalFooterConfig : internalFooterConfig;
+
+  // Sync external configs to internal state
+  useEffect(() => {
+    if (externalHeaderConfig !== undefined) {
+      setInternalHeaderConfig(externalHeaderConfig);
+    }
+  }, [externalHeaderConfig]);
+
+  useEffect(() => {
+    if (externalFooterConfig !== undefined) {
+      setInternalFooterConfig(externalFooterConfig);
+    }
+  }, [externalFooterConfig]);
 
 
   useEffect(() => {
-    console.log("content", content);
     setIsMounted(true);
   }, []);
 
@@ -137,7 +172,11 @@ export default function RichTextEditor({
           levels: [1, 2, 3, 4, 5, 6],
         },
         horizontalRule: false, // Use the separate extension
-        hardBreak: false, // Disable hard break to prevent spacebar issues
+        hardBreak: {
+          HTMLAttributes: {
+            class: "hard-break",
+          }
+        }
       }),
       Placeholder.configure({
         placeholder: placeholder || "Start typing...",
@@ -169,7 +208,7 @@ export default function RichTextEditor({
           class: "border border-gray-300 p-2 bg-gray-100 font-semibold",
         },
       }),
-      Image.configure({
+      ResizableImageExtension.configure({
         inline: true,
         allowBase64: true,
         HTMLAttributes: {
@@ -283,12 +322,27 @@ export default function RichTextEditor({
     [validVariables],
   );
 
-  // Clean content before passing to onChange (remove highlight spans)
+  // Clean content before passing to onChange (remove highlight spans and trailing breaks)
   const cleanContent = useCallback((html: string): string => {
-    return html.replace(
+    let cleaned = html.replace(
       /<span class="variable-(valid|invalid)[^"]*" data-variable="[^"]*">(.*?)<\/span>/g,
       "$2",
     );
+
+    // Remove ProseMirror trailing breaks: <p><br class="ProseMirror-trailingBreak"></p>
+    // Also handle cases where there might be whitespace or other content
+    cleaned = cleaned.replace(
+      /<p[^>]*>\s*<br\s+class="ProseMirror-trailingBreak"[^>]*>\s*<\/p>/gi,
+      "",
+    );
+
+    // Remove trailing breaks that are standalone (not in empty paragraphs)
+    cleaned = cleaned.replace(
+      /<br\s+class="ProseMirror-trailingBreak"[^>]*>/gi,
+      "",
+    );
+
+    return cleaned;
   }, []);
 
   const editor = useEditor({
@@ -338,8 +392,9 @@ export default function RichTextEditor({
       const cleaned = cleanContent(currentHtml);
       const highlighted = processContentForHighlighting(cleaned);
 
-      // Only update if highlighting changed
-      if (currentHtml !== highlighted) {
+      // Only update if highlighting changed (and content matches prop to avoid conflicts)
+      // We check content match to prevent updating when content prop is being synced
+      if (currentHtml !== highlighted && cleaned === content) {
         // Save current selection
         const { from, to } = editor.state.selection;
         editor.commands.setContent(highlighted, { emitUpdate: false });
@@ -367,6 +422,27 @@ export default function RichTextEditor({
     processContentForHighlighting,
     cleanContent,
   ]);
+
+  // Sync content prop changes to editor (e.g., when syncing from Google Docs)
+  useEffect(() => {
+    if (!editor || !isMounted) return;
+
+    // Get current editor content (cleaned)
+    const currentHtml = editor.getHTML();
+    const currentCleaned = cleanContent(currentHtml);
+
+    // Only update if content prop differs from current editor content
+    // This prevents unnecessary updates and infinite loops
+    if (currentCleaned !== content) {
+      // Don't update if editor is focused (user is typing)
+      if (editor.isFocused) {
+        return;
+      }
+
+      // Set content without emitting update to prevent onChange callback
+      editor.commands.setContent(content, { emitUpdate: false });
+    }
+  }, [content, editor, isMounted, cleanContent]);
 
   // Expose editor to parent via ref
   useEffect(() => {
@@ -408,23 +484,109 @@ export default function RichTextEditor({
 
   // Image handler
   const addImage = useCallback(() => {
-    setShowImageUploader(true);
+    imageInputRef.current?.click();
   }, []);
 
-  const handleInsertImage = useCallback(
-    (url: string) => {
-      if (!editor) return;
-      editor.chain().focus().setImage({ src: url }).run();
+  const handleImageFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file || !editor) return;
+
+      // Validate file type
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "image/svg+xml",
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Invalid image type. Allowed: JPEG, PNG, GIF, WebP, SVG");
+        return;
+      }
+
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size exceeds 5MB limit");
+        return;
+      }
+
+      // Read file as base64
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string;
+        if (base64) {
+          editor.chain().focus().setResizableImage({ src: base64 }).run();
+        }
+      };
+      reader.readAsDataURL(file);
+
+      // Reset input so same file can be selected again
+      if (imageInputRef.current) {
+        imageInputRef.current.value = "";
+      }
     },
     [editor],
   );
 
-  // Print handler
+  // Header/Footer handlers
+  const handleHeaderSave = useCallback((config: HeaderConfig) => {
+    if (onHeaderChange) {
+      onHeaderChange(config);
+    } else {
+      setInternalHeaderConfig(config);
+    }
+  }, [onHeaderChange]);
+
+  const handleFooterSave = useCallback((config: FooterConfig) => {
+    if (onFooterChange) {
+      onFooterChange(config);
+    } else {
+      setInternalFooterConfig(config);
+    }
+  }, [onFooterChange]);
+
+  // Split content into pages (simplified version for print)
+  const splitContentIntoPages = useCallback((htmlContent: string): string[] => {
+
+    // First, split by manual page breaks
+    const contentParts = htmlContent.split('<div class="page-break"></div>');
+    const pages: string[] = [];
+
+    for (const part of contentParts) {
+      if (!part.trim()) continue;
+
+      // For print, we'll use a simple approach: split by page breaks
+      // In a real implementation, you'd measure content height
+      // For now, we'll just add each part as a page
+      pages.push(part.trim());
+    }
+
+    // If no pages were created, create at least one page
+    if (pages.length === 0 && htmlContent.trim()) {
+      pages.push(htmlContent.trim());
+    }
+
+    return pages;
+  }, []);
+
+  // Print handler with header/footer support
   const handlePrint = useCallback(() => {
     if (!editor) return;
 
+    // A4 dimensions constants
+    const A4_WIDTH_PX = 794;
+    const A4_HEIGHT_PX = 1123;
+    const PAGE_MARGIN_HORIZONTAL = 80;
+    const PAGE_MARGIN_VERTICAL = 80;
+    const CONTENT_WIDTH_PX = A4_WIDTH_PX - PAGE_MARGIN_HORIZONTAL;
+
     // Clean content before printing (remove variable highlight spans)
     const htmlContent = cleanContent(editor.getHTML());
+
+    // Split content into pages
+    const pages = splitContentIntoPages(htmlContent);
+    const totalPages = pages.length;
 
     // Create a print-friendly HTML document
     const printWindow = window.open('', '_blank');
@@ -432,6 +594,48 @@ export default function RichTextEditor({
       console.error('Failed to open print window');
       return;
     }
+
+    // Generate page HTML with headers/footers
+    const pageHTMLs = pages.map((pageContent, index) => {
+      const pageNumber = index + 1;
+
+      // Check if header/footer should be shown
+      const showHeader = shouldShowHeader(headerConfig, pageNumber);
+      const showFooter = shouldShowFooter(footerConfig, pageNumber);
+
+      // Get heights
+      const headerHeight = showHeader ? (headerConfig?.height || 40) : 0;
+      const footerHeight = showFooter ? (footerConfig?.height || 40) : 0;
+
+      // Process header/footer content with placeholders
+      const headerContent = showHeader && headerConfig
+        ? processPlaceholders(headerConfig.content, pageNumber, totalPages)
+        : '';
+      const footerContent = showFooter && footerConfig
+        ? processPlaceholders(footerConfig.content, pageNumber, totalPages)
+        : '';
+
+      // Calculate content area height
+      const contentAreaHeight = A4_HEIGHT_PX - headerHeight - footerHeight - PAGE_MARGIN_VERTICAL;
+
+      return `
+        <div class="print-page" style="width: ${A4_WIDTH_PX}px; height: ${A4_HEIGHT_PX}px; page-break-after: always; position: relative; margin: 0; padding: 0;">
+          ${showHeader ? `
+            <div class="print-header" style="height: ${headerHeight}px; width: 100%; padding: 0 40px; display: flex; align-items: center; position: absolute; top: 0; left: 0;">
+              <div class="header-content" style="width: 100%;">${headerContent}</div>
+            </div>
+          ` : ''}
+          <div class="print-content" style="width: ${CONTENT_WIDTH_PX}px; height: ${contentAreaHeight}px; margin: ${headerHeight + 40}px auto ${footerHeight + 40}px; padding: 0; word-wrap: break-word; overflow: hidden;">
+            ${pageContent}
+          </div>
+          ${showFooter ? `
+            <div class="print-footer" style="height: ${footerHeight}px; width: 100%; padding: 0 40px; display: flex; align-items: center; position: absolute; bottom: 0; left: 0;">
+              <div class="footer-content" style="width: 100%;">${footerContent}</div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
 
     // Create print HTML with A4 page layout
     const printHTML = `
@@ -461,12 +665,49 @@ export default function RichTextEditor({
               margin: 0;
             }
             
+            .print-page {
+              width: ${A4_WIDTH_PX}px;
+              height: ${A4_HEIGHT_PX}px;
+              page-break-after: always;
+              position: relative;
+              margin: 0;
+              padding: 0;
+            }
+            
+            .print-header {
+              width: 100%;
+              padding: 0 40px;
+              display: flex;
+              align-items: center;
+              position: absolute;
+              top: 0;
+              left: 0;
+            }
+            
+            .print-header .header-content {
+              width: 100%;
+            }
+            
+            .print-footer {
+              width: 100%;
+              padding: 0 40px;
+              display: flex;
+              align-items: center;
+              position: absolute;
+              bottom: 0;
+              left: 0;
+            }
+            
+            .print-footer .footer-content {
+              width: 100%;
+            }
+            
             .print-content {
-              width: 714px; /* A4 width (794px) minus margins (40px each side) */
+              width: ${CONTENT_WIDTH_PX}px;
               margin: 0 auto;
-              padding: 40px;
+              padding: 0;
               word-wrap: break-word;
-              page-break-inside: auto;
+              overflow: hidden;
             }
             
             /* Headings */
@@ -659,9 +900,9 @@ export default function RichTextEditor({
                 padding: 0;
               }
               
-              .print-content {
+              .print-page {
                 margin: 0;
-                padding: 40px;
+                padding: 0;
               }
               
               /* Avoid breaking inside these elements */
@@ -687,9 +928,7 @@ export default function RichTextEditor({
           </style>
         </head>
         <body>
-          <div class="print-content">
-            ${htmlContent}
-          </div>
+          ${pageHTMLs}
           <script>
             window.onload = function() {
               // Wait a bit for styles to apply
@@ -704,7 +943,7 @@ export default function RichTextEditor({
 
     printWindow.document.writeln(printHTML);
     printWindow.document.close();
-  }, [editor, cleanContent]);
+  }, [editor, cleanContent, headerConfig, footerConfig, splitContentIntoPages]);
 
 
   // Don't render on server to avoid hydration mismatch
@@ -1282,6 +1521,22 @@ export default function RichTextEditor({
             </DropdownMenu>
           )}
 
+          {/* Header/Footer Buttons */}
+          <div className="flex gap-1 border-l border-gray-200 pl-2 ml-2">
+            <ToolbarButton
+              onClick={() => setShowHeaderModal(true)}
+              title={headerConfig ? "Edit Header" : "Add Header"}
+            >
+              <FileText className="h-4 w-4" />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => setShowFooterModal(true)}
+              title={footerConfig ? "Edit Footer" : "Add Footer"}
+            >
+              <FileText className="h-4 w-4 rotate-180" />
+            </ToolbarButton>
+          </div>
+
           {/* Print Button */}
           <div className="flex gap-1 border-l border-gray-200 pl-2 ml-2">
             <ToolbarButton
@@ -1292,6 +1547,42 @@ export default function RichTextEditor({
             </ToolbarButton>
           </div>
         </div>
+
+        {/* Instructions Section */}
+        <div className="flex gap-1 border-l border-gray-200 pl-2 ml-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-xs text-gray-600 hover:text-gray-900"
+                title="Keyboard Shortcuts"
+              >
+                <span className="text-xs">💡 Tips</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4" align="start">
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm text-gray-900 font-poppins">
+                  Keyboard Shortcuts
+                </h4>
+                <div className="space-y-2 text-xs text-gray-700 font-poppins">
+                  <div className="flex items-center gap-2">
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-[10px] font-mono">Shift</kbd>
+                    <span>+</span>
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-[10px] font-mono">Enter</kbd>
+                    <span className="ml-2">Add a new line within the same paragraph</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-[10px] font-mono">Enter</kbd>
+                    <span className="ml-2">Start a new paragraph</span>
+                  </div>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       {/* Editor Content */}
@@ -1300,11 +1591,31 @@ export default function RichTextEditor({
         className="min-h-[500px] max-h-[800px] overflow-y-auto"
       />
 
-      {/* Image Uploader Dialog */}
-      <ImageUploader
-        open={showImageUploader}
-        onClose={() => setShowImageUploader(false)}
-        onInsert={handleInsertImage}
+      {/* Hidden file input for image upload */}
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+        onChange={handleImageFileSelect}
+        className="hidden"
+      />
+
+      {/* Header Modal */}
+      <HeaderFooterModal
+        open={showHeaderModal}
+        onClose={() => setShowHeaderModal(false)}
+        onSave={handleHeaderSave}
+        type="header"
+        initialConfig={headerConfig}
+      />
+
+      {/* Footer Modal */}
+      <HeaderFooterModal
+        open={showFooterModal}
+        onClose={() => setShowFooterModal(false)}
+        onSave={handleFooterSave}
+        type="footer"
+        initialConfig={footerConfig}
       />
 
       {/* Editor-specific styles (ProseMirror wrapper) */}

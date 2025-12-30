@@ -9,6 +9,7 @@ import {
   UpdateContractTemplateInput,
   ListContractTemplatesInput,
 } from "../types/contractTemplate.types";
+import { HeaderConfig, FooterConfig } from "@/components/editor/types";
 import {
   parsePlaceholders,
   validatePlaceholders,
@@ -22,6 +23,27 @@ import {
 } from "@/lib/google-docs";
 import { ENV } from "@/constants/variables";
 import logger from "@/utils/logger";
+import { headerFooterConfigSchema } from "../schemas/contractTemplate.schema";
+
+// Helper to validate and parse header/footer config from Prisma JSON
+const parseHeaderFooterConfig = (
+  jsonValue: Prisma.JsonValue | null | undefined,
+): HeaderConfig | FooterConfig | undefined => {
+  if (!jsonValue) {
+    return undefined;
+  }
+
+  // Validate with Zod schema
+  const result = headerFooterConfigSchema.safeParse(jsonValue);
+  if (!result.success) {
+    logger.warn(
+      `Invalid header/footer config format: ${JSON.stringify(result.error.issues)}`,
+    );
+    return undefined;
+  }
+
+  return result.data;
+};
 
 // Helper to format template version data
 const formatTemplateVersion = (version: {
@@ -36,6 +58,8 @@ const formatTemplateVersion = (version: {
   changeNotes: string | null;
   googleDocTemplateId: string | null;
   googleDocFolderId: string | null;
+  headerConfig?: Prisma.JsonValue | null;
+  footerConfig?: Prisma.JsonValue | null;
   createdAt: Date;
 }): TemplateVersionData => ({
   id: version.id,
@@ -49,6 +73,12 @@ const formatTemplateVersion = (version: {
   changeNotes: version.changeNotes,
   googleDocTemplateId: version.googleDocTemplateId,
   googleDocFolderId: version.googleDocFolderId,
+  headerConfig: parseHeaderFooterConfig(version.headerConfig) as
+    | HeaderConfig
+    | undefined,
+  footerConfig: parseHeaderFooterConfig(version.footerConfig) as
+    | FooterConfig
+    | undefined,
   createdAt: version.createdAt.toISOString(),
 });
 
@@ -275,6 +305,8 @@ export const saveTemplateDraftContent = async (
   createdBy: string,
   googleDocTemplateId?: string | null,
   googleDocFolderId?: string | null,
+  headerConfig?: HeaderConfig | null,
+  footerConfig?: FooterConfig | null,
   syncToGoogleDocs: boolean = true,
 ): Promise<{ id: string; googleDocId?: string }> => {
   // Get template with draft version and current version to find existing Google Doc ID
@@ -376,13 +408,15 @@ export const saveTemplateDraftContent = async (
         bodyHtml: enhancedContent,
         googleDocTemplateId: currentGoogleDocId,
         googleDocFolderId: currentGoogleDocFolderId,
+        headerConfig: (headerConfig || null) as unknown as Prisma.JsonValue,
+        footerConfig: (footerConfig || null) as unknown as Prisma.JsonValue,
         variablesSchema: {
           type: "object",
           properties: {},
           placeholders,
           validation,
         },
-      },
+      } as Prisma.TemplateVersionUncheckedUpdateInput,
     });
   } else {
     // Create new draft version
@@ -402,6 +436,8 @@ export const saveTemplateDraftContent = async (
         bodyHtml: enhancedContent,
         googleDocTemplateId: currentGoogleDocId,
         googleDocFolderId: currentGoogleDocFolderId,
+        headerConfig: (headerConfig || null) as unknown as Prisma.JsonValue,
+        footerConfig: (footerConfig || null) as unknown as Prisma.JsonValue,
         variablesSchema: {
           type: "object",
           properties: {},
@@ -411,7 +447,7 @@ export const saveTemplateDraftContent = async (
         defaultData: {},
         checksumSha256: "",
         createdBy,
-      },
+      } as Prisma.TemplateVersionUncheckedCreateInput,
     });
   }
 

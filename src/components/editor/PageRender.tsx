@@ -1,42 +1,17 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import './PageRender.css'
 import './EditorContentStyles.css'
+import type { HeaderConfig, FooterConfig } from './types'
+import {
+    shouldShowHeader,
+    shouldShowFooter,
+    processPlaceholders,
+} from './types'
 
 interface PageRendererProps {
     content: string
-    headers: HeaderFooterConfig
-    footers: HeaderFooterConfig
-}
-
-
-export interface HeaderFooterItem {
-    content: string
-    height?: number // Height in pixels, defaults to 40 if not specified
-}
-
-export interface HeaderFooterConfig {
-    left: HeaderFooterItem | string // Support both old string format and new object format
-    center: HeaderFooterItem | string
-    right: HeaderFooterItem | string
-}
-
-// Helper functions to normalize config
-export const getHeaderFooterContent = (item: HeaderFooterItem | string | undefined): string => {
-    if (!item) return ''
-    if (typeof item === 'string') return item
-    return item.content || ''
-}
-
-export const getHeaderFooterHeight = (item: HeaderFooterItem | string | undefined): number => {
-    if (!item) return 40
-    if (typeof item === 'string') return 40
-    return item.height || 40
-}
-
-export interface EditorState {
-    content: string
-    headers: HeaderFooterConfig
-    footers: HeaderFooterConfig
+    header?: HeaderConfig
+    footer?: FooterConfig
 }
 
 export interface PageInfo {
@@ -47,7 +22,7 @@ export interface PageInfo {
 }
 
 
-const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers, footers: _footers }) => {
+const PageRenderer: React.FC<PageRendererProps> = ({ content, header, footer }) => {
     const [pages, setPages] = useState<string[]>([])
     const [isLoading, setIsLoading] = useState(false)
 
@@ -77,18 +52,48 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
 
     /**
      * Wait for all images in an element to load
+     * Temporarily attaches images to DOM to ensure proper loading
      */
     const waitForImages = useCallback(async (element: HTMLElement): Promise<void> => {
         const images = Array.from(element.querySelectorAll('img'))
-        await Promise.all(
-            images.map(img => {
+        if (images.length === 0) return
+
+        // Create a temporary container to attach images to DOM
+        const tempContainer = document.createElement('div')
+        tempContainer.style.position = 'absolute'
+        tempContainer.style.visibility = 'hidden'
+        tempContainer.style.left = '-9999px'
+        tempContainer.style.top = '-9999px'
+        document.body.appendChild(tempContainer)
+
+        try {
+            // Clone and attach images to DOM for proper loading
+            const imagePromises = images.map(img => {
                 if (img.complete) return Promise.resolve()
+
+                // Clone the image and attach to DOM
+                const clonedImg = img.cloneNode(true) as HTMLImageElement
+                tempContainer.appendChild(clonedImg)
+
                 return new Promise<void>((resolve) => {
-                    img.onload = () => resolve()
-                    img.onerror = () => resolve() // Continue even if image fails
+                    clonedImg.onload = () => {
+                        tempContainer.removeChild(clonedImg)
+                        resolve()
+                    }
+                    clonedImg.onerror = () => {
+                        tempContainer.removeChild(clonedImg)
+                        resolve() // Continue even if image fails
+                    }
                 })
             })
-        )
+
+            await Promise.all(imagePromises)
+        } finally {
+            // Clean up temporary container
+            if (tempContainer.parentNode) {
+                document.body.removeChild(tempContainer)
+            }
+        }
     }, [])
 
     /**
@@ -160,47 +165,6 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
         return tempDiv.innerHTML
     }
 
-    // Note: Currently unused as headers/footers are disabled in the UI
-    // Kept for future use when headers/footers are re-enabled
-    const _renderHeaderFooter = (item: string | { content: string; height?: number }, pageNumber: number, totalPages: number) => {
-        const html = getHeaderFooterContent(item)
-        if (!html) return ''
-
-        // Create a temporary div to parse HTML and replace placeholders
-        const tempDiv = document.createElement('div')
-        tempDiv.innerHTML = html
-
-        // Replace placeholders in text nodes
-        const replaceInNode = (node: Node) => {
-            if (node.nodeType === Node.TEXT_NODE) {
-                let text = node.textContent || ''
-                text = text.replace(/{page}/g, pageNumber.toString())
-                text = text.replace(/{total}/g, totalPages.toString())
-                node.textContent = text
-            } else if (node.nodeType === Node.ELEMENT_NODE) {
-                const element = node as Element
-                // Replace in attributes (like alt text, title, etc.)
-                Array.from(element.attributes).forEach(attr => {
-                    if (attr.value.includes('{page}') || attr.value.includes('{total}')) {
-                        let value = attr.value
-                        value = value.replace(/{page}/g, pageNumber.toString())
-                        value = value.replace(/{total}/g, totalPages.toString())
-                        element.setAttribute(attr.name, value)
-                    }
-                })
-                // Recursively process child nodes
-                Array.from(node.childNodes).forEach(child => replaceInNode(child))
-            }
-        }
-
-        Array.from(tempDiv.childNodes).forEach(node => replaceInNode(node))
-
-        // Process images to convert attributes to inline styles
-        let processedHtml = tempDiv.innerHTML
-        processedHtml = processImageAttributes(processedHtml)
-
-        return processedHtml
-    }
 
     /**
      * Measures the actual height of an element including all its content
@@ -367,6 +331,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
     /**
      * Measures cumulative height of elements in a container
      * This accounts for margin collapsing between adjacent elements
+     * Uses getBoundingClientRect for accurate layout-aware measurement
      */
     const measureCumulativeHeight = (elements: HTMLElement[], container: HTMLElement): number => {
         // Clear container
@@ -377,8 +342,9 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
             container.appendChild(el.cloneNode(true))
         })
 
-        // Measure total height including margins
-        const height = container.scrollHeight
+        // Measure total height using getBoundingClientRect for accurate layout-aware measurement
+        const rect = container.getBoundingClientRect()
+        const height = rect.height
 
         // Clear container
         container.innerHTML = ''
@@ -387,9 +353,23 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
     }
 
     /**
+     * Calculate the minimum available content height across all pages.
+     * This accounts for header/footer heights to ensure content fits on any page.
+     * We use a conservative approach: assume header and footer are always present
+     * to ensure content will fit regardless of which page it lands on.
+     */
+    const getMinAvailableHeight = useCallback((): number => {
+        // Get the maximum header/footer heights that could appear on any page
+        const headerHeight = header ? (header.height || 40) : 0
+        const footerHeight = footer ? (footer.height || 40) : 0
+        return CONTENT_HEIGHT_PX - headerHeight - footerHeight
+    }, [header, footer, CONTENT_HEIGHT_PX])
+
+    /**
      * Splits content into pages while preserving HTML structure
      * Properly accounts for images, tables, and all other elements
      * Uses cumulative measurement to handle margin collapsing correctly
+     * Now accounts for header/footer heights when calculating available space
      */
     const splitContentIntoPages = useCallback(async (): Promise<string[]> => {
         if (!content) {
@@ -398,12 +378,27 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
 
         // Create a measurement container with proper A4 dimensions
         // CRITICAL: Must match exact same styles as .page-content for accurate measurement
+        // Explicitly match render wrapping and allow natural height
         const measurementContainer = document.createElement('div')
         measurementContainer.style.width = `${CONTENT_WIDTH_PX}px`
+
+        measurementContainer.style.position = 'static'  // key
+        measurementContainer.style.top = 'auto'
+        measurementContainer.style.left = 'auto'
+        measurementContainer.style.right = 'auto'
+        measurementContainer.style.bottom = 'auto'
+        measurementContainer.style.height = 'auto'
+        measurementContainer.style.maxHeight = 'none'
+        measurementContainer.style.overflow = 'visible'
+        measurementContainer.style.height = 'auto' // Allow natural height
         measurementContainer.style.position = 'absolute'
         measurementContainer.style.visibility = 'hidden'
         measurementContainer.style.left = '-9999px'
         measurementContainer.style.top = '-9999px'
+        measurementContainer.style.overflow = 'visible' // Allow natural overflow
+        measurementContainer.style.overflowWrap = 'break-word' // Match render wrapping
+        measurementContainer.style.whiteSpace = 'normal' // Match render wrapping
+        measurementContainer.style.boxSizing = 'border-box' // Match render box model
         measurementContainer.className = 'page-content' // Apply same CSS class for consistent styling
         document.body.appendChild(measurementContainer)
 
@@ -432,6 +427,9 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
 
                 // Process elements using cumulative measurement
                 let currentPageElements: HTMLElement[] = []
+                // Use minimum available height (accounting for header/footer) for all pages
+                // This ensures content fits regardless of which page it lands on
+                const availableHeight = getMinAvailableHeight()
 
                 for (let i = 0; i < children.length; i++) {
                     const child = children[i]
@@ -441,8 +439,8 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
                         // Measure table height
                         const tableHeight = measureCumulativeHeight([child], measurementContainer)
 
-                        // If table is taller than page, split it by rows
-                        if (tableHeight > CONTENT_HEIGHT_PX) {
+                        // If table is taller than available page height, split it by rows
+                        if (tableHeight > availableHeight) {
                             // Save current page content before handling table
                             if (currentPageElements.length > 0) {
                                 const pageDiv = document.createElement('div')
@@ -455,7 +453,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
                             const tableParts = splitTableIntoPages(
                                 child as HTMLTableElement,
                                 measurementContainer,
-                                CONTENT_HEIGHT_PX
+                                availableHeight
                             )
 
                             // Add each table part as its own page
@@ -471,7 +469,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
                     const testElements = [...currentPageElements, child]
                     const testHeight = measureCumulativeHeight(testElements, measurementContainer)
 
-                    if (testHeight > CONTENT_HEIGHT_PX && currentPageElements.length > 0) {
+                    if (testHeight > availableHeight && currentPageElements.length > 0) {
                         // Current page is full, save it
                         const pageDiv = document.createElement('div')
                         currentPageElements.forEach(el => pageDiv.appendChild(el.cloneNode(true)))
@@ -480,9 +478,9 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
                         // Start new page with current element
                         currentPageElements = [child]
 
-                        // Check if single element exceeds page height
+                        // Check if single element exceeds available height
                         const singleHeight = measureCumulativeHeight([child], measurementContainer)
-                        if (singleHeight > CONTENT_HEIGHT_PX) {
+                        if (singleHeight > availableHeight) {
                             // Element is too tall, add it as its own page (will be clipped)
                             const pageDiv = document.createElement('div')
                             pageDiv.appendChild(child.cloneNode(true))
@@ -513,7 +511,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
             // Clean up measurement container
             document.body.removeChild(measurementContainer)
         }
-    }, [content, CONTENT_WIDTH_PX, CONTENT_HEIGHT_PX, splitTableIntoPages])
+    }, [content, CONTENT_WIDTH_PX, splitTableIntoPages, getMinAvailableHeight])
 
     // Process page content to convert image width/height attributes to inline styles
     const processPageContent = (html: string): string => {
@@ -538,10 +536,17 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
                 // Wait for fonts to load (Rule 3: Measurement timing)
                 await waitForFonts()
 
-                // Wait for images in content to load
                 const tempDiv = document.createElement('div')
+                tempDiv.style.position = 'absolute'
+                tempDiv.style.visibility = 'hidden'
+                tempDiv.style.left = '-9999px'
+                tempDiv.style.top = '0'
                 tempDiv.innerHTML = content
+                document.body.appendChild(tempDiv)
+
                 await waitForImages(tempDiv)
+
+                document.body.removeChild(tempDiv)
 
                 // Perform pagination
                 const newPages = await splitContentIntoPages()
@@ -564,7 +569,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
         return () => {
             cancelled = true
         }
-    }, [content, splitContentIntoPages, waitForFonts, waitForImages])
+    }, [content, header, footer, splitContentIntoPages, waitForFonts, waitForImages])
 
     return (
         <div className="page-renderer">
@@ -575,27 +580,29 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
 
             <div className="pages-container">
                 {pages.map((pageContent, index) => {
-                    // Process all header/footer text with placeholders
-                    //   const headerLeft = renderHeaderFooter(headers.left, index + 1, pages.length)
-                    //   const headerCenter = renderHeaderFooter(headers.center, index + 1, pages.length)
-                    //   const headerRight = renderHeaderFooter(headers.right, index + 1, pages.length)
-                    //   const footerLeft = renderHeaderFooter(footers.left, index + 1, pages.length)
-                    //   const footerCenter = renderHeaderFooter(footers.center, index + 1, pages.length)
-                    //   const footerRight = renderHeaderFooter(footers.right, index + 1, pages.length)
+                    const pageNumber = index + 1
+                    const totalPages = pages.length
 
-                    //   // Get configured heights (use the maximum height from all three positions)
-                    //   const headerHeightLeft = getHeaderFooterHeight(headers.left)
-                    //   const headerHeightCenter = getHeaderFooterHeight(headers.center)
-                    //   const headerHeightRight = getHeaderFooterHeight(headers.right)
-                    //   const headerHeight = Math.max(headerHeightLeft, headerHeightCenter, headerHeightRight)
+                    // Check if header/footer should be shown based on frequency
+                    const showHeader = shouldShowHeader(header, pageNumber)
+                    const showFooter = shouldShowFooter(footer, pageNumber)
 
-                    //   const footerHeightLeft = getHeaderFooterHeight(footers.left)
-                    //   const footerHeightCenter = getHeaderFooterHeight(footers.center)
-                    //   const footerHeightRight = getHeaderFooterHeight(footers.right)
-                    //   const footerHeight = Math.max(footerHeightLeft, footerHeightCenter, footerHeightRight)
+                    // Get heights
+                    const headerHeight = showHeader ? (header?.height || 40) : 0
+                    const footerHeight = showFooter ? (footer?.height || 40) : 0
 
-                    //   const contentTop = headerHeight
-                    //   const contentBottom = footerHeight
+                    // Process header/footer content with placeholders
+                    const headerContent = showHeader && header
+                        ? processPlaceholders(header.content, pageNumber, totalPages)
+                        : ''
+                    const footerContent = showFooter && footer
+                        ? processPlaceholders(footer.content, pageNumber, totalPages)
+                        : ''
+
+                    // Calculate content area positioning
+                    const contentTop = headerHeight + 40 // 40px top margin + header height
+                    const contentBottom = footerHeight + 40 // 40px bottom margin + footer height
+                    const contentAreaHeight = CONTENT_HEIGHT_PX - headerHeight - footerHeight
 
                     return (
                         <div
@@ -607,52 +614,78 @@ const PageRenderer: React.FC<PageRendererProps> = ({ content, headers: _headers,
                                 height: PAGE_HEIGHT,
                                 overflow: 'hidden',
                                 scrollSnapAlign: 'start',
-                                scrollSnapStop: 'always'
+                                scrollSnapStop: 'always',
+                                position: 'relative'
                             }}
                         >
-                            {/* Header */}
-                            {/* <div
-                className="page-header"
-                style={{ height: `${headerHeight}px`, maxHeight: `${headerHeight}px` }}
-              >
-                <div className="header-left" dangerouslySetInnerHTML={{ __html: headerLeft }} />
-                <div className="header-center" dangerouslySetInnerHTML={{ __html: headerCenter }} />
-                <div className="header-right" dangerouslySetInnerHTML={{ __html: headerRight }} />
-              </div> */}
+                            {/* Header - Full width single section */}
+                            {showHeader && (
+                                <div
+                                    className="page-header"
+                                    style={{
+                                        height: `${headerHeight}px`,
+                                        maxHeight: `${headerHeight}px`,
+                                        width: '100%',
+                                        padding: '0 40px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        zIndex: 1
+                                    }}
+                                >
+                                    <div
+                                        className="header-content"
+                                        style={{ width: '100%' }}
+                                        dangerouslySetInnerHTML={{ __html: headerContent }}
+                                    />
+                                </div>
+                            )}
 
                             {/* Page Content */}
                             <div
                                 className="page-content"
                                 style={{
                                     width: 'calc(100% - 80px)',
-                                    height: `${CONTENT_HEIGHT_PX}px`,
+                                    height: `${contentAreaHeight}px`,
                                     margin: '0',
                                     padding: '0',
                                     position: 'absolute',
-                                    top: '40px',
+                                    top: `${contentTop}px`,
                                     left: '40px',
                                     right: '40px',
-                                    bottom: '40px',
+                                    bottom: `${contentBottom}px`,
                                     overflow: 'hidden', // No scrollbars - content must fit within page
                                     overflowWrap: 'break-word'
                                 }}
                                 dangerouslySetInnerHTML={{ __html: processPageContent(pageContent) }}
                             />
 
-                            {/* Footer */}
-                            {/* <div
-                className="page-footer"
-                style={{ height: `${footerHeight}px`, maxHeight: `${footerHeight}px` }}
-              >
-                <div className="footer-left" dangerouslySetInnerHTML={{ __html: footerLeft }} />
-                <div className="footer-center" dangerouslySetInnerHTML={{ __html: footerCenter }} />
-                <div className="footer-right" dangerouslySetInnerHTML={{ __html: footerRight }} />
-              </div>
- */}
-                            {/* Page Number Indicator */}
-                            {/* <div className="page-number-indicator">
-                Page {index + 1} of {pages.length}
-              </div> */}
+                            {/* Footer - Full width single section */}
+                            {showFooter && (
+                                <div
+                                    className="page-footer"
+                                    style={{
+                                        height: `${footerHeight}px`,
+                                        maxHeight: `${footerHeight}px`,
+                                        width: '100%',
+                                        padding: '0 40px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        position: 'absolute',
+                                        bottom: 0,
+                                        left: 0,
+                                        zIndex: 1
+                                    }}
+                                >
+                                    <div
+                                        className="footer-content"
+                                        style={{ width: '100%' }}
+                                        dangerouslySetInnerHTML={{ __html: footerContent }}
+                                    />
+                                </div>
+                            )}
                         </div>
                     )
                 })}
