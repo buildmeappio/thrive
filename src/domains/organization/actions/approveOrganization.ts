@@ -5,8 +5,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/domains/auth/server/session";
 import handlers from "../server/handlers";
-import { sendMail } from "@/lib/email";
-import { ENV } from "@/constants/variables";
+import emailService from "@/services/email.service";
+import logger from "@/utils/logger";
 
 type OrganizationView = {
   id: string;
@@ -22,20 +22,25 @@ type OrganizationView = {
   }>;
 };
 
-const BRAND = {
-  logo: `${ENV.NEXT_PUBLIC_CDN_URL}/images/thrive-logo.png`,
-  primary: "#00A8FF",
-  supportEmail: "support@thrivenetwork.ca",
-  appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://thrivenetwork.ca",
-};
-
 const approveOrganization = async (id: string) => {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   const organization = await handlers.approveOrganization(id, user.accountId);
 
-  //   await sendApprovalEmailToOrganization(organization);
+  // Fetch full organization data with manager details for email
+  try {
+    const fullOrg = (await handlers.getOrganizationById(
+      id,
+    )) as OrganizationView;
+    await sendWelcomeEmailToOrganization(fullOrg);
+    logger.log("✓ Welcome email sent successfully");
+  } catch (emailError) {
+    logger.error(
+      "⚠️ Failed to send welcome email (but approval succeeded):",
+      emailError,
+    );
+  }
 
   // Revalidate dashboard and organization pages
   revalidatePath("/dashboard");
@@ -45,65 +50,38 @@ const approveOrganization = async (id: string) => {
   return organization;
 };
 
-async function _sendApprovalEmailToOrganization(org: OrganizationView) {
-  const recipients = extractManagerEmails(org);
-  if (recipients.length === 0) return;
+async function sendWelcomeEmailToOrganization(org: OrganizationView) {
+  const manager = org.manager?.[0];
+  const email = manager?.account?.user?.email;
+  const firstName = manager?.account?.user?.firstName || "";
+  const lastName = manager?.account?.user?.lastName || "";
 
-  await sendMail({
-    to: recipients,
-    subject: "Your organization has been approved",
-    html: approvalEmailHtml(org.name, BRAND.appUrl),
-  });
-}
+  if (!email) {
+    logger.error("Organization manager email not found");
+    return;
+  }
 
-function extractManagerEmails(org: OrganizationView): string[] {
-  const emails = (org.manager ?? [])
-    .map((m) => m?.account?.user?.email)
-    .filter((e): e is string => !!e && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
-  return Array.from(new Set(emails));
-}
+  const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL}/organization/login`;
 
-function approvalEmailHtml(orgName: string, link: string) {
-  const content = `
-    <p style="font-family:'Poppins',Arial,sans-serif;font-size:16px;line-height:1.5;color:#333;">
-      Your organization <strong>${escapeHtml(orgName)}</strong> has been <strong>approved</strong>.
-    </p>
-    <p style="font-family:'Poppins',Arial,sans-serif;font-size:16px;line-height:1.5;color:#333;">
-      You can now sign in and start using the platform.
-    </p>
-    <div style="text-align:center; margin:24px 0;">
-      <a href="${link}" style="background:${BRAND.primary}; color:#fff; padding:12px 32px; border-radius:24px; text-decoration:none; font-weight:600; display:inline-block; font-family:'Poppins',Arial,sans-serif;">
-        Go to Dashboard &rarr;
-      </a>
-    </div>
-    <p style="font-family:'Poppins',Arial,sans-serif;font-size:14px;color:#555;text-align:center;">
-      Need help? <a href="mailto:${BRAND.supportEmail}" style="color:${BRAND.primary};">${BRAND.supportEmail}</a>
-    </p>
-  `;
-  return emailShell(content);
-}
+  const result = await emailService.sendEmail(
+    "Welcome to Thrive - Get Started",
+    "organization-welcome.html",
+    {
+      firstName,
+      lastName,
+      organizationName: org.name,
+      loginUrl,
+      cdnUrl:
+        process.env.NEXT_PUBLIC_CDN_URL ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        "",
+    },
+    email,
+  );
 
-function emailShell(innerHtml: string) {
-  return `
-    <div style="font-family:'Poppins',Arial,sans-serif;background:#f7fbfd;padding:32px;">
-      <div style="max-width:600px;margin:auto;background:#fff;border-radius:8px;box-shadow:0 2px 8px #e3e3e3;padding:32px;">
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet"/>
-        <div style="text-align:center;">
-          <img src="${BRAND.logo}" alt="Thrive Assessment & Care" style="height:48px;margin-bottom:16px;"/>
-        </div>
-        ${innerHtml}
-      </div>
-    </div>
-  `;
-}
-
-function escapeHtml(input: string) {
-  return String(input)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  if (!result.success) {
+    throw new Error((result as { success: false; error: string }).error);
+  }
 }
 
 export default approveOrganization;

@@ -1,16 +1,18 @@
 /**
  * Parse placeholders from template content
- * Supports namespace-based placeholders: {{examiner.name}}, {{fees.base_exam_fee}}, etc.
+ * Matches any text between {{ }} - both valid namespace-based placeholders and invalid ones
+ * Examples: {{examiner.name}}, {{fees.base_exam_fee}}, {{invalid_var}}, {{ jdvdvv }}
  */
 export function parsePlaceholders(content: string): string[] {
-  // Match: {{namespace.key}} or {{namespace.key.subkey}}
-  const placeholderRegex = /\{\{\s*([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)+)\s*\}\}/g;
+  // Match any text between {{ }} (not just namespace.variable format)
+  const placeholderRegex = /\{\{\s*([^}]+?)\s*\}\}/g;
   const placeholders: string[] = [];
   let match;
 
   while ((match = placeholderRegex.exec(content)) !== null) {
     const placeholder = match[1].trim();
-    if (!placeholders.includes(placeholder)) {
+    // Only add non-empty placeholders
+    if (placeholder && !placeholders.includes(placeholder)) {
       placeholders.push(placeholder);
     }
   }

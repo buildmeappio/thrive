@@ -6,9 +6,41 @@ import { UserTableRow } from "../types/UserData";
 import logger from "@/utils/logger";
 import { AccountStatus } from "@prisma/client";
 
+// Helper function to check if name contains at least one letter
+const hasAtLeastOneLetter = (value: string): boolean => {
+  return /[a-zA-Z]/.test(value.trim());
+};
+
 const createUserSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  firstName: z
+    .string()
+    .min(1, "First name is required")
+    .trim()
+    .refine(
+      (val) => val.length >= 2,
+      "First name must be at least 2 characters",
+    )
+    .refine(
+      (val) => /^[a-zA-Z\s'-]+$/.test(val),
+      "First name can only contain letters, spaces, hyphens, and apostrophes",
+    )
+    .refine(
+      (val) => hasAtLeastOneLetter(val),
+      "First name must contain at least one letter",
+    ),
+  lastName: z
+    .string()
+    .min(1, "Last name is required")
+    .trim()
+    .refine((val) => val.length >= 2, "Last name must be at least 2 characters")
+    .refine(
+      (val) => /^[a-zA-Z\s'-]+$/.test(val),
+      "Last name can only contain letters, spaces, hyphens, and apostrophes",
+    )
+    .refine(
+      (val) => hasAtLeastOneLetter(val),
+      "Last name must contain at least one letter",
+    ),
   email: z.string().email("Invalid email address"),
 });
 

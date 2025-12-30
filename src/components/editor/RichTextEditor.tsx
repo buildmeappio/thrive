@@ -214,23 +214,52 @@ export default function RichTextEditor({
           "$2",
         );
 
-        const placeholderRegex =
-          /\{\{\s*([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)+)\s*\}\}/g;
+        // Match any text between {{ }} (not just namespace.variable format)
+        const placeholderRegex = /\{\{\s*([^}]+?)\s*\}\}/g;
         const matches: Array<{ match: string; placeholder: string }> = [];
 
         // Find all matches
         let match;
         while ((match = placeholderRegex.exec(cleanedHtml)) !== null) {
-          matches.push({
-            match: match[0],
-            placeholder: match[1].trim(),
-          });
+          const placeholder = match[1].trim();
+          // Only process if placeholder is not empty
+          if (placeholder) {
+            matches.push({
+              match: match[0],
+              placeholder: placeholder,
+            });
+          }
         }
+
+        // Allowed namespaces for validation
+        const ALLOWED_NAMESPACES = [
+          "examiner",
+          "contract",
+          "org",
+          "thrive",
+          "fees",
+          "custom",
+        ];
 
         // Replace matches in reverse order to preserve positions
         let processedHtml = cleanedHtml;
         matches.reverse().forEach(({ match, placeholder }) => {
-          const isValid = validVariables.has(placeholder);
+          // Check if placeholder is in validVariables set
+          const isInValidSet = validVariables.has(placeholder);
+
+          // Validate namespace if placeholder has namespace format (contains a dot)
+          let hasValidNamespace = true;
+          if (placeholder.includes(".")) {
+            const parts = placeholder.split(".");
+            const namespace = parts[0];
+            hasValidNamespace = ALLOWED_NAMESPACES.includes(namespace);
+          }
+
+          // A placeholder is valid only if:
+          // 1. It exists in validVariables set, AND
+          // 2. If it has a namespace format, the namespace must be allowed
+          const isValid = isInValidSet && hasValidNamespace;
+
           const className = isValid
             ? "variable-valid bg-[#E0F7FA] text-[#006064] px-1 py-0.5 rounded font-mono text-sm"
             : "variable-invalid bg-red-100 text-red-700 px-1 py-0.5 rounded font-mono text-sm";
