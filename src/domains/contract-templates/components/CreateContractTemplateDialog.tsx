@@ -29,6 +29,32 @@ export default function CreateContractTemplateDialog({ open, onClose }: Props) {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
+  // Helper function to check if display name contains at least one letter
+  const hasAtLeastOneLetter = (value: string): boolean => {
+    return /[a-zA-Z]/.test(value.trim());
+  };
+
+  // Validate display name
+  const validateDisplayName = (value: string): string | null => {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) {
+      return "Display name is required";
+    }
+    if (trimmed.length < 2) {
+      return "Display name must be at least 2 characters";
+    }
+    if (trimmed.length > 255) {
+      return "Display name must be less than 255 characters";
+    }
+    if (!/^[a-zA-Z0-9\s\-'.,()&]+$/.test(trimmed)) {
+      return "Display name can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands";
+    }
+    if (!hasAtLeastOneLetter(trimmed)) {
+      return "Display name must contain at least one letter";
+    }
+    return null;
+  };
+
   // Auto-generate slug from display name
   const generateSlug = (name: string): string => {
     return name
@@ -52,6 +78,14 @@ export default function CreateContractTemplateDialog({ open, onClose }: Props) {
 
   const handleDisplayNameChange = (value: string) => {
     setDisplayName(value);
+    // Clear display name error when user starts typing
+    if (fieldErrors.displayName) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.displayName;
+        return newErrors;
+      });
+    }
     // Only auto-update slug if it hasn't been manually edited
     if (!slugManuallyEdited) {
       setSlug(generateSlug(value));
@@ -75,6 +109,14 @@ export default function CreateContractTemplateDialog({ open, onClose }: Props) {
     e.preventDefault();
     setIsSubmitting(true);
     setFieldErrors({});
+
+    // Validate display name before submission
+    const displayNameError = validateDisplayName(displayName);
+    if (displayNameError) {
+      setFieldErrors({ displayName: displayNameError });
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const result = await createContractTemplateAction({
