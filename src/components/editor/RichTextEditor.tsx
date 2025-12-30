@@ -56,6 +56,7 @@ import {
   FileBoxIcon,
   Hash,
   Printer,
+  Square,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -70,10 +71,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import logger from "@/utils/logger";
 import PageBreakExtension from "./extension/PageBreakExtension";
+import TickBoxExtension from "./extension/TickBoxExtension";
 import HeaderFooterModal from "./HeaderFooterModal";
 import type { HeaderConfig, FooterConfig } from "./types";
 import {
@@ -142,6 +151,8 @@ export default function RichTextEditor({
   const [internalFooterConfig, setInternalFooterConfig] = useState<FooterConfig | undefined>(externalFooterConfig);
   const [showHeaderModal, setShowHeaderModal] = useState(false);
   const [showFooterModal, setShowFooterModal] = useState(false);
+  const [showTickBoxInput, setShowTickBoxInput] = useState(false);
+  const [tickBoxLabels, setTickBoxLabels] = useState("");
 
   // Use external configs if provided, otherwise use internal state
   const headerConfig = externalHeaderConfig !== undefined ? externalHeaderConfig : internalHeaderConfig;
@@ -247,6 +258,7 @@ export default function RichTextEditor({
         ellipsis: false,
       }),
       PageBreakExtension,
+      TickBoxExtension,
       VariableHighlight.configure({
         validVariables,
       }),
@@ -528,6 +540,52 @@ export default function RichTextEditor({
     },
     [editor],
   );
+
+  // Tick box handler
+  const addTickBox = useCallback(() => {
+    setTickBoxLabels("");
+    setShowTickBoxInput(true);
+  }, []);
+
+  const applyTickBox = useCallback(() => {
+    if (!editor) return;
+
+    const labels = tickBoxLabels
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+
+    if (labels.length === 0) {
+      toast.error("Please enter at least one label");
+      return;
+    }
+
+    if (labels.length === 1) {
+      // Single tick box
+      editor
+        .chain()
+        .focus()
+        .setTickBox({
+          label: labels[0],
+          tickBoxId: `tick-box-${Date.now()}`,
+          checked: false,
+        })
+        .run();
+    } else {
+      // Multiple tick boxes in a group
+      editor
+        .chain()
+        .focus()
+        .setTickBoxGroup({
+          labels,
+          group: `tick-group-${Date.now()}`,
+        })
+        .run();
+    }
+
+    setShowTickBoxInput(false);
+    setTickBoxLabels("");
+  }, [editor, tickBoxLabels]);
 
   // Header/Footer handlers
   const handleHeaderSave = useCallback((config: HeaderConfig) => {
@@ -891,6 +949,38 @@ export default function RichTextEditor({
             .page-break {
               page-break-after: always;
               break-after: page;
+            }
+            
+            /* Tick Box */
+            .tick-box-container {
+              display: flex;
+              align-items: center;
+              justify-content: flex-start;
+              margin: 0.5em 0;
+            }
+            
+            .tick-box {
+              width: 20px;
+              height: 20px;
+              border: 1px solid #000;
+              border-radius: 5px;
+              background-color: #fff;
+              flex-shrink: 0;
+            }
+            
+            .tick-box[data-checked="true"] {
+              background-color: #000;
+            }
+            
+            .tick-box[data-checked="false"] {
+              background-color: #fff;
+            }
+            
+            .tick-box-label {
+              font-size: 16px;
+              font-weight: 500;
+              color: #000;
+              margin-left: 10px;
             }
             
             /* Print-specific styles */
@@ -1442,6 +1532,10 @@ export default function RichTextEditor({
                 <FileBoxIcon className="mr-2 h-4 w-4" />
                 Page Break
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={addTickBox}>
+                <Square className="mr-2 h-4 w-4" />
+                Tick Box
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -1617,6 +1711,45 @@ export default function RichTextEditor({
         type="footer"
         initialConfig={footerConfig}
       />
+
+      {/* Tick Box Input Dialog */}
+      <Dialog open={showTickBoxInput} onOpenChange={setShowTickBoxInput}>
+        <DialogContent className="w-96">
+          <DialogHeader>
+            <DialogTitle>Add Tick Box(es)</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Tick Box Labels (one per line)
+              </label>
+              <Textarea
+                placeholder="Occupational Therapist&#10;Physiotherapist&#10;Chiropractor&#10;Physician"
+                value={tickBoxLabels}
+                onChange={(e) => setTickBoxLabels(e.target.value)}
+                rows={6}
+                className="font-sans"
+                autoFocus
+              />
+              <p className="text-xs text-gray-500">
+                Enter one label per line. Multiple tick boxes will be grouped together and only one can be selected at a time.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowTickBoxInput(false)}
+              >
+                Cancel
+              </Button>
+              <Button size="sm" onClick={applyTickBox}>
+                Insert
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Editor-specific styles (ProseMirror wrapper) */}
       <style jsx global>{`

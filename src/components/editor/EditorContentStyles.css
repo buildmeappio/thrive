@@ -907,3 +907,56 @@
   line-height: inherit;
   visibility: visible;
 }
+
+/* Tick Box Styles */
+.ProseMirror.editor-content .tick-box-container,
+.editor-content .tick-box-container,
+.page-content .tick-box-container,
+.header-content .tick-box-container,
+.footer-content .tick-box-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0 0.5em 0.5em 0;
+  vertical-align: middle;
+}
+
+.ProseMirror.editor-content .tick-box,
+.editor-content .tick-box,
+.page-content .tick-box,
+.header-content .tick-box,
+.footer-content .tick-box {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #000;
+  border-radius: 5px;
+  background-color: #fff;
+  flex-shrink: 0;
+}
+
+.ProseMirror.editor-content .tick-box[data-checked="true"],
+.editor-content .tick-box[data-checked="true"],
+.page-content .tick-box[data-checked="true"],
+.header-content .tick-box[data-checked="true"],
+.footer-content .tick-box[data-checked="true"] {
+  background-color: #000;
+}
+
+.ProseMirror.editor-content .tick-box[data-checked="false"],
+.editor-content .tick-box[data-checked="false"],
+.page-content .tick-box[data-checked="false"],
+.header-content .tick-box[data-checked="false"],
+.footer-content .tick-box[data-checked="false"] {
+  background-color: #fff;
+}
+
+.ProseMirror.editor-content .tick-box-label,
+.editor-content .tick-box-label,
+.page-content .tick-box-label,
+.header-content .tick-box-label,
+.footer-content .tick-box-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000;
+  margin-left: 10px;
+}
