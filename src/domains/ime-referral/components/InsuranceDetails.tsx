@@ -376,6 +376,7 @@ const InsuranceDetails: React.FC<InsuranceProps> = ({
                     <PhoneInput
                       disabled={isSubmitting}
                       name="insurancePhone"
+                      placeholder="Enter your phone number"
                       value={watch('insurancePhone') || ''}
                       onChange={e =>
                         setValue('insurancePhone', e.target.value, { shouldValidate: true })

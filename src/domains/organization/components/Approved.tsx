@@ -2,9 +2,11 @@
 import { Button } from '@/components/ui';
 import { URLS } from '@/constants/routes';
 import useRouter from '@/hooks/useRouter';
+import { useIMEReferralStore } from '@/store/useImeReferral';
 
 const Approved = () => {
   const router = useRouter();
+  const { reset } = useIMEReferralStore();
 
   return (
     <div className="min-h-[385px] w-full max-w-[700px] rounded-[25px] bg-white px-6 py-4 md:px-10">
@@ -50,7 +52,10 @@ const Approved = () => {
           Let&apos;s get your first independent medical examination started.
         </p>
         <Button
-          onClick={() => router.push(URLS.IME_REFERRAL)}
+          onClick={() => {
+            reset();
+            router.push(URLS.IME_REFERRAL);
+          }}
           className="w-fit rounded-full bg-[#000093] px-4 py-2 font-medium text-[#ffffff] hover:bg-[#000093] sm:px-8 lg:px-8"
         >
           ✚ <p>New Request</p>

@@ -19,6 +19,7 @@ import { signOut } from 'next-auth/react';
 import { createRoute, URLS } from '@/constants/routes';
 import { useSession } from 'next-auth/react';
 import { useSidebar } from '@/providers/SideBarProvider';
+import { useIMEReferralStore } from '@/store/useImeReferral';
 
 export const medicalExaminerSidebarRoutes = [
   { icon: Home, label: 'Dashboard', href: '/dashboard', index: 0 },
@@ -98,6 +99,9 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
 
   const handleNewReferral = () => {
     if (isOrgStatusPending) return;
+    // Reset IME referral form store when starting a new request
+    const { reset } = useIMEReferralStore.getState();
+    reset();
     router.push(URLS.IME_REFERRAL);
     if (onMobileClose) {
       onMobileClose();

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import ClaimantDetails from './ClaimantDetails';
 import ConsentInfo from './ConsentInfo';
 import ReferralSubmitted from './ReferralSubmitted';
@@ -13,6 +13,7 @@ import DocumentUpload from './DocumentUpload';
 import { type getExaminationTypes } from '@/domains/auth/server/handlers';
 import InsuranceDetails from './InsuranceDetails';
 import type { getLanguages } from '@/domains/claimant/actions';
+import { useIMEReferralStore } from '@/store/useImeReferral';
 
 interface StepConfig {
   component: React.ComponentType<StepProps>;
@@ -42,6 +43,15 @@ const IMEReferral: React.FC<IMEReferralProps> = ({
   mode = 'create',
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const { reset, _hasHydrated } = useIMEReferralStore();
+
+  // Reset form data and step when starting a new request (create mode)
+  useEffect(() => {
+    if (_hasHydrated && mode === 'create') {
+      reset();
+      setCurrentStep(1);
+    }
+  }, [_hasHydrated, mode, reset]);
 
   const STEPS: StepConfig[] = useMemo(
     () => [
