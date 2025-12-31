@@ -147,16 +147,26 @@ export default function RichTextEditor({
   const [linkUrl, setLinkUrl] = useState("");
   const [showLinkInput, setShowLinkInput] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
-  const [internalHeaderConfig, setInternalHeaderConfig] = useState<HeaderConfig | undefined>(externalHeaderConfig);
-  const [internalFooterConfig, setInternalFooterConfig] = useState<FooterConfig | undefined>(externalFooterConfig);
+  const [internalHeaderConfig, setInternalHeaderConfig] = useState<
+    HeaderConfig | undefined
+  >(externalHeaderConfig);
+  const [internalFooterConfig, setInternalFooterConfig] = useState<
+    FooterConfig | undefined
+  >(externalFooterConfig);
   const [showHeaderModal, setShowHeaderModal] = useState(false);
   const [showFooterModal, setShowFooterModal] = useState(false);
   const [showTickBoxInput, setShowTickBoxInput] = useState(false);
   const [tickBoxLabels, setTickBoxLabels] = useState("");
 
   // Use external configs if provided, otherwise use internal state
-  const headerConfig = externalHeaderConfig !== undefined ? externalHeaderConfig : internalHeaderConfig;
-  const footerConfig = externalFooterConfig !== undefined ? externalFooterConfig : internalFooterConfig;
+  const headerConfig =
+    externalHeaderConfig !== undefined
+      ? externalHeaderConfig
+      : internalHeaderConfig;
+  const footerConfig =
+    externalFooterConfig !== undefined
+      ? externalFooterConfig
+      : internalFooterConfig;
 
   // Sync external configs to internal state
   useEffect(() => {
@@ -170,7 +180,6 @@ export default function RichTextEditor({
       setInternalFooterConfig(externalFooterConfig);
     }
   }, [externalFooterConfig]);
-
 
   useEffect(() => {
     setIsMounted(true);
@@ -186,8 +195,8 @@ export default function RichTextEditor({
         hardBreak: {
           HTMLAttributes: {
             class: "hard-break",
-          }
-        }
+          },
+        },
       }),
       Placeholder.configure({
         placeholder: placeholder || "Start typing...",
@@ -588,25 +597,30 @@ export default function RichTextEditor({
   }, [editor, tickBoxLabels]);
 
   // Header/Footer handlers
-  const handleHeaderSave = useCallback((config: HeaderConfig) => {
-    if (onHeaderChange) {
-      onHeaderChange(config);
-    } else {
-      setInternalHeaderConfig(config);
-    }
-  }, [onHeaderChange]);
+  const handleHeaderSave = useCallback(
+    (config: HeaderConfig) => {
+      if (onHeaderChange) {
+        onHeaderChange(config);
+      } else {
+        setInternalHeaderConfig(config);
+      }
+    },
+    [onHeaderChange],
+  );
 
-  const handleFooterSave = useCallback((config: FooterConfig) => {
-    if (onFooterChange) {
-      onFooterChange(config);
-    } else {
-      setInternalFooterConfig(config);
-    }
-  }, [onFooterChange]);
+  const handleFooterSave = useCallback(
+    (config: FooterConfig) => {
+      if (onFooterChange) {
+        onFooterChange(config);
+      } else {
+        setInternalFooterConfig(config);
+      }
+    },
+    [onFooterChange],
+  );
 
   // Split content into pages (simplified version for print)
   const splitContentIntoPages = useCallback((htmlContent: string): string[] => {
-
     // First, split by manual page breaks
     const contentParts = htmlContent.split('<div class="page-break"></div>');
     const pages: string[] = [];
@@ -647,53 +661,66 @@ export default function RichTextEditor({
     const totalPages = pages.length;
 
     // Create a print-friendly HTML document
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (!printWindow) {
-      console.error('Failed to open print window');
+      console.error("Failed to open print window");
       return;
     }
 
     // Generate page HTML with headers/footers
-    const pageHTMLs = pages.map((pageContent, index) => {
-      const pageNumber = index + 1;
+    const pageHTMLs = pages
+      .map((pageContent, index) => {
+        const pageNumber = index + 1;
 
-      // Check if header/footer should be shown
-      const showHeader = shouldShowHeader(headerConfig, pageNumber);
-      const showFooter = shouldShowFooter(footerConfig, pageNumber);
+        // Check if header/footer should be shown
+        const showHeader = shouldShowHeader(headerConfig, pageNumber);
+        const showFooter = shouldShowFooter(footerConfig, pageNumber);
 
-      // Get heights
-      const headerHeight = showHeader ? (headerConfig?.height || 40) : 0;
-      const footerHeight = showFooter ? (footerConfig?.height || 40) : 0;
+        // Get heights
+        const headerHeight = showHeader ? headerConfig?.height || 40 : 0;
+        const footerHeight = showFooter ? footerConfig?.height || 40 : 0;
 
-      // Process header/footer content with placeholders
-      const headerContent = showHeader && headerConfig
-        ? processPlaceholders(headerConfig.content, pageNumber, totalPages)
-        : '';
-      const footerContent = showFooter && footerConfig
-        ? processPlaceholders(footerConfig.content, pageNumber, totalPages)
-        : '';
+        // Process header/footer content with placeholders
+        const headerContent =
+          showHeader && headerConfig
+            ? processPlaceholders(headerConfig.content, pageNumber, totalPages)
+            : "";
+        const footerContent =
+          showFooter && footerConfig
+            ? processPlaceholders(footerConfig.content, pageNumber, totalPages)
+            : "";
 
-      // Calculate content area height
-      const contentAreaHeight = A4_HEIGHT_PX - headerHeight - footerHeight - PAGE_MARGIN_VERTICAL;
+        // Calculate content area height
+        const contentAreaHeight =
+          A4_HEIGHT_PX - headerHeight - footerHeight - PAGE_MARGIN_VERTICAL;
 
-      return `
+        return `
         <div class="print-page" style="width: ${A4_WIDTH_PX}px; height: ${A4_HEIGHT_PX}px; page-break-after: always; position: relative; margin: 0; padding: 0;">
-          ${showHeader ? `
+          ${
+            showHeader
+              ? `
             <div class="print-header" style="height: ${headerHeight}px; width: 100%; padding: 0 40px; display: flex; align-items: center; position: absolute; top: 0; left: 0;">
               <div class="header-content" style="width: 100%;">${headerContent}</div>
             </div>
-          ` : ''}
+          `
+              : ""
+          }
           <div class="print-content" style="width: ${CONTENT_WIDTH_PX}px; height: ${contentAreaHeight}px; margin: ${headerHeight + 40}px auto ${footerHeight + 40}px; padding: 0; word-wrap: break-word; overflow: hidden;">
             ${pageContent}
           </div>
-          ${showFooter ? `
+          ${
+            showFooter
+              ? `
             <div class="print-footer" style="height: ${footerHeight}px; width: 100%; padding: 0 40px; display: flex; align-items: center; position: absolute; bottom: 0; left: 0;">
               <div class="footer-content" style="width: 100%;">${footerContent}</div>
             </div>
-          ` : ''}
+          `
+              : ""
+          }
         </div>
       `;
-    }).join('');
+      })
+      .join("");
 
     // Create print HTML with A4 page layout
     const printHTML = `
@@ -1036,7 +1063,6 @@ export default function RichTextEditor({
     printWindow.document.close();
   }, [editor, cleanContent, headerConfig, footerConfig, splitContentIntoPages]);
 
-
   // Don't render on server to avoid hydration mismatch
   if (!isMounted || !editor) {
     return (
@@ -1045,7 +1071,6 @@ export default function RichTextEditor({
       </div>
     );
   }
-
 
   // Toolbar button component
   const ToolbarButton = ({
@@ -1329,10 +1354,10 @@ export default function RichTextEditor({
                       c.color === ""
                         ? editor.chain().focus().unsetHighlight().run()
                         : editor
-                          .chain()
-                          .focus()
-                          .toggleHighlight({ color: c.color })
-                          .run()
+                            .chain()
+                            .focus()
+                            .toggleHighlight({ color: c.color })
+                            .run()
                     }
                     className="w-6 h-6 rounded border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
                     style={{ backgroundColor: c.color || "white" }}
@@ -1634,10 +1659,7 @@ export default function RichTextEditor({
 
           {/* Print Button */}
           <div className="flex gap-1 border-l border-gray-200 pl-2 ml-2">
-            <ToolbarButton
-              onClick={handlePrint}
-              title="Print Template"
-            >
+            <ToolbarButton onClick={handlePrint} title="Print Template">
               <Printer className="h-4 w-4" />
             </ToolbarButton>
           </div>
@@ -1664,13 +1686,21 @@ export default function RichTextEditor({
                 </h4>
                 <div className="space-y-2 text-xs text-gray-700 font-poppins">
                   <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-[10px] font-mono">Shift</kbd>
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-[10px] font-mono">
+                      Shift
+                    </kbd>
                     <span>+</span>
-                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-[10px] font-mono">Enter</kbd>
-                    <span className="ml-2">Add a new line within the same paragraph</span>
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-[10px] font-mono">
+                      Enter
+                    </kbd>
+                    <span className="ml-2">
+                      Add a new line within the same paragraph
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-[10px] font-mono">Enter</kbd>
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-[10px] font-mono">
+                      Enter
+                    </kbd>
                     <span className="ml-2">Start a new paragraph</span>
                   </div>
                 </div>
@@ -1733,7 +1763,8 @@ export default function RichTextEditor({
                 autoFocus
               />
               <p className="text-xs text-gray-500">
-                Enter one label per line. Multiple tick boxes will be grouped together and only one can be selected at a time.
+                Enter one label per line. Multiple tick boxes will be grouped
+                together and only one can be selected at a time.
               </p>
             </div>
             <div className="flex justify-end gap-2">

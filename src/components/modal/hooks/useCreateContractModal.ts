@@ -70,12 +70,10 @@ export const useCreateContractModal = (
   const [selectedTemplateContent, setSelectedTemplateContent] = useState<
     string | null
   >(null);
-  const [selectedTemplateHeaderContent, setSelectedTemplateHeaderContent] = useState<
-    HeaderConfig | null
-  >(null);
-  const [selectedTemplateFooterContent, setSelectedTemplateFooterContent] = useState<
-    FooterConfig | null
-  >(null);
+  const [selectedTemplateHeaderContent, setSelectedTemplateHeaderContent] =
+    useState<HeaderConfig | null>(null);
+  const [selectedTemplateFooterContent, setSelectedTemplateFooterContent] =
+    useState<FooterConfig | null>(null);
 
   // --- Fee structures ---
   const [feeStructures, setFeeStructures] = useState<FeeStructureListItem[]>(
@@ -207,8 +205,12 @@ export const useCreateContractModal = (
         if (templateResult.success && templateResult.data.currentVersion) {
           const content = templateResult.data.currentVersion.bodyHtml;
           setSelectedTemplateContent(content);
-          setSelectedTemplateHeaderContent(templateResult.data.currentVersion.headerConfig);
-          setSelectedTemplateFooterContent(templateResult.data.currentVersion.footerConfig);
+          setSelectedTemplateHeaderContent(
+            templateResult.data.currentVersion.headerConfig,
+          );
+          setSelectedTemplateFooterContent(
+            templateResult.data.currentVersion.footerConfig,
+          );
           const requiredFeeVars = extractRequiredFeeVariables(content);
 
           if (requiredFeeVars.size === 0) {

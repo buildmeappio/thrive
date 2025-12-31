@@ -1,32 +1,36 @@
-import { Node, mergeAttributes } from '@tiptap/core'
+import { Node, mergeAttributes } from "@tiptap/core";
 
 export interface PageBreakOptions {
-  HTMLAttributes: Record<string, any>
+  HTMLAttributes: Record<string, any>;
 }
 
-declare module '@tiptap/core' {
+declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     pageBreak: {
-      setPageBreak: () => ReturnType
-    }
+      setPageBreak: () => ReturnType;
+    };
   }
 }
 
 export default Node.create<PageBreakOptions>({
-  name: 'pageBreak',
+  name: "pageBreak",
 
-  group: 'block',
+  group: "block",
 
   parseHTML() {
     return [
       {
-        tag: 'div.page-break',
+        tag: "div.page-break",
       },
-    ]
+    ];
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { class: 'page-break' }), '']
+    return [
+      "div",
+      mergeAttributes(HTMLAttributes, { class: "page-break" }),
+      "",
+    ];
   },
 
   addCommands() {
@@ -34,8 +38,8 @@ export default Node.create<PageBreakOptions>({
       setPageBreak:
         () =>
         ({ commands }) => {
-          return commands.insertContent('<div class="page-break"></div>')
+          return commands.insertContent('<div class="page-break"></div>');
         },
-    }
+    };
   },
-})
+});

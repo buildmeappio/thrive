@@ -1,5 +1,5 @@
 .page-renderer {
-  padding: 1rem 1rem 0rem 1rem;  
+  padding: 1rem 1rem 0rem 1rem;
   background: #f8f9fa;
   border-radius: 8px;
   overflow: hidden;
@@ -77,7 +77,9 @@
   box-sizing: border-box;
 }
 
-.header-left, .header-center, .header-right {
+.header-left,
+.header-center,
+.header-right {
   flex: 1;
   display: flex;
   align-items: flex-start;
@@ -222,7 +224,9 @@
   box-sizing: border-box;
 }
 
-.footer-left, .footer-center, .footer-right {
+.footer-left,
+.footer-center,
+.footer-right {
   flex: 1;
   display: flex;
   align-items: flex-start;
@@ -357,11 +361,11 @@
     width: 100% !important;
     max-width: none !important;
   }
-  
+
   .preview-heading {
     display: none !important;
   }
-  
+
   .pages-container {
     background: white !important;
     box-shadow: none !important;
@@ -372,7 +376,7 @@
     border: none !important;
     width: 100% !important;
   }
-  
+
   .page {
     box-shadow: none !important;
     border: none !important;
@@ -390,11 +394,11 @@
     position: relative !important;
     overflow: hidden !important;
   }
-  
+
   .page:last-child {
     page-break-after: avoid !important;
   }
-  
+
   .page-content {
     width: calc(100% - 80px) !important;
     height: calc(1123px - 80px) !important; /* A4 height minus margins */
@@ -411,7 +415,7 @@
     word-wrap: break-word !important;
     line-height: 1.6 !important;
   }
-  
+
   .page-header {
     position: absolute !important;
     top: 0 !important;
@@ -429,7 +433,7 @@
     font-weight: 500 !important;
     z-index: 10 !important;
   }
-  
+
   .page-footer {
     position: absolute !important;
     bottom: 0 !important;
@@ -447,61 +451,75 @@
     font-weight: 500 !important;
     z-index: 10 !important;
   }
-  
+
   .page-number-indicator {
     display: none !important;
   }
-  
-  .header-left, .header-center, .header-right,
-  .footer-left, .footer-center, .footer-right {
+
+  .header-left,
+  .header-center,
+  .header-right,
+  .footer-left,
+  .footer-center,
+  .footer-right {
     color: #000 !important;
   }
-  
+
   /* Hide any debug or UI elements in print */
-  .debug-info, .test-panel {
+  .debug-info,
+  .test-panel {
     display: none !important;
   }
-  
+
   /* Hide any other UI elements that might show in print */
-  .ui-element, .control-element, .info-panel {
+  .ui-element,
+  .control-element,
+  .info-panel {
     display: none !important;
   }
-  
+
   /* Ensure only page content is visible */
   .page-renderer > *:not(.pages-container) {
     display: none !important;
   }
-  
+
   /* Hide any browser-generated content */
-  .browser-content, .system-content {
+  .browser-content,
+  .system-content {
     display: none !important;
   }
-  
+
   /* Ensure headers and footers are clean */
-  .page-header, .page-footer {
+  .page-header,
+  .page-footer {
     background: white !important;
     color: #000 !important;
     border-color: #dee2e6 !important;
   }
-  
+
   /* Hide any page indicators or debug info */
-  .page-indicator, .debug-panel, .info-text {
+  .page-indicator,
+  .debug-panel,
+  .info-text {
     display: none !important;
   }
-  
+
   /* Hide any remaining UI elements */
-  .ui-text, .info-label, .status-text {
+  .ui-text,
+  .info-label,
+  .status-text {
     display: none !important;
   }
-  
+
   /* Ensure clean page content */
   .page-content * {
     color: #000 !important;
     background: transparent !important;
   }
-  
+
   /* Hide any pseudo-elements */
-  .page-content *::before, .page-content *::after {
+  .page-content *::before,
+  .page-content *::after {
     display: none !important;
   }
 }
@@ -519,7 +537,6 @@
     margin: 40px 40px !important;
   }
 }
-
 
 .page-content .hard-break,
 .header-content .hard-break,

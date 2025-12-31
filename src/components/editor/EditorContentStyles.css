@@ -1,22 +1,20 @@
 /* Shared styles for editor content (.ProseMirror, .editor-content) and preview content (.page-content, .header-content, .footer-content) */
 
 :root {
-  --var-line-height: 1.;
+  --var-line-height: 1;
 }
-
-
 
 /* Base typography */
 .ProseMirror.editor-content,
 .editor-content,
 .page-content {
-  font-family: 'Serif', Arial, sans-serif;
+  font-family: "Serif", Arial, sans-serif;
   line-height: var(--var-line-height);
   color: #333;
 }
 
 .header-content {
-  font-family: 'Serif', Arial, sans-serif;
+  font-family: "Serif", Arial, sans-serif;
   line-height: var(--var-line-height);
   color: #333;
   margin-top: auto;
@@ -24,7 +22,7 @@
 }
 
 .footer-content {
-  font-family: 'Serif', Arial, sans-serif;
+  font-family: "Serif", Arial, sans-serif;
   line-height: var(--var-line-height);
   color: #333;
   margin-top: auto;
@@ -226,7 +224,9 @@
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
   font-size: 0.875em;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
   color: #d63384;
 }
 
@@ -575,7 +575,6 @@
   text-align: left;
 }
 
-
 /* Page Break */
 .ProseMirror.editor-content .page-break,
 .editor-content .page-break,
@@ -597,7 +596,7 @@
 .page-content .page-break::before,
 .header-content .page-break::before,
 .footer-content .page-break::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 0;
@@ -605,8 +604,8 @@
   height: 1px;
   background: repeating-linear-gradient(
     to right,
-    #E9EDEE 0px,
-    #E9EDEE 8px,
+    #e9edee 0px,
+    #e9edee 8px,
     transparent 8px,
     transparent 16px
   );
@@ -618,15 +617,15 @@
 .page-content .page-break::after,
 .header-content .page-break::after,
 .footer-content .page-break::after {
-  content: 'Page Break';
+  content: "Page Break";
   position: relative;
   background: white;
   padding: 4px 12px;
   font-size: 11px;
   font-weight: 500;
-  color: #6B7280;
+  color: #6b7280;
   border-radius: 6px;
-  border: 1px solid #E9EDEE;
+  border: 1px solid #e9edee;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   letter-spacing: 0.3px;
   z-index: 1;
@@ -638,9 +637,9 @@
 .page-content .page-break:hover::after,
 .header-content .page-break:hover::after,
 .footer-content .page-break:hover::after {
-  background: #F9FAFB;
-  border-color: #D1D5DB;
-  color: #4B5563;
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #4b5563;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
@@ -650,11 +649,13 @@
 .page-content .variable-valid,
 .header-content .variable-valid,
 .footer-content .variable-valid {
-  background-color: #E0F7FA;
+  background-color: #e0f7fa;
   color: #006064;
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
   font-size: 0.875rem;
 }
 
@@ -667,7 +668,9 @@
   color: #991b1b;
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
   font-size: 0.875rem;
 }
 
@@ -890,8 +893,6 @@
   background: #2563eb;
   transform: scale(1.2);
 }
-
-
 
 .page-content br.ProseMirror-trailingBreak,
 .header-content br.ProseMirror-trailingBreak,

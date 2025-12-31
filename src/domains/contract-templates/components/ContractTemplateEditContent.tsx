@@ -56,6 +56,12 @@ import RichTextEditor from "@/components/editor/RichTextEditor";
 import StatusBadge from "./StatusBadge";
 import PageRender from "@/components/editor/PageRender";
 import type { HeaderConfig, FooterConfig } from "@/components/editor/types";
+import CustomVariableDialog from "@/domains/custom-variables/components/CustomVariableDialog";
+import {
+  updateCustomVariableAction,
+  listCustomVariablesAction,
+} from "@/domains/custom-variables/actions";
+import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
 
 type Props = {
   template: ContractTemplateData;
@@ -67,10 +73,10 @@ export default function ContractTemplateEditContent({ template }: Props) {
     template.currentVersion?.bodyHtml || "",
   );
   const [headerConfig, setHeaderConfig] = useState<HeaderConfig | undefined>(
-    template.currentVersion?.headerConfig as HeaderConfig | undefined
+    template.currentVersion?.headerConfig as HeaderConfig | undefined,
   );
   const [footerConfig, setFooterConfig] = useState<FooterConfig | undefined>(
-    template.currentVersion?.footerConfig as FooterConfig | undefined
+    template.currentVersion?.footerConfig as FooterConfig | undefined,
   );
   const [isSaving, setIsSaving] = useState(false);
   const [placeholders, setPlaceholders] = useState<string[]>([]);
@@ -98,7 +104,13 @@ export default function ContractTemplateEditContent({ template }: Props) {
     missingVariables: string[];
   } | null>(null);
   const [systemVariables, setSystemVariables] = useState<any[]>([]);
+  const [customVariables, setCustomVariables] = useState<CustomVariable[]>([]);
   const [, setIsLoadingSystemVariables] = useState(false);
+  const [editingVariable, setEditingVariable] = useState<CustomVariable | null>(
+    null,
+  );
+  const [isVariableDialogOpen, setIsVariableDialogOpen] = useState(false);
+  const [isUpdatingVariable, setIsUpdatingVariable] = useState(false);
   const editorRef = useRef<any>(null);
 
   // Google Docs sync state
@@ -154,19 +166,18 @@ export default function ContractTemplateEditContent({ template }: Props) {
     const loadVariables = async () => {
       setIsLoadingSystemVariables(true);
       try {
-        // Load only system variables (no custom variables)
-        const result = await import("@/domains/custom-variables/actions").then(
-          (m) => m.listCustomVariablesAction({ isActive: true }),
-        );
+        const result = await listCustomVariablesAction({ isActive: true });
         if ("error" in result) {
           return;
         }
         if (result.data) {
-          // Only system variables (thrive.*, contract.*, etc.)
+          // Separate system variables and custom variables
           const system = result.data.filter(
             (v) => !v.key.startsWith("custom."),
           );
+          const custom = result.data.filter((v) => v.key.startsWith("custom."));
           setSystemVariables(system);
+          setCustomVariables(custom);
         }
       } catch (error) {
         console.error("Error loading variables:", error);
@@ -391,6 +402,50 @@ export default function ContractTemplateEditContent({ template }: Props) {
     }
   };
 
+  const handleVariableUpdate = async (data: {
+    key: string;
+    defaultValue: string;
+    description?: string | null;
+  }) => {
+    if (!editingVariable) return;
+
+    setIsUpdatingVariable(true);
+    try {
+      const result = await updateCustomVariableAction({
+        id: editingVariable.id,
+        key: data.key,
+        defaultValue: data.defaultValue,
+        description: data.description,
+      });
+
+      if ("error" in result) {
+        toast.error(result.error ?? "Failed to update variable");
+        return;
+      }
+
+      // Update the appropriate variables list based on whether it's a custom variable
+      const isCustomVar = editingVariable.key.startsWith("custom.");
+      if (isCustomVar) {
+        setCustomVariables((prev) =>
+          prev.map((v) => (v.id === editingVariable.id ? result.data : v)),
+        );
+      } else {
+        setSystemVariables((prev) =>
+          prev.map((v) => (v.id === editingVariable.id ? result.data : v)),
+        );
+      }
+
+      toast.success("Variable updated successfully");
+      setIsVariableDialogOpen(false);
+      setEditingVariable(null);
+    } catch (error) {
+      console.error("Error updating variable:", error);
+      toast.error("Failed to update variable");
+    } finally {
+      setIsUpdatingVariable(false);
+    }
+  };
+
   const availableVariables = useMemo(() => {
     // Group system variables by namespace
     const systemVarsByNamespace: Record<string, string[]> = {};
@@ -457,8 +512,20 @@ export default function ContractTemplateEditContent({ template }: Props) {
       });
     }
 
+    // Add custom variables
+    if (customVariables.length > 0) {
+      const customVars = customVariables.map((v) => {
+        // Remove "custom." prefix for display
+        return v.key.replace(/^custom\./, "");
+      });
+      vars.push({
+        namespace: "custom",
+        vars: customVars,
+      });
+    }
+
     return vars;
-  }, [selectedFeeStructureData, systemVariables]);
+  }, [selectedFeeStructureData, systemVariables, customVariables]);
 
   const validVariablesSet = useMemo(
     () =>
@@ -643,20 +710,22 @@ export default function ContractTemplateEditContent({ template }: Props) {
               <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6 border-b border-gray-200 overflow-x-auto pt-4">
                 <button
                   onClick={() => setActiveTab("variables")}
-                  className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "variables"
-                    ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                    }`}
+                  className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                    activeTab === "variables"
+                      ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  }`}
                 >
                   Variables
                 </button>
                 {placeholders.length > 0 && (
                   <button
                     onClick={() => setActiveTab("placeholders")}
-                    className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 relative cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "placeholders"
-                      ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                      }`}
+                    className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 relative cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                      activeTab === "placeholders"
+                        ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                    }`}
                   >
                     Detected
                     <span className="ml-1.5 sm:ml-2 inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 text-[10px] sm:text-xs font-bold text-white bg-[#00A8FF] rounded-full">
@@ -771,6 +840,19 @@ export default function ContractTemplateEditContent({ template }: Props) {
                       const editableSystemVars = systemVariables.filter((v) =>
                         v.key.startsWith(`${group.namespace}.`),
                       );
+                      // Check if this namespace has custom variables
+                      const editableCustomVars =
+                        group.namespace === "custom"
+                          ? customVariables
+                          : customVariables.filter((v) =>
+                              v.key.startsWith(`${group.namespace}.`),
+                            );
+
+                      // Combine all editable variables for this namespace
+                      const allEditableVars = [
+                        ...editableSystemVars,
+                        ...editableCustomVars,
+                      ];
 
                       return (
                         <div key={group.namespace} className="space-y-3">
@@ -783,10 +865,10 @@ export default function ContractTemplateEditContent({ template }: Props) {
                             </span>
                           </div>
                           <div className="space-y-2">
-                            {/* Show editable system variables with edit buttons */}
-                            {editableSystemVars.length > 0 && (
+                            {/* Show editable variables with edit buttons */}
+                            {allEditableVars.length > 0 && (
                               <div className="space-y-1.5 sm:space-y-2 mb-2 sm:mb-3">
-                                {editableSystemVars.map((variable) => {
+                                {allEditableVars.map((variable) => {
                                   return (
                                     <div
                                       key={variable.id}
@@ -813,10 +895,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                       </div>
                                       <button
                                         onClick={() => {
-                                          // TODO: Implement system variable editing
-                                          toast.info(
-                                            "System variable editing coming soon",
-                                          );
+                                          setEditingVariable(variable);
+                                          setIsVariableDialogOpen(true);
                                         }}
                                         className="text-[10px] sm:text-xs text-blue-600 hover:text-blue-700 cursor-pointer whitespace-nowrap shrink-0"
                                       >
@@ -832,8 +912,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                             {group.vars
                               .filter((varName) => {
                                 const fullPlaceholder = `${group.namespace}.${varName}`;
-                                // Don't show if it's already displayed as an editable system variable
-                                return !editableSystemVars.some(
+                                // Don't show if it's already displayed as an editable variable
+                                return !allEditableVars.some(
                                   (v) => v.key === fullPlaceholder,
                                 );
                               })
@@ -864,7 +944,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                     <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-3">
                       <p className="text-xs sm:text-sm text-blue-800 font-poppins font-medium">
                         {placeholders.length} placeholder
-                        {placeholders.length !== 1 ? "s" : ""} detected in your template
+                        {placeholders.length !== 1 ? "s" : ""} detected in your
+                        template
                       </p>
                     </div>
 
@@ -928,14 +1009,15 @@ export default function ContractTemplateEditContent({ template }: Props) {
                         return (
                           <div
                             key={placeholder}
-                            className={`text-xs sm:text-sm font-mono px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border flex items-center justify-between gap-2 transition-colors ${hasError
-                              ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
-                              : isInvalid
+                            className={`text-xs sm:text-sm font-mono px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border flex items-center justify-between gap-2 transition-colors ${
+                              hasError
                                 ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
-                                : hasWarning
-                                  ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
-                                  : "bg-gray-50 border-gray-200 hover:bg-gray-100"
-                              }`}
+                                : isInvalid
+                                  ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                                  : hasWarning
+                                    ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
+                                    : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                            }`}
                           >
                             <span className="break-all">{`{{${placeholder}}}`}</span>
                             {isInvalid && (
@@ -1029,6 +1111,18 @@ export default function ContractTemplateEditContent({ template }: Props) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Variable Edit Dialog */}
+      <CustomVariableDialog
+        open={isVariableDialogOpen}
+        onClose={() => {
+          setIsVariableDialogOpen(false);
+          setEditingVariable(null);
+        }}
+        onSubmit={handleVariableUpdate}
+        initialData={editingVariable}
+        isLoading={isUpdatingVariable}
+      />
     </div>
   );
 }
