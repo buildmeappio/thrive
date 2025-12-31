@@ -70,13 +70,13 @@ type Props = {
 export default function ContractTemplateEditContent({ template }: Props) {
   const router = useRouter();
   const [content, setContent] = useState(
-    template.currentVersion?.bodyHtml || ""
+    template.currentVersion?.bodyHtml || "",
   );
   const [headerConfig, setHeaderConfig] = useState<HeaderConfig | undefined>(
-    template.currentVersion?.headerConfig as HeaderConfig | undefined
+    template.currentVersion?.headerConfig as HeaderConfig | undefined,
   );
   const [footerConfig, setFooterConfig] = useState<FooterConfig | undefined>(
-    template.currentVersion?.footerConfig as FooterConfig | undefined
+    template.currentVersion?.footerConfig as FooterConfig | undefined,
   );
   const [isSaving, setIsSaving] = useState(false);
   const [placeholders, setPlaceholders] = useState<string[]>([]);
@@ -86,14 +86,14 @@ export default function ContractTemplateEditContent({ template }: Props) {
     warnings: Array<{ placeholder: string; warning: string }>;
   }>({ valid: true, errors: [], warnings: [] });
   const [activeTab, setActiveTab] = useState<"variables" | "placeholders">(
-    "variables"
+    "variables",
   );
   const [isVariablesPanelOpen, setIsVariablesPanelOpen] = useState(true);
   const [selectedFeeStructureId, setSelectedFeeStructureId] = useState<string>(
-    template.feeStructureId || ""
+    template.feeStructureId || "",
   );
   const [feeStructures, setFeeStructures] = useState<FeeStructureListItem[]>(
-    []
+    [],
   );
   const [selectedFeeStructureData, setSelectedFeeStructureData] =
     useState<FeeStructureData | null>(null);
@@ -107,7 +107,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
   const [customVariables, setCustomVariables] = useState<CustomVariable[]>([]);
   const [, setIsLoadingSystemVariables] = useState(false);
   const [editingVariable, setEditingVariable] = useState<CustomVariable | null>(
-    null
+    null,
   );
   const [isVariableDialogOpen, setIsVariableDialogOpen] = useState(false);
   const [isUpdatingVariable, setIsUpdatingVariable] = useState(false);
@@ -130,7 +130,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
       const requiredFeeVars = extractRequiredFeeVariables(content);
       const compatibility = validateFeeStructureCompatibility(
         requiredFeeVars,
-        selectedFeeStructureData.variables || []
+        selectedFeeStructureData.variables || [],
       );
       setFeeStructureCompatibility(compatibility);
     } else {
@@ -173,7 +173,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
         if (result.data) {
           // Separate system variables and custom variables
           const system = result.data.filter(
-            (v) => !v.key.startsWith("custom.")
+            (v) => !v.key.startsWith("custom."),
           );
           const custom = result.data.filter((v) => v.key.startsWith("custom."));
           setSystemVariables(system);
@@ -215,12 +215,12 @@ export default function ContractTemplateEditContent({ template }: Props) {
       const requiredFeeVars = extractRequiredFeeVariables(content);
       const compatibility = validateFeeStructureCompatibility(
         requiredFeeVars,
-        selectedFeeStructureData.variables || []
+        selectedFeeStructureData.variables || [],
       );
 
       if (!compatibility.compatible) {
         toast.error(
-          `Fee structure is missing required variables: ${compatibility.missingVariables.join(", ")}`
+          `Fee structure is missing required variables: ${compatibility.missingVariables.join(", ")}`,
         );
         return;
       }
@@ -230,7 +230,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
     const requiredFeeVars = extractRequiredFeeVariables(content);
     if (requiredFeeVars.size > 0 && !selectedFeeStructureId) {
       toast.error(
-        "Template uses fee variables. Please select a compatible fee structure before saving."
+        "Template uses fee variables. Please select a compatible fee structure before saving.",
       );
       return;
     }
@@ -304,7 +304,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
   const handleSyncFromGoogleDocsClick = () => {
     if (!googleDocUrl) {
       toast.error(
-        "No Google Doc linked to this template. Save the template first to create a Google Doc."
+        "No Google Doc linked to this template. Save the template first to create a Google Doc.",
       );
       return;
     }
@@ -390,7 +390,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
       toast.success(
         feeStructureId
           ? "Fee structure updated successfully"
-          : "Fee structure removed successfully"
+          : "Fee structure removed successfully",
       );
       router.refresh();
     } catch (error) {
@@ -427,11 +427,11 @@ export default function ContractTemplateEditContent({ template }: Props) {
       const isCustomVar = editingVariable.key.startsWith("custom.");
       if (isCustomVar) {
         setCustomVariables((prev) =>
-          prev.map((v) => (v.id === editingVariable.id ? result.data : v))
+          prev.map((v) => (v.id === editingVariable.id ? result.data : v)),
         );
       } else {
         setSystemVariables((prev) =>
-          prev.map((v) => (v.id === editingVariable.id ? result.data : v))
+          prev.map((v) => (v.id === editingVariable.id ? result.data : v)),
         );
       }
 
@@ -531,10 +531,10 @@ export default function ContractTemplateEditContent({ template }: Props) {
     () =>
       new Set(
         availableVariables.flatMap((group) =>
-          group.vars.map((v) => `${group.namespace}.${v}`)
-        )
+          group.vars.map((v) => `${group.namespace}.${v}`),
+        ),
       ),
-    [availableVariables]
+    [availableVariables],
   );
 
   return (
@@ -566,7 +566,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
               href={googleDocUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center h-10 sm:h-11 rounded-full border border-[#E5E5E5] bg-white text-[#1A1A1A] hover:bg-gray-50 hover:border-gray-300 font-poppins font-medium text-xs sm:text-sm transition-all px-4 sm:px-5">
+              className="inline-flex items-center justify-center h-10 sm:h-11 rounded-full border border-[#E5E5E5] bg-white text-[#1A1A1A] hover:bg-gray-50 hover:border-gray-300 font-poppins font-medium text-xs sm:text-sm transition-all px-4 sm:px-5"
+            >
               <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 text-[#00A8FF] flex-shrink-0" />
               <span className="hidden sm:inline">Open in Google Docs</span>
               <span className="sm:hidden">Google Docs</span>
@@ -579,7 +580,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
             onClick={handleSyncFromGoogleDocsClick}
             disabled={!googleDocUrl || isLoadingGoogleDocUrl}
             variant="outline"
-            className="h-10 sm:h-11 rounded-full border-[#E5E5E5] text-[#1A1A1A] hover:bg-gray-50 hover:border-gray-300 font-poppins font-medium text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all px-4 sm:px-5">
+            className="h-10 sm:h-11 rounded-full border-[#E5E5E5] text-[#1A1A1A] hover:bg-gray-50 hover:border-gray-300 font-poppins font-medium text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all px-4 sm:px-5"
+          >
             <RefreshCw className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#00A8FF] mr-1.5 sm:mr-2" />
             <span className="hidden sm:inline">Sync from Docs</span>
             <span className="sm:hidden">Sync</span>
@@ -594,7 +596,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
               (feeStructureCompatibility &&
                 !feeStructureCompatibility.compatible)
             }
-            className="h-10 sm:h-11 px-4 sm:px-6 md:px-10 rounded-full bg-gradient-to-r items-center from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-poppins font-semibold text-xs sm:text-sm transition-all shadow-sm">
+            className="h-10 sm:h-11 px-4 sm:px-6 md:px-10 rounded-full bg-gradient-to-r items-center from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-poppins font-semibold text-xs sm:text-sm transition-all shadow-sm"
+          >
             {isSaving ? (
               <>
                 <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin mr-1.5 sm:mr-2" />
@@ -632,7 +635,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
               <div className="flex items-center justify-between mb-3 sm:mb-4 flex-shrink-0">
                 <Label
                   htmlFor="template-content"
-                  className="font-poppins font-semibold text-sm sm:text-base">
+                  className="font-poppins font-semibold text-sm sm:text-base"
+                >
                   Template Content
                 </Label>
                 <div className="flex items-center gap-2 text-xs text-gray-500 font-poppins">
@@ -682,7 +686,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
           {/* Panel Header - Collapsible */}
           <button
             onClick={() => setIsVariablesPanelOpen(!isVariablesPanelOpen)}
-            className="w-full px-4 sm:px-5 md:px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+            className="w-full px-4 sm:px-5 md:px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          >
             <div className="flex items-center gap-3">
               <h3 className="font-poppins font-semibold text-sm sm:text-base text-gray-900">
                 Variables & Placeholders
@@ -709,7 +714,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                     activeTab === "variables"
                       ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                  }`}>
+                  }`}
+                >
                   Variables
                 </button>
                 {placeholders.length > 0 && (
@@ -719,7 +725,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                       activeTab === "placeholders"
                         ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                    }`}>
+                    }`}
+                  >
                     Detected
                     <span className="ml-1.5 sm:ml-2 inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 text-[10px] sm:text-xs font-bold text-white bg-[#00A8FF] rounded-full">
                       {placeholders.length}
@@ -746,7 +753,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                         onValueChange={handleFeeStructureChange}
                         disabled={
                           isUpdatingFeeStructure || isLoadingFeeStructures
-                        }>
+                        }
+                      >
                         <SelectTrigger className="rounded-[14px] font-poppins">
                           <SelectValue
                             placeholder={
@@ -809,7 +817,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                         <li key={v} className="font-mono">
                                           fees.{v}
                                         </li>
-                                      )
+                                      ),
                                     )}
                                   </ul>
                                 </div>
@@ -830,14 +838,14 @@ export default function ContractTemplateEditContent({ template }: Props) {
                     {availableVariables.map((group) => {
                       // Check if this namespace has editable system variables
                       const editableSystemVars = systemVariables.filter((v) =>
-                        v.key.startsWith(`${group.namespace}.`)
+                        v.key.startsWith(`${group.namespace}.`),
                       );
                       // Check if this namespace has custom variables
                       const editableCustomVars =
                         group.namespace === "custom"
                           ? customVariables
                           : customVariables.filter((v) =>
-                              v.key.startsWith(`${group.namespace}.`)
+                              v.key.startsWith(`${group.namespace}.`),
                             );
 
                       // Combine all editable variables for this namespace
@@ -864,14 +872,16 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                   return (
                                     <div
                                       key={variable.id}
-                                      className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
+                                      className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
+                                    >
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
                                           <button
                                             onClick={() =>
                                               insertPlaceholder(variable.key)
                                             }
-                                            className="font-mono text-xs sm:text-sm text-[#00A8FF] hover:underline cursor-pointer break-all">
+                                            className="font-mono text-xs sm:text-sm text-[#00A8FF] hover:underline cursor-pointer break-all"
+                                          >
                                             {`{{${variable.key}}}`}
                                           </button>
                                         </div>
@@ -888,7 +898,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                           setEditingVariable(variable);
                                           setIsVariableDialogOpen(true);
                                         }}
-                                        className="text-[10px] sm:text-xs text-blue-600 hover:text-blue-700 cursor-pointer whitespace-nowrap shrink-0">
+                                        className="text-[10px] sm:text-xs text-blue-600 hover:text-blue-700 cursor-pointer whitespace-nowrap shrink-0"
+                                      >
                                         Edit
                                       </button>
                                     </div>
@@ -903,7 +914,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                 const fullPlaceholder = `${group.namespace}.${varName}`;
                                 // Don't show if it's already displayed as an editable variable
                                 return !allEditableVars.some(
-                                  (v) => v.key === fullPlaceholder
+                                  (v) => v.key === fullPlaceholder,
                                 );
                               })
                               .map((varName) => {
@@ -914,7 +925,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                     onClick={() =>
                                       insertPlaceholder(fullPlaceholder)
                                     }
-                                    className="w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-gray-50 border border-gray-200 font-mono transition-colors cursor-pointer break-all">
+                                    className="w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-gray-50 border border-gray-200 font-mono transition-colors cursor-pointer break-all"
+                                  >
                                     {`{{${fullPlaceholder}}}`}
                                   </button>
                                 );
@@ -950,7 +962,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                           {validation.errors.map((error, idx) => (
                             <div
                               key={idx}
-                              className="text-xs sm:text-sm text-red-700 font-poppins break-words pl-7">
+                              className="text-xs sm:text-sm text-red-700 font-poppins break-words pl-7"
+                            >
                               <span className="font-mono font-semibold">{`{{${error.placeholder}}}`}</span>
                               <span className="ml-2">- {error.error}</span>
                             </div>
@@ -972,7 +985,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                           {validation.warnings.map((warning, idx) => (
                             <div
                               key={idx}
-                              className="text-xs sm:text-sm text-amber-700 font-poppins break-words pl-7">
+                              className="text-xs sm:text-sm text-amber-700 font-poppins break-words pl-7"
+                            >
                               <span className="font-mono font-semibold">{`{{${warning.placeholder}}}`}</span>
                               <span className="ml-2">- {warning.warning}</span>
                             </div>
@@ -984,10 +998,10 @@ export default function ContractTemplateEditContent({ template }: Props) {
                     <div className="space-y-2 max-h-[400px] overflow-y-auto">
                       {placeholders.map((placeholder) => {
                         const hasError = validation.errors.some(
-                          (e) => e.placeholder === placeholder
+                          (e) => e.placeholder === placeholder,
                         );
                         const hasWarning = validation.warnings.some(
-                          (w) => w.placeholder === placeholder
+                          (w) => w.placeholder === placeholder,
                         );
                         const isValid = validVariablesSet.has(placeholder);
                         const isInvalid = !isValid && !hasError && !hasWarning;
@@ -1003,7 +1017,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                   : hasWarning
                                     ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
                                     : "bg-gray-50 border-gray-200 hover:bg-gray-100"
-                            }`}>
+                            }`}
+                          >
                             <span className="break-all">{`{{${placeholder}}}`}</span>
                             {isInvalid && (
                               <span className="text-xs text-red-600 font-poppins ml-2 whitespace-nowrap flex-shrink-0 font-medium">
@@ -1042,7 +1057,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
         open={showSyncConfirmDialog}
         onOpenChange={(open) =>
           !isSyncingFromGDocs && setShowSyncConfirmDialog(open)
-        }>
+        }
+      >
         <DialogContent className="sm:max-w-[450px] rounded-2xl sm:rounded-[24px] p-0 gap-0 overflow-hidden">
           {isSyncingFromGDocs ? (
             /* Loading State */
@@ -1079,12 +1095,14 @@ export default function ContractTemplateEditContent({ template }: Props) {
                 <Button
                   variant="outline"
                   onClick={() => setShowSyncConfirmDialog(false)}
-                  className="h-11 px-6 rounded-full border-[#E5E5E5] text-[#1A1A1A] hover:bg-gray-50 font-poppins font-medium">
+                  className="h-11 px-6 rounded-full border-[#E5E5E5] text-[#1A1A1A] hover:bg-gray-50 font-poppins font-medium"
+                >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleConfirmSyncFromGoogleDocs}
-                  className="h-11 px-6 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 font-poppins font-semibold shadow-sm transition-all">
+                  className="h-11 px-6 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 font-poppins font-semibold shadow-sm transition-all"
+                >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Sync Content
                 </Button>

@@ -131,12 +131,13 @@ export default function CreateContractModal(props: CreateContractModalProps) {
               {[1, 2, 3].map((s) => (
                 <div
                   key={s}
-                  className={`h-1.5 rounded-full transition-all ${s === step
-                    ? "w-6 bg-[#000080]"
-                    : s < step
-                      ? "w-3 bg-[#000080]/50"
-                      : "w-3 bg-[#E5E5E5]"
-                    }`}
+                  className={`h-1.5 rounded-full transition-all ${
+                    s === step
+                      ? "w-6 bg-[#000080]"
+                      : s < step
+                        ? "w-3 bg-[#000080]/50"
+                        : "w-3 bg-[#E5E5E5]"
+                  }`}
                 />
               ))}
             </div>
@@ -328,7 +329,11 @@ export default function CreateContractModal(props: CreateContractModalProps) {
             <div className="space-y-4">
               {previewHtml ? (
                 <div className="border border-[#E5E5E5] rounded-xl sm:rounded-[15px] p-4 bg-white overflow-auto">
-                  <PageRender content={previewHtml} header={selectedTemplateHeaderContent} footer={selectedTemplateFooterContent} />
+                  <PageRender
+                    content={previewHtml}
+                    header={selectedTemplateHeaderContent}
+                    footer={selectedTemplateFooterContent}
+                  />
                 </div>
               ) : (
                 <div className="flex items-center justify-center py-12">
