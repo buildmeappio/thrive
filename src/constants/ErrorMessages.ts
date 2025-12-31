@@ -156,7 +156,7 @@ export default Object.freeze({
   ORGANIZATION_INFO_UPDATE_FAILED: 'Failed to update organization information',
   ADDRESS_LOOKUP_INVALID: 'Address lookup is invalid',
   FAMILY_DOCTOR_NAME_INVALID: 'Family doctor name is invalid',
-  FAMILY_DOCTOR_NAME_MIN: 'Family doctor name must be at least 5 characters',
+  FAMILY_DOCTOR_NAME_MIN: 'Family doctor name must be at least 2 characters',
   STREET_ADDRESS_MIN: 'Street address must be at least 5 characters',
   CITY_MIN_OPTIONAL: 'City must be at least 5 characters',
   SUITE_MIN: 'Apt/Unit/Suite must be at least 2 characters',
