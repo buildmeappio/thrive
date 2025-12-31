@@ -225,12 +225,18 @@ export const ClaimantDetailsSchema = z.object({
   familyDoctorName: z
     .string()
     .trim()
-    .refine(val => val === '' || val.length >= 5, {
+    .refine(val => val === '' || val.trim().length > 0, {
+      message: ErrorMessages.FIELD_CANNOT_BE_ONLY_SPACES,
+    })
+    .refine(val => val === '' || val.length >= 2, {
       message: ErrorMessages.FAMILY_DOCTOR_NAME_MIN,
     })
-    .refine(val => val === '' || /^[A-Za-zÀ-ÿ]*$/.test(val), {
-      message: ErrorMessages.FAMILY_DOCTOR_NAME_INVALID,
-    })
+    .refine(
+      val => val === '' || /^[A-Za-zÀ-ÿ' ](?:[A-Za-zÀ-ÿ' -]*[A-Za-zÀ-ÿ])?$/.test(val.trim()),
+      {
+        message: ErrorMessages.FAMILY_DOCTOR_NAME_INVALID,
+      }
+    )
     .optional(),
 
   familyDoctorEmail: z
