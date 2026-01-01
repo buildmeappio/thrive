@@ -69,6 +69,16 @@ export const updateContractTemplateSchema = z.object({
     )
     .optional(),
   isActive: z.boolean().optional(),
+  feeStructureId: z
+    .union([
+      z.string().uuid(),
+      z
+        .string()
+        .length(0)
+        .transform(() => null),
+      z.null(),
+    ])
+    .optional(),
 });
 
 export const saveTemplateDraftContentSchema = z.object({

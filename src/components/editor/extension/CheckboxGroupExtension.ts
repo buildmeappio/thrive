@@ -29,8 +29,16 @@ export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
 
   group: "block",
 
-  // Atom nodes don't have content, perfect for preserving raw HTML
-  atom: true,
+  // Don't make it an atom - we want TipTap to parse the HTML content
+  atom: false,
+
+  // Make it selectable so it can be focused
+  selectable: true,
+
+  // Allow content so TipTap can parse the inner HTML
+  content: "block+",
+
+  // Don't add keyboard shortcuts - let other extensions handle Enter key
 
   addAttributes() {
     return {
@@ -113,17 +121,94 @@ export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
     const innerHTML = node.attrs.innerHTML || "";
     const { innerHTML: _, ...attrs } = HTMLAttributes;
 
-    // TipTap doesn't support raw HTML rendering, so we need to parse it
-    // For now, return the structure and TipTap will serialize it
-    // The innerHTML will be preserved in the attribute and can be accessed when needed
-    return [
-      "div",
-      mergeAttributes(this.options.HTMLAttributes, attrs),
-      // Return 0 to indicate no content, but the innerHTML is stored in attributes
-      // This is a workaround - TipTap will serialize the node but won't include innerHTML
-      // We'll need to handle this in the cleanContent function or when saving
-      0,
-    ];
+    // If we're in a browser environment, parse and render the HTML
+    if (typeof window !== "undefined" && innerHTML) {
+      try {
+        // Create a temporary DOM element to parse the HTML
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = innerHTML;
+
+        // Convert the parsed HTML to TipTap's node structure
+        const children: any[] = [];
+
+        // Process label element
+        const label = tempDiv.querySelector("label.font-semibold");
+        if (label) {
+          children.push([
+            "label",
+            {
+              class: "font-semibold",
+              style: "font-weight: 600; display: block; margin-bottom: 8px;",
+            },
+            label.textContent || "",
+          ]);
+        }
+
+        // Process checkbox options
+        const optionsDiv = tempDiv.querySelector("div.checkbox-options");
+        if (optionsDiv) {
+          const optionDivs = optionsDiv.querySelectorAll("div");
+          const optionChildren: any[] = [];
+
+          optionDivs.forEach((optDiv) => {
+            const checkboxSpan = optDiv.querySelector(
+              "span.checkbox-indicator",
+            );
+            const labelEl = optDiv.querySelector("label");
+
+            if (checkboxSpan && labelEl) {
+              optionChildren.push([
+                "div",
+                {
+                  style:
+                    "margin-bottom: 4px; display: flex; align-items: center;",
+                },
+                [
+                  "span",
+                  {
+                    class: "checkbox-indicator",
+                    "data-checkbox-value":
+                      checkboxSpan.getAttribute("data-checkbox-value") || "",
+                    "data-variable-key":
+                      checkboxSpan.getAttribute("data-variable-key") || "",
+                    style:
+                      "display: inline-block; width: 16px; height: 16px; border: 2px solid #333; margin-right: 8px; vertical-align: middle; flex-shrink: 0;",
+                  },
+                  checkboxSpan.textContent || "☐",
+                ],
+                [
+                  "label",
+                  { style: "margin: 0; font-weight: normal;" },
+                  labelEl.textContent || "",
+                ],
+              ]);
+            }
+          });
+
+          if (optionChildren.length > 0) {
+            children.push([
+              "div",
+              { class: "checkbox-options", style: "margin-top: 8px;" },
+              ...optionChildren,
+            ]);
+          }
+        }
+
+        // If we successfully parsed children, return them
+        if (children.length > 0) {
+          return [
+            "div",
+            mergeAttributes(this.options.HTMLAttributes, attrs),
+            ...children,
+          ];
+        }
+      } catch (error) {
+        console.error("Error parsing checkbox group HTML:", error);
+      }
+    }
+
+    // Fallback: return empty div - TipTap will preserve the HTML through parseHTML
+    return ["div", mergeAttributes(this.options.HTMLAttributes, attrs), 0];
   },
 
   addCommands() {
