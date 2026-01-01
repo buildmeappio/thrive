@@ -372,9 +372,9 @@ export default function RichTextEditor({
           // 2. If it has a namespace format, the namespace must be allowed
           const isValid = isInValidSet && hasValidNamespace;
 
-          // Get the variable value if available
-          const variableValue = variableValues.get(placeholder);
-          const displayText = variableValue || match;
+          // Always show the placeholder ({{variable.key}}) in the editor, not the value
+          // Values should only be shown in the preview, not in the editor
+          const displayText = match; // Always use the placeholder format
 
           const className = isValid
             ? "variable-valid bg-[#E0F7FA] text-[#006064] px-1 py-0.5 rounded font-mono text-sm underline"
