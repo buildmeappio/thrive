@@ -1,13 +1,14 @@
 model CustomVariable {
-    id           String   @id @default(uuid())
-    key          String   @unique
-    defaultValue String
-    description  String?
-    isActive     Boolean  @default(true)
-    variableType String   @default("text") // "text" | "checkbox_group"
-    options      Json?    // For checkbox groups: [{ label: string, value: string }]
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
+    id            String   @id @default(uuid())
+    key           String   @unique
+    defaultValue  String
+    description   String?
+    isActive      Boolean  @default(true)
+    variableType  String   @default("text") // "text" | "checkbox_group"
+    showUnderline Boolean  @default(false) // For text variables: whether to show underline in preview
+    options       Json? // For checkbox groups: [{ label: string, value: string }]
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
 
     @@map("custom_variables")
 }
