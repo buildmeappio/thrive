@@ -78,6 +78,11 @@ const ContractSigningPage = async ({ params, searchParams }: PageProps) => {
       feeStructure={contractData.feeStructure}
       contractHtml={contract.contractHtml}
       isAlreadySigned={isAlreadySigned}
+      headerConfig={(contract as any).headerConfig || undefined}
+      footerConfig={(contract as any).footerConfig || undefined}
+      checkboxGroupsFromTemplate={
+        (contract as any).checkboxGroupsFromTemplate || undefined
+      }
     />
   );
 };
