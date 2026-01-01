@@ -78,14 +78,23 @@ export async function signContractHandler(input: SignContractInput) {
       // Get existing fieldValues
       const existingFieldValues = (contract.fieldValues as any) || {};
 
-      // Update fieldValues with signature and checkbox selections if provided
-      const updatedFieldValues = input.fieldValues || {
-        ...existingFieldValues,
-        examiner: {
-          ...(existingFieldValues.examiner || {}),
-          ...(input.signatureImage && { signature: input.signatureImage }),
-        },
-      };
+      // Update fieldValues with signature, signature_date_time, and checkbox selections if provided
+      const updatedFieldValues = input.fieldValues
+        ? {
+            ...existingFieldValues,
+            examiner: {
+              ...(existingFieldValues.examiner || {}),
+              ...(input.fieldValues.examiner || {}),
+              ...(input.signatureImage && { signature: input.signatureImage }),
+            },
+          }
+        : {
+            ...existingFieldValues,
+            examiner: {
+              ...(existingFieldValues.examiner || {}),
+              ...(input.signatureImage && { signature: input.signatureImage }),
+            },
+          };
 
       await prisma.contract.update({
         where: { id: contract.id },

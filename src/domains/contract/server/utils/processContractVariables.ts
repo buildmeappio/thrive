@@ -69,7 +69,7 @@ export async function processContractVariables(
 
   // 4. Add contract field values (from fieldValues JSON field)
   if (contractFieldValues) {
-    // Handle nested objects (e.g., examiner.signature, examiner.checkbox_selections)
+    // Handle nested objects (e.g., examiner.signature, examiner.checkbox_selections, examiner.signature_date_time)
     if (contractFieldValues.examiner) {
       const examinerFields = contractFieldValues.examiner as Record<
         string,
@@ -80,6 +80,34 @@ export async function processContractVariables(
       }
       if (examinerFields.checkbox_selections) {
         // Checkbox selections are handled separately in the UI
+      }
+      // Add examiner.signature_date_time if it exists
+      if (examinerFields.signature_date_time) {
+        // Format the ISO date string to a readable format
+        try {
+          const date = new Date(examinerFields.signature_date_time);
+          const formattedDateTime = date.toLocaleString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          });
+          variableValues.set("examiner.signature_date_time", formattedDateTime);
+          console.log(
+            `✅ Set examiner.signature_date_time: ${formattedDateTime}`,
+          );
+        } catch (error) {
+          // If parsing fails, use the raw value
+          const rawValue = String(examinerFields.signature_date_time);
+          variableValues.set("examiner.signature_date_time", rawValue);
+          console.log(`⚠️ Set examiner.signature_date_time (raw): ${rawValue}`);
+        }
+      } else {
+        console.log(
+          "ℹ️ examiner.signature_date_time not found in examinerFields",
+        );
       }
     }
 

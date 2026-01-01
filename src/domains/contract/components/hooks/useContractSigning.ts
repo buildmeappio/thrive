@@ -40,9 +40,13 @@ export const useContractSigning = ({
 
       const pdfBase64 = await generatePdfFromHtml();
 
+      // Get current date/time in ISO format for signature_date_time
+      const signatureDateTime = new Date().toISOString();
+
       const fieldValues = {
         examiner: {
           signature: signatureImage || undefined,
+          signature_date_time: signatureDateTime,
           checkbox_selections: checkboxValues,
         },
       };

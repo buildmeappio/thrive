@@ -183,77 +183,127 @@ export async function getLatestContract(id: string) {
       }
     }
 
-    // Fetch custom variables to reconstruct checkbox groups if they're missing from HTML
+    // Fetch custom variables to reconstruct checkbox groups ONLY if they're referenced in the contract
     const checkboxGroupsFromTemplate: Array<{
       variableKey: string;
       label: string;
       options: Array<{ label: string; value: string }>;
     }> = [];
 
-    if (!contractHtml?.includes('data-variable-type="checkbox_group"')) {
-      try {
-        const customVariables = await prisma.customVariable.findMany({
-          where: {
-            isActive: true,
-            variableType: "checkbox_group",
-          },
-        });
+    // Check if contract HTML contains checkbox groups
+    const htmlHasCheckboxGroups =
+      contractHtml?.includes('data-variable-type="checkbox_group"') ||
+      contractHtml?.includes("data-variable-type='checkbox_group'");
 
-        customVariables.forEach((variable) => {
-          // Only include custom variables (those starting with "custom.")
-          // Exclude system variables like "thrive.*", "examiner.*", "contract.*", "fee.*"
-          if (!variable.key.startsWith("custom.")) {
-            console.log(
-              `🚫 Filtering out non-custom variable from database: ${variable.key}`,
-            );
-            return;
-          }
+    // Also check the template's bodyHtml to see which checkbox groups are actually in the template
+    const templateBodyHtml = contract.templateVersion?.bodyHtml || "";
+    const templateHasCheckboxGroups =
+      templateBodyHtml.includes('data-variable-type="checkbox_group"') ||
+      templateBodyHtml.includes("data-variable-type='checkbox_group'");
 
-          // Also exclude custom variables that contain system namespaces (e.g., "custom.thrive.primary_discipline")
-          if (
-            variable.key.includes(".thrive.") ||
-            variable.key.includes(".examiner.") ||
-            variable.key.includes(".contract.") ||
-            variable.key.includes(".fee.") ||
-            variable.key.startsWith("custom.thrive.") ||
-            variable.key.startsWith("custom.examiner.") ||
-            variable.key.startsWith("custom.contract.") ||
-            variable.key.startsWith("custom.fee.")
-          ) {
-            console.log(
-              `🚫 Filtering out custom variable with system namespace: ${variable.key}`,
-            );
-            return;
-          }
+    // Only fetch checkbox groups if they're missing from HTML but present in template
+    // OR if we need to reconstruct them from the template
+    if (!htmlHasCheckboxGroups && templateHasCheckboxGroups) {
+      console.log(
+        "🔍 HTML doesn't have checkbox groups but template does, fetching from database",
+      );
 
-          if (variable.options && Array.isArray(variable.options)) {
-            const options = variable.options as Array<{
-              label: string;
-              value: string;
-            }>;
-            // Remove "custom." prefix and any system namespace prefixes
-            const label = variable.key
-              .replace(/^custom\./, "")
-              .replace(/^(thrive|examiner|contract|fee)\./, "") // Remove system namespace if present
-              .replace(/_/g, " ")
-              .replace(/\b\w/g, (l) => l.toUpperCase());
+      // Extract checkbox group variable keys from the template bodyHtml
+      const checkboxGroupKeys = new Set<string>();
+      const checkboxGroupPattern = /data-variable-key\s*=\s*["']([^"']+)["']/gi;
+      let match;
+      while ((match = checkboxGroupPattern.exec(templateBodyHtml)) !== null) {
+        const key = match[1];
+        if (key.startsWith("custom.")) {
+          checkboxGroupKeys.add(key);
+        }
+      }
 
-            console.log(
-              `✅ Including custom checkbox group from database: ${variable.key} (label: ${label})`,
-            );
-            checkboxGroupsFromTemplate.push({
-              variableKey: variable.key,
-              label,
-              options,
-            });
-          }
-        });
-      } catch (error) {
-        console.error(
-          "Error fetching custom variables for checkbox groups:",
-          error,
+      console.log(
+        `🔍 Found ${checkboxGroupKeys.size} checkbox group variable keys in template:`,
+        Array.from(checkboxGroupKeys),
+      );
+
+      // Only fetch checkbox groups that are actually referenced in the template
+      if (checkboxGroupKeys.size > 0) {
+        try {
+          const customVariables = await prisma.customVariable.findMany({
+            where: {
+              isActive: true,
+              variableType: "checkbox_group",
+              key: {
+                in: Array.from(checkboxGroupKeys),
+              },
+            },
+          });
+
+          customVariables.forEach((variable) => {
+            // Only include custom variables (those starting with "custom.")
+            if (!variable.key.startsWith("custom.")) {
+              console.log(
+                `🚫 Filtering out non-custom variable from database: ${variable.key}`,
+              );
+              return;
+            }
+
+            // Also exclude custom variables that contain system namespaces
+            if (
+              variable.key.includes(".thrive.") ||
+              variable.key.includes(".examiner.") ||
+              variable.key.includes(".contract.") ||
+              variable.key.includes(".fee.") ||
+              variable.key.startsWith("custom.thrive.") ||
+              variable.key.startsWith("custom.examiner.") ||
+              variable.key.startsWith("custom.contract.") ||
+              variable.key.startsWith("custom.fee.")
+            ) {
+              console.log(
+                `🚫 Filtering out custom variable with system namespace: ${variable.key}`,
+              );
+              return;
+            }
+
+            if (variable.options && Array.isArray(variable.options)) {
+              const options = variable.options as Array<{
+                label: string;
+                value: string;
+              }>;
+              // Remove "custom." prefix and any system namespace prefixes
+              const label = variable.key
+                .replace(/^custom\./, "")
+                .replace(/^(thrive|examiner|contract|fee)\./, "") // Remove system namespace if present
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (l) => l.toUpperCase());
+
+              console.log(
+                `✅ Including custom checkbox group from database: ${variable.key} (label: ${label})`,
+              );
+              checkboxGroupsFromTemplate.push({
+                variableKey: variable.key,
+                label,
+                options,
+              });
+            }
+          });
+        } catch (error) {
+          console.error(
+            "Error fetching custom variables for checkbox groups:",
+            error,
+          );
+        }
+      } else {
+        console.log(
+          "⚠️ No checkbox group variable keys found in template, not fetching from database",
         );
       }
+    } else if (!htmlHasCheckboxGroups && !templateHasCheckboxGroups) {
+      console.log(
+        "ℹ️ Contract doesn't contain checkbox groups, not fetching from database",
+      );
+    } else {
+      console.log(
+        "ℹ️ Contract HTML already contains checkbox groups, not fetching from database",
+      );
     }
 
     return {

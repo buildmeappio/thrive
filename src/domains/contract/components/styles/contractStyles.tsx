@@ -37,6 +37,7 @@ export const ContractStyles = () => (
       flex-direction: column;
       clear: both;
       isolation: isolate; /* Create new stacking context */
+      box-sizing: border-box;
     }
 
     /* Ensure pages don't overlap - add spacing */
@@ -66,6 +67,9 @@ export const ContractStyles = () => (
       flex-wrap: wrap;
       overflow: hidden;
       box-sizing: border-box;
+      position: relative;
+      /* Ensure header doesn't overlap content */
+      margin-bottom: 0;
     }
 
     .header-left,
@@ -130,6 +134,26 @@ export const ContractStyles = () => (
       color: #333;
       background: white;
       min-height: 0;
+      /* Ensure content doesn't overlap with header/footer */
+      padding-top: 24px;
+      padding-bottom: 24px;
+      /* Account for header and footer heights */
+      box-sizing: border-box;
+      /* Add extra spacing to prevent text from being cut off */
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    /* Ensure first element in page-content has proper spacing */
+    .page-content > *:first-child {
+      margin-top: 0;
+      padding-top: 0;
+    }
+
+    /* Ensure last element in page-content has proper spacing */
+    .page-content > *:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
     }
 
     /* Page footer styles */
@@ -149,6 +173,9 @@ export const ContractStyles = () => (
       flex-wrap: wrap;
       overflow: hidden;
       box-sizing: border-box;
+      position: relative;
+      /* Ensure footer doesn't overlap content */
+      margin-top: 0;
     }
 
     .footer-left,
