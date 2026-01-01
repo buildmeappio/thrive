@@ -48,8 +48,8 @@ export function VariableKeyInput({
         </code>
       </p>
       <p className="text-xs text-gray-400 mt-1">
-        The key will be automatically formatted (e.g., "Primary Discipline" →
-        "custom.primary_discipline")
+        The key will be automatically formatted (e.g., &quot;Primary
+        Discipline&quot; → &quot;custom.primary_discipline&quot;)
       </p>
       {isEditing && isSystemVariable && (
         <p className="text-xs text-amber-600 mt-1">
@@ -59,8 +59,8 @@ export function VariableKeyInput({
       )}
       {!isEditing && (
         <p className="text-xs text-gray-400 mt-1">
-          Examples: "Primary Discipline", "Company Name", "Copyright Text" -
-          will be auto-formatted
+          Examples: &quot;Primary Discipline&quot;, &quot;Company Name&quot;,
+          &quot;Copyright Text&quot; - will be auto-formatted
         </p>
       )}
     </div>

@@ -111,7 +111,7 @@ export function CheckboxOptionsList({
       </div>
       {options.length === 0 && (
         <p className="text-xs text-gray-500 mt-2">
-          Click "Add Option" to create checkbox options
+          Click &quot;Add Option&quot; to create checkbox options
         </p>
       )}
     </div>
