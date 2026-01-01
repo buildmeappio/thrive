@@ -1687,102 +1687,208 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
 
         {/* Contract Review Modal */}
         {isContractReviewOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setIsContractReviewOpen(false)}
-          >
+          <>
+            <style jsx global>{`
+              /* Contract page styles for modal */
+              .contract-modal-container .page {
+                background: white;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                margin: 1rem auto;
+                position: relative;
+                min-height: auto;
+                height: auto;
+                overflow: visible;
+                page-break-inside: avoid;
+                flex-shrink: 0;
+                width: 100%;
+                max-width: 794px;
+                display: flex;
+                flex-direction: column;
+                box-sizing: border-box;
+              }
+
+              .contract-modal-container .page-header {
+                flex-shrink: 0;
+                min-height: 40px;
+                background: #f8f9fa;
+                border-bottom: 1px solid #dee2e6;
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                padding: 8px 40px;
+                font-size: 12px;
+                color: #6c757d;
+                font-weight: 500;
+                z-index: 10;
+                flex-wrap: wrap;
+                overflow: hidden;
+                box-sizing: border-box;
+                position: relative;
+                margin-bottom: 0;
+              }
+
+              .contract-modal-container .page-content {
+                flex: 1;
+                margin: 0;
+                padding: 24px 40px;
+                position: relative;
+                overflow: visible;
+                word-wrap: break-word;
+                line-height: 1.6;
+                font-size: 14px;
+                color: #333;
+                background: white;
+                min-height: 0;
+                box-sizing: border-box;
+                margin-top: 0;
+                margin-bottom: 0;
+              }
+
+              .contract-modal-container .page-footer {
+                flex-shrink: 0;
+                min-height: 40px;
+                background: #f8f9fa;
+                border-top: 1px solid #dee2e6;
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                padding: 8px 40px;
+                font-size: 12px;
+                color: #6c757d;
+                font-weight: 500;
+                z-index: 10;
+                flex-wrap: wrap;
+                overflow: hidden;
+                box-sizing: border-box;
+                position: relative;
+                margin-top: 0;
+              }
+
+              .contract-modal-container .pages-container {
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+                width: 100%;
+                padding: 0;
+                overflow: visible;
+              }
+
+              .contract-modal-container {
+                overflow: visible;
+              }
+
+              .contract-modal-container .page-content > *:first-child {
+                margin-top: 0;
+                padding-top: 0;
+              }
+
+              .contract-modal-container .page-content > *:last-child {
+                margin-bottom: 0;
+                padding-bottom: 0;
+              }
+            `}</style>
             <div
-              className="bg-white w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg relative flex flex-col"
-              onClick={(e) => e.stopPropagation()}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setIsContractReviewOpen(false)}
             >
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    Review Signed Contract
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Signed by {capitalizeWords(examiner.name)} on{" "}
-                    {examiner.contractSignedByExaminerAt
-                      ? new Date(
-                          examiner.contractSignedByExaminerAt,
-                        ).toLocaleDateString("en-US", {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        })
-                      : "N/A"}
-                  </p>
+              <div
+                className="bg-white w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg relative flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">
+                      Review Signed Contract
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Signed by {capitalizeWords(examiner.name)} on{" "}
+                      {examiner.contractSignedByExaminerAt
+                        ? new Date(
+                            examiner.contractSignedByExaminerAt,
+                          ).toLocaleDateString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        : "N/A"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsContractReviewOpen(false)}
+                    className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
+                    aria-label="Close"
+                  >
+                    ✕
+                  </button>
                 </div>
-                <button
-                  onClick={() => setIsContractReviewOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
-              </div>
 
-              {/* Contract Preview */}
-              <div className="flex-1 overflow-auto p-6">
-                {loadingContract ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-gray-600 font-poppins">
-                      Loading contract...
-                    </p>
-                  </div>
-                ) : contractHtml ? (
-                  <div
-                    className="w-full h-full bg-white rounded-lg p-6 overflow-auto"
-                    dangerouslySetInnerHTML={{ __html: contractHtml }}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
-                    <p className="text-gray-600 font-poppins">
-                      Contract preview not available
-                    </p>
-                  </div>
-                )}
-              </div>
+                {/* Contract Preview */}
+                <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 min-h-0">
+                  {loadingContract ? (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <p className="text-gray-600 font-poppins">
+                        Loading contract...
+                      </p>
+                    </div>
+                  ) : contractHtml ? (
+                    <div
+                      className="contract-modal-container w-full bg-white rounded-lg"
+                      style={{
+                        padding: "0",
+                      }}
+                      dangerouslySetInnerHTML={{ __html: contractHtml }}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+                      <p className="text-gray-600 font-poppins">
+                        Contract preview not available
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-              {/* Footer with Actions */}
-              <div className="flex items-center justify-between p-6 border-t border-gray-200">
-                <button
-                  onClick={() => setIsContractReviewOpen(false)}
-                  className="px-6 py-3 rounded-full border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-poppins text-sm font-medium"
-                >
-                  Close
-                </button>
-                <div className="flex items-center gap-3">
+                {/* Footer with Actions */}
+                <div className="flex items-center justify-between p-6 border-t border-gray-200">
                   <button
-                    onClick={handleDeclineContract}
-                    disabled={loadingAction !== null}
-                    className={cn(
-                      "px-6 py-3 rounded-full border border-red-500 text-red-700 bg-white hover:bg-red-50 font-poppins text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed",
-                    )}
+                    onClick={() => setIsContractReviewOpen(false)}
+                    className="px-6 py-3 rounded-full border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-poppins text-sm font-medium"
                   >
-                    {loadingAction === "reject"
-                      ? "Declining..."
-                      : "Decline Contract"}
+                    Close
                   </button>
-                  <button
-                    onClick={async () => {
-                      await handleMarkContractSigned();
-                      setIsContractReviewOpen(false);
-                    }}
-                    disabled={loadingAction !== null}
-                    className={cn(
-                      "px-6 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-poppins text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
-                    )}
-                  >
-                    {loadingAction === "markContractSigned"
-                      ? "Confirming..."
-                      : "Confirm Contract"}
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handleDeclineContract}
+                      disabled={loadingAction !== null}
+                      className={cn(
+                        "px-6 py-3 rounded-full border border-red-500 text-red-700 bg-white hover:bg-red-50 font-poppins text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed",
+                      )}
+                    >
+                      {loadingAction === "reject"
+                        ? "Declining..."
+                        : "Decline Contract"}
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await handleMarkContractSigned();
+                        setIsContractReviewOpen(false);
+                      }}
+                      disabled={loadingAction !== null}
+                      className={cn(
+                        "px-6 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-poppins text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
+                      )}
+                    >
+                      {loadingAction === "markContractSigned"
+                        ? "Confirming..."
+                        : "Confirm Contract"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
       {/* Bottom padding for mobile */}

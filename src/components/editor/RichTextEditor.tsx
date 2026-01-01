@@ -86,6 +86,7 @@ import PageBreakExtension from "./extension/PageBreakExtension";
 import TickBoxExtension from "./extension/TickBoxExtension";
 import FontSizeExtension from "./extension/FontSizeExtension";
 import { CheckboxGroupExtension } from "./extension/CheckboxGroupExtension";
+import { EnterKeyFixExtension } from "./extension/EnterKeyFixExtension";
 import HeaderFooterModal from "./HeaderFooterModal";
 import type { HeaderConfig, FooterConfig } from "./types";
 import {
@@ -216,6 +217,8 @@ export default function RichTextEditor({
 
   const extensions = useMemo(
     () => [
+      // Add EnterKeyFixExtension FIRST with highest priority to ensure it handles Enter
+      EnterKeyFixExtension,
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3, 4, 5, 6],
@@ -369,9 +372,9 @@ export default function RichTextEditor({
           // 2. If it has a namespace format, the namespace must be allowed
           const isValid = isInValidSet && hasValidNamespace;
 
-          // Get the variable value if available
-          const variableValue = variableValues.get(placeholder);
-          const displayText = variableValue || match;
+          // Always show the placeholder ({{variable.key}}) in the editor, not the value
+          // Values should only be shown in the preview, not in the editor
+          const displayText = match; // Always use the placeholder format
 
           const className = isValid
             ? "variable-valid bg-[#E0F7FA] text-[#006064] px-1 py-0.5 rounded font-mono text-sm underline"
@@ -424,10 +427,50 @@ export default function RichTextEditor({
       attributes: {
         class:
           "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none min-h-[500px] p-4 font-poppins editor-content",
+        tabindex: "0", // Ensure editor is focusable
       },
+      // Removed handleDOMEvents as it might interfere with keyboard shortcuts
+      // Let TipTap's keyboard shortcuts handle Enter key instead
     },
     immediatelyRender: false,
+    autofocus: false,
   });
+
+  // Debug: Log when editor is created
+  useEffect(() => {
+    if (editor) {
+      console.log(
+        "✅ Editor created, extensions:",
+        editor.extensionManager.extensions.map((e) => e.name),
+      );
+      console.log(
+        "✅ EnterKeyFixExtension loaded:",
+        editor.extensionManager.extensions.some(
+          (e) => e.name === "enterKeyFix",
+        ),
+      );
+    }
+  }, [editor]);
+
+  // Debug: Add global keydown listener to check if Enter is being captured
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const handleGlobalKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        console.log("Global Enter key detected", {
+          target: event.target,
+          currentTarget: event.currentTarget,
+          defaultPrevented: event.defaultPrevented,
+        });
+      }
+    };
+
+    document.addEventListener("keydown", handleGlobalKeyDown, true);
+    return () => {
+      document.removeEventListener("keydown", handleGlobalKeyDown, true);
+    };
+  }, [isMounted]);
 
   // Update highlighting when content or validVariables change
   useEffect(() => {
@@ -1895,18 +1938,27 @@ export default function RichTextEditor({
       </div>
 
       {/* Editor Content */}
-      <div
-        className="flex-1 min-h-0 overflow-hidden flex flex-col"
-        onClick={() => {
-          // Ensure editor receives focus when clicking on the container
-          if (editor && !editor.isDestroyed) {
-            editor.commands.focus();
-          }
-        }}
-      >
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
         <EditorContent
           editor={editor}
           className="min-h-[500px] max-h-[77vh] overflow-y-auto flex-1"
+          onClick={() => {
+            // Ensure editor receives focus when clicking on the editor content
+            if (editor && !editor.isDestroyed && !editor.isFocused) {
+              editor.commands.focus();
+            }
+          }}
+          onKeyDown={(e) => {
+            // Debug: log all keydown events
+            if (e.key === "Enter") {
+              console.log("EditorContent onKeyDown - Enter pressed", {
+                shiftKey: e.shiftKey,
+                defaultPrevented: e.defaultPrevented,
+                isFocused: editor?.isFocused,
+                target: e.target,
+              });
+            }
+          }}
         />
       </div>
 

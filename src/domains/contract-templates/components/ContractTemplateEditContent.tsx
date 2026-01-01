@@ -105,6 +105,11 @@ export default function ContractTemplateEditContent({ template }: Props) {
     compatible: boolean;
     missingVariables: string[];
   } | null>(null);
+
+  // Sync selectedFeeStructureId with template prop when it changes (e.g., after router.refresh())
+  useEffect(() => {
+    setSelectedFeeStructureId(template.feeStructureId || "");
+  }, [template.feeStructureId]);
   const [systemVariables, setSystemVariables] = useState<any[]>([]);
   const [customVariables, setCustomVariables] = useState<CustomVariable[]>([]);
   const [, setIsLoadingSystemVariables] = useState(false);
@@ -240,6 +245,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
 
     setIsSaving(true);
     try {
+      // Save template content
       const result = await saveTemplateDraftContentAction({
         templateId: template.id,
         content: content,
@@ -250,6 +256,28 @@ export default function ContractTemplateEditContent({ template }: Props) {
       if ("error" in result) {
         toast.error(result.error ?? "Failed to save template");
         return;
+      }
+
+      // Always save fee structure to ensure it's persisted with the template
+      // This ensures the fee structure is saved even if it was changed via dropdown
+      // Convert empty string to null for proper database storage
+      const feeStructureIdToSave =
+        selectedFeeStructureId && selectedFeeStructureId.trim()
+          ? selectedFeeStructureId
+          : null;
+      const feeStructureResult = await updateContractTemplateAction({
+        id: template.id,
+        feeStructureId: feeStructureIdToSave,
+      });
+      if ("error" in feeStructureResult) {
+        console.error(
+          "Error updating fee structure:",
+          feeStructureResult.error,
+        );
+        // Don't fail the save if fee structure update fails, but log it
+        toast.error(
+          `Template saved, but fee structure update failed: ${feeStructureResult.error}`,
+        );
       }
 
       // Update Google Doc URL if a new document ID was returned
