@@ -8,7 +8,10 @@ import type { RefObject } from "react";
 
 // Re-export for convenience
 export type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
-export type { FeeStructureListItem, FeeStructureData } from "@/domains/fee-structures/types/feeStructure.types";
+export type {
+  FeeStructureListItem,
+  FeeStructureData,
+} from "@/domains/fee-structures/types/feeStructure.types";
 export type { HeaderConfig, FooterConfig } from "@/components/editor/types";
 export type { ContractTemplateData } from "../../types/contractTemplate.types";
 
