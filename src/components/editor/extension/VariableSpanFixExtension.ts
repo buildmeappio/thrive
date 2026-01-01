@@ -29,7 +29,7 @@ export const VariableSpanFixExtension = Extension.create({
 
           // If transaction changed the document, check if we need to fix variable spans
           const tr = newState.tr;
-          let modified = false;
+          const modified = false;
 
           // We'll let the onUpdate handler in RichTextEditor fix this
           // This plugin is mainly for detection/prevention
@@ -83,13 +83,17 @@ export const VariableSpanFixExtension = Extension.create({
                                 spanEnd,
                               );
                               view.dispatch(tr);
-                            // Move cursor after inserted text
-                            setTimeout(() => {
-                              const newPos = spanEnd + text.length;
-                              const resolvedPos = view.state.doc.resolve(newPos);
-                              const selection = TextSelection.near(resolvedPos);
-                              view.dispatch(view.state.tr.setSelection(selection));
-                            }, 0);
+                              // Move cursor after inserted text
+                              setTimeout(() => {
+                                const newPos = spanEnd + text.length;
+                                const resolvedPos =
+                                  view.state.doc.resolve(newPos);
+                                const selection =
+                                  TextSelection.near(resolvedPos);
+                                view.dispatch(
+                                  view.state.tr.setSelection(selection),
+                                );
+                              }, 0);
                             }
                             return true; // Handled
                           }

@@ -416,7 +416,7 @@ export default function RichTextEditor({
     // First, fix any variable spans that have content added inside them
     // This happens when users type after a variable - TipTap might insert text inside the span
     // We need to extract any content that was added inside variable spans and place it after the span
-    let fixedHtml = html.replace(
+    const fixedHtml = html.replace(
       /<span class="variable-(valid|invalid)[^"]*" data-variable="([^"]*)"[^>]*>(.*?)<\/span>/g,
       (match, _validity, variableKey, content) => {
         // Extract the variable placeholder from content (should be {{variableKey}})
