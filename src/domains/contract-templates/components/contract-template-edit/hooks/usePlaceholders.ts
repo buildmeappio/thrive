@@ -100,6 +100,34 @@ export function usePlaceholders({
       ],
     });
 
+    // Add application.examiner variables (hardcoded as they come from application data)
+    vars.push({
+      namespace: "application",
+      vars: [
+        "examiner_name",
+        "examiner_first_name",
+        "examiner_last_name",
+        "examiner_email",
+        "examiner_phone",
+        "examiner_landline_number",
+        "examiner_province",
+        "examiner_city",
+        "examiner_languages_spoken",
+        "examiner_license_number",
+        "examiner_province_of_licensure",
+        "examiner_specialties",
+        "examiner_years_of_ime_experience",
+        "examiner_imes_completed",
+        "examiner_currently_conducting_imes",
+        "examiner_assessment_types",
+        "examiner_assessment_type_other",
+        "examiner_experience_details",
+        "examiner_agree_to_terms",
+        "examiner_signature",
+        "examiner_signature_date_time",
+      ],
+    });
+
     // Add fee structure variables
     if (selectedFeeStructureData?.variables) {
       vars.push({

@@ -31,6 +31,7 @@ export type PlaceholderValidationResult = {
 
 const ALLOWED_NAMESPACES = [
   "examiner",
+  "application", // Added for application.examiner_* variables
   "contract",
   "org",
   "thrive",

@@ -31,7 +31,9 @@ export function useFeeStructures({
   content,
 }: UseFeeStructuresParams): UseFeeStructuresReturn {
   const router = useRouter();
-  const [feeStructures, setFeeStructures] = useState<FeeStructureListItem[]>([]);
+  const [feeStructures, setFeeStructures] = useState<FeeStructureListItem[]>(
+    [],
+  );
   const [selectedFeeStructureId, setSelectedFeeStructureId] = useState<string>(
     initialFeeStructureId || "",
   );

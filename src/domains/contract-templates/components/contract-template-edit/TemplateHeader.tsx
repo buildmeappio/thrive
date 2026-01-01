@@ -90,8 +90,7 @@ export function TemplateHeader({
           disabled={
             isSaving ||
             !validation.valid ||
-            (feeStructureCompatibility &&
-              !feeStructureCompatibility.compatible)
+            (feeStructureCompatibility && !feeStructureCompatibility.compatible)
           }
           className="h-10 sm:h-11 px-4 sm:px-6 md:px-10 rounded-full bg-gradient-to-r items-center from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-poppins font-semibold text-xs sm:text-sm transition-all shadow-sm"
         >
