@@ -10,6 +10,7 @@ export const signContract = async (
   signatureImage?: string,
   ipAddress?: string,
   userAgent?: string,
+  fieldValues?: any,
 ) => {
   const result = await signContractHandler({
     contractId,
@@ -19,6 +20,7 @@ export const signContract = async (
     signatureImage,
     ipAddress,
     userAgent,
+    fieldValues,
   });
   return result;
 };

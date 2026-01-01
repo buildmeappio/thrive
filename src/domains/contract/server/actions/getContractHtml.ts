@@ -1,12 +1,15 @@
 "use server";
 
 import { getLatestContract } from "./getLatestContract.actions";
+import type { HeaderConfig, FooterConfig } from "../../types/contract.types";
 
 export const getContractHtmlAction = async (
   contractId: string,
 ): Promise<{
   success: boolean;
   contractHtml?: string | null;
+  headerConfig?: HeaderConfig | null;
+  footerConfig?: FooterConfig | null;
   error?: string;
 }> => {
   try {
@@ -29,6 +32,8 @@ export const getContractHtmlAction = async (
     return {
       success: true,
       contractHtml: contract.contractHtml || null,
+      headerConfig: (contract as any).headerConfig || null,
+      footerConfig: (contract as any).footerConfig || null,
     };
   } catch (error: unknown) {
     console.error("Error in getContractHtmlAction:", error);

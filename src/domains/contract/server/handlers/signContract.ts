@@ -17,6 +17,7 @@ export interface SignContractInput {
   signatureImage?: string; // Signature image as data URL
   ipAddress?: string;
   userAgent?: string;
+  fieldValues?: any; // Field values including checkbox selections
 }
 
 export async function signContractHandler(input: SignContractInput) {
@@ -77,8 +78,8 @@ export async function signContractHandler(input: SignContractInput) {
       // Get existing fieldValues
       const existingFieldValues = (contract.fieldValues as any) || {};
 
-      // Update fieldValues with signature if provided
-      const updatedFieldValues = {
+      // Update fieldValues with signature and checkbox selections if provided
+      const updatedFieldValues = input.fieldValues || {
         ...existingFieldValues,
         examiner: {
           ...(existingFieldValues.examiner || {}),
