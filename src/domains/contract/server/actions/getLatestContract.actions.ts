@@ -184,7 +184,7 @@ export async function getLatestContract(id: string) {
     }
 
     // Fetch custom variables to reconstruct checkbox groups if they're missing from HTML
-    let checkboxGroupsFromTemplate: Array<{
+    const checkboxGroupsFromTemplate: Array<{
       variableKey: string;
       label: string;
       options: Array<{ label: string; value: string }>;
@@ -232,7 +232,7 @@ export async function getLatestContract(id: string) {
               value: string;
             }>;
             // Remove "custom." prefix and any system namespace prefixes
-            let label = variable.key
+            const label = variable.key
               .replace(/^custom\./, "")
               .replace(/^(thrive|examiner|contract|fee)\./, "") // Remove system namespace if present
               .replace(/_/g, " ")
