@@ -57,6 +57,7 @@ import {
   Hash,
   Printer,
   Square,
+  Type,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -83,6 +84,8 @@ import { toast } from "sonner";
 import logger from "@/utils/logger";
 import PageBreakExtension from "./extension/PageBreakExtension";
 import TickBoxExtension from "./extension/TickBoxExtension";
+import FontSizeExtension from "./extension/FontSizeExtension";
+import { CheckboxGroupExtension } from "./extension/CheckboxGroupExtension";
 import HeaderFooterModal from "./HeaderFooterModal";
 import type { HeaderConfig, FooterConfig } from "./types";
 import {
@@ -99,6 +102,12 @@ type Props = {
   editorRef?: React.MutableRefObject<any>;
   validVariables?: Set<string>;
   availableVariables?: Array<{ namespace: string; vars: string[] }>;
+  variableValues?: Map<string, string>; // Map of variable keys to their default values
+  customVariables?: Array<{
+    key: string;
+    variableType: "text" | "checkbox_group";
+    options?: Array<{ label: string; value: string }> | null;
+  }>; // Custom variables with their types
   headerConfig?: HeaderConfig;
   footerConfig?: FooterConfig;
   onHeaderChange?: (config: HeaderConfig | undefined) => void;
@@ -131,6 +140,24 @@ const HIGHLIGHT_COLORS = [
   { name: "Gray", color: "#E5E7EB" },
 ];
 
+const FONT_SIZES = [
+  { label: "8px", value: "8px" },
+  { label: "9px", value: "9px" },
+  { label: "10px", value: "10px" },
+  { label: "11px", value: "11px" },
+  { label: "12px", value: "12px" },
+  { label: "14px", value: "14px" },
+  { label: "16px", value: "16px" },
+  { label: "18px", value: "18px" },
+  { label: "20px", value: "20px" },
+  { label: "24px", value: "24px" },
+  { label: "28px", value: "28px" },
+  { label: "32px", value: "32px" },
+  { label: "36px", value: "36px" },
+  { label: "48px", value: "48px" },
+  { label: "72px", value: "72px" },
+];
+
 export default function RichTextEditor({
   content,
   onChange,
@@ -138,6 +165,8 @@ export default function RichTextEditor({
   editorRef,
   validVariables = new Set(),
   availableVariables = [],
+  variableValues = new Map(),
+  customVariables = [],
   headerConfig: externalHeaderConfig,
   footerConfig: externalFooterConfig,
   onHeaderChange,
@@ -197,6 +226,11 @@ export default function RichTextEditor({
             class: "hard-break",
           },
         },
+        paragraph: {
+          HTMLAttributes: {
+            class: "",
+          },
+        },
       }),
       Placeholder.configure({
         placeholder: placeholder || "Start typing...",
@@ -236,6 +270,9 @@ export default function RichTextEditor({
         },
       }),
       TextStyle,
+      FontSizeExtension.configure({
+        types: ["textStyle"],
+      }),
       Color,
       Highlight.configure({
         multicolor: true,
@@ -268,6 +305,7 @@ export default function RichTextEditor({
       }),
       PageBreakExtension,
       TickBoxExtension,
+      CheckboxGroupExtension,
       VariableHighlight.configure({
         validVariables,
       }),
@@ -331,23 +369,31 @@ export default function RichTextEditor({
           // 2. If it has a namespace format, the namespace must be allowed
           const isValid = isInValidSet && hasValidNamespace;
 
+          // Get the variable value if available
+          const variableValue = variableValues.get(placeholder);
+          const displayText = variableValue || match;
+
           const className = isValid
-            ? "variable-valid bg-[#E0F7FA] text-[#006064] px-1 py-0.5 rounded font-mono text-sm"
-            : "variable-invalid bg-red-100 text-red-700 px-1 py-0.5 rounded font-mono text-sm";
-          const replacement = `<span class="${className}" data-variable="${placeholder}" data-is-valid="${isValid}">${match}</span>`;
+            ? "variable-valid bg-[#E0F7FA] text-[#006064] px-1 py-0.5 rounded font-mono text-sm underline"
+            : "variable-invalid bg-red-100 text-red-700 px-1 py-0.5 rounded font-mono text-sm underline";
+          const replacement = `<span class="${className}" data-variable="${placeholder}" data-is-valid="${isValid}" title="${match}">${displayText}</span>`;
           processedHtml = processedHtml.replace(match, replacement);
         });
 
         return processedHtml;
       },
-    [validVariables],
+    [validVariables, variableValues],
   );
 
   // Clean content before passing to onChange (remove highlight spans and trailing breaks)
   const cleanContent = useCallback((html: string): string => {
+    // Replace variable spans with their original placeholder format {{variable.key}}
+    // Extract the variable key from data-variable attribute and restore the placeholder
     let cleaned = html.replace(
-      /<span class="variable-(valid|invalid)[^"]*" data-variable="[^"]*">(.*?)<\/span>/g,
-      "$2",
+      /<span class="variable-(valid|invalid)[^"]*" data-variable="([^"]*)"[^>]*>.*?<\/span>/g,
+      (match, _validity, variableKey) => {
+        return `{{${variableKey}}}`;
+      },
     );
 
     // Remove ProseMirror trailing breaks: <p><br class="ProseMirror-trailingBreak"></p>
@@ -378,22 +424,6 @@ export default function RichTextEditor({
       attributes: {
         class:
           "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none min-h-[500px] p-4 font-poppins editor-content",
-      },
-      handleDOMEvents: {
-        keydown: (view, event) => {
-          // Prevent spacebar from creating new line
-          if (
-            event.key === " " &&
-            !event.shiftKey &&
-            !event.ctrlKey &&
-            !event.metaKey &&
-            !event.altKey
-          ) {
-            // Allow default spacebar behavior (insert space)
-            return false;
-          }
-          return false;
-        },
       },
     },
     immediatelyRender: false,
@@ -456,6 +486,7 @@ export default function RichTextEditor({
     // This prevents unnecessary updates and infinite loops
     if (currentCleaned !== content) {
       // Don't update if editor is focused (user is typing)
+      // This prevents interfering with user input, especially when pressing Enter multiple times
       if (editor.isFocused) {
         return;
       }
@@ -1100,9 +1131,9 @@ export default function RichTextEditor({
   );
 
   return (
-    <div className="rounded-[14px] border border-[#E9EDEE] bg-white overflow-hidden">
+    <div className="rounded-[14px] border border-[#E9EDEE] bg-white overflow-hidden flex flex-col">
       {/* Toolbar */}
-      <div className="border-b border-[#E9EDEE] p-2 flex flex-wrap gap-1 bg-gray-50">
+      <div className="border-b border-[#E9EDEE] p-2 flex flex-wrap gap-1 bg-gray-50 sticky top-0 z-50 flex-shrink-0 shadow-sm">
         {/* Undo/Redo */}
         <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
           <ToolbarButton
@@ -1293,6 +1324,87 @@ export default function RichTextEditor({
           >
             <SuperscriptIcon className="h-4 w-4" />
           </ToolbarButton>
+        </div>
+
+        {/* Font Size */}
+        <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                title="Font Size"
+              >
+                <Type className="h-4 w-4 mr-1" />
+                <span className="max-w-[60px] truncate">
+                  {(() => {
+                    const fontSize = editor.getAttributes("textStyle").fontSize;
+                    if (fontSize) {
+                      const sizeOption = FONT_SIZES.find(
+                        (s) => s.value === fontSize,
+                      );
+                      return sizeOption ? sizeOption.label : fontSize;
+                    }
+                    return "Size";
+                  })()}
+                </span>
+                <ChevronDown className="ml-1 h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="min-w-[120px] max-h-[300px] overflow-y-auto">
+              <DropdownMenuItem
+                onClick={() => {
+                  if (editor.commands.unsetFontSize) {
+                    editor.chain().focus().unsetFontSize().run();
+                  } else {
+                    // Fallback: unset fontSize directly via textStyle mark
+                    editor
+                      .chain()
+                      .focus()
+                      .setMark("textStyle", { fontSize: null })
+                      .removeEmptyTextStyle()
+                      .run();
+                  }
+                }}
+                className={
+                  !editor.getAttributes("textStyle").fontSize
+                    ? "bg-gray-100"
+                    : ""
+                }
+              >
+                <span className="text-sm">Default</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {FONT_SIZES.map((size) => (
+                <DropdownMenuItem
+                  key={size.value}
+                  onClick={() => {
+                    if (editor.commands.setFontSize) {
+                      editor.chain().focus().setFontSize(size.value).run();
+                    } else {
+                      // Fallback: set fontSize directly via textStyle mark
+                      editor
+                        .chain()
+                        .focus()
+                        .setMark("textStyle", { fontSize: size.value })
+                        .run();
+                    }
+                  }}
+                  className={
+                    editor.getAttributes("textStyle").fontSize === size.value
+                      ? "bg-gray-100"
+                      : ""
+                  }
+                >
+                  <span className="text-sm" style={{ fontSize: size.value }}>
+                    {size.label}
+                  </span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Colors */}
@@ -1515,6 +1627,78 @@ export default function RichTextEditor({
           </div>
         )}
 
+        {/* Checkbox Groups Menu */}
+        {customVariables.filter((v) => v.variableType === "checkbox_group")
+          .length > 0 && (
+          <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-xs"
+                  title="Insert Checkbox Group"
+                >
+                  <Square className="h-4 w-4 mr-1" />
+                  Checkboxes
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="max-h-[400px] overflow-y-auto min-w-[250px]">
+                {customVariables
+                  .filter((v) => v.variableType === "checkbox_group")
+                  .map((variable) => {
+                    const displayKey = variable.key.replace(/^custom\./, "");
+                    return (
+                      <DropdownMenuItem
+                        key={variable.key}
+                        onClick={() => {
+                          // Insert checkbox group HTML markup
+                          // Use Unicode checkbox characters (☐ = unchecked, ☑ = checked) that TipTap will preserve
+                          const checkboxHtml = `<div data-variable-type="checkbox_group" data-variable-key="${variable.key}" class="checkbox-group-variable" style="margin: 12px 0;">
+  <label class="font-semibold" style="font-weight: 600; display: block; margin-bottom: 8px;">${displayKey.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}:</label>
+  <div class="checkbox-options" style="margin-top: 8px;">
+    ${
+      variable.options
+        ?.map(
+          (opt) => `
+      <div style="margin-bottom: 4px; display: flex; align-items: center;">
+        <span class="checkbox-indicator" data-checkbox-value="${opt.value}" data-variable-key="${variable.key}" style="display: inline-block; width: 16px; height: 16px; border: 2px solid #333; margin-right: 8px; vertical-align: middle; flex-shrink: 0;">☐</span>
+        <label style="margin: 0; font-weight: normal;">${opt.label}</label>
+      </div>
+    `,
+        )
+        .join("") || ""
+    }
+  </div>
+</div>`;
+                          editor
+                            .chain()
+                            .focus()
+                            .insertContent(checkboxHtml)
+                            .run();
+                        }}
+                        className="text-xs"
+                      >
+                        <div>
+                          <div className="font-semibold">
+                            {displayKey
+                              .replace(/_/g, " ")
+                              .replace(/\b\w/g, (l) => l.toUpperCase())}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {variable.options?.length || 0} options
+                          </div>
+                        </div>
+                      </DropdownMenuItem>
+                    );
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
+
         {/* Insert Menu */}
         <div className="flex gap-1">
           <DropdownMenu>
@@ -1711,10 +1895,20 @@ export default function RichTextEditor({
       </div>
 
       {/* Editor Content */}
-      <EditorContent
-        editor={editor}
-        className="min-h-[500px] max-h-[77vh] overflow-y-auto"
-      />
+      <div
+        className="flex-1 min-h-0 overflow-hidden flex flex-col"
+        onClick={() => {
+          // Ensure editor receives focus when clicking on the container
+          if (editor && !editor.isDestroyed) {
+            editor.commands.focus();
+          }
+        }}
+      >
+        <EditorContent
+          editor={editor}
+          className="min-h-[500px] max-h-[77vh] overflow-y-auto flex-1"
+        />
+      </div>
 
       {/* Hidden file input for image upload */}
       <input

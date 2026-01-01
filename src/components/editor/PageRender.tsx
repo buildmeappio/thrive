@@ -12,6 +12,7 @@ interface PageRendererProps {
   content: string;
   header?: HeaderConfig;
   footer?: FooterConfig;
+  variableValues?: Map<string, string>; // Map of variable keys to their default values
 }
 
 export interface PageInfo {
@@ -25,6 +26,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
   content,
   header,
   footer,
+  variableValues = new Map(),
 }) => {
   const [pages, setPages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -387,7 +389,11 @@ const PageRenderer: React.FC<PageRendererProps> = ({
     // Get the maximum header/footer heights that could appear on any page
     const headerHeight = header ? header.height || 40 : 0;
     const footerHeight = footer ? footer.height || 40 : 0;
-    return CONTENT_HEIGHT_PX - headerHeight - footerHeight;
+    // Account for the 10px top and bottom margins used in rendering
+    // Add a larger buffer (15px) to account for rounding, spacing differences, and line heights
+    // This ensures measurement matches actual available space and prevents clipping
+    // Being more conservative ensures all content is visible
+    return CONTENT_HEIGHT_PX - headerHeight - footerHeight - 20 - 15; // 10px top + 10px bottom margin + 15px buffer
   }, [header, footer, CONTENT_HEIGHT_PX]);
 
   /**
@@ -424,28 +430,41 @@ const PageRenderer: React.FC<PageRendererProps> = ({
     measurementContainer.style.overflowWrap = "break-word"; // Match render wrapping
     measurementContainer.style.whiteSpace = "normal"; // Match render wrapping
     measurementContainer.style.boxSizing = "border-box"; // Match render box model
+    measurementContainer.style.padding = "0"; // Match render padding
+    measurementContainer.style.margin = "0"; // Match render margin
     measurementContainer.className = "page-content"; // Apply same CSS class for consistent styling
     document.body.appendChild(measurementContainer);
 
     try {
       // First, split by manual page breaks
-      const contentParts = content.split('<div class="page-break"></div>');
+      // Use a more robust regex to handle page breaks with potential whitespace
+      const pageBreakRegex = /<div\s+class="page-break"\s*><\/div>/gi;
+      const contentParts = content.split(pageBreakRegex);
       const pages: string[] = [];
 
       for (const part of contentParts) {
-        if (!part.trim()) continue;
+        const trimmedPart = part.trim();
+        if (!trimmedPart) continue;
 
-        // Parse the HTML content
+        // Parse the HTML content - preserve all content including text nodes
         const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = part.trim();
+        tempDiv.innerHTML = trimmedPart;
 
-        // Get all top-level children as an array
-        const children = Array.from(tempDiv.children) as HTMLElement[];
+        // Get all top-level nodes (both elements and text nodes)
+        const allNodes = Array.from(tempDiv.childNodes);
+        const elementNodes = allNodes.filter(
+          (node) => node.nodeType === Node.ELEMENT_NODE,
+        ) as HTMLElement[];
 
-        if (children.length === 0) {
-          // If no children (plain text), wrap in a div and add as page
-          if (part.trim()) {
-            pages.push(part.trim());
+        // If there are no element nodes but there is content, it's plain text
+        if (elementNodes.length === 0) {
+          // Check if there are text nodes with actual content
+          const textNodes = allNodes.filter(
+            (node) =>
+              node.nodeType === Node.TEXT_NODE && node.textContent?.trim(),
+          );
+          if (textNodes.length > 0 || trimmedPart) {
+            pages.push(trimmedPart);
           }
           continue;
         }
@@ -456,8 +475,48 @@ const PageRenderer: React.FC<PageRendererProps> = ({
         // This ensures content fits regardless of which page it lands on
         const availableHeight = getMinAvailableHeight();
 
-        for (let i = 0; i < children.length; i++) {
-          const child = children[i];
+        // Process all nodes, preserving text nodes between elements
+        for (let i = 0; i < allNodes.length; i++) {
+          const node = allNodes[i];
+
+          // Handle text nodes - wrap them in paragraphs to preserve them
+          if (node.nodeType === Node.TEXT_NODE) {
+            const textContent = node.textContent?.trim();
+            if (textContent) {
+              // Wrap text nodes in a paragraph to preserve them
+              const p = document.createElement("p");
+              p.textContent = textContent;
+              const wrappedNode = p as HTMLElement;
+
+              // Try adding this wrapped text node to current page
+              const testElements = [...currentPageElements, wrappedNode];
+              const testHeight = measureCumulativeHeight(
+                testElements,
+                measurementContainer,
+              );
+
+              if (
+                testHeight > availableHeight &&
+                currentPageElements.length > 0
+              ) {
+                // Current page is full, save it
+                const pageDiv = document.createElement("div");
+                currentPageElements.forEach((el) =>
+                  pageDiv.appendChild(el.cloneNode(true)),
+                );
+                pages.push(pageDiv.innerHTML);
+                currentPageElements = [wrappedNode];
+              } else {
+                currentPageElements.push(wrappedNode);
+              }
+            }
+            continue;
+          }
+
+          // Process element nodes
+          if (node.nodeType !== Node.ELEMENT_NODE) continue;
+
+          const child = node as HTMLElement;
 
           // Special handling for tables that need to be split
           if (child.tagName === "TABLE") {
@@ -495,6 +554,83 @@ const PageRenderer: React.FC<PageRendererProps> = ({
             }
           }
 
+          // Special handling for lists (ul/ol) that need to be split
+          if (child.tagName === "UL" || child.tagName === "OL") {
+            const listItems = Array.from(
+              child.querySelectorAll(":scope > li"),
+            ) as HTMLElement[];
+
+            if (listItems.length > 0) {
+              // Process each list item individually to ensure all items are preserved
+              for (
+                let itemIndex = 0;
+                itemIndex < listItems.length;
+                itemIndex++
+              ) {
+                const listItem = listItems[itemIndex];
+
+                // Create a temporary list with just this item to measure its height
+                const tempList = document.createElement(child.tagName);
+                // Copy list attributes (like class, data-type, etc.)
+                Array.from(child.attributes).forEach((attr) => {
+                  tempList.setAttribute(attr.name, attr.value);
+                });
+                tempList.appendChild(listItem.cloneNode(true));
+
+                // Try adding this list item to current page
+                const testElements = [...currentPageElements, tempList];
+                const testHeight = measureCumulativeHeight(
+                  testElements,
+                  measurementContainer,
+                );
+
+                if (
+                  testHeight > availableHeight &&
+                  currentPageElements.length > 0
+                ) {
+                  // Current page is full, save it
+                  const pageDiv = document.createElement("div");
+                  currentPageElements.forEach((el) =>
+                    pageDiv.appendChild(el.cloneNode(true)),
+                  );
+                  pages.push(pageDiv.innerHTML);
+                  currentPageElements = [];
+                }
+
+                // Create a new list with just this item for proper rendering
+                const newList = document.createElement(child.tagName);
+                // Copy list attributes (like class, data-type, etc.)
+                Array.from(child.attributes).forEach((attr) => {
+                  newList.setAttribute(attr.name, attr.value);
+                });
+                newList.appendChild(listItem.cloneNode(true));
+
+                // Check if single list item exceeds available height
+                const singleListHeight = measureCumulativeHeight(
+                  [newList],
+                  measurementContainer,
+                );
+                if (
+                  singleListHeight > availableHeight &&
+                  currentPageElements.length === 0
+                ) {
+                  // List item is too tall, but we still need to show it
+                  // Add it as its own page - it will overflow but be visible
+                  const pageDiv = document.createElement("div");
+                  pageDiv.appendChild(newList.cloneNode(true));
+                  pages.push(pageDiv.innerHTML);
+                  // Don't add to currentPageElements since it's already on its own page
+                } else {
+                  // List item fits, add it to current page
+                  currentPageElements.push(newList);
+                }
+              }
+
+              // Skip the original list element since we've processed all its items
+              continue;
+            }
+          }
+
           // Try adding this element to current page
           const testElements = [...currentPageElements, child];
           const testHeight = measureCumulativeHeight(
@@ -519,11 +655,15 @@ const PageRenderer: React.FC<PageRendererProps> = ({
               measurementContainer,
             );
             if (singleHeight > availableHeight) {
-              // Element is too tall, add it as its own page (will be clipped)
+              // Element is too tall, but we still need to show it
+              // Add it as its own page - it will overflow but be visible
               const pageDiv = document.createElement("div");
               pageDiv.appendChild(child.cloneNode(true));
               pages.push(pageDiv.innerHTML);
               currentPageElements = [];
+            } else {
+              // Element fits on new page, keep it in currentPageElements
+              // (it's already been set above)
             }
           } else {
             // Element fits, add to current page
@@ -554,8 +694,178 @@ const PageRenderer: React.FC<PageRendererProps> = ({
   }, [content, CONTENT_WIDTH_PX, splitTableIntoPages, getMinAvailableHeight]);
 
   // Process page content to convert image width/height attributes to inline styles
+  // and replace variable placeholders with their values
   const processPageContent = (html: string): string => {
-    return processImageAttributes(html);
+    let processed = processImageAttributes(html);
+
+    // CRITICAL: Protect checkbox groups FIRST before any variable processing
+    // Temporarily replace checkbox groups with placeholders to prevent them from being processed
+    const checkboxGroupPlaceholders: string[] = [];
+
+    // Use a more robust approach: find checkbox groups by matching opening tag, then find matching closing tag
+    // This handles nested divs correctly
+    const checkboxGroupPattern =
+      /<div[^>]*data-variable-type=["']checkbox_group["'][^>]*>/gi;
+    let match;
+    const groups: Array<{ start: number; end: number; html: string }> = [];
+
+    // Find all opening tags
+    while ((match = checkboxGroupPattern.exec(processed)) !== null) {
+      const startIndex = match.index;
+      const openingTag = match[0];
+
+      // Find the matching closing </div> tag by counting nested divs
+      let depth = 1;
+      let currentIndex = startIndex + openingTag.length;
+
+      while (depth > 0 && currentIndex < processed.length) {
+        const nextOpen = processed.indexOf("<div", currentIndex);
+        const nextClose = processed.indexOf("</div>", currentIndex);
+
+        if (nextClose === -1) break;
+
+        if (nextOpen !== -1 && nextOpen < nextClose) {
+          depth++;
+          currentIndex = nextOpen + 4;
+        } else {
+          depth--;
+          if (depth === 0) {
+            const endIndex = nextClose + 6; // Include </div>
+            const html = processed.substring(startIndex, endIndex);
+            groups.push({ start: startIndex, end: endIndex, html });
+            break;
+          }
+          currentIndex = nextClose + 6;
+        }
+      }
+    }
+
+    // Replace groups in reverse order to maintain indices
+    groups.reverse().forEach((group) => {
+      const placeholder = `__CHECKBOX_GROUP_${checkboxGroupPlaceholders.length}__`;
+      checkboxGroupPlaceholders.unshift(group.html);
+      processed =
+        processed.substring(0, group.start) +
+        placeholder +
+        processed.substring(group.end);
+    });
+
+    // Now process variable highlight spans (checkbox groups are safely stored)
+    // Step 1: Remove spans with data-variable attribute (most common case)
+    processed = processed.replace(
+      /<span[^>]*data-variable="([^"]*)"[^>]*class="[^"]*variable-(valid|invalid)[^"]*"[^>]*>(.*?)<\/span>/gi,
+      (match, variableKey, _validity, content) => {
+        return `{{${variableKey}}}`;
+      },
+    );
+
+    // Step 2: Remove spans with variable classes (catch any remaining)
+    processed = processed.replace(
+      /<span[^>]*class="[^"]*variable-(valid|invalid)[^"]*"[^>]*>(.*?)<\/span>/gi,
+      (match, _validity, content) => {
+        // Try to extract placeholder from content
+        const placeholderMatch = content.match(/\{\{([^}]+)\}\}/);
+        if (placeholderMatch) {
+          return placeholderMatch[0];
+        }
+        // If content is plain text (might be a value), try to find variable key from data attribute
+        const dataVarMatch = match.match(/data-variable="([^"]*)"/);
+        if (dataVarMatch) {
+          return `{{${dataVarMatch[1]}}}`;
+        }
+        return content;
+      },
+    );
+
+    // Step 3: Remove any remaining spans with inline styles that might have variable colors
+    processed = processed.replace(
+      /<span[^>]*style="[^"]*background[^"]*#[E0F7FA][^"]*"[^>]*>(.*?)<\/span>/gi,
+      (match, content) => {
+        const placeholderMatch = content.match(/\{\{([^}]+)\}\}/);
+        return placeholderMatch ? placeholderMatch[0] : content;
+      },
+    );
+
+    processed = processed.replace(
+      /<span[^>]*style="[^"]*background[^"]*red[^"]*"[^>]*data-variable="([^"]*)"[^>]*>(.*?)<\/span>/gi,
+      (match, variableKey, content) => {
+        return `{{${variableKey}}}`;
+      },
+    );
+
+    // Replace variable placeholders with their values and add underline styling
+    // Checkbox groups are already protected, so they won't be processed
+    const placeholderRegex = /\{\{\s*([^}]+?)\s*\}\}/g;
+    processed = processed.replace(placeholderRegex, (match, placeholder) => {
+      const variableKey = placeholder.trim();
+      const variableValue = variableValues.get(variableKey);
+
+      if (variableValue) {
+        // Replace with value as regular text with bold underline (thick border-bottom)
+        // IMPORTANT: No classes, no background color - just plain text with bold underline
+        // Use inline style only to override any CSS that might apply
+        return `<span style="border-bottom: 2px solid black; background: none !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; font-weight: normal;" title="${match}">${variableValue}</span>`;
+      }
+
+      // If no value found, show as a bold underline (blank line to fill in)
+      // This creates a visual blank space with a bold underline, like a form field
+      return `<span style="border-bottom: 2px solid black; display: inline-block; min-width: 150px; background: none !important; color: transparent !important; padding: 0 !important; border-radius: 0 !important;" title="${match}">&nbsp;</span>`;
+    });
+
+    // Restore checkbox groups exactly as stored (they remain unchanged, no underlines added)
+    checkboxGroupPlaceholders.forEach((checkboxGroup, index) => {
+      // Restore the checkbox group exactly as it was stored
+      // The checkbox group HTML should be preserved completely
+      let restored = checkboxGroup;
+
+      // Ensure it has the checkbox-group-variable class if it doesn't already
+      if (
+        !restored.includes('class="checkbox-group-variable"') &&
+        !restored.includes("class='checkbox-group-variable'")
+      ) {
+        const keyMatch = restored.match(/data-variable-key=["']([^"']*)["']/);
+        const variableKey = keyMatch ? keyMatch[1] : "";
+
+        // Extract content
+        const contentStart = restored.indexOf(">") + 1;
+        const contentEnd = restored.lastIndexOf("</div>");
+        const content =
+          contentStart > 0 && contentEnd > contentStart
+            ? restored.substring(contentStart, contentEnd)
+            : "";
+
+        // Rebuild with class
+        restored = `<div data-variable-type="checkbox_group" data-variable-key="${variableKey}" class="checkbox-group-variable" style="margin: 12px 0;">
+${content}
+</div>`;
+      }
+
+      // Remove any underline styles that might have been added to content inside checkbox group
+      // Remove border-bottom styles from spans
+      restored = restored.replace(
+        /<span([^>]*)\s+style="([^"]*border-bottom[^"]*)"([^>]*)>/gi,
+        (match, before, style, after) => {
+          // Remove border-bottom from style attribute
+          const cleanedStyle = style
+            .replace(/border-bottom[^;]*;?/gi, "")
+            .trim();
+          const newStyle = cleanedStyle ? `style="${cleanedStyle}"` : "";
+          return `<span${before} ${newStyle}${after}>`;
+        },
+      );
+
+      // Also remove any standalone underline spans that might have been added
+      restored = restored.replace(
+        /<span[^>]*style="[^"]*border-bottom:\s*2px[^"]*"[^>]*>.*?<\/span>/gi,
+        "",
+      );
+
+      // Use a more specific replacement pattern
+      const placeholderPattern = new RegExp(`__CHECKBOX_GROUP_${index}__`, "g");
+      processed = processed.replace(placeholderPattern, restored);
+    });
+
+    return processed;
   };
 
   // Effect to perform pagination when content changes
@@ -620,6 +930,50 @@ const PageRenderer: React.FC<PageRendererProps> = ({
 
   return (
     <div className="page-renderer">
+      <style>{`
+        .checkbox-group-variable {
+          margin: 12px 0;
+        }
+        .checkbox-group-variable label {
+          font-weight: 600;
+          display: block;
+          margin-bottom: 8px;
+        }
+        .checkbox-group-variable .checkbox-options {
+          margin-top: 8px;
+        }
+        .checkbox-group-variable .checkbox-options > div {
+          margin-bottom: 4px;
+          display: flex;
+          align-items: center;
+        }
+        .checkbox-group-variable .checkbox-indicator {
+          display: inline-block;
+          width: 16px;
+          height: 16px;
+          border: 2px solid #333;
+          margin-right: 8px;
+          vertical-align: middle;
+          flex-shrink: 0;
+          text-align: center;
+          line-height: 12px;
+          font-size: 14px;
+          cursor: default;
+        }
+        .checkbox-group-variable label {
+          font-weight: normal;
+          margin-bottom: 0;
+        }
+        .checkbox-group-variable,
+        .checkbox-group-variable *,
+        .checkbox-group-variable label,
+        .checkbox-group-variable input,
+        .checkbox-group-variable div,
+        .checkbox-group-variable span {
+          border-bottom: none !important;
+          text-decoration: none !important;
+        }
+      `}</style>
       <h3 className="preview-heading">
         Page Preview (A4 Layout) - {pages.length}{" "}
         {pages.length === 1 ? "Page" : "Pages"}
@@ -650,10 +1004,12 @@ const PageRenderer: React.FC<PageRendererProps> = ({
               : "";
 
           // Calculate content area positioning
-          const contentTop = headerHeight + 10; // 40px top margin + header height
-          const contentBottom = footerHeight + 10; // 40px bottom margin + footer height
+          const contentTop = headerHeight + 10; // 10px top margin + header height
+          const contentBottom = footerHeight + 10; // 10px bottom margin + footer height
+          // Calculate content area height accounting for margins
+          // Match the measurement logic exactly to prevent clipping
           const contentAreaHeight =
-            CONTENT_HEIGHT_PX - headerHeight - footerHeight;
+            CONTENT_HEIGHT_PX - headerHeight - footerHeight - 20 - 15; // Subtract 20px for margins + 15px buffer
 
           return (
             <div
@@ -699,15 +1055,16 @@ const PageRenderer: React.FC<PageRendererProps> = ({
                 className="page-content"
                 style={{
                   width: "calc(100% - 80px)",
-                  height: `${contentAreaHeight}px`,
+                  minHeight: `${contentAreaHeight}px`,
+                  height: "auto", // Allow content to expand if needed to show all content
                   margin: "0",
                   padding: "0",
                   position: "absolute",
                   top: `${contentTop}px`,
                   left: "40px",
                   right: "40px",
-                  bottom: `${contentBottom}px`,
-                  overflow: "hidden", // No scrollbars - content must fit within page
+                  bottom: "auto", // Don't constrain bottom - let content expand
+                  overflow: "visible", // Allow content to be visible even if it exceeds page bounds
                   overflowWrap: "break-word",
                 }}
                 dangerouslySetInnerHTML={{

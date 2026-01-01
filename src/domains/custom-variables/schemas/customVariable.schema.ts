@@ -1,33 +1,57 @@
 import { z } from "zod";
 
-export const createCustomVariableSchema = z.object({
-  key: z
-    .string()
-    .min(1)
-    .max(255)
-    .regex(
-      /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/,
-      "Key must be in format 'namespace.key' (e.g., 'thrive.company_name', 'custom.copyright')",
-    ),
-  defaultValue: z.string().min(1),
-  description: z.string().max(500).optional().nullable(),
+const checkboxOptionSchema = z.object({
+  label: z.string().min(1),
+  value: z.string().min(1),
 });
 
-export const updateCustomVariableSchema = z.object({
-  id: z.string().uuid(),
-  key: z
-    .string()
-    .min(1)
-    .max(255)
-    .regex(
-      /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/,
-      "Key must be in format 'namespace.key' (e.g., 'thrive.company_name', 'custom.copyright')",
-    )
-    .optional(),
-  defaultValue: z.string().min(1).optional(),
-  description: z.string().max(500).optional().nullable(),
-  isActive: z.boolean().optional(),
-});
+export const createCustomVariableSchema = z
+  .object({
+    key: z.string().min(1).max(255),
+    defaultValue: z.string().optional(),
+    description: z.string().max(500).optional().nullable(),
+    variableType: z.enum(["text", "checkbox_group"]).default("text"),
+    options: z.array(checkboxOptionSchema).optional().nullable(),
+  })
+  .refine(
+    (data) => {
+      // For text variables, defaultValue is required
+      if (data.variableType === "text") {
+        return data.defaultValue && data.defaultValue.trim().length > 0;
+      }
+      // For checkbox groups, defaultValue is not required
+      return true;
+    },
+    {
+      message: "Default value is required for text variables",
+      path: ["defaultValue"],
+    },
+  );
+
+export const updateCustomVariableSchema = z
+  .object({
+    id: z.string().uuid(),
+    key: z.string().min(1).max(255).optional(),
+    defaultValue: z.string().optional(),
+    description: z.string().max(500).optional().nullable(),
+    isActive: z.boolean().optional(),
+    variableType: z.enum(["text", "checkbox_group"]).optional(),
+    options: z.array(checkboxOptionSchema).optional().nullable(),
+  })
+  .refine(
+    (data) => {
+      // If updating variableType to text, defaultValue is required
+      if (data.variableType === "text" && data.defaultValue !== undefined) {
+        return data.defaultValue.trim().length > 0;
+      }
+      // For checkbox groups or when defaultValue is not being updated, it's optional
+      return true;
+    },
+    {
+      message: "Default value is required for text variables",
+      path: ["defaultValue"],
+    },
+  );
 
 export const listCustomVariablesSchema = z.object({
   isActive: z.boolean().optional(),

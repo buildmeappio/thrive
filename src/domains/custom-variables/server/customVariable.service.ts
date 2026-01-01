@@ -7,6 +7,60 @@ import {
   ListCustomVariablesInput,
 } from "../types/customVariable.types";
 
+/**
+ * Normalizes a variable key to the proper format
+ * - Adds "custom." prefix if not present
+ * - Converts to lowercase
+ * - Replaces spaces and special characters with underscores
+ * - Removes leading/trailing underscores
+ * - Replaces multiple underscores with single underscore
+ */
+function normalizeVariableKey(key: string): string {
+  let normalized = key.trim();
+
+  if (!normalized) {
+    throw new Error("Variable key cannot be empty");
+  }
+
+  // If it already has a namespace (contains a dot), extract it
+  if (normalized.includes(".")) {
+    const parts = normalized.split(".");
+    const namespace = parts[0].toLowerCase();
+    const keyPart = parts.slice(1).join("."); // Keep periods in key part
+
+    // Normalize the key part
+    let normalizedKeyPart = keyPart
+      .toLowerCase()
+      .replace(/[^a-z0-9_.]+/g, "_") // Replace non-alphanumeric (except underscore and period) with underscore
+      .replace(/^_+|_+$/g, "") // Remove leading/trailing underscores
+      .replace(/_+/g, "_"); // Replace multiple underscores with single underscore
+
+    // Remove periods at the end
+    normalizedKeyPart = normalizedKeyPart.replace(/\.+$/, "");
+
+    // Ensure key part is not empty
+    if (!normalizedKeyPart) {
+      throw new Error("Variable key part cannot be empty after normalization");
+    }
+
+    // Always use "custom." namespace for custom variables
+    return `custom.${normalizedKeyPart}`;
+  }
+
+  // No namespace, normalize and add "custom." prefix
+  normalized = normalized
+    .toLowerCase()
+    .replace(/[^a-z0-9_]+/g, "_") // Replace non-alphanumeric (except underscore) with underscore
+    .replace(/^_+|_+$/g, "") // Remove leading/trailing underscores
+    .replace(/_+/g, "_"); // Replace multiple underscores with single underscore
+
+  if (!normalized) {
+    throw new Error("Variable key cannot be empty after normalization");
+  }
+
+  return `custom.${normalized}`;
+}
+
 // List all custom variables
 export const listCustomVariables = async (
   input: ListCustomVariablesInput = {},
@@ -28,6 +82,8 @@ export const listCustomVariables = async (
     defaultValue: v.defaultValue,
     description: v.description,
     isActive: v.isActive,
+    variableType: (v.variableType as "text" | "checkbox_group") || "text",
+    options: (v.options as any) || null,
     createdAt: v.createdAt.toISOString(),
     updatedAt: v.updatedAt.toISOString(),
   }));
@@ -51,6 +107,9 @@ export const getCustomVariable = async (
     defaultValue: variable.defaultValue,
     description: variable.description,
     isActive: variable.isActive,
+    variableType:
+      (variable.variableType as "text" | "checkbox_group") || "text",
+    options: (variable.options as any) || null,
     createdAt: variable.createdAt.toISOString(),
     updatedAt: variable.updatedAt.toISOString(),
   };
@@ -60,23 +119,28 @@ export const getCustomVariable = async (
 export const createCustomVariable = async (
   input: CreateCustomVariableInput,
 ): Promise<CustomVariable> => {
+  // Normalize the key automatically
+  const normalizedKey = normalizeVariableKey(input.key);
+
   // Check if key already exists
   const existing = await prisma.customVariable.findFirst({
-    where: { key: input.key },
+    where: { key: normalizedKey },
   });
 
   if (existing) {
     throw HttpError.badRequest(
-      `A custom variable with key "${input.key}" already exists`,
+      `A custom variable with key "${normalizedKey}" already exists`,
     );
   }
 
   const variable = await prisma.customVariable.create({
     data: {
-      key: input.key,
-      defaultValue: input.defaultValue,
+      key: normalizedKey,
+      defaultValue: input.defaultValue || "", // Empty string for checkbox groups
       description: input.description || null,
       isActive: true,
+      variableType: input.variableType || "text",
+      options: input.options || null,
     },
   });
 
@@ -86,6 +150,9 @@ export const createCustomVariable = async (
     defaultValue: variable.defaultValue,
     description: variable.description,
     isActive: variable.isActive,
+    variableType:
+      (variable.variableType as "text" | "checkbox_group") || "text",
+    options: (variable.options as any) || null,
     createdAt: variable.createdAt.toISOString(),
     updatedAt: variable.updatedAt.toISOString(),
   };
@@ -117,25 +184,34 @@ export const updateCustomVariable = async (
     );
   }
 
-  // If updating key, check for duplicates
+  // If updating key, normalize it and check for duplicates
   if (updateData.key && updateData.key !== existingVariable.key) {
+    const normalizedKey = normalizeVariableKey(updateData.key);
+    updateData.key = normalizedKey;
+
     const existing = await prisma.customVariable.findFirst({
       where: {
-        key: updateData.key,
+        key: normalizedKey,
         NOT: { id },
       },
     });
 
     if (existing) {
       throw HttpError.badRequest(
-        `A custom variable with key "${updateData.key}" already exists`,
+        `A custom variable with key "${normalizedKey}" already exists`,
       );
     }
   }
 
+  // Prepare update data, handling options JSON
+  const updatePayload: any = { ...updateData };
+  if (updateData.options !== undefined) {
+    updatePayload.options = updateData.options;
+  }
+
   const variable = await prisma.customVariable.update({
     where: { id },
-    data: updateData,
+    data: updatePayload,
   });
 
   return {
@@ -144,6 +220,9 @@ export const updateCustomVariable = async (
     defaultValue: variable.defaultValue,
     description: variable.description,
     isActive: variable.isActive,
+    variableType:
+      (variable.variableType as "text" | "checkbox_group") || "text",
+    options: (variable.options as any) || null,
     createdAt: variable.createdAt.toISOString(),
     updatedAt: variable.updatedAt.toISOString(),
   };
