@@ -255,17 +255,19 @@ export const ContractStyles = () => (
       text-align: center;
       line-height: 12px;
       font-size: 14px;
-      cursor: pointer;
+      cursor: default;
       user-select: none;
       transition: background-color 0.2s;
+      pointer-events: none;
     }
     .checkbox-group-variable .checkbox-indicator:hover {
-      background-color: #f0f0f0;
+      background-color: transparent;
     }
     .checkbox-group-variable label {
       font-weight: normal;
       margin-bottom: 0;
-      cursor: pointer;
+      cursor: default;
+      pointer-events: none;
     }
     .prose table {
       border-collapse: collapse;

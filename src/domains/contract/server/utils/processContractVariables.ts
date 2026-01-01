@@ -17,6 +17,13 @@ export async function processContractVariables(
     email: string;
     province?: string;
     city?: string;
+    phone?: string;
+    landlineNumber?: string;
+    languagesSpoken?: string[];
+    licenseNumber?: string;
+    provinceOfLicensure?: string;
+    specialties?: string[];
+    yearsOfIMEExperience?: string;
   },
   contractFieldValues?: Record<string, any> | null,
 ): Promise<string> {
@@ -40,7 +47,65 @@ export async function processContractVariables(
     variableValues.set("fee.payment_terms", feeStructure.paymentTerms);
   }
 
-  // 2. Add examiner variables
+  // 2. Add examiner application variables (using new application.examiner_* format)
+  variableValues.set("application.examiner_name", examinerData.name);
+  variableValues.set("application.examiner_email", examinerData.email);
+
+  if (examinerData.province) {
+    variableValues.set("application.examiner_province", examinerData.province);
+  }
+  if (examinerData.city) {
+    variableValues.set("application.examiner_city", examinerData.city);
+  }
+  if (examinerData.phone) {
+    variableValues.set("application.examiner_phone", examinerData.phone);
+  }
+  if (examinerData.landlineNumber) {
+    variableValues.set(
+      "application.examiner_landline_number",
+      examinerData.landlineNumber,
+    );
+  }
+  if (
+    examinerData.languagesSpoken &&
+    Array.isArray(examinerData.languagesSpoken) &&
+    examinerData.languagesSpoken.length > 0
+  ) {
+    variableValues.set(
+      "application.examiner_languages_spoken",
+      examinerData.languagesSpoken.join(", "),
+    );
+  }
+  if (examinerData.licenseNumber) {
+    variableValues.set(
+      "application.examiner_license_number",
+      examinerData.licenseNumber,
+    );
+  }
+  if (examinerData.provinceOfLicensure) {
+    variableValues.set(
+      "application.examiner_province_of_licensure",
+      examinerData.provinceOfLicensure,
+    );
+  }
+  if (
+    examinerData.specialties &&
+    Array.isArray(examinerData.specialties) &&
+    examinerData.specialties.length > 0
+  ) {
+    variableValues.set(
+      "application.examiner_specialties",
+      examinerData.specialties.join(", "),
+    );
+  }
+  if (examinerData.yearsOfIMEExperience) {
+    variableValues.set(
+      "application.examiner_years_of_ime_experience",
+      examinerData.yearsOfIMEExperience,
+    );
+  }
+
+  // Also support legacy examiner.* format for backward compatibility
   variableValues.set("examiner.name", examinerData.name);
   variableValues.set("examiner.email", examinerData.email);
   if (examinerData.province) {
@@ -81,7 +146,7 @@ export async function processContractVariables(
       if (examinerFields.checkbox_selections) {
         // Checkbox selections are handled separately in the UI
       }
-      // Add examiner.signature_date_time if it exists
+      // Add examiner.signature_date_time if it exists (both new and legacy formats)
       if (examinerFields.signature_date_time) {
         // Format the ISO date string to a readable format
         try {
@@ -94,20 +159,42 @@ export async function processContractVariables(
             minute: "2-digit",
             hour12: true,
           });
-          variableValues.set("examiner.signature_date_time", formattedDateTime);
+          variableValues.set(
+            "application.examiner_signature_date_time",
+            formattedDateTime,
+          );
+          variableValues.set("examiner.signature_date_time", formattedDateTime); // Legacy support
           console.log(
-            `✅ Set examiner.signature_date_time: ${formattedDateTime}`,
+            `✅ Set application.examiner_signature_date_time: ${formattedDateTime}`,
           );
         } catch (error) {
           // If parsing fails, use the raw value
           const rawValue = String(examinerFields.signature_date_time);
-          variableValues.set("examiner.signature_date_time", rawValue);
-          console.log(`⚠️ Set examiner.signature_date_time (raw): ${rawValue}`);
+          variableValues.set(
+            "application.examiner_signature_date_time",
+            rawValue,
+          );
+          variableValues.set("examiner.signature_date_time", rawValue); // Legacy support
+          console.log(
+            `⚠️ Set application.examiner_signature_date_time (raw): ${rawValue}`,
+          );
         }
       } else {
         console.log(
           "ℹ️ examiner.signature_date_time not found in examinerFields",
         );
+      }
+
+      // Add examiner signature if it exists (both new and legacy formats)
+      if (examinerFields.signature) {
+        variableValues.set(
+          "application.examiner_signature",
+          String(examinerFields.signature),
+        );
+        variableValues.set(
+          "examiner.signature",
+          String(examinerFields.signature),
+        ); // Legacy support
       }
     }
 

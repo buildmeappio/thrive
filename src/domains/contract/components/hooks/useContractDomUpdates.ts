@@ -402,69 +402,8 @@ export const useContractDomUpdates = ({
         });
       }
 
-      // Restore checkbox states after signature/date/name updates
-      if (checkboxGroups.length > 0 && Object.keys(checkboxValues).length > 0) {
-        checkboxGroups.forEach((group) => {
-          const currentValues = checkboxValues[group.variableKey] || [];
-          group.options.forEach((opt) => {
-            const isChecked = currentValues.includes(opt.value);
-
-            const allParagraphs = contractEl.querySelectorAll<HTMLElement>("p");
-            allParagraphs.forEach((p) => {
-              const text = p.textContent?.trim() || "";
-              const labelMatch = text.match(/^[☐☑]\s*(.+)$/);
-              if (labelMatch) {
-                const labelText = labelMatch[1].trim();
-                const matches =
-                  labelText.toLowerCase() === opt.label.toLowerCase();
-
-                if (matches) {
-                  let checkboxSpan = p.querySelector(
-                    "span.checkbox-indicator",
-                  ) as HTMLElement | null;
-
-                  if (!checkboxSpan) {
-                    checkboxSpan = document.createElement("span");
-                    checkboxSpan.className = "checkbox-indicator";
-                    checkboxSpan.style.display = "inline-block";
-                    checkboxSpan.style.marginRight = "4px";
-                    checkboxSpan.style.padding = "2px 4px";
-                    checkboxSpan.style.borderRadius = "4px";
-                    checkboxSpan.style.cursor = "pointer";
-
-                    const restOfText = text.substring(1).trim();
-                    checkboxSpan.textContent = isChecked ? "☑" : "☐";
-
-                    p.textContent = "";
-                    p.appendChild(checkboxSpan);
-                    if (restOfText) {
-                      p.appendChild(document.createTextNode(" " + restOfText));
-                    }
-                  } else {
-                    checkboxSpan.textContent = isChecked ? "☑" : "☐";
-                  }
-
-                  if (checkboxSpan) {
-                    checkboxSpan.style.backgroundColor = isChecked
-                      ? "#e3f2fd"
-                      : "transparent";
-                  }
-
-                  p.style.backgroundColor = "transparent";
-
-                  if (isChecked) {
-                    p.setAttribute("data-checkbox-checked", "true");
-                    p.setAttribute("data-checkbox-value", opt.value);
-                  } else {
-                    p.removeAttribute("data-checkbox-checked");
-                    p.removeAttribute("data-checkbox-value");
-                  }
-                }
-              }
-            });
-          });
-        });
-      }
+      // Checkboxes are read-only - they remain as displayed in the contract HTML
+      // No interaction needed, they're just visual elements
     }, 50); // Small delay to ensure DOM is ready and ContractContent has finished updating
 
     return () => clearTimeout(timeoutId);

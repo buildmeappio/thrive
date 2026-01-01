@@ -158,6 +158,8 @@ export async function getLatestContract(id: string) {
           city,
         });
 
+        // Extract all examiner application fields
+        const application = contract.application;
         contractHtml = await processContractVariables(
           contractHtml,
           {
@@ -172,6 +174,14 @@ export async function getLatestContract(id: string) {
             email: examinerEmail,
             province: province,
             city: city,
+            phone: application?.phone || undefined,
+            landlineNumber: application?.landlineNumber || undefined,
+            languagesSpoken: application?.languagesSpoken || undefined,
+            licenseNumber: application?.licenseNumber || undefined,
+            provinceOfLicensure: application?.provinceOfLicensure || undefined,
+            specialties: application?.specialties || undefined,
+            yearsOfIMEExperience:
+              application?.yearsOfIMEExperience || undefined,
           },
           contract.fieldValues as Record<string, any> | null,
         );
