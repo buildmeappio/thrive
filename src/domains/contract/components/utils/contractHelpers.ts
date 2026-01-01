@@ -95,19 +95,19 @@ export const processContractHtmlWithHeadersFooters = (
         ${
           showHeader
             ? `
-          <div class="page-header" style="flex-shrink: 0; height: ${headerHeight}px; background: #f8f9fa; border-bottom: 1px solid #dee2e6; padding: 8px 40px; display: flex; align-items: center; z-index: 10;">
+          <div class="page-header" style="flex-shrink: 0; height: ${headerHeight}px; background: #f8f9fa; border-bottom: 1px solid #dee2e6; padding: 8px 40px; display: flex; align-items: center; z-index: 10; box-sizing: border-box; margin: 0;">
             <div class="header-content" style="width: 100%;">${headerContent}</div>
           </div>
         `
             : ""
         }
-        <div class="page-content" style="flex: 1; padding: 20px 40px; overflow: visible; word-wrap: break-word; min-height: 0;">
+        <div class="page-content" style="flex: 1; padding: 24px 40px; overflow: visible; word-wrap: break-word; min-height: 0; box-sizing: border-box; margin: 0;">
           ${trimmedPart}
         </div>
         ${
           showFooter
             ? `
-          <div class="page-footer" style="flex-shrink: 0; height: ${footerHeight}px; background: #f8f9fa; border-top: 1px solid #dee2e6; padding: 8px 40px; display: flex; align-items: center; z-index: 10;">
+          <div class="page-footer" style="flex-shrink: 0; height: ${footerHeight}px; background: #f8f9fa; border-top: 1px solid #dee2e6; padding: 8px 40px; display: flex; align-items: center; z-index: 10; box-sizing: border-box; margin: 0;">
             <div class="footer-content" style="width: 100%;">${footerContent}</div>
           </div>
         `
@@ -145,19 +145,19 @@ export const processContractHtmlWithHeadersFooters = (
         ${
           showHeader
             ? `
-          <div class="page-header" style="flex-shrink: 0; height: ${headerHeight}px; background: #f8f9fa; border-bottom: 1px solid #dee2e6; padding: 8px 40px; display: flex; align-items: center; z-index: 10;">
+          <div class="page-header" style="flex-shrink: 0; height: ${headerHeight}px; background: #f8f9fa; border-bottom: 1px solid #dee2e6; padding: 8px 40px; display: flex; align-items: center; z-index: 10; box-sizing: border-box; margin: 0;">
             <div class="header-content" style="width: 100%;">${headerContent}</div>
           </div>
         `
             : ""
         }
-        <div class="page-content" style="flex: 1; padding: 20px 40px; overflow: visible; word-wrap: break-word; min-height: 0;">
+        <div class="page-content" style="flex: 1; padding: 24px 40px; overflow: visible; word-wrap: break-word; min-height: 0; box-sizing: border-box; margin: 0;">
           ${html}
         </div>
         ${
           showFooter
             ? `
-          <div class="page-footer" style="flex-shrink: 0; height: ${footerHeight}px; background: #f8f9fa; border-top: 1px solid #dee2e6; padding: 8px 40px; display: flex; align-items: center; z-index: 10;">
+          <div class="page-footer" style="flex-shrink: 0; height: ${footerHeight}px; background: #f8f9fa; border-top: 1px solid #dee2e6; padding: 8px 40px; display: flex; align-items: center; z-index: 10; box-sizing: border-box; margin: 0;">
             <div class="footer-content" style="width: 100%;">${footerContent}</div>
           </div>
         `
