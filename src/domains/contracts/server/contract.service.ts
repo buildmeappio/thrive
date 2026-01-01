@@ -141,6 +141,8 @@ export const getContract = async (id: string): Promise<ContractData> => {
           bodyHtml: true,
           googleDocTemplateId: true,
           googleDocFolderId: true,
+          headerConfig: true,
+          footerConfig: true,
         },
       },
       feeStructure: {
@@ -148,6 +150,21 @@ export const getContract = async (id: string): Promise<ContractData> => {
           variables: {
             orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
           },
+        },
+      },
+      examinerProfile: {
+        include: {
+          account: {
+            include: {
+              user: true,
+            },
+          },
+          address: true,
+        },
+      },
+      application: {
+        include: {
+          address: true,
         },
       },
     },
@@ -701,12 +718,117 @@ export const previewContract = async (
   // Get all values for placeholder replacement
   const values: Record<string, string | number | boolean> = {};
 
+  // Fetch examiner profile if needed
+  let examinerProfile = null;
+  if (contract.examinerProfileId) {
+    examinerProfile = await prisma.examinerProfile.findUnique({
+      where: { id: contract.examinerProfileId },
+      include: {
+        account: {
+          include: {
+            user: true,
+          },
+        },
+        address: true,
+      },
+    });
+  }
+
+  // Fetch application if needed
+  let application = null;
+  if (contract.applicationId) {
+    application = await prisma.examinerApplication.findUnique({
+      where: { id: contract.applicationId },
+      include: {
+        address: true,
+      },
+    });
+  }
+
+  // Extract fieldValues for use throughout the function
+  const fv =
+    contract.fieldValues && typeof contract.fieldValues === "object"
+      ? (contract.fieldValues as any)
+      : null;
+
   // Add examiner values
-  if (contract.fieldValues && typeof contract.fieldValues === "object") {
-    const fv = contract.fieldValues as any;
-    if (fv.examiner) {
-      for (const [key, value] of Object.entries(fv.examiner)) {
-        values[`examiner.${key}`] = String(value);
+  if (fv && fv.examiner) {
+    for (const [key, value] of Object.entries(fv.examiner)) {
+      // Special handling for examiner.name - always format it properly
+      if (key === "name" && examinerProfile?.account?.user) {
+        const user = examinerProfile.account.user;
+        const formattedName = formatFullName(user.firstName, user.lastName);
+        if (formattedName) {
+          values["examiner.name"] = formattedName;
+        } else {
+          values["examiner.name"] = String(value);
+        }
+      } else {
+        // Only add non-empty values from fieldValues
+        // Empty values will be populated from examinerProfile or application address below
+        const stringValue = String(value);
+        if (stringValue.trim() !== "") {
+          values[`examiner.${key}`] = stringValue;
+        }
+      }
+    }
+  }
+
+  // Add examiner data from examinerProfile if available (for missing fields like city)
+  if (examinerProfile) {
+    // Add examiner name if not already set (using formatFullName utility for consistent formatting)
+    if (!values["examiner.name"] && examinerProfile.account?.user) {
+      const user = examinerProfile.account.user;
+      const fullName = formatFullName(user.firstName, user.lastName);
+      if (fullName) {
+        values["examiner.name"] = fullName;
+      }
+    }
+
+    // Add examiner email if not already set
+    if (!values["examiner.email"] && examinerProfile.account?.user?.email) {
+      values["examiner.email"] = examinerProfile.account.user.email;
+    }
+
+    // Add examiner city from address if not already set or if it's empty
+    // Check both examinerProfile address and application address
+    // Also check if it's already in values but empty - we want to populate it if we have a source
+    const currentCityValue = values["examiner.city"];
+    const hasCityValue =
+      currentCityValue && String(currentCityValue).trim() !== "";
+
+    if (!hasCityValue) {
+      // First check examinerProfile address
+      if (
+        examinerProfile.address?.city &&
+        examinerProfile.address.city.trim() !== ""
+      ) {
+        values["examiner.city"] = examinerProfile.address.city;
+      } else if (
+        application?.address?.city &&
+        application.address.city.trim() !== ""
+      ) {
+        // Check application address if available
+        values["examiner.city"] = application.address.city;
+      } else {
+        // If city is not available, set empty string to avoid missing placeholder error
+        // The template should handle empty values gracefully
+        values["examiner.city"] = "";
+      }
+    }
+
+    // Add examiner province from address if not already set
+    // Check both examinerProfile address and application address
+    if (!values["examiner.province"]) {
+      // First check examinerProfile address
+      if (examinerProfile.address?.province) {
+        values["examiner.province"] = examinerProfile.address.province;
+      } else if (application?.address?.province) {
+        // Check application address if available
+        values["examiner.province"] = application.address.province;
+      } else {
+        // If province is not available, set empty string to avoid missing placeholder error
+        values["examiner.province"] = "";
       }
     }
 
@@ -722,95 +844,95 @@ export const previewContract = async (
       }).format(new Date(contract.signedAt));
       values["examiner.signature_date_time"] = signatureDateTime;
     }
+  }
 
-    // Add contract values
-    if (fv.contract) {
-      for (const [key, value] of Object.entries(fv.contract)) {
-        values[`contract.${key}`] = String(value);
-      }
+  // Add contract values
+  if (fv && fv.contract) {
+    for (const [key, value] of Object.entries(fv.contract)) {
+      values[`contract.${key}`] = String(value);
     }
+  }
 
-    // Add review date from contract.reviewedAt if available
-    if (contract.reviewedAt) {
-      try {
-        const reviewDateObj = new Date(contract.reviewedAt);
-        // Check if date is valid
-        if (!isNaN(reviewDateObj.getTime())) {
-          const reviewDate = new Intl.DateTimeFormat("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }).format(reviewDateObj);
-          values["contract.review_date"] = reviewDate;
-        }
-      } catch (error) {
-        logger.warn(
-          `Failed to format review date for contract ${contract.id}:`,
-          error,
-        );
+  // Add review date from contract.reviewedAt if available
+  if (contract.reviewedAt) {
+    try {
+      const reviewDateObj = new Date(contract.reviewedAt);
+      // Check if date is valid
+      if (!isNaN(reviewDateObj.getTime())) {
+        const reviewDate = new Intl.DateTimeFormat("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }).format(reviewDateObj);
+        values["contract.review_date"] = reviewDate;
       }
+    } catch (error) {
+      logger.warn(
+        `Failed to format review date for contract ${contract.id}:`,
+        error,
+      );
     }
+  }
 
-    // Add thrive values (defaults)
-    if (fv.thrive) {
-      for (const [key, value] of Object.entries(fv.thrive)) {
-        values[`thrive.${key}`] = String(value);
-      }
-    } else if (fv.org) {
-      // Backward compatibility: support old "org" namespace
-      for (const [key, value] of Object.entries(fv.org)) {
-        values[`thrive.${key}`] = String(value);
-      }
+  // Add thrive values (defaults)
+  if (fv && fv.thrive) {
+    for (const [key, value] of Object.entries(fv.thrive)) {
+      values[`thrive.${key}`] = String(value);
     }
-
-    // Add all variables from database (system + custom)
-    const dbVariablesMap = await getAllVariablesMap();
-    Object.assign(values, dbVariablesMap);
-
-    // Override with fieldValues if provided
-    if (fv.thrive) {
-      for (const [key, value] of Object.entries(fv.thrive)) {
-        values[`thrive.${key}`] = String(value);
-      }
-    } else if (fv.org) {
-      // Backward compatibility: support old "org" namespace
-      for (const [key, value] of Object.entries(fv.org)) {
-        values[`thrive.${key}`] = String(value);
-      }
+  } else if (fv && fv.org) {
+    // Backward compatibility: support old "org" namespace
+    for (const [key, value] of Object.entries(fv.org)) {
+      values[`thrive.${key}`] = String(value);
     }
+  }
 
-    // Add fees values
-    if (contract.feeStructure) {
-      for (const variable of contract.feeStructure.variables) {
-        const overrideValue = fv.fees_overrides?.[variable.key];
-        const defaultValue =
-          overrideValue !== undefined ? overrideValue : variable.defaultValue;
+  // Add all variables from database (system + custom)
+  const dbVariablesMap = await getAllVariablesMap();
+  Object.assign(values, dbVariablesMap);
 
-        // Format based on type
-        let formattedValue: string;
-        if (variable.type === "MONEY") {
-          const numValue =
-            typeof defaultValue === "number"
-              ? defaultValue
-              : parseFloat(String(defaultValue || 0));
-          formattedValue = new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: variable.currency || "USD",
-            minimumFractionDigits: variable.decimals || 2,
-            maximumFractionDigits: variable.decimals || 2,
-          }).format(numValue);
-        } else if (variable.type === "NUMBER") {
-          const numValue =
-            typeof defaultValue === "number"
-              ? defaultValue
-              : parseFloat(String(defaultValue || 0));
-          formattedValue = numValue.toFixed(variable.decimals || 0);
-        } else {
-          formattedValue = String(defaultValue || "");
-        }
+  // Override with fieldValues if provided
+  if (fv && fv.thrive) {
+    for (const [key, value] of Object.entries(fv.thrive)) {
+      values[`thrive.${key}`] = String(value);
+    }
+  } else if (fv && fv.org) {
+    // Backward compatibility: support old "org" namespace
+    for (const [key, value] of Object.entries(fv.org)) {
+      values[`thrive.${key}`] = String(value);
+    }
+  }
 
-        values[`fees.${variable.key}`] = formattedValue;
+  // Add fees values
+  if (contract.feeStructure) {
+    for (const variable of contract.feeStructure.variables) {
+      const overrideValue = fv?.fees_overrides?.[variable.key];
+      const defaultValue =
+        overrideValue !== undefined ? overrideValue : variable.defaultValue;
+
+      // Format based on type
+      let formattedValue: string;
+      if (variable.type === "MONEY") {
+        const numValue =
+          typeof defaultValue === "number"
+            ? defaultValue
+            : parseFloat(String(defaultValue || 0));
+        formattedValue = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: variable.currency || "USD",
+          minimumFractionDigits: variable.decimals || 2,
+          maximumFractionDigits: variable.decimals || 2,
+        }).format(numValue);
+      } else if (variable.type === "NUMBER") {
+        const numValue =
+          typeof defaultValue === "number"
+            ? defaultValue
+            : parseFloat(String(defaultValue || 0));
+        formattedValue = numValue.toFixed(variable.decimals || 0);
+      } else {
+        formattedValue = String(defaultValue || "");
       }
+
+      values[`fees.${variable.key}`] = formattedValue;
     }
   } else {
     // No fieldValues, load all variables from database
@@ -883,6 +1005,91 @@ export const previewContract = async (
   // Replace placeholders in template
   let renderedHtml = templateHtml;
   const missingPlaceholders: string[] = [];
+
+  // Step 1: Protect checkbox groups first
+  const checkboxGroupPlaceholders: string[] = [];
+  const checkboxGroupPattern =
+    /<div[^>]*data-variable-type=["']checkbox_group["'][^>]*>/gi;
+  let match;
+  const groups: Array<{ start: number; end: number; html: string }> = [];
+
+  while ((match = checkboxGroupPattern.exec(renderedHtml)) !== null) {
+    const startIndex = match.index;
+    const openingTag = match[0];
+    let depth = 1;
+    let currentIndex = startIndex + openingTag.length;
+
+    while (depth > 0 && currentIndex < renderedHtml.length) {
+      const nextOpen = renderedHtml.indexOf("<div", currentIndex);
+      const nextClose = renderedHtml.indexOf("</div>", currentIndex);
+      if (nextClose === -1) break;
+      if (nextOpen !== -1 && nextOpen < nextClose) {
+        depth++;
+        currentIndex = nextOpen + 4;
+      } else {
+        depth--;
+        if (depth === 0) {
+          const endIndex = nextClose + 6;
+          groups.push({
+            start: startIndex,
+            end: endIndex,
+            html: renderedHtml.substring(startIndex, endIndex),
+          });
+          break;
+        }
+        currentIndex = nextClose + 6;
+      }
+    }
+  }
+
+  groups.reverse().forEach((group) => {
+    const placeholder = `__CHECKBOX_GROUP_${checkboxGroupPlaceholders.length}__`;
+    checkboxGroupPlaceholders.unshift(group.html);
+    renderedHtml =
+      renderedHtml.substring(0, group.start) +
+      placeholder +
+      renderedHtml.substring(group.end);
+  });
+
+  // Step 2: Extract variable keys from spans with data-variable attribute
+  renderedHtml = renderedHtml.replace(
+    /<span[^>]*data-variable="([^"]*)"[^>]*>(.*?)<\/span>/gi,
+    (match, variableKey) => {
+      return `{{${variableKey}}}`;
+    },
+  );
+
+  // Step 3: Extract variable keys from spans with title attribute containing placeholder
+  renderedHtml = renderedHtml.replace(
+    /<span[^>]*title="\{\{([^}]+)\}\}"[^>]*>(.*?)<\/span>/gi,
+    (match, variableKey) => {
+      return `{{${variableKey}}}`;
+    },
+  );
+
+  // Step 4: Extract variable keys from spans with border-bottom styling (preview spans)
+  renderedHtml = renderedHtml.replace(
+    /<span[^>]*style="[^"]*border-bottom:\s*2px[^"]*"[^>]*title="\{\{([^}]+)\}\}"[^>]*>(.*?)<\/span>/gi,
+    (match, variableKey) => {
+      return `{{${variableKey}}}`;
+    },
+  );
+
+  // Step 5: Handle spans with variable classes
+  renderedHtml = renderedHtml.replace(
+    /<span[^>]*class="[^"]*variable-(valid|invalid)[^"]*"[^>]*>(.*?)<\/span>/gi,
+    (match, _validity, content) => {
+      const placeholderMatch = content.match(/\{\{([^}]+)\}\}/);
+      if (placeholderMatch) return placeholderMatch[0];
+      const dataVarMatch = match.match(/data-variable="([^"]*)"/);
+      if (dataVarMatch) return `{{${dataVarMatch[1]}}}`;
+      const titleMatch = match.match(/title="\{\{([^}]+)\}\}"/);
+      if (titleMatch) return `{{${titleMatch[1]}}}`;
+      return content;
+    },
+  );
+
+  // Step 6: Now parse and replace placeholders
   const placeholders = parsePlaceholders(renderedHtml);
 
   for (const placeholder of placeholders) {
@@ -898,10 +1105,19 @@ export const previewContract = async (
       placeholder === "examiner.signature_date_time";
 
     // Review date is optional - only set when admin reviews the contract
+    // City and province are optional - may not be available for all examiners
     const isOptionalPlaceholder =
-      isSignaturePlaceholder || placeholder === "contract.review_date";
+      isSignaturePlaceholder ||
+      placeholder === "contract.review_date" ||
+      placeholder === "examiner.city" ||
+      placeholder === "examiner.province";
 
-    if (values[placeholder]) {
+    // Check if value exists and is not empty (for city/province, empty string means not available)
+    const value = values[placeholder];
+    const hasValue =
+      value !== undefined && value !== null && String(value).trim() !== "";
+
+    if (hasValue) {
       // Special handling for logo and signature - convert to img tag if it's a URL or data URL
       let replacement: string;
       if (
@@ -936,7 +1152,9 @@ export const previewContract = async (
           replacement = signatureUrl;
         }
       } else {
-        replacement = String(values[placeholder]);
+        // For regular variable values, add bold underline styling (matching template preview)
+        const valueStr = String(value);
+        replacement = `<span style="border-bottom: 2px solid black; background: none !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; font-weight: normal;" title="${placeholder}">${valueStr}</span>`;
       }
 
       renderedHtml = renderedHtml.replace(regex, replacement);
@@ -950,6 +1168,19 @@ export const previewContract = async (
       } else if (placeholder === "contract.review_date") {
         // For review_date, replace with empty string or "Not reviewed" - it's optional
         renderedHtml = renderedHtml.replace(regex, "");
+      } else if (
+        placeholder === "examiner.city" ||
+        placeholder === "examiner.province"
+      ) {
+        // For city and province, if value exists but is empty string, replace with empty string
+        // Otherwise, use underscores as placeholder
+        const value = values[placeholder];
+        if (value !== undefined && String(value).trim() !== "") {
+          renderedHtml = renderedHtml.replace(regex, String(value));
+        } else {
+          const underscoreLine = "________________________";
+          renderedHtml = renderedHtml.replace(regex, underscoreLine);
+        }
       } else {
         // For signature_date_time, just use underscores without the data attribute
         const underscoreLine = "________________________";
@@ -960,6 +1191,12 @@ export const previewContract = async (
       missingPlaceholders.push(placeholder);
     }
   }
+
+  // Step 7: Restore checkbox groups
+  checkboxGroupPlaceholders.forEach((checkboxGroup, index) => {
+    const placeholderPattern = new RegExp(`__CHECKBOX_GROUP_${index}__`, "g");
+    renderedHtml = renderedHtml.replace(placeholderPattern, checkboxGroup);
+  });
 
   // Log final rendered HTML for debugging
   logger.log(

@@ -27,6 +27,7 @@ import {
   FileText,
   ChevronDown,
   ChevronUp,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -60,6 +61,7 @@ import CustomVariableDialog from "@/domains/custom-variables/components/CustomVa
 import {
   updateCustomVariableAction,
   listCustomVariablesAction,
+  createCustomVariableAction,
 } from "@/domains/custom-variables/actions";
 import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
 
@@ -85,9 +87,9 @@ export default function ContractTemplateEditContent({ template }: Props) {
     errors: Array<{ placeholder: string; error: string }>;
     warnings: Array<{ placeholder: string; warning: string }>;
   }>({ valid: true, errors: [], warnings: [] });
-  const [activeTab, setActiveTab] = useState<"variables" | "placeholders">(
-    "variables",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "variables" | "custom" | "placeholders"
+  >("variables");
   const [isVariablesPanelOpen, setIsVariablesPanelOpen] = useState(true);
   const [selectedFeeStructureId, setSelectedFeeStructureId] = useState<string>(
     template.feeStructureId || "",
@@ -111,6 +113,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
   );
   const [isVariableDialogOpen, setIsVariableDialogOpen] = useState(false);
   const [isUpdatingVariable, setIsUpdatingVariable] = useState(false);
+  const [isCreatingVariable, setIsCreatingVariable] = useState(false);
   const editorRef = useRef<any>(null);
 
   // Google Docs sync state
@@ -406,9 +409,50 @@ export default function ContractTemplateEditContent({ template }: Props) {
     key: string;
     defaultValue: string;
     description?: string | null;
+    variableType?: "text" | "checkbox_group";
+    options?: Array<{ label: string; value: string }>;
   }) => {
-    if (!editingVariable) return;
+    if (!editingVariable) {
+      // Creating new variable
+      setIsCreatingVariable(true);
+      try {
+        // Ensure key starts with "custom."
+        const variableKey = data.key.startsWith("custom.")
+          ? data.key
+          : `custom.${data.key}`;
 
+        const result = await createCustomVariableAction({
+          key: variableKey,
+          defaultValue:
+            data.variableType === "checkbox_group"
+              ? ""
+              : data.defaultValue || "",
+          description: data.description,
+          variableType: data.variableType,
+          options: data.options,
+        });
+
+        if ("error" in result) {
+          toast.error(result.error ?? "Failed to create variable");
+          return;
+        }
+
+        // Add to custom variables list
+        setCustomVariables((prev) => [...prev, result.data]);
+
+        toast.success("Custom variable created successfully");
+        setIsVariableDialogOpen(false);
+        setEditingVariable(null);
+      } catch (error) {
+        console.error("Error creating variable:", error);
+        toast.error("Failed to create variable");
+      } finally {
+        setIsCreatingVariable(false);
+      }
+      return;
+    }
+
+    // Updating existing variable
     setIsUpdatingVariable(true);
     try {
       const result = await updateCustomVariableAction({
@@ -416,6 +460,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
         key: data.key,
         defaultValue: data.defaultValue,
         description: data.description,
+        variableType: data.variableType,
+        options: data.options,
       });
 
       if ("error" in result) {
@@ -537,6 +583,23 @@ export default function ContractTemplateEditContent({ template }: Props) {
     [availableVariables],
   );
 
+  // Create a map of variable keys to their default values
+  const variableValuesMap = useMemo(() => {
+    const valuesMap = new Map<string, string>();
+
+    // Add system variables with their default values
+    systemVariables.forEach((variable) => {
+      valuesMap.set(variable.key, variable.defaultValue || "");
+    });
+
+    // Add custom variables with their default values
+    customVariables.forEach((variable) => {
+      valuesMap.set(variable.key, variable.defaultValue || "");
+    });
+
+    return valuesMap;
+  }, [systemVariables, customVariables]);
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
@@ -651,10 +714,12 @@ export default function ContractTemplateEditContent({ template }: Props) {
                 <RichTextEditor
                   content={content}
                   onChange={setContent}
-                  placeholder="Enter template content with placeholders like {{thrive.company_name}}, {{examiner.name}}, {{fees.base_exam_fee}}, etc. (Use Shift + Enter for new line)"
+                  placeholder="Enter template content with placeholders like {{thrive.company_name}}, {{examiner.name}}, {{fees.base_exam_fee}}, etc. (Press Enter for new paragraph, Shift + Enter for new line)"
                   editorRef={editorRef}
                   validVariables={validVariablesSet}
                   availableVariables={availableVariables}
+                  variableValues={variableValuesMap}
+                  customVariables={customVariables}
                   headerConfig={headerConfig}
                   footerConfig={footerConfig}
                   onHeaderChange={setHeaderConfig}
@@ -675,6 +740,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
                   content={content}
                   header={headerConfig}
                   footer={footerConfig}
+                  variableValues={variableValuesMap}
                 />
               </div>
             </div>
@@ -717,6 +783,21 @@ export default function ContractTemplateEditContent({ template }: Props) {
                   }`}
                 >
                   Variables
+                </button>
+                <button
+                  onClick={() => setActiveTab("custom")}
+                  className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                    activeTab === "custom"
+                      ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  Custom Variables
+                  {customVariables.length > 0 && (
+                    <span className="ml-1.5 sm:ml-2 inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 text-[10px] sm:text-xs font-bold text-white bg-[#00A8FF] rounded-full">
+                      {customVariables.length}
+                    </span>
+                  )}
                 </button>
                 {placeholders.length > 0 && (
                   <button
@@ -835,106 +916,201 @@ export default function ContractTemplateEditContent({ template }: Props) {
                         )}
                     </div>
 
-                    {availableVariables.map((group) => {
-                      // Check if this namespace has editable system variables
-                      const editableSystemVars = systemVariables.filter((v) =>
-                        v.key.startsWith(`${group.namespace}.`),
-                      );
-                      // Check if this namespace has custom variables
-                      const editableCustomVars =
-                        group.namespace === "custom"
-                          ? customVariables
-                          : customVariables.filter((v) =>
-                              v.key.startsWith(`${group.namespace}.`),
-                            );
+                    {availableVariables
+                      .filter((group) => group.namespace !== "custom") // Exclude custom namespace from Variables tab
+                      .map((group) => {
+                        // Check if this namespace has editable system variables
+                        const editableSystemVars = systemVariables.filter((v) =>
+                          v.key.startsWith(`${group.namespace}.`),
+                        );
+                        // Check if this namespace has custom variables (non-custom namespaces)
+                        const editableCustomVars = customVariables.filter((v) =>
+                          v.key.startsWith(`${group.namespace}.`),
+                        );
 
-                      // Combine all editable variables for this namespace
-                      const allEditableVars = [
-                        ...editableSystemVars,
-                        ...editableCustomVars,
-                      ];
+                        // Combine all editable variables for this namespace
+                        const allEditableVars = [
+                          ...editableSystemVars,
+                          ...editableCustomVars,
+                        ];
 
-                      return (
-                        <div key={group.namespace} className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <p className="font-semibold text-sm text-gray-800 capitalize">
-                              {group.namespace}
-                            </p>
-                            <span className="text-xs text-gray-400 font-normal">
-                              ({group.vars.length})
-                            </span>
-                          </div>
-                          <div className="space-y-2">
-                            {/* Show editable variables with edit buttons */}
-                            {allEditableVars.length > 0 && (
-                              <div className="space-y-1.5 sm:space-y-2 mb-2 sm:mb-3">
-                                {allEditableVars.map((variable) => {
-                                  return (
-                                    <div
-                                      key={variable.id}
-                                      className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
-                                    >
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-                                          <button
-                                            onClick={() =>
-                                              insertPlaceholder(variable.key)
-                                            }
-                                            className="font-mono text-xs sm:text-sm text-[#00A8FF] hover:underline cursor-pointer break-all"
-                                          >
-                                            {`{{${variable.key}}}`}
-                                          </button>
-                                        </div>
-                                        <p className="text-[10px] sm:text-xs text-gray-600 mb-1 break-words">
-                                          {variable.description ||
-                                            "No description"}
-                                        </p>
-                                        <p className="text-[10px] sm:text-xs text-gray-500 font-mono break-all break-words">
-                                          Default: {variable.defaultValue}
-                                        </p>
-                                      </div>
-                                      <button
-                                        onClick={() => {
-                                          setEditingVariable(variable);
-                                          setIsVariableDialogOpen(true);
-                                        }}
-                                        className="text-[10px] sm:text-xs text-blue-600 hover:text-blue-700 cursor-pointer whitespace-nowrap shrink-0"
+                        return (
+                          <div key={group.namespace} className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-sm text-gray-800 capitalize">
+                                {group.namespace}
+                              </p>
+                              <span className="text-xs text-gray-400 font-normal">
+                                ({group.vars.length})
+                              </span>
+                            </div>
+                            <div className="space-y-2">
+                              {/* Show editable variables with edit buttons */}
+                              {allEditableVars.length > 0 && (
+                                <div className="space-y-1.5 sm:space-y-2 mb-2 sm:mb-3">
+                                  {allEditableVars.map((variable) => {
+                                    return (
+                                      <div
+                                        key={variable.id}
+                                        className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
                                       >
-                                        Edit
-                                      </button>
-                                    </div>
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                                            <button
+                                              onClick={() =>
+                                                insertPlaceholder(variable.key)
+                                              }
+                                              className="font-mono text-xs sm:text-sm text-[#00A8FF] hover:underline cursor-pointer break-all"
+                                            >
+                                              {`{{${variable.key}}}`}
+                                            </button>
+                                          </div>
+                                          <p className="text-[10px] sm:text-xs text-gray-600 mb-1 break-words">
+                                            {variable.description ||
+                                              "No description"}
+                                          </p>
+                                          <p className="text-[10px] sm:text-xs text-gray-500 font-mono break-all break-words">
+                                            Default: {variable.defaultValue}
+                                          </p>
+                                        </div>
+                                        <button
+                                          onClick={() => {
+                                            setEditingVariable(variable);
+                                            setIsVariableDialogOpen(true);
+                                          }}
+                                          className="text-[10px] sm:text-xs text-blue-600 hover:text-blue-700 cursor-pointer whitespace-nowrap shrink-0"
+                                        >
+                                          Edit
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+
+                              {/* Show non-editable variables (examiner, fees) */}
+                              {group.vars
+                                .filter((varName) => {
+                                  const fullPlaceholder = `${group.namespace}.${varName}`;
+                                  // Don't show if it's already displayed as an editable variable
+                                  return !allEditableVars.some(
+                                    (v) => v.key === fullPlaceholder,
+                                  );
+                                })
+                                .map((varName) => {
+                                  const fullPlaceholder = `${group.namespace}.${varName}`;
+                                  return (
+                                    <button
+                                      key={fullPlaceholder}
+                                      onClick={() =>
+                                        insertPlaceholder(fullPlaceholder)
+                                      }
+                                      className="w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-gray-50 border border-gray-200 font-mono transition-colors cursor-pointer break-all"
+                                    >
+                                      {`{{${fullPlaceholder}}}`}
+                                    </button>
                                   );
                                 })}
-                              </div>
-                            )}
-
-                            {/* Show non-editable variables (examiner, fees) */}
-                            {group.vars
-                              .filter((varName) => {
-                                const fullPlaceholder = `${group.namespace}.${varName}`;
-                                // Don't show if it's already displayed as an editable variable
-                                return !allEditableVars.some(
-                                  (v) => v.key === fullPlaceholder,
-                                );
-                              })
-                              .map((varName) => {
-                                const fullPlaceholder = `${group.namespace}.${varName}`;
-                                return (
-                                  <button
-                                    key={fullPlaceholder}
-                                    onClick={() =>
-                                      insertPlaceholder(fullPlaceholder)
-                                    }
-                                    className="w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-gray-50 border border-gray-200 font-mono transition-colors cursor-pointer break-all"
-                                  >
-                                    {`{{${fullPlaceholder}}}`}
-                                  </button>
-                                );
-                              })}
+                            </div>
                           </div>
+                        );
+                      })}
+                  </div>
+                )}
+
+                {/* Custom Variables Tab */}
+                {activeTab === "custom" && (
+                  <div className="space-y-4 sm:space-y-5">
+                    {/* Add Button */}
+                    <div className="flex justify-end">
+                      <Button
+                        onClick={() => {
+                          setEditingVariable(null);
+                          setIsVariableDialogOpen(true);
+                        }}
+                        className="h-8 px-3 text-xs font-poppins"
+                      >
+                        <Plus className="h-4 w-4 mr-1.5" />
+                        Add Custom Variable
+                      </Button>
+                    </div>
+
+                    {customVariables.length > 0 ? (
+                      <>
+                        <div className="space-y-3">
+                          {customVariables.map((variable) => {
+                            return (
+                              <div
+                                key={variable.id}
+                                className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                                    <button
+                                      onClick={() =>
+                                        insertPlaceholder(variable.key)
+                                      }
+                                      className="font-mono text-xs sm:text-sm text-[#00A8FF] hover:underline cursor-pointer break-all"
+                                    >
+                                      {`{{${variable.key}}}`}
+                                    </button>
+                                    {variable.variableType ===
+                                      "checkbox_group" && (
+                                      <span className="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-semibold">
+                                        Checkbox Group
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-[10px] sm:text-xs text-gray-600 mb-1 break-words">
+                                    {variable.description || "No description"}
+                                  </p>
+                                  {variable.variableType === "text" ? (
+                                    <p className="text-[10px] sm:text-xs text-gray-500 font-mono break-all break-words">
+                                      Default: {variable.defaultValue}
+                                    </p>
+                                  ) : variable.variableType ===
+                                      "checkbox_group" && variable.options ? (
+                                    <div className="mt-2">
+                                      <p className="text-[10px] sm:text-xs text-gray-500 mb-1">
+                                        Options ({variable.options.length}):
+                                      </p>
+                                      <div className="flex flex-wrap gap-1">
+                                        {variable.options.map((opt, idx) => (
+                                          <span
+                                            key={idx}
+                                            className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-700 rounded font-mono"
+                                          >
+                                            {opt.label}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ) : null}
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    setEditingVariable(variable);
+                                    setIsVariableDialogOpen(true);
+                                  }}
+                                  className="text-[10px] sm:text-xs text-blue-600 hover:text-blue-700 cursor-pointer whitespace-nowrap shrink-0"
+                                >
+                                  Edit
+                                </button>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
+                      </>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-sm text-gray-500 font-poppins mb-2">
+                          No custom variables created yet
+                        </p>
+                        <p className="text-xs text-gray-400 font-poppins">
+                          Custom variables will appear here once created
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1121,7 +1297,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
         }}
         onSubmit={handleVariableUpdate}
         initialData={editingVariable}
-        isLoading={isUpdatingVariable}
+        isLoading={isUpdatingVariable || isCreatingVariable}
       />
     </div>
   );

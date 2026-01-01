@@ -1,17 +1,26 @@
+export type CheckboxOption = {
+  label: string;
+  value: string;
+};
+
 export type CustomVariable = {
   id: string;
   key: string;
   defaultValue: string;
   description: string | null;
   isActive: boolean;
+  variableType: "text" | "checkbox_group";
+  options: CheckboxOption[] | null;
   createdAt: string;
   updatedAt: string;
 };
 
 export type CreateCustomVariableInput = {
   key: string;
-  defaultValue: string;
+  defaultValue?: string;
   description?: string | null;
+  variableType?: "text" | "checkbox_group";
+  options?: CheckboxOption[];
 };
 
 export type UpdateCustomVariableInput = {
@@ -20,6 +29,8 @@ export type UpdateCustomVariableInput = {
   defaultValue?: string;
   description?: string | null;
   isActive?: boolean;
+  variableType?: "text" | "checkbox_group";
+  options?: CheckboxOption[];
 };
 
 export type ListCustomVariablesInput = {
