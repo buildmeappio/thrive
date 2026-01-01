@@ -13,6 +13,10 @@ interface PageRendererProps {
   header?: HeaderConfig;
   footer?: FooterConfig;
   variableValues?: Map<string, string>; // Map of variable keys to their default values
+  customVariables?: Array<{
+    key: string;
+    showUnderline?: boolean;
+  }>; // Custom variables with showUnderline setting
 }
 
 export interface PageInfo {
@@ -27,6 +31,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
   header,
   footer,
   variableValues = new Map(),
+  customVariables = [],
 }) => {
   const [pages, setPages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -793,6 +798,15 @@ const PageRenderer: React.FC<PageRendererProps> = ({
       },
     );
 
+    // Create a map of custom variable keys to their showUnderline setting
+    const customVariableUnderlineMap = new Map<string, boolean>();
+    customVariables.forEach((variable) => {
+      customVariableUnderlineMap.set(
+        variable.key,
+        variable.showUnderline ?? false,
+      );
+    });
+
     // Replace variable placeholders with their values and add underline styling
     // Checkbox groups are already protected, so they won't be processed
     const placeholderRegex = /\{\{\s*([^}]+?)\s*\}\}/g;
@@ -800,16 +814,63 @@ const PageRenderer: React.FC<PageRendererProps> = ({
       const variableKey = placeholder.trim();
       const variableValue = variableValues.get(variableKey);
 
+      // Don't show underline for thrive.* variables
+      const isThriveVariable = variableKey.startsWith("thrive.");
+
+      // Check if this is a custom variable and if showUnderline is enabled
+      // For thrive variables, always set showUnderline to false
+      const showUnderline = isThriveVariable
+        ? false
+        : (customVariableUnderlineMap.get(variableKey) ?? true); // Default to true for non-custom variables
+
       if (variableValue) {
-        // Replace with value as regular text with bold underline (thick border-bottom)
-        // IMPORTANT: No classes, no background color - just plain text with bold underline
-        // Use inline style only to override any CSS that might apply
-        return `<span style="border-bottom: 2px solid black; background: none !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; font-weight: normal;" title="${match}">${variableValue}</span>`;
+        // Check if the value is an image URL
+        const isImageUrl = (url: string): boolean => {
+          const trimmedUrl = url.trim();
+          const imageExtensions = [
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".gif",
+            ".svg",
+            ".webp",
+            ".bmp",
+            ".ico",
+          ];
+          return (
+            (trimmedUrl.startsWith("http://") ||
+              trimmedUrl.startsWith("https://")) &&
+            imageExtensions.some((ext) =>
+              trimmedUrl.toLowerCase().endsWith(ext),
+            )
+          );
+        };
+
+        // If it's an image URL, render as an image
+        if (isImageUrl(variableValue)) {
+          return `<img src="${variableValue}" alt="${variableKey}" style="max-width: 100%; height: auto; display: inline-block; vertical-align: middle;" title="${match}" />`;
+        }
+
+        // Replace with value - conditionally add underline based on showUnderline setting
+        if (showUnderline) {
+          // Replace with value as regular text with bold underline (thick border-bottom)
+          // IMPORTANT: No classes, no background color - just plain text with bold underline
+          // Use inline style only to override any CSS that might apply
+          return `<span style="border-bottom: 2px solid black; background: none !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; font-weight: normal;" title="${match}">${variableValue}</span>`;
+        } else {
+          // Replace with value as regular text without underline
+          return `<span style="background: none !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; font-weight: normal;" title="${match}">${variableValue}</span>`;
+        }
       }
 
-      // If no value found, show as a bold underline (blank line to fill in)
+      // If no value found, show as a bold underline (blank line to fill in) only if showUnderline is true
       // This creates a visual blank space with a bold underline, like a form field
-      return `<span style="border-bottom: 2px solid black; display: inline-block; min-width: 150px; background: none !important; color: transparent !important; padding: 0 !important; border-radius: 0 !important;" title="${match}">&nbsp;</span>`;
+      if (showUnderline) {
+        return `<span style="border-bottom: 2px solid black; display: inline-block; min-width: 150px; background: none !important; color: transparent !important; padding: 0 !important; border-radius: 0 !important;" title="${match}">&nbsp;</span>`;
+      } else {
+        // Show as blank space without underline
+        return `<span style="display: inline-block; min-width: 150px; background: none !important; color: transparent !important; padding: 0 !important; border-radius: 0 !important;" title="${match}">&nbsp;</span>`;
+      }
     });
 
     // Restore checkbox groups exactly as stored (they remain unchanged, no underlines added)

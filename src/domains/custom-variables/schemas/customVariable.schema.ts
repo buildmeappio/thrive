@@ -12,6 +12,7 @@ export const createCustomVariableSchema = z
     description: z.string().max(500).optional().nullable(),
     variableType: z.enum(["text", "checkbox_group"]).default("text"),
     options: z.array(checkboxOptionSchema).optional().nullable(),
+    showUnderline: z.boolean().optional(),
   })
   .refine(
     (data) => {
@@ -37,6 +38,7 @@ export const updateCustomVariableSchema = z
     isActive: z.boolean().optional(),
     variableType: z.enum(["text", "checkbox_group"]).optional(),
     options: z.array(checkboxOptionSchema).optional().nullable(),
+    showUnderline: z.boolean().optional(),
   })
   .refine(
     (data) => {

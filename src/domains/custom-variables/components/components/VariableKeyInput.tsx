@@ -47,20 +47,10 @@ export function VariableKeyInput({
           {`{{${normalizedKey}}}`}
         </code>
       </p>
-      <p className="text-xs text-gray-400 mt-1">
-        The key will be automatically formatted (e.g., &quot;Primary
-        Discipline&quot; → &quot;custom.primary_discipline&quot;)
-      </p>
       {isEditing && isSystemVariable && (
         <p className="text-xs text-amber-600 mt-1">
           System variable keys cannot be changed. Only the default value and
           description can be edited.
-        </p>
-      )}
-      {!isEditing && (
-        <p className="text-xs text-gray-400 mt-1">
-          Examples: &quot;Primary Discipline&quot;, &quot;Company Name&quot;,
-          &quot;Copyright Text&quot; - will be auto-formatted
         </p>
       )}
     </div>

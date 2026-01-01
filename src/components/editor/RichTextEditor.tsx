@@ -87,6 +87,7 @@ import TickBoxExtension from "./extension/TickBoxExtension";
 import FontSizeExtension from "./extension/FontSizeExtension";
 import { CheckboxGroupExtension } from "./extension/CheckboxGroupExtension";
 import { EnterKeyFixExtension } from "./extension/EnterKeyFixExtension";
+import { VariableSpanFixExtension } from "./extension/VariableSpanFixExtension";
 import HeaderFooterModal from "./HeaderFooterModal";
 import type { HeaderConfig, FooterConfig } from "./types";
 import {
@@ -219,6 +220,8 @@ export default function RichTextEditor({
     () => [
       // Add EnterKeyFixExtension FIRST with highest priority to ensure it handles Enter
       EnterKeyFixExtension,
+      // Add VariableSpanFixExtension to prevent typing inside variable spans
+      VariableSpanFixExtension,
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3, 4, 5, 6],
@@ -345,7 +348,8 @@ export default function RichTextEditor({
 
         // Allowed namespaces for validation
         const ALLOWED_NAMESPACES = [
-          "examiner",
+          "examiner", // Legacy support
+          "application",
           "contract",
           "org",
           "thrive",
@@ -358,6 +362,23 @@ export default function RichTextEditor({
         matches.reverse().forEach(({ match, placeholder }) => {
           // Check if placeholder is in validVariables set
           const isInValidSet = validVariables.has(placeholder);
+
+          // Debug logging for troubleshooting
+          if (placeholder.includes("application.examiner")) {
+            const sampleVars = Array.from(validVariables)
+              .filter((v) => v.includes("application"))
+              .slice(0, 5);
+            console.log("🔍 Variable validation:", {
+              placeholder,
+              isInValidSet,
+              validVariablesSize: validVariables.size,
+              hasPlaceholder: validVariables.has(placeholder),
+              sampleValidVars: sampleVars,
+              allApplicationVars: Array.from(validVariables).filter((v) =>
+                v.startsWith("application."),
+              ),
+            });
+          }
 
           // Validate namespace if placeholder has namespace format (contains a dot)
           let hasValidNamespace = true;
@@ -385,14 +406,41 @@ export default function RichTextEditor({
 
         return processedHtml;
       },
-    [validVariables, variableValues],
+    // Convert Set to string for dependency tracking, since Set reference might not change
+    // This ensures the function is recreated when validVariables contents change
+    [Array.from(validVariables).sort().join(","), variableValues],
   );
 
   // Clean content before passing to onChange (remove highlight spans and trailing breaks)
   const cleanContent = useCallback((html: string): string => {
+    // First, fix any variable spans that have content added inside them
+    // This happens when users type after a variable - TipTap might insert text inside the span
+    // We need to extract any content that was added inside variable spans and place it after the span
+    let fixedHtml = html.replace(
+      /<span class="variable-(valid|invalid)[^"]*" data-variable="([^"]*)"[^>]*>(.*?)<\/span>/g,
+      (match, _validity, variableKey, content) => {
+        // Extract the variable placeholder from content (should be {{variableKey}})
+        const placeholderMatch = content.match(/\{\{([^}]+)\}\}/);
+        if (placeholderMatch) {
+          // Content contains the placeholder, check if there's extra text
+          const placeholder = placeholderMatch[0];
+          const extraContent = content.replace(placeholder, "").trim();
+
+          if (extraContent) {
+            // There's extra content inside the span - move it outside
+            return `<span class="variable-${_validity}" data-variable="${variableKey}">${placeholder}</span>${extraContent}`;
+          }
+          // Just the placeholder, return as is
+          return `<span class="variable-${_validity}" data-variable="${variableKey}">${placeholder}</span>`;
+        }
+        // No placeholder found, return the span with content (shouldn't happen)
+        return match;
+      },
+    );
+
     // Replace variable spans with their original placeholder format {{variable.key}}
     // Extract the variable key from data-variable attribute and restore the placeholder
-    let cleaned = html.replace(
+    let cleaned = fixedHtml.replace(
       /<span class="variable-(valid|invalid)[^"]*" data-variable="([^"]*)"[^>]*>.*?<\/span>/g,
       (match, _validity, variableKey) => {
         return `{{${variableKey}}}`;
@@ -420,8 +468,52 @@ export default function RichTextEditor({
     content: content,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
-      const cleaned = cleanContent(html);
-      onChange(cleaned);
+
+      // Fix any variable spans that have extra content inside them before cleaning
+      // This prevents text typed after variables from inheriting variable styling
+      const fixedHtml = html.replace(
+        /<span class="variable-(valid|invalid)[^"]*" data-variable="([^"]*)"[^>]*>([\s\S]*?)<\/span>/g,
+        (fullMatch, validity, variableKey, content) => {
+          const placeholder = `{{${variableKey}}}`;
+
+          // Check if content contains the placeholder
+          if (content.includes(placeholder)) {
+            const placeholderIndex = content.indexOf(placeholder);
+            const beforePlaceholder = content.substring(0, placeholderIndex);
+            const afterPlaceholder = content.substring(
+              placeholderIndex + placeholder.length,
+            );
+
+            // If there's any content before or after the placeholder, move it outside the span
+            if (beforePlaceholder.trim() || afterPlaceholder.trim()) {
+              return `${beforePlaceholder}<span class="variable-${validity}" data-variable="${variableKey}">${placeholder}</span>${afterPlaceholder}`;
+            }
+          }
+
+          return fullMatch;
+        },
+      );
+
+      // If we fixed something, update the editor immediately
+      if (fixedHtml !== html) {
+        const { from, to } = editor.state.selection;
+        editor.commands.setContent(fixedHtml, { emitUpdate: false });
+        setTimeout(() => {
+          if (editor && !editor.isDestroyed) {
+            try {
+              editor.commands.setTextSelection({ from, to });
+            } catch (e) {
+              // Selection might be invalid, ignore
+            }
+          }
+        }, 10);
+        // Use the fixed HTML for cleaning
+        const cleaned = cleanContent(fixedHtml);
+        onChange(cleaned);
+      } else {
+        const cleaned = cleanContent(html);
+        onChange(cleaned);
+      }
     },
     editorProps: {
       attributes: {
@@ -429,8 +521,6 @@ export default function RichTextEditor({
           "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none min-h-[500px] p-4 font-poppins editor-content",
         tabindex: "0", // Ensure editor is focusable
       },
-      // Removed handleDOMEvents as it might interfere with keyboard shortcuts
-      // Let TipTap's keyboard shortcuts handle Enter key instead
     },
     immediatelyRender: false,
     autofocus: false,
@@ -472,23 +562,94 @@ export default function RichTextEditor({
     };
   }, [isMounted]);
 
+  // Force re-highlighting when validVariables changes (e.g., when variables are added)
+  useEffect(() => {
+    if (!editor || !isMounted) return;
+
+    // When validVariables changes, force a re-highlight even if editor is focused
+    // This ensures newly added variables are immediately highlighted correctly
+    const timeoutId = setTimeout(() => {
+      const currentHtml = editor.getHTML();
+      const cleaned = cleanContent(currentHtml);
+      const highlighted = processContentForHighlighting(cleaned);
+
+      if (currentHtml !== highlighted) {
+        const { from, to } = editor.state.selection;
+        editor.commands.setContent(highlighted, { emitUpdate: false });
+        setTimeout(() => {
+          if (editor && !editor.isDestroyed) {
+            try {
+              editor.commands.setTextSelection({ from, to });
+            } catch (e) {
+              // Selection might be invalid, ignore
+            }
+          }
+        }, 10);
+      }
+    }, 100); // Small delay to ensure validVariables is updated
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    validVariables,
+    editor,
+    isMounted,
+    processContentForHighlighting,
+    cleanContent,
+  ]);
+
   // Update highlighting when content or validVariables change
   useEffect(() => {
     if (!editor || !isMounted) return;
 
     const updateHighlighting = () => {
-      // Don't update highlighting while user is typing (check if editor has focus)
-      if (editor.isFocused) {
-        return;
+      const currentHtml = editor.getHTML();
+
+      // First, fix any variable spans that have content after the placeholder
+      // This prevents text typed after }} from being inside the variable span
+      const fixedHtml = currentHtml.replace(
+        /<span class="variable-(valid|invalid)[^"]*" data-variable="([^"]*)"[^>]*>([\s\S]*?)<\/span>/g,
+        (fullMatch, validity, variableKey, content) => {
+          const placeholder = `{{${variableKey}}}`;
+          // Check if content contains the placeholder
+          if (content.includes(placeholder)) {
+            const placeholderIndex = content.indexOf(placeholder);
+            const beforePlaceholder = content.substring(0, placeholderIndex);
+            const afterPlaceholder = content.substring(
+              placeholderIndex + placeholder.length,
+            );
+
+            // If there's content after the placeholder, move it outside the span
+            if (afterPlaceholder.trim() || beforePlaceholder.trim()) {
+              // Keep only the placeholder inside the span, move everything else outside
+              return `${beforePlaceholder}<span class="variable-${validity}" data-variable="${variableKey}">${placeholder}</span>${afterPlaceholder}`;
+            }
+          }
+          return fullMatch;
+        },
+      );
+
+      // Only update if we fixed something
+      if (fixedHtml !== currentHtml) {
+        const { from, to } = editor.state.selection;
+        editor.commands.setContent(fixedHtml, { emitUpdate: false });
+        setTimeout(() => {
+          if (editor && !editor.isDestroyed) {
+            try {
+              editor.commands.setTextSelection({ from, to });
+            } catch (e) {
+              logger.error("Error restoring selection", e);
+            }
+          }
+        }, 10);
+        return; // Don't proceed with highlighting update, wait for next cycle
       }
 
-      const currentHtml = editor.getHTML();
       const cleaned = cleanContent(currentHtml);
       const highlighted = processContentForHighlighting(cleaned);
 
-      // Only update if highlighting changed (and content matches prop to avoid conflicts)
-      // We check content match to prevent updating when content prop is being synced
-      if (currentHtml !== highlighted && cleaned === content) {
+      // Update highlighting if it changed
+      // If editor is focused, we still update but with a longer debounce to avoid interfering with typing
+      if (currentHtml !== highlighted) {
         // Save current selection
         const { from, to } = editor.state.selection;
         editor.commands.setContent(highlighted, { emitUpdate: false });
@@ -505,8 +666,9 @@ export default function RichTextEditor({
       }
     };
 
-    // Debounce to avoid too many updates
-    const timeoutId = setTimeout(updateHighlighting, 200);
+    // Use shorter debounce if editor is not focused, longer if focused (to avoid interfering with typing)
+    const debounceDelay = editor.isFocused ? 500 : 200;
+    const timeoutId = setTimeout(updateHighlighting, debounceDelay);
     return () => clearTimeout(timeoutId);
   }, [
     editor,
@@ -1870,18 +2032,84 @@ export default function RichTextEditor({
 
           {/* Header/Footer Buttons */}
           <div className="flex gap-1 border-l border-gray-200 pl-2 ml-2">
-            <ToolbarButton
-              onClick={() => setShowHeaderModal(true)}
-              title={headerConfig ? "Edit Header" : "Add Header"}
-            >
-              <FileText className="h-4 w-4" />
-            </ToolbarButton>
-            <ToolbarButton
-              onClick={() => setShowFooterModal(true)}
-              title={footerConfig ? "Edit Footer" : "Add Footer"}
-            >
-              <FileText className="h-4 w-4 rotate-180" />
-            </ToolbarButton>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-xs"
+                  title={headerConfig ? "Header Options" : "Add Header"}
+                >
+                  <FileText className="h-4 w-4" />
+                  {headerConfig && <span className="ml-1 text-xs">Header</span>}
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setShowHeaderModal(true)}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  {headerConfig ? "Edit Header" : "Add Header"}
+                </DropdownMenuItem>
+                {headerConfig && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        if (onHeaderChange) {
+                          onHeaderChange(undefined);
+                        } else {
+                          setInternalHeaderConfig(undefined);
+                        }
+                      }}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Remove Header
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-xs"
+                  title={footerConfig ? "Footer Options" : "Add Footer"}
+                >
+                  <FileText className="h-4 w-4 rotate-180" />
+                  {footerConfig && <span className="ml-1 text-xs">Footer</span>}
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setShowFooterModal(true)}>
+                  <FileText className="mr-2 h-4 w-4 rotate-180" />
+                  {footerConfig ? "Edit Footer" : "Add Footer"}
+                </DropdownMenuItem>
+                {footerConfig && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        if (onFooterChange) {
+                          onFooterChange(undefined);
+                        } else {
+                          setInternalFooterConfig(undefined);
+                        }
+                      }}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Remove Footer
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Print Button */}

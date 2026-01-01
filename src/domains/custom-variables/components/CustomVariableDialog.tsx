@@ -24,11 +24,13 @@ export default function CustomVariableDialog({
     description,
     variableType,
     checkboxOptions,
+    showUnderline,
     errors,
     setKey,
     setDefaultValue,
     setDescription,
     setVariableType,
+    setShowUnderline,
     addCheckboxOption,
     removeCheckboxOption,
     updateCheckboxOption,
@@ -108,6 +110,8 @@ export default function CustomVariableDialog({
             <DefaultValueInput
               value={defaultValue}
               onChange={setDefaultValue}
+              showUnderline={showUnderline}
+              onShowUnderlineChange={setShowUnderline}
               errors={errors}
               disabled={isLoading}
             />

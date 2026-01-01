@@ -11,6 +11,7 @@ export type CustomVariable = {
   isActive: boolean;
   variableType: "text" | "checkbox_group";
   options: CheckboxOption[] | null;
+  showUnderline?: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -21,6 +22,7 @@ export type CreateCustomVariableInput = {
   description?: string | null;
   variableType?: "text" | "checkbox_group";
   options?: CheckboxOption[];
+  showUnderline?: boolean;
 };
 
 export type UpdateCustomVariableInput = {
@@ -31,6 +33,7 @@ export type UpdateCustomVariableInput = {
   isActive?: boolean;
   variableType?: "text" | "checkbox_group";
   options?: CheckboxOption[];
+  showUnderline?: boolean;
 };
 
 export type ListCustomVariablesInput = {
@@ -48,6 +51,7 @@ export type CustomVariableFormData = {
   description?: string | null;
   variableType: "text" | "checkbox_group";
   options?: CheckboxOption[];
+  showUnderline?: boolean;
 };
 
 export type CustomVariableDialogProps = {
