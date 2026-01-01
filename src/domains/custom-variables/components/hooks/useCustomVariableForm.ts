@@ -14,6 +14,7 @@ export function useCustomVariableForm(initialData?: CustomVariable | null) {
     "text",
   );
   const [checkboxOptions, setCheckboxOptions] = useState<CheckboxOption[]>([]);
+  const [showUnderline, setShowUnderline] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
   // Reset form when dialog opens/closes or initialData changes
@@ -24,12 +25,14 @@ export function useCustomVariableForm(initialData?: CustomVariable | null) {
       setDescription(initialData.description || "");
       setVariableType(initialData.variableType || "text");
       setCheckboxOptions(initialData.options || []);
+      setShowUnderline(initialData.showUnderline ?? false);
     } else {
       setKey("");
       setDefaultValue("");
       setDescription("");
       setVariableType("text");
       setCheckboxOptions([]);
+      setShowUnderline(false);
     }
     setErrors({});
   }, [initialData]);
@@ -113,6 +116,7 @@ export function useCustomVariableForm(initialData?: CustomVariable | null) {
         variableType === "checkbox_group"
           ? checkboxOptions.filter((o) => o.label.trim() && o.value.trim())
           : undefined,
+      showUnderline: variableType === "text" ? showUnderline : undefined,
     };
   };
 
@@ -123,6 +127,7 @@ export function useCustomVariableForm(initialData?: CustomVariable | null) {
     description,
     variableType,
     checkboxOptions,
+    showUnderline,
     errors,
     // Setters
     setKey,
@@ -130,6 +135,7 @@ export function useCustomVariableForm(initialData?: CustomVariable | null) {
     setDescription,
     setVariableType,
     setCheckboxOptions,
+    setShowUnderline,
     // Actions
     addCheckboxOption,
     removeCheckboxOption,

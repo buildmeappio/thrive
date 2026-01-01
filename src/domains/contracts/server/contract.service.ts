@@ -751,99 +751,176 @@ export const previewContract = async (
       ? (contract.fieldValues as any)
       : null;
 
-  // Add examiner values
+  // Add examiner values from fieldValues (legacy support for examiner.* format)
   if (fv && fv.examiner) {
     for (const [key, value] of Object.entries(fv.examiner)) {
+      // Map legacy examiner.* variables to new application.examiner_* format
+      const legacyKey = `examiner.${key}`;
+      const newKey = `application.examiner_${key.replace(/_/g, "_")}`;
+
       // Special handling for examiner.name - always format it properly
       if (key === "name" && examinerProfile?.account?.user) {
         const user = examinerProfile.account.user;
         const formattedName = formatFullName(user.firstName, user.lastName);
         if (formattedName) {
-          values["examiner.name"] = formattedName;
+          values[newKey] = formattedName;
         } else {
-          values["examiner.name"] = String(value);
+          values[newKey] = String(value);
         }
       } else {
         // Only add non-empty values from fieldValues
-        // Empty values will be populated from examinerProfile or application address below
         const stringValue = String(value);
         if (stringValue.trim() !== "") {
-          values[`examiner.${key}`] = stringValue;
+          values[newKey] = stringValue;
         }
       }
     }
   }
 
-  // Add examiner data from examinerProfile if available (for missing fields like city)
-  if (examinerProfile) {
+  // Add examiner application data (prioritize application data over examinerProfile)
+  if (application) {
+    // Name - format from firstName and lastName
+    if (!values["application.examiner_name"]) {
+      const fullName = formatFullName(
+        application.firstName || "",
+        application.lastName || "",
+      );
+      if (fullName) {
+        values["application.examiner_name"] = fullName;
+      }
+    }
+
+    // Email
+    if (!values["application.examiner_email"] && application.email) {
+      values["application.examiner_email"] = application.email;
+    }
+
+    // Phone
+    if (!values["application.examiner_phone"] && application.phone) {
+      values["application.examiner_phone"] = application.phone;
+    }
+
+    // Landline Number
+    if (
+      !values["application.examiner_landline_number"] &&
+      application.landlineNumber
+    ) {
+      values["application.examiner_landline_number"] =
+        application.landlineNumber;
+    }
+
+    // Province (from provinceOfResidence)
+    if (
+      !values["application.examiner_province"] &&
+      application.provinceOfResidence
+    ) {
+      values["application.examiner_province"] = application.provinceOfResidence;
+    }
+
+    // City (from address)
+    if (!values["application.examiner_city"] && application.address?.city) {
+      values["application.examiner_city"] = application.address.city;
+    }
+
+    // Languages Spoken (array -> comma-separated)
+    if (
+      !values["application.examiner_languages_spoken"] &&
+      application.languagesSpoken &&
+      Array.isArray(application.languagesSpoken) &&
+      application.languagesSpoken.length > 0
+    ) {
+      values["application.examiner_languages_spoken"] =
+        application.languagesSpoken.join(", ");
+    }
+
+    // License Number
+    if (
+      !values["application.examiner_license_number"] &&
+      application.licenseNumber
+    ) {
+      values["application.examiner_license_number"] = application.licenseNumber;
+    }
+
+    // Province of Licensure
+    if (
+      !values["application.examiner_province_of_licensure"] &&
+      application.provinceOfLicensure
+    ) {
+      values["application.examiner_province_of_licensure"] =
+        application.provinceOfLicensure;
+    }
+
+    // Specialties (array -> comma-separated)
+    if (
+      !values["application.examiner_specialties"] &&
+      application.specialties &&
+      Array.isArray(application.specialties) &&
+      application.specialties.length > 0
+    ) {
+      values["application.examiner_specialties"] =
+        application.specialties.join(", ");
+    }
+
+    // Years of IME Experience
+    if (
+      !values["application.examiner_years_of_ime_experience"] &&
+      application.yearsOfIMEExperience
+    ) {
+      values["application.examiner_years_of_ime_experience"] =
+        application.yearsOfIMEExperience;
+    }
+  }
+
+  // Fallback to examinerProfile if application is not available
+  if (!application && examinerProfile) {
     // Add examiner name if not already set (using formatFullName utility for consistent formatting)
-    if (!values["examiner.name"] && examinerProfile.account?.user) {
+    if (!values["application.examiner_name"] && examinerProfile.account?.user) {
       const user = examinerProfile.account.user;
       const fullName = formatFullName(user.firstName, user.lastName);
       if (fullName) {
-        values["examiner.name"] = fullName;
+        values["application.examiner_name"] = fullName;
       }
     }
 
     // Add examiner email if not already set
-    if (!values["examiner.email"] && examinerProfile.account?.user?.email) {
-      values["examiner.email"] = examinerProfile.account.user.email;
+    if (
+      !values["application.examiner_email"] &&
+      examinerProfile.account?.user?.email
+    ) {
+      values["application.examiner_email"] = examinerProfile.account.user.email;
     }
 
-    // Add examiner city from address if not already set or if it's empty
-    // Check both examinerProfile address and application address
-    // Also check if it's already in values but empty - we want to populate it if we have a source
-    const currentCityValue = values["examiner.city"];
-    const hasCityValue =
-      currentCityValue && String(currentCityValue).trim() !== "";
-
-    if (!hasCityValue) {
-      // First check examinerProfile address
-      if (
-        examinerProfile.address?.city &&
-        examinerProfile.address.city.trim() !== ""
-      ) {
-        values["examiner.city"] = examinerProfile.address.city;
-      } else if (
-        application?.address?.city &&
-        application.address.city.trim() !== ""
-      ) {
-        // Check application address if available
-        values["examiner.city"] = application.address.city;
-      } else {
-        // If city is not available, set empty string to avoid missing placeholder error
-        // The template should handle empty values gracefully
-        values["examiner.city"] = "";
-      }
+    // Add examiner city from address if not already set
+    if (!values["application.examiner_city"] && examinerProfile.address?.city) {
+      values["application.examiner_city"] = examinerProfile.address.city;
     }
 
     // Add examiner province from address if not already set
-    // Check both examinerProfile address and application address
-    if (!values["examiner.province"]) {
-      // First check examinerProfile address
-      if (examinerProfile.address?.province) {
-        values["examiner.province"] = examinerProfile.address.province;
-      } else if (application?.address?.province) {
-        // Check application address if available
-        values["examiner.province"] = application.address.province;
-      } else {
-        // If province is not available, set empty string to avoid missing placeholder error
-        values["examiner.province"] = "";
-      }
+    if (
+      !values["application.examiner_province"] &&
+      examinerProfile.address?.province
+    ) {
+      values["application.examiner_province"] =
+        examinerProfile.address.province;
     }
+  }
 
-    // Add signature date_time from contract.signedAt if available
-    if (contract.signedAt) {
-      const signatureDateTime = new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }).format(new Date(contract.signedAt));
-      values["examiner.signature_date_time"] = signatureDateTime;
-    }
+  // Add signature date_time from contract.signedAt if available
+  if (contract.signedAt) {
+    const signatureDateTime = new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(new Date(contract.signedAt));
+    values["application.examiner_signature_date_time"] = signatureDateTime;
+  }
+
+  // Add signature from fieldValues if available
+  if (fv && fv.examiner && fv.examiner.signature) {
+    values["application.examiner_signature"] = String(fv.examiner.signature);
   }
 
   // Add contract values
@@ -1102,7 +1179,9 @@ export const previewContract = async (
     // Signature placeholders are optional - replace with underscores if not available
     const isSignaturePlaceholder =
       placeholder === "examiner.signature" ||
-      placeholder === "examiner.signature_date_time";
+      placeholder === "examiner.signature_date_time" ||
+      placeholder === "application.examiner_signature" ||
+      placeholder === "application.examiner_signature_date_time";
 
     // Review date is optional - only set when admin reviews the contract
     // City and province are optional - may not be available for all examiners
@@ -1110,7 +1189,9 @@ export const previewContract = async (
       isSignaturePlaceholder ||
       placeholder === "contract.review_date" ||
       placeholder === "examiner.city" ||
-      placeholder === "examiner.province";
+      placeholder === "examiner.province" ||
+      placeholder === "application.examiner_city" ||
+      placeholder === "application.examiner_province";
 
     // Check if value exists and is not empty (for city/province, empty string means not available)
     const value = values[placeholder];
@@ -1136,7 +1217,8 @@ export const previewContract = async (
           replacement = logoUrl;
         }
       } else if (
-        placeholder === "examiner.signature" &&
+        (placeholder === "examiner.signature" ||
+          placeholder === "application.examiner_signature") &&
         values[placeholder] &&
         typeof values[placeholder] === "string"
       ) {
@@ -1170,7 +1252,9 @@ export const previewContract = async (
         renderedHtml = renderedHtml.replace(regex, "");
       } else if (
         placeholder === "examiner.city" ||
-        placeholder === "examiner.province"
+        placeholder === "examiner.province" ||
+        placeholder === "application.examiner_city" ||
+        placeholder === "application.examiner_province"
       ) {
         // For city and province, if value exists but is empty string, replace with empty string
         // Otherwise, use underscores as placeholder

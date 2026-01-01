@@ -84,6 +84,7 @@ export const listCustomVariables = async (
     isActive: v.isActive,
     variableType: (v.variableType as "text" | "checkbox_group") || "text",
     options: (v.options as any) || null,
+    showUnderline: (v as any).showUnderline ?? false,
     createdAt: v.createdAt.toISOString(),
     updatedAt: v.updatedAt.toISOString(),
   }));
@@ -141,7 +142,8 @@ export const createCustomVariable = async (
       isActive: true,
       variableType: input.variableType || "text",
       options: input.options || null,
-    },
+      showUnderline: input.showUnderline ?? false,
+    } as any,
   });
 
   return {

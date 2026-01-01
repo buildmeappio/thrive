@@ -439,6 +439,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
     description?: string | null;
     variableType?: "text" | "checkbox_group";
     options?: Array<{ label: string; value: string }>;
+    showUnderline?: boolean;
   }) => {
     if (!editingVariable) {
       // Creating new variable
@@ -458,6 +459,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
           description: data.description,
           variableType: data.variableType,
           options: data.options,
+          showUnderline: data.showUnderline,
         });
 
         if ("error" in result) {
@@ -490,6 +492,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
         description: data.description,
         variableType: data.variableType,
         options: data.options,
+        showUnderline: data.showUnderline,
       });
 
       if ("error" in result) {
@@ -558,18 +561,23 @@ export default function ContractTemplateEditContent({ template }: Props) {
       });
     }
 
-    // Add examiner variables (hardcoded as they come from contract data)
+    // Add examiner application variables (from examiner application detail page)
     vars.push({
-      namespace: "examiner",
+      namespace: "application",
       vars: [
-        "name",
-        "email",
-        "phone",
-        "province",
-        "city",
-        "postal_code",
-        "signature",
-        "signature_date_time",
+        "examiner_name",
+        "examiner_email",
+        "examiner_phone",
+        "examiner_landline_number",
+        "examiner_province",
+        "examiner_city",
+        "examiner_languages_spoken",
+        "examiner_license_number",
+        "examiner_province_of_licensure",
+        "examiner_specialties",
+        "examiner_years_of_ime_experience",
+        "examiner_signature",
+        "examiner_signature_date_time",
       ],
     });
 
@@ -601,15 +609,32 @@ export default function ContractTemplateEditContent({ template }: Props) {
     return vars;
   }, [selectedFeeStructureData, systemVariables, customVariables]);
 
-  const validVariablesSet = useMemo(
-    () =>
-      new Set(
-        availableVariables.flatMap((group) =>
-          group.vars.map((v) => `${group.namespace}.${v}`),
-        ),
+  const validVariablesSet = useMemo(() => {
+    const set = new Set(
+      availableVariables.flatMap((group) =>
+        group.vars.map((v) => `${group.namespace}.${v}`),
       ),
-    [availableVariables],
-  );
+    );
+
+    // Debug logging
+    if (set.has("application.examiner_name")) {
+      console.log("✅ validVariablesSet contains application.examiner_name");
+    } else {
+      console.log(
+        "❌ validVariablesSet does NOT contain application.examiner_name",
+      );
+      console.log(
+        "Available variables:",
+        Array.from(set).filter((v) => v.includes("application")),
+      );
+      console.log(
+        "availableVariables:",
+        availableVariables.find((g) => g.namespace === "application"),
+      );
+    }
+
+    return set;
+  }, [availableVariables]);
 
   // Create a map of variable keys to their default values
   const variableValuesMap = useMemo(() => {
@@ -742,7 +767,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
                 <RichTextEditor
                   content={content}
                   onChange={setContent}
-                  placeholder="Enter template content with placeholders like {{thrive.company_name}}, {{examiner.name}}, {{fees.base_exam_fee}}, etc. (Press Enter for new paragraph, Shift + Enter for new line)"
+                  placeholder="Enter template content with placeholders like {{thrive.company_name}}, {{application.examiner_name}}, {{fees.base_exam_fee}}, etc. (Press Enter for new paragraph, Shift + Enter for new line)"
                   editorRef={editorRef}
                   validVariables={validVariablesSet}
                   availableVariables={availableVariables}
@@ -769,6 +794,10 @@ export default function ContractTemplateEditContent({ template }: Props) {
                   header={headerConfig}
                   footer={footerConfig}
                   variableValues={variableValuesMap}
+                  customVariables={customVariables.map((v) => ({
+                    key: v.key,
+                    showUnderline: v.showUnderline,
+                  }))}
                 />
               </div>
             </div>
