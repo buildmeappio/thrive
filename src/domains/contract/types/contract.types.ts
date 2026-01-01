@@ -48,13 +48,6 @@ export interface SignaturePanelProps {
   clearSignature: () => void;
   agree: boolean;
   setAgree: (agree: boolean) => void;
-  checkboxGroups: CheckboxGroup[];
-  checkboxValues: Record<string, string[]>;
-  onCheckboxChange: (
-    groupKey: string,
-    optionValue: string,
-    checked: boolean,
-  ) => void;
   onSign: () => void;
   onDecline: () => void;
   isSigning: boolean;

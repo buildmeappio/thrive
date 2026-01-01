@@ -8,9 +8,6 @@ export const SignaturePanel = ({
   clearSignature,
   agree,
   setAgree,
-  checkboxGroups,
-  checkboxValues,
-  onCheckboxChange,
   onSign,
   onDecline,
   isSigning,
@@ -74,54 +71,6 @@ export const SignaturePanel = ({
             Clear Signature
           </button>
         </div>
-
-        {checkboxGroups.length > 0 && (
-          <div className="space-y-4">
-            <label className="block text-sm font-semibold text-black mb-2">
-              Select Options
-            </label>
-            {checkboxGroups.map((group) => (
-              <div
-                key={group.variableKey}
-                className="border-2 border-[#E9EDEE] rounded-[10px] p-4 bg-white"
-              >
-                <label className="block text-sm font-semibold text-black mb-3">
-                  {group.label}
-                </label>
-                <div className="space-y-2">
-                  {group.options.map((option) => {
-                    const isChecked =
-                      checkboxValues[group.variableKey]?.includes(
-                        option.value,
-                      ) || false;
-                    return (
-                      <label
-                        key={option.value}
-                        className="flex items-start gap-3 cursor-pointer hover:bg-[#F2F5F6] p-2 rounded transition-colors"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={(e) =>
-                            onCheckboxChange(
-                              group.variableKey,
-                              option.value,
-                              e.target.checked,
-                            )
-                          }
-                          className="mt-0.5 w-5 h-5 text-[#00A8FF] border-2 border-[#9EA9AA] rounded focus:ring-2 focus:ring-[#00A8FF]/30 focus-visible:outline-none cursor-pointer"
-                        />
-                        <span className="text-sm text-[#333] leading-relaxed">
-                          {option.label}
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         <div className="border-2 border-[#E9EDEE] rounded-[10px] p-4 bg-[#F2F5F6]">
           <label className="flex items-start gap-3 cursor-pointer">

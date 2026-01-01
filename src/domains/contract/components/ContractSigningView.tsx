@@ -3,10 +3,8 @@
 import { useState, useCallback } from "react";
 import { useSignatureCanvas } from "./hooks/useSignatureCanvas";
 import { usePdfGeneration } from "./hooks/usePdfGeneration";
-import { useCheckboxGroups } from "./hooks/useCheckboxGroups";
 import { useContractSigning } from "./hooks/useContractSigning";
 import { useContractDomUpdates } from "./hooks/useContractDomUpdates";
-import { useCheckboxInteractions } from "./hooks/useCheckboxInteractions";
 import { processContractHtmlWithHeadersFooters } from "./utils/contractHelpers";
 import { ContractStyles } from "./styles/contractStyles";
 import { DeclinedView } from "./components/DeclinedView";
@@ -48,8 +46,6 @@ const ContractSigningView = ({
   const { canvasRef, signatureImage, clearSignature, validateSignature } =
     useSignatureCanvas();
   const { generatePdfFromHtml } = usePdfGeneration();
-  const { checkboxGroups, checkboxValues, setCheckboxValues } =
-    useCheckboxGroups(processedHtml, checkboxGroupsFromTemplate);
 
   const {
     isSigning,
@@ -70,7 +66,7 @@ const ContractSigningView = ({
     sigDate,
     contractHtml,
     signatureImage,
-    checkboxValues,
+    checkboxValues: {}, // Empty object - checkboxes are not interactive
     generatePdfFromHtml,
   });
 
@@ -82,120 +78,15 @@ const ContractSigningView = ({
     await handleSignInternal();
   }, [validateSignature, handleSignInternal]);
 
-  // Update DOM with signature, date, name, and checkboxes
+  // Update DOM with signature, date, and name
   useContractDomUpdates({
     contractHtml: processedHtml,
     signatureImage,
     sigName,
     sigDate,
-    checkboxValues,
-    checkboxGroups,
+    checkboxValues: {}, // Empty - checkboxes are read-only
+    checkboxGroups: [], // Empty - checkboxes are read-only
   });
-
-  // Handle checkbox interactions in contract preview
-  useCheckboxInteractions({
-    contractHtml: processedHtml,
-    checkboxValues,
-    checkboxGroups,
-    setCheckboxValues,
-  });
-
-  // Handle checkbox changes from sidebar
-  const handleCheckboxChange = useCallback(
-    (groupKey: string, optionValue: string, checked: boolean) => {
-      setCheckboxValues((prev) => {
-        const currentValues = prev[groupKey] || [];
-        const newValues = checked
-          ? [...currentValues, optionValue]
-          : currentValues.filter((v) => v !== optionValue);
-
-        // Update visual checkboxes in contract preview
-        setTimeout(() => {
-          const contractContainer =
-            document.getElementById("contract") ||
-            document.getElementById("contract-content");
-          if (!contractContainer) return;
-
-          const group = checkboxGroups.find((g) => g.variableKey === groupKey);
-          if (!group) return;
-
-          group.options.forEach((opt) => {
-            const isChecked = newValues.includes(opt.value);
-
-            // Try data attributes first
-            const indicators = contractContainer.querySelectorAll<HTMLElement>(
-              `[data-variable-type="checkbox_group"][data-variable-key="${groupKey}"] .checkbox-indicator[data-checkbox-value="${opt.value}"]`,
-            );
-
-            if (indicators.length === 0) {
-              // Fallback: search by label in <p> tags
-              const allParagraphs =
-                contractContainer.querySelectorAll<HTMLElement>("p");
-              allParagraphs.forEach((p) => {
-                const text = p.textContent?.trim() || "";
-                const labelMatch = text.match(/^[☐☑]\s*(.+)$/);
-                if (labelMatch) {
-                  const labelText = labelMatch[1].trim();
-                  const matches =
-                    labelText.toLowerCase() === opt.label.toLowerCase();
-
-                  if (matches) {
-                    let checkboxSpan = p.querySelector(
-                      "span.checkbox-indicator",
-                    ) as HTMLElement | null;
-
-                    if (!checkboxSpan) {
-                      checkboxSpan = document.createElement("span");
-                      checkboxSpan.className = "checkbox-indicator";
-                      checkboxSpan.style.display = "inline-block";
-                      checkboxSpan.style.marginRight = "4px";
-                      checkboxSpan.style.padding = "2px 4px";
-                      checkboxSpan.style.borderRadius = "4px";
-                      checkboxSpan.style.cursor = "pointer";
-
-                      const restOfText = text.substring(1).trim();
-                      checkboxSpan.textContent = isChecked ? "☑" : "☐";
-
-                      p.textContent = "";
-                      p.appendChild(checkboxSpan);
-                      if (restOfText) {
-                        p.appendChild(
-                          document.createTextNode(" " + restOfText),
-                        );
-                      }
-                    } else {
-                      checkboxSpan.textContent = isChecked ? "☑" : "☐";
-                    }
-
-                    if (checkboxSpan) {
-                      checkboxSpan.style.backgroundColor = isChecked
-                        ? "#e3f2fd"
-                        : "transparent";
-                    }
-
-                    p.style.backgroundColor = "transparent";
-                  }
-                }
-              });
-            } else {
-              indicators.forEach((ind) => {
-                ind.textContent = isChecked ? "☑" : "☐";
-                ind.style.backgroundColor = isChecked
-                  ? "#e3f2fd"
-                  : "transparent";
-              });
-            }
-          });
-        }, 0);
-
-        return {
-          ...prev,
-          [groupKey]: newValues,
-        };
-      });
-    },
-    [checkboxGroups, setCheckboxValues],
-  );
 
   if (declined) {
     return <DeclinedView />;
@@ -218,9 +109,6 @@ const ContractSigningView = ({
             clearSignature={clearSignature}
             agree={agree}
             setAgree={setAgree}
-            checkboxGroups={checkboxGroups}
-            checkboxValues={checkboxValues}
-            onCheckboxChange={handleCheckboxChange}
             onSign={handleSign}
             onDecline={() => setShowDeclineModal(true)}
             isSigning={isSigning}
