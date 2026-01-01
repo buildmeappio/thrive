@@ -1,7 +1,7 @@
 /* Shared styles for editor content (.ProseMirror, .editor-content) and preview content (.page-content, .header-content, .footer-content) */
 
 :root {
-  --var-line-height: 1;
+  --var-line-height: 1.5;
 }
 
 /* Base typography */
@@ -123,7 +123,8 @@
 .ProseMirror.editor-content p,
 .editor-content p,
 .page-content p {
-  margin-bottom: 0.65em;
+  margin-bottom: 1em;
+  line-height: var(--var-line-height);
 }
 
 /* Ensure empty paragraphs are visible */

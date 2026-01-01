@@ -69,6 +69,15 @@ type Props = {
   template: ContractTemplateData;
 };
 
+/**
+ * Variable types
+ * 1. Static
+ * 2. Referenced (from other data sources)
+ * 3. Custom (take via user input)
+ * 4. Fee strucutre (specific fee structure taken via user input)
+ * 
+ */
+
 export default function ContractTemplateEditContent({ template }: Props) {
   const router = useRouter();
   const [content, setContent] = useState(
@@ -176,6 +185,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
       try {
         const result = await listCustomVariablesAction({ isActive: true });
         if ("error" in result) {
+          console.error("Failed to load variables:", result.error);
+          toast.error(result.error ?? "Failed to load variables");
           return;
         }
         if (result.data) {
@@ -431,8 +442,9 @@ export default function ContractTemplateEditContent({ template }: Props) {
     } finally {
       setIsUpdatingFeeStructure(false);
     }
-  };
+  }
 
+  // Optimistic update + rollback for variable updates
   const handleVariableUpdate = async (data: {
     key: string;
     defaultValue: string;
@@ -442,7 +454,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
     showUnderline?: boolean;
   }) => {
     if (!editingVariable) {
-      // Creating new variable
+      // Creating new variable (no optimistics update needed; it adds a new item)
       setIsCreatingVariable(true);
       try {
         // Ensure key starts with "custom."
@@ -482,8 +494,63 @@ export default function ContractTemplateEditContent({ template }: Props) {
       return;
     }
 
-    // Updating existing variable
+    // Updating existing variable with optimistic update and rollback
     setIsUpdatingVariable(true);
+
+    // Check if variable still exists before attempting update
+    const isCustomVar = editingVariable.key.startsWith("custom.");
+    const variableStillExists = isCustomVar
+      ? customVariables.some((v) => v.id === editingVariable.id)
+      : systemVariables.some((v) => v.id === editingVariable.id);
+
+    if (!variableStillExists) {
+      toast.error("Variable was deleted. Please refresh the page.");
+      setIsVariableDialogOpen(false);
+      setEditingVariable(null);
+      setIsUpdatingVariable(false);
+      return;
+    }
+
+    // Save previous state for rollback
+    let prevCustom: CustomVariable | null = null;
+    let prevSystem: CustomVariable | null = null;
+
+    if (isCustomVar) {
+      setCustomVariables((prev) => {
+        prevCustom = prev.find((v) => v.id === editingVariable.id) || null;
+        // Optimistically update variable in list
+        return prev.map((v) =>
+          v.id === editingVariable.id
+            ? {
+              ...v,
+              key: data.key,
+              defaultValue: data.defaultValue,
+              description: data.description,
+              variableType: data.variableType,
+              options: data.options,
+            }
+            : v
+        );
+      });
+    } else {
+      setSystemVariables((prev) => {
+        prevSystem = prev.find((v) => v.id === editingVariable.id) || null;
+        // Optimistically update variable in list
+        return prev.map((v) =>
+          v.id === editingVariable.id
+            ? {
+              ...v,
+              key: data.key,
+              defaultValue: data.defaultValue,
+              description: data.description,
+              variableType: data.variableType,
+              options: data.options,
+            }
+            : v
+        );
+      });
+    }
+
     try {
       const result = await updateCustomVariableAction({
         id: editingVariable.id,
@@ -496,28 +563,134 @@ export default function ContractTemplateEditContent({ template }: Props) {
       });
 
       if ("error" in result) {
+        // Check if error is "not found" (variable was deleted)
+        const isNotFoundError =
+          result.error?.toLowerCase().includes("not found") ||
+          result.error?.toLowerCase().includes("variable not found");
+
+        if (isNotFoundError) {
+          // Variable was deleted - remove it from the list
+          if (isCustomVar) {
+            setCustomVariables((prev) =>
+              prev.filter((v) => v.id !== editingVariable.id)
+            );
+          } else {
+            setSystemVariables((prev) =>
+              prev.filter((v) => v.id !== editingVariable.id)
+            );
+          }
+          toast.error("Variable was deleted by another user.");
+          setIsVariableDialogOpen(false);
+          setEditingVariable(null);
+          return;
+        }
+
+        // Other errors - rollback to previous state
+        if (isCustomVar && prevCustom) {
+          setCustomVariables((prev) => {
+            const variableExists = prev.some((v) => v.id === editingVariable.id);
+            if (variableExists) {
+              return prev.map((v) =>
+                v.id === editingVariable.id ? prevCustom! : v
+              );
+            }
+            // Variable doesn't exist, add it back
+            return [...prev, prevCustom];
+          });
+        } else if (!isCustomVar && prevSystem) {
+          setSystemVariables((prev) => {
+            const variableExists = prev.some((v) => v.id === editingVariable.id);
+            if (variableExists) {
+              return prev.map((v) =>
+                v.id === editingVariable.id ? prevSystem! : v
+              );
+            }
+            // Variable doesn't exist, add it back
+            return [...prev, prevSystem];
+          });
+        }
         toast.error(result.error ?? "Failed to update variable");
         return;
       }
 
-      // Update the appropriate variables list based on whether it's a custom variable
-      const isCustomVar = editingVariable.key.startsWith("custom.");
+      // Success: replace with server return
       if (isCustomVar) {
-        setCustomVariables((prev) =>
-          prev.map((v) => (v.id === editingVariable.id ? result.data : v)),
-        );
+        setCustomVariables((prev) => {
+          const variableExists = prev.some((v) => v.id === editingVariable.id);
+          if (variableExists) {
+            return prev.map((v) =>
+              v.id === editingVariable.id ? result.data : v
+            );
+          }
+          // Variable was removed, add it back
+          return [...prev, result.data];
+        });
       } else {
-        setSystemVariables((prev) =>
-          prev.map((v) => (v.id === editingVariable.id ? result.data : v)),
-        );
+        setSystemVariables((prev) => {
+          const variableExists = prev.some((v) => v.id === editingVariable.id);
+          if (variableExists) {
+            return prev.map((v) =>
+              v.id === editingVariable.id ? result.data : v
+            );
+          }
+          // Variable was removed, add it back
+          return [...prev, result.data];
+        });
       }
 
       toast.success("Variable updated successfully");
       setIsVariableDialogOpen(false);
       setEditingVariable(null);
     } catch (error) {
-      console.error("Error updating variable:", error);
-      toast.error("Failed to update variable");
+      // Rollback on error - check if variable still exists
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      const isNotFoundError =
+        errorMessage.toLowerCase().includes("not found") ||
+        errorMessage.toLowerCase().includes("variable not found");
+
+      if (isNotFoundError) {
+        // Variable was deleted - remove it from the list
+        if (isCustomVar) {
+          setCustomVariables((prev) =>
+            prev.filter((v) => v.id !== editingVariable.id)
+          );
+        } else {
+          setSystemVariables((prev) =>
+            prev.filter((v) => v.id !== editingVariable.id)
+          );
+        }
+        toast.error("Variable was deleted by another user.");
+        setIsVariableDialogOpen(false);
+        setEditingVariable(null);
+      } else {
+        // Other errors - rollback to previous state
+        if (isCustomVar && prevCustom) {
+          setCustomVariables((prev) => {
+            const variableExists = prev.some((v) => v.id === editingVariable.id);
+            if (variableExists) {
+              return prev.map((v) =>
+                v.id === editingVariable.id ? prevCustom! : v
+              );
+            }
+            // Variable doesn't exist, add it back
+            return [...prev, prevCustom];
+          });
+        } else if (!isCustomVar && prevSystem) {
+          setSystemVariables((prev) => {
+            const variableExists = prev.some((v) => v.id === editingVariable.id);
+            if (variableExists) {
+              return prev.map((v) =>
+                v.id === editingVariable.id ? prevSystem! : v
+              );
+            }
+            // Variable doesn't exist, add it back
+            return [...prev, prevSystem];
+          });
+        }
+        console.error("Error updating variable:", error);
+        toast.error("Failed to update variable");
+      }
     } finally {
       setIsUpdatingVariable(false);
     }
@@ -833,21 +1006,19 @@ export default function ContractTemplateEditContent({ template }: Props) {
               <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6 border-b border-gray-200 overflow-x-auto pt-4">
                 <button
                   onClick={() => setActiveTab("variables")}
-                  className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${
-                    activeTab === "variables"
-                      ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                  }`}
+                  className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "variables"
+                    ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                    }`}
                 >
                   Variables
                 </button>
                 <button
                   onClick={() => setActiveTab("custom")}
-                  className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${
-                    activeTab === "custom"
-                      ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                  }`}
+                  className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "custom"
+                    ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                    }`}
                 >
                   Custom Variables
                   {customVariables.length > 0 && (
@@ -859,11 +1030,10 @@ export default function ContractTemplateEditContent({ template }: Props) {
                 {placeholders.length > 0 && (
                   <button
                     onClick={() => setActiveTab("placeholders")}
-                    className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 relative cursor-pointer whitespace-nowrap flex-shrink-0 ${
-                      activeTab === "placeholders"
-                        ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                    }`}
+                    className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 relative cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "placeholders"
+                      ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                      }`}
                   >
                     Detected
                     <span className="ml-1.5 sm:ml-2 inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 text-[10px] sm:text-xs font-bold text-white bg-[#00A8FF] rounded-full">
@@ -985,11 +1155,23 @@ export default function ContractTemplateEditContent({ template }: Props) {
                           v.key.startsWith(`${group.namespace}.`),
                         );
 
-                        // Combine all editable variables for this namespace
-                        const allEditableVars = [
-                          ...editableSystemVars,
-                          ...editableCustomVars,
-                        ];
+                        // Combine all editable variables for this namespace and deduplicate by key
+                        // Use a Map to ensure uniqueness, prioritizing custom variables over system variables
+                        const variablesMap = new Map<string, CustomVariable>();
+
+                        // Add system variables first
+                        editableSystemVars.forEach((v) => {
+                          if (!variablesMap.has(v.key)) {
+                            variablesMap.set(v.key, v);
+                          }
+                        });
+
+                        // Add custom variables, which will override system variables with same key
+                        editableCustomVars.forEach((v) => {
+                          variablesMap.set(v.key, v);
+                        });
+
+                        const allEditableVars = Array.from(variablesMap.values());
 
                         return (
                           <div key={group.namespace} className="space-y-3">
@@ -1113,10 +1295,10 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                     </button>
                                     {variable.variableType ===
                                       "checkbox_group" && (
-                                      <span className="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-semibold">
-                                        Checkbox Group
-                                      </span>
-                                    )}
+                                        <span className="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-semibold">
+                                          Checkbox Group
+                                        </span>
+                                      )}
                                   </div>
                                   <p className="text-[10px] sm:text-xs text-gray-600 mb-1 break-words">
                                     {variable.description || "No description"}
@@ -1126,7 +1308,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                       Default: {variable.defaultValue}
                                     </p>
                                   ) : variable.variableType ===
-                                      "checkbox_group" && variable.options ? (
+                                    "checkbox_group" && variable.options ? (
                                     <div className="mt-2">
                                       <p className="text-[10px] sm:text-xs text-gray-500 mb-1">
                                         Options ({variable.options.length}):
@@ -1242,15 +1424,14 @@ export default function ContractTemplateEditContent({ template }: Props) {
                         return (
                           <div
                             key={placeholder}
-                            className={`text-xs sm:text-sm font-mono px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border flex items-center justify-between gap-2 transition-colors ${
-                              hasError
+                            className={`text-xs sm:text-sm font-mono px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border flex items-center justify-between gap-2 transition-colors ${hasError
+                              ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                              : isInvalid
                                 ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
-                                : isInvalid
-                                  ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
-                                  : hasWarning
-                                    ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
-                                    : "bg-gray-50 border-gray-200 hover:bg-gray-100"
-                            }`}
+                                : hasWarning
+                                  ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
+                                  : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                              }`}
                           >
                             <span className="break-all">{`{{${placeholder}}}`}</span>
                             {isInvalid && (
