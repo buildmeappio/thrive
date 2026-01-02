@@ -33,6 +33,7 @@ export default function CreateContractModal(props: CreateContractModalProps) {
     feeStructureData,
     feeFormValues,
     contractFormValues,
+    customVariables,
     requiresFeeStructure,
     setSelectedTemplateId,
     setSelectedFeeStructureId,
@@ -114,6 +115,8 @@ export default function CreateContractModal(props: CreateContractModalProps) {
             <ContractVariablesFormStep
               values={contractFormValues}
               onChange={setContractFormValues}
+              customVariables={customVariables}
+              templateContent={selectedTemplateContent}
             />
           )}
 

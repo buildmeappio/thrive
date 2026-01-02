@@ -11,8 +11,11 @@ import { ContractTemplateListItem } from "@/domains/contract-templates/types/con
 import { FeeStructureListItem } from "@/domains/fee-structures/types/feeStructure.types";
 import {
   extractRequiredFeeVariables,
+  extractRequiredCustomVariables,
   validateFeeStructureCompatibility,
 } from "@/domains/contract-templates/utils/placeholderParser";
+import { listCustomVariablesAction } from "@/domains/custom-variables/actions/listCustomVariables";
+import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
 import {
   initializeContractFormValues,
   validateContractFormValues,
@@ -81,6 +84,9 @@ export const useCreateContractModal = (
   const [contractFormValues, setContractFormValues] =
     useState<ContractFormValues>(initializeContractFormValues());
 
+  // --- Custom variables ---
+  const [customVariables, setCustomVariables] = useState<CustomVariable[]>([]);
+
   // --- Loading ---
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
@@ -136,6 +142,55 @@ export const useCreateContractModal = (
             templateResult.data.currentVersion.footerConfig,
           );
           const requiredFeeVars = extractRequiredFeeVariables(content);
+
+          // Extract custom variables from template
+          const requiredCustomVarKeys = extractRequiredCustomVariables(content);
+
+          // Load custom variable definitions
+          if (requiredCustomVarKeys.length > 0) {
+            try {
+              const customVarsResult = await listCustomVariablesAction({
+                isActive: true,
+              });
+              if (customVarsResult.success && customVarsResult.data) {
+                // Filter to only variables that are used in the template
+                const usedCustomVars = customVarsResult.data.filter((v) => {
+                  const keyWithoutPrefix = v.key.replace(/^custom\./, "");
+                  return requiredCustomVarKeys.includes(keyWithoutPrefix);
+                });
+                setCustomVariables(usedCustomVars);
+
+                // Initialize custom variable values with defaults
+                setContractFormValues((prev) => {
+                  const custom: Record<string, string | string[]> =
+                    prev.custom || {};
+                  let hasChanges = false;
+
+                  for (const variable of usedCustomVars) {
+                    const keyWithoutPrefix = variable.key.replace(
+                      /^custom\./,
+                      "",
+                    );
+                    if (!(keyWithoutPrefix in custom)) {
+                      if (variable.variableType === "checkbox_group") {
+                        custom[keyWithoutPrefix] = [];
+                      } else if (variable.defaultValue) {
+                        custom[keyWithoutPrefix] = variable.defaultValue;
+                      }
+                      hasChanges = true;
+                    }
+                  }
+
+                  return hasChanges ? { ...prev, custom } : prev;
+                });
+              }
+            } catch (error) {
+              console.error("Error loading custom variables:", error);
+              // Don't show error toast, just log it
+            }
+          } else {
+            setCustomVariables([]);
+          }
 
           if (requiredFeeVars.size === 0) {
             setCompatibleFeeStructures(feeStructuresList);
@@ -220,6 +275,7 @@ export const useCreateContractModal = (
     setSelectedFeeStructureId("");
     setCompatibleFeeStructures([]);
     setContractFormValues(initializeContractFormValues());
+    setCustomVariables([]);
     feeStructureLoader.resetFeeStructureState();
     contractSubmission.resetContractState();
     isInitializingRef.current = false;
@@ -436,7 +492,11 @@ export const useCreateContractModal = (
    * Validates contract form and creates/updates contract.
    */
   const handleContractFormSubmit = useCallback(async () => {
-    const validation = validateContractFormValues(contractFormValues);
+    const validation = validateContractFormValues(
+      contractFormValues,
+      customVariables,
+      selectedTemplateContent,
+    );
     if (!validation.valid) {
       toast.error(
         `Please fill in required fields: ${validation.missingFields.join(", ")}`,
@@ -464,6 +524,8 @@ export const useCreateContractModal = (
     selectedFeeStructureId,
     feeStructureLoader.feeFormValues,
     contractSubmission,
+    customVariables,
+    selectedTemplateContent,
   ]);
 
   /**
@@ -525,6 +587,7 @@ export const useCreateContractModal = (
 
     // Contract Variables Form State
     contractFormValues,
+    customVariables,
 
     // Actions
     setSelectedTemplateId: handleTemplateChange,

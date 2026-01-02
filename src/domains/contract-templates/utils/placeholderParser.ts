@@ -210,6 +210,27 @@ export function extractRequiredFeeVariables(content: string): Set<string> {
 }
 
 /**
+ * Extract required custom variable keys from template content
+ * Returns an array of custom variable keys without the "custom." prefix
+ * Example: ["variable_key_1", "variable_key_2"] from {{custom.variable_key_1}} and {{custom.variable_key_2}}
+ */
+export function extractRequiredCustomVariables(content: string): string[] {
+  const placeholders = parsePlaceholders(content);
+  const customVariables = new Set<string>();
+
+  for (const placeholder of placeholders) {
+    const parts = placeholder.split(".");
+    if (parts[0] === "custom" && parts.length >= 2) {
+      // Extract the variable key (first part after "custom.")
+      const variableKey = parts[1];
+      customVariables.add(variableKey);
+    }
+  }
+
+  return Array.from(customVariables);
+}
+
+/**
  * Validate that a fee structure has all required variables
  * Also checks if composite variables have required sub-fields
  */

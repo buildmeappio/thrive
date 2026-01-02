@@ -126,15 +126,16 @@ function processVariablePlaceholders(
 
       // Replace with value - conditionally add underline based on showUnderline setting
       if (showUnderline) {
-        return `<span style="border-bottom: 2px solid black; background: none !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; font-weight: normal;" title="${match}">${variableValue}</span>`;
+        return `<span style="display: inline; border-bottom: 2px solid black; background: none !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; font-weight: normal;" title="${match}">${variableValue}</span>`;
       } else {
-        return `<span style="background: none !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; font-weight: normal;" title="${match}">${variableValue}</span>`;
+        return `<span style="display: inline; background: none !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; font-weight: normal;" title="${match}">${variableValue}</span>`;
       }
     }
 
     // If no value found, show as a bold underline (blank line to fill in) only if showUnderline is true
+    // Use inline-block for empty placeholders to allow min-width to work
     if (showUnderline) {
-      return `<span style="border-bottom: 2px solid black; display: inline-block; min-width: 150px; background: none !important; color: transparent !important; padding: 0 !important; border-radius: 0 !important;" title="${match}">&nbsp;</span>`;
+      return `<span style="display: inline-block; border-bottom: 2px solid black; min-width: 150px; background: none !important; color: transparent !important; padding: 0 !important; border-radius: 0 !important;" title="${match}">&nbsp;</span>`;
     } else {
       return `<span style="display: inline-block; min-width: 150px; background: none !important; color: transparent !important; padding: 0 !important; border-radius: 0 !important;" title="${match}">&nbsp;</span>`;
     }

@@ -26,6 +26,12 @@ import {
   markContractSigned,
   getExaminerContract,
 } from "../actions";
+import {
+  listContractsAction,
+  getContractAction,
+} from "@/domains/contracts/actions";
+import { listCustomVariablesAction } from "@/domains/custom-variables/actions/listCustomVariables";
+import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
 import { Check, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
@@ -152,6 +158,11 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     | null
   >(null);
   const [confirmingSlotId, setConfirmingSlotId] = useState<string | null>(null);
+  const [contractData, setContractData] = useState<{
+    fieldValues: any;
+    customVariables: CustomVariable[];
+  } | null>(null);
+  const [_loadingContractData, setLoadingContractData] = useState(false);
 
   // Sync local status with examiner prop when it changes (e.g., after refresh)
   useEffect(() => {
@@ -190,6 +201,60 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     autoMoveToReview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only once on mount - examiner.id and examiner.status are intentionally not included
+
+  // Fetch contract data and custom variables
+  useEffect(() => {
+    const loadContractData = async () => {
+      // Only load if contract has been sent/signed
+      if (
+        !["contract_sent", "contract_signed", "approved", "active"].includes(
+          status,
+        )
+      ) {
+        return;
+      }
+
+      setLoadingContractData(true);
+      try {
+        // Get contract for this examiner/application
+        const contracts = await listContractsAction({
+          [isApplication ? "applicationId" : "examinerProfileId"]: examiner.id,
+          status: "ALL",
+        });
+
+        if (contracts && contracts.length > 0) {
+          // Get the latest contract
+          const latestContract = contracts[0];
+
+          // Get contract details with fieldValues
+          const contractDetailResult = await getContractAction(
+            latestContract.id,
+          );
+          if (contractDetailResult.success && contractDetailResult.data) {
+            const fieldValues = contractDetailResult.data.fieldValues || {};
+
+            // Load custom variables to get their labels
+            const customVarsResult = await listCustomVariablesAction({
+              isActive: true,
+            });
+
+            if (customVarsResult.success && customVarsResult.data) {
+              setContractData({
+                fieldValues,
+                customVariables: customVarsResult.data,
+              });
+            }
+          }
+        }
+      } catch (error) {
+        logger.error("Error loading contract data:", error);
+      } finally {
+        setLoadingContractData(false);
+      }
+    };
+
+    loadContractData();
+  }, [status, examiner.id, isApplication]);
 
   const handleApprove = async () => {
     // If contract is already sent, approve directly
@@ -1083,6 +1148,67 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                         />
                       </>
                     ) : null}
+                  </Section>
+                )}
+
+              {/* Section: Contract Details - Show custom variables */}
+              {contractData &&
+                contractData.fieldValues?.custom &&
+                Object.keys(contractData.fieldValues.custom).length > 0 && (
+                  <Section title="Contract Details">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {Object.entries(contractData.fieldValues.custom).map(
+                        ([key, value]) => {
+                          // Find custom variable definition to get label
+                          const customVar = contractData.customVariables.find(
+                            (v) => v.key === `custom.${key}` || v.key === key,
+                          );
+                          // Format key to label if not available
+                          const formatKeyToLabel = (k: string): string => {
+                            return k
+                              .replace(/_/g, " ")
+                              .split(" ")
+                              .map(
+                                (word) =>
+                                  word.charAt(0).toUpperCase() +
+                                  word.slice(1).toLowerCase(),
+                              )
+                              .join(" ");
+                          };
+                          const label =
+                            customVar?.label || formatKeyToLabel(key);
+
+                          let displayValue: string;
+                          if (Array.isArray(value)) {
+                            // For checkbox groups, show selected options
+                            if (customVar?.options) {
+                              const selectedLabels = value
+                                .map((val) => {
+                                  const option = customVar.options?.find(
+                                    (opt) => opt.value === val,
+                                  );
+                                  return option?.label || val;
+                                })
+                                .filter(Boolean);
+                              displayValue = selectedLabels.join(", ");
+                            } else {
+                              displayValue = value.join(", ");
+                            }
+                          } else {
+                            displayValue = String(value || "-");
+                          }
+
+                          return (
+                            <FieldRow
+                              key={key}
+                              label={label}
+                              value={displayValue}
+                              type="text"
+                            />
+                          );
+                        },
+                      )}
+                    </div>
                   </Section>
                 )}
 
