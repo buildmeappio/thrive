@@ -65,7 +65,6 @@ export function EditorSection({
             editorRef={editorRef}
             validVariables={validVariablesSet}
             availableVariables={availableVariables}
-            variableValues={variableValuesMap}
             customVariables={customVariables}
             headerConfig={headerConfig}
             footerConfig={footerConfig}

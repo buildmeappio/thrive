@@ -55,6 +55,15 @@ export type ContractData = {
       decimals: number | null;
       unit: string | null;
       included: boolean;
+      composite: boolean;
+      subFields: Array<{
+        key: string;
+        label: string;
+        type: string;
+        defaultValue?: unknown;
+        required?: boolean;
+        unit?: string | null;
+      }> | null;
     }>;
   } | null;
 };
