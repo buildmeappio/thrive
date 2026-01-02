@@ -1,6 +1,7 @@
 model CustomVariable {
     id            String   @id @default(uuid())
     key           String   @unique
+    label         String?  @map("label")
     defaultValue  String   @default("") @map("default_value")
     description   String?
     isActive      Boolean  @default(true) @map("is_active")
