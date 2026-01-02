@@ -216,6 +216,17 @@ export const getContract = async (id: string): Promise<ContractData> => {
             decimals: v.decimals,
             unit: v.unit,
             included: v.included,
+            composite: v.composite,
+            subFields: v.subFields
+              ? (v.subFields as Array<{
+                  key: string;
+                  label: string;
+                  type: string;
+                  defaultValue?: unknown;
+                  required?: boolean;
+                  unit?: string | null;
+                }>)
+              : null,
           })),
         }
       : null,
@@ -258,9 +269,19 @@ export const createContract = async (
   const requiredFeeVars = extractRequiredFeeVariables(templateContent);
 
   if (requiredFeeVars.size > 0) {
+    // Transform Prisma variables to match expected type
+    const transformedVariables = feeStructure.variables.map((v) => ({
+      key: v.key,
+      composite: v.composite,
+      subFields: v.subFields
+        ? Array.isArray(v.subFields)
+          ? (v.subFields as Array<{ key: string }>)
+          : []
+        : undefined,
+    }));
     const compatibility = validateFeeStructureCompatibility(
       requiredFeeVars,
-      feeStructure.variables,
+      transformedVariables,
       templateContent,
     );
 
@@ -616,9 +637,19 @@ export const updateContractFeeStructure = async (
   const requiredFeeVars = extractRequiredFeeVariables(templateContent);
 
   if (requiredFeeVars.size > 0) {
+    // Transform Prisma variables to match expected type
+    const transformedVariables = feeStructure.variables.map((v) => ({
+      key: v.key,
+      composite: v.composite,
+      subFields: v.subFields
+        ? Array.isArray(v.subFields)
+          ? (v.subFields as Array<{ key: string }>)
+          : []
+        : undefined,
+    }));
     const compatibility = validateFeeStructureCompatibility(
       requiredFeeVars,
-      feeStructure.variables,
+      transformedVariables,
       templateContent,
     );
 
@@ -811,7 +842,6 @@ export const previewContract = async (
   if (fv && fv.examiner) {
     for (const [key, value] of Object.entries(fv.examiner)) {
       // Map legacy examiner.* variables to new application.examiner_* format
-      const legacyKey = `examiner.${key}`;
       const newKey = `application.examiner_${key.replace(/_/g, "_")}`;
 
       // Special handling for examiner.name - always format it properly
@@ -1106,7 +1136,11 @@ export const previewContract = async (
 
     for (const variable of contract.feeStructure.variables) {
       // Handle composite variables
-      if (variable.composite && variable.subFields && variable.subFields.length > 0) {
+      if (
+        variable.composite &&
+        variable.subFields &&
+        variable.subFields.length > 0
+      ) {
         const overrideValue = fv?.fees_overrides?.[variable.key];
         const compositeValue =
           overrideValue !== undefined &&

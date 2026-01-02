@@ -51,10 +51,7 @@ export function splitTableIntoPages(
     measurementContainer.removeChild(tempTable);
 
     // Check if adding this row exceeds available height
-    if (
-      currentHeight + rowHeight > availableHeight &&
-      currentRows.length > 0
-    ) {
+    if (currentHeight + rowHeight > availableHeight && currentRows.length > 0) {
       // Create a new table with current rows
       const newTable = document.createElement("table");
       // Copy table attributes
@@ -101,4 +98,3 @@ export function splitTableIntoPages(
 
   return tableTables;
 }
-

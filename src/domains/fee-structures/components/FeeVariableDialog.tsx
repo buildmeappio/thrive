@@ -196,10 +196,7 @@ export default function FeeVariableDialog({
   };
 
   // Update sub-field
-  const handleUpdateSubField = (
-    index: number,
-    field: Partial<SubField>,
-  ) => {
+  const handleUpdateSubField = (index: number, field: Partial<SubField>) => {
     const updated = [...subFields];
     updated[index] = { ...updated[index], ...field };
     setSubFields(updated);
@@ -325,8 +322,8 @@ export default function FeeVariableDialog({
     (composite
       ? subFields.length > 0 && validateSubFields() === null
       : included ||
-      defaultValue.trim() === "" ||
-      validateAmount(defaultValue) === null);
+        defaultValue.trim() === "" ||
+        validateAmount(defaultValue) === null);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
@@ -573,7 +570,8 @@ export default function FeeVariableDialog({
                         </Label>
                         <Input
                           type={
-                            subField.type === "NUMBER" || subField.type === "MONEY"
+                            subField.type === "NUMBER" ||
+                            subField.type === "MONEY"
                               ? "number"
                               : "text"
                           }
@@ -603,7 +601,8 @@ export default function FeeVariableDialog({
                             });
                           }}
                           placeholder={
-                            subField.type === "NUMBER" || subField.type === "MONEY"
+                            subField.type === "NUMBER" ||
+                            subField.type === "MONEY"
                               ? "0"
                               : "Enter text"
                           }
@@ -620,9 +619,7 @@ export default function FeeVariableDialog({
                             })
                           }
                         />
-                        <Label className="text-xs font-poppins">
-                          Required
-                        </Label>
+                        <Label className="text-xs font-poppins">Required</Label>
                       </div>
                     </div>
                   </div>
@@ -634,7 +631,6 @@ export default function FeeVariableDialog({
                   </p>
                 )}
               </div>
-
             </>
           )}
 

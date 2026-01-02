@@ -38,12 +38,7 @@ export default function ModalHeader({
         onClick={onClose}
         className="absolute right-4 top-4 sm:right-5 sm:top-5 grid h-8 w-8 sm:h-[32px] sm:w-[32px] place-items-center rounded-full bg-[#000093] focus:outline-none focus:ring-2 focus:ring-[#000093]/40"
       >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          className="text-white"
-        >
+        <svg width="16" height="16" viewBox="0 0 24 24" className="text-white">
           <path
             fill="currentColor"
             d="M18.3 5.7a1 1 0 0 0-1.4-1.4L12 9.17 7.1 4.3A1 1 0 0 0 5.7 5.7L10.6 10.6 5.7 15.5a1 1 0 1 0 1.4 1.4L12 12.03l4.9 4.87a1 1 0 0 0 1.4-1.4l-4.9-4.87 4.9-4.93Z"

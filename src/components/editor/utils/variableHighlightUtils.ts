@@ -6,7 +6,7 @@ import { ALLOWED_NAMESPACES } from "../constants";
  */
 export function highlightVariable(
   placeholder: string,
-  validVariables: Set<string>
+  validVariables: Set<string>,
 ): string {
   const key = placeholder.trim();
   if (!key) return placeholder;
@@ -16,7 +16,7 @@ export function highlightVariable(
   const hasValidNamespace = key.includes(".")
     ? ALLOWED_NAMESPACES.includes(key.split(".")[0])
     : true;
-  
+
   // For fee variables, check if format is valid even if not in validVariablesSet
   // This allows users to add fee variables before selecting a fee structure
   // or when the variable exists in a different fee structure
@@ -25,7 +25,7 @@ export function highlightVariable(
   const feeVariableFormatValid = isFeeVariable
     ? /^fees\.[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*$/.test(key)
     : false;
-  
+
   const isValid = (isInValidSet || feeVariableFormatValid) && hasValidNamespace;
 
   const className = isValid
@@ -34,4 +34,3 @@ export function highlightVariable(
 
   return `<span class="${className}" data-variable="${key}" data-is-valid="${isValid}" contenteditable="false">${placeholder}</span>`;
 }
-

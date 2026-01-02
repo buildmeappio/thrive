@@ -133,7 +133,11 @@ export function usePlaceholders({
     if (selectedFeeStructureData?.variables) {
       const feeVars: string[] = [];
       for (const variable of selectedFeeStructureData.variables) {
-        if (variable.composite && variable.subFields && variable.subFields.length > 0) {
+        if (
+          variable.composite &&
+          variable.subFields &&
+          variable.subFields.length > 0
+        ) {
           // Add sub-fields for composite variables
           for (const subField of variable.subFields) {
             feeVars.push(`${variable.key}.${subField.key}`);
@@ -203,9 +207,10 @@ export function usePlaceholders({
       if (editorRef.current) {
         const editor = editorRef.current;
         const placeholderText = `{{${placeholder}}}`;
-        
+
         // Use utility function to highlight the variable
-        const highlightedHtml = highlightVariable(placeholderText, validVariablesSet) + "&nbsp;";
+        const highlightedHtml =
+          highlightVariable(placeholderText, validVariablesSet) + "&nbsp;";
 
         // Use insertContent with parseOptions to ensure it's treated as a single node
         (editor as any)

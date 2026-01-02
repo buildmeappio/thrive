@@ -13,4 +13,3 @@ export const CONTENT_HEIGHT_PX = A4_HEIGHT_PX - PAGE_MARGIN_VERTICAL;
 
 // Display dimensions for preview (responsive while maintaining aspect ratio)
 export const PAGE_HEIGHT = `${A4_HEIGHT_PX}px`; // 1123px - true A4 height
-

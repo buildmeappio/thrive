@@ -290,7 +290,9 @@ export function useContractSubmission(
   /**
    * Generates and loads the contract preview.
    */
-  const generatePreview = async (contractIdToPreview: string): Promise<boolean> => {
+  const generatePreview = async (
+    contractIdToPreview: string,
+  ): Promise<boolean> => {
     const previewResult = await previewContractAction(contractIdToPreview);
     if (previewResult.success) {
       setPreviewHtml(previewResult.data.renderedHtml);

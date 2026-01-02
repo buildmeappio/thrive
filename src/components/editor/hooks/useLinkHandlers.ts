@@ -49,4 +49,3 @@ export function useLinkHandlers(editor: Editor | null) {
     removeLink,
   };
 }
-

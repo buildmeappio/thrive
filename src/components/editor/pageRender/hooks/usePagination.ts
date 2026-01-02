@@ -307,4 +307,3 @@ export function usePaginationWithLoading(
 
   return { performPagination };
 }
-

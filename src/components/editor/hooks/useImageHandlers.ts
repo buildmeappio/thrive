@@ -61,4 +61,3 @@ export function useImageHandlers(editor: Editor | null) {
     handleImageFileSelect,
   };
 }
-

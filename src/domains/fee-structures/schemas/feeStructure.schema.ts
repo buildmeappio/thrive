@@ -23,10 +23,7 @@ export const subFieldSchema = z.object({
   }),
   defaultValue: z.union([z.number(), z.string()]).optional(),
   required: z.boolean().optional().default(false),
-  unit: z
-    .string()
-    .max(20, "Unit must be less than 20 characters")
-    .optional(),
+  unit: z.string().max(20, "Unit must be less than 20 characters").optional(),
 });
 
 // Helper function to check if name contains at least one letter
@@ -177,7 +174,8 @@ export const createFeeVariableSchema = feeVariableBaseSchema.superRefine(
           ) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: "Sub-field default value must be a number for NUMBER/MONEY types",
+              message:
+                "Sub-field default value must be a number for NUMBER/MONEY types",
               path: ["subFields", i, "defaultValue"],
             });
           } else if (
@@ -349,7 +347,8 @@ export const updateFeeVariableSchema = feeVariableBaseSchema
           ) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: "Sub-field default value must be a number for NUMBER/MONEY types",
+              message:
+                "Sub-field default value must be a number for NUMBER/MONEY types",
               path: ["subFields", i, "defaultValue"],
             });
           } else if (

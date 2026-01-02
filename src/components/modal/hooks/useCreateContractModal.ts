@@ -312,7 +312,11 @@ export const useCreateContractModal = (
         contractSubmission.setContractId(contractId);
         setSelectedTemplateId(templateId);
 
-        await loadTemplateAndFindCompatible(templateId, feeStructuresList, true);
+        await loadTemplateAndFindCompatible(
+          templateId,
+          feeStructuresList,
+          true,
+        );
 
         if (contract.feeStructureId) {
           const fieldValues = contract.fieldValues as Record<string, unknown>;

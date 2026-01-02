@@ -1,7 +1,11 @@
 import { useCallback } from "react";
 import type { Editor } from "@tiptap/react";
 import type { HeaderConfig, FooterConfig } from "../types";
-import { shouldShowHeader, shouldShowFooter, processPlaceholders } from "../types";
+import {
+  shouldShowHeader,
+  shouldShowFooter,
+  processPlaceholders,
+} from "../types";
 
 /**
  * Hook for print functionality
@@ -461,4 +465,3 @@ export function usePrint(
     handlePrint,
   };
 }
-
