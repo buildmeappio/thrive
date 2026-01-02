@@ -7,11 +7,9 @@ import {
   createCustomVariableAction,
   updateCustomVariableAction,
 } from "@/domains/custom-variables/actions";
-import type {
-  CustomVariable,
-  VariableUpdateData,
-  UseVariablesReturn,
-} from "../types";
+import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
+import type { VariableUpdateData } from "../../../types/variables.types";
+import type { UseVariablesReturn } from "../../../types/hooks.types";
 
 export function useVariables(): UseVariablesReturn {
   const [systemVariables, setSystemVariables] = useState<CustomVariable[]>([]);

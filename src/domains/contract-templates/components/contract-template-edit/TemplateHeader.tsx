@@ -11,7 +11,10 @@ import {
   FileText,
 } from "lucide-react";
 import StatusBadge from "../StatusBadge";
-import type { FeeStructureCompatibility, PlaceholderValidation } from "./types";
+import type {
+  FeeStructureCompatibility,
+  PlaceholderValidation,
+} from "../../types/validation.types";
 
 type TemplateHeaderProps = {
   displayName: string;
@@ -92,7 +95,7 @@ export function TemplateHeader({
             !validation.valid ||
             (feeStructureCompatibility && !feeStructureCompatibility.compatible)
           }
-          className="h-10 sm:h-11 px-4 sm:px-6 md:px-10 rounded-full bg-gradient-to-r items-center from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-poppins font-semibold text-xs sm:text-sm transition-all shadow-sm"
+          className="h-10 sm:h-11 px-4 sm:px-6 md:px-10 rounded-full bg-[#000080] text-white hover:bg-[#000093] disabled:opacity-50 disabled:cursor-not-allowed font-poppins font-semibold text-xs sm:text-sm transition-all shadow-sm flex items-center gap-2"
         >
           {isSaving ? (
             <>

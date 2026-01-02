@@ -154,9 +154,13 @@ export const useCreateContractModal = (
               });
               if (customVarsResult.success && customVarsResult.data) {
                 // Filter to only variables that are used in the template
+                // Exclude admin_signature - it should only be collected during review, not during contract creation
                 const usedCustomVars = customVarsResult.data.filter((v) => {
                   const keyWithoutPrefix = v.key.replace(/^custom\./, "");
-                  return requiredCustomVarKeys.includes(keyWithoutPrefix);
+                  return (
+                    requiredCustomVarKeys.includes(keyWithoutPrefix) &&
+                    keyWithoutPrefix !== "admin_signature"
+                  );
                 });
                 setCustomVariables(usedCustomVars);
 

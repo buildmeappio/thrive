@@ -6,7 +6,8 @@ import {
   syncFromGoogleDocsAction,
   getGoogleDocUrlAction,
 } from "../../../actions";
-import type { UseGoogleDocsSyncReturn, EditorRef } from "../types";
+import type { UseGoogleDocsSyncReturn } from "../../../types/hooks.types";
+import type { EditorRef } from "../../../types/contractTemplateEdit.types";
 
 type UseGoogleDocsSyncParams = {
   templateId: string;

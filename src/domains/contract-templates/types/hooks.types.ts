@@ -1,69 +1,14 @@
-import type { ContractTemplateData } from "../../types/contractTemplate.types";
+import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
 import type {
   FeeStructureListItem,
   FeeStructureData,
 } from "@/domains/fee-structures/types/feeStructure.types";
-import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
-import type { RefObject } from "react";
-
-// Re-export for convenience
-export type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
-export type {
-  FeeStructureListItem,
-  FeeStructureData,
-} from "@/domains/fee-structures/types/feeStructure.types";
-export type { HeaderConfig, FooterConfig } from "@/components/editor/types";
-export type { ContractTemplateData } from "../../types/contractTemplate.types";
-
-/**
- * Validation result for placeholders
- */
-export type PlaceholderValidation = {
-  valid: boolean;
-  errors: Array<{ placeholder: string; error: string }>;
-  warnings: Array<{ placeholder: string; warning: string }>;
-};
-
-/**
- * Fee structure compatibility result
- */
-export type FeeStructureCompatibility = {
-  compatible: boolean;
-  missingVariables: string[];
-} | null;
-
-/**
- * Variable group for display
- */
-export type VariableGroup = {
-  namespace: string;
-  vars: string[];
-};
-
-/**
- * Variable update data for CRUD operations
- */
-export type VariableUpdateData = {
-  key: string;
-  defaultValue: string | null;
-  description?: string | null;
-  label?: string | null;
-  variableType?: "text" | "checkbox_group";
-  options?: Array<{ label: string; value: string }>;
-  showUnderline?: boolean;
-};
-
-/**
- * Editor ref type - using any as TipTap editor type is complex
- */
-export type EditorRef = RefObject<any>;
-
-/**
- * Props for the main ContractTemplateEditContent component
- */
-export type ContractTemplateEditContentProps = {
-  template: ContractTemplateData;
-};
+import type { VariableGroup, VariablesPanelTab } from "./variables.types";
+import type {
+  PlaceholderValidation,
+  FeeStructureCompatibility,
+} from "./validation.types";
+import type { VariableUpdateData } from "./variables.types";
 
 /**
  * Variables hook return type
@@ -128,8 +73,3 @@ export type UseTemplateSaveReturn = {
   isSaving: boolean;
   handleSave: () => Promise<void>;
 };
-
-/**
- * Active tab type for variables panel
- */
-export type VariablesPanelTab = "variables" | "custom" | "placeholders";

@@ -178,10 +178,10 @@ function Step2Footer({
         {isLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Generating Preview...</span>
+            <span>Loading...</span>
           </>
         ) : (
-          "Preview Contract"
+          "Continue"
         )}
       </button>
     </>

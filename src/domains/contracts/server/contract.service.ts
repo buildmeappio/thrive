@@ -1100,8 +1100,32 @@ export const previewContract = async (
       Object.keys(fv.contract),
     );
     for (const [key, value] of Object.entries(fv.contract)) {
-      values[`contract.${key}`] = String(value);
-      console.log(`[Contract Preview] Set contract.${key} = "${value}"`);
+      // Format review_date if it's a date string (YYYY-MM-DD)
+      if (key === "review_date" && typeof value === "string") {
+        try {
+          const reviewDateObj = new Date(value + "T00:00:00.000Z");
+          if (!isNaN(reviewDateObj.getTime())) {
+            const formattedDate = new Intl.DateTimeFormat("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            }).format(reviewDateObj);
+            values[`contract.${key}`] = formattedDate;
+            console.log(
+              `[Contract Preview] Set contract.${key} = "${formattedDate}" (formatted from ${value})`,
+            );
+          } else {
+            values[`contract.${key}`] = String(value);
+            console.log(`[Contract Preview] Set contract.${key} = "${value}"`);
+          }
+        } catch {
+          values[`contract.${key}`] = String(value);
+          console.log(`[Contract Preview] Set contract.${key} = "${value}"`);
+        }
+      } else {
+        values[`contract.${key}`] = String(value);
+        console.log(`[Contract Preview] Set contract.${key} = "${value}"`);
+      }
     }
   } else {
     console.warn(
@@ -1389,10 +1413,15 @@ export const previewContract = async (
       placeholder === "application.examiner_signature" ||
       placeholder === "application.examiner_signature_date_time";
 
+    // Admin signature is optional - only set when admin reviews the contract
+    const isAdminSignaturePlaceholder =
+      placeholder === "custom.admin_signature";
+
     // Review date is optional - only set when admin reviews the contract
     // City and province are optional - may not be available for all examiners
     const isOptionalPlaceholder =
       isSignaturePlaceholder ||
+      isAdminSignaturePlaceholder ||
       placeholder === "contract.review_date" ||
       placeholder === "examiner.city" ||
       placeholder === "examiner.province" ||
@@ -1439,6 +1468,22 @@ export const previewContract = async (
         } else {
           replacement = signatureUrl;
         }
+      } else if (
+        placeholder === "custom.admin_signature" &&
+        values[placeholder] &&
+        typeof values[placeholder] === "string"
+      ) {
+        const signatureUrl = String(values[placeholder]).trim();
+        if (
+          signatureUrl &&
+          (signatureUrl.startsWith("data:image/") ||
+            signatureUrl.startsWith("http://") ||
+            signatureUrl.startsWith("https://"))
+        ) {
+          replacement = `<img src="${signatureUrl}" alt="Admin Signature" data-signature="admin" style="max-width: 240px; height: auto; display: inline-block;" />`;
+        } else {
+          replacement = signatureUrl;
+        }
       } else {
         // For regular variable values, add bold underline styling (matching template preview)
         const valueStr = String(value);
@@ -1456,9 +1501,28 @@ export const previewContract = async (
         const underscoreLine =
           '<span data-signature="examiner">________________________</span>';
         renderedHtml = renderedHtml.replace(regex, underscoreLine);
+      } else if (placeholder === "custom.admin_signature") {
+        // Admin signature placeholder - only show if contract has been reviewed
+        // If not reviewed yet, completely hide it (empty string)
+        if (contract.reviewedAt) {
+          // Contract has been reviewed, show underscores if signature not present
+          const underscoreLine =
+            '<span data-signature="admin">________________________</span>';
+          renderedHtml = renderedHtml.replace(regex, underscoreLine);
+        } else {
+          // Contract not reviewed yet - completely remove the placeholder
+          renderedHtml = renderedHtml.replace(regex, "");
+        }
       } else if (placeholder === "contract.review_date") {
-        // For review_date, replace with empty string or "Not reviewed" - it's optional
-        renderedHtml = renderedHtml.replace(regex, "");
+        // Review date - only show if contract has been reviewed
+        // If not reviewed yet, completely hide it (empty string)
+        if (contract.reviewedAt) {
+          // Contract has been reviewed but date not set - show empty string
+          renderedHtml = renderedHtml.replace(regex, "");
+        } else {
+          // Contract not reviewed yet - completely remove the placeholder
+          renderedHtml = renderedHtml.replace(regex, "");
+        }
       } else if (
         placeholder === "examiner.city" ||
         placeholder === "examiner.province" ||
@@ -1516,12 +1580,15 @@ export const generateAndUploadContractHtml = async (
   const previewResult = await previewContract(contractId);
 
   // Filter out optional placeholders - signature placeholders are only available after signing,
-  // and review_date is only set when admin reviews the contract
+  // review_date and admin_signature are only set when admin reviews the contract
   const requiredPlaceholders = previewResult.missingPlaceholders.filter(
     (p) =>
       p !== "examiner.signature" &&
       p !== "examiner.signature_date_time" &&
-      p !== "contract.review_date",
+      p !== "application.examiner_signature" &&
+      p !== "application.examiner_signature_date_time" &&
+      p !== "contract.review_date" &&
+      p !== "custom.admin_signature",
   );
 
   if (requiredPlaceholders.length > 0) {
