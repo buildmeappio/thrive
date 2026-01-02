@@ -457,14 +457,45 @@ export const useContractDomUpdates = ({
           },
         );
 
+        // ZERO: First, try to find and replace any spans that contain underscores and have the placeholder in title
+        // This handles the case where the admin side rendered it with underline styling
+        const allSpansWithUnderscores =
+          contractEl.querySelectorAll<HTMLElement>("span");
+        allSpansWithUnderscores.forEach((span) => {
+          const title = span.getAttribute("title");
+          const textContent = span.textContent || "";
+          const hasUnderscores =
+            textContent.includes("_") && textContent.trim().length > 0;
+          const hasPlaceholderInTitle =
+            title?.includes("application.examiner_signature_date_time") ||
+            title?.includes("examiner.signature_date_time");
+
+          if (hasUnderscores && hasPlaceholderInTitle) {
+            span.textContent = formattedDateTime;
+            span.style.borderBottom = "none";
+            span.style.textDecoration = "none";
+            span.style.background = "none";
+            span.style.padding = "0";
+            span.style.borderRadius = "0";
+            span.style.fontWeight = "normal";
+            span.removeAttribute("title");
+          }
+        });
+
         // FIRST: Check spans with data-variable or title attributes for application.examiner_signature_date_time
         const signatureDateTimeSpans = contractEl.querySelectorAll<HTMLElement>(
-          '[data-variable="application.examiner_signature_date_time"], [data-variable*="application.examiner_signature_date_time"], [title*="application.examiner_signature_date_time"], [title*="{{application.examiner_signature_date_time}}"]',
+          '[data-variable="application.examiner_signature_date_time"], [data-variable*="application.examiner_signature_date_time"], [title*="application.examiner_signature_date_time"], [title*="{{application.examiner_signature_date_time}}"], [title="application.examiner_signature_date_time"]',
         );
         signatureDateTimeSpans.forEach((span) => {
           span.textContent = formattedDateTime;
           span.style.borderBottom = "none";
           span.style.textDecoration = "none";
+          span.style.background = "none";
+          span.style.padding = "0";
+          span.style.borderRadius = "0";
+          span.style.fontWeight = "normal";
+          // Remove the title attribute to avoid confusion
+          span.removeAttribute("title");
         });
 
         // SECOND: Also check for legacy examiner.signature_date_time format
@@ -517,6 +548,15 @@ export const useContractDomUpdates = ({
                 if (parent instanceof HTMLElement) {
                   parent.style.borderBottom = "none";
                   parent.style.textDecoration = "none";
+                  parent.style.background = "none";
+                  parent.style.padding = "0";
+                  parent.style.borderRadius = "0";
+                  parent.style.fontWeight = "normal";
+                  // Remove title attribute if it contains the placeholder
+                  const title = parent.getAttribute("title");
+                  if (title?.includes("signature_date_time")) {
+                    parent.removeAttribute("title");
+                  }
                 }
               }
               break;
@@ -525,19 +565,35 @@ export const useContractDomUpdates = ({
         }
 
         // FOURTH: Also update any spans with the variable placeholder (legacy support)
+        // This catches spans that might have been created with the underline styling
         const allSpans = contractEl.querySelectorAll<HTMLElement>("span");
         allSpans.forEach((span) => {
           const title = span.getAttribute("title");
           const dataVar = span.getAttribute("data-variable");
+          const textContent = span.textContent || "";
+          // Check if this span contains the placeholder text or has the placeholder in title/data-variable
           if (
             title?.includes("application.examiner_signature_date_time") ||
             title?.includes("examiner.signature_date_time") ||
             dataVar === "application.examiner_signature_date_time" ||
-            dataVar === "examiner.signature_date_time"
+            dataVar === "examiner.signature_date_time" ||
+            textContent.includes("application.examiner_signature_date_time") ||
+            textContent.includes(
+              "{{application.examiner_signature_date_time}}",
+            ) ||
+            textContent.includes("examiner.signature_date_time") ||
+            textContent.includes("{{examiner.signature_date_time}}") ||
+            (textContent.includes("________________") &&
+              title?.includes("signature_date_time"))
           ) {
             span.textContent = formattedDateTime;
             span.style.borderBottom = "none";
             span.style.textDecoration = "none";
+            span.style.background = "none";
+            span.style.padding = "0";
+            span.style.borderRadius = "0";
+            span.style.fontWeight = "normal";
+            span.removeAttribute("title");
           }
         });
       }
