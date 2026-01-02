@@ -2,13 +2,10 @@
 
 import { Label } from "@/components/ui/label";
 import RichTextEditor from "@/components/editor/RichTextEditor";
-import type {
-  HeaderConfig,
-  FooterConfig,
-  VariableGroup,
-  CustomVariable,
-  EditorRef,
-} from "./types";
+import type { HeaderConfig, FooterConfig } from "@/components/editor/types";
+import type { VariableGroup } from "../../types/variables.types";
+import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
+import type { EditorRef } from "../../types/contractTemplateEdit.types";
 
 type EditorSectionProps = {
   content: string;

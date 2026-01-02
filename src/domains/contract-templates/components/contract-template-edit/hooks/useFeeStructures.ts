@@ -15,9 +15,9 @@ import {
 import type {
   FeeStructureListItem,
   FeeStructureData,
-  FeeStructureCompatibility,
-  UseFeeStructuresReturn,
-} from "../types";
+} from "@/domains/fee-structures/types/feeStructure.types";
+import type { FeeStructureCompatibility } from "../../../types/validation.types";
+import type { UseFeeStructuresReturn } from "../../../types/hooks.types";
 
 type UseFeeStructuresParams = {
   templateId: string;

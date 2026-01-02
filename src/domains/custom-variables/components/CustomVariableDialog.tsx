@@ -65,7 +65,7 @@ export default function CustomVariableDialog({
       }}
     >
       <div
-        className="relative w-full max-w-[500px] max-h-[90vh] rounded-2xl bg-white p-6 shadow-lg flex flex-col"
+        className="relative w-full max-w-[500px] max-h-[90vh] rounded-2xl bg-white p-6 sm:p-8 shadow-lg flex flex-col"
         onMouseDown={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -88,7 +88,7 @@ export default function CustomVariableDialog({
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 flex flex-col flex-1 min-h-0 overflow-y-auto"
+          className="space-y-4 flex flex-col flex-1 min-h-0 overflow-y-auto px-1"
         >
           <LabelInput
             value={label}
@@ -148,13 +148,17 @@ export default function CustomVariableDialog({
           <div className="flex justify-end gap-3 pt-4 flex-shrink-0">
             <Button
               type="button"
-              variant="outline"
               onClick={onClose}
               disabled={isLoading}
+              className="h-10 rounded-full font-poppins text-[14px] font-[500] tracking-[-0.02em] border border-[#E5E5E5] bg-white text-[#1A1A1A] hover:bg-gray-50"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="h-10 rounded-full font-poppins text-[14px] font-[500] tracking-[-0.02em] bg-[#000080] text-white hover:bg-[#000093] px-6"
+            >
               {isLoading ? "Saving..." : initialData ? "Update" : "Create"}
             </Button>
           </div>

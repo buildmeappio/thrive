@@ -2,11 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Send, Eye } from "lucide-react";
+import { ArrowLeft, Send, Eye, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
-import { previewContractAction, sendContractAction } from "../actions";
+import {
+  previewContractAction,
+  sendContractAction,
+  reviewContractAction,
+} from "../actions";
 import type { ContractData } from "../types/contract.types";
 import { formatText, formatFullName } from "@/utils/text";
+import AdminReviewForm from "./AdminReviewForm";
 
 type Props = {
   contract: ContractData;
@@ -17,6 +22,8 @@ export default function ContractDetailView({ contract }: Props) {
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [sending, setSending] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
 
   useEffect(() => {
     loadPreview();
@@ -57,11 +64,15 @@ export default function ContractDetailView({ contract }: Props) {
         return;
       }
       toast.success("Contract sent successfully");
+      // Refresh the page to show updated contract status
       router.refresh();
     } catch (error) {
       console.error("Error sending contract:", error);
-      toast.error("Failed to send contract");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to send contract";
+      toast.error(errorMessage);
     } finally {
+      // Always reset loading state, even if router.refresh() hangs
       setSending(false);
     }
   };
@@ -77,6 +88,34 @@ export default function ContractDetailView({ contract }: Props) {
       );
     }
     return "N/A";
+  };
+
+  const handleReviewSubmit = async (
+    signatureImage: string,
+    reviewDate: string,
+  ) => {
+    setReviewing(true);
+    try {
+      const result = await reviewContractAction({
+        contractId: contract.id,
+        signatureImage,
+        reviewDate,
+      });
+      if ("error" in result) {
+        toast.error(result.error ?? "Failed to review contract");
+        return;
+      }
+      toast.success("Contract reviewed successfully");
+      setShowReviewForm(false);
+      router.refresh();
+      // Reload preview to show updated signature and review date
+      await loadPreview();
+    } catch (error) {
+      console.error("Error reviewing contract:", error);
+      toast.error("Failed to review contract");
+    } finally {
+      setReviewing(false);
+    }
   };
 
   return (
@@ -113,6 +152,20 @@ export default function ContractDetailView({ contract }: Props) {
             >
               <Send className="w-4 h-4" />
               {sending ? "Sending..." : "Send Contract"}
+            </button>
+          )}
+          {contract.status === "SIGNED" && !contract.reviewedAt && (
+            <button
+              onClick={() => setShowReviewForm(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#000080] text-white rounded-full hover:bg-[#000060] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              style={{
+                fontFamily: "Poppins, sans-serif",
+                fontWeight: 400,
+                fontSize: "14px",
+              }}
+            >
+              <CheckCircle className="w-4 h-4" />
+              Review Signed Contract
             </button>
           )}
         </div>
@@ -288,6 +341,15 @@ export default function ContractDetailView({ contract }: Props) {
           </div>
         )}
       </div>
+
+      {/* Admin Review Form Modal */}
+      {showReviewForm && (
+        <AdminReviewForm
+          onClose={() => setShowReviewForm(false)}
+          onSubmit={handleReviewSubmit}
+          isLoading={reviewing}
+        />
+      )}
     </div>
   );
 }

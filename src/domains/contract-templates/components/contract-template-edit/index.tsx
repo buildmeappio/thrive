@@ -17,11 +17,8 @@ import { PreviewSection } from "./PreviewSection";
 import { VariablesPanel } from "./VariablesPanel";
 import { SyncConfirmDialog } from "./SyncConfirmDialog";
 
-import type {
-  ContractTemplateEditContentProps,
-  HeaderConfig,
-  FooterConfig,
-} from "./types";
+import type { ContractTemplateEditContentProps } from "../../types/contractTemplateEdit.types";
+import type { HeaderConfig, FooterConfig } from "@/components/editor/types";
 
 /**
  * Variable types

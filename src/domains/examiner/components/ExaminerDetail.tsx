@@ -29,6 +29,7 @@ import {
 import {
   listContractsAction,
   getContractAction,
+  reviewContractAction,
 } from "@/domains/contracts/actions";
 import { listCustomVariablesAction } from "@/domains/custom-variables/actions/listCustomVariables";
 import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
@@ -39,6 +40,7 @@ import { capitalizeWords } from "@/utils/text";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import logger from "@/utils/logger";
+import { useAdminSignatureCanvas } from "@/domains/contracts/components/hooks/useAdminSignatureCanvas";
 
 // Utility function to format text from database: remove _, -, and capitalize each word
 const formatText = (str: string): string => {
@@ -133,6 +135,25 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
   const [contractHtml, setContractHtml] = useState<string | null>(null);
   const [loadingContract, setLoadingContract] = useState(false);
   const [pendingSendContract, setPendingSendContract] = useState(false);
+  const [currentContractId, setCurrentContractId] = useState<
+    string | undefined
+  >(undefined);
+
+  // Admin signature for contract review
+  // Re-initialize when modal opens by using isContractReviewOpen as key
+  const { canvasRef, signatureImage, clearSignature } =
+    useAdminSignatureCanvas();
+  const [reviewDate, setReviewDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
+
+  // Reset signature when modal closes
+  useEffect(() => {
+    if (!isContractReviewOpen) {
+      clearSignature();
+      setReviewDate(new Date().toISOString().split("T")[0]);
+    }
+  }, [isContractReviewOpen, clearSignature]);
   const [existingContractId, setExistingContractId] = useState<
     string | undefined
   >(undefined);
@@ -516,15 +537,36 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
   };
 
   const handleMarkContractSigned = async () => {
+    if (!currentContractId) {
+      toast.error("Contract ID not found");
+      return;
+    }
+
     setLoadingAction("markContractSigned");
     try {
+      const result = await reviewContractAction({
+        contractId: currentContractId,
+        signatureImage: signatureImage || null,
+        reviewDate: reviewDate,
+      });
+
+      if ("error" in result) {
+        toast.error(result.error ?? "Failed to review contract");
+        return;
+      }
+
+      // Also call the original markContractSigned to update examiner status
       await markContractSigned(examiner.id);
       setStatus("contract_signed");
-      toast.success("Contract marked as signed.");
+      toast.success("Contract reviewed and confirmed successfully.");
+      setIsContractReviewOpen(false);
+      // Clear signature and reset review date
+      clearSignature();
+      setReviewDate(new Date().toISOString().split("T")[0]);
       router.refresh();
     } catch (error) {
-      logger.error("Failed to mark contract signed:", error);
-      toast.error("Failed to mark contract signed. Please try again.");
+      logger.error("Failed to review contract:", error);
+      toast.error("Failed to review contract. Please try again.");
     } finally {
       setLoadingAction(null);
     }
@@ -1547,6 +1589,9 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                                   );
                                   if (result.success && result.contractHtml) {
                                     setContractHtml(result.contractHtml);
+                                    if (result.contractId) {
+                                      setCurrentContractId(result.contractId);
+                                    }
                                   } else {
                                     toast.error("Failed to load contract");
                                   }
@@ -1917,13 +1962,115 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                 margin-bottom: 0;
                 padding-bottom: 0;
               }
+
+              /* Contract preview styles (matching examiner side) */
+              .prose {
+                color: #333;
+              }
+              .prose table {
+                border-collapse: collapse;
+                margin: 1rem 0;
+                overflow: hidden;
+                width: 100%;
+              }
+              .prose table td,
+              .prose table th {
+                border: 1px solid #d1d5db;
+                box-sizing: border-box;
+                min-width: 1em;
+                padding: 0.5rem;
+                position: relative;
+                vertical-align: top;
+              }
+              .prose table th {
+                background-color: #f3f4f6;
+                font-weight: 600;
+              }
+              .prose img {
+                max-width: 100%;
+                height: auto;
+                display: inline-block;
+              }
+              .prose ul[data-type="taskList"] {
+                list-style: none;
+                padding: 0;
+              }
+              .prose ul[data-type="taskList"] li {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.5rem;
+              }
+              .prose hr {
+                border: none;
+                border-top: 1px solid #d1d5db;
+                margin: 1rem 0;
+              }
+              .prose blockquote {
+                border-left: 4px solid #d1d5db;
+                padding-left: 1rem;
+                margin: 1rem 0;
+                color: #6b7280;
+                font-style: italic;
+              }
+              .prose pre {
+                background: #f3f4f6;
+                border-radius: 0.5rem;
+                padding: 1rem;
+                margin: 1rem 0;
+                overflow-x: auto;
+              }
+              .prose code {
+                background: #f3f4f6;
+                padding: 0.125rem 0.25rem;
+                border-radius: 0.25rem;
+                font-size: 0.875em;
+                font-family:
+                  ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+                  "Liberation Mono", monospace;
+              }
+
+              /* Ensure signature area is always interactive */
+              .signature-container {
+                pointer-events: auto !important;
+                position: relative;
+                z-index: 1000;
+              }
+
+              /* Ensure contract preview doesn't block signature area */
+              .contract-preview-column {
+                pointer-events: auto;
+                position: relative;
+                z-index: 1;
+              }
+
+              /* Ensure all elements inside contract preview don't overflow */
+              .contract-preview-column * {
+                max-width: 100%;
+                overflow: visible;
+              }
+
+              /* Ensure signature column is always on top */
+              .signature-column {
+                pointer-events: auto !important;
+                position: relative;
+                z-index: 1001 !important;
+                background: #f9fafb;
+              }
+
+              /* Canvas specific styles */
+              canvas.signature-canvas {
+                pointer-events: auto !important;
+                position: relative !important;
+                z-index: 1002 !important;
+                cursor: crosshair !important;
+              }
             `}</style>
             <div
               className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
               onClick={() => setIsContractReviewOpen(false)}
             >
               <div
-                className="bg-white w-full max-w-4xl max-h-[90vh] rounded-lg shadow-lg relative flex flex-col"
+                className="bg-white w-full max-w-7xl max-h-[90vh] rounded-lg shadow-lg relative flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Header */}
@@ -1954,35 +2101,104 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                   </button>
                 </div>
 
-                {/* Contract Preview */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 min-h-0">
-                  {loadingContract ? (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <p className="text-gray-600 font-poppins">
-                        Loading contract...
-                      </p>
+                {/* Two Column Layout */}
+                <div className="flex-1 flex overflow-hidden min-h-0 relative">
+                  {/* Left Column - Contract Preview */}
+                  <div className="contract-preview-column flex-1 overflow-y-auto overflow-x-hidden p-6 border-r border-gray-200">
+                    {loadingContract ? (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <p className="text-gray-600 font-poppins">
+                          Loading contract...
+                        </p>
+                      </div>
+                    ) : contractHtml ? (
+                      <div
+                        className="flex-1 min-w-0 bg-white rounded-[20px]"
+                        style={{
+                          padding: "40px 50px",
+                          maxWidth: "210mm",
+                          lineHeight: "1.4",
+                          boxShadow: "0px 0px 36.35px 0px #00000008",
+                        }}
+                      >
+                        <div
+                          className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none font-poppins"
+                          dangerouslySetInnerHTML={{ __html: contractHtml }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+                        <p className="text-gray-600 font-poppins">
+                          Contract preview not available
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column - Admin Signature and Review Date */}
+                  <div className="signature-column w-96 flex-shrink-0 p-6 bg-gray-50 flex flex-col">
+                    <div className="space-y-6">
+                      {/* Review Date */}
+                      <div>
+                        <label className="block text-sm font-semibold text-black mb-2 font-poppins">
+                          Review Date
+                        </label>
+                        <input
+                          type="date"
+                          value={reviewDate}
+                          onChange={(e) => setReviewDate(e.target.value)}
+                          disabled={loadingAction !== null}
+                          className="w-full h-12 rounded-[10px] border-none bg-white px-3 text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:opacity-50 font-poppins"
+                        />
+                      </div>
+
+                      {/* Admin Signature */}
+                      <div className="signature-container">
+                        <label className="block text-sm font-semibold text-black mb-2 font-poppins">
+                          Admin Signature
+                        </label>
+                        <div className="border-2 border-[#00A8FF] rounded-[10px] p-1 bg-white signature-container">
+                          <canvas
+                            key={
+                              isContractReviewOpen
+                                ? "canvas-open"
+                                : "canvas-closed"
+                            }
+                            ref={canvasRef}
+                            width={320}
+                            height={140}
+                            className="signature-canvas w-full cursor-crosshair bg-[#F2F5F6] rounded-[8px] select-none"
+                            style={{
+                              touchAction: "none",
+                              display: "block",
+                              pointerEvents: "auto",
+                              userSelect: "none",
+                              WebkitUserSelect: "none",
+                              position: "relative",
+                              zIndex: 1002,
+                            }}
+                          />
+                        </div>
+                        <button
+                          onClick={clearSignature}
+                          disabled={loadingAction !== null}
+                          className="mt-2 text-sm text-[#00A8FF] hover:text-[#0088CC] font-semibold underline transition-colors disabled:opacity-50 font-poppins"
+                        >
+                          Clear Signature
+                        </button>
+                      </div>
                     </div>
-                  ) : contractHtml ? (
-                    <div
-                      className="contract-modal-container w-full bg-white rounded-lg"
-                      style={{
-                        padding: "0",
-                      }}
-                      dangerouslySetInnerHTML={{ __html: contractHtml }}
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
-                      <p className="text-gray-600 font-poppins">
-                        Contract preview not available
-                      </p>
-                    </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Footer with Actions */}
                 <div className="flex items-center justify-between p-6 border-t border-gray-200">
                   <button
-                    onClick={() => setIsContractReviewOpen(false)}
+                    onClick={() => {
+                      setIsContractReviewOpen(false);
+                      clearSignature();
+                      setReviewDate(new Date().toISOString().split("T")[0]);
+                    }}
                     className="px-6 py-3 rounded-full border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-poppins text-sm font-medium"
                   >
                     Close
@@ -2002,7 +2218,6 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                     <button
                       onClick={async () => {
                         await handleMarkContractSigned();
-                        setIsContractReviewOpen(false);
                       }}
                       disabled={loadingAction !== null}
                       className={cn(

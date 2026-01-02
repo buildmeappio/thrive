@@ -75,10 +75,13 @@ export default function ContractVariablesFormStep({
   );
 
   // Determine which contract variables are used in the template
+  // Exclude review_date - it should only be set during review, not during contract creation
   const usedContractVariables = useMemo(() => {
     if (!templateContent) return { province: false, effective_date: false };
 
-    const requiredPlaceholders = parsePlaceholders(templateContent);
+    const requiredPlaceholders = parsePlaceholders(templateContent).filter(
+      (p) => p !== "contract.review_date",
+    );
     return {
       province: requiredPlaceholders.includes("contract.province"),
       effective_date: requiredPlaceholders.includes("contract.effective_date"),
@@ -86,23 +89,30 @@ export default function ContractVariablesFormStep({
   }, [templateContent]);
 
   // Initialize custom variables with default values
+  // Filter out admin_signature - it should only be collected during review, not during contract creation
   const initializedCustomVariables = useMemo(() => {
-    return customVariables.map((variable) => {
-      const keyWithoutPrefix = variable.key.replace(/^custom\./, "");
-      const currentValue = getCustomVariableValue(keyWithoutPrefix);
+    return customVariables
+      .filter((variable) => {
+        // Exclude admin_signature from the form - it's only for review
+        const keyWithoutPrefix = variable.key.replace(/^custom\./, "");
+        return keyWithoutPrefix !== "admin_signature";
+      })
+      .map((variable) => {
+        const keyWithoutPrefix = variable.key.replace(/^custom\./, "");
+        const currentValue = getCustomVariableValue(keyWithoutPrefix);
 
-      // If no value set, use default value
-      if (
-        !currentValue ||
-        (typeof currentValue === "string" && currentValue === "")
-      ) {
-        if (variable.variableType === "checkbox_group") {
-          return { ...variable, defaultValue: [] };
+        // If no value set, use default value
+        if (
+          !currentValue ||
+          (typeof currentValue === "string" && currentValue === "")
+        ) {
+          if (variable.variableType === "checkbox_group") {
+            return { ...variable, defaultValue: [] };
+          }
+          return variable;
         }
         return variable;
-      }
-      return variable;
-    });
+      });
   }, [customVariables, getCustomVariableValue]);
 
   // Check if there are any fields to show
@@ -365,8 +375,9 @@ export function validateContractFormValues(
     : [];
 
   // Validate contract variables if they're used in the template
-  const contractPlaceholders = requiredPlaceholders.filter((p) =>
-    p.startsWith("contract."),
+  // Exclude review_date - it should only be set during review, not during contract creation
+  const contractPlaceholders = requiredPlaceholders.filter(
+    (p) => p.startsWith("contract.") && p !== "contract.review_date",
   );
 
   for (const placeholder of contractPlaceholders) {
@@ -385,9 +396,16 @@ export function validateContractFormValues(
 
   // Validate custom variables - only validate those that are used in the template
   // (customVariables is already filtered to only include variables used in the template)
+  // Exclude admin_signature - it should only be collected during review, not during contract creation
   if (customVariables && customVariables.length > 0) {
     for (const variable of customVariables) {
       const keyWithoutPrefix = variable.key.replace(/^custom\./, "");
+
+      // Skip admin_signature - it's only for review, not contract creation
+      if (keyWithoutPrefix === "admin_signature") {
+        continue;
+      }
+
       const displayLabel = variable.label || formatKeyToLabel(keyWithoutPrefix);
       const value = values.custom?.[keyWithoutPrefix];
 

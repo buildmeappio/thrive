@@ -6,14 +6,12 @@ import {
   validatePlaceholders,
 } from "../../../utils/placeholderParser";
 import { highlightVariable } from "@/components/editor/utils/variableHighlightUtils";
-import type {
-  CustomVariable,
-  FeeStructureData,
-  VariableGroup,
-  PlaceholderValidation,
-  UsePlaceholdersReturn,
-  EditorRef,
-} from "../types";
+import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
+import type { FeeStructureData } from "@/domains/fee-structures/types/feeStructure.types";
+import type { VariableGroup } from "../../../types/variables.types";
+import type { PlaceholderValidation } from "../../../types/validation.types";
+import type { UsePlaceholdersReturn } from "../../../types/hooks.types";
+import type { EditorRef } from "../../../types/contractTemplateEdit.types";
 
 type UsePlaceholdersParams = {
   content: string;

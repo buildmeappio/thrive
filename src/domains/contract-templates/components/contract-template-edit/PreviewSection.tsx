@@ -2,7 +2,7 @@
 
 import { Label } from "@/components/ui/label";
 import PageRender from "@/components/editor/PageRender";
-import type { HeaderConfig, FooterConfig } from "./types";
+import type { HeaderConfig, FooterConfig } from "@/components/editor/types";
 import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
 
 export type PreviewSectionProps = {

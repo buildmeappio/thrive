@@ -13,12 +13,9 @@ import {
   extractRequiredFeeVariables,
   validateFeeStructureCompatibility,
 } from "../../../utils/placeholderParser";
-import type {
-  HeaderConfig,
-  FooterConfig,
-  FeeStructureData,
-  UseTemplateSaveReturn,
-} from "../types";
+import type { HeaderConfig, FooterConfig } from "@/components/editor/types";
+import type { FeeStructureData } from "@/domains/fee-structures/types/feeStructure.types";
+import type { UseTemplateSaveReturn } from "../../../types/hooks.types";
 
 type UseTemplateSaveParams = {
   templateId: string;
