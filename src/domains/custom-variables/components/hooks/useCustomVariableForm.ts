@@ -6,7 +6,10 @@ import type {
   FormErrors,
 } from "../../types/customVariable.types";
 
-export function useCustomVariableForm(initialData?: CustomVariable | null) {
+export function useCustomVariableForm(
+  initialData?: CustomVariable | null,
+  isOpen?: boolean,
+) {
   const [key, setKey] = useState("");
   const [defaultValue, setDefaultValue] = useState("");
   const [description, setDescription] = useState("");
@@ -27,6 +30,7 @@ export function useCustomVariableForm(initialData?: CustomVariable | null) {
       setCheckboxOptions(initialData.options || []);
       setShowUnderline(initialData.showUnderline ?? false);
     } else {
+      // Reset to empty form when no initialData
       setKey("");
       setDefaultValue("");
       setDescription("");
@@ -35,7 +39,7 @@ export function useCustomVariableForm(initialData?: CustomVariable | null) {
       setShowUnderline(false);
     }
     setErrors({});
-  }, [initialData]);
+  }, [initialData, isOpen]); // Also reset when dialog opens/closes
 
   const addCheckboxOption = () => {
     setCheckboxOptions([...checkboxOptions, { label: "", value: "" }]);

@@ -36,7 +36,7 @@ export default function CustomVariableDialog({
     updateCheckboxOption,
     validate,
     getFormData,
-  } = useCustomVariableForm(initialData);
+  } = useCustomVariableForm(initialData, open);
 
   const handleTypeChange = (type: "text" | "checkbox_group") => {
     setVariableType(type);
