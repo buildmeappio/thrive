@@ -2,6 +2,7 @@ import type {
   FeeFormValues,
   FeeVariable,
 } from "../components/FeeStructureFormStep";
+import type { ContractFormValues } from "../components/ContractVariablesFormStep";
 import { FooterConfig, HeaderConfig } from "@/components/editor/types";
 
 export type CreateContractModalProps = {
@@ -22,10 +23,11 @@ export type UseCreateContractModalOptions = CreateContractModalProps;
  * Step definitions:
  * 1 - Select Template & Fee Structure
  * 2 - Fill Fee Structure Form
- * 3 - Preview Contract
- * 4 - Contract Sent (Success)
+ * 3 - Fill Contract Variables Form
+ * 4 - Preview Contract
+ * 5 - Contract Sent (Success)
  */
-export type ContractModalStep = 1 | 2 | 3 | 4;
+export type ContractModalStep = 1 | 2 | 3 | 4 | 5;
 
 export type FeeStructureFullData = {
   id: string;
@@ -72,13 +74,18 @@ export type UseCreateContractModalReturn = {
   feeFormValues: FeeFormValues;
   requiresFeeStructure: boolean;
 
+  // Contract Variables Form State
+  contractFormValues: ContractFormValues;
+
   // Actions
   setSelectedTemplateId: (id: string) => void;
   setSelectedFeeStructureId: (id: string) => void;
   setStep: (step: ContractModalStep) => void;
   setFeeFormValues: (values: FeeFormValues) => void;
+  setContractFormValues: (values: ContractFormValues) => void;
   handleContinueToFeeForm: () => void;
   handleFeeFormSubmit: () => Promise<void>;
+  handleContractFormSubmit: () => Promise<void>;
   handleSendContract: () => Promise<void>;
   panelRef: React.RefObject<HTMLDivElement | null>;
   titleId: string;

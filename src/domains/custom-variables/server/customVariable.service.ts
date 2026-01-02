@@ -76,18 +76,51 @@ export const listCustomVariables = async (
     orderBy: [{ key: "asc" }],
   });
 
-  return variables.map((v) => ({
-    id: v.id,
-    key: v.key,
-    defaultValue: v.defaultValue,
-    description: v.description,
-    isActive: v.isActive,
-    variableType: (v.variableType as "text" | "checkbox_group") || "text",
-    options: (v.options as any) || null,
-    showUnderline: (v as any).showUnderline ?? false,
-    createdAt: v.createdAt.toISOString(),
-    updatedAt: v.updatedAt.toISOString(),
-  }));
+  return variables.map((v) => {
+    // Ensure variableType is always set - handle null/undefined cases
+    const dbVariableType = v.variableType;
+    let variableType: "text" | "checkbox_group" = "text";
+
+    // Debug: Log what Prisma is returning for all variables
+    console.log(
+      `[Server] Variable ${v.key}: Prisma variableType =`,
+      dbVariableType,
+      typeof dbVariableType,
+      "Full object keys:",
+      Object.keys(v),
+    );
+
+    if (dbVariableType === "checkbox_group") {
+      variableType = "checkbox_group";
+    } else if (dbVariableType === "text") {
+      variableType = "text";
+    }
+    // If variableType is null/undefined/empty, default to "text"
+    // This handles old records that were created before variableType was added
+
+    const result = {
+      id: v.id,
+      key: v.key,
+      defaultValue: v.defaultValue,
+      description: v.description,
+      isActive: v.isActive,
+      variableType: variableType, // Always "text" or "checkbox_group", never undefined
+      options: (v.options as any) || null,
+      showUnderline: v.showUnderline ?? false,
+      createdAt: v.createdAt.toISOString(),
+      updatedAt: v.updatedAt.toISOString(),
+    } satisfies CustomVariable;
+
+    // Double-check that variableType is set
+    if (!result.variableType) {
+      console.warn(
+        `[Server] Variable ${v.key} has no variableType, defaulting to "text"`,
+      );
+      result.variableType = "text";
+    }
+
+    return result;
+  });
 };
 
 // Get a single custom variable
@@ -102,18 +135,26 @@ export const getCustomVariable = async (
     throw HttpError.notFound("Custom variable not found");
   }
 
+  // Ensure variableType is always set - handle null/undefined cases
+  let variableType: "text" | "checkbox_group" = "text";
+  if (variable.variableType === "checkbox_group") {
+    variableType = "checkbox_group";
+  } else if (variable.variableType === "text") {
+    variableType = "text";
+  }
+
   return {
     id: variable.id,
     key: variable.key,
     defaultValue: variable.defaultValue,
     description: variable.description,
     isActive: variable.isActive,
-    variableType:
-      (variable.variableType as "text" | "checkbox_group") || "text",
+    variableType: variableType,
     options: (variable.options as any) || null,
+    showUnderline: variable.showUnderline ?? false,
     createdAt: variable.createdAt.toISOString(),
     updatedAt: variable.updatedAt.toISOString(),
-  };
+  } satisfies CustomVariable;
 };
 
 // Create a new custom variable
@@ -140,11 +181,30 @@ export const createCustomVariable = async (
       defaultValue: input.defaultValue || "", // Empty string for checkbox groups
       description: input.description || null,
       isActive: true,
-      variableType: input.variableType || "text",
+      variableType: input.variableType || "text", // Explicitly set variableType
       options: input.options || null,
       showUnderline: input.showUnderline ?? false,
     } as any,
   });
+
+  // Debug: Log what was created
+  const dbVariableType = variable.variableType;
+  console.log(
+    `[Server] Created variable ${variable.key}: Prisma returned variableType =`,
+    dbVariableType,
+    typeof dbVariableType,
+    "Input was:",
+    input.variableType,
+  );
+
+  // Ensure variableType is always set - handle null/undefined cases
+  let variableType: "text" | "checkbox_group" = "text";
+
+  if (dbVariableType === "checkbox_group") {
+    variableType = "checkbox_group";
+  } else if (dbVariableType === "text") {
+    variableType = "text";
+  }
 
   return {
     id: variable.id,
@@ -152,12 +212,12 @@ export const createCustomVariable = async (
     defaultValue: variable.defaultValue,
     description: variable.description,
     isActive: variable.isActive,
-    variableType:
-      (variable.variableType as "text" | "checkbox_group") || "text",
+    variableType: variableType,
     options: (variable.options as any) || null,
+    showUnderline: variable.showUnderline ?? false,
     createdAt: variable.createdAt.toISOString(),
     updatedAt: variable.updatedAt.toISOString(),
-  };
+  } satisfies CustomVariable;
 };
 
 // Update a custom variable
@@ -216,18 +276,37 @@ export const updateCustomVariable = async (
     data: updatePayload,
   });
 
+  // Debug: Log what was updated
+  const dbVariableType = variable.variableType;
+  console.log(
+    `[Server] Updated variable ${variable.key}: Prisma returned variableType =`,
+    dbVariableType,
+    typeof dbVariableType,
+    "Input was:",
+    updateData.variableType,
+  );
+
+  // Ensure variableType is always set - handle null/undefined cases
+  let variableType: "text" | "checkbox_group" = "text";
+
+  if (dbVariableType === "checkbox_group") {
+    variableType = "checkbox_group";
+  } else if (dbVariableType === "text") {
+    variableType = "text";
+  }
+
   return {
     id: variable.id,
     key: variable.key,
     defaultValue: variable.defaultValue,
     description: variable.description,
     isActive: variable.isActive,
-    variableType:
-      (variable.variableType as "text" | "checkbox_group") || "text",
+    variableType: variableType,
     options: (variable.options as any) || null,
+    showUnderline: variable.showUnderline ?? false,
     createdAt: variable.createdAt.toISOString(),
     updatedAt: variable.updatedAt.toISOString(),
-  };
+  } satisfies CustomVariable;
 };
 
 // Delete a custom variable (soft delete by setting isActive to false)

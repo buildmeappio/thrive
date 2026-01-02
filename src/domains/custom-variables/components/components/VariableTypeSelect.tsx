@@ -20,6 +20,10 @@ export function VariableTypeSelect({
   disabled = false,
   onTypeChange,
 }: Props) {
+  // Ensure value is always valid
+  const validValue: "text" | "checkbox_group" =
+    value === "text" || value === "checkbox_group" ? value : "text";
+
   const handleChange = (newValue: "text" | "checkbox_group") => {
     onChange(newValue);
     onTypeChange?.(newValue);
@@ -30,9 +34,13 @@ export function VariableTypeSelect({
       <Label htmlFor="variableType" className="mb-2 block">
         Variable Type *
       </Label>
-      <Select value={value} onValueChange={handleChange} disabled={disabled}>
+      <Select
+        value={validValue}
+        onValueChange={handleChange}
+        disabled={disabled}
+      >
         <SelectTrigger>
-          <SelectValue />
+          <SelectValue placeholder="Select variable type" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="text">Text</SelectItem>
@@ -40,7 +48,7 @@ export function VariableTypeSelect({
         </SelectContent>
       </Select>
       <p className="text-xs text-gray-500 mt-1">
-        {value === "text"
+        {validValue === "text"
           ? "A simple text variable that can be replaced in contracts"
           : "A group of checkboxes that examiners can select from"}
       </p>

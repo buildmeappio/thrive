@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 import { extractRequiredFeeVariables } from "@/domains/contract-templates/utils/placeholderParser";
 import { useCreateContractModal } from "./hooks/useCreateContractModal";
 import FeeStructureFormStep from "./components/FeeStructureFormStep";
+import ContractVariablesFormStep from "./components/ContractVariablesFormStep";
 import type { CreateContractModalProps } from "./types/createContractModal.types";
 import PageRender from "@/components/editor/PageRender";
 
@@ -35,13 +36,16 @@ export default function CreateContractModal(props: CreateContractModalProps) {
     selectedTemplate,
     feeStructureData,
     feeFormValues,
+    contractFormValues,
     requiresFeeStructure,
     setSelectedTemplateId,
     setSelectedFeeStructureId,
     setStep,
     setFeeFormValues,
+    setContractFormValues,
     handleContinueToFeeForm,
     handleFeeFormSubmit,
+    handleContractFormSubmit,
     handleSendContract,
     panelRef,
     titleId,
@@ -58,8 +62,10 @@ export default function CreateContractModal(props: CreateContractModalProps) {
       case 2:
         return "Fee Details";
       case 3:
-        return "Preview Contract";
+        return "Contract Details";
       case 4:
+        return "Preview Contract";
+      case 5:
         return "Contract Sent";
       default:
         return "Send Contract";
@@ -126,9 +132,9 @@ export default function CreateContractModal(props: CreateContractModalProps) {
           </h2>
 
           {/* Step Indicator */}
-          {step < 4 && (
+          {step < 5 && (
             <div className="flex items-center gap-2 mt-2">
-              {[1, 2, 3].map((s) => (
+              {[1, 2, 3, 4].map((s) => (
                 <div
                   key={s}
                   className={`h-1.5 rounded-full transition-all ${
@@ -324,8 +330,16 @@ export default function CreateContractModal(props: CreateContractModalProps) {
             </div>
           )}
 
-          {/* Step 3: Preview Contract */}
+          {/* Step 3: Contract Variables Form */}
           {step === 3 && (
+            <ContractVariablesFormStep
+              values={contractFormValues}
+              onChange={setContractFormValues}
+            />
+          )}
+
+          {/* Step 4: Preview Contract */}
+          {step === 4 && (
             <div className="space-y-4">
               {previewHtml ? (
                 <div className="border border-[#E5E5E5] rounded-xl sm:rounded-[15px] p-4 bg-white overflow-auto">
@@ -348,8 +362,8 @@ export default function CreateContractModal(props: CreateContractModalProps) {
             </div>
           )}
 
-          {/* Step 4: Contract Sent */}
-          {step === 4 && (
+          {/* Step 5: Contract Sent */}
+          {step === 5 && (
             <div className="space-y-4">
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
@@ -493,6 +507,52 @@ export default function CreateContractModal(props: CreateContractModalProps) {
               </button>
               <button
                 type="button"
+                onClick={handleContractFormSubmit}
+                disabled={isLoading}
+                className="
+                  h-10 sm:h-[46px]
+                  rounded-full
+                  bg-[#000080] px-6 sm:px-8 text-white
+                  transition-opacity
+                  disabled:cursor-not-allowed disabled:opacity-50
+                  hover:bg-[#000093]
+                  font-poppins text-[14px] sm:text-[16px] font-[500] tracking-[-0.02em]
+                  flex items-center gap-2
+                "
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Generating Preview...</span>
+                  </>
+                ) : (
+                  "Preview Contract"
+                )}
+              </button>
+            </>
+          )}
+
+          {/* Step 4 Footer */}
+          {step === 4 && (
+            <>
+              <button
+                type="button"
+                onClick={() => setStep(3)}
+                disabled={isLoading}
+                className="
+                  h-10 sm:h-[46px]
+                  rounded-full
+                  border border-[#E5E5E5] bg-white px-6 sm:px-8
+                  text-[#1A1A1A] transition-colors
+                  disabled:cursor-not-allowed disabled:opacity-50
+                  hover:bg-gray-50
+                  font-poppins text-[14px] sm:text-[16px] font-[500] tracking-[-0.02em]
+                "
+              >
+                Back
+              </button>
+              <button
+                type="button"
                 onClick={handleSendContract}
                 disabled={isLoading || !contractId}
                 className="
@@ -518,8 +578,8 @@ export default function CreateContractModal(props: CreateContractModalProps) {
             </>
           )}
 
-          {/* Step 4 Footer */}
-          {step === 4 && (
+          {/* Step 5 Footer */}
+          {step === 5 && (
             <button
               type="button"
               onClick={onClose}

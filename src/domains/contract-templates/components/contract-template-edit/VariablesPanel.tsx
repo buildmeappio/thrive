@@ -368,9 +368,12 @@ function VariablesTabContent({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
                               <button
-                                onClick={() =>
-                                  onInsertPlaceholder(variable.key)
-                                }
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  onInsertPlaceholder(variable.key);
+                                }}
                                 className="font-mono text-xs sm:text-sm text-[#00A8FF] hover:underline cursor-pointer break-all"
                               >
                                 {`{{${variable.key}}}`}
@@ -408,8 +411,13 @@ function VariablesTabContent({
                     const fullPlaceholder = `${group.namespace}.${varName}`;
                     return (
                       <button
+                        type="button"
                         key={fullPlaceholder}
-                        onClick={() => onInsertPlaceholder(fullPlaceholder)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onInsertPlaceholder(fullPlaceholder);
+                        }}
                         className="w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-gray-50 border border-gray-200 font-mono transition-colors cursor-pointer break-all"
                       >
                         {`{{${fullPlaceholder}}}`}
@@ -461,7 +469,12 @@ function CustomVariablesTabContent({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
                     <button
-                      onClick={() => onInsertPlaceholder(variable.key)}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onInsertPlaceholder(variable.key);
+                      }}
                       className="font-mono text-xs sm:text-sm text-[#00A8FF] hover:underline cursor-pointer break-all"
                     >
                       {`{{${variable.key}}}`}

@@ -3,12 +3,14 @@
 import { Label } from "@/components/ui/label";
 import PageRender from "@/components/editor/PageRender";
 import type { HeaderConfig, FooterConfig } from "./types";
+import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
 
-type PreviewSectionProps = {
+export type PreviewSectionProps = {
   content: string;
   headerConfig: HeaderConfig | undefined;
   footerConfig: FooterConfig | undefined;
   variableValuesMap: Map<string, string>;
+  customVariables?: CustomVariable[];
 };
 
 export function PreviewSection({
@@ -16,6 +18,7 @@ export function PreviewSection({
   headerConfig,
   footerConfig,
   variableValuesMap,
+  customVariables = [],
 }: PreviewSectionProps) {
   return (
     <div className="flex flex-col max-h-[100vh] min-h-[500px] lg:min-h-0">
@@ -29,6 +32,12 @@ export function PreviewSection({
             header={headerConfig}
             footer={footerConfig}
             variableValues={variableValuesMap}
+            customVariables={customVariables.map((v) => ({
+              key: v.key,
+              showUnderline: v.showUnderline,
+              variableType: v.variableType,
+              options: v.options || undefined,
+            }))}
           />
         </div>
       </div>
