@@ -24,7 +24,11 @@ const formatVariable = (variable: {
   currency: string | null;
   decimals: number | null;
   unit: string | null;
+  included: boolean;
   sortOrder: number;
+  composite: boolean;
+  subFields: unknown;
+  referenceKey: string | null;
   createdAt: Date;
   updatedAt: Date;
 }): FeeVariableData => ({
@@ -38,7 +42,13 @@ const formatVariable = (variable: {
   currency: variable.currency,
   decimals: variable.decimals,
   unit: variable.unit,
+  included: variable.included,
   sortOrder: variable.sortOrder,
+  composite: variable.composite,
+  subFields: Array.isArray(variable.subFields)
+    ? (variable.subFields as FeeVariableData["subFields"])
+    : null,
+  referenceKey: variable.referenceKey,
   createdAt: variable.createdAt.toISOString(),
   updatedAt: variable.updatedAt.toISOString(),
 });
@@ -204,6 +214,9 @@ export const duplicateFeeStructure = async (
         decimals: v.decimals,
         unit: v.unit,
         sortOrder: v.sortOrder,
+        composite: v.composite,
+        subFields: v.subFields as Prisma.InputJsonValue,
+        referenceKey: v.referenceKey,
       })),
     });
   }
@@ -390,6 +403,31 @@ export const createFeeVariable = async (
     _max: { sortOrder: true },
   });
 
+  // Validate referenceKey exists if provided
+  if (input.referenceKey) {
+    const referencedVariable = await prisma.feeStructureVariable.findFirst({
+      where: {
+        feeStructureId: input.feeStructureId,
+        key: input.referenceKey,
+      },
+    });
+
+    if (!referencedVariable) {
+      const error = new Error(
+        "Reference key does not exist in this fee structure",
+      ) as Error & {
+        fieldErrors: Record<string, string>;
+      };
+      error.fieldErrors = {
+        referenceKey: "Reference key does not exist in this fee structure",
+      };
+      throw error;
+    }
+
+    // Prevent circular references (variable cannot reference itself)
+    // Note: We can't check this here since variable doesn't exist yet, but we check in update
+  }
+
   const variable = await prisma.feeStructureVariable.create({
     data: {
       feeStructureId: input.feeStructureId,
@@ -408,7 +446,13 @@ export const createFeeVariable = async (
             ? (input.decimals ?? 0)
             : null,
       unit: input.unit?.trim() || null,
+      included: input.included ?? false,
       sortOrder: input.sortOrder ?? (maxSortOrder._max.sortOrder ?? 0) + 1,
+      composite: input.composite ?? false,
+      subFields: input.subFields
+        ? (input.subFields as Prisma.InputJsonValue)
+        : null,
+      referenceKey: input.referenceKey?.trim() || null,
     },
   });
 
@@ -468,6 +512,42 @@ export const updateFeeVariable = async (
     throw error;
   }
 
+  // Validate referenceKey exists if provided
+  if (input.referenceKey) {
+    const referencedVariable = await prisma.feeStructureVariable.findFirst({
+      where: {
+        feeStructureId: input.feeStructureId,
+        key: input.referenceKey,
+        id: { not: input.variableId }, // Exclude self
+      },
+    });
+
+    if (!referencedVariable) {
+      const error = new Error(
+        "Reference key does not exist in this fee structure",
+      ) as Error & {
+        fieldErrors: Record<string, string>;
+      };
+      error.fieldErrors = {
+        referenceKey: "Reference key does not exist in this fee structure",
+      };
+      throw error;
+    }
+
+    // Prevent circular references (variable cannot reference itself)
+    if (input.referenceKey === existingVariable.key) {
+      const error = new Error(
+        "Variable cannot reference itself",
+      ) as Error & {
+        fieldErrors: Record<string, string>;
+      };
+      error.fieldErrors = {
+        referenceKey: "Variable cannot reference itself",
+      };
+      throw error;
+    }
+  }
+
   await prisma.feeStructureVariable.update({
     where: { id: input.variableId },
     data: {
@@ -486,7 +566,13 @@ export const updateFeeVariable = async (
             ? (input.decimals ?? 0)
             : null,
       unit: input.unit?.trim() || null,
+      included: input.included ?? false,
       sortOrder: input.sortOrder ?? existingVariable.sortOrder,
+      composite: input.composite ?? false,
+      subFields: input.subFields
+        ? (input.subFields as Prisma.InputJsonValue)
+        : null,
+      referenceKey: input.referenceKey?.trim() || null,
     },
   });
 

@@ -215,6 +215,7 @@ export const getContract = async (id: string): Promise<ContractData> => {
             currency: v.currency,
             decimals: v.decimals,
             unit: v.unit,
+            included: v.included,
           })),
         }
       : null,
@@ -260,13 +261,25 @@ export const createContract = async (
     const compatibility = validateFeeStructureCompatibility(
       requiredFeeVars,
       feeStructure.variables,
+      templateContent,
     );
 
     if (!compatibility.compatible) {
+      const missingParts: string[] = [];
+      if (compatibility.missingVariables.length > 0) {
+        missingParts.push(
+          ...compatibility.missingVariables.map((v) => `fees.${v}`),
+        );
+      }
+      if (compatibility.missingSubFields.length > 0) {
+        missingParts.push(
+          ...compatibility.missingSubFields.map(
+            (sf) => `fees.${sf.variableKey}.${sf.subFieldKey}`,
+          ),
+        );
+      }
       throw HttpError.badRequest(
-        `Fee structure is missing required variables: ${compatibility.missingVariables
-          .map((v) => `fees.${v}`)
-          .join(", ")}`,
+        `Fee structure is missing required variables: ${missingParts.join(", ")}`,
       );
     }
   }
@@ -606,13 +619,25 @@ export const updateContractFeeStructure = async (
     const compatibility = validateFeeStructureCompatibility(
       requiredFeeVars,
       feeStructure.variables,
+      templateContent,
     );
 
     if (!compatibility.compatible) {
+      const missingParts: string[] = [];
+      if (compatibility.missingVariables.length > 0) {
+        missingParts.push(
+          ...compatibility.missingVariables.map((v) => `fees.${v}`),
+        );
+      }
+      if (compatibility.missingSubFields.length > 0) {
+        missingParts.push(
+          ...compatibility.missingSubFields.map(
+            (sf) => `fees.${sf.variableKey}.${sf.subFieldKey}`,
+          ),
+        );
+      }
       throw HttpError.badRequest(
-        `Fee structure is missing required variables: ${compatibility.missingVariables
-          .map((v) => `fees.${v}`)
-          .join(", ")}`,
+        `Fee structure is missing required variables: ${missingParts.join(", ")}`,
       );
     }
   }
@@ -1080,41 +1105,99 @@ export const previewContract = async (
     );
 
     for (const variable of contract.feeStructure.variables) {
-      const overrideValue = fv?.fees_overrides?.[variable.key];
-      const defaultValue =
-        overrideValue !== undefined ? overrideValue : variable.defaultValue;
+      // Handle composite variables
+      if (variable.composite && variable.subFields && variable.subFields.length > 0) {
+        const overrideValue = fv?.fees_overrides?.[variable.key];
+        const compositeValue =
+          overrideValue !== undefined &&
+          typeof overrideValue === "object" &&
+          overrideValue !== null &&
+          !Array.isArray(overrideValue)
+            ? (overrideValue as Record<string, unknown>)
+            : {};
 
-      console.log(
-        `[Contract Preview] Processing fee variable: ${variable.key}, type=${variable.type}, defaultValue=${defaultValue}, override=${overrideValue}`,
-      );
+        console.log(
+          `[Contract Preview] Processing composite fee variable: ${variable.key}, subFields=${variable.subFields.length}`,
+        );
 
-      // Format based on type
-      let formattedValue: string;
-      if (variable.type === "MONEY") {
-        const numValue =
-          typeof defaultValue === "number"
-            ? defaultValue
-            : parseFloat(String(defaultValue || 0));
-        formattedValue = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: variable.currency || "USD",
-          minimumFractionDigits: variable.decimals || 2,
-          maximumFractionDigits: variable.decimals || 2,
-        }).format(numValue);
-      } else if (variable.type === "NUMBER") {
-        const numValue =
-          typeof defaultValue === "number"
-            ? defaultValue
-            : parseFloat(String(defaultValue || 0));
-        formattedValue = numValue.toFixed(variable.decimals || 0);
+        // Process each sub-field
+        for (const subField of variable.subFields) {
+          const subFieldValue =
+            subField.key in compositeValue
+              ? compositeValue[subField.key]
+              : subField.defaultValue;
+
+          let formattedValue: string;
+          if (subField.type === "MONEY") {
+            const numValue =
+              typeof subFieldValue === "number"
+                ? subFieldValue
+                : parseFloat(String(subFieldValue || 0));
+            formattedValue = new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency: "CAD", // Default currency for sub-fields
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }).format(numValue);
+          } else if (subField.type === "NUMBER") {
+            const numValue =
+              typeof subFieldValue === "number"
+                ? subFieldValue
+                : parseFloat(String(subFieldValue || 0));
+            formattedValue = numValue.toFixed(0);
+            if (subField.unit) {
+              formattedValue += ` ${subField.unit}`;
+            }
+          } else {
+            formattedValue = String(subFieldValue || "");
+          }
+
+          values[`fees.${variable.key}.${subField.key}`] = formattedValue;
+          console.log(
+            `[Contract Preview] Set fees.${variable.key}.${subField.key} = "${formattedValue}"`,
+          );
+        }
       } else {
-        formattedValue = String(defaultValue || "");
-      }
+        // Handle regular (non-composite) variables
+        const overrideValue = fv?.fees_overrides?.[variable.key];
+        const defaultValue =
+          overrideValue !== undefined ? overrideValue : variable.defaultValue;
 
-      values[`fees.${variable.key}`] = formattedValue;
-      console.log(
-        `[Contract Preview] Set fees.${variable.key} = "${formattedValue}"`,
-      );
+        console.log(
+          `[Contract Preview] Processing fee variable: ${variable.key}, type=${variable.type}, defaultValue=${defaultValue}, override=${overrideValue}, included=${variable.included}`,
+        );
+
+        // Format based on type
+        let formattedValue: string;
+        // Check if variable is marked as "Included"
+        if (variable.included) {
+          formattedValue = "Included";
+        } else if (variable.type === "MONEY") {
+          const numValue =
+            typeof defaultValue === "number"
+              ? defaultValue
+              : parseFloat(String(defaultValue || 0));
+          formattedValue = new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: variable.currency || "USD",
+            minimumFractionDigits: variable.decimals || 2,
+            maximumFractionDigits: variable.decimals || 2,
+          }).format(numValue);
+        } else if (variable.type === "NUMBER") {
+          const numValue =
+            typeof defaultValue === "number"
+              ? defaultValue
+              : parseFloat(String(defaultValue || 0));
+          formattedValue = numValue.toFixed(variable.decimals || 0);
+        } else {
+          formattedValue = String(defaultValue || "");
+        }
+
+        values[`fees.${variable.key}`] = formattedValue;
+        console.log(
+          `[Contract Preview] Set fees.${variable.key} = "${formattedValue}"`,
+        );
+      }
     }
   } else {
     console.warn(`[Contract Preview] No fee structure found on contract!`);

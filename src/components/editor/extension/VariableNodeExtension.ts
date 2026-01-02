@@ -135,7 +135,18 @@ export const VariableNodeExtension = Node.create<VariableNodeOptions>({
           const { variable, variableType = "text" } = options;
 
           // Validate the variable against the allowed set
-          const isValid = this.options.validVariables.has(variable);
+          const isInValidSet = this.options.validVariables.has(variable);
+          
+          // For fee variables, check if format is valid even if not in validVariablesSet
+          // This allows users to add fee variables before selecting a fee structure
+          // or when the variable exists in a different fee structure
+          // Supports both simple variables (fees.base_exam_fee) and composite sub-fields (fees.late_cancellation.hours)
+          const isFeeVariable = variable.startsWith("fees.");
+          const feeVariableFormatValid = isFeeVariable
+            ? /^fees\.[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*$/.test(variable)
+            : false;
+          
+          const isValid = isInValidSet || feeVariableFormatValid;
 
           return commands.insertContent({
             type: this.name,

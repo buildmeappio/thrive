@@ -70,6 +70,7 @@ export type ContractFeeStructure = {
     currency?: string | null;
     decimals?: number | null;
     unit?: string | null;
+    included?: boolean;
   }>;
 };
 

@@ -63,6 +63,7 @@ export class ExaminerDto {
               currency: variable.currency,
               decimals: variable.decimals,
               unit: variable.unit,
+              included: variable.included ?? false,
             };
           }),
         };

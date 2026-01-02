@@ -54,6 +54,7 @@ export type ContractData = {
       currency: string | null;
       decimals: number | null;
       unit: string | null;
+      included: boolean;
     }>;
   } | null;
 };

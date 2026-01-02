@@ -52,6 +52,7 @@ import {
 import type {
   FeeStructureListItem,
   FeeStructureData,
+  FeeVariableData,
 } from "@/domains/fee-structures/types/feeStructure.types";
 import RichTextEditor from "@/components/editor/RichTextEditor";
 import StatusBadge from "./StatusBadge";
@@ -757,11 +758,23 @@ export default function ContractTemplateEditContent({ template }: Props) {
       ],
     });
 
-    // Add fee structure variables
+    // Add fee structure variables (including composite sub-fields)
     if (selectedFeeStructureData?.variables) {
+      const feeVars: string[] = [];
+      for (const variable of selectedFeeStructureData.variables) {
+        if (variable.composite && variable.subFields && variable.subFields.length > 0) {
+          // Add sub-fields for composite variables
+          for (const subField of variable.subFields) {
+            feeVars.push(`${variable.key}.${subField.key}`);
+          }
+        } else {
+          // Add regular variable key
+          feeVars.push(variable.key);
+        }
+      }
       vars.push({
         namespace: "fees",
-        vars: selectedFeeStructureData.variables.map((v) => v.key),
+        vars: feeVars,
       });
     } else {
       vars.push({
@@ -812,6 +825,46 @@ export default function ContractTemplateEditContent({ template }: Props) {
     return set;
   }, [availableVariables]);
 
+  // Helper function to format fee variable default value
+  const formatFeeVariableValue = (
+    variable: FeeVariableData,
+  ): string => {
+    // Check if variable is marked as "Included"
+    if (variable.included) {
+      return "Included";
+    }
+
+    // Handle null/undefined default value
+    if (
+      variable.defaultValue === null ||
+      variable.defaultValue === undefined
+    ) {
+      return "";
+    }
+
+    // Format based on type
+    if (variable.type === "MONEY") {
+      const numValue =
+        typeof variable.defaultValue === "number"
+          ? variable.defaultValue
+          : parseFloat(String(variable.defaultValue || 0));
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: variable.currency || "CAD",
+        minimumFractionDigits: variable.decimals ?? 2,
+        maximumFractionDigits: variable.decimals ?? 2,
+      }).format(numValue);
+    } else if (variable.type === "NUMBER") {
+      const numValue =
+        typeof variable.defaultValue === "number"
+          ? variable.defaultValue
+          : parseFloat(String(variable.defaultValue || 0));
+      return numValue.toFixed(variable.decimals || 0);
+    } else {
+      return String(variable.defaultValue || "");
+    }
+  };
+
   // Create a map of variable keys to their default values
   const variableValuesMap = useMemo(() => {
     const valuesMap = new Map<string, string>();
@@ -826,8 +879,51 @@ export default function ContractTemplateEditContent({ template }: Props) {
       valuesMap.set(variable.key, variable.defaultValue || "");
     });
 
+    // Add fee structure variables with their formatted default values
+    // Handle both regular and composite variables
+    if (selectedFeeStructureData?.variables) {
+      selectedFeeStructureData.variables.forEach((variable) => {
+        if (variable.composite && variable.subFields && variable.subFields.length > 0) {
+          // Handle composite variables - add each sub-field
+          variable.subFields.forEach((subField) => {
+            let formattedValue = "";
+            if (subField.defaultValue !== null && subField.defaultValue !== undefined) {
+              if (subField.type === "MONEY") {
+                const numValue =
+                  typeof subField.defaultValue === "number"
+                    ? subField.defaultValue
+                    : parseFloat(String(subField.defaultValue || 0));
+                formattedValue = new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "CAD",
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(numValue);
+              } else if (subField.type === "NUMBER") {
+                const numValue =
+                  typeof subField.defaultValue === "number"
+                    ? subField.defaultValue
+                    : parseFloat(String(subField.defaultValue || 0));
+                formattedValue = numValue.toFixed(0);
+                if (subField.unit) {
+                  formattedValue += ` ${subField.unit}`;
+                }
+              } else {
+                formattedValue = String(subField.defaultValue || "");
+              }
+            }
+            valuesMap.set(`fees.${variable.key}.${subField.key}`, formattedValue);
+          });
+        } else {
+          // Handle regular (non-composite) variables
+          const formattedValue = formatFeeVariableValue(variable);
+          valuesMap.set(`fees.${variable.key}`, formattedValue);
+        }
+      });
+    }
+
     return valuesMap;
-  }, [systemVariables, customVariables]);
+  }, [systemVariables, customVariables, selectedFeeStructureData]);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -947,7 +1043,6 @@ export default function ContractTemplateEditContent({ template }: Props) {
                   editorRef={editorRef}
                   validVariables={validVariablesSet}
                   availableVariables={availableVariables}
-                  variableValues={variableValuesMap}
                   customVariables={customVariables}
                   headerConfig={headerConfig}
                   footerConfig={footerConfig}
@@ -1424,7 +1519,16 @@ export default function ContractTemplateEditContent({ template }: Props) {
                           (w) => w.placeholder === placeholder,
                         );
                         const isValid = validVariablesSet.has(placeholder);
-                        const isInvalid = !isValid && !hasError && !hasWarning;
+
+                        // For fee variables, check if format is valid even if not in selected fee structure
+                        // This allows users to add fee variables before selecting a fee structure
+                        // or when the variable exists in a different fee structure
+                        const isFeeVariable = placeholder.startsWith("fees.");
+                        const feeVariableFormatValid = isFeeVariable
+                          ? /^fees\.[a-z][a-z0-9_]*$/.test(placeholder)
+                          : false;
+
+                        const isInvalid = !isValid && !hasError && !hasWarning && !feeVariableFormatValid;
 
                         return (
                           <div

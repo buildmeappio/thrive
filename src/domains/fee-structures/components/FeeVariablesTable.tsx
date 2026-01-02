@@ -99,6 +99,17 @@ export default function FeeVariablesTable({
     currency?: string;
     decimals?: number;
     unit?: string;
+    included?: boolean;
+    composite?: boolean;
+    subFields?: Array<{
+      key: string;
+      label: string;
+      type: "NUMBER" | "MONEY" | "TEXT";
+      defaultValue?: number | string;
+      required?: boolean;
+      unit?: string;
+    }>;
+    referenceKey?: string;
   }): Promise<{ success: boolean; fieldErrors?: Record<string, string> }> => {
     setIsSubmitting(true);
 
@@ -234,10 +245,29 @@ export default function FeeVariablesTable({
                     key={variable.id}
                     className="bg-white border-0 border-b transition-colors hover:bg-muted/50"
                   >
-                    <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle">
-                      <span className="text-[#4D4D4D] font-poppins text-sm sm:text-[16px] leading-normal font-medium">
-                        {variable.label}
-                      </span>
+                    <TableCell className="px-3 sm:px-6 py-3 sm:py-4 align-middle">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[#4D4D4D] font-poppins text-sm sm:text-[16px] leading-normal font-medium">
+                            {variable.label}
+                          </span>
+                          {variable.composite && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 font-poppins">
+                              Composite
+                            </span>
+                          )}
+                        </div>
+                        {variable.composite && variable.subFields && variable.subFields.length > 0 && (
+                          <div className="text-xs text-[#7B8B91] font-poppins mt-1">
+                            Sub-fields: {variable.subFields.map((sf) => sf.label).join(", ")}
+                            {variable.referenceKey && (
+                              <span className="ml-2 text-blue-600">
+                                (ref: {variable.referenceKey})
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle">
                       <div className="space-y-1">
@@ -245,18 +275,30 @@ export default function FeeVariablesTable({
                           {variable.key}
                         </code>
                         <p className="text-xs text-[#7B8B91] font-poppins">
-                          {"{{fees." + variable.key + "}}"}
+                          {variable.composite
+                            ? `{{fees.${variable.key}.sub_field}}`
+                            : `{{fees.${variable.key}}}`}
                         </p>
                       </div>
                     </TableCell>
                     <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle">
-                      <span className="text-[#4D4D4D] font-poppins text-sm sm:text-[16px] leading-normal">
-                        {formatDefaultValue(
-                          variable.defaultValue,
-                          variable.currency,
-                          variable.decimals,
-                        )}
-                      </span>
+                      {variable.composite ? (
+                        <span className="text-[#7B8B91] font-poppins text-xs italic">
+                          Multiple sub-fields
+                        </span>
+                      ) : variable.included ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 font-poppins">
+                          Included
+                        </span>
+                      ) : (
+                        <span className="text-[#4D4D4D] font-poppins text-sm sm:text-[16px] leading-normal">
+                          {formatDefaultValue(
+                            variable.defaultValue,
+                            variable.currency,
+                            variable.decimals,
+                          )}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle text-center">
                       {variable.required ? (

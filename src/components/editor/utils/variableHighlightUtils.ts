@@ -16,7 +16,17 @@ export function highlightVariable(
   const hasValidNamespace = key.includes(".")
     ? ALLOWED_NAMESPACES.includes(key.split(".")[0])
     : true;
-  const isValid = isInValidSet && hasValidNamespace;
+  
+  // For fee variables, check if format is valid even if not in validVariablesSet
+  // This allows users to add fee variables before selecting a fee structure
+  // or when the variable exists in a different fee structure
+  // Supports both simple variables (fees.base_exam_fee) and composite sub-fields (fees.late_cancellation.hours)
+  const isFeeVariable = key.startsWith("fees.");
+  const feeVariableFormatValid = isFeeVariable
+    ? /^fees\.[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*$/.test(key)
+    : false;
+  
+  const isValid = (isInValidSet || feeVariableFormatValid) && hasValidNamespace;
 
   const className = isValid
     ? "variable-valid bg-[#E0F7FA] text-[#006064] px-1 py-0.5 rounded font-mono text-sm underline"

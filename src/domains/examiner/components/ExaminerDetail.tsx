@@ -1014,7 +1014,10 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
                         (variable) => {
                           let formattedValue: string;
 
-                          if (variable.type === "MONEY") {
+                          // Check if variable is marked as "Included"
+                          if (variable.included) {
+                            formattedValue = "Included";
+                          } else if (variable.type === "MONEY") {
                             const numValue =
                               typeof variable.value === "number"
                                 ? variable.value

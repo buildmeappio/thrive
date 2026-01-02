@@ -129,11 +129,23 @@ export function usePlaceholders({
       ],
     });
 
-    // Add fee structure variables
+    // Add fee structure variables (including composite sub-fields)
     if (selectedFeeStructureData?.variables) {
+      const feeVars: string[] = [];
+      for (const variable of selectedFeeStructureData.variables) {
+        if (variable.composite && variable.subFields && variable.subFields.length > 0) {
+          // Add sub-fields for composite variables
+          for (const subField of variable.subFields) {
+            feeVars.push(`${variable.key}.${subField.key}`);
+          }
+        } else {
+          // Add regular variable key
+          feeVars.push(variable.key);
+        }
+      }
       vars.push({
         namespace: "fees",
-        vars: selectedFeeStructureData.variables.map((v) => v.key),
+        vars: feeVars,
       });
     } else {
       vars.push({

@@ -4,6 +4,31 @@ import { FeeVariableType } from "@prisma/client";
 // Key format: snake_case starting with lowercase letter
 const keyRegex = /^[a-z][a-z0-9_]*$/;
 
+// Sub-field schema for composite variables
+export const subFieldSchema = z.object({
+  key: z
+    .string()
+    .min(1, "Sub-field key is required")
+    .max(64, "Sub-field key must be less than 64 characters")
+    .regex(
+      keyRegex,
+      "Sub-field key must be snake_case (lowercase letters, numbers, and underscores, starting with a letter)",
+    ),
+  label: z
+    .string()
+    .min(1, "Sub-field label is required")
+    .max(80, "Sub-field label must be less than 80 characters"),
+  type: z.enum(["NUMBER", "MONEY", "TEXT"], {
+    message: "Sub-field type must be NUMBER, MONEY, or TEXT",
+  }),
+  defaultValue: z.union([z.number(), z.string()]).optional(),
+  required: z.boolean().optional().default(false),
+  unit: z
+    .string()
+    .max(20, "Unit must be less than 20 characters")
+    .optional(),
+});
+
 // Helper function to check if name contains at least one letter
 const hasAtLeastOneLetter = (value: string): boolean => {
   return /[a-zA-Z]/.test(value.trim());
@@ -46,8 +71,8 @@ export const feeVariableBaseSchema = z.object({
     .refine((val) => val.length >= 2, "Label must be at least 2 characters")
     .refine((val) => val.length <= 80, "Label must be less than 80 characters")
     .refine(
-      (val) => /^[a-zA-Z0-9\s\-'.,()&]+$/.test(val),
-      "Label can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands",
+      (val) => /^[a-zA-Z0-9\s\-'.,()&/|]+$/.test(val),
+      "Label can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, ampersands, slashes, and pipes",
     )
     .refine(
       (val) => hasAtLeastOneLetter(val),
@@ -91,12 +116,89 @@ export const feeVariableBaseSchema = z.object({
     .max(20, "Unit must be less than 20 characters")
     .optional()
     .transform((val) => val?.trim() || undefined),
+  included: z.boolean().default(false),
   sortOrder: z.number().int().default(0),
+  // Composite variable fields
+  composite: z.boolean().default(false),
+  subFields: z.array(subFieldSchema).optional(),
+  referenceKey: z
+    .string()
+    .max(64, "Reference key must be less than 64 characters")
+    .regex(
+      keyRegex,
+      "Reference key must be snake_case (lowercase letters, numbers, and underscores, starting with a letter)",
+    )
+    .optional()
+    .transform((val) => val?.trim() || undefined),
 });
 
 // Custom refinement for variable validation
 export const createFeeVariableSchema = feeVariableBaseSchema.superRefine(
   (data, ctx) => {
+    // Composite variable validation
+    if (data.composite) {
+      // Composite variables must have subFields
+      if (!data.subFields || data.subFields.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Composite variables must have at least one sub-field",
+          path: ["subFields"],
+        });
+        return; // Early return to avoid further validation
+      }
+
+      // Validate sub-field keys are unique
+      const subFieldKeys = new Set<string>();
+      for (let i = 0; i < data.subFields.length; i++) {
+        const subField = data.subFields[i];
+        if (subFieldKeys.has(subField.key)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Duplicate sub-field key: ${subField.key}`,
+            path: ["subFields", i, "key"],
+          });
+        }
+        subFieldKeys.add(subField.key);
+
+        // Validate sub-field default values
+        if (subField.required && subField.defaultValue === undefined) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Required sub-field must have a default value",
+            path: ["subFields", i, "defaultValue"],
+          });
+        }
+
+        // Validate sub-field default value types
+        if (subField.defaultValue !== undefined) {
+          if (
+            (subField.type === "NUMBER" || subField.type === "MONEY") &&
+            typeof subField.defaultValue !== "number"
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Sub-field default value must be a number for NUMBER/MONEY types",
+              path: ["subFields", i, "defaultValue"],
+            });
+          } else if (
+            subField.type === "TEXT" &&
+            typeof subField.defaultValue !== "string"
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Sub-field default value must be a string for TEXT type",
+              path: ["subFields", i, "defaultValue"],
+            });
+          }
+        }
+      }
+
+      // For composite variables, type field is ignored (sub-fields have their own types)
+      // Skip standard type validation
+      return;
+    }
+
+    // Non-composite variable validation (existing logic)
     // Currency only allowed for MONEY type
     if (data.currency && data.type !== FeeVariableType.MONEY) {
       ctx.addIssue({
@@ -205,7 +307,70 @@ export const updateFeeVariableSchema = feeVariableBaseSchema
     variableId: z.string().uuid("Invalid variable ID"),
   })
   .superRefine((data, ctx) => {
-    // Same validation as create
+    // Composite variable validation (same as create)
+    if (data.composite) {
+      // Composite variables must have subFields
+      if (!data.subFields || data.subFields.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Composite variables must have at least one sub-field",
+          path: ["subFields"],
+        });
+        return; // Early return to avoid further validation
+      }
+
+      // Validate sub-field keys are unique
+      const subFieldKeys = new Set<string>();
+      for (let i = 0; i < data.subFields.length; i++) {
+        const subField = data.subFields[i];
+        if (subFieldKeys.has(subField.key)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Duplicate sub-field key: ${subField.key}`,
+            path: ["subFields", i, "key"],
+          });
+        }
+        subFieldKeys.add(subField.key);
+
+        // Validate sub-field default values
+        if (subField.required && subField.defaultValue === undefined) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Required sub-field must have a default value",
+            path: ["subFields", i, "defaultValue"],
+          });
+        }
+
+        // Validate sub-field default value types
+        if (subField.defaultValue !== undefined) {
+          if (
+            (subField.type === "NUMBER" || subField.type === "MONEY") &&
+            typeof subField.defaultValue !== "number"
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Sub-field default value must be a number for NUMBER/MONEY types",
+              path: ["subFields", i, "defaultValue"],
+            });
+          } else if (
+            subField.type === "TEXT" &&
+            typeof subField.defaultValue !== "string"
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "Sub-field default value must be a string for TEXT type",
+              path: ["subFields", i, "defaultValue"],
+            });
+          }
+        }
+      }
+
+      // For composite variables, type field is ignored (sub-fields have their own types)
+      // Skip standard type validation
+      return;
+    }
+
+    // Non-composite variable validation (same as create)
     if (data.currency && data.type !== FeeVariableType.MONEY) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

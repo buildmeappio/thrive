@@ -10,6 +10,19 @@ export type FeeStructureListItem = {
   templateCount: number;
 };
 
+// Sub-field definition for composite variables
+export type SubField = {
+  key: string; // e.g., "hours", "percentage"
+  label: string; // e.g., "Hours", "Percentage"
+  type: "NUMBER" | "MONEY" | "TEXT";
+  defaultValue?: number | string;
+  required?: boolean;
+  unit?: string; // e.g., "hours", "%"
+};
+
+// Value type for composite variables (nested object)
+export type CompositeValue = Record<string, number | string | null>;
+
 export type FeeVariableData = {
   id: string;
   feeStructureId: string;
@@ -21,9 +34,14 @@ export type FeeVariableData = {
   currency: string | null;
   decimals: number | null;
   unit: string | null;
+  included: boolean;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
+  // Composite variable fields
+  composite: boolean;
+  subFields: SubField[] | null;
+  referenceKey: string | null;
 };
 
 export type FeeStructureData = {
@@ -58,7 +76,12 @@ export type CreateFeeVariableInput = {
   currency?: string;
   decimals?: number;
   unit?: string;
+  included?: boolean;
   sortOrder?: number;
+  // Composite variable fields
+  composite?: boolean;
+  subFields?: SubField[];
+  referenceKey?: string;
 };
 
 export type UpdateFeeVariableInput = {
@@ -72,7 +95,12 @@ export type UpdateFeeVariableInput = {
   currency?: string;
   decimals?: number;
   unit?: string;
+  included?: boolean;
   sortOrder?: number;
+  // Composite variable fields
+  composite?: boolean;
+  subFields?: SubField[];
+  referenceKey?: string;
 };
 
 export type DeleteFeeVariableInput = {

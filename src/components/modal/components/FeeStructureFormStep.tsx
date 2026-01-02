@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FeeVariableType } from "@prisma/client";
 
@@ -15,6 +15,18 @@ export type FeeVariable = {
   decimals: number | null;
   unit: string | null;
   sortOrder: number;
+  included?: boolean;
+  // Composite variable fields
+  composite?: boolean;
+  subFields?: Array<{
+    key: string;
+    label: string;
+    type: "NUMBER" | "MONEY" | "TEXT";
+    defaultValue?: number | string;
+    required?: boolean;
+    unit?: string;
+  }>;
+  referenceKey?: string | null;
 };
 
 export type FeeFormValues = Record<string, unknown>;
@@ -36,13 +48,35 @@ export default function FeeStructureFormStep({
   onChange,
   feeStructureName,
 }: FeeStructureFormStepProps) {
-  // Sort variables by sortOrder
+  // Sort variables by sortOrder and filter out included variables (they're handled separately)
   const sortedVariables = useMemo(
-    () => [...variables].sort((a, b) => a.sortOrder - b.sortOrder),
+    () =>
+      [...variables]
+        .filter((v) => v.included !== true)
+        .sort((a, b) => a.sortOrder - b.sortOrder),
     [variables],
   );
 
-  // Handle field value change
+  // Automatically add included variables to form values
+  useEffect(() => {
+    const includedVariables = variables.filter((v) => v.included === true);
+    if (includedVariables.length > 0) {
+      const updatedValues = { ...values };
+      let hasChanges = false;
+      for (const variable of includedVariables) {
+        if (updatedValues[variable.key] !== "included") {
+          updatedValues[variable.key] = "included";
+          hasChanges = true;
+        }
+      }
+      if (hasChanges) {
+        onChange(updatedValues);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variables]);
+
+  // Handle field value change (supports nested composite values)
   const handleFieldChange = useCallback(
     (key: string, value: unknown) => {
       onChange({ ...values, [key]: value });
@@ -50,15 +84,214 @@ export default function FeeStructureFormStep({
     [values, onChange],
   );
 
-  // Get display value for a field
+  // Handle composite sub-field value change
+  const handleCompositeFieldChange = useCallback(
+    (variableKey: string, subFieldKey: string, value: unknown) => {
+      const currentValue = values[variableKey];
+      const compositeValue =
+        typeof currentValue === "object" && currentValue !== null
+          ? { ...(currentValue as Record<string, unknown>) }
+          : {};
+      compositeValue[subFieldKey] = value;
+      onChange({ ...values, [variableKey]: compositeValue });
+    },
+    [values, onChange],
+  );
+
+  // Get display value for a field (supports composite nested values)
   const getFieldValue = (variable: FeeVariable): unknown => {
     const value = values[variable.key];
     if (value !== undefined) return value;
     return variable.defaultValue;
   };
 
+  // Get composite sub-field value
+  const getCompositeSubFieldValue = (
+    variable: FeeVariable,
+    subFieldKey: string,
+  ): unknown => {
+    const compositeValue = values[variable.key];
+    if (
+      typeof compositeValue === "object" &&
+      compositeValue !== null &&
+      subFieldKey in compositeValue
+    ) {
+      return (compositeValue as Record<string, unknown>)[subFieldKey];
+    }
+    // Try to get from sub-field default value
+    const subField = variable.subFields?.find((sf) => sf.key === subFieldKey);
+    return subField?.defaultValue;
+  };
+
+  // Render input for a sub-field
+  const renderSubFieldInput = (
+    variable: FeeVariable,
+    subField: { key: string; label: string; type: "NUMBER" | "MONEY" | "TEXT"; unit?: string },
+  ) => {
+    const value = getCompositeSubFieldValue(variable, subField.key);
+    const inputId = `fee-${variable.key}-${subField.key}`;
+
+    switch (subField.type) {
+      case "MONEY":
+        return (
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7A7A7A] font-poppins text-[14px]">
+              $
+            </span>
+            <input
+              id={inputId}
+              type="text"
+              inputMode="decimal"
+              value={value !== null && value !== undefined ? String(value) : ""}
+              onChange={(e) => {
+                const inputValue = e.target.value;
+                if (inputValue === "" || /^\d*\.?\d*$/.test(inputValue)) {
+                  const numValue =
+                    inputValue === ""
+                      ? null
+                      : inputValue === "."
+                        ? inputValue
+                        : parseFloat(inputValue);
+                  handleCompositeFieldChange(variable.key, subField.key, numValue);
+                }
+              }}
+              onBlur={(e) => {
+                const inputValue = e.target.value;
+                if (inputValue && inputValue !== ".") {
+                  const numValue = parseFloat(inputValue);
+                  if (!isNaN(numValue)) {
+                    handleCompositeFieldChange(variable.key, subField.key, numValue);
+                  }
+                }
+              }}
+              className="
+                h-12 w-full
+                rounded-xl sm:rounded-[15px]
+                border border-[#E5E5E5] bg-[#F6F6F6]
+                pl-8 pr-3 sm:pr-4 outline-none
+                placeholder:font-[400] placeholder:text-[14px]
+                placeholder:text-[#A4A4A4]
+                font-poppins text-[14px] sm:text-[15px]
+                focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
+              "
+              placeholder="0.00"
+            />
+            {subField.unit && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A4A4A4] font-poppins text-[12px]">
+                {subField.unit}
+              </span>
+            )}
+          </div>
+        );
+
+      case "NUMBER":
+        return (
+          <div className="relative">
+            <input
+              id={inputId}
+              type="text"
+              inputMode="decimal"
+              value={value !== null && value !== undefined ? String(value) : ""}
+              onChange={(e) => {
+                const inputValue = e.target.value;
+                if (inputValue === "" || /^-?\d*\.?\d*$/.test(inputValue)) {
+                  const numValue =
+                    inputValue === ""
+                      ? null
+                      : inputValue === "-" ||
+                        inputValue === "." ||
+                        inputValue === "-."
+                        ? inputValue
+                        : parseFloat(inputValue);
+                  handleCompositeFieldChange(variable.key, subField.key, numValue);
+                }
+              }}
+              onBlur={(e) => {
+                const inputValue = e.target.value;
+                if (inputValue && inputValue !== "-" && inputValue !== ".") {
+                  const numValue = parseFloat(inputValue);
+                  if (!isNaN(numValue)) {
+                    handleCompositeFieldChange(variable.key, subField.key, numValue);
+                  }
+                }
+              }}
+              className="
+                h-12 w-full
+                rounded-xl sm:rounded-[15px]
+                border border-[#E5E5E5] bg-[#F6F6F6]
+                px-3 sm:px-4 outline-none
+                placeholder:font-[400] placeholder:text-[14px]
+                placeholder:text-[#A4A4A4]
+                font-poppins text-[14px] sm:text-[15px]
+                focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
+              "
+              placeholder="Enter value"
+            />
+            {subField.unit && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A4A4A4] font-poppins text-[12px]">
+                {subField.unit}
+              </span>
+            )}
+          </div>
+        );
+
+      case "TEXT":
+        return (
+          <input
+            id={inputId}
+            type="text"
+            value={typeof value === "string" ? value : ""}
+            onChange={(e) =>
+              handleCompositeFieldChange(variable.key, subField.key, e.target.value)
+            }
+            className="
+              h-12 w-full
+              rounded-xl sm:rounded-[15px]
+              border border-[#E5E5E5] bg-[#F6F6F6]
+              px-3 sm:px-4 outline-none
+              placeholder:font-[400] placeholder:text-[14px]
+              placeholder:text-[#A4A4A4]
+              font-poppins text-[14px] sm:text-[15px]
+              focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
+            "
+            placeholder="Enter text"
+          />
+        );
+
+      default:
+        return null;
+    }
+  };
+
   // Render input based on variable type
   const renderInput = (variable: FeeVariable) => {
+    // Handle composite variables
+    if (variable.composite && variable.subFields && variable.subFields.length > 0) {
+      return (
+        <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          {variable.subFields.map((subField) => (
+            <div key={subField.key}>
+              <label
+                htmlFor={`fee-${variable.key}-${subField.key}`}
+                className="block font-[500] text-sm sm:text-[15px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
+              >
+                {subField.label}
+                {subField.required && (
+                  <span className="text-red-500 ml-1">*</span>
+                )}
+                {variable.referenceKey && subField.type === "NUMBER" && (
+                  <span className="text-[#7A7A7A] ml-1 text-xs">
+                    (% of {variable.referenceKey})
+                  </span>
+                )}
+              </label>
+              {renderSubFieldInput(variable, subField)}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
     const value = getFieldValue(variable);
     const inputId = `fee-${variable.key}`;
 
@@ -134,8 +367,8 @@ export default function FeeStructureFormStep({
                     inputValue === ""
                       ? null
                       : inputValue === "-" ||
-                          inputValue === "." ||
-                          inputValue === "-."
+                        inputValue === "." ||
+                        inputValue === "-."
                         ? inputValue
                         : parseFloat(inputValue);
                   handleFieldChange(variable.key, numValue);
@@ -269,6 +502,24 @@ export default function FeeStructureFormStep({
             );
           }
 
+          // Composite variables span full width
+          if (variable.composite) {
+            return (
+              <div key={variable.id} className="sm:col-span-2">
+                <label
+                  htmlFor={`fee-${variable.key}`}
+                  className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
+                >
+                  {variable.label}
+                  {variable.required && (
+                    <span className="text-red-500 ml-1">*</span>
+                  )}
+                </label>
+                {renderInput(variable)}
+              </div>
+            );
+          }
+
           return (
             <div key={variable.id}>
               <label
@@ -290,7 +541,7 @@ export default function FeeStructureFormStep({
 }
 
 /**
- * Validates that all required fields have values
+ * Validates that all required fields have values (supports composite variables)
  */
 export function validateFeeFormValues(
   variables: FeeVariable[],
@@ -299,7 +550,38 @@ export function validateFeeFormValues(
   const missingFields: string[] = [];
 
   for (const variable of variables) {
-    if (variable.required) {
+    // Skip validation for included variables
+    if (variable.included) {
+      continue;
+    }
+
+    if (variable.composite && variable.subFields) {
+      // Validate composite variable sub-fields
+      const compositeValue = values[variable.key];
+      const isCompositeValueValid =
+        typeof compositeValue === "object" &&
+        compositeValue !== null &&
+        !Array.isArray(compositeValue);
+
+      for (const subField of variable.subFields) {
+        if (subField.required) {
+          const subFieldValue = isCompositeValueValid
+            ? (compositeValue as Record<string, unknown>)[subField.key]
+            : undefined;
+          const defaultValue = subField.defaultValue;
+
+          if (
+            (subFieldValue === null ||
+              subFieldValue === undefined ||
+              subFieldValue === "") &&
+            (defaultValue === null || defaultValue === undefined)
+          ) {
+            missingFields.push(`${variable.label} - ${subField.label}`);
+          }
+        }
+      }
+    } else if (variable.required) {
+      // Validate regular variable
       const value = values[variable.key] ?? variable.defaultValue;
 
       if (value === null || value === undefined || value === "") {
@@ -315,7 +597,7 @@ export function validateFeeFormValues(
 }
 
 /**
- * Initializes form values from fee structure variables using their default values
+ * Initializes form values from fee structure variables using their default values (supports composite variables)
  */
 export function initializeFeeFormValues(
   variables: FeeVariable[],
@@ -323,7 +605,35 @@ export function initializeFeeFormValues(
   const values: FeeFormValues = {};
 
   for (const variable of variables) {
-    if (variable.defaultValue !== null && variable.defaultValue !== undefined) {
+    // Automatically set included variables to "included"
+    if (variable.included) {
+      values[variable.key] = "included";
+      continue;
+    }
+
+    if (variable.composite && variable.subFields) {
+      // Initialize composite variable with sub-field defaults
+      const compositeValue: Record<string, unknown> = {};
+      let hasDefaults = false;
+
+      for (const subField of variable.subFields) {
+        if (
+          subField.defaultValue !== null &&
+          subField.defaultValue !== undefined
+        ) {
+          compositeValue[subField.key] = subField.defaultValue;
+          hasDefaults = true;
+        }
+      }
+
+      if (hasDefaults) {
+        values[variable.key] = compositeValue;
+      }
+    } else if (
+      variable.defaultValue !== null &&
+      variable.defaultValue !== undefined
+    ) {
+      // Initialize regular variable
       values[variable.key] = variable.defaultValue;
     }
   }

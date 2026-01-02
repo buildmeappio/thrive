@@ -58,7 +58,7 @@ export function validatePlaceholders(
       continue;
     }
 
-    // Validate fees namespace format (must be snake_case after fees.)
+    // Validate fees namespace format (supports nested keys for composite variables)
     if (namespace === "fees") {
       if (parts.length < 2) {
         errors.push({
@@ -68,13 +68,26 @@ export function validatePlaceholders(
         continue;
       }
 
-      const key = parts.slice(1).join(".");
-      // Check if key is valid snake_case
-      if (!/^[a-z][a-z0-9_]*$/.test(key)) {
+      // For nested keys like fees.late_cancellation.hours
+      // Validate variable key (first part after fees.)
+      const variableKey = parts[1];
+      if (!/^[a-z][a-z0-9_]*$/.test(variableKey)) {
         errors.push({
           placeholder,
-          error: `Invalid fees key format. Must be snake_case (e.g., base_exam_fee)`,
+          error: `Invalid fees variable key format. Must be snake_case (e.g., base_exam_fee)`,
         });
+        continue;
+      }
+
+      // If there's a sub-field (parts.length > 2), validate it too
+      if (parts.length > 2) {
+        const subFieldKey = parts[2];
+        if (!/^[a-z][a-z0-9_]*$/.test(subFieldKey)) {
+          errors.push({
+            placeholder,
+            error: `Invalid fees sub-field key format. Must be snake_case (e.g., hours)`,
+          });
+        }
       }
     }
 
@@ -154,26 +167,30 @@ export function replacePlaceholders(
 }
 
 /**
- * Extract namespace and key from placeholder
+ * Extract namespace and key from placeholder (supports nested composite variable keys)
  */
 export function parsePlaceholderKey(placeholder: string): {
   namespace: string;
   key: string;
+  subFieldKey?: string;
   fullKey: string;
 } {
   const parts = placeholder.split(".");
   const namespace = parts[0];
-  const key = parts.slice(1).join(".");
+  const key = parts[1] || "";
+  const subFieldKey = parts.length > 2 ? parts.slice(2).join(".") : undefined;
   return {
     namespace,
     key,
+    subFieldKey,
     fullKey: placeholder,
   };
 }
 
 /**
  * Extract required fee variable keys from template content
- * Returns a Set of fee variable keys (e.g., ["base_exam_fee", "travel_fee"])
+ * Returns a Set of fee variable keys (e.g., ["base_exam_fee", "late_cancellation"])
+ * For composite variables, extracts the parent variable key (e.g., "late_cancellation" from "fees.late_cancellation.hours")
  */
 export function extractRequiredFeeVariables(content: string): Set<string> {
   const placeholders = parsePlaceholders(content);
@@ -182,9 +199,10 @@ export function extractRequiredFeeVariables(content: string): Set<string> {
   for (const placeholder of placeholders) {
     const parts = placeholder.split(".");
     if (parts[0] === "fees" && parts.length >= 2) {
-      // Extract the key after "fees."
-      const key = parts.slice(1).join(".");
-      feeVariables.add(key);
+      // Extract the variable key (first part after "fees.")
+      // For nested keys like fees.late_cancellation.hours, extract "late_cancellation"
+      const variableKey = parts[1];
+      feeVariables.add(variableKey);
     }
   }
 
@@ -193,25 +211,76 @@ export function extractRequiredFeeVariables(content: string): Set<string> {
 
 /**
  * Validate that a fee structure has all required variables
+ * Also checks if composite variables have required sub-fields
  */
 export type FeeStructureCompatibilityResult = {
   compatible: boolean;
   missingVariables: string[];
+  missingSubFields: Array<{ variableKey: string; subFieldKey: string }>;
   extraVariables: string[];
 };
 
 export function validateFeeStructureCompatibility(
   requiredVariables: Set<string>,
-  feeStructureVariables: Array<{ key: string }>,
+  feeStructureVariables: Array<{
+    key: string;
+    composite?: boolean;
+    subFields?: Array<{ key: string }>;
+  }>,
+  templateContent?: string,
 ): FeeStructureCompatibilityResult {
   const feeStructureKeys = new Set(feeStructureVariables.map((v) => v.key));
+  const feeStructureMap = new Map(
+    feeStructureVariables.map((v) => [v.key, v]),
+  );
 
   const missingVariables: string[] = [];
+  const missingSubFields: Array<{ variableKey: string; subFieldKey: string }> =
+    [];
+
+  // Extract all placeholders from template if provided
+  let allPlaceholders: string[] = [];
+  if (templateContent) {
+    allPlaceholders = parsePlaceholders(templateContent);
+  }
 
   // Check for missing required variables
   for (const requiredKey of requiredVariables) {
     if (!feeStructureKeys.has(requiredKey)) {
       missingVariables.push(requiredKey);
+    } else {
+      // Check if it's a composite variable and if sub-fields are required
+      const variable = feeStructureMap.get(requiredKey);
+      if (variable?.composite && templateContent) {
+        // Find all placeholders for this composite variable
+        const compositePlaceholders = allPlaceholders.filter((p) => {
+          const parts = p.split(".");
+          return parts[0] === "fees" && parts[1] === requiredKey && parts.length > 2;
+        });
+
+        // Extract required sub-field keys
+        const requiredSubFieldKeys = new Set<string>();
+        for (const placeholder of compositePlaceholders) {
+          const parts = placeholder.split(".");
+          if (parts.length > 2) {
+            requiredSubFieldKeys.add(parts.slice(2).join("."));
+          }
+        }
+
+        // Check if composite variable has all required sub-fields
+        const availableSubFieldKeys = new Set(
+          variable.subFields?.map((sf) => sf.key) || [],
+        );
+
+        for (const requiredSubFieldKey of requiredSubFieldKeys) {
+          if (!availableSubFieldKeys.has(requiredSubFieldKey)) {
+            missingSubFields.push({
+              variableKey: requiredKey,
+              subFieldKey: requiredSubFieldKey,
+            });
+          }
+        }
+      }
     }
   }
 
@@ -219,8 +288,10 @@ export function validateFeeStructureCompatibility(
   // We don't need to check for extra variables as they don't cause issues
 
   return {
-    compatible: missingVariables.length === 0,
+    compatible:
+      missingVariables.length === 0 && missingSubFields.length === 0,
     missingVariables,
+    missingSubFields,
     extraVariables: [],
   };
 }
