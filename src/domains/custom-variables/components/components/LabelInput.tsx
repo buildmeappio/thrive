@@ -9,7 +9,12 @@ type Props = {
   disabled?: boolean;
 };
 
-export function LabelInput({ value, onChange, errors, disabled = false }: Props) {
+export function LabelInput({
+  value,
+  onChange,
+  errors,
+  disabled = false,
+}: Props) {
   return (
     <div>
       <Label htmlFor="label" className="mb-2 block">
@@ -32,5 +37,3 @@ export function LabelInput({ value, onChange, errors, disabled = false }: Props)
     </div>
   );
 }
-
-

@@ -21,15 +21,16 @@ export function VariableKeyInput({
 }: Props) {
   // For system variables, show the actual key without normalization
   // For custom variables, show normalized preview
-  const normalizedKey = isSystemVariable && isEditing
-    ? value || "key_name"
-    : value
-      ? `custom.${value
-        .toLowerCase()
-        .replace(/[^a-z0-9_]+/g, "_")
-        .replace(/^_+|_+$/g, "")
-        .replace(/_+/g, "_")}`
-      : "custom.key_name";
+  const normalizedKey =
+    isSystemVariable && isEditing
+      ? value || "key_name"
+      : value
+        ? `custom.${value
+            .toLowerCase()
+            .replace(/[^a-z0-9_]+/g, "_")
+            .replace(/^_+|_+$/g, "")
+            .replace(/_+/g, "_")}`
+        : "custom.key_name";
 
   return (
     <div>
