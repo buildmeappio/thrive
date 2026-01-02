@@ -1,7 +1,7 @@
 model CustomVariable {
     id            String   @id @default(uuid())
     key           String   @unique
-    defaultValue  String   @map("default_value")
+    defaultValue  String   @default("") @map("default_value")
     description   String?
     isActive      Boolean  @default(true) @map("is_active")
     variableType  String   @default("text") @map("variable_type") // "text" | "checkbox_group"
