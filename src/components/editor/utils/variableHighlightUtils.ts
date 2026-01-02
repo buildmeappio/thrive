@@ -34,7 +34,9 @@ export function highlightVariable(
     ? /^custom\.[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*$/.test(key)
     : false;
 
-  const isValid = (isInValidSet || feeVariableFormatValid || customVariableFormatValid) && hasValidNamespace;
+  const isValid =
+    (isInValidSet || feeVariableFormatValid || customVariableFormatValid) &&
+    hasValidNamespace;
 
   const className = isValid
     ? "variable-valid bg-[#E0F7FA] text-[#006064] px-1 py-0.5 rounded font-mono text-sm underline"

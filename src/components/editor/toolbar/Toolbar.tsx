@@ -78,10 +78,7 @@ export function Toolbar({
       }));
 
       // Track existing variables for this namespace
-      existingVarsByNamespace.set(
-        group.namespace,
-        new Set(group.vars),
-      );
+      existingVarsByNamespace.set(group.namespace, new Set(group.vars));
 
       return { namespace: group.namespace, vars };
     });
@@ -250,13 +247,13 @@ export function Toolbar({
       {/* Checkbox Groups Menu */}
       {customVariables.filter((v) => v.variableType === "checkbox_group")
         .length > 0 && (
-          <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
-            <CheckboxGroupsMenu
-              editor={editor}
-              customVariables={customVariables}
-            />
-          </div>
-        )}
+        <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+          <CheckboxGroupsMenu
+            editor={editor}
+            customVariables={customVariables}
+          />
+        </div>
+      )}
 
       {/* Insert Menu */}
       <div className="flex gap-1">

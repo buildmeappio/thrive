@@ -442,7 +442,8 @@ export default function FeeVariableDialog({
                 className="rounded-[14px] border-gray-200 font-poppins"
               />
               <p className="text-xs text-muted-foreground font-poppins">
-                Number of decimal places to display (default: {type === "MONEY" ? "2" : "0"})
+                Number of decimal places to display (default:{" "}
+                {type === "MONEY" ? "2" : "0"})
               </p>
             </div>
           )}
@@ -477,9 +478,19 @@ export default function FeeVariableDialog({
               <Input
                 id="defaultValue"
                 type={type === "MONEY" || type === "NUMBER" ? "number" : "text"}
-                step={type === "MONEY" ? "0.01" : type === "NUMBER" ? "1" : undefined}
+                step={
+                  type === "MONEY"
+                    ? "0.01"
+                    : type === "NUMBER"
+                      ? "1"
+                      : undefined
+                }
                 min={type === "MONEY" || type === "NUMBER" ? "0" : undefined}
-                max={type === "MONEY" || type === "NUMBER" ? "999999999.99" : undefined}
+                max={
+                  type === "MONEY" || type === "NUMBER"
+                    ? "999999999.99"
+                    : undefined
+                }
                 value={defaultValue}
                 onChange={(e) => {
                   const value = e.target.value;
