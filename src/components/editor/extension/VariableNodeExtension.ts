@@ -157,7 +157,8 @@ export const VariableNodeExtension = Node.create<VariableNodeOptions>({
             ? /^custom\.[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*$/.test(variable)
             : false;
 
-          const isValid = isInValidSet || feeVariableFormatValid || customVariableFormatValid;
+          const isValid =
+            isInValidSet || feeVariableFormatValid || customVariableFormatValid;
 
           return commands.insertContent({
             type: this.name,

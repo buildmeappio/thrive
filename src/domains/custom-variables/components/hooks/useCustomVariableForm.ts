@@ -217,7 +217,8 @@ export function useCustomVariableForm(
   const getFormData = (): CustomVariableFormData => {
     return {
       key: key.trim(),
-      defaultValue: variableType === "text" ? (defaultValue.trim() || null) : null,
+      defaultValue:
+        variableType === "text" ? defaultValue.trim() || null : null,
       description: description.trim() || null,
       label: label.trim(),
       variableType,

@@ -770,7 +770,9 @@ export default function ContractTemplateEditContent({ template }: Props) {
 
     // Add fee structure variables
     if (selectedFeeStructureData?.variables) {
-      const feeVars = selectedFeeStructureData.variables.map((variable) => variable.key);
+      const feeVars = selectedFeeStructureData.variables.map(
+        (variable) => variable.key,
+      );
       vars.push({
         namespace: "fees",
         vars: feeVars,
@@ -825,63 +827,69 @@ export default function ContractTemplateEditContent({ template }: Props) {
   }, [availableVariables]);
 
   // Helper function to format fee variable default value
-  const formatFeeVariableValue = useCallback((variable: FeeVariableData): string => {
-    // Check if variable is marked as "Included"
-    if (variable.included) {
-      return "Included";
-    }
-
-    // Handle null/undefined default value
-    if (variable.defaultValue === null || variable.defaultValue === undefined) {
-      return "";
-    }
-
-    // Format based on type
-    if (variable.type === "MONEY") {
-      const numValue =
-        typeof variable.defaultValue === "number"
-          ? variable.defaultValue
-          : parseFloat(String(variable.defaultValue || 0));
-
-      // Validate that the parsed value is a valid number
-      if (isNaN(numValue)) {
-        return "";
+  const formatFeeVariableValue = useCallback(
+    (variable: FeeVariableData): string => {
+      // Check if variable is marked as "Included"
+      if (variable.included) {
+        return "Included";
       }
 
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: variable.currency || "CAD",
-        minimumFractionDigits: variable.decimals ?? 2,
-        maximumFractionDigits: variable.decimals ?? 2,
-      }).format(numValue);
-    } else if (variable.type === "NUMBER") {
-      const numValue =
-        typeof variable.defaultValue === "number"
-          ? variable.defaultValue
-          : parseFloat(String(variable.defaultValue || 0));
-
-      // Validate that the parsed value is a valid number
-      if (isNaN(numValue)) {
-        return "";
-      }
-
-      const formatted = numValue.toFixed(variable.decimals ?? 0);
-      return variable.unit ? `${formatted} ${variable.unit}` : formatted;
-    } else {
-      // TEXT type - ensure it's a valid string representation
-      if (typeof variable.defaultValue === "string") {
-        return variable.defaultValue;
-      } else if (
-        typeof variable.defaultValue === "number" ||
-        typeof variable.defaultValue === "boolean"
+      // Handle null/undefined default value
+      if (
+        variable.defaultValue === null ||
+        variable.defaultValue === undefined
       ) {
-        return String(variable.defaultValue);
-      } else {
-        // For objects, arrays, etc., return empty string
         return "";
       }
-    }
-  }, []);
+
+      // Format based on type
+      if (variable.type === "MONEY") {
+        const numValue =
+          typeof variable.defaultValue === "number"
+            ? variable.defaultValue
+            : parseFloat(String(variable.defaultValue || 0));
+
+        // Validate that the parsed value is a valid number
+        if (isNaN(numValue)) {
+          return "";
+        }
+
+        return new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: variable.currency || "CAD",
+          minimumFractionDigits: variable.decimals ?? 2,
+          maximumFractionDigits: variable.decimals ?? 2,
+        }).format(numValue);
+      } else if (variable.type === "NUMBER") {
+        const numValue =
+          typeof variable.defaultValue === "number"
+            ? variable.defaultValue
+            : parseFloat(String(variable.defaultValue || 0));
+
+        // Validate that the parsed value is a valid number
+        if (isNaN(numValue)) {
+          return "";
+        }
+
+        const formatted = numValue.toFixed(variable.decimals ?? 0);
+        return variable.unit ? `${formatted} ${variable.unit}` : formatted;
+      } else {
+        // TEXT type - ensure it's a valid string representation
+        if (typeof variable.defaultValue === "string") {
+          return variable.defaultValue;
+        } else if (
+          typeof variable.defaultValue === "number" ||
+          typeof variable.defaultValue === "boolean"
+        ) {
+          return String(variable.defaultValue);
+        } else {
+          // For objects, arrays, etc., return empty string
+          return "";
+        }
+      }
+    },
+    [],
+  );
 
   // Create a map of variable keys to their default values
   const variableValuesMap = useMemo(() => {
@@ -906,7 +914,12 @@ export default function ContractTemplateEditContent({ template }: Props) {
     }
 
     return valuesMap;
-  }, [systemVariables, customVariables, selectedFeeStructureData, formatFeeVariableValue]);
+  }, [
+    systemVariables,
+    customVariables,
+    selectedFeeStructureData,
+    formatFeeVariableValue,
+  ]);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -1088,8 +1101,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                 <button
                   onClick={() => setActiveTab("variables")}
                   className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "variables"
-                    ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                      ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                     }`}
                 >
                   Variables
@@ -1097,8 +1110,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                 <button
                   onClick={() => setActiveTab("custom")}
                   className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "custom"
-                    ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                      ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                     }`}
                 >
                   Custom Variables
@@ -1112,8 +1125,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
                   <button
                     onClick={() => setActiveTab("placeholders")}
                     className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 relative cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "placeholders"
-                      ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                        ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                       }`}
                   >
                     Detected
@@ -1521,12 +1534,12 @@ export default function ContractTemplateEditContent({ template }: Props) {
                           <div
                             key={placeholder}
                             className={`text-xs sm:text-sm font-mono px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border flex items-center justify-between gap-2 transition-colors ${hasError
-                              ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
-                              : isInvalid
                                 ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
-                                : hasWarning
-                                  ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
-                                  : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                                : isInvalid
+                                  ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                                  : hasWarning
+                                    ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
+                                    : "bg-gray-50 border-gray-200 hover:bg-gray-100"
                               }`}
                           >
                             <span className="break-all">{`{{${placeholder}}}`}</span>
