@@ -175,7 +175,111 @@ export const useContractDomUpdates = ({
         return dynamicContainer;
       };
 
-      // Update signature image targets
+      // FIRST: Replace {{application.examiner_signature}} placeholder with signature image
+      // This must happen BEFORE checking for fallback containers
+      let signatureReplacedAtPlaceholder = false;
+      if (signatureImage) {
+        // Check spans with data-variable or title attributes (most reliable)
+        const signatureSpans = contractEl.querySelectorAll<HTMLElement>(
+          '[data-variable="application.examiner_signature"], [data-variable*="application.examiner_signature"], [title*="application.examiner_signature"], [title*="{{application.examiner_signature}}"]',
+        );
+        signatureSpans.forEach((span) => {
+          if (!span.querySelector("img[data-signature='examiner']")) {
+            // Check if span contains the placeholder text
+            const spanText = span.textContent || "";
+            if (
+              spanText.includes("application.examiner_signature") ||
+              spanText.includes("{{application.examiner_signature}}") ||
+              span
+                .getAttribute("data-variable")
+                ?.includes("application.examiner_signature") ||
+              span
+                .getAttribute("title")
+                ?.includes("application.examiner_signature")
+            ) {
+              span.innerHTML = `<img src="${signatureImage}" alt="Examiner Signature" data-signature="examiner" style="max-width: 240px; height: auto; display: inline-block;" />`;
+              span.style.borderBottom = "none";
+              span.style.textDecoration = "none";
+              span.style.display = "inline-block";
+              signatureReplacedAtPlaceholder = true;
+            }
+          } else {
+            signatureReplacedAtPlaceholder = true; // Already has signature
+          }
+        });
+
+        // If not found in spans, search text nodes
+        if (!signatureReplacedAtPlaceholder) {
+          const signaturePlaceholderWalker = document.createTreeWalker(
+            contractEl,
+            NodeFilter.SHOW_TEXT,
+          );
+          while (signaturePlaceholderWalker.nextNode()) {
+            const textNode = signaturePlaceholderWalker.currentNode as Text;
+            const textContent = textNode.textContent || "";
+            if (
+              textContent.includes("application.examiner_signature") ||
+              textContent.includes("{{application.examiner_signature}}")
+            ) {
+              const parent = textNode.parentElement;
+              if (parent) {
+                // Check if already replaced (contains img tag)
+                if (parent.querySelector("img[data-signature='examiner']")) {
+                  signatureReplacedAtPlaceholder = true;
+                  break;
+                }
+
+                // Replace the placeholder with img tag
+                const newText = textContent.replace(
+                  /\{\{\s*application\.examiner_signature\s*\}\}/gi,
+                  "",
+                );
+
+                // Create img element
+                const img = document.createElement("img");
+                img.src = signatureImage;
+                img.alt = "Examiner Signature";
+                img.setAttribute("data-signature", "examiner");
+                img.style.maxWidth = "240px";
+                img.style.height = "auto";
+                img.style.display = "inline-block";
+
+                // Replace parent content if it's mostly just the placeholder
+                if (
+                  parent.textContent?.trim() === "" ||
+                  parent.textContent?.trim() ===
+                    "{{application.examiner_signature}}" ||
+                  parent.textContent
+                    ?.trim()
+                    .includes("{{application.examiner_signature}}")
+                ) {
+                  parent.innerHTML = "";
+                  parent.appendChild(img);
+                } else {
+                  // Replace just the placeholder text
+                  textNode.textContent = newText;
+                  parent.insertBefore(img, textNode.nextSibling);
+                }
+
+                // Remove underline styling from parent if it exists
+                if (parent instanceof HTMLElement) {
+                  parent.style.borderBottom = "none";
+                  parent.style.textDecoration = "none";
+                }
+                signatureReplacedAtPlaceholder = true;
+                break;
+              }
+            }
+          }
+        }
+
+        // Mark that signature was replaced to prevent fallback container creation
+        if (signatureReplacedAtPlaceholder) {
+          contractEl.setAttribute("data-signature-replaced", "true");
+        }
+      }
+
+      // Update signature image targets (for specific selectors like [data-signature="examiner"])
       const hasImageTarget = updateTargets(
         [
           '[data-contract-signature="image"]',
@@ -196,9 +300,13 @@ export const useContractDomUpdates = ({
         },
       );
 
-      const dynamicContainer = hasImageTarget ? null : ensureDynamicContainer();
+      // Only create fallback container if signature wasn't replaced at placeholder location
+      const dynamicContainer =
+        hasImageTarget || signatureReplacedAtPlaceholder
+          ? null
+          : ensureDynamicContainer();
 
-      if (dynamicContainer) {
+      if (dynamicContainer && !signatureReplacedAtPlaceholder) {
         // Only update if signatureImage exists - don't clear if it's already there
         if (signatureImage) {
           // Check if signature already exists to avoid unnecessary updates
@@ -208,7 +316,12 @@ export const useContractDomUpdates = ({
           }
         }
         // Don't clear the container if signatureImage is falsy - preserve existing signature
-      } else if (!hasImageTarget && signatureImage) {
+      } else if (
+        !hasImageTarget &&
+        !signatureReplacedAtPlaceholder &&
+        signatureImage
+      ) {
+        // Only create fallback if signature wasn't replaced at placeholder
         let fallback = contractEl.querySelector<HTMLElement>(
           "#contract-dynamic-examiner-signature",
         );
@@ -328,7 +441,7 @@ export const useContractDomUpdates = ({
         },
       );
 
-      // Update examiner.signature_date_time placeholder if signature exists
+      // Update application.examiner_signature_date_time placeholder if signature exists
       // This shows the current date/time when signing
       if (signatureImage) {
         const signatureDateTime = new Date().toISOString();
@@ -344,36 +457,61 @@ export const useContractDomUpdates = ({
           },
         );
 
-        // Find and replace {{examiner.signature_date_time}} placeholder
-        const signatureDateTimePlaceholder =
-          contractEl.querySelector<HTMLElement>(
+        // FIRST: Check spans with data-variable or title attributes for application.examiner_signature_date_time
+        const signatureDateTimeSpans = contractEl.querySelectorAll<HTMLElement>(
+          '[data-variable="application.examiner_signature_date_time"], [data-variable*="application.examiner_signature_date_time"], [title*="application.examiner_signature_date_time"], [title*="{{application.examiner_signature_date_time}}"]',
+        );
+        signatureDateTimeSpans.forEach((span) => {
+          span.textContent = formattedDateTime;
+          span.style.borderBottom = "none";
+          span.style.textDecoration = "none";
+        });
+
+        // SECOND: Also check for legacy examiner.signature_date_time format
+        const legacySignatureDateTimeSpans =
+          contractEl.querySelectorAll<HTMLElement>(
             '[data-variable="examiner.signature_date_time"], [title="{{examiner.signature_date_time}}"]',
           );
+        legacySignatureDateTimeSpans.forEach((span) => {
+          span.textContent = formattedDateTime;
+          span.style.borderBottom = "none";
+          span.style.textDecoration = "none";
+        });
 
-        if (signatureDateTimePlaceholder) {
-          signatureDateTimePlaceholder.textContent = formattedDateTime;
-          // Remove underline styling if it exists
-          signatureDateTimePlaceholder.style.borderBottom = "none";
-          signatureDateTimePlaceholder.style.textDecoration = "none";
-        } else {
-          // Try to find by text content containing the placeholder
+        // THIRD: Try to find by text content containing the placeholder
+        if (
+          signatureDateTimeSpans.length === 0 &&
+          legacySignatureDateTimeSpans.length === 0
+        ) {
           const walker = document.createTreeWalker(
             contractEl,
             NodeFilter.SHOW_TEXT,
           );
           while (walker.nextNode()) {
             const textNode = walker.currentNode as Text;
+            const textContent = textNode.textContent || "";
             if (
-              textNode.textContent?.includes("examiner.signature_date_time") ||
-              textNode.textContent?.includes("{{examiner.signature_date_time}}")
+              textContent.includes(
+                "application.examiner_signature_date_time",
+              ) ||
+              textContent.includes(
+                "{{application.examiner_signature_date_time}}",
+              ) ||
+              textContent.includes("examiner.signature_date_time") ||
+              textContent.includes("{{examiner.signature_date_time}}")
             ) {
               // Replace the placeholder text
               const parent = textNode.parentElement;
               if (parent) {
-                const newText = textNode.textContent.replace(
-                  /\{\{\s*examiner\.signature_date_time\s*\}\}/gi,
-                  formattedDateTime,
-                );
+                const newText = textContent
+                  .replace(
+                    /\{\{\s*application\.examiner_signature_date_time\s*\}\}/gi,
+                    formattedDateTime,
+                  )
+                  .replace(
+                    /\{\{\s*examiner\.signature_date_time\s*\}\}/gi,
+                    formattedDateTime,
+                  );
                 textNode.textContent = newText;
                 // Remove underline styling from parent if it exists
                 if (parent instanceof HTMLElement) {
@@ -386,13 +524,15 @@ export const useContractDomUpdates = ({
           }
         }
 
-        // Also update any spans with the variable placeholder
+        // FOURTH: Also update any spans with the variable placeholder (legacy support)
         const allSpans = contractEl.querySelectorAll<HTMLElement>("span");
         allSpans.forEach((span) => {
           const title = span.getAttribute("title");
           const dataVar = span.getAttribute("data-variable");
           if (
+            title?.includes("application.examiner_signature_date_time") ||
             title?.includes("examiner.signature_date_time") ||
+            dataVar === "application.examiner_signature_date_time" ||
             dataVar === "examiner.signature_date_time"
           ) {
             span.textContent = formattedDateTime;

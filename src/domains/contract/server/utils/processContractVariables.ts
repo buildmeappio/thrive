@@ -133,19 +133,40 @@ export async function processContractVariables(
   }
 
   // 4. Add contract field values (from fieldValues JSON field)
+  // IMPORTANT: This must come AFTER custom variables so that user-provided values (like signature) take precedence
   if (contractFieldValues) {
+    console.log(
+      `[processContractVariables] Processing fieldValues:`,
+      JSON.stringify(contractFieldValues, null, 2),
+    );
+
     // Handle nested objects (e.g., examiner.signature, examiner.checkbox_selections, examiner.signature_date_time)
     if (contractFieldValues.examiner) {
       const examinerFields = contractFieldValues.examiner as Record<
         string,
         any
       >;
-      if (examinerFields.signature) {
-        // Signature is handled separately, skip here
-      }
+      console.log(
+        `[processContractVariables] examinerFields:`,
+        JSON.stringify(examinerFields, null, 2),
+      );
+
       if (examinerFields.checkbox_selections) {
         // Checkbox selections are handled separately in the UI
       }
+
+      // Add examiner signature FIRST (before signature_date_time) - this takes precedence over custom variables
+      if (examinerFields.signature) {
+        const signatureValue = String(examinerFields.signature);
+        variableValues.set("application.examiner_signature", signatureValue);
+        variableValues.set("examiner.signature", signatureValue); // Legacy support
+        console.log(
+          `✅ Set application.examiner_signature from fieldValues (length: ${signatureValue.length})`,
+        );
+      } else {
+        console.log(`⚠️ examiner.signature not found in examinerFields`);
+      }
+
       // Add examiner.signature_date_time if it exists (both new and legacy formats)
       if (examinerFields.signature_date_time) {
         // Format the ISO date string to a readable format
@@ -184,18 +205,8 @@ export async function processContractVariables(
           "ℹ️ examiner.signature_date_time not found in examinerFields",
         );
       }
-
-      // Add examiner signature if it exists (both new and legacy formats)
-      if (examinerFields.signature) {
-        variableValues.set(
-          "application.examiner_signature",
-          String(examinerFields.signature),
-        );
-        variableValues.set(
-          "examiner.signature",
-          String(examinerFields.signature),
-        ); // Legacy support
-      }
+    } else {
+      console.log(`⚠️ contractFieldValues.examiner is missing`);
     }
 
     // Add any other top-level field values
@@ -387,6 +398,27 @@ export async function processContractVariables(
     const variableValue = variableValues.get(variableKey);
 
     if (variableValue) {
+      // Special handling for signature placeholders - convert data URLs to img tags
+      if (
+        (variableKey === "application.examiner_signature" ||
+          variableKey === "examiner.signature") &&
+        typeof variableValue === "string"
+      ) {
+        const signatureValue = String(variableValue).trim();
+        // Check if it's a data URL or HTTP URL
+        if (
+          signatureValue &&
+          (signatureValue.startsWith("data:image/") ||
+            signatureValue.startsWith("http://") ||
+            signatureValue.startsWith("https://"))
+        ) {
+          console.log(
+            `✅ Converting signature to img tag for ${variableKey} (length: ${signatureValue.length})`,
+          );
+          return `<img src="${signatureValue}" alt="Examiner Signature" data-signature="examiner" style="max-width: 240px; height: auto; display: inline-block;" />`;
+        }
+      }
+
       // Replace with value as regular text (no underline, no span)
       return variableValue;
     }
