@@ -20,16 +20,6 @@ export const listCustomVariablesAction = async (
     const parsed = listCustomVariablesSchema.parse(input);
     const data = await listCustomVariables(parsed);
 
-    // Debug: Log what we're returning to the client
-    console.log(
-      "[Action] Returning to client:",
-      data.map((v) => ({
-        key: v.key,
-        variableType: v.variableType,
-        typeofVariableType: typeof v.variableType,
-      })),
-    );
-
     return { success: true, data };
   } catch (error) {
     console.error("Error listing custom variables:", error);

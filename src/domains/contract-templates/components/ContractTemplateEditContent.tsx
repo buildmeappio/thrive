@@ -446,8 +446,9 @@ export default function ContractTemplateEditContent({ template }: Props) {
   // Optimistic update + rollback for variable updates
   const handleVariableUpdate = async (data: {
     key: string;
-    defaultValue: string;
+    defaultValue: string | null;
     description?: string | null;
+    label?: string | null;
     variableType?: "text" | "checkbox_group";
     options?: Array<{ label: string; value: string }>;
     showUnderline?: boolean;
@@ -468,6 +469,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
               ? ""
               : data.defaultValue || "",
           description: data.description,
+          label: data.label,
           variableType: data.variableType,
           options: data.options,
           showUnderline: data.showUnderline,
@@ -523,10 +525,12 @@ export default function ContractTemplateEditContent({ template }: Props) {
             ? {
               ...v,
               key: data.key,
-              defaultValue: data.defaultValue,
-              description: data.description,
-              variableType: data.variableType,
-              options: data.options,
+              defaultValue: data.defaultValue ?? "",
+              description: data.description ?? null,
+              label: data.label ?? v.label,
+              variableType: data.variableType ?? "text",
+              options: data.options ?? null,
+              showUnderline: data.showUnderline ?? v.showUnderline ?? false,
             }
             : v,
         );
@@ -540,10 +544,12 @@ export default function ContractTemplateEditContent({ template }: Props) {
             ? {
               ...v,
               key: data.key,
-              defaultValue: data.defaultValue,
-              description: data.description,
-              variableType: data.variableType,
-              options: data.options,
+              defaultValue: data.defaultValue ?? "",
+              description: data.description ?? null,
+              label: data.label ?? v.label,
+              variableType: data.variableType ?? "text",
+              options: data.options ?? null,
+              showUnderline: data.showUnderline ?? v.showUnderline ?? false,
             }
             : v,
         );
@@ -554,8 +560,9 @@ export default function ContractTemplateEditContent({ template }: Props) {
       const result = await updateCustomVariableAction({
         id: editingVariable.id,
         key: data.key,
-        defaultValue: data.defaultValue,
+        defaultValue: data.defaultValue ?? "",
         description: data.description,
+        label: data.label,
         variableType: data.variableType,
         options: data.options,
         showUnderline: data.showUnderline,

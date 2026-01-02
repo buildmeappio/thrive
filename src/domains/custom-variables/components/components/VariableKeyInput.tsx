@@ -19,13 +19,17 @@ export function VariableKeyInput({
   isEditing = false,
   isSystemVariable = false,
 }: Props) {
-  const normalizedKey = value
-    ? `custom.${value
+  // For system variables, show the actual key without normalization
+  // For custom variables, show normalized preview
+  const normalizedKey = isSystemVariable && isEditing
+    ? value || "key_name"
+    : value
+      ? `custom.${value
         .toLowerCase()
         .replace(/[^a-z0-9_]+/g, "_")
         .replace(/^_+|_+$/g, "")
         .replace(/_+/g, "_")}`
-    : "custom.key_name";
+      : "custom.key_name";
 
   return (
     <div>
@@ -36,8 +40,8 @@ export function VariableKeyInput({
         id="key"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="e.g., thrive.company_name, custom.copyright"
-        disabled={disabled || isEditing || isSystemVariable}
+        placeholder="e.g., company_name, copyright_text"
+        disabled={disabled || isSystemVariable}
         className={errors.key ? "border-red-500" : ""}
       />
       {errors.key && <p className="text-xs text-red-500 mt-1">{errors.key}</p>}

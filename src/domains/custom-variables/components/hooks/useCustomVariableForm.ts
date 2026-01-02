@@ -11,13 +11,21 @@ export function useCustomVariableForm(
   isOpen?: boolean,
 ) {
   // Initialize state with initialData if available to ensure correct values on first render
-  const [key, setKey] = useState(initialData?.key || "");
+  // Extract key part after "custom." prefix for display
+  const getInitialKey = () => {
+    if (!initialData?.key) return "";
+    return initialData.key.startsWith("custom.")
+      ? initialData.key.replace(/^custom\./, "")
+      : initialData.key;
+  };
+  const [key, setKey] = useState(getInitialKey());
   const [defaultValue, setDefaultValue] = useState(
     initialData?.defaultValue || "",
   );
   const [description, setDescription] = useState(
     initialData?.description || "",
   );
+  const [label, setLabel] = useState(initialData?.label || "");
   const [variableType, setVariableType] = useState<"text" | "checkbox_group">(
     () => {
       // Initialize with initialData if available
@@ -42,6 +50,7 @@ export function useCustomVariableForm(
     initialData?.showUnderline ?? false,
   );
   const [errors, setErrors] = useState<FormErrors>({});
+  const [isKeyManuallyEdited, setIsKeyManuallyEdited] = useState(false);
 
   // Reset form when initialData changes or when dialog opens/closes
   useEffect(() => {
@@ -53,9 +62,11 @@ export function useCustomVariableForm(
         setKey("");
         setDefaultValue("");
         setDescription("");
+        setLabel("");
         setVariableType("text");
         setCheckboxOptions([]);
         setShowUnderline(false);
+        setIsKeyManuallyEdited(false);
       }
       setErrors({});
       return;
@@ -64,9 +75,15 @@ export function useCustomVariableForm(
     // Dialog is open - populate form with initialData if it exists
     if (initialData) {
       // Always update all fields when initialData changes
-      setKey(initialData.key || "");
+      // Extract key part after "custom." prefix for display
+      const keyValue = initialData.key.startsWith("custom.")
+        ? initialData.key.replace(/^custom\./, "")
+        : initialData.key;
+      setKey(keyValue || "");
       setDefaultValue(initialData.defaultValue || "");
       setDescription(initialData.description || "");
+      setLabel(initialData.label || "");
+      setIsKeyManuallyEdited(true); // When editing, key is already set, so mark as manually edited
 
       // Ensure variableType is explicitly set - check the actual value
       const type = initialData.variableType;
@@ -91,12 +108,31 @@ export function useCustomVariableForm(
       setKey("");
       setDefaultValue("");
       setDescription("");
+      setLabel("");
       setVariableType("text");
       setCheckboxOptions([]);
       setShowUnderline(false);
+      setIsKeyManuallyEdited(false);
     }
     setErrors({});
   }, [initialData, isOpen]); // Update when initialData changes or dialog opens/closes
+
+  // Auto-generate key from label when creating new variable (if key wasn't manually edited)
+  useEffect(() => {
+    // Only auto-generate for new variables (no initialData) and if key wasn't manually edited
+    if (!initialData && !isKeyManuallyEdited && label.trim()) {
+      const generatedKey = label
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9_]+/g, "_") // Replace non-alphanumeric (except underscore) with underscore
+        .replace(/^_+|_+$/g, "") // Remove leading/trailing underscores
+        .replace(/_+/g, "_"); // Replace multiple underscores with single underscore
+
+      if (generatedKey) {
+        setKey(generatedKey);
+      }
+    }
+  }, [label, initialData, isKeyManuallyEdited]);
 
   const addCheckboxOption = () => {
     setCheckboxOptions([...checkboxOptions, { label: "", value: "" }]);
@@ -133,6 +169,21 @@ export function useCustomVariableForm(
 
     if (!key.trim()) {
       newErrors.key = "Key is required";
+    } else {
+      // Validate normalized key is not empty
+      const normalized = key
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9_]+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .replace(/_+/g, "_");
+      if (!normalized) {
+        newErrors.key = "Key must contain at least one letter or number";
+      }
+    }
+
+    if (!label.trim()) {
+      newErrors.label = "Label is required";
     }
 
     if (variableType === "checkbox_group") {
@@ -168,6 +219,7 @@ export function useCustomVariableForm(
       key: key.trim(),
       defaultValue: variableType === "text" ? (defaultValue.trim() || null) : null,
       description: description.trim() || null,
+      label: label.trim(),
       variableType,
       options:
         variableType === "checkbox_group"
@@ -177,19 +229,27 @@ export function useCustomVariableForm(
     };
   };
 
+  // Custom setKey that tracks manual editing
+  const handleKeyChange = (value: string) => {
+    setIsKeyManuallyEdited(true);
+    setKey(value);
+  };
+
   return {
     // State
     key,
     defaultValue,
     description,
+    label,
     variableType,
     checkboxOptions,
     showUnderline,
     errors,
     // Setters
-    setKey,
+    setKey: handleKeyChange,
     setDefaultValue,
     setDescription,
+    setLabel,
     setVariableType,
     setCheckboxOptions,
     setShowUnderline,

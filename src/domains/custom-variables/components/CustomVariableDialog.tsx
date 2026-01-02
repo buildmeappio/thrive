@@ -1,4 +1,4 @@
-/* eslint-disable react/no-unescaped-entities */
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { useCustomVariableForm } from "./hooks/useCustomVariableForm";
 import type { CustomVariableDialogProps } from "../types/customVariable.types";
 import { VariableKeyInput } from "./components/VariableKeyInput";
+import { LabelInput } from "./components/LabelInput";
 import { VariableTypeSelect } from "./components/VariableTypeSelect";
 import { DefaultValueInput } from "./components/DefaultValueInput";
 import { CheckboxOptionsList } from "./components/CheckboxOptionsList";
@@ -22,6 +23,7 @@ export default function CustomVariableDialog({
     key,
     defaultValue,
     description,
+    label,
     variableType,
     checkboxOptions,
     showUnderline,
@@ -29,6 +31,7 @@ export default function CustomVariableDialog({
     setKey,
     setDefaultValue,
     setDescription,
+    setLabel,
     setVariableType,
     setShowUnderline,
     addCheckboxOption,
@@ -88,6 +91,13 @@ export default function CustomVariableDialog({
           onSubmit={handleSubmit}
           className="space-y-4 flex flex-col flex-1 min-h-0 overflow-y-auto"
         >
+          <LabelInput
+            value={label}
+            onChange={setLabel}
+            errors={errors}
+            disabled={isLoading}
+          />
+
           <VariableKeyInput
             value={key}
             onChange={setKey}

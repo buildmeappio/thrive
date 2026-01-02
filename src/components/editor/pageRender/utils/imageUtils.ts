@@ -5,6 +5,11 @@ import { CONTENT_WIDTH_PX, CONTENT_HEIGHT_PX } from "../constants";
  * Temporarily attaches images to DOM to ensure proper loading
  */
 export async function waitForImages(element: HTMLElement): Promise<void> {
+  // Check if we're in a browser environment
+  if (typeof document === "undefined") {
+    return; // Skip image loading during SSR
+  }
+
   const images = Array.from(element.querySelectorAll("img"));
   if (images.length === 0) return;
 
@@ -52,6 +57,12 @@ export async function waitForImages(element: HTMLElement): Promise<void> {
  * 2. Scale down oversized images to fit within page content area
  */
 export function processImageAttributes(html: string): string {
+  // Check if we're in a browser environment (document is available)
+  if (typeof document === "undefined") {
+    // During SSR, return HTML as-is since DOM manipulation isn't available
+    return html;
+  }
+
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = html;
 

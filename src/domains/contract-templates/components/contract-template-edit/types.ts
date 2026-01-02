@@ -45,10 +45,12 @@ export type VariableGroup = {
  */
 export type VariableUpdateData = {
   key: string;
-  defaultValue: string;
+  defaultValue: string | null;
   description?: string | null;
+  label?: string | null;
   variableType?: "text" | "checkbox_group";
   options?: Array<{ label: string; value: string }>;
+  showUnderline?: boolean;
 };
 
 /**

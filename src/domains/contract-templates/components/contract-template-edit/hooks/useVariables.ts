@@ -36,30 +36,11 @@ export function useVariables(): UseVariablesReturn {
           return;
         }
         if (result.data) {
-          // Debug: Log what we received from the server
-          console.log(
-            "[Client useVariables] Received from server:",
-            result.data.map((v) => ({
-              key: v.key,
-              variableType: v.variableType,
-              typeofVariableType: typeof v.variableType,
-              allKeys: Object.keys(v),
-            })),
-          );
-
           // Separate system variables and custom variables
           const system = result.data.filter(
             (v) => !v.key.startsWith("custom."),
           );
           const custom = result.data.filter((v) => v.key.startsWith("custom."));
-
-          console.log(
-            "[Client useVariables] Custom variables:",
-            custom.map((v) => ({
-              key: v.key,
-              variableType: v.variableType,
-            })),
-          );
 
           setSystemVariables(system);
           setCustomVariables(custom);
@@ -92,8 +73,10 @@ export function useVariables(): UseVariablesReturn {
                 ? ""
                 : data.defaultValue || "",
             description: data.description,
+            label: data.label,
             variableType: data.variableType,
             options: data.options,
+            showUnderline: data.showUnderline,
           });
 
           if ("error" in result) {
@@ -146,10 +129,12 @@ export function useVariables(): UseVariablesReturn {
               ? {
                   ...v,
                   key: data.key,
-                  defaultValue: data.defaultValue,
+                  defaultValue: data.defaultValue ?? "",
                   description: data.description ?? null,
+                  label: data.label ?? v.label,
                   variableType: data.variableType ?? "text",
                   options: data.options ?? null,
+                  showUnderline: data.showUnderline ?? v.showUnderline ?? false,
                 }
               : v,
           );
@@ -163,10 +148,12 @@ export function useVariables(): UseVariablesReturn {
               ? {
                   ...v,
                   key: data.key,
-                  defaultValue: data.defaultValue,
+                  defaultValue: data.defaultValue ?? "",
                   description: data.description ?? null,
+                  label: data.label ?? v.label,
                   variableType: data.variableType ?? "text",
                   options: data.options ?? null,
+                  showUnderline: data.showUnderline ?? v.showUnderline ?? false,
                 }
               : v,
           );
@@ -177,10 +164,12 @@ export function useVariables(): UseVariablesReturn {
         const result = await updateCustomVariableAction({
           id: editingVariable.id,
           key: data.key,
-          defaultValue: data.defaultValue,
+          defaultValue: data.defaultValue ?? "",
           description: data.description,
+          label: data.label,
           variableType: data.variableType,
           options: data.options,
+          showUnderline: data.showUnderline,
         });
 
         if ("error" in result) {

@@ -25,7 +25,6 @@ function normalizeVariableKey(key: string): string {
   // If it already has a namespace (contains a dot), extract it
   if (normalized.includes(".")) {
     const parts = normalized.split(".");
-    const namespace = parts[0].toLowerCase();
     const keyPart = parts.slice(1).join("."); // Keep periods in key part
 
     // Normalize the key part
@@ -81,15 +80,6 @@ export const listCustomVariables = async (
     const dbVariableType = v.variableType;
     let variableType: "text" | "checkbox_group" = "text";
 
-    // Debug: Log what Prisma is returning for all variables
-    console.log(
-      `[Server] Variable ${v.key}: Prisma variableType =`,
-      dbVariableType,
-      typeof dbVariableType,
-      "Full object keys:",
-      Object.keys(v),
-    );
-
     if (dbVariableType === "checkbox_group") {
       variableType = "checkbox_group";
     } else if (dbVariableType === "text") {
@@ -103,6 +93,7 @@ export const listCustomVariables = async (
       key: v.key,
       defaultValue: v.defaultValue,
       description: v.description,
+      label: v.label || null,
       isActive: v.isActive,
       variableType: variableType, // Always "text" or "checkbox_group", never undefined
       options: (v.options as any) || null,
@@ -110,14 +101,6 @@ export const listCustomVariables = async (
       createdAt: v.createdAt.toISOString(),
       updatedAt: v.updatedAt.toISOString(),
     } satisfies CustomVariable;
-
-    // Double-check that variableType is set
-    if (!result.variableType) {
-      console.warn(
-        `[Server] Variable ${v.key} has no variableType, defaulting to "text"`,
-      );
-      result.variableType = "text";
-    }
 
     return result;
   });
@@ -148,6 +131,7 @@ export const getCustomVariable = async (
     key: variable.key,
     defaultValue: variable.defaultValue,
     description: variable.description,
+    label: variable.label || null,
     isActive: variable.isActive,
     variableType: variableType,
     options: (variable.options as any) || null,
@@ -180,6 +164,7 @@ export const createCustomVariable = async (
       key: normalizedKey,
       defaultValue: input.defaultValue || "", // Empty string for checkbox groups
       description: input.description || null,
+      label: input.label || null,
       isActive: true,
       variableType: input.variableType || "text", // Explicitly set variableType
       options: input.options || null,
@@ -187,17 +172,8 @@ export const createCustomVariable = async (
     } as any,
   });
 
-  // Debug: Log what was created
-  const dbVariableType = variable.variableType;
-  console.log(
-    `[Server] Created variable ${variable.key}: Prisma returned variableType =`,
-    dbVariableType,
-    typeof dbVariableType,
-    "Input was:",
-    input.variableType,
-  );
-
   // Ensure variableType is always set - handle null/undefined cases
+  const dbVariableType = variable.variableType;
   let variableType: "text" | "checkbox_group" = "text";
 
   if (dbVariableType === "checkbox_group") {
@@ -211,6 +187,7 @@ export const createCustomVariable = async (
     key: variable.key,
     defaultValue: variable.defaultValue,
     description: variable.description,
+      label: variable.label || null,
     isActive: variable.isActive,
     variableType: variableType,
     options: (variable.options as any) || null,
@@ -280,17 +257,8 @@ export const updateCustomVariable = async (
     data: updatePayload,
   });
 
-  // Debug: Log what was updated
-  const dbVariableType = variable.variableType;
-  console.log(
-    `[Server] Updated variable ${variable.key}: Prisma returned variableType =`,
-    dbVariableType,
-    typeof dbVariableType,
-    "Input was:",
-    updateData.variableType,
-  );
-
   // Ensure variableType is always set - handle null/undefined cases
+  const dbVariableType = variable.variableType;
   let variableType: "text" | "checkbox_group" = "text";
 
   if (dbVariableType === "checkbox_group") {
@@ -304,6 +272,7 @@ export const updateCustomVariable = async (
     key: variable.key,
     defaultValue: variable.defaultValue,
     description: variable.description,
+      label: variable.label || null,
     isActive: variable.isActive,
     variableType: variableType,
     options: (variable.options as any) || null,

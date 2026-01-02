@@ -73,13 +73,7 @@ export function CheckboxOptionsList({
                 <Label className="text-xs text-gray-600">Value</Label>
                 <Input
                   value={option.value}
-                  onChange={(e) =>
-                    onUpdate(
-                      index,
-                      "value",
-                      e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "_"),
-                    )
-                  }
+                  onChange={(e) => onUpdate(index, "value", e.target.value)}
                   placeholder="Auto-generated from label"
                   disabled={disabled}
                   className={

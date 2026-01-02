@@ -303,6 +303,12 @@ export function usePaginationWithLoading(
       return [];
     }
 
+    // Check if we're in a browser environment
+    if (typeof document === "undefined") {
+      // During SSR, return empty array or skip pagination
+      return [];
+    }
+
     // Wait for fonts to load
     await document.fonts.ready;
 

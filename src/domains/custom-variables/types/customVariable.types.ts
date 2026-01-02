@@ -8,6 +8,7 @@ export type CustomVariable = {
   key: string;
   defaultValue: string | null;
   description: string | null;
+  label: string | null;
   isActive: boolean;
   variableType: "text" | "checkbox_group";
   options: CheckboxOption[] | null;
@@ -20,6 +21,7 @@ export type CreateCustomVariableInput = {
   key: string;
   defaultValue?: string;
   description?: string | null;
+  label?: string | null;
   variableType?: "text" | "checkbox_group";
   options?: CheckboxOption[];
   showUnderline?: boolean;
@@ -30,6 +32,7 @@ export type UpdateCustomVariableInput = {
   key?: string;
   defaultValue?: string;
   description?: string | null;
+  label?: string | null;
   isActive?: boolean;
   variableType?: "text" | "checkbox_group";
   options?: CheckboxOption[];
@@ -49,6 +52,7 @@ export type CustomVariableFormData = {
   key: string;
   defaultValue: string | null;
   description?: string | null;
+  label: string;
   variableType: "text" | "checkbox_group";
   options?: CheckboxOption[];
   showUnderline?: boolean;
