@@ -77,24 +77,47 @@ export async function signContractHandler(input: SignContractInput) {
     try {
       // Get existing fieldValues
       const existingFieldValues = (contract.fieldValues as any) || {};
+      console.log(
+        `[signContract] Existing fieldValues:`,
+        JSON.stringify(existingFieldValues, null, 2),
+      );
+      console.log(
+        `[signContract] Input signatureImage exists:`,
+        !!input.signatureImage,
+      );
+      console.log(
+        `[signContract] Input signatureImage length:`,
+        input.signatureImage?.length || 0,
+      );
+      console.log(
+        `[signContract] Input fieldValues:`,
+        JSON.stringify(input.fieldValues, null, 2),
+      );
 
       // Update fieldValues with signature, signature_date_time, and checkbox selections if provided
-      const updatedFieldValues = input.fieldValues
-        ? {
-            ...existingFieldValues,
-            examiner: {
-              ...(existingFieldValues.examiner || {}),
-              ...(input.fieldValues.examiner || {}),
-              ...(input.signatureImage && { signature: input.signatureImage }),
-            },
-          }
-        : {
-            ...existingFieldValues,
-            examiner: {
-              ...(existingFieldValues.examiner || {}),
-              ...(input.signatureImage && { signature: input.signatureImage }),
-            },
-          };
+      // Priority: input.signatureImage > input.fieldValues.examiner.signature > existing
+      const signatureToSave =
+        input.signatureImage || input.fieldValues?.examiner?.signature;
+
+      const updatedFieldValues = {
+        ...existingFieldValues,
+        examiner: {
+          ...(existingFieldValues.examiner || {}),
+          ...(input.fieldValues?.examiner || {}),
+          ...(signatureToSave && { signature: signatureToSave }),
+        },
+      };
+
+      console.log(
+        `[signContract] Updated fieldValues:`,
+        JSON.stringify(updatedFieldValues, null, 2),
+      );
+      console.log(
+        `[signContract] Signature being saved:`,
+        updatedFieldValues.examiner?.signature
+          ? `Yes (length: ${String(updatedFieldValues.examiner.signature).length})`
+          : `No`,
+      );
 
       await prisma.contract.update({
         where: { id: contract.id },
@@ -110,6 +133,10 @@ export async function signContractHandler(input: SignContractInput) {
           fieldValues: updatedFieldValues,
         },
       });
+
+      console.log(
+        `[signContract] Contract updated successfully with signature`,
+      );
     } catch (updateError: unknown) {
       const errorMessage =
         updateError instanceof Error ? updateError.message : "Unknown error";
