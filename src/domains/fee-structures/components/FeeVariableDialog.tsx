@@ -19,9 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FeeVariableData, SubField } from "../types/feeStructure.types";
+import { FeeVariableData } from "../types/feeStructure.types";
 import { FeeVariableType } from "@prisma/client";
-import { Plus, Trash2 } from "lucide-react";
 
 type FeeVariableDialogProps = {
   open: boolean;
@@ -36,8 +35,6 @@ type FeeVariableDialogProps = {
     decimals?: number;
     unit?: string;
     included?: boolean;
-    composite?: boolean;
-    subFields?: SubField[];
   }) => Promise<{ success: boolean; fieldErrors?: Record<string, string> }>;
   initialData?: FeeVariableData | null;
   isLoading?: boolean;
@@ -61,16 +58,16 @@ export default function FeeVariableDialog({
 }: FeeVariableDialogProps) {
   const [label, setLabel] = useState("");
   const [key, setKey] = useState("");
+  const [type, setType] = useState<FeeVariableType>("MONEY");
   const [defaultValue, setDefaultValue] = useState<string>("");
   const [required, setRequired] = useState(false);
   const [included, setIncluded] = useState(false);
   const [keyEdited, setKeyEdited] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [composite, setComposite] = useState(false);
-  const [subFields, setSubFields] = useState<SubField[]>([]);
+  const [unit, setUnit] = useState<string>("");
+  const [decimals, setDecimals] = useState<number | undefined>(undefined);
 
   const isEditing = !!initialData;
-  // Always use MONEY type for new variables (unless composite)
 
   // Helper function to check if label contains at least one letter
   const hasAtLeastOneLetter = (value: string): boolean => {
@@ -113,8 +110,8 @@ export default function FeeVariableDialog({
     return null;
   };
 
-  // Validate amount
-  const validateAmount = (value: string): string | null => {
+  // Validate numeric value (for MONEY and NUMBER types)
+  const validateNumericValue = (value: string): string | null => {
     if (value.trim() === "") {
       if (required) {
         return "Default value is required";
@@ -140,11 +137,12 @@ export default function FeeVariableDialog({
       if (initialData) {
         setLabel(initialData.label);
         setKey(initialData.key);
+        setType(initialData.type);
         setRequired(initialData.required);
         setIncluded(initialData.included ?? false);
         setKeyEdited(true);
-        setComposite(initialData.composite ?? false);
-        setSubFields(initialData.subFields ?? []);
+        setUnit(initialData.unit ?? "");
+        setDecimals(initialData.decimals ?? undefined);
 
         // Set default value
         if (
@@ -159,12 +157,13 @@ export default function FeeVariableDialog({
         // Reset for new variable
         setLabel("");
         setKey("");
+        setType("MONEY");
         setDefaultValue("");
         setRequired(false);
         setIncluded(false);
         setKeyEdited(false);
-        setComposite(false);
-        setSubFields([]);
+        setUnit("");
+        setDecimals(undefined);
       }
       setFieldErrors({});
     }
@@ -176,66 +175,6 @@ export default function FeeVariableDialog({
       setKey(toSnakeCase(label));
     }
   }, [label, keyEdited]);
-
-  // Add sub-field
-  const handleAddSubField = () => {
-    setSubFields([
-      ...subFields,
-      {
-        key: "",
-        label: "",
-        type: "NUMBER",
-        required: false,
-      },
-    ]);
-  };
-
-  // Remove sub-field
-  const handleRemoveSubField = (index: number) => {
-    setSubFields(subFields.filter((_, i) => i !== index));
-  };
-
-  // Update sub-field
-  const handleUpdateSubField = (index: number, field: Partial<SubField>) => {
-    const updated = [...subFields];
-    updated[index] = { ...updated[index], ...field };
-    setSubFields(updated);
-  };
-
-  // Validate sub-fields
-  const validateSubFields = (): string | null => {
-    if (!composite) return null;
-
-    if (subFields.length === 0) {
-      return "Composite variables must have at least one sub-field";
-    }
-
-    const subFieldKeys = new Set<string>();
-    for (let i = 0; i < subFields.length; i++) {
-      const subField = subFields[i];
-
-      if (!subField.key.trim()) {
-        return `Sub-field ${i + 1}: Key is required`;
-      }
-      if (!/^[a-z][a-z0-9_]*$/.test(subField.key.trim())) {
-        return `Sub-field ${i + 1}: Key must be snake_case`;
-      }
-      if (subFieldKeys.has(subField.key.trim())) {
-        return `Sub-field ${i + 1}: Duplicate key "${subField.key}"`;
-      }
-      subFieldKeys.add(subField.key.trim());
-
-      if (!subField.label.trim()) {
-        return `Sub-field ${i + 1}: Label is required`;
-      }
-
-      if (subField.required && subField.defaultValue === undefined) {
-        return `Sub-field ${i + 1}: Required sub-field must have a default value`;
-      }
-    }
-
-    return null;
-  };
 
   const handleSubmit = async () => {
     setFieldErrors({});
@@ -254,53 +193,65 @@ export default function FeeVariableDialog({
       return;
     }
 
-    // Validate composite-specific fields
-    if (composite) {
-      const subFieldsError = validateSubFields();
-      if (subFieldsError) {
-        setFieldErrors({ subFields: subFieldsError });
-        return;
+    // Skip validation if included is true
+    if (!included) {
+      // Validate numeric value for MONEY and NUMBER types
+      if (type === "MONEY" || type === "NUMBER") {
+        const numericError = validateNumericValue(defaultValue);
+        if (numericError) {
+          setFieldErrors({ defaultValue: numericError });
+          return;
+        }
+      } else if (type === "TEXT") {
+        // Validate text value
+        if (required && defaultValue.trim() === "") {
+          setFieldErrors({ defaultValue: "Default value is required" });
+          return;
+        }
       }
     }
 
-    // Skip amount validation if included is true or composite
-    if (!included && !composite) {
-      // Validate amount
-      const amountError = validateAmount(defaultValue);
-      if (amountError) {
-        setFieldErrors({ defaultValue: amountError });
-        return;
+    // Prepare default value based on type
+    let finalDefaultValue: number | string | undefined = undefined;
+    if (!included && defaultValue.trim() !== "") {
+      if (type === "MONEY" || type === "NUMBER") {
+        const parsed = parseFloat(defaultValue);
+        if (isNaN(parsed)) {
+          setFieldErrors({
+            defaultValue: "Default value must be a valid number",
+          });
+          return;
+        }
+        finalDefaultValue = parsed;
+      } else if (type === "TEXT") {
+        finalDefaultValue = defaultValue.trim();
       }
-    }
-
-    // Prepare default value - always treat as numeric amount (for non-composite)
-    let finalDefaultValue: number | undefined = undefined;
-    if (!included && !composite && defaultValue.trim() !== "") {
-      const parsed = parseFloat(defaultValue);
-      if (isNaN(parsed)) {
-        setFieldErrors({
-          defaultValue: "Default value must be a valid number",
-        });
-        return;
-      }
-      finalDefaultValue = parsed;
-    } else if (!included && !composite && required) {
+    } else if (!included && required) {
       setFieldErrors({ defaultValue: "Default value is required" });
       return;
+    }
+
+    // Determine decimals and currency based on type
+    let finalDecimals: number | undefined = undefined;
+    let finalCurrency: string | undefined = undefined;
+
+    if (type === "MONEY") {
+      finalDecimals = decimals ?? 2;
+      finalCurrency = "CAD"; // Default currency
+    } else if (type === "NUMBER") {
+      finalDecimals = decimals ?? 0;
     }
 
     const result = await onSubmit({
       label: label.trim(),
       key: key.trim(),
-      type: composite ? "TEXT" : "MONEY", // Type is ignored for composite, but required by schema
-      defaultValue: included || composite ? undefined : finalDefaultValue,
-      required: included || composite ? false : required,
-      currency: composite ? undefined : "CAD", // Default currency
-      decimals: composite ? undefined : 2, // Default decimals for MONEY
-      unit: undefined,
-      included: composite ? false : included,
-      composite,
-      subFields: composite ? subFields : undefined,
+      type,
+      defaultValue: included ? undefined : finalDefaultValue,
+      required: included ? false : required,
+      currency: finalCurrency,
+      decimals: finalDecimals,
+      unit: unit.trim() || undefined,
+      included,
     });
 
     if (!result.success && result.fieldErrors) {
@@ -319,11 +270,13 @@ export default function FeeVariableDialog({
     /^[a-z][a-z0-9_]*$/.test(key.trim()) &&
     validateLabel(label) === null &&
     validateKey(key) === null &&
-    (composite
-      ? subFields.length > 0 && validateSubFields() === null
-      : included ||
-        defaultValue.trim() === "" ||
-        validateAmount(defaultValue) === null);
+    (included ||
+      defaultValue.trim() === "" ||
+      (type === "MONEY" || type === "NUMBER"
+        ? validateNumericValue(defaultValue) === null
+        : type === "TEXT"
+          ? true
+          : true));
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
@@ -397,9 +350,7 @@ export default function FeeVariableDialog({
             <p className="text-xs text-muted-foreground font-poppins">
               Used as{" "}
               <code className="bg-[#EEF1F3] px-1 py-0.5 rounded">
-                {composite
-                  ? `{{fees.${key || "key"}.sub_field}}`
-                  : `{{fees.${key || "key"}}}`}
+                {`{{fees.${key || "key"}}}`}
               </code>
             </p>
             {fieldErrors.key && (
@@ -409,230 +360,45 @@ export default function FeeVariableDialog({
             )}
           </div>
 
-          {/* Composite Variable Toggle */}
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="composite"
-              checked={composite}
-              onCheckedChange={(checked) => {
-                setComposite(checked === true);
-                if (checked === true) {
-                  // Reset non-composite fields
-                  setIncluded(false);
-                  setRequired(false);
-                  setDefaultValue("");
-                  // Initialize with one sub-field if empty
-                  if (subFields.length === 0) {
-                    setSubFields([
-                      {
-                        key: "",
-                        label: "",
-                        type: "NUMBER",
-                        required: false,
-                      },
-                    ]);
-                  }
+          {/* Type Selector */}
+          <div className="grid gap-2">
+            <Label htmlFor="type" className="font-poppins">
+              Type <span className="text-red-500">*</span>
+            </Label>
+            <Select
+              value={type}
+              onValueChange={(value: FeeVariableType) => {
+                setType(value);
+                // Reset fields when type changes
+                if (value === "MONEY") {
+                  setDecimals(2);
+                  setUnit("");
+                } else if (value === "NUMBER") {
+                  setDecimals(0);
                 } else {
-                  // Clear composite fields
-                  setSubFields([]);
+                  setDecimals(undefined);
+                  setUnit("");
+                }
+                // Clear defaultValue error when type changes
+                if (fieldErrors.defaultValue) {
+                  setFieldErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors.defaultValue;
+                    return newErrors;
+                  });
                 }
               }}
-            />
-            <label
-              htmlFor="composite"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 font-poppins"
             >
-              Composite Variable (multiple sub-fields)
-            </label>
+              <SelectTrigger className="rounded-[14px] border-gray-200 font-poppins">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="MONEY">Money</SelectItem>
+                <SelectItem value="NUMBER">Number</SelectItem>
+                <SelectItem value="TEXT">Text</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-
-          {/* Composite Variable Fields */}
-          {composite && (
-            <>
-              {/* Sub-Fields Editor */}
-              <div className="space-y-4 border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <Label className="font-poppins font-semibold">
-                    Sub-Fields <span className="text-red-500">*</span>
-                  </Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddSubField}
-                    className="rounded-full"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Sub-Field
-                  </Button>
-                </div>
-
-                {subFields.map((subField, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-1 gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
-                  >
-                    <div className="flex items-center justify-between">
-                      <Label className="font-poppins text-sm">
-                        Sub-Field {index + 1}
-                      </Label>
-                      {subFields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveSubField(index)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="grid gap-1">
-                        <Label className="text-xs font-poppins">
-                          Key <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          value={subField.key}
-                          onChange={(e) => {
-                            const sanitized = e.target.value
-                              .toLowerCase()
-                              .replace(/[^a-z0-9_]/g, "");
-                            const finalValue = sanitized.replace(/^[^a-z]/, "");
-                            handleUpdateSubField(index, { key: finalValue });
-                          }}
-                          placeholder="e.g., hours"
-                          maxLength={64}
-                          className="rounded-[14px] border-gray-200 font-poppins text-sm"
-                        />
-                      </div>
-
-                      <div className="grid gap-1">
-                        <Label className="text-xs font-poppins">
-                          Label <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          value={subField.label}
-                          onChange={(e) =>
-                            handleUpdateSubField(index, {
-                              label: e.target.value,
-                            })
-                          }
-                          placeholder="e.g., Hours"
-                          maxLength={80}
-                          className="rounded-[14px] border-gray-200 font-poppins text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="grid gap-1">
-                        <Label className="text-xs font-poppins">Type</Label>
-                        <Select
-                          value={subField.type}
-                          onValueChange={(value: "NUMBER" | "MONEY" | "TEXT") =>
-                            handleUpdateSubField(index, { type: value })
-                          }
-                        >
-                          <SelectTrigger className="rounded-[14px] border-gray-200 font-poppins text-sm h-9">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="NUMBER">Number</SelectItem>
-                            <SelectItem value="MONEY">Money</SelectItem>
-                            <SelectItem value="TEXT">Text</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="grid gap-1">
-                        <Label className="text-xs font-poppins">Unit</Label>
-                        <Input
-                          value={subField.unit || ""}
-                          onChange={(e) =>
-                            handleUpdateSubField(index, {
-                              unit: e.target.value,
-                            })
-                          }
-                          placeholder="e.g., hours, %"
-                          maxLength={20}
-                          className="rounded-[14px] border-gray-200 font-poppins text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="grid gap-1">
-                        <Label className="text-xs font-poppins">
-                          Default Value
-                        </Label>
-                        <Input
-                          type={
-                            subField.type === "NUMBER" ||
-                            subField.type === "MONEY"
-                              ? "number"
-                              : "text"
-                          }
-                          value={
-                            subField.defaultValue !== undefined
-                              ? String(subField.defaultValue)
-                              : ""
-                          }
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            let parsedValue: number | string | undefined;
-                            if (value === "") {
-                              parsedValue = undefined;
-                            } else if (
-                              subField.type === "NUMBER" ||
-                              subField.type === "MONEY"
-                            ) {
-                              parsedValue = parseFloat(value);
-                              if (isNaN(parsedValue)) {
-                                parsedValue = value; // Keep as string while typing
-                              }
-                            } else {
-                              parsedValue = value;
-                            }
-                            handleUpdateSubField(index, {
-                              defaultValue: parsedValue,
-                            });
-                          }}
-                          placeholder={
-                            subField.type === "NUMBER" ||
-                            subField.type === "MONEY"
-                              ? "0"
-                              : "Enter text"
-                          }
-                          className="rounded-[14px] border-gray-200 font-poppins text-sm"
-                        />
-                      </div>
-
-                      <div className="flex items-center space-x-2 pt-6">
-                        <Checkbox
-                          checked={subField.required ?? false}
-                          onCheckedChange={(checked) =>
-                            handleUpdateSubField(index, {
-                              required: checked === true,
-                            })
-                          }
-                        />
-                        <Label className="text-xs font-poppins">Required</Label>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {fieldErrors.subFields && (
-                  <p className="text-sm text-red-500 font-poppins">
-                    {fieldErrors.subFields}
-                  </p>
-                )}
-              </div>
-            </>
-          )}
 
           {/* Included */}
           <div className="flex items-center space-x-2">
@@ -656,19 +422,64 @@ export default function FeeVariableDialog({
             </label>
           </div>
 
+          {/* Decimals - only for MONEY and NUMBER types */}
+          {!included && (type === "MONEY" || type === "NUMBER") && (
+            <div className="grid gap-2">
+              <Label htmlFor="decimals" className="font-poppins">
+                Decimal Places
+              </Label>
+              <Input
+                id="decimals"
+                type="number"
+                min="0"
+                max="6"
+                value={decimals ?? ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setDecimals(value === "" ? undefined : parseInt(value, 10));
+                }}
+                placeholder={type === "MONEY" ? "2" : "0"}
+                className="rounded-[14px] border-gray-200 font-poppins"
+              />
+              <p className="text-xs text-muted-foreground font-poppins">
+                Number of decimal places to display (default: {type === "MONEY" ? "2" : "0"})
+              </p>
+            </div>
+          )}
+
+          {/* Unit - only for NUMBER type */}
+          {type === "NUMBER" && (
+            <div className="grid gap-2">
+              <Label htmlFor="unit" className="font-poppins">
+                Unit
+              </Label>
+              <Input
+                id="unit"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                placeholder="e.g., hours, %, items"
+                maxLength={20}
+                className="rounded-[14px] border-gray-200 font-poppins"
+              />
+              <p className="text-xs text-muted-foreground font-poppins">
+                Optional unit to display after the number (e.g., hours, %)
+              </p>
+            </div>
+          )}
+
           {/* Default Value - hidden when included is true */}
           {!included && (
             <div className="grid gap-2">
               <Label htmlFor="defaultValue" className="font-poppins">
-                Default Value (Amount){" "}
+                Default Value{" "}
                 {required && <span className="text-red-500">*</span>}
               </Label>
               <Input
                 id="defaultValue"
-                type="number"
-                step="0.01"
-                min="0"
-                max="999999999.99"
+                type={type === "MONEY" || type === "NUMBER" ? "number" : "text"}
+                step={type === "MONEY" ? "0.01" : type === "NUMBER" ? "1" : undefined}
+                min={type === "MONEY" || type === "NUMBER" ? "0" : undefined}
+                max={type === "MONEY" || type === "NUMBER" ? "999999999.99" : undefined}
                 value={defaultValue}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -682,11 +493,21 @@ export default function FeeVariableDialog({
                     });
                   }
                 }}
-                placeholder="e.g., 150.00"
+                placeholder={
+                  type === "MONEY"
+                    ? "e.g., 150.00"
+                    : type === "NUMBER"
+                      ? "e.g., 5"
+                      : "e.g., Enter text"
+                }
                 className="rounded-[14px] border-gray-200 font-poppins"
               />
               <p className="text-xs text-muted-foreground font-poppins">
-                Enter the default amount in CAD
+                {type === "MONEY"
+                  ? "Enter the default amount in CAD"
+                  : type === "NUMBER"
+                    ? "Enter the default numeric value"
+                    : "Enter the default text value"}
               </p>
               {fieldErrors.defaultValue && (
                 <p className="text-sm text-red-500 font-poppins">

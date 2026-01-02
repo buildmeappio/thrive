@@ -761,24 +761,9 @@ export default function ContractTemplateEditContent({ template }: Props) {
       ],
     });
 
-    // Add fee structure variables (including composite sub-fields)
+    // Add fee structure variables
     if (selectedFeeStructureData?.variables) {
-      const feeVars: string[] = [];
-      for (const variable of selectedFeeStructureData.variables) {
-        if (
-          variable.composite &&
-          variable.subFields &&
-          variable.subFields.length > 0
-        ) {
-          // Add sub-fields for composite variables
-          for (const subField of variable.subFields) {
-            feeVars.push(`${variable.key}.${subField.key}`);
-          }
-        } else {
-          // Add regular variable key
-          feeVars.push(variable.key);
-        }
-      }
+      const feeVars = selectedFeeStructureData.variables.map((variable) => variable.key);
       vars.push({
         namespace: "fees",
         vars: feeVars,
@@ -861,7 +846,8 @@ export default function ContractTemplateEditContent({ template }: Props) {
         typeof variable.defaultValue === "number"
           ? variable.defaultValue
           : parseFloat(String(variable.defaultValue || 0));
-      return numValue.toFixed(variable.decimals || 0);
+      const formatted = numValue.toFixed(variable.decimals || 0);
+      return variable.unit ? `${formatted} ${variable.unit}` : formatted;
     } else {
       return String(variable.defaultValue || "");
     }
@@ -882,55 +868,10 @@ export default function ContractTemplateEditContent({ template }: Props) {
     });
 
     // Add fee structure variables with their formatted default values
-    // Handle both regular and composite variables
     if (selectedFeeStructureData?.variables) {
       selectedFeeStructureData.variables.forEach((variable) => {
-        if (
-          variable.composite &&
-          variable.subFields &&
-          variable.subFields.length > 0
-        ) {
-          // Handle composite variables - add each sub-field
-          variable.subFields.forEach((subField) => {
-            let formattedValue = "";
-            if (
-              subField.defaultValue !== null &&
-              subField.defaultValue !== undefined
-            ) {
-              if (subField.type === "MONEY") {
-                const numValue =
-                  typeof subField.defaultValue === "number"
-                    ? subField.defaultValue
-                    : parseFloat(String(subField.defaultValue || 0));
-                formattedValue = new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: "CAD",
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                }).format(numValue);
-              } else if (subField.type === "NUMBER") {
-                const numValue =
-                  typeof subField.defaultValue === "number"
-                    ? subField.defaultValue
-                    : parseFloat(String(subField.defaultValue || 0));
-                formattedValue = numValue.toFixed(0);
-                if (subField.unit) {
-                  formattedValue += ` ${subField.unit}`;
-                }
-              } else {
-                formattedValue = String(subField.defaultValue || "");
-              }
-            }
-            valuesMap.set(
-              `fees.${variable.key}.${subField.key}`,
-              formattedValue,
-            );
-          });
-        } else {
-          // Handle regular (non-composite) variables
-          const formattedValue = formatFeeVariableValue(variable);
-          valuesMap.set(`fees.${variable.key}`, formattedValue);
-        }
+        const formattedValue = formatFeeVariableValue(variable);
+        valuesMap.set(`fees.${variable.key}`, formattedValue);
       });
     }
 

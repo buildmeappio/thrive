@@ -39,15 +39,40 @@ type FeeVariablesTableProps = {
 
 const formatDefaultValue = (
   value: unknown,
+  type?: FeeVariableType,
   currency?: string | null,
   decimals?: number | null,
+  unit?: string | null,
 ): string => {
   if (value === null || value === undefined) {
     return "—";
   }
 
+  // Handle non-numeric types
+  if (type === "TEXT" || type === "BOOLEAN") {
+    if (type === "BOOLEAN") {
+      return value === true ? "Yes" : "No";
+    }
+    return String(value);
+  }
+
   const numValue = Number(value);
   if (isNaN(numValue)) return String(value);
+
+  // Format based on type
+  if (type === "MONEY") {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency || "CAD",
+      minimumFractionDigits: decimals ?? 2,
+      maximumFractionDigits: decimals ?? 2,
+    }).format(numValue);
+  } else if (type === "NUMBER") {
+    const formatted = numValue.toFixed(decimals ?? 0);
+    return unit ? `${formatted} ${unit}` : formatted;
+  }
+
+  // Fallback for unknown types (legacy behavior)
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currency || "CAD",
@@ -299,8 +324,10 @@ export default function FeeVariablesTable({
                         <span className="text-[#4D4D4D] font-poppins text-sm sm:text-[16px] leading-normal">
                           {formatDefaultValue(
                             variable.defaultValue,
+                            variable.type,
                             variable.currency,
                             variable.decimals,
+                            variable.unit,
                           )}
                         </span>
                       )}

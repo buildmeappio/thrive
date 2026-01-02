@@ -1223,6 +1223,9 @@ export const previewContract = async (
               ? defaultValue
               : parseFloat(String(defaultValue || 0));
           formattedValue = numValue.toFixed(variable.decimals || 0);
+          if (variable.unit) {
+            formattedValue += ` ${variable.unit}`;
+          }
         } else {
           formattedValue = String(defaultValue || "");
         }
