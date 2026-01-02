@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import "./PageRender.css";
-import "./EditorContentStyles.css";
-import type { HeaderConfig, FooterConfig } from "./types";
-import { usePaginationWithLoading } from "./pageRender/hooks/usePagination";
-import { CheckboxGroupStyles } from "./pageRender/components/CheckboxGroupStyles";
-import { PagePreviewHeading } from "./pageRender/components/PagePreviewHeading";
-import { Page } from "./pageRender/components/Page";
-import type { CustomVariable } from "./pageRender/utils/variableUtils";
+import "../PageRender.css";
+import "../EditorContentStyles.css";
+import type { HeaderConfig, FooterConfig } from "../types";
+import { usePaginationWithLoading } from "./hooks/usePagination";
+import { CheckboxGroupStyles } from "./components/CheckboxGroupStyles";
+import { PagePreviewHeading } from "./components/PagePreviewHeading";
+import { Page } from "./components/Page";
+import type { CustomVariable } from "./utils/variableUtils";
 
 interface PageRendererProps {
   content: string;
@@ -118,3 +118,4 @@ const PageRenderer: React.FC<PageRendererProps> = ({
 };
 
 export default PageRenderer;
+

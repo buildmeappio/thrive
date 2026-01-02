@@ -51,6 +51,7 @@ export const VariableHighlight = Mark.create<VariableHighlightOptions>({
           }
           return {
             "data-variable": attributes.variable,
+            contenteditable: "false", // Prevent editing inside variable spans
           };
         },
       },
@@ -93,8 +94,8 @@ export const VariableHighlight = Mark.create<VariableHighlightOptions>({
     const existingClass =
       HTMLAttributes.class || HTMLAttributes.className || "";
     const baseClass = isValid
-      ? "variable-valid bg-[#E0F7FA] text-[#006064] px-1 py-0.5 rounded font-mono text-sm"
-      : "variable-invalid bg-red-100 text-red-700 px-1 py-0.5 rounded font-mono text-sm";
+      ? "variable-valid bg-[#E0F7FA] text-[#006064] px-1 py-0.5 rounded font-mono text-sm underline"
+      : "variable-invalid bg-red-100 text-red-700 px-1 py-0.5 rounded font-mono text-sm underline";
 
     return [
       "span",
@@ -103,6 +104,7 @@ export const VariableHighlight = Mark.create<VariableHighlightOptions>({
         "data-variable":
           HTMLAttributes.variable || HTMLAttributes["data-variable"],
         "data-is-valid": isValid ? "true" : "false",
+        contenteditable: "false", // Prevent editing inside variable spans
       }),
       0,
     ];
@@ -112,19 +114,19 @@ export const VariableHighlight = Mark.create<VariableHighlightOptions>({
     return {
       setVariableHighlight:
         (attributes) =>
-        ({ commands }) => {
-          return commands.setMark(this.name, attributes);
-        },
+          ({ commands }) => {
+            return commands.setMark(this.name, attributes);
+          },
       toggleVariableHighlight:
         (attributes) =>
-        ({ commands }) => {
-          return commands.toggleMark(this.name, attributes);
-        },
+          ({ commands }) => {
+            return commands.toggleMark(this.name, attributes);
+          },
       unsetVariableHighlight:
         () =>
-        ({ commands }) => {
-          return commands.unsetMark(this.name);
-        },
+          ({ commands }) => {
+            return commands.unsetMark(this.name);
+          },
     };
   },
 });

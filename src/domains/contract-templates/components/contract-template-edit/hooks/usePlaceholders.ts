@@ -5,6 +5,7 @@ import {
   parsePlaceholders,
   validatePlaceholders,
 } from "../../../utils/placeholderParser";
+import { highlightVariable } from "@/components/editor/utils/variableHighlightUtils";
 import type {
   CustomVariable,
   FeeStructureData,
@@ -190,15 +191,9 @@ export function usePlaceholders({
       if (editorRef.current) {
         const editor = editorRef.current;
         const placeholderText = `{{${placeholder}}}`;
-        const isValid = validVariablesSet.has(placeholder);
-
-        // Insert the placeholder text with the highlight span already applied
-        // This ensures the color shows immediately
-        const className = isValid
-          ? "variable-valid bg-[#E0F7FA] text-[#006064] px-1 py-0.5 rounded font-mono text-sm"
-          : "variable-invalid bg-red-100 text-red-700 px-1 py-0.5 rounded font-mono text-sm";
-
-        const highlightedHtml = `<span class="${className}" data-variable="${placeholder}" data-is-valid="${isValid}">${placeholderText}</span>&nbsp;`;
+        
+        // Use utility function to highlight the variable
+        const highlightedHtml = highlightVariable(placeholderText, validVariablesSet) + "&nbsp;";
 
         // Use insertContent with parseOptions to ensure it's treated as a single node
         (editor as any)
