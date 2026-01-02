@@ -65,37 +65,21 @@ function buildFieldValues(
     contractValues.effective_date = contractFormValues.effective_date.trim();
   }
 
-  // Filter out undefined/null/empty values for thrive/organization
-  const thriveValues: Record<string, string> = {};
-  if (
-    contractFormValues.company_name &&
-    contractFormValues.company_name.trim()
-  ) {
-    thriveValues.company_name = contractFormValues.company_name.trim();
-  }
-  if (
-    contractFormValues.company_address &&
-    contractFormValues.company_address.trim()
-  ) {
-    thriveValues.company_address = contractFormValues.company_address.trim();
-  }
-  if (
-    contractFormValues.company_phone &&
-    contractFormValues.company_phone.trim()
-  ) {
-    thriveValues.company_phone = contractFormValues.company_phone.trim();
-  }
-  if (
-    contractFormValues.company_email &&
-    contractFormValues.company_email.trim()
-  ) {
-    thriveValues.company_email = contractFormValues.company_email.trim();
-  }
-  if (
-    contractFormValues.company_website &&
-    contractFormValues.company_website.trim()
-  ) {
-    thriveValues.company_website = contractFormValues.company_website.trim();
+  // Thrive/organization values are seeded in DB and will be loaded from there
+
+  // Process custom variable values
+  const customValues: Record<string, string | string[]> = {};
+  if (contractFormValues.custom) {
+    for (const [key, value] of Object.entries(contractFormValues.custom)) {
+      if (Array.isArray(value)) {
+        // For checkbox groups, keep as array or convert to comma-separated string
+        if (value.length > 0) {
+          customValues[key] = value;
+        }
+      } else if (typeof value === "string" && value.trim() !== "") {
+        customValues[key] = value.trim();
+      }
+    }
   }
 
   return {
@@ -104,8 +88,9 @@ function buildFieldValues(
       email: examinerEmail,
     },
     contract: contractValues,
-    thrive: thriveValues,
+    // thrive values are seeded in DB and will be loaded from there
     fees_overrides: feeFormValues,
+    custom: Object.keys(customValues).length > 0 ? customValues : undefined,
   };
 }
 

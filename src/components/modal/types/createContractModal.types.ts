@@ -3,6 +3,7 @@ import type {
   FeeVariable,
 } from "../components/FeeStructureFormStep";
 import type { ContractFormValues } from "../components/ContractVariablesFormStep";
+import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
 import { FooterConfig, HeaderConfig } from "@/components/editor/types";
 
 export type CreateContractModalProps = {
@@ -76,6 +77,7 @@ export type UseCreateContractModalReturn = {
 
   // Contract Variables Form State
   contractFormValues: ContractFormValues;
+  customVariables: CustomVariable[];
 
   // Actions
   setSelectedTemplateId: (id: string) => void;
