@@ -89,7 +89,14 @@ const PageRenderer: React.FC<PageRendererProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [content, header, footer, variableValues, customVariables, performPagination]);
+  }, [
+    content,
+    header,
+    footer,
+    variableValues,
+    customVariables,
+    performPagination,
+  ]);
 
   return (
     <div className="page-renderer">
