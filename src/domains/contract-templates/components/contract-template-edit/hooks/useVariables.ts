@@ -36,11 +36,31 @@ export function useVariables(): UseVariablesReturn {
           return;
         }
         if (result.data) {
+          // Debug: Log what we received from the server
+          console.log(
+            "[Client useVariables] Received from server:",
+            result.data.map((v) => ({
+              key: v.key,
+              variableType: v.variableType,
+              typeofVariableType: typeof v.variableType,
+              allKeys: Object.keys(v),
+            })),
+          );
+
           // Separate system variables and custom variables
           const system = result.data.filter(
             (v) => !v.key.startsWith("custom."),
           );
           const custom = result.data.filter((v) => v.key.startsWith("custom."));
+
+          console.log(
+            "[Client useVariables] Custom variables:",
+            custom.map((v) => ({
+              key: v.key,
+              variableType: v.variableType,
+            })),
+          );
+
           setSystemVariables(system);
           setCustomVariables(custom);
         }

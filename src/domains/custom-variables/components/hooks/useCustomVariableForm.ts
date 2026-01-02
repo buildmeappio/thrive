@@ -10,27 +10,84 @@ export function useCustomVariableForm(
   initialData?: CustomVariable | null,
   isOpen?: boolean,
 ) {
-  const [key, setKey] = useState("");
-  const [defaultValue, setDefaultValue] = useState("");
-  const [description, setDescription] = useState("");
-  const [variableType, setVariableType] = useState<"text" | "checkbox_group">(
-    "text",
+  // Initialize state with initialData if available to ensure correct values on first render
+  const [key, setKey] = useState(initialData?.key || "");
+  const [defaultValue, setDefaultValue] = useState(
+    initialData?.defaultValue || "",
   );
-  const [checkboxOptions, setCheckboxOptions] = useState<CheckboxOption[]>([]);
-  const [showUnderline, setShowUnderline] = useState(false);
+  const [description, setDescription] = useState(
+    initialData?.description || "",
+  );
+  const [variableType, setVariableType] = useState<"text" | "checkbox_group">(
+    () => {
+      // Initialize with initialData if available
+      if (initialData?.variableType === "checkbox_group") {
+        return "checkbox_group";
+      }
+      if (initialData?.variableType === "text") {
+        return "text";
+      }
+      return "text";
+    },
+  );
+  const [checkboxOptions, setCheckboxOptions] = useState<CheckboxOption[]>(
+    () => {
+      if (initialData?.options && Array.isArray(initialData.options)) {
+        return initialData.options;
+      }
+      return [];
+    },
+  );
+  const [showUnderline, setShowUnderline] = useState(
+    initialData?.showUnderline ?? false,
+  );
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // Reset form when dialog opens/closes or initialData changes
+  // Reset form when initialData changes or when dialog opens/closes
   useEffect(() => {
+    // Only update form when dialog is open
+    if (!isOpen) {
+      // Dialog is closed - reset form only if there's no initialData
+      // This prevents clearing form when dialog closes after editing
+      if (!initialData) {
+        setKey("");
+        setDefaultValue("");
+        setDescription("");
+        setVariableType("text");
+        setCheckboxOptions([]);
+        setShowUnderline(false);
+      }
+      setErrors({});
+      return;
+    }
+
+    // Dialog is open - populate form with initialData if it exists
     if (initialData) {
-      setKey(initialData.key);
-      setDefaultValue(initialData.defaultValue);
+      // Always update all fields when initialData changes
+      setKey(initialData.key || "");
+      setDefaultValue(initialData.defaultValue || "");
       setDescription(initialData.description || "");
-      setVariableType(initialData.variableType || "text");
-      setCheckboxOptions(initialData.options || []);
+
+      // Ensure variableType is explicitly set - check the actual value
+      const type = initialData.variableType;
+      // Explicitly check for checkbox_group first, then text
+      if (type === "checkbox_group") {
+        setVariableType("checkbox_group");
+      } else if (type === "text") {
+        setVariableType("text");
+      } else {
+        // Fallback to text if type is invalid or missing
+        setVariableType("text");
+      }
+
+      setCheckboxOptions(
+        initialData.options && Array.isArray(initialData.options)
+          ? initialData.options
+          : [],
+      );
       setShowUnderline(initialData.showUnderline ?? false);
     } else {
-      // Reset to empty form when no initialData
+      // Dialog is open but no initialData - reset to empty form for new variable
       setKey("");
       setDefaultValue("");
       setDescription("");
@@ -39,7 +96,7 @@ export function useCustomVariableForm(
       setShowUnderline(false);
     }
     setErrors({});
-  }, [initialData, isOpen]); // Also reset when dialog opens/closes
+  }, [initialData, isOpen]); // Update when initialData changes or dialog opens/closes
 
   const addCheckboxOption = () => {
     setCheckboxOptions([...checkboxOptions, { label: "", value: "" }]);

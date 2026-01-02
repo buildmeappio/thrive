@@ -405,6 +405,13 @@ export const createContract = async (
   }
 
   // Create contract
+  console.log(
+    "[createContract] Received fieldValues:",
+    JSON.stringify(input.fieldValues, null, 2),
+  );
+  console.log("[createContract] contract values:", input.fieldValues?.contract);
+  console.log("[createContract] thrive values:", input.fieldValues?.thrive);
+
   const contract = await prisma.contract.create({
     data: {
       examinerProfileId: input.examinerProfileId || null,
@@ -419,6 +426,8 @@ export const createContract = async (
       createdBy,
     },
   });
+
+  console.log("[createContract] Contract created with ID:", contract.id);
 
   return { id: contract.id };
 };
@@ -446,9 +455,28 @@ export const updateContractFields = async (
 
   // Merge with existing fieldValues
   const existingFieldValues = (contract.fieldValues as any) || {};
+
+  // Deep merge examiner to preserve existing values (name, email) when signature is added
+  const mergedExaminer = {
+    ...(existingFieldValues.examiner || {}),
+    ...(input.fieldValues.examiner || {}),
+  };
+
+  // Log signature updates for debugging
+  if (input.fieldValues.examiner?.signature) {
+    console.log(
+      `[updateContractFields] Saving examiner signature for contract ${input.id}`,
+    );
+    console.log(
+      `[updateContractFields] Merged examiner object:`,
+      JSON.stringify(mergedExaminer),
+    );
+  }
+
   const updatedFieldValues = {
     ...existingFieldValues,
     ...input.fieldValues,
+    examiner: mergedExaminer,
     // Deep merge fees_overrides to preserve existing values
     fees_overrides: {
       ...(existingFieldValues.fees_overrides || {}),
@@ -743,6 +771,9 @@ export const previewContract = async (
         address: true,
       },
     });
+    console.log(
+      `[Contract Preview] Application loaded: id=${application?.id}, hasAddress=${!!application?.address}, addressCity=${application?.address?.city}`,
+    );
   }
 
   // Extract fieldValues for use throughout the function
@@ -785,9 +816,20 @@ export const previewContract = async (
         application.firstName || "",
         application.lastName || "",
       );
+      console.log(
+        `[Contract Preview] Application name: firstName="${application.firstName}", lastName="${application.lastName}", formatted="${fullName}"`,
+      );
       if (fullName) {
         values["application.examiner_name"] = fullName;
+      } else {
+        console.warn(
+          `[Contract Preview] formatFullName returned empty for application ${application.id}`,
+        );
       }
+    } else {
+      console.log(
+        `[Contract Preview] application.examiner_name already set to: "${values["application.examiner_name"]}"`,
+      );
     }
 
     // Email
@@ -818,8 +860,14 @@ export const previewContract = async (
     }
 
     // City (from address)
+    console.log(
+      `[Contract Preview] Checking application.address.city: address=${!!application.address}, city=${application.address?.city}`,
+    );
     if (!values["application.examiner_city"] && application.address?.city) {
       values["application.examiner_city"] = application.address.city;
+      console.log(
+        `[Contract Preview] Set application.examiner_city = "${application.address.city}"`,
+      );
     }
 
     // Languages Spoken (array -> comma-separated)
@@ -873,13 +921,27 @@ export const previewContract = async (
 
   // Fallback to examinerProfile if application is not available
   if (!application && examinerProfile) {
+    console.log(
+      `[Contract Preview] No application, falling back to examinerProfile ${examinerProfile.id}`,
+    );
     // Add examiner name if not already set (using formatFullName utility for consistent formatting)
     if (!values["application.examiner_name"] && examinerProfile.account?.user) {
       const user = examinerProfile.account.user;
       const fullName = formatFullName(user.firstName, user.lastName);
+      console.log(
+        `[Contract Preview] ExaminerProfile name: firstName="${user.firstName}", lastName="${user.lastName}", formatted="${fullName}"`,
+      );
       if (fullName) {
         values["application.examiner_name"] = fullName;
+      } else {
+        console.warn(
+          `[Contract Preview] formatFullName returned empty for examinerProfile ${examinerProfile.id}`,
+        );
       }
+    } else if (!values["application.examiner_name"]) {
+      console.warn(
+        `[Contract Preview] No user data in examinerProfile ${examinerProfile.id}`,
+      );
     }
 
     // Add examiner email if not already set
@@ -891,8 +953,14 @@ export const previewContract = async (
     }
 
     // Add examiner city from address if not already set
+    console.log(
+      `[Contract Preview] Checking examinerProfile.address.city: address=${!!examinerProfile.address}, city=${examinerProfile.address?.city}`,
+    );
     if (!values["application.examiner_city"] && examinerProfile.address?.city) {
       values["application.examiner_city"] = examinerProfile.address.city;
+      console.log(
+        `[Contract Preview] Set application.examiner_city from examinerProfile = "${examinerProfile.address.city}"`,
+      );
     }
 
     // Add examiner province from address if not already set
@@ -903,6 +971,10 @@ export const previewContract = async (
       values["application.examiner_province"] =
         examinerProfile.address.province;
     }
+  } else if (!application && !examinerProfile) {
+    console.error(
+      `[Contract Preview] Contract has neither application nor examinerProfile!`,
+    );
   }
 
   // Add signature date_time from contract.signedAt if available
@@ -918,16 +990,17 @@ export const previewContract = async (
     values["application.examiner_signature_date_time"] = signatureDateTime;
   }
 
-  // Add signature from fieldValues if available
+  // Load all variables from database FIRST (system + custom defaults)
+  // This provides fallback values for any variables not provided in fieldValues
+  const dbVariablesMap = await getAllVariablesMap();
+  Object.assign(values, dbVariablesMap);
+
+  // OVERRIDE with signature from fieldValues (user-provided signature takes precedence)
   if (fv && fv.examiner && fv.examiner.signature) {
     values["application.examiner_signature"] = String(fv.examiner.signature);
-  }
-
-  // Add contract values
-  if (fv && fv.contract) {
-    for (const [key, value] of Object.entries(fv.contract)) {
-      values[`contract.${key}`] = String(value);
-    }
+    console.log(
+      `[Contract Preview] Set application.examiner_signature from fieldValues`,
+    );
   }
 
   // Add review date from contract.reviewedAt if available
@@ -951,40 +1024,67 @@ export const previewContract = async (
     }
   }
 
-  // Add thrive values (defaults)
-  if (fv && fv.thrive) {
-    for (const [key, value] of Object.entries(fv.thrive)) {
-      values[`thrive.${key}`] = String(value);
+  // OVERRIDE with contract values from fieldValues (user-provided values take precedence)
+  console.log(`[Contract Preview] Checking contract values...`);
+  console.log(`[Contract Preview] fv exists:`, !!fv);
+  console.log(`[Contract Preview] fv.contract exists:`, !!fv?.contract);
+  console.log(
+    `[Contract Preview] fv.contract value:`,
+    JSON.stringify(fv?.contract),
+  );
+  console.log(
+    `[Contract Preview] fv.thrive value:`,
+    JSON.stringify(fv?.thrive),
+  );
+
+  if (fv && fv.contract) {
+    console.log(
+      `[Contract Preview] Found contract fieldValues:`,
+      Object.keys(fv.contract),
+    );
+    for (const [key, value] of Object.entries(fv.contract)) {
+      values[`contract.${key}`] = String(value);
+      console.log(`[Contract Preview] Set contract.${key} = "${value}"`);
     }
-  } else if (fv && fv.org) {
-    // Backward compatibility: support old "org" namespace
-    for (const [key, value] of Object.entries(fv.org)) {
-      values[`thrive.${key}`] = String(value);
-    }
+  } else {
+    console.warn(
+      `[Contract Preview] No contract fieldValues found! fv=${!!fv}, fv.contract=${!!fv?.contract}`,
+    );
   }
 
-  // Add all variables from database (system + custom)
-  const dbVariablesMap = await getAllVariablesMap();
-  Object.assign(values, dbVariablesMap);
-
-  // Override with fieldValues if provided
+  // OVERRIDE with thrive values from fieldValues (user-provided values take precedence)
   if (fv && fv.thrive) {
     for (const [key, value] of Object.entries(fv.thrive)) {
       values[`thrive.${key}`] = String(value);
+      console.log(`[Contract Preview] Set thrive.${key} = "${value}"`);
     }
   } else if (fv && fv.org) {
     // Backward compatibility: support old "org" namespace
     for (const [key, value] of Object.entries(fv.org)) {
       values[`thrive.${key}`] = String(value);
+      console.log(
+        `[Contract Preview] Set thrive.${key} = "${value}" (from org)`,
+      );
     }
   }
 
   // Add fees values
   if (contract.feeStructure) {
+    console.log(
+      `[Contract Preview] Fee structure found: ${contract.feeStructure.name} (${contract.feeStructure.id})`,
+    );
+    console.log(
+      `[Contract Preview] Fee structure has ${contract.feeStructure.variables.length} variables`,
+    );
+
     for (const variable of contract.feeStructure.variables) {
       const overrideValue = fv?.fees_overrides?.[variable.key];
       const defaultValue =
         overrideValue !== undefined ? overrideValue : variable.defaultValue;
+
+      console.log(
+        `[Contract Preview] Processing fee variable: ${variable.key}, type=${variable.type}, defaultValue=${defaultValue}, override=${overrideValue}`,
+      );
 
       // Format based on type
       let formattedValue: string;
@@ -1010,55 +1110,26 @@ export const previewContract = async (
       }
 
       values[`fees.${variable.key}`] = formattedValue;
+      console.log(
+        `[Contract Preview] Set fees.${variable.key} = "${formattedValue}"`,
+      );
     }
   } else {
-    // No fieldValues, load all variables from database
-    const dbVariablesMap = await getAllVariablesMap();
-    Object.assign(values, dbVariablesMap);
+    console.warn(`[Contract Preview] No fee structure found on contract!`);
+  }
 
-    // Add signature date_time from contract.signedAt if available
-    if (contract.signedAt) {
-      const signatureDateTime = new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }).format(new Date(contract.signedAt));
-      values["examiner.signature_date_time"] = signatureDateTime;
-    }
-
-    // Add custom variables
-    const customVariablesMap = await getAllVariablesMap();
-    Object.assign(values, customVariablesMap);
-
-    if (contract.feeStructure) {
-      for (const variable of contract.feeStructure.variables) {
-        let formattedValue: string;
-        if (variable.type === "MONEY") {
-          const numValue =
-            typeof variable.defaultValue === "number"
-              ? variable.defaultValue
-              : parseFloat(String(variable.defaultValue || 0));
-          formattedValue = new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: variable.currency || "USD",
-            minimumFractionDigits: variable.decimals || 2,
-            maximumFractionDigits: variable.decimals || 2,
-          }).format(numValue);
-        } else if (variable.type === "NUMBER") {
-          const numValue =
-            typeof variable.defaultValue === "number"
-              ? variable.defaultValue
-              : parseFloat(String(variable.defaultValue || 0));
-          formattedValue = numValue.toFixed(variable.decimals || 0);
-        } else {
-          formattedValue = String(variable.defaultValue || "");
-        }
-        values[`fees.${variable.key}`] = formattedValue;
-      }
-    }
+  // Add signature date_time from contract.signedAt if available
+  if (contract.signedAt) {
+    const signatureDateTime = new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(new Date(contract.signedAt));
+    values["examiner.signature_date_time"] = signatureDateTime;
+    values["application.examiner_signature_date_time"] = signatureDateTime;
   }
 
   // Always use HTML template from bodyHtml as source of truth

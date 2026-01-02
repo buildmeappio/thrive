@@ -169,6 +169,7 @@ export default function ContractTemplateEditContent({
             headerConfig={headerConfig}
             footerConfig={footerConfig}
             variableValuesMap={variableValuesMap}
+            customVariables={customVariables}
           />
         </div>
 

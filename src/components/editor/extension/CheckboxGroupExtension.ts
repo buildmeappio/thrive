@@ -196,11 +196,13 @@ export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
 
         // If we successfully parsed children, return them
         if (children.length > 0) {
-          return [
-            "div",
-            mergeAttributes(this.options.HTMLAttributes, attrs),
-            ...children,
-          ];
+          // Ensure data-variable-type is preserved in the output
+          const finalAttrs = {
+            ...mergeAttributes(this.options.HTMLAttributes, attrs),
+            "data-variable-type":
+              attrs["data-variable-type"] || "checkbox_group",
+          };
+          return ["div", finalAttrs, ...children];
         }
       } catch (error) {
         console.error("Error parsing checkbox group HTML:", error);
@@ -208,7 +210,12 @@ export const CheckboxGroupExtension = Node.create<CheckboxGroupOptions>({
     }
 
     // Fallback: return empty div - TipTap will preserve the HTML through parseHTML
-    return ["div", mergeAttributes(this.options.HTMLAttributes, attrs), 0];
+    // Ensure data-variable-type is preserved even in fallback
+    const fallbackAttrs = {
+      ...mergeAttributes(this.options.HTMLAttributes, attrs),
+      "data-variable-type": attrs["data-variable-type"] || "checkbox_group",
+    };
+    return ["div", fallbackAttrs, 0];
   },
 
   addCommands() {

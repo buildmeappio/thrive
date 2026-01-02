@@ -100,6 +100,7 @@ export default function CustomVariableDialog({
           />
 
           <VariableTypeSelect
+            key={`${initialData?.id || "new"}-${variableType}`}
             value={variableType}
             onChange={setVariableType}
             disabled={isLoading}

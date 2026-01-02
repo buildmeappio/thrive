@@ -16,7 +16,9 @@ interface PageRendererProps {
   customVariables?: Array<{
     key: string;
     showUnderline?: boolean;
-  }>; // Custom variables with showUnderline setting
+    variableType?: "text" | "checkbox_group";
+    options?: Array<{ label: string; value: string }>;
+  }>; // Custom variables with showUnderline setting and options for checkbox groups
 }
 
 export interface PageInfo {
@@ -703,14 +705,38 @@ const PageRenderer: React.FC<PageRendererProps> = ({
   const processPageContent = (html: string): string => {
     let processed = processImageAttributes(html);
 
+    // Debug: Log if we find checkbox groups in the HTML
+    if (
+      processed.includes("checkbox") ||
+      processed.includes("checkbox_group")
+    ) {
+      console.log("Found checkbox-related content in HTML");
+      // Log a larger sample to see the structure
+      const checkboxIndex = processed.indexOf("checkbox");
+      if (checkboxIndex !== -1) {
+        console.log(
+          "Checkbox content sample:",
+          processed.substring(
+            Math.max(0, checkboxIndex - 100),
+            checkboxIndex + 500,
+          ),
+        );
+      }
+    }
+
     // CRITICAL: Protect checkbox groups FIRST before any variable processing
     // Temporarily replace checkbox groups with placeholders to prevent them from being processed
     const checkboxGroupPlaceholders: string[] = [];
 
     // Use a more robust approach: find checkbox groups by matching opening tag, then find matching closing tag
     // This handles nested divs correctly
+    // Also check for checkbox-group-variable class as a fallback
+    // Match patterns:
+    // 1. data-variable-type="checkbox_group" or data-variable-type='checkbox_group'
+    // 2. class containing "checkbox-group-variable"
+    // 3. Any combination of the above
     const checkboxGroupPattern =
-      /<div[^>]*data-variable-type=["']checkbox_group["'][^>]*>/gi;
+      /<div[^>]*(?:data-variable-type\s*=\s*["']checkbox_group["']|class\s*=\s*["'][^"']*checkbox-group-variable[^"']*["'])[^>]*>/gi;
     let match;
     const groups: Array<{ start: number; end: number; html: string }> = [];
 
@@ -745,6 +771,119 @@ const PageRenderer: React.FC<PageRendererProps> = ({
       }
     }
 
+    // Also try to find checkbox groups by looking for checkbox-indicator spans
+    // This is a fallback in case the div structure is different
+    if (groups.length === 0) {
+      const checkboxIndicatorPattern =
+        /<span[^>]*class\s*=\s*["'][^"']*checkbox-indicator[^"']*["'][^>]*>/gi;
+      let indicatorMatch;
+      while (
+        (indicatorMatch = checkboxIndicatorPattern.exec(processed)) !== null
+      ) {
+        // Find the parent div containing this checkbox indicator
+        let searchIndex = indicatorMatch.index;
+        let divStart = -1;
+
+        // Search backwards for the opening div tag
+        while (searchIndex >= 0) {
+          const prevDiv = processed.lastIndexOf("<div", searchIndex);
+          if (prevDiv === -1) break;
+
+          // Check if this div has checkbox group attributes
+          const divEnd = processed.indexOf(">", prevDiv);
+          if (divEnd === -1 || divEnd > indicatorMatch.index) break;
+
+          const divTag = processed.substring(prevDiv, divEnd + 1);
+          if (
+            divTag.includes('data-variable-type="checkbox_group"') ||
+            divTag.includes("data-variable-type='checkbox_group'") ||
+            divTag.includes("checkbox-group-variable")
+          ) {
+            divStart = prevDiv;
+            break;
+          }
+
+          searchIndex = prevDiv - 1;
+        }
+
+        if (divStart !== -1) {
+          // Find the matching closing div
+          let depth = 1;
+          let currentIndex = processed.indexOf(">", divStart) + 1;
+
+          while (depth > 0 && currentIndex < processed.length) {
+            const nextOpen = processed.indexOf("<div", currentIndex);
+            const nextClose = processed.indexOf("</div>", currentIndex);
+
+            if (nextClose === -1) break;
+
+            if (nextOpen !== -1 && nextOpen < nextClose) {
+              depth++;
+              currentIndex = nextOpen + 4;
+            } else {
+              depth--;
+              if (depth === 0) {
+                const endIndex = nextClose + 6;
+                const html = processed.substring(divStart, endIndex);
+                // Check if this group is already in the list
+                const exists = groups.some((g) => g.start === divStart);
+                if (!exists) {
+                  groups.push({ start: divStart, end: endIndex, html });
+                }
+                break;
+              }
+              currentIndex = nextClose + 6;
+            }
+          }
+        }
+      }
+    }
+
+    // Debug: Log found groups
+    if (groups.length > 0) {
+      console.log(`Found ${groups.length} checkbox group(s) in content`);
+      groups.forEach((group, idx) => {
+        console.log(`Checkbox group ${idx + 1}:`, group.html.substring(0, 500));
+      });
+    } else {
+      // Try to find any div with data-variable-key that might be a checkbox group
+      const variableKeyPattern = /data-variable-key=["']([^"']+)["']/gi;
+      const variableKeys: string[] = [];
+      let keyMatch;
+      while ((keyMatch = variableKeyPattern.exec(processed)) !== null) {
+        variableKeys.push(keyMatch[1]);
+      }
+      if (variableKeys.length > 0) {
+        console.log("Found variable keys in content:", variableKeys);
+        // Check if any of these are checkbox group variables
+        const checkboxVarKeys = variableKeys.filter((key) => {
+          const customVar = customVariables.find((v) => v.key === key);
+          return customVar?.variableType === "checkbox_group";
+        });
+        if (checkboxVarKeys.length > 0) {
+          console.log("Checkbox group variable keys found:", checkboxVarKeys);
+          const firstKeyIndex = processed.indexOf(checkboxVarKeys[0]);
+          if (firstKeyIndex !== -1) {
+            console.log(
+              "HTML around first checkbox key:",
+              processed.substring(
+                Math.max(0, firstKeyIndex - 200),
+                firstKeyIndex + 500,
+              ),
+            );
+          }
+        }
+      }
+      console.log(
+        "No checkbox groups detected. Full HTML length:",
+        processed.length,
+      );
+      console.log(
+        "HTML sample (first 2000 chars):",
+        processed.substring(0, 2000),
+      );
+    }
+
     // Replace groups in reverse order to maintain indices
     groups.reverse().forEach((group) => {
       const placeholder = `__CHECKBOX_GROUP_${checkboxGroupPlaceholders.length}__`;
@@ -756,15 +895,15 @@ const PageRenderer: React.FC<PageRendererProps> = ({
     });
 
     // Now process variable highlight spans (checkbox groups are safely stored)
-    // Step 1: Remove spans with data-variable attribute (most common case)
+    // Step 1: Remove ALL spans with data-variable attribute (order-agnostic)
     processed = processed.replace(
-      /<span[^>]*data-variable="([^"]*)"[^>]*class="[^"]*variable-(valid|invalid)[^"]*"[^>]*>(.*?)<\/span>/gi,
-      (match, variableKey, _validity, content) => {
+      /<span[^>]*data-variable="([^"]*)"[^>]*>(.*?)<\/span>/gi,
+      (match, variableKey, content) => {
         return `{{${variableKey}}}`;
       },
     );
 
-    // Step 2: Remove spans with variable classes (catch any remaining)
+    // Step 2: Remove spans with variable classes that might not have data-variable
     processed = processed.replace(
       /<span[^>]*class="[^"]*variable-(valid|invalid)[^"]*"[^>]*>(.*?)<\/span>/gi,
       (match, _validity, content) => {
@@ -773,30 +912,83 @@ const PageRenderer: React.FC<PageRendererProps> = ({
         if (placeholderMatch) {
           return placeholderMatch[0];
         }
-        // If content is plain text (might be a value), try to find variable key from data attribute
-        const dataVarMatch = match.match(/data-variable="([^"]*)"/);
-        if (dataVarMatch) {
-          return `{{${dataVarMatch[1]}}}`;
-        }
         return content;
       },
     );
 
-    // Step 3: Remove any remaining spans with inline styles that might have variable colors
+    // Step 3: Clean up any remaining variable-related spans with inline styles
     processed = processed.replace(
-      /<span[^>]*style="[^"]*background[^"]*#[E0F7FA][^"]*"[^>]*>(.*?)<\/span>/gi,
+      /<span[^>]*style="[^"]*background[^"]*(?:#E0F7FA|#e0f7fa|rgb\(224,\s*247,\s*250\))[^"]*"[^>]*>(.*?)<\/span>/gi,
       (match, content) => {
         const placeholderMatch = content.match(/\{\{([^}]+)\}\}/);
         return placeholderMatch ? placeholderMatch[0] : content;
       },
     );
 
+    // Step 4: Clean up red/invalid variable spans
     processed = processed.replace(
-      /<span[^>]*style="[^"]*background[^"]*red[^"]*"[^>]*data-variable="([^"]*)"[^>]*>(.*?)<\/span>/gi,
-      (match, variableKey, content) => {
-        return `{{${variableKey}}}`;
+      /<span[^>]*style="[^"]*background[^"]*(?:red|#ff|rgb\(255)[^"]*"[^>]*>(.*?)<\/span>/gi,
+      (match, content) => {
+        const placeholderMatch = content.match(/\{\{([^}]+)\}\}/);
+        return placeholderMatch ? placeholderMatch[0] : content;
       },
     );
+
+    // Step 5: Remove any stray closing quotes or angle brackets left from incomplete span removal
+    processed = processed.replace(/[">]+(\{\{[^}]+\}\})/g, "$1");
+    processed = processed.replace(/(\{\{[^}]+\}\})[">]+/g, "$1");
+
+    // Create a map of custom variable keys to their full data (needed for checkbox groups)
+    const customVariableMap = new Map<
+      string,
+      {
+        showUnderline?: boolean;
+        options?: Array<{ label: string; value: string }>;
+        variableType?: "text" | "checkbox_group";
+      }
+    >();
+
+    // Debug: Log all custom variables received
+    console.log(
+      "All customVariables received:",
+      customVariables.map((v) => ({
+        key: v.key,
+        variableType: v.variableType,
+        hasOptions: !!v.options && v.options.length > 0,
+        optionsCount: v.options?.length || 0,
+      })),
+    );
+
+    customVariables.forEach((variable) => {
+      customVariableMap.set(variable.key, {
+        showUnderline: variable.showUnderline,
+        options: variable.options,
+        variableType: variable.variableType,
+      });
+    });
+
+    // Debug: Log checkbox_group variables
+    const checkboxGroupVars = Array.from(customVariableMap.entries()).filter(
+      ([_, data]) => data.variableType === "checkbox_group",
+    );
+    if (checkboxGroupVars.length > 0) {
+      console.log(
+        "Checkbox group variables available:",
+        checkboxGroupVars.map(([key, data]) => ({
+          key,
+          optionsCount: data.options?.length || 0,
+        })),
+      );
+    } else {
+      console.log("No checkbox_group variables found in customVariables");
+      console.log(
+        "All variables in map:",
+        Array.from(customVariableMap.entries()).map(([key, data]) => ({
+          key,
+          type: data.variableType,
+        })),
+      );
+    }
 
     // Create a map of custom variable keys to their showUnderline setting
     const customVariableUnderlineMap = new Map<string, boolean>();
@@ -809,9 +1001,53 @@ const PageRenderer: React.FC<PageRendererProps> = ({
 
     // Replace variable placeholders with their values and add underline styling
     // Checkbox groups are already protected, so they won't be processed
+    // BUT: If a checkbox_group variable appears as a placeholder (not as HTML structure),
+    // we need to convert it to a checkbox group HTML structure
     const placeholderRegex = /\{\{\s*([^}]+?)\s*\}\}/g;
     processed = processed.replace(placeholderRegex, (match, placeholder) => {
       const variableKey = placeholder.trim();
+
+      // Check if this is a checkbox_group variable that should be rendered as checkboxes
+      const customVar = customVariableMap.get(variableKey);
+      if (customVar) {
+        console.log(
+          `Processing variable ${variableKey}: type=${customVar.variableType}, hasOptions=${!!customVar.options && customVar.options.length > 0}`,
+        );
+      }
+
+      if (customVar?.variableType === "checkbox_group") {
+        if (customVar.options && customVar.options.length > 0) {
+          console.log(
+            `✓ Converting checkbox_group placeholder ${variableKey} to checkbox HTML with ${customVar.options.length} options`,
+          );
+          // This is a checkbox group variable - render it as checkbox HTML
+          const displayKey = variableKey
+            .replace(/^custom\./, "")
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (l) => l.toUpperCase());
+
+          const optionsHtml = customVar.options
+            .map(
+              (opt) => `
+      <div style="margin-bottom: 4px; display: flex; align-items: center;">
+        <span class="checkbox-indicator" data-checkbox-value="${opt.value}" data-variable-key="${variableKey}" style="display: inline-block; width: 16px; height: 16px; border: 2px solid #333; margin-right: 8px; vertical-align: middle; flex-shrink: 0; text-align: center; line-height: 12px; font-size: 14px; cursor: default;">☐</span>
+        <label style="margin: 0; font-weight: normal;">${opt.label}</label>
+      </div>
+    `,
+            )
+            .join("");
+
+          return `<div data-variable-type="checkbox_group" data-variable-key="${variableKey}" class="checkbox-group-variable" style="margin: 12px 0;">
+  <label class="font-semibold" style="font-weight: 600; display: block; margin-bottom: 8px;">${displayKey}:</label>
+  <div class="checkbox-options" style="margin-top: 8px;">
+${optionsHtml}
+  </div>
+</div>`;
+        } else {
+          console.warn(`Checkbox group variable ${variableKey} has no options`);
+        }
+      }
+
       const variableValue = variableValues.get(variableKey);
 
       // Don't show underline for thrive.* variables
@@ -873,32 +1109,137 @@ const PageRenderer: React.FC<PageRendererProps> = ({
       }
     });
 
+    // If no checkbox groups were found but we have checkbox_group variables in the content,
+    // create them from scratch by finding their variable keys
+    if (groups.length === 0 && checkboxGroupPlaceholders.length === 0) {
+      // Find all checkbox_group variable keys that should be in the content
+      const checkboxVarKeys = Array.from(customVariableMap.entries())
+        .filter(
+          ([_, data]) =>
+            data.variableType === "checkbox_group" &&
+            data.options &&
+            data.options.length > 0,
+        )
+        .map(([key, _]) => key);
+
+      if (checkboxVarKeys.length > 0) {
+        console.log(
+          "Creating checkbox groups from variable keys:",
+          checkboxVarKeys,
+        );
+
+        // For each checkbox variable key, create the HTML structure
+        checkboxVarKeys.forEach((variableKey) => {
+          const customVar = customVariableMap.get(variableKey);
+          if (!customVar?.options || customVar.options.length === 0) return;
+
+          const displayKey = variableKey
+            .replace(/^custom\./, "")
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (l) => l.toUpperCase());
+
+          const optionsHtml = customVar.options
+            .map(
+              (opt) => `
+      <div style="margin-bottom: 4px; display: flex; align-items: center;">
+        <span class="checkbox-indicator" data-checkbox-value="${opt.value}" data-variable-key="${variableKey}" style="display: inline-block; width: 16px; height: 16px; border: 2px solid #333; margin-right: 8px; vertical-align: middle; flex-shrink: 0; text-align: center; line-height: 12px; font-size: 14px; cursor: default;">☐</span>
+        <label style="margin: 0; font-weight: normal;">${opt.label}</label>
+      </div>
+    `,
+            )
+            .join("");
+
+          const checkboxGroupHtml = `<div data-variable-type="checkbox_group" data-variable-key="${variableKey}" class="checkbox-group-variable" style="margin: 12px 0;">
+  <label class="font-semibold" style="font-weight: 600; display: block; margin-bottom: 8px;">${displayKey}:</label>
+  <div class="checkbox-options" style="margin-top: 8px;">
+${optionsHtml}
+  </div>
+</div>`;
+
+          // Find if this variable key appears in the content as a placeholder
+          const placeholderPattern = new RegExp(
+            `\\{\\{\\s*${variableKey.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\}\\}`,
+            "g",
+          );
+          if (placeholderPattern.test(processed)) {
+            // Replace the placeholder with the checkbox group HTML
+            processed = processed.replace(
+              placeholderPattern,
+              checkboxGroupHtml,
+            );
+            console.log(
+              `Replaced placeholder for ${variableKey} with checkbox group`,
+            );
+          }
+        });
+      }
+    }
+
     // Restore checkbox groups exactly as stored (they remain unchanged, no underlines added)
     checkboxGroupPlaceholders.forEach((checkboxGroup, index) => {
       // Restore the checkbox group exactly as it was stored
       // The checkbox group HTML should be preserved completely
       let restored = checkboxGroup;
 
-      // Ensure it has the checkbox-group-variable class if it doesn't already
-      if (
-        !restored.includes('class="checkbox-group-variable"') &&
-        !restored.includes("class='checkbox-group-variable'")
-      ) {
-        const keyMatch = restored.match(/data-variable-key=["']([^"']*)["']/);
-        const variableKey = keyMatch ? keyMatch[1] : "";
+      // Extract variable key
+      const keyMatch = restored.match(/data-variable-key=["']([^"']*)["']/);
+      const variableKey = keyMatch ? keyMatch[1] : "";
+      const customVar = customVariableMap.get(variableKey);
 
-        // Extract content
-        const contentStart = restored.indexOf(">") + 1;
-        const contentEnd = restored.lastIndexOf("</div>");
-        const content =
-          contentStart > 0 && contentEnd > contentStart
-            ? restored.substring(contentStart, contentEnd)
-            : "";
+      // Check if checkbox group has options - if not, populate from custom variable
+      // Check for both the class name and the structure
+      const hasOptions =
+        (restored.includes("checkbox-options") ||
+          restored.includes('class="checkbox-options"')) &&
+        (restored.includes("checkbox-indicator") ||
+          restored.includes('class="checkbox-indicator"'));
 
-        // Rebuild with class
+      // Always populate options from custom variable if available and options are missing
+      // This ensures options are always displayed correctly
+      if (!hasOptions && customVar?.options && customVar.options.length > 0) {
+        // Checkbox group is missing options - populate from custom variable
+        const displayKey = variableKey
+          .replace(/^custom\./, "")
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (l) => l.toUpperCase());
+
+        const optionsHtml = customVar.options
+          .map(
+            (opt) => `
+      <div style="margin-bottom: 4px; display: flex; align-items: center;">
+        <span class="checkbox-indicator" data-checkbox-value="${opt.value}" data-variable-key="${variableKey}" style="display: inline-block; width: 16px; height: 16px; border: 2px solid #333; margin-right: 8px; vertical-align: middle; flex-shrink: 0; text-align: center; line-height: 12px; font-size: 14px; cursor: default;">☐</span>
+        <label style="margin: 0; font-weight: normal;">${opt.label}</label>
+      </div>
+    `,
+          )
+          .join("");
+
+        // Rebuild checkbox group with options
         restored = `<div data-variable-type="checkbox_group" data-variable-key="${variableKey}" class="checkbox-group-variable" style="margin: 12px 0;">
+  <label class="font-semibold" style="font-weight: 600; display: block; margin-bottom: 8px;">${displayKey}:</label>
+  <div class="checkbox-options" style="margin-top: 8px;">
+${optionsHtml}
+  </div>
+</div>`;
+      } else {
+        // Ensure it has the checkbox-group-variable class if it doesn't already
+        if (
+          !restored.includes('class="checkbox-group-variable"') &&
+          !restored.includes("class='checkbox-group-variable'")
+        ) {
+          // Extract content
+          const contentStart = restored.indexOf(">") + 1;
+          const contentEnd = restored.lastIndexOf("</div>");
+          const content =
+            contentStart > 0 && contentEnd > contentStart
+              ? restored.substring(contentStart, contentEnd)
+              : "";
+
+          // Rebuild with class
+          restored = `<div data-variable-type="checkbox_group" data-variable-key="${variableKey}" class="checkbox-group-variable" style="margin: 12px 0;">
 ${content}
 </div>`;
+        }
       }
 
       // Remove any underline styles that might have been added to content inside checkbox group

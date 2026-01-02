@@ -198,9 +198,18 @@ export function usePlaceholders({
           ? "variable-valid bg-[#E0F7FA] text-[#006064] px-1 py-0.5 rounded font-mono text-sm"
           : "variable-invalid bg-red-100 text-red-700 px-1 py-0.5 rounded font-mono text-sm";
 
-        const highlightedHtml = `<span class="${className}" data-variable="${placeholder}" data-is-valid="${isValid}">${placeholderText}</span>`;
+        const highlightedHtml = `<span class="${className}" data-variable="${placeholder}" data-is-valid="${isValid}">${placeholderText}</span>&nbsp;`;
 
-        (editor as any).chain().focus().insertContent(highlightedHtml).run();
+        // Use insertContent with parseOptions to ensure it's treated as a single node
+        (editor as any)
+          .chain()
+          .focus()
+          .insertContent(highlightedHtml, {
+            parseOptions: {
+              preserveWhitespace: "full",
+            },
+          })
+          .run();
       }
     },
     [editorRef, validVariablesSet],
