@@ -55,12 +55,9 @@ export const Page: React.FC<PageProps> = ({
   const contentAreaHeight =
     CONTENT_HEIGHT_PX - headerHeight - footerHeight - 20 - 15; // Subtract 20px for margins + 15px buffer
 
-  // Process page content
-  const processedContent = processPageContent(
-    pageContent,
-    variableValues,
-    customVariables,
-  );
+  // Page content is already processed with variables during pagination
+  // No need to process again - use as-is
+  const processedContent = pageContent;
 
   return (
     <div

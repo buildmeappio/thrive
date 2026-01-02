@@ -149,7 +149,15 @@ export const VariableNodeExtension = Node.create<VariableNodeOptions>({
             ? /^fees\.[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*$/.test(variable)
             : false;
 
-          const isValid = isInValidSet || feeVariableFormatValid;
+          // For custom variables, check if format is valid even if not in validVariablesSet
+          // This allows users to add custom variables that may not be in the current validVariablesSet
+          // Format: custom.varname (supports nested: custom.namespace.varname)
+          const isCustomVariable = variable.startsWith("custom.");
+          const customVariableFormatValid = isCustomVariable
+            ? /^custom\.[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*$/.test(variable)
+            : false;
+
+          const isValid = isInValidSet || feeVariableFormatValid || customVariableFormatValid;
 
           return commands.insertContent({
             type: this.name,

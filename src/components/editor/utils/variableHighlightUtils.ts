@@ -26,7 +26,15 @@ export function highlightVariable(
     ? /^fees\.[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*$/.test(key)
     : false;
 
-  const isValid = (isInValidSet || feeVariableFormatValid) && hasValidNamespace;
+  // For custom variables, check if format is valid even if not in validVariablesSet
+  // This allows users to add custom variables that may not be in the current validVariablesSet
+  // Format: custom.varname (supports nested: custom.namespace.varname)
+  const isCustomVariable = key.startsWith("custom.");
+  const customVariableFormatValid = isCustomVariable
+    ? /^custom\.[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*$/.test(key)
+    : false;
+
+  const isValid = (isInValidSet || feeVariableFormatValid || customVariableFormatValid) && hasValidNamespace;
 
   const className = isValid
     ? "variable-valid bg-[#E0F7FA] text-[#006064] px-1 py-0.5 rounded font-mono text-sm underline"

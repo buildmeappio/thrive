@@ -38,10 +38,20 @@ const PageRenderer: React.FC<PageRendererProps> = ({
   const [pages, setPages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Convert customVariables to CustomVariable type
+  const customVars: CustomVariable[] = customVariables.map((v) => ({
+    key: v.key,
+    showUnderline: v.showUnderline,
+    variableType: v.variableType,
+    options: v.options,
+  }));
+
   const { performPagination } = usePaginationWithLoading(
     content,
     header,
     footer,
+    variableValues,
+    customVars,
   );
 
   // Effect to perform pagination when content changes
@@ -79,15 +89,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [content, header, footer, performPagination]);
-
-  // Convert customVariables to CustomVariable type
-  const customVars: CustomVariable[] = customVariables.map((v) => ({
-    key: v.key,
-    showUnderline: v.showUnderline,
-    variableType: v.variableType,
-    options: v.options,
-  }));
+  }, [content, header, footer, variableValues, customVariables, performPagination]);
 
   return (
     <div className="page-renderer">

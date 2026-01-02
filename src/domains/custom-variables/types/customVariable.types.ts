@@ -6,7 +6,7 @@ export type CheckboxOption = {
 export type CustomVariable = {
   id: string;
   key: string;
-  defaultValue: string;
+  defaultValue: string | null;
   description: string | null;
   isActive: boolean;
   variableType: "text" | "checkbox_group";
@@ -47,7 +47,7 @@ export type ActionResult<T> =
 // Component-specific types
 export type CustomVariableFormData = {
   key: string;
-  defaultValue: string;
+  defaultValue: string | null;
   description?: string | null;
   variableType: "text" | "checkbox_group";
   options?: CheckboxOption[];

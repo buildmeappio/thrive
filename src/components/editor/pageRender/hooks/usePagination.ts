@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import type { HeaderConfig, FooterConfig } from "../../types";
 import { CONTENT_HEIGHT_PX } from "../constants";
 import { waitForImages } from "../utils/imageUtils";
@@ -7,6 +7,8 @@ import {
   createMeasurementContainer,
 } from "../utils/measurementUtils";
 import { splitTableIntoPages } from "../utils/tableUtils";
+import { processPageContent } from "../utils/variableUtils";
+import type { CustomVariable } from "../utils/variableUtils";
 
 /**
  * Calculate the minimum available content height across all pages.
@@ -272,38 +274,54 @@ export function usePagination(
 
 /**
  * Hook to perform pagination with font and image loading
+ * Processes variables BEFORE pagination to ensure accurate width/height measurements
  */
 export function usePaginationWithLoading(
   content: string,
   header: HeaderConfig | undefined,
   footer: FooterConfig | undefined,
+  variableValues?: Map<string, string>,
+  customVariables?: CustomVariable[],
 ) {
-  const { splitContentIntoPages } = usePagination(content, header, footer);
+  // Process variables first to get the actual content that will be rendered
+  // Memoize to avoid reprocessing on every render
+  const processedContent = useMemo(() => {
+    if (variableValues && customVariables) {
+      return processPageContent(content, variableValues, customVariables);
+    }
+    return content;
+  }, [content, variableValues, customVariables]);
+
+  const { splitContentIntoPages } = usePagination(
+    processedContent,
+    header,
+    footer,
+  );
 
   const performPagination = useCallback(async (): Promise<string[]> => {
-    if (!content || !content.trim()) {
+    if (!processedContent || !processedContent.trim()) {
       return [];
     }
 
     // Wait for fonts to load
     await document.fonts.ready;
 
-    // Wait for images to load
+    // Wait for images to load (after variables are processed, as variables might be images)
     const tempDiv = document.createElement("div");
     tempDiv.style.position = "absolute";
     tempDiv.style.visibility = "hidden";
     tempDiv.style.left = "-9999px";
     tempDiv.style.top = "0";
-    tempDiv.innerHTML = content;
+    tempDiv.innerHTML = processedContent;
     document.body.appendChild(tempDiv);
 
     await waitForImages(tempDiv);
 
     document.body.removeChild(tempDiv);
 
-    // Perform pagination
+    // Perform pagination on processed content
     return await splitContentIntoPages();
-  }, [content, splitContentIntoPages]);
+  }, [processedContent, splitContentIntoPages]);
 
   return { performPagination };
 }

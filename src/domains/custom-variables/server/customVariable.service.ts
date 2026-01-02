@@ -265,10 +265,14 @@ export const updateCustomVariable = async (
     }
   }
 
-  // Prepare update data, handling options JSON
+  // Prepare update data, handling options JSON and defaultValue
   const updatePayload: any = { ...updateData };
   if (updateData.options !== undefined) {
     updatePayload.options = updateData.options;
+  }
+  // Ensure defaultValue is never null - convert to empty string if null
+  if (updateData.defaultValue !== undefined) {
+    updatePayload.defaultValue = updateData.defaultValue ?? "";
   }
 
   const variable = await prisma.customVariable.update({

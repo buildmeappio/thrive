@@ -64,54 +64,82 @@ export function Toolbar({
   // Combine system variables with text-type custom variables
   // Filter out checkbox_group types - they use the CheckboxGroupsMenu
   const mergedVariables = useMemo(() => {
-    // Convert system variables to the new format (all treated as text type)
-    const systemVars = availableVariables.map((group) => ({
-      namespace: group.namespace,
-      vars: group.vars.map((varName) => ({
+    // Build a map for efficient duplicate checking: namespace -> Set of variable names
+    const existingVarsByNamespace = new Map<string, Set<string>>();
+
+    // Process system variables and build the lookup map
+    const result: Array<{
+      namespace: string;
+      vars: Array<{ name: string; type: InsertableVariableType }>;
+    }> = availableVariables.map((group) => {
+      const vars = group.vars.map((varName) => ({
         name: varName,
         type: "text" as InsertableVariableType,
-      })),
-    }));
+      }));
 
-    // Filter custom variables to only include insertable types (text, number, money)
-    const textCustomVars = customVariables.filter(
-      (v) =>
-        !v.variableType ||
-        (INSERTABLE_VARIABLE_TYPES as readonly string[]).includes(
-          v.variableType,
-        ),
-    );
+      // Track existing variables for this namespace
+      existingVarsByNamespace.set(
+        group.namespace,
+        new Set(group.vars),
+      );
 
-    // Group custom variables by namespace (extract from key like "custom.varname")
-    const customGroups: Record<
-      string,
-      Array<{ name: string; type: InsertableVariableType }>
-    > = {};
-    textCustomVars.forEach((v) => {
-      const parts = v.key.split(".");
-      const namespace = parts[0] || "custom";
-      const varName = parts.slice(1).join(".") || v.key;
-      if (!customGroups[namespace]) {
-        customGroups[namespace] = [];
-      }
-      customGroups[namespace].push({
-        name: varName,
-        type: (v.variableType as InsertableVariableType) || "text",
-      });
+      return { namespace: group.namespace, vars };
     });
 
-    // Merge system vars with custom vars
-    const merged = [...systemVars];
-    Object.entries(customGroups).forEach(([namespace, vars]) => {
-      const existingGroup = merged.find((g) => g.namespace === namespace);
+    // Process custom variables in a single pass: filter, check duplicates, and group
+    const customGroups = new Map<
+      string,
+      Array<{ name: string; type: InsertableVariableType }>
+    >();
+
+    for (const customVar of customVariables) {
+      // Skip checkbox_group types and non-insertable types
+      if (
+        customVar.variableType &&
+        !INSERTABLE_VARIABLE_TYPES.includes(
+          customVar.variableType as InsertableVariableType,
+        )
+      ) {
+        continue;
+      }
+
+      // Parse namespace and variable name from key (e.g., "custom.varname" -> namespace: "custom", name: "varname")
+      const [namespace = "custom", ...nameParts] = customVar.key.split(".");
+      const varName = nameParts.join(".") || customVar.key;
+
+      // Check if this variable already exists
+      const existingVars = existingVarsByNamespace.get(namespace);
+      if (existingVars?.has(varName)) {
+        continue; // Skip duplicates
+      }
+
+      // Add to custom groups
+      if (!customGroups.has(namespace)) {
+        customGroups.set(namespace, []);
+      }
+      customGroups.get(namespace)!.push({
+        name: varName,
+        type: (customVar.variableType as InsertableVariableType) || "text",
+      });
+
+      // Track this variable to prevent future duplicates
+      if (!existingVarsByNamespace.has(namespace)) {
+        existingVarsByNamespace.set(namespace, new Set());
+      }
+      existingVarsByNamespace.get(namespace)!.add(varName);
+    }
+
+    // Merge custom groups into result
+    for (const [namespace, vars] of customGroups) {
+      const existingGroup = result.find((g) => g.namespace === namespace);
       if (existingGroup) {
         existingGroup.vars.push(...vars);
       } else {
-        merged.push({ namespace, vars });
+        result.push({ namespace, vars });
       }
-    });
+    }
 
-    return merged;
+    return result;
   }, [availableVariables, customVariables]);
 
   return (
@@ -222,13 +250,13 @@ export function Toolbar({
       {/* Checkbox Groups Menu */}
       {customVariables.filter((v) => v.variableType === "checkbox_group")
         .length > 0 && (
-        <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
-          <CheckboxGroupsMenu
-            editor={editor}
-            customVariables={customVariables}
-          />
-        </div>
-      )}
+          <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+            <CheckboxGroupsMenu
+              editor={editor}
+              customVariables={customVariables}
+            />
+          </div>
+        )}
 
       {/* Insert Menu */}
       <div className="flex gap-1">

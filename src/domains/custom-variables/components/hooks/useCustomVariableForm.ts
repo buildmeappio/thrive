@@ -135,11 +135,7 @@ export function useCustomVariableForm(
       newErrors.key = "Key is required";
     }
 
-    if (variableType === "text") {
-      if (!defaultValue.trim()) {
-        newErrors.defaultValue = "Default value is required";
-      }
-    } else if (variableType === "checkbox_group") {
+    if (variableType === "checkbox_group") {
       if (checkboxOptions.length === 0) {
         newErrors.checkboxOptions = "At least one checkbox option is required";
       } else {
@@ -170,7 +166,7 @@ export function useCustomVariableForm(
   const getFormData = (): CustomVariableFormData => {
     return {
       key: key.trim(),
-      defaultValue: variableType === "text" ? defaultValue.trim() : "",
+      defaultValue: variableType === "text" ? (defaultValue.trim() || null) : null,
       description: description.trim() || null,
       variableType,
       options:

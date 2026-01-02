@@ -23,7 +23,7 @@ export function DefaultValueInput({
   return (
     <div>
       <Label htmlFor="defaultValue" className="mb-2 block">
-        Default Value *
+        Default Value
       </Label>
       <Textarea
         id="defaultValue"
