@@ -997,9 +997,11 @@ export const previewContract = async (
 
   // OVERRIDE with signature from fieldValues (user-provided signature takes precedence)
   if (fv && fv.examiner && fv.examiner.signature) {
-    values["application.examiner_signature"] = String(fv.examiner.signature);
+    const signatureValue = String(fv.examiner.signature);
+    values["application.examiner_signature"] = signatureValue;
+    values["examiner.signature"] = signatureValue; // Legacy support
     console.log(
-      `[Contract Preview] Set application.examiner_signature from fieldValues`,
+      `[Contract Preview] Set application.examiner_signature and examiner.signature from fieldValues`,
     );
   }
 
@@ -1313,7 +1315,10 @@ export const previewContract = async (
       renderedHtml = renderedHtml.replace(regex, replacement);
     } else if (isOptionalPlaceholder) {
       // Handle optional placeholders
-      if (placeholder === "examiner.signature") {
+      if (
+        placeholder === "examiner.signature" ||
+        placeholder === "application.examiner_signature"
+      ) {
         // Wrap in a span with data-signature attribute so examiner-web can identify it
         const underscoreLine =
           '<span data-signature="examiner">________________________</span>';
