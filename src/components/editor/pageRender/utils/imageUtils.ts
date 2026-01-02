@@ -131,9 +131,7 @@ export function isImageUrl(url: string): boolean {
     ".ico",
   ];
   return (
-    (trimmedUrl.startsWith("http://") ||
-      trimmedUrl.startsWith("https://")) &&
+    (trimmedUrl.startsWith("http://") || trimmedUrl.startsWith("https://")) &&
     imageExtensions.some((ext) => trimmedUrl.toLowerCase().endsWith(ext))
   );
 }
-

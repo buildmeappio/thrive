@@ -32,4 +32,3 @@ export const PageContent: React.FC<PageContentProps> = ({
     />
   );
 };
-

@@ -53,9 +53,7 @@ export function findCheckboxGroups(html: string): Array<{
     const checkboxIndicatorPattern =
       /<span[^>]*class\s*=\s*["'][^"']*checkbox-indicator[^"']*["'][^>]*>/gi;
     let indicatorMatch;
-    while (
-      (indicatorMatch = checkboxIndicatorPattern.exec(html)) !== null
-    ) {
+    while ((indicatorMatch = checkboxIndicatorPattern.exec(html)) !== null) {
       // Find the parent div containing this checkbox indicator
       let searchIndex = indicatorMatch.index;
       let divStart = -1;
@@ -104,7 +102,11 @@ export function findCheckboxGroups(html: string): Array<{
               // Check if this group is already in the list
               const exists = groups.some((g) => g.start === divStart);
               if (!exists) {
-                groups.push({ start: divStart, end: endIndex, html: groupHtml });
+                groups.push({
+                  start: divStart,
+                  end: endIndex,
+                  html: groupHtml,
+                });
               }
               break;
             }
@@ -122,9 +124,10 @@ export function findCheckboxGroups(html: string): Array<{
  * Protect checkbox groups by replacing them with placeholders
  * Returns the processed HTML and array of protected groups
  */
-export function protectCheckboxGroups(
-  html: string,
-): { processed: string; placeholders: string[] } {
+export function protectCheckboxGroups(html: string): {
+  processed: string;
+  placeholders: string[];
+} {
   const groups = findCheckboxGroups(html);
   const placeholders: string[] = [];
   let processed = html;
@@ -267,4 +270,3 @@ ${content}
 
   return restored;
 }
-

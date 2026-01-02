@@ -131,4 +131,3 @@ export function createMeasurementContainer(): HTMLElement {
 
   return measurementContainer;
 }
-

@@ -9,20 +9,20 @@ export function useVariableHighlighting(validVariables: Set<string>) {
   // Serialize Set for dependency tracking
   const validVariablesKey = useMemo(
     () => Array.from(validVariables).sort().join("|"),
-    [validVariables]
+    [validVariables],
   );
 
   // Function to highlight a single variable placeholder
   const highlightVariable = useMemo(
-    () => (placeholder: string): string => {
-      return highlightVariableUtil(placeholder, validVariables);
-    },
+    () =>
+      (placeholder: string): string => {
+        return highlightVariableUtil(placeholder, validVariables);
+      },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [validVariablesKey] // validVariablesKey tracks Set contents changes
+    [validVariablesKey], // validVariablesKey tracks Set contents changes
   );
 
   return {
     highlightVariable,
   };
 }
-

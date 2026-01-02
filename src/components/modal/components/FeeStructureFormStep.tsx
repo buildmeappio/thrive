@@ -126,7 +126,12 @@ export default function FeeStructureFormStep({
   // Render input for a sub-field
   const renderSubFieldInput = (
     variable: FeeVariable,
-    subField: { key: string; label: string; type: "NUMBER" | "MONEY" | "TEXT"; unit?: string },
+    subField: {
+      key: string;
+      label: string;
+      type: "NUMBER" | "MONEY" | "TEXT";
+      unit?: string;
+    },
   ) => {
     const value = getCompositeSubFieldValue(variable, subField.key);
     const inputId = `fee-${variable.key}-${subField.key}`;
@@ -152,7 +157,11 @@ export default function FeeStructureFormStep({
                       : inputValue === "."
                         ? inputValue
                         : parseFloat(inputValue);
-                  handleCompositeFieldChange(variable.key, subField.key, numValue);
+                  handleCompositeFieldChange(
+                    variable.key,
+                    subField.key,
+                    numValue,
+                  );
                 }
               }}
               onBlur={(e) => {
@@ -160,7 +169,11 @@ export default function FeeStructureFormStep({
                 if (inputValue && inputValue !== ".") {
                   const numValue = parseFloat(inputValue);
                   if (!isNaN(numValue)) {
-                    handleCompositeFieldChange(variable.key, subField.key, numValue);
+                    handleCompositeFieldChange(
+                      variable.key,
+                      subField.key,
+                      numValue,
+                    );
                   }
                 }
               }}
@@ -199,11 +212,15 @@ export default function FeeStructureFormStep({
                     inputValue === ""
                       ? null
                       : inputValue === "-" ||
-                        inputValue === "." ||
-                        inputValue === "-."
+                          inputValue === "." ||
+                          inputValue === "-."
                         ? inputValue
                         : parseFloat(inputValue);
-                  handleCompositeFieldChange(variable.key, subField.key, numValue);
+                  handleCompositeFieldChange(
+                    variable.key,
+                    subField.key,
+                    numValue,
+                  );
                 }
               }}
               onBlur={(e) => {
@@ -211,7 +228,11 @@ export default function FeeStructureFormStep({
                 if (inputValue && inputValue !== "-" && inputValue !== ".") {
                   const numValue = parseFloat(inputValue);
                   if (!isNaN(numValue)) {
-                    handleCompositeFieldChange(variable.key, subField.key, numValue);
+                    handleCompositeFieldChange(
+                      variable.key,
+                      subField.key,
+                      numValue,
+                    );
                   }
                 }
               }}
@@ -242,7 +263,11 @@ export default function FeeStructureFormStep({
             type="text"
             value={typeof value === "string" ? value : ""}
             onChange={(e) =>
-              handleCompositeFieldChange(variable.key, subField.key, e.target.value)
+              handleCompositeFieldChange(
+                variable.key,
+                subField.key,
+                e.target.value,
+              )
             }
             className="
               h-12 w-full
@@ -266,7 +291,11 @@ export default function FeeStructureFormStep({
   // Render input based on variable type
   const renderInput = (variable: FeeVariable) => {
     // Handle composite variables
-    if (variable.composite && variable.subFields && variable.subFields.length > 0) {
+    if (
+      variable.composite &&
+      variable.subFields &&
+      variable.subFields.length > 0
+    ) {
       return (
         <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
           {variable.subFields.map((subField) => (
@@ -367,8 +396,8 @@ export default function FeeStructureFormStep({
                     inputValue === ""
                       ? null
                       : inputValue === "-" ||
-                        inputValue === "." ||
-                        inputValue === "-."
+                          inputValue === "." ||
+                          inputValue === "-."
                         ? inputValue
                         : parseFloat(inputValue);
                   handleFieldChange(variable.key, numValue);

@@ -17,4 +17,3 @@ export const PagePreviewHeading: React.FC<PagePreviewHeadingProps> = ({
     </h3>
   );
 };
-

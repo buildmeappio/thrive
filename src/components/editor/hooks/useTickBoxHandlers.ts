@@ -64,4 +64,3 @@ export function useTickBoxHandlers(editor: Editor | null) {
     applyTickBox,
   };
 }
-

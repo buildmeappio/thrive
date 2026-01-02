@@ -52,4 +52,3 @@ export const ALLOWED_NAMESPACES = [
   "fees",
   "custom",
 ];
-

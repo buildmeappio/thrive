@@ -145,8 +145,8 @@ export function useRichTextEditor(
       // Simple: just clean content and emit
       // Variable spans are non-editable (contenteditable="false"), so no fixing needed
       const html = editor.getHTML();
-        const cleaned = cleanContent(html);
-        onChange(cleaned);
+      const cleaned = cleanContent(html);
+      onChange(cleaned);
     },
     editorProps: {
       attributes: {
@@ -171,4 +171,3 @@ export function useRichTextEditor(
     setEditorRef,
   };
 }
-

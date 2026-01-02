@@ -536,9 +536,7 @@ export const updateFeeVariable = async (
 
     // Prevent circular references (variable cannot reference itself)
     if (input.referenceKey === existingVariable.key) {
-      const error = new Error(
-        "Variable cannot reference itself",
-      ) as Error & {
+      const error = new Error("Variable cannot reference itself") as Error & {
         fieldErrors: Record<string, string>;
       };
       error.fieldErrors = {

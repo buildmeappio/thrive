@@ -30,4 +30,3 @@ export const PageFooter: React.FC<PageFooterProps> = ({ content, height }) => {
     </div>
   );
 };
-

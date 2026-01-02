@@ -27,7 +27,7 @@ import { ENV } from "@/constants/variables";
 
 // List contracts with optional filters
 export const listContracts = async (
-  input: ListContractsInput
+  input: ListContractsInput,
 ): Promise<ContractListItem[]> => {
   const { status, search, templateId, examinerProfileId, applicationId } =
     input;
@@ -102,7 +102,7 @@ export const listContracts = async (
     } else if (contract.application) {
       examinerName = formatFullName(
         contract.application.firstName,
-        contract.application.lastName
+        contract.application.lastName,
       );
     }
 
@@ -236,7 +236,7 @@ export const getContract = async (id: string): Promise<ContractData> => {
 // Create a new contract
 export const createContract = async (
   input: CreateContractInput,
-  createdBy: string
+  createdBy: string,
 ): Promise<{ id: string }> => {
   // Get template version
   const templateVersion = await prisma.templateVersion.findUnique({
@@ -282,25 +282,25 @@ export const createContract = async (
     const compatibility = validateFeeStructureCompatibility(
       requiredFeeVars,
       transformedVariables,
-      templateContent
+      templateContent,
     );
 
     if (!compatibility.compatible) {
       const missingParts: string[] = [];
       if (compatibility.missingVariables.length > 0) {
         missingParts.push(
-          ...compatibility.missingVariables.map((v) => `fees.${v}`)
+          ...compatibility.missingVariables.map((v) => `fees.${v}`),
         );
       }
       if (compatibility.missingSubFields.length > 0) {
         missingParts.push(
           ...compatibility.missingSubFields.map(
-            (sf) => `fees.${sf.variableKey}.${sf.subFieldKey}`
-          )
+            (sf) => `fees.${sf.variableKey}.${sf.subFieldKey}`,
+          ),
         );
       }
       throw HttpError.badRequest(
-        `Fee structure is missing required variables: ${missingParts.join(", ")}`
+        `Fee structure is missing required variables: ${missingParts.join(", ")}`,
       );
     }
   }
@@ -321,7 +321,7 @@ export const createContract = async (
     if (examiner?.account?.user) {
       examinerName = formatFullName(
         examiner.account.user.firstName,
-        examiner.account.user.lastName
+        examiner.account.user.lastName,
       );
     }
   } else if (input.applicationId) {
@@ -331,7 +331,7 @@ export const createContract = async (
     if (application) {
       examinerName = formatFullName(
         application.firstName,
-        application.lastName
+        application.lastName,
       );
     }
   }
@@ -409,13 +409,13 @@ export const createContract = async (
   // Validate that either examinerProfileId or applicationId is provided, but not both
   if (!input.examinerProfileId && !input.applicationId) {
     throw HttpError.badRequest(
-      "Either examinerProfileId or applicationId must be provided"
+      "Either examinerProfileId or applicationId must be provided",
     );
   }
 
   if (input.examinerProfileId && input.applicationId) {
     throw HttpError.badRequest(
-      "Cannot provide both examinerProfileId and applicationId"
+      "Cannot provide both examinerProfileId and applicationId",
     );
   }
 
@@ -441,7 +441,7 @@ export const createContract = async (
   // Create contract
   console.log(
     "[createContract] Received fieldValues:",
-    JSON.stringify(input.fieldValues, null, 2)
+    JSON.stringify(input.fieldValues, null, 2),
   );
   console.log("[createContract] contract values:", input.fieldValues?.contract);
   console.log("[createContract] thrive values:", input.fieldValues?.thrive);
@@ -468,7 +468,7 @@ export const createContract = async (
 
 // Update contract fields
 export const updateContractFields = async (
-  input: UpdateContractFieldsInput
+  input: UpdateContractFieldsInput,
 ): Promise<{ id: string }> => {
   const contract = await prisma.contract.findUnique({
     where: { id: input.id },
@@ -499,11 +499,11 @@ export const updateContractFields = async (
   // Log signature updates for debugging
   if (input.fieldValues.examiner?.signature) {
     console.log(
-      `[updateContractFields] Saving examiner signature for contract ${input.id}`
+      `[updateContractFields] Saving examiner signature for contract ${input.id}`,
     );
     console.log(
       `[updateContractFields] Merged examiner object:`,
-      JSON.stringify(mergedExaminer)
+      JSON.stringify(mergedExaminer),
     );
   }
 
@@ -601,7 +601,7 @@ export const updateContractFields = async (
 // Update contract fee structure
 export const updateContractFeeStructure = async (
   contractId: string,
-  feeStructureId: string
+  feeStructureId: string,
 ): Promise<{ id: string }> => {
   const contract = await prisma.contract.findUnique({
     where: { id: contractId },
@@ -650,25 +650,25 @@ export const updateContractFeeStructure = async (
     const compatibility = validateFeeStructureCompatibility(
       requiredFeeVars,
       transformedVariables,
-      templateContent
+      templateContent,
     );
 
     if (!compatibility.compatible) {
       const missingParts: string[] = [];
       if (compatibility.missingVariables.length > 0) {
         missingParts.push(
-          ...compatibility.missingVariables.map((v) => `fees.${v}`)
+          ...compatibility.missingVariables.map((v) => `fees.${v}`),
         );
       }
       if (compatibility.missingSubFields.length > 0) {
         missingParts.push(
           ...compatibility.missingSubFields.map(
-            (sf) => `fees.${sf.variableKey}.${sf.subFieldKey}`
-          )
+            (sf) => `fees.${sf.variableKey}.${sf.subFieldKey}`,
+          ),
         );
       }
       throw HttpError.badRequest(
-        `Fee structure is missing required variables: ${missingParts.join(", ")}`
+        `Fee structure is missing required variables: ${missingParts.join(", ")}`,
       );
     }
   }
@@ -747,7 +747,7 @@ export const updateContractFeeStructure = async (
     if (examiner?.account?.user) {
       examinerName = formatFullName(
         examiner.account.user.firstName,
-        examiner.account.user.lastName
+        examiner.account.user.lastName,
       );
     }
   } else if (contract.applicationId) {
@@ -757,7 +757,7 @@ export const updateContractFeeStructure = async (
     if (application) {
       examinerName = formatFullName(
         application.firstName,
-        application.lastName
+        application.lastName,
       );
     }
   }
@@ -795,7 +795,7 @@ export const updateContractFeeStructure = async (
 
 // Preview contract (render with placeholders)
 export const previewContract = async (
-  contractId: string
+  contractId: string,
 ): Promise<PreviewContractResult> => {
   const contract = await getContract(contractId);
 
@@ -828,7 +828,7 @@ export const previewContract = async (
       },
     });
     console.log(
-      `[Contract Preview] Application loaded: id=${application?.id}, hasAddress=${!!application?.address}, addressCity=${application?.address?.city}`
+      `[Contract Preview] Application loaded: id=${application?.id}, hasAddress=${!!application?.address}, addressCity=${application?.address?.city}`,
     );
   }
 
@@ -869,21 +869,21 @@ export const previewContract = async (
     if (!values["application.examiner_name"]) {
       const fullName = formatFullName(
         application.firstName || "",
-        application.lastName || ""
+        application.lastName || "",
       );
       console.log(
-        `[Contract Preview] Application name: firstName="${application.firstName}", lastName="${application.lastName}", formatted="${fullName}"`
+        `[Contract Preview] Application name: firstName="${application.firstName}", lastName="${application.lastName}", formatted="${fullName}"`,
       );
       if (fullName) {
         values["application.examiner_name"] = fullName;
       } else {
         console.warn(
-          `[Contract Preview] formatFullName returned empty for application ${application.id}`
+          `[Contract Preview] formatFullName returned empty for application ${application.id}`,
         );
       }
     } else {
       console.log(
-        `[Contract Preview] application.examiner_name already set to: "${values["application.examiner_name"]}"`
+        `[Contract Preview] application.examiner_name already set to: "${values["application.examiner_name"]}"`,
       );
     }
 
@@ -916,12 +916,12 @@ export const previewContract = async (
 
     // City (from address)
     console.log(
-      `[Contract Preview] Checking application.address.city: address=${!!application.address}, city=${application.address?.city}`
+      `[Contract Preview] Checking application.address.city: address=${!!application.address}, city=${application.address?.city}`,
     );
     if (!values["application.examiner_city"] && application.address?.city) {
       values["application.examiner_city"] = application.address.city;
       console.log(
-        `[Contract Preview] Set application.examiner_city = "${application.address.city}"`
+        `[Contract Preview] Set application.examiner_city = "${application.address.city}"`,
       );
     }
 
@@ -977,25 +977,25 @@ export const previewContract = async (
   // Fallback to examinerProfile if application is not available
   if (!application && examinerProfile) {
     console.log(
-      `[Contract Preview] No application, falling back to examinerProfile ${examinerProfile.id}`
+      `[Contract Preview] No application, falling back to examinerProfile ${examinerProfile.id}`,
     );
     // Add examiner name if not already set (using formatFullName utility for consistent formatting)
     if (!values["application.examiner_name"] && examinerProfile.account?.user) {
       const user = examinerProfile.account.user;
       const fullName = formatFullName(user.firstName, user.lastName);
       console.log(
-        `[Contract Preview] ExaminerProfile name: firstName="${user.firstName}", lastName="${user.lastName}", formatted="${fullName}"`
+        `[Contract Preview] ExaminerProfile name: firstName="${user.firstName}", lastName="${user.lastName}", formatted="${fullName}"`,
       );
       if (fullName) {
         values["application.examiner_name"] = fullName;
       } else {
         console.warn(
-          `[Contract Preview] formatFullName returned empty for examinerProfile ${examinerProfile.id}`
+          `[Contract Preview] formatFullName returned empty for examinerProfile ${examinerProfile.id}`,
         );
       }
     } else if (!values["application.examiner_name"]) {
       console.warn(
-        `[Contract Preview] No user data in examinerProfile ${examinerProfile.id}`
+        `[Contract Preview] No user data in examinerProfile ${examinerProfile.id}`,
       );
     }
 
@@ -1009,12 +1009,12 @@ export const previewContract = async (
 
     // Add examiner city from address if not already set
     console.log(
-      `[Contract Preview] Checking examinerProfile.address.city: address=${!!examinerProfile.address}, city=${examinerProfile.address?.city}`
+      `[Contract Preview] Checking examinerProfile.address.city: address=${!!examinerProfile.address}, city=${examinerProfile.address?.city}`,
     );
     if (!values["application.examiner_city"] && examinerProfile.address?.city) {
       values["application.examiner_city"] = examinerProfile.address.city;
       console.log(
-        `[Contract Preview] Set application.examiner_city from examinerProfile = "${examinerProfile.address.city}"`
+        `[Contract Preview] Set application.examiner_city from examinerProfile = "${examinerProfile.address.city}"`,
       );
     }
 
@@ -1028,7 +1028,7 @@ export const previewContract = async (
     }
   } else if (!application && !examinerProfile) {
     console.error(
-      `[Contract Preview] Contract has neither application nor examinerProfile!`
+      `[Contract Preview] Contract has neither application nor examinerProfile!`,
     );
   }
 
@@ -1056,7 +1056,7 @@ export const previewContract = async (
     values["application.examiner_signature"] = signatureValue;
     values["examiner.signature"] = signatureValue; // Legacy support
     console.log(
-      `[Contract Preview] Set application.examiner_signature and examiner.signature from fieldValues`
+      `[Contract Preview] Set application.examiner_signature and examiner.signature from fieldValues`,
     );
   }
 
@@ -1076,7 +1076,7 @@ export const previewContract = async (
     } catch (error) {
       logger.warn(
         `Failed to format review date for contract ${contract.id}:`,
-        error
+        error,
       );
     }
   }
@@ -1087,17 +1087,17 @@ export const previewContract = async (
   console.log(`[Contract Preview] fv.contract exists:`, !!fv?.contract);
   console.log(
     `[Contract Preview] fv.contract value:`,
-    JSON.stringify(fv?.contract)
+    JSON.stringify(fv?.contract),
   );
   console.log(
     `[Contract Preview] fv.thrive value:`,
-    JSON.stringify(fv?.thrive)
+    JSON.stringify(fv?.thrive),
   );
 
   if (fv && fv.contract) {
     console.log(
       `[Contract Preview] Found contract fieldValues:`,
-      Object.keys(fv.contract)
+      Object.keys(fv.contract),
     );
     for (const [key, value] of Object.entries(fv.contract)) {
       values[`contract.${key}`] = String(value);
@@ -1105,7 +1105,7 @@ export const previewContract = async (
     }
   } else {
     console.warn(
-      `[Contract Preview] No contract fieldValues found! fv=${!!fv}, fv.contract=${!!fv?.contract}`
+      `[Contract Preview] No contract fieldValues found! fv=${!!fv}, fv.contract=${!!fv?.contract}`,
     );
   }
 
@@ -1120,7 +1120,7 @@ export const previewContract = async (
     for (const [key, value] of Object.entries(fv.org)) {
       values[`thrive.${key}`] = String(value);
       console.log(
-        `[Contract Preview] Set thrive.${key} = "${value}" (from org)`
+        `[Contract Preview] Set thrive.${key} = "${value}" (from org)`,
       );
     }
   }
@@ -1128,10 +1128,10 @@ export const previewContract = async (
   // Add fees values
   if (contract.feeStructure) {
     console.log(
-      `[Contract Preview] Fee structure found: ${contract.feeStructure.name} (${contract.feeStructure.id})`
+      `[Contract Preview] Fee structure found: ${contract.feeStructure.name} (${contract.feeStructure.id})`,
     );
     console.log(
-      `[Contract Preview] Fee structure has ${contract.feeStructure.variables.length} variables`
+      `[Contract Preview] Fee structure has ${contract.feeStructure.variables.length} variables`,
     );
 
     for (const variable of contract.feeStructure.variables) {
@@ -1151,7 +1151,7 @@ export const previewContract = async (
             : {};
 
         console.log(
-          `[Contract Preview] Processing composite fee variable: ${variable.key}, subFields=${variable.subFields.length}`
+          `[Contract Preview] Processing composite fee variable: ${variable.key}, subFields=${variable.subFields.length}`,
         );
 
         // Process each sub-field
@@ -1188,7 +1188,7 @@ export const previewContract = async (
 
           values[`fees.${variable.key}.${subField.key}`] = formattedValue;
           console.log(
-            `[Contract Preview] Set fees.${variable.key}.${subField.key} = "${formattedValue}"`
+            `[Contract Preview] Set fees.${variable.key}.${subField.key} = "${formattedValue}"`,
           );
         }
       } else {
@@ -1198,7 +1198,7 @@ export const previewContract = async (
           overrideValue !== undefined ? overrideValue : variable.defaultValue;
 
         console.log(
-          `[Contract Preview] Processing fee variable: ${variable.key}, type=${variable.type}, defaultValue=${defaultValue}, override=${overrideValue}, included=${variable.included}`
+          `[Contract Preview] Processing fee variable: ${variable.key}, type=${variable.type}, defaultValue=${defaultValue}, override=${overrideValue}, included=${variable.included}`,
         );
 
         // Format based on type
@@ -1229,7 +1229,7 @@ export const previewContract = async (
 
         values[`fees.${variable.key}`] = formattedValue;
         console.log(
-          `[Contract Preview] Set fees.${variable.key} = "${formattedValue}"`
+          `[Contract Preview] Set fees.${variable.key} = "${formattedValue}"`,
         );
       }
     }
@@ -1266,7 +1266,7 @@ export const previewContract = async (
 
   // Log the raw HTML to debug styling issues
   logger.log(
-    `📋 Raw template HTML (first 500 chars): ${templateHtml.substring(0, 500)}`
+    `📋 Raw template HTML (first 500 chars): ${templateHtml.substring(0, 500)}`,
   );
 
   // Replace placeholders in template
@@ -1323,7 +1323,7 @@ export const previewContract = async (
     /<span[^>]*data-variable="([^"]*)"[^>]*>(.*?)<\/span>/gi,
     (match, variableKey) => {
       return `{{${variableKey}}}`;
-    }
+    },
   );
 
   // Step 3: Extract variable keys from spans with title attribute containing placeholder
@@ -1331,7 +1331,7 @@ export const previewContract = async (
     /<span[^>]*title="\{\{([^}]+)\}\}"[^>]*>(.*?)<\/span>/gi,
     (match, variableKey) => {
       return `{{${variableKey}}}`;
-    }
+    },
   );
 
   // Step 4: Extract variable keys from spans with border-bottom styling (preview spans)
@@ -1339,7 +1339,7 @@ export const previewContract = async (
     /<span[^>]*style="[^"]*border-bottom:\s*2px[^"]*"[^>]*title="\{\{([^}]+)\}\}"[^>]*>(.*?)<\/span>/gi,
     (match, variableKey) => {
       return `{{${variableKey}}}`;
-    }
+    },
   );
 
   // Step 5: Handle spans with variable classes
@@ -1353,7 +1353,7 @@ export const previewContract = async (
       const titleMatch = match.match(/title="\{\{([^}]+)\}\}"/);
       if (titleMatch) return `{{${titleMatch[1]}}}`;
       return content;
-    }
+    },
   );
 
   // Step 6: Now parse and replace placeholders
@@ -1363,7 +1363,7 @@ export const previewContract = async (
     // Replace all occurrences of this placeholder
     const regex = new RegExp(
       `\\{\\{\\s*${placeholder.replace(/\./g, "\\.")}\\s*\\}\\}`,
-      "g"
+      "g",
     );
 
     // Signature placeholders are optional - replace with underscores if not available
@@ -1477,7 +1477,7 @@ export const previewContract = async (
 
   // Log final rendered HTML for debugging
   logger.log(
-    `✅ Contract preview HTML generated (${renderedHtml.length} characters)`
+    `✅ Contract preview HTML generated (${renderedHtml.length} characters)`,
   );
   const finalPreview =
     renderedHtml.length > 1000
@@ -1494,7 +1494,7 @@ export const previewContract = async (
 
 // Generate contract HTML and upload to S3 (used when sending contract)
 export const generateAndUploadContractHtml = async (
-  contractId: string
+  contractId: string,
 ): Promise<{ htmlS3Key: string; renderedHtml: string }> => {
   // First, generate the HTML using previewContract
   const previewResult = await previewContract(contractId);
@@ -1505,18 +1505,18 @@ export const generateAndUploadContractHtml = async (
     (p) =>
       p !== "examiner.signature" &&
       p !== "examiner.signature_date_time" &&
-      p !== "contract.review_date"
+      p !== "contract.review_date",
   );
 
   if (requiredPlaceholders.length > 0) {
     throw HttpError.badRequest(
-      `Missing required placeholders: ${requiredPlaceholders.join(", ")}`
+      `Missing required placeholders: ${requiredPlaceholders.join(", ")}`,
     );
   }
 
   // Log HTML before uploading
   logger.log(
-    `📤 Preparing to upload contract HTML to S3 (${previewResult.renderedHtml.length} characters)`
+    `📤 Preparing to upload contract HTML to S3 (${previewResult.renderedHtml.length} characters)`,
   );
   const uploadPreview =
     previewResult.renderedHtml.length > 1000
@@ -1533,7 +1533,7 @@ export const generateAndUploadContractHtml = async (
       htmlBuffer,
       htmlFileName,
       "text/html",
-      "contracts"
+      "contracts",
     );
     logger.log(`✅ Contract HTML uploaded to S3: ${htmlS3Key}`);
   } catch (error) {
@@ -1591,7 +1591,7 @@ export const generateAndUploadContractHtml = async (
     // Log error but don't fail the contract generation
     logger.error(
       "Failed to create/update Google Doc for contract (non-fatal):",
-      error
+      error,
     );
     // Still update the contract with HTML and S3 key
     await prisma.contract.update({

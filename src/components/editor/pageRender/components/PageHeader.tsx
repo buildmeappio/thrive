@@ -30,4 +30,3 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ content, height }) => {
     </div>
   );
 };
-

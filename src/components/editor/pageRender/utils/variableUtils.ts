@@ -116,7 +116,7 @@ function processVariablePlaceholders(
     const isThriveVariable = variableKey.startsWith("thrive.");
     const showUnderline = isThriveVariable
       ? false
-      : customVariableUnderlineMap.get(variableKey) ?? true; // Default to true for non-custom variables
+      : (customVariableUnderlineMap.get(variableKey) ?? true); // Default to true for non-custom variables
 
     if (variableValue) {
       // Check if the value is an image URL
@@ -264,4 +264,3 @@ export function processPageContent(
 
   return processed;
 }
-

@@ -257,16 +257,21 @@ export default function FeeVariablesTable({
                             </span>
                           )}
                         </div>
-                        {variable.composite && variable.subFields && variable.subFields.length > 0 && (
-                          <div className="text-xs text-[#7B8B91] font-poppins mt-1">
-                            Sub-fields: {variable.subFields.map((sf) => sf.label).join(", ")}
-                            {variable.referenceKey && (
-                              <span className="ml-2 text-blue-600">
-                                (ref: {variable.referenceKey})
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        {variable.composite &&
+                          variable.subFields &&
+                          variable.subFields.length > 0 && (
+                            <div className="text-xs text-[#7B8B91] font-poppins mt-1">
+                              Sub-fields:{" "}
+                              {variable.subFields
+                                .map((sf) => sf.label)
+                                .join(", ")}
+                              {variable.referenceKey && (
+                                <span className="ml-2 text-blue-600">
+                                  (ref: {variable.referenceKey})
+                                </span>
+                              )}
+                            </div>
+                          )}
                       </div>
                     </TableCell>
                     <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-middle">

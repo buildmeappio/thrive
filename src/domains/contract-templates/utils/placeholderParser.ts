@@ -230,9 +230,7 @@ export function validateFeeStructureCompatibility(
   templateContent?: string,
 ): FeeStructureCompatibilityResult {
   const feeStructureKeys = new Set(feeStructureVariables.map((v) => v.key));
-  const feeStructureMap = new Map(
-    feeStructureVariables.map((v) => [v.key, v]),
-  );
+  const feeStructureMap = new Map(feeStructureVariables.map((v) => [v.key, v]));
 
   const missingVariables: string[] = [];
   const missingSubFields: Array<{ variableKey: string; subFieldKey: string }> =
@@ -255,7 +253,9 @@ export function validateFeeStructureCompatibility(
         // Find all placeholders for this composite variable
         const compositePlaceholders = allPlaceholders.filter((p) => {
           const parts = p.split(".");
-          return parts[0] === "fees" && parts[1] === requiredKey && parts.length > 2;
+          return (
+            parts[0] === "fees" && parts[1] === requiredKey && parts.length > 2
+          );
         });
 
         // Extract required sub-field keys
@@ -288,8 +288,7 @@ export function validateFeeStructureCompatibility(
   // We don't need to check for extra variables as they don't cause issues
 
   return {
-    compatible:
-      missingVariables.length === 0 && missingSubFields.length === 0,
+    compatible: missingVariables.length === 0 && missingSubFields.length === 0,
     missingVariables,
     missingSubFields,
     extraVariables: [],

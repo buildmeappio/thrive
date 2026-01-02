@@ -51,4 +51,3 @@ export const CheckboxGroupStyles: React.FC = () => {
     `}</style>
   );
 };
-

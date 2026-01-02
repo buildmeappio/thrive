@@ -1,5 +1,15 @@
 import { useMemo } from "react";
-import { Undo2, Redo2, Bold, Italic, Underline as UnderlineIcon, Strikethrough, Subscript as SubscriptIcon, Superscript as SuperscriptIcon, Printer } from "lucide-react";
+import {
+  Undo2,
+  Redo2,
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  Subscript as SubscriptIcon,
+  Superscript as SuperscriptIcon,
+  Printer,
+} from "lucide-react";
 import { ToolbarButton } from "./ToolbarButton";
 import { TextStyleDropdown } from "./TextStyleDropdown";
 import { FontSizeDropdown } from "./FontSizeDropdown";
@@ -17,229 +27,239 @@ import type { Editor } from "@tiptap/react";
 import type { useLinkHandlers } from "../hooks/useLinkHandlers";
 import type { useHeaderFooter } from "../hooks/useHeaderFooter";
 import type { HeaderConfig, FooterConfig } from "../types";
-import { INSERTABLE_VARIABLE_TYPES, type InsertableVariableType } from "../extension/VariableNodeExtension";
+import {
+  INSERTABLE_VARIABLE_TYPES,
+  type InsertableVariableType,
+} from "../extension/VariableNodeExtension";
 
 interface ToolbarProps {
-	editor: Editor;
-	linkHandlers: ReturnType<typeof useLinkHandlers>;
-	headerFooterHandlers: ReturnType<typeof useHeaderFooter>;
-	headerConfig?: HeaderConfig;
-	footerConfig?: FooterConfig;
-	availableVariables: Array<{ namespace: string; vars: string[] }>;
-	customVariables: Array<{
-		key: string;
-		variableType: "text" | "checkbox_group";
-		options?: Array<{ label: string; value: string }> | null;
-	}>;
-	onAddImage: () => void;
-	onAddTickBox: () => void;
-	onPrint: () => void;
+  editor: Editor;
+  linkHandlers: ReturnType<typeof useLinkHandlers>;
+  headerFooterHandlers: ReturnType<typeof useHeaderFooter>;
+  headerConfig?: HeaderConfig;
+  footerConfig?: FooterConfig;
+  availableVariables: Array<{ namespace: string; vars: string[] }>;
+  customVariables: Array<{
+    key: string;
+    variableType: "text" | "checkbox_group";
+    options?: Array<{ label: string; value: string }> | null;
+  }>;
+  onAddImage: () => void;
+  onAddTickBox: () => void;
+  onPrint: () => void;
 }
 
 export function Toolbar({
-	editor,
-	linkHandlers,
-	headerFooterHandlers,
-	headerConfig,
-	footerConfig,
-	availableVariables,
-	customVariables,
-	onAddImage,
-	onAddTickBox,
-	onPrint,
+  editor,
+  linkHandlers,
+  headerFooterHandlers,
+  headerConfig,
+  footerConfig,
+  availableVariables,
+  customVariables,
+  onAddImage,
+  onAddTickBox,
+  onPrint,
 }: ToolbarProps) {
-	// Combine system variables with text-type custom variables
-	// Filter out checkbox_group types - they use the CheckboxGroupsMenu
-	const mergedVariables = useMemo(() => {
-		// Convert system variables to the new format (all treated as text type)
-		const systemVars = availableVariables.map((group) => ({
-			namespace: group.namespace,
-			vars: group.vars.map((varName) => ({
-				name: varName,
-				type: "text" as InsertableVariableType,
-			})),
-		}));
+  // Combine system variables with text-type custom variables
+  // Filter out checkbox_group types - they use the CheckboxGroupsMenu
+  const mergedVariables = useMemo(() => {
+    // Convert system variables to the new format (all treated as text type)
+    const systemVars = availableVariables.map((group) => ({
+      namespace: group.namespace,
+      vars: group.vars.map((varName) => ({
+        name: varName,
+        type: "text" as InsertableVariableType,
+      })),
+    }));
 
-		// Filter custom variables to only include insertable types (text, number, money)
-		const textCustomVars = customVariables.filter(
-			(v) =>
-				!v.variableType ||
-				(INSERTABLE_VARIABLE_TYPES as readonly string[]).includes(v.variableType)
-		);
+    // Filter custom variables to only include insertable types (text, number, money)
+    const textCustomVars = customVariables.filter(
+      (v) =>
+        !v.variableType ||
+        (INSERTABLE_VARIABLE_TYPES as readonly string[]).includes(
+          v.variableType,
+        ),
+    );
 
-		// Group custom variables by namespace (extract from key like "custom.varname")
-		const customGroups: Record<string, Array<{ name: string; type: InsertableVariableType }>> = {};
-		textCustomVars.forEach((v) => {
-			const parts = v.key.split(".");
-			const namespace = parts[0] || "custom";
-			const varName = parts.slice(1).join(".") || v.key;
-			if (!customGroups[namespace]) {
-				customGroups[namespace] = [];
-			}
-			customGroups[namespace].push({
-				name: varName,
-				type: (v.variableType as InsertableVariableType) || "text",
-			});
-		});
+    // Group custom variables by namespace (extract from key like "custom.varname")
+    const customGroups: Record<
+      string,
+      Array<{ name: string; type: InsertableVariableType }>
+    > = {};
+    textCustomVars.forEach((v) => {
+      const parts = v.key.split(".");
+      const namespace = parts[0] || "custom";
+      const varName = parts.slice(1).join(".") || v.key;
+      if (!customGroups[namespace]) {
+        customGroups[namespace] = [];
+      }
+      customGroups[namespace].push({
+        name: varName,
+        type: (v.variableType as InsertableVariableType) || "text",
+      });
+    });
 
-		// Merge system vars with custom vars
-		const merged = [...systemVars];
-		Object.entries(customGroups).forEach(([namespace, vars]) => {
-			const existingGroup = merged.find((g) => g.namespace === namespace);
-			if (existingGroup) {
-				existingGroup.vars.push(...vars);
-			} else {
-				merged.push({ namespace, vars });
-			}
-		});
+    // Merge system vars with custom vars
+    const merged = [...systemVars];
+    Object.entries(customGroups).forEach(([namespace, vars]) => {
+      const existingGroup = merged.find((g) => g.namespace === namespace);
+      if (existingGroup) {
+        existingGroup.vars.push(...vars);
+      } else {
+        merged.push({ namespace, vars });
+      }
+    });
 
-		return merged;
-	}, [availableVariables, customVariables]);
+    return merged;
+  }, [availableVariables, customVariables]);
 
-	return (
-		<div className="border-b border-[#E9EDEE] p-2 flex flex-wrap gap-1 bg-gray-50 sticky top-0 z-50 flex-shrink-0 shadow-sm">
-			{/* Undo/Redo */}
-			<div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
-				<ToolbarButton
-					onClick={() => editor.chain().focus().undo().run()}
-					disabled={!editor.can().chain().focus().undo().run()}
-					title="Undo"
-				>
-					<Undo2 className="h-4 w-4" />
-				</ToolbarButton>
-				<ToolbarButton
-					onClick={() => editor.chain().focus().redo().run()}
-					disabled={!editor.can().chain().focus().redo().run()}
-					title="Redo"
-				>
-					<Redo2 className="h-4 w-4" />
-				</ToolbarButton>
-			</div>
+  return (
+    <div className="border-b border-[#E9EDEE] p-2 flex flex-wrap gap-1 bg-gray-50 sticky top-0 z-50 flex-shrink-0 shadow-sm">
+      {/* Undo/Redo */}
+      <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().undo().run()}
+          disabled={!editor.can().chain().focus().undo().run()}
+          title="Undo"
+        >
+          <Undo2 className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().redo().run()}
+          disabled={!editor.can().chain().focus().redo().run()}
+          title="Redo"
+        >
+          <Redo2 className="h-4 w-4" />
+        </ToolbarButton>
+      </div>
 
-			{/* Text Style Dropdown */}
-			<div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
-				<TextStyleDropdown editor={editor} />
-			</div>
+      {/* Text Style Dropdown */}
+      <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+        <TextStyleDropdown editor={editor} />
+      </div>
 
-			{/* Text Formatting */}
-			<div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
-				<ToolbarButton
-					onClick={() => editor.chain().focus().toggleBold().run()}
-					active={editor.isActive("bold")}
-					disabled={!editor.can().chain().focus().toggleBold().run()}
-					title="Bold"
-				>
-					<Bold className="h-4 w-4" />
-				</ToolbarButton>
-				<ToolbarButton
-					onClick={() => editor.chain().focus().toggleItalic().run()}
-					active={editor.isActive("italic")}
-					disabled={!editor.can().chain().focus().toggleItalic().run()}
-					title="Italic"
-				>
-					<Italic className="h-4 w-4" />
-				</ToolbarButton>
-				<ToolbarButton
-					onClick={() => editor.chain().focus().toggleUnderline().run()}
-					active={editor.isActive("underline")}
-					title="Underline"
-				>
-					<UnderlineIcon className="h-4 w-4" />
-				</ToolbarButton>
-				<ToolbarButton
-					onClick={() => editor.chain().focus().toggleStrike().run()}
-					active={editor.isActive("strike")}
-					title="Strikethrough"
-				>
-					<Strikethrough className="h-4 w-4" />
-				</ToolbarButton>
-				<ToolbarButton
-					onClick={() => editor.chain().focus().toggleSubscript().run()}
-					active={editor.isActive("subscript")}
-					title="Subscript"
-				>
-					<SubscriptIcon className="h-4 w-4" />
-				</ToolbarButton>
-				<ToolbarButton
-					onClick={() => editor.chain().focus().toggleSuperscript().run()}
-					active={editor.isActive("superscript")}
-					title="Superscript"
-				>
-					<SuperscriptIcon className="h-4 w-4" />
-				</ToolbarButton>
-			</div>
+      {/* Text Formatting */}
+      <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          active={editor.isActive("bold")}
+          disabled={!editor.can().chain().focus().toggleBold().run()}
+          title="Bold"
+        >
+          <Bold className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          active={editor.isActive("italic")}
+          disabled={!editor.can().chain().focus().toggleItalic().run()}
+          title="Italic"
+        >
+          <Italic className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          active={editor.isActive("underline")}
+          title="Underline"
+        >
+          <UnderlineIcon className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          active={editor.isActive("strike")}
+          title="Strikethrough"
+        >
+          <Strikethrough className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleSubscript().run()}
+          active={editor.isActive("subscript")}
+          title="Subscript"
+        >
+          <SubscriptIcon className="h-4 w-4" />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleSuperscript().run()}
+          active={editor.isActive("superscript")}
+          title="Superscript"
+        >
+          <SuperscriptIcon className="h-4 w-4" />
+        </ToolbarButton>
+      </div>
 
-			{/* Font Size */}
-			<div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
-				<FontSizeDropdown editor={editor} />
-			</div>
+      {/* Font Size */}
+      <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+        <FontSizeDropdown editor={editor} />
+      </div>
 
-			{/* Colors */}
-			<div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
-				<ColorPicker editor={editor} />
-			</div>
+      {/* Colors */}
+      <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+        <ColorPicker editor={editor} />
+      </div>
 
-			{/* Links */}
-			<div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
-				<LinkPopover editor={editor} linkHandlers={linkHandlers} />
-			</div>
+      {/* Links */}
+      <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+        <LinkPopover editor={editor} linkHandlers={linkHandlers} />
+      </div>
 
-			{/* Alignment */}
-			<div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
-				<AlignmentButtons editor={editor} />
-			</div>
+      {/* Alignment */}
+      <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+        <AlignmentButtons editor={editor} />
+      </div>
 
-			{/* Lists */}
-			<div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
-				<ListButtons editor={editor} />
-			</div>
+      {/* Lists */}
+      <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+        <ListButtons editor={editor} />
+      </div>
 
-			{/* Variables Menu - only text, number, money types */}
-			{mergedVariables.length > 0 && (
-				<div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
-					<VariablesMenu editor={editor} availableVariables={mergedVariables} />
-				</div>
-			)}
+      {/* Variables Menu - only text, number, money types */}
+      {mergedVariables.length > 0 && (
+        <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+          <VariablesMenu editor={editor} availableVariables={mergedVariables} />
+        </div>
+      )}
 
-			{/* Checkbox Groups Menu */}
-			{customVariables.filter((v) => v.variableType === "checkbox_group")
-				.length > 0 && (
-					<div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
-						<CheckboxGroupsMenu editor={editor} customVariables={customVariables} />
-					</div>
-				)}
+      {/* Checkbox Groups Menu */}
+      {customVariables.filter((v) => v.variableType === "checkbox_group")
+        .length > 0 && (
+        <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
+          <CheckboxGroupsMenu
+            editor={editor}
+            customVariables={customVariables}
+          />
+        </div>
+      )}
 
-			{/* Insert Menu */}
-			<div className="flex gap-1">
-				<InsertMenu
-					editor={editor}
-					onAddImage={onAddImage}
-					onAddTickBox={onAddTickBox}
-				/>
-				<TableMenu editor={editor} />
+      {/* Insert Menu */}
+      <div className="flex gap-1">
+        <InsertMenu
+          editor={editor}
+          onAddImage={onAddImage}
+          onAddTickBox={onAddTickBox}
+        />
+        <TableMenu editor={editor} />
 
-				{/* Header/Footer Buttons */}
-				<div className="flex gap-1 border-l border-gray-200 pl-2 ml-2">
-					<HeaderFooterButtons
-						headerConfig={headerConfig}
-						footerConfig={footerConfig}
-						headerFooterHandlers={headerFooterHandlers}
-					/>
-				</div>
+        {/* Header/Footer Buttons */}
+        <div className="flex gap-1 border-l border-gray-200 pl-2 ml-2">
+          <HeaderFooterButtons
+            headerConfig={headerConfig}
+            footerConfig={footerConfig}
+            headerFooterHandlers={headerFooterHandlers}
+          />
+        </div>
 
-				{/* Print Button */}
-				<div className="flex gap-1 border-l border-gray-200 pl-2 ml-2">
-					<ToolbarButton onClick={onPrint} title="Print Template">
-						<Printer className="h-4 w-4" />
-					</ToolbarButton>
-				</div>
-			</div>
+        {/* Print Button */}
+        <div className="flex gap-1 border-l border-gray-200 pl-2 ml-2">
+          <ToolbarButton onClick={onPrint} title="Print Template">
+            <Printer className="h-4 w-4" />
+          </ToolbarButton>
+        </div>
+      </div>
 
-			{/* Instructions Section */}
-			<div className="flex gap-1 border-l border-gray-200 pl-2 ml-2">
-				<KeyboardShortcutsPopover />
-			</div>
-		</div>
-	);
+      {/* Instructions Section */}
+      <div className="flex gap-1 border-l border-gray-200 pl-2 ml-2">
+        <KeyboardShortcutsPopover />
+      </div>
+    </div>
+  );
 }
-

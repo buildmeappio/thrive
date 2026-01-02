@@ -114,19 +114,19 @@ export const VariableHighlight = Mark.create<VariableHighlightOptions>({
     return {
       setVariableHighlight:
         (attributes) =>
-          ({ commands }) => {
-            return commands.setMark(this.name, attributes);
-          },
+        ({ commands }) => {
+          return commands.setMark(this.name, attributes);
+        },
       toggleVariableHighlight:
         (attributes) =>
-          ({ commands }) => {
-            return commands.toggleMark(this.name, attributes);
-          },
+        ({ commands }) => {
+          return commands.toggleMark(this.name, attributes);
+        },
       unsetVariableHighlight:
         () =>
-          ({ commands }) => {
-            return commands.unsetMark(this.name);
-          },
+        ({ commands }) => {
+          return commands.unsetMark(this.name);
+        },
     };
   },
 });
