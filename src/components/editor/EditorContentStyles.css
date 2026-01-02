@@ -962,3 +962,29 @@
   color: #000;
   margin-left: 10px;
 }
+
+/* Ensure variable spans stay inline with text and don't break onto new lines */
+.page-content span[title],
+.header-content span[title],
+.footer-content span[title] {
+  display: inline !important;
+  white-space: normal;
+  word-break: normal;
+  vertical-align: baseline;
+}
+
+/* Specifically target variable replacement spans */
+.page-content span[style*="border-bottom"],
+.page-content span[style*="background: none"],
+.header-content span[style*="border-bottom"],
+.header-content span[style*="background: none"],
+.footer-content span[style*="border-bottom"],
+.footer-content span[style*="background: none"] {
+  display: inline !important;
+  vertical-align: baseline;
+}
+
+/* Ensure paragraphs containing variable spans don't force breaks */
+.page-content p span[title] {
+  display: inline !important;
+}

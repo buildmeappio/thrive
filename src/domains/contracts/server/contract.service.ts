@@ -1254,6 +1254,19 @@ export const previewContract = async (
     values["application.examiner_signature_date_time"] = signatureDateTime;
   }
 
+  // Add custom variable values from fieldValues.custom
+  if (fv && fv.custom && typeof fv.custom === "object") {
+    const customValues = fv.custom as Record<string, string | string[]>;
+    for (const [key, value] of Object.entries(customValues)) {
+      if (Array.isArray(value)) {
+        // For checkbox groups, join selected values with comma and space
+        values[`custom.${key}`] = value.join(", ");
+      } else if (typeof value === "string" && value.trim() !== "") {
+        values[`custom.${key}`] = value;
+      }
+    }
+  }
+
   // Always use HTML template from bodyHtml as source of truth
   const templateHtml = contract.templateVersion.bodyHtml;
 
@@ -1429,7 +1442,7 @@ export const previewContract = async (
       } else {
         // For regular variable values, add bold underline styling (matching template preview)
         const valueStr = String(value);
-        replacement = `<span style="border-bottom: 2px solid black; background: none !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; font-weight: normal;" title="${placeholder}">${valueStr}</span>`;
+        replacement = `<span style="display: inline; border-bottom: 2px solid black; background: none !important; color: inherit !important; padding: 0 !important; border-radius: 0 !important; font-weight: normal;" title="${placeholder}">${valueStr}</span>`;
       }
 
       renderedHtml = renderedHtml.replace(regex, replacement);
