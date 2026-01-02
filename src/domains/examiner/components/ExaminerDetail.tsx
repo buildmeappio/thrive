@@ -1,882 +1,105 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { DashboardShell } from "@/layouts/dashboard";
-import Section from "@/components/Section";
-import FieldRow from "@/components/FieldRow";
 import RequestInfoModal from "@/components/modal/RequestInfoModal";
 import RejectModal from "@/components/modal/RejectModal";
 import EditFeeStructureModal from "@/components/modal/EditFeeStructureModal";
 import ConfirmInterviewSlotModal from "@/components/modal/ConfirmInterviewSlotModal";
 import CreateContractModal from "@/components/modal/CreateContractModal";
-import { cn } from "@/lib/utils";
-import { ExaminerData, ExaminerFeeStructure } from "../types/ExaminerData";
-import {
-  approveExaminer,
-  rejectExaminer,
-  requestMoreInfo,
-  updateFeeStructure,
-  sendContract,
-  moveToReview,
-  scheduleInterview as _scheduleInterview,
-  requestInterview,
-  resendInterviewRequest,
-  confirmInterviewSlot,
-  markInterviewCompleted,
-  markContractSigned,
-  getExaminerContract,
-} from "../actions";
-import {
-  listContractsAction,
-  getContractAction,
-  reviewContractAction,
-} from "@/domains/contracts/actions";
-import { listCustomVariablesAction } from "@/domains/custom-variables/actions/listCustomVariables";
-import type { CustomVariable } from "@/domains/custom-variables/types/customVariable.types";
-import { Check, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import { formatPhoneNumber } from "@/utils/phone";
+import { ArrowLeft } from "lucide-react";
 import { capitalizeWords } from "@/utils/text";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import logger from "@/utils/logger";
-import { useAdminSignatureCanvas } from "@/domains/contracts/components/hooks/useAdminSignatureCanvas";
-
-// Utility function to format text from database: remove _, -, and capitalize each word
-const formatText = (str: string): string => {
-  if (!str) return str;
-  return str
-    .replace(/[-_]/g, " ") // Replace - and _ with spaces
-    .split(" ")
-    .filter((word) => word.length > 0) // Remove empty strings
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
-};
-
-// Utility function to format years of experience: keep numeric ranges and hyphens intact
-const formatYearsOfExperience = (str: string): string => {
-  if (!str) return str;
-  const trimmed = str.trim();
-
-  // Match patterns like "2-3", "2 - 3", "2 3", optionally with trailing text (e.g., "Years")
-  const rangeMatch = trimmed.match(/^(\d+)[\s-]+(\d+)(.*)$/i);
-  if (rangeMatch) {
-    const [, start, end, suffix] = rangeMatch;
-    const formattedSuffix = suffix
-      ? ` ${formatText(suffix.trim().replace(/^-+/, ""))}`
-      : "";
-    return `${start}-${end}${formattedSuffix}`.trim();
-  }
-
-  // Match standalone numeric range (no suffix)
-  if (/^\d+-\d+$/.test(trimmed)) {
-    return trimmed;
-  }
-
-  // Otherwise, format as text (replace hyphens/underscores with spaces and capitalize)
-  return trimmed
-    .replace(/[-_]/g, " ")
-    .split(" ")
-    .filter((word) => word.length > 0)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
-};
-
-const mapStatus = {
-  DRAFT: "draft",
-  PENDING: "pending",
-  ACCEPTED: "approved",
-  REJECTED: "rejected",
-  INFO_REQUESTED: "info_requested",
-  ACTIVE: "active",
-  SUBMITTED: "submitted",
-  IN_REVIEW: "in_review",
-  MORE_INFO_REQUESTED: "more_info_requested",
-  INTERVIEW_REQUESTED: "interview_requested",
-  INTERVIEW_SCHEDULED: "interview_scheduled",
-  INTERVIEW_COMPLETED: "interview_completed",
-  CONTRACT_SENT: "contract_sent",
-  CONTRACT_SIGNED: "contract_signed",
-  APPROVED: "approved",
-  WITHDRAWN: "withdrawn",
-  SUSPENDED: "suspended",
-} as const;
+import type { ExaminerData } from "../types/ExaminerData";
+import {
+  useExaminerDetailState,
+  useContractData,
+  useExaminerActions,
+  useContractHandlers,
+  useContractReview,
+} from "../hooks";
+import {
+  ExaminerStatusBadge,
+  ContractReviewModal,
+  ExaminerActions,
+} from "./index";
+import Section from "@/components/Section";
+import {
+  PersonalInformationSection,
+  MedicalCredentialsSection,
+  VerificationDocumentsSection,
+  IMEBackgroundSection,
+  FeeStructureSection,
+  ContractDetailsSection,
+  ConsentSection,
+  InterviewDetailsSection,
+} from "./sections";
 
 type Props = { examiner: ExaminerData; isApplication?: boolean };
 
 type ExaminerDetailComponent = React.FC<Props>;
 
-// Helper function to wrap icon in gradient circle with overlay
-const GradientIcon = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="relative w-5 h-5 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] flex items-center justify-center overflow-hidden">
-      <div
-        className="absolute inset-0 rounded-full"
-        style={{ backgroundColor: "#00E1B8", opacity: 0.5 }}
-      ></div>
-      <div className="relative z-10 text-white flex items-center justify-center">
-        {children}
-      </div>
-    </div>
-  );
-};
-
 const ExaminerDetail: ExaminerDetailComponent = (props) => {
   const { examiner, isApplication = false } = props;
 
-  const router = useRouter();
-  const [isRequestOpen, setIsRequestOpen] = useState(false);
-  const [isRejectOpen, setIsRejectOpen] = useState(false);
-  const [isFeeStructureOpen, setIsFeeStructureOpen] = useState(false);
-  const [isContractReviewOpen, setIsContractReviewOpen] = useState(false);
-  const [isConfirmSlotModalOpen, setIsConfirmSlotModalOpen] = useState(false);
-  const [isCreateContractModalOpen, setIsCreateContractModalOpen] =
-    useState(false);
-  const [contractHtml, setContractHtml] = useState<string | null>(null);
-  const [loadingContract, setLoadingContract] = useState(false);
-  const [pendingSendContract, setPendingSendContract] = useState(false);
-  const [currentContractId, setCurrentContractId] = useState<
-    string | undefined
-  >(undefined);
+  // State management hook
+  const state = useExaminerDetailState({
+    examiner,
+    isApplication,
+  });
 
-  // Admin signature for contract review
-  // Re-initialize when modal opens by using isContractReviewOpen as key
-  const { canvasRef, signatureImage, clearSignature } =
-    useAdminSignatureCanvas();
-  const [reviewDate, setReviewDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
+  // Contract data loading hook
+  useContractData({
+    status: state.status,
+    examinerId: examiner.id,
+    isApplication,
+    setContractData: state.setContractData,
+    setLoadingContractData: state.setLoadingContractData,
+  });
 
-  // Reset signature when modal closes
-  useEffect(() => {
-    if (!isContractReviewOpen) {
-      clearSignature();
-      setReviewDate(new Date().toISOString().split("T")[0]);
-    }
-  }, [isContractReviewOpen, clearSignature]);
-  const [existingContractId, setExistingContractId] = useState<
-    string | undefined
-  >(undefined);
-  const [existingTemplateId, setExistingTemplateId] = useState<
-    string | undefined
-  >(undefined);
-  const [status, setStatus] = useState<
-    (typeof mapStatus)[ExaminerData["status"]]
-  >(mapStatus[examiner.status]);
-  const [loadingAction, setLoadingAction] = useState<
-    | "approve"
-    | "reject"
-    | "request"
-    | "feeStructure"
-    | "sendContract"
-    | "moveToReview"
-    | "scheduleInterview"
-    | "requestInterview"
-    | "resendInterviewRequest"
-    | "confirmInterviewSlot"
-    | "markInterviewCompleted"
-    | "markContractSigned"
-    | null
-  >(null);
-  const [confirmingSlotId, setConfirmingSlotId] = useState<string | null>(null);
-  const [contractData, setContractData] = useState<{
-    fieldValues: any;
-    customVariables: CustomVariable[];
-  } | null>(null);
-  const [_loadingContractData, setLoadingContractData] = useState(false);
+  // Actions hook
+  const actions = useExaminerActions({
+    examinerId: examiner.id,
+    isApplication,
+    status: state.status,
+    setStatus: state.setStatus,
+    setLoadingAction: state.setLoadingAction,
+    pendingSendContract: state.pendingSendContract,
+    setPendingSendContract: state.setPendingSendContract,
+    setIsRequestOpen: state.setIsRequestOpen,
+    setIsRejectOpen: state.setIsRejectOpen,
+    setIsFeeStructureOpen: state.setIsFeeStructureOpen,
+    setIsCreateContractModalOpen: state.setIsCreateContractModalOpen,
+  });
 
-  // Sync local status with examiner prop when it changes (e.g., after refresh)
-  useEffect(() => {
-    const currentStatus = mapStatus[examiner.status];
-    setStatus(currentStatus);
-  }, [examiner.status]);
+  // Contract handlers hook
+  const contractHandlers = useContractHandlers({
+    examinerId: examiner.id,
+    isApplication,
+    status: state.status,
+    setStatus: state.setStatus,
+    setLoadingAction: state.setLoadingAction,
+    setExistingContractId: state.setExistingContractId,
+    setExistingTemplateId: state.setExistingTemplateId,
+    setIsCreateContractModalOpen: state.setIsCreateContractModalOpen,
+  });
 
-  // Redirect if status is DRAFT - we only show from SUBMITTED onwards
-  useEffect(() => {
-    const currentStatus = mapStatus[examiner.status];
-    if (currentStatus === "draft") {
-      router.push("/examiner");
-      return;
-    }
-  }, [examiner.status, router]);
+  // Contract review hook
+  const contractReview = useContractReview({
+    examinerId: examiner.id,
+    isApplication,
+    isContractReviewOpen: state.isContractReviewOpen,
+    setIsContractReviewOpen: state.setIsContractReviewOpen,
+    setStatus: state.setStatus,
+    setLoadingAction: state.setLoadingAction,
+  });
 
-  // Automatically move to IN_REVIEW when admin opens a SUBMITTED/PENDING application
-  useEffect(() => {
-    const autoMoveToReview = async () => {
-      const currentStatus = mapStatus[examiner.status];
-      if (currentStatus === "submitted" || currentStatus === "pending") {
-        // Update UI immediately
-        setStatus("in_review");
-
-        // Update database in background
-        try {
-          await moveToReview(examiner.id);
-        } catch (error) {
-          logger.error("Failed to auto-move to review:", error);
-          // Revert status on error
-          setStatus(currentStatus);
-        }
-      }
-    };
-
-    autoMoveToReview();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount - examiner.id and examiner.status are intentionally not included
-
-  // Fetch contract data and custom variables
-  useEffect(() => {
-    const loadContractData = async () => {
-      // Only load if contract has been sent/signed
-      if (
-        !["contract_sent", "contract_signed", "approved", "active"].includes(
-          status,
-        )
-      ) {
-        return;
-      }
-
-      setLoadingContractData(true);
-      try {
-        // Get contract for this examiner/application
-        const contracts = await listContractsAction({
-          [isApplication ? "applicationId" : "examinerProfileId"]: examiner.id,
-          status: "ALL",
-        });
-
-        if (contracts && contracts.length > 0) {
-          // Get the latest contract
-          const latestContract = contracts[0];
-
-          // Get contract details with fieldValues
-          const contractDetailResult = await getContractAction(
-            latestContract.id,
-          );
-          if (contractDetailResult.success && contractDetailResult.data) {
-            const fieldValues = contractDetailResult.data.fieldValues || {};
-
-            // Load custom variables to get their labels
-            const customVarsResult = await listCustomVariablesAction({
-              isActive: true,
-            });
-
-            if (customVarsResult.success && customVarsResult.data) {
-              setContractData({
-                fieldValues,
-                customVariables: customVarsResult.data,
-              });
-            }
-          }
-        }
-      } catch (error) {
-        logger.error("Error loading contract data:", error);
-      } finally {
-        setLoadingContractData(false);
-      }
-    };
-
-    loadContractData();
-  }, [status, examiner.id, isApplication]);
-
-  const handleApprove = async () => {
-    // If contract is already sent, approve directly
-    // Otherwise, open contract creation modal first
-    if (status === "contract_sent" || status === "contract_signed") {
-      // Contract is already sent/signed, approve directly
-      setLoadingAction("approve");
-      try {
-        await approveExaminer(examiner.id);
-        if (isApplication) {
-          toast.success(
-            "Application approved successfully! An email has been sent to the applicant.",
-          );
-        } else {
-          toast.success(
-            "Examiner approved successfully! An email has been sent to the examiner.",
-          );
-        }
-        setStatus("approved");
-      } catch (error) {
-        logger.error("Failed to approve:", error);
-        toast.error(
-          `Failed to approve ${isApplication ? "application" : "examiner"}. Please try again.`,
-        );
-      } finally {
-        setLoadingAction(null);
-      }
-    } else {
-      // No contract sent yet, open contract creation modal
-      setIsCreateContractModalOpen(true);
+  // Handler for review signed contract button
+  const handleReviewSignedContract = async () => {
+    if (examiner.contractSignedByExaminerAt) {
+      await contractReview.loadContract();
     }
   };
-
-  const handleContractCreated = async () => {
-    // After contract is created and sent, update status to contract_sent
-    // Don't approve automatically - approval is a separate step
-    // The status will be updated in the database by sendContract action
-    // Force a refresh to get the updated status from the server
-    router.refresh();
-    // Also update local state immediately for better UX
-    setStatus("contract_sent");
-  };
-
-  const handleRejectSubmit = async (
-    internalNotes: string,
-    messageToExaminer: string,
-  ) => {
-    setLoadingAction("reject");
-    try {
-      await rejectExaminer(examiner.id, messageToExaminer);
-      if (isApplication) {
-        toast.success(
-          "Application rejected. An email has been sent to the applicant.",
-        );
-      } else {
-        toast.success(
-          "Examiner rejected. An email has been sent to the examiner.",
-        );
-      }
-      setStatus("rejected");
-      setIsRejectOpen(false);
-    } catch (error) {
-      logger.error("Failed to reject:", error);
-      toast.error(
-        `Failed to reject ${isApplication ? "application" : "examiner"}. Please try again.`,
-      );
-    } finally {
-      setLoadingAction(null);
-    }
-  };
-
-  const handleRequestMoreInfoSubmit = async (
-    internalNotes: string,
-    messageToExaminer: string,
-    documentsRequired: boolean,
-  ) => {
-    setLoadingAction("request");
-    try {
-      await requestMoreInfo(examiner.id, messageToExaminer, documentsRequired);
-      if (isApplication) {
-        toast.success("Request sent. An email has been sent to the applicant.");
-      } else {
-        toast.success("Request sent. An email has been sent to the examiner.");
-      }
-      setStatus("more_info_requested");
-      setIsRequestOpen(false);
-    } catch (error) {
-      logger.error("Failed to request more info:", error);
-      toast.error("Failed to send request. Please try again.");
-    } finally {
-      setLoadingAction(null);
-    }
-  };
-
-  const handleFeeStructureSubmit = async (
-    data: Omit<ExaminerFeeStructure, "id">,
-  ) => {
-    setLoadingAction("feeStructure");
-    try {
-      const result = await updateFeeStructure(examiner.id, data);
-      if (result.success) {
-        setIsFeeStructureOpen(false);
-        toast.success("Fee structure saved successfully.");
-
-        // If pending send contract, send it now after fee structure is saved
-        if (pendingSendContract) {
-          setPendingSendContract(false);
-          await handleSendContractAfterFeeStructure();
-        } else {
-          router.refresh();
-        }
-      } else {
-        toast.error(
-          "error" in result ? result.error : "Failed to update fee structure.",
-        );
-      }
-    } catch (error) {
-      logger.error("Failed to update fee structure:", error);
-      toast.error("Failed to update fee structure. Please try again.");
-    } finally {
-      setLoadingAction(null);
-    }
-  };
-
-  const handleSendContractAfterFeeStructure = async () => {
-    setLoadingAction("sendContract");
-    try {
-      const result = await sendContract(examiner.id);
-      if (result.success) {
-        setStatus("contract_sent");
-        toast.success("Contract sent successfully to examiner's email.");
-        router.refresh();
-      } else {
-        toast.error(
-          "error" in result ? result.error : "Failed to send contract.",
-        );
-      }
-    } catch (error) {
-      logger.error("Failed to send contract:", error);
-      toast.error("Failed to send contract. Please try again.");
-    } finally {
-      setLoadingAction(null);
-    }
-  };
-
-  // Suspend/Reactivate handlers removed - skipping for now
-
-  const handleDeclineContract = async () => {
-    setLoadingAction("reject");
-    try {
-      await rejectExaminer(examiner.id, "Contract declined by admin");
-      setStatus("rejected");
-      toast.success("Contract declined and application rejected.");
-      setIsContractReviewOpen(false);
-      router.refresh();
-    } catch (error) {
-      logger.error("Failed to decline contract:", error);
-      toast.error("Failed to decline contract. Please try again.");
-    } finally {
-      setLoadingAction(null);
-    }
-  };
-
-  const handleSendContract = async () => {
-    // For first-time contract sending, use the contract creation modal
-    if (status === "interview_completed") {
-      setExistingContractId(undefined);
-      setExistingTemplateId(undefined);
-      setIsCreateContractModalOpen(true);
-      return;
-    }
-
-    // For re-sending existing contracts, open modal with existing contract info
-    try {
-      // Check if there's an existing contract
-      const contractResult = await getExaminerContract(
-        examiner.id,
-        isApplication,
-      );
-
-      if (contractResult.success && contractResult.contractId) {
-        // Get contract details to get template ID
-        const { getContractAction } =
-          await import("@/domains/contracts/actions");
-        const contractDetails = await getContractAction(
-          contractResult.contractId,
-        );
-
-        if (contractDetails.success && contractDetails.data) {
-          // Set existing contract info
-          setExistingContractId(contractResult.contractId);
-          setExistingTemplateId(contractDetails.data.templateId);
-          setIsCreateContractModalOpen(true);
-        } else {
-          // Fallback: just open modal
-          setExistingContractId(contractResult.contractId);
-          setExistingTemplateId(undefined);
-          setIsCreateContractModalOpen(true);
-        }
-      } else {
-        // No existing contract, open modal to create new one
-        setExistingContractId(undefined);
-        setExistingTemplateId(undefined);
-        setIsCreateContractModalOpen(true);
-      }
-    } catch (error) {
-      logger.error("Failed to load contract info:", error);
-      // Still open modal even if we can't load contract info
-      setExistingContractId(undefined);
-      setExistingTemplateId(undefined);
-      setIsCreateContractModalOpen(true);
-    }
-  };
-
-  const handleRequestInterview = async () => {
-    setLoadingAction("requestInterview");
-    try {
-      await requestInterview(examiner.id);
-      setStatus("interview_requested");
-      toast.success(
-        "Interview request sent. Examiner will receive an email to schedule their interview.",
-      );
-      router.refresh();
-    } catch (error) {
-      logger.error("Failed to request interview:", error);
-      toast.error("Failed to request interview. Please try again.");
-    } finally {
-      setLoadingAction(null);
-    }
-  };
-
-  const handleResendInterviewRequest = async () => {
-    setLoadingAction("resendInterviewRequest");
-    try {
-      await resendInterviewRequest(examiner.id);
-      toast.success("Interview request email resent successfully.");
-      router.refresh();
-    } catch (error) {
-      logger.error("Failed to resend interview request:", error);
-      toast.error("Failed to resend interview request. Please try again.");
-    } finally {
-      setLoadingAction(null);
-    }
-  };
-
-  const handleMarkInterviewCompleted = async () => {
-    setLoadingAction("markInterviewCompleted");
-    try {
-      await markInterviewCompleted(examiner.id);
-      setStatus("interview_completed");
-      toast.success("Interview marked as completed.");
-      router.refresh();
-    } catch (error) {
-      logger.error("Failed to mark interview completed:", error);
-      toast.error("Failed to mark interview completed. Please try again.");
-    } finally {
-      setLoadingAction(null);
-    }
-  };
-
-  const handleMarkContractSigned = async () => {
-    if (!currentContractId) {
-      toast.error("Contract ID not found");
-      return;
-    }
-
-    setLoadingAction("markContractSigned");
-    try {
-      const result = await reviewContractAction({
-        contractId: currentContractId,
-        signatureImage: signatureImage || null,
-        reviewDate: reviewDate,
-      });
-
-      if ("error" in result) {
-        toast.error(result.error ?? "Failed to review contract");
-        return;
-      }
-
-      // Also call the original markContractSigned to update examiner status
-      await markContractSigned(examiner.id);
-      setStatus("contract_signed");
-      toast.success("Contract reviewed and confirmed successfully.");
-      setIsContractReviewOpen(false);
-      // Clear signature and reset review date
-      clearSignature();
-      setReviewDate(new Date().toISOString().split("T")[0]);
-      router.refresh();
-    } catch (error) {
-      logger.error("Failed to review contract:", error);
-      toast.error("Failed to review contract. Please try again.");
-    } finally {
-      setLoadingAction(null);
-    }
-  };
-
-  const handleConfirmInterviewSlot = async (slotId: string) => {
-    setLoadingAction("confirmInterviewSlot");
-    setConfirmingSlotId(slotId);
-    try {
-      const result = await confirmInterviewSlot(slotId, examiner.id);
-      if (result.success) {
-        setStatus("interview_scheduled");
-        toast.success(
-          "Interview slot confirmed. Confirmation email sent to examiner.",
-        );
-        setIsConfirmSlotModalOpen(false);
-        router.refresh();
-      } else {
-        toast.error(
-          "error" in result
-            ? result.error
-            : "Failed to confirm interview slot. Please try again.",
-        );
-      }
-    } catch (error) {
-      logger.error("Failed to confirm interview slot:", error);
-      toast.error("Failed to confirm interview slot. Please try again.");
-    } finally {
-      setLoadingAction(null);
-      setConfirmingSlotId(null);
-    }
-  };
-
-  // Function to get status badge styling
-  const getStatusBadge = () => {
-    switch (status) {
-      // Old statuses (backward compatibility)
-      case "pending":
-        return {
-          text: "Submitted",
-          icon: (
-            <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </GradientIcon>
-          ),
-        };
-      case "info_requested":
-        return {
-          text: "Info Requested",
-          icon: (
-            <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </GradientIcon>
-          ),
-        };
-      case "active":
-        return {
-          text: "Active",
-          icon: (
-            <GradientIcon>
-              <Check className="w-3 h-3" />
-            </GradientIcon>
-          ),
-        };
-      // New statuses
-      case "submitted":
-        return {
-          text: "Submitted",
-          icon: (
-            <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </GradientIcon>
-          ),
-        };
-      case "in_review":
-        return {
-          text: "In Review",
-          icon: (
-            <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </GradientIcon>
-          ),
-        };
-      case "more_info_requested":
-        return {
-          text: "More Info Requested",
-          icon: (
-            <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </GradientIcon>
-          ),
-        };
-      case "interview_requested":
-        return {
-          text: "Interview Requested",
-          icon: (
-            <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </GradientIcon>
-          ),
-        };
-      case "interview_scheduled":
-        return {
-          text: "Interview Scheduled",
-          icon: (
-            <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </GradientIcon>
-          ),
-        };
-      case "interview_completed":
-        return {
-          text: "Interview Completed",
-          icon: (
-            <GradientIcon>
-              <Check className="w-3 h-3" />
-            </GradientIcon>
-          ),
-        };
-      case "contract_sent":
-        return {
-          text: "Contract Sent",
-          icon: (
-            <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </GradientIcon>
-          ),
-        };
-      case "contract_signed":
-        return {
-          text: "Contract Signed",
-          icon: (
-            <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                />
-              </svg>
-            </GradientIcon>
-          ),
-        };
-      case "approved":
-        return {
-          text: "Approved",
-          icon: (
-            <GradientIcon>
-              <Check className="w-3 h-3" />
-            </GradientIcon>
-          ),
-        };
-      case "rejected":
-        return {
-          text: "Rejected",
-          icon: null,
-        };
-      case "withdrawn":
-        return {
-          text: "Withdrawn",
-          icon: null,
-        };
-      case "suspended":
-        return {
-          text: "Suspended",
-          icon: (
-            <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-                />
-              </svg>
-            </GradientIcon>
-          ),
-        };
-      default:
-        return {
-          text: "Submitted",
-          icon: (
-            <GradientIcon>
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </GradientIcon>
-          ),
-        };
-    }
-  };
-
-  const statusBadge = getStatusBadge();
 
   return (
     <DashboardShell>
@@ -899,21 +122,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
             </h1>
           </Link>
         </div>
-        <div className="px-[2px] py-[2px] rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] w-fit">
-          <div
-            className="px-4 py-2 rounded-full flex items-center gap-2"
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontWeight: 600,
-              fontSize: "14px",
-              color: "#004766",
-              backgroundColor: "#E0F7F4",
-            }}
-          >
-            {statusBadge.icon}
-            <span style={{ color: "#004766" }}>{statusBadge.text}</span>
-          </div>
-        </div>
+        <ExaminerStatusBadge status={state.status} />
       </div>
 
       <div className="w-full flex flex-col items-center">
@@ -922,1318 +131,140 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
             {/* LEFT COLUMN */}
             <div className="flex flex-col gap-6 lg:gap-10">
-              {/* Section 1: Personal Information */}
-              <Section title="Personal Information">
-                <FieldRow
-                  label="Name"
-                  value={capitalizeWords(examiner.name || "-")}
-                  type="text"
-                />
-                <FieldRow
-                  label="Email Address"
-                  value={examiner.email || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="Cell Phone"
-                  value={formatPhoneNumber(examiner.phone)}
-                  type="text"
-                />
-                <FieldRow
-                  label="Work Phone"
-                  value={formatPhoneNumber(examiner.landlineNumber)}
-                  type="text"
-                />
-                <FieldRow
-                  label="Province"
-                  value={examiner.province || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="City"
-                  value={examiner.addressCity || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="Languages Spoken"
-                  value={examiner.languagesSpoken?.join(", ") || "-"}
-                  type="text"
-                />
-              </Section>
-
-              {/* Section 2: Medical Credentials */}
-              <Section title="Medical Credentials">
-                <FieldRow
-                  label="License/Registration Number"
-                  value={examiner.licenseNumber || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="License/Registration Issuing Province"
-                  value={examiner.provinceOfLicensure || "-"}
-                  type="text"
-                />
-                <div className="flex flex-col sm:flex-row justify-between w-full rounded-lg bg-[#F6F6F6] px-3 sm:px-4 py-2 gap-1.5 sm:gap-2">
-                  <span className="min-w-0 flex-1 font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] pr-2">
-                    Specialties
-                  </span>
-                  <div className="flex-1 text-left sm:text-right">
-                    <span className="block font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-relaxed tracking-[-0.03em] text-[#000080]">
-                      {examiner.specialties && examiner.specialties.length > 0
-                        ? examiner.specialties
-                            .map((s) => formatText(s))
-                            .join(", ")
-                        : "-"}
-                    </span>
-                  </div>
-                </div>
-                <FieldRow
-                  label="Years of IME Experience"
-                  value={
-                    examiner.yearsOfIMEExperience
-                      ? formatYearsOfExperience(examiner.yearsOfIMEExperience)
-                      : "-"
-                  }
-                  type="text"
-                />
-              </Section>
-
-              {/* Section 3: Verification Documents */}
-              <Section title="Verification Documents">
-                {examiner.medicalLicenseUrls &&
-                examiner.medicalLicenseUrls.length > 0 ? (
-                  // Multiple documents - show each file with Preview/Download
-                  <div className="max-h-[300px] overflow-y-auto space-y-2">
-                    {examiner.medicalLicenseUrls.map((url, index) => (
-                      <FieldRow
-                        key={index}
-                        label={`Document ${index + 1}`}
-                        value={`Verification_Document_${index + 1}.pdf`}
-                        type="document"
-                        documentUrl={url}
-                      />
-                    ))}
-                  </div>
-                ) : examiner.medicalLicenseUrl ? (
-                  // Single document - use FieldRow
-                  <FieldRow
-                    label="Document 1"
-                    value="Verification_Document.pdf"
-                    type="document"
-                    documentUrl={examiner.medicalLicenseUrl}
-                  />
-                ) : (
-                  // No documents uploaded - styled like other empty states
-                  <FieldRow
-                    label="Verification Documents"
-                    value="Not uploaded"
-                    type="text"
-                  />
-                )}
-              </Section>
+              <PersonalInformationSection examiner={examiner} />
+              <MedicalCredentialsSection examiner={examiner} />
+              <VerificationDocumentsSection examiner={examiner} />
             </div>
 
             {/* RIGHT COLUMN */}
             <div className="flex flex-col gap-6 lg:gap-10">
-              {/* Section 3: IME Background and Experience */}
-              <Section title="IME Background and Experience">
-                <FieldRow
-                  label="Have you completed any IMEs?"
-                  value={
-                    examiner.imesCompleted
-                      ? examiner.imesCompleted.toLowerCase() === "yes"
-                        ? "Yes"
-                        : examiner.imesCompleted.toLowerCase() === "no"
-                          ? "No"
-                          : examiner.imesCompleted.charAt(0).toUpperCase() +
-                            examiner.imesCompleted.slice(1).toLowerCase()
-                      : "-"
-                  }
-                  type="text"
-                />
-                <FieldRow
-                  label="Are you currently conducting IMEs?"
-                  value={examiner.currentlyConductingIMEs ? "Yes" : "No"}
-                  type="text"
-                />
-                <FieldRow
-                  label="Assessment Types"
-                  value={
-                    examiner.assessmentTypes &&
-                    examiner.assessmentTypes.length > 0
-                      ? examiner.assessmentTypes
-                          .map((type) => formatText(type))
-                          .join(", ")
-                      : "-"
-                  }
-                  type="text"
-                />
-                {examiner.assessmentTypeOther &&
-                examiner.assessmentTypeOther.trim() !== "" ? (
-                  <FieldRow
-                    label="Other Assessment Type"
-                    value={capitalizeWords(examiner.assessmentTypeOther)}
-                    type="text"
-                  />
-                ) : null}
-                {/* Tell us about your experience */}
-                {examiner.experienceDetails &&
-                examiner.experienceDetails.trim() !== "" ? (
-                  <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[169px] flex flex-col">
-                    <h4 className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-none tracking-[-0.03em] text-[#4E4E4E] mb-3">
-                      Tell us about your experience
-                    </h4>
-                    <p
-                      className="font-poppins text-sm sm:text-base text-[#000080] flex-1 overflow-hidden"
-                      style={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: 6,
-                        WebkitBoxOrient: "vertical",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {examiner.experienceDetails}
-                    </p>
-                  </div>
-                ) : (
-                  <FieldRow
-                    label="Tell us about your experience"
-                    value="-"
-                    type="text"
-                  />
-                )}
-              </Section>
+              <IMEBackgroundSection examiner={examiner} />
+              <FeeStructureSection examiner={examiner} status={state.status} />
+              <ContractDetailsSection contractData={state.contractData} />
+              <ConsentSection examiner={examiner} />
+              <InterviewDetailsSection
+                examiner={examiner}
+                status={state.status}
+              />
 
-              {/* Section 4: Fee Structure (visible if fee structure exists, for both applications and examiners after interview_scheduled) */}
-              {(examiner.contractFeeStructure || examiner.feeStructure) &&
-                [
-                  "interview_scheduled",
-                  "interview_completed",
-                  "contract_sent",
-                  "contract_signed",
-                  "approved",
-                  "active",
-                ].includes(status) && (
-                  <Section title="Fee Structure">
-                    {examiner.contractFeeStructure ? (
-                      // Dynamic fee structure from contract
-                      examiner.contractFeeStructure.variables.map(
-                        (variable) => {
-                          let formattedValue: string;
-
-                          // Check if variable is marked as "Included"
-                          if (variable.included) {
-                            formattedValue = "Included";
-                          } else if (variable.type === "MONEY") {
-                            const numValue =
-                              typeof variable.value === "number"
-                                ? variable.value
-                                : parseFloat(String(variable.value || 0));
-                            formattedValue = new Intl.NumberFormat("en-US", {
-                              style: "currency",
-                              currency: variable.currency || "USD",
-                              minimumFractionDigits: variable.decimals || 2,
-                              maximumFractionDigits: variable.decimals || 2,
-                            }).format(numValue);
-                          } else if (variable.type === "NUMBER") {
-                            const numValue =
-                              typeof variable.value === "number"
-                                ? variable.value
-                                : parseFloat(String(variable.value || 0));
-                            formattedValue = numValue.toFixed(
-                              variable.decimals || 0,
-                            );
-                            if (variable.unit) {
-                              formattedValue += ` ${variable.unit}`;
-                            }
-                          } else if (variable.type === "BOOLEAN") {
-                            formattedValue =
-                              variable.value === true ? "Yes" : "No";
-                          } else {
-                            formattedValue = String(variable.value || "");
-                          }
-
-                          return (
-                            <FieldRow
-                              key={variable.key}
-                              label={variable.label}
-                              value={formattedValue}
-                              type="text"
-                            />
-                          );
-                        },
-                      )
-                    ) : examiner.feeStructure ? (
-                      // Legacy static fee structure
-                      <>
-                        <FieldRow
-                          label="IME Fee"
-                          value={`$${examiner.feeStructure.IMEFee || 0}`}
-                          type="text"
-                        />
-                        <FieldRow
-                          label="Record Review Fee"
-                          value={`$${examiner.feeStructure.recordReviewFee || 0}`}
-                          type="text"
-                        />
-                        {examiner.feeStructure.hourlyRate && (
-                          <FieldRow
-                            label="Hourly Rate"
-                            value={`$${examiner.feeStructure.hourlyRate}`}
-                            type="text"
-                          />
-                        )}
-                        <FieldRow
-                          label="Cancellation Fee"
-                          value={`$${examiner.feeStructure.cancellationFee || 0}`}
-                          type="text"
-                        />
-                      </>
-                    ) : null}
-                  </Section>
-                )}
-
-              {/* Section: Contract Details - Show custom variables */}
-              {contractData &&
-                contractData.fieldValues?.custom &&
-                Object.keys(contractData.fieldValues.custom).length > 0 && (
-                  <Section title="Contract Details">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {Object.entries(contractData.fieldValues.custom).map(
-                        ([key, value]) => {
-                          // Find custom variable definition to get label
-                          const customVar = contractData.customVariables.find(
-                            (v) => v.key === `custom.${key}` || v.key === key,
-                          );
-                          // Format key to label if not available
-                          const formatKeyToLabel = (k: string): string => {
-                            return k
-                              .replace(/_/g, " ")
-                              .split(" ")
-                              .map(
-                                (word) =>
-                                  word.charAt(0).toUpperCase() +
-                                  word.slice(1).toLowerCase(),
-                              )
-                              .join(" ");
-                          };
-                          const label =
-                            customVar?.label || formatKeyToLabel(key);
-
-                          let displayValue: string;
-                          if (Array.isArray(value)) {
-                            // For checkbox groups, show selected options
-                            if (customVar?.options) {
-                              const selectedLabels = value
-                                .map((val) => {
-                                  const option = customVar.options?.find(
-                                    (opt) => opt.value === val,
-                                  );
-                                  return option?.label || val;
-                                })
-                                .filter(Boolean);
-                              displayValue = selectedLabels.join(", ");
-                            } else {
-                              displayValue = value.join(", ");
-                            }
-                          } else {
-                            displayValue = String(value || "-");
-                          }
-
-                          return (
-                            <FieldRow
-                              key={key}
-                              label={label}
-                              value={displayValue}
-                              type="text"
-                            />
-                          );
-                        },
-                      )}
-                    </div>
-                  </Section>
-                )}
-
-              {/* Section 5: Consent */}
-              <Section title="Consent">
-                <FieldRow
-                  label="Consent to Background Verification"
-                  value="Yes"
-                  type="text"
-                />
-                <FieldRow
-                  label="Agree to Terms & Conditions and Privacy Policy"
-                  value={examiner.agreeToTerms ? "Yes" : "No"}
-                  type="text"
-                />
-              </Section>
-
-              {/* Section 6: Interview Details - Show BOOKED/COMPLETED slots when scheduled */}
-              {examiner.interviewSlots &&
-                examiner.interviewSlots.length > 0 &&
-                [
-                  "interview_scheduled",
-                  "interview_completed",
-                  "contract_sent",
-                  "contract_signed",
-                  "approved",
-                  "active",
-                ].includes(status) && (
-                  <Section title="Interview Details">
-                    {(() => {
-                      const bookedSlots = examiner.interviewSlots.filter(
-                        (slot) =>
-                          slot.startTime &&
-                          slot.endTime &&
-                          (slot.status === "BOOKED" ||
-                            slot.status === "COMPLETED"),
-                      );
-                      return bookedSlots.map((slot, index) => (
-                        <div
-                          key={slot.id}
-                          className={index > 0 ? "mt-4" : "space-y-2"}
-                        >
-                          {index > 0 && (
-                            <div className="border-t border-gray-200 pt-4 mt-4"></div>
-                          )}
-                          <FieldRow
-                            label={
-                              bookedSlots.length > 1
-                                ? `Interview ${index + 1} Date`
-                                : "Interview Date"
-                            }
-                            value={
-                              slot.startTime
-                                ? new Date(slot.startTime).toLocaleDateString(
-                                    "en-US",
-                                    {
-                                      month: "short",
-                                      day: "numeric",
-                                      year: "numeric",
-                                    },
-                                  )
-                                : "N/A"
-                            }
-                            type="text"
-                          />
-                          <FieldRow
-                            label={
-                              bookedSlots.length > 1
-                                ? `Interview ${index + 1} Time`
-                                : "Interview Time"
-                            }
-                            value={
-                              slot.startTime && slot.endTime
-                                ? `${new Date(
-                                    slot.startTime,
-                                  ).toLocaleTimeString("en-US", {
-                                    hour: "numeric",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  })} - ${new Date(
-                                    slot.endTime,
-                                  ).toLocaleTimeString("en-US", {
-                                    hour: "numeric",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  })}`
-                                : "N/A"
-                            }
-                            type="text"
-                          />
-                          {slot.status && (
-                            <FieldRow
-                              label={
-                                bookedSlots.length > 1
-                                  ? `Interview ${index + 1} Status`
-                                  : "Interview Status"
-                              }
-                              value={formatText(slot.status)}
-                              type="text"
-                            />
-                          )}
-                        </div>
-                      ));
-                    })()}
-                  </Section>
-                )}
-
-              {/* Section 7: Actions - Hidden when MORE_INFO_REQUESTED, INFO_REQUESTED, or ACTIVE */}
-              {/* Hide actions for approved applications (they're now examiners) and active examiners */}
-              {status !== "more_info_requested" &&
-                status !== "info_requested" &&
-                status !== "active" &&
-                !(isApplication && status === "approved") && (
+              {/* Section 7: Actions */}
+              {state.status !== "more_info_requested" &&
+                state.status !== "info_requested" &&
+                state.status !== "active" &&
+                !(isApplication && state.status === "approved") && (
                   <Section title="Actions">
-                    <div className="flex flex-row flex-wrap gap-3">
-                      {/* SUBMITTED or PENDING: Auto-moved to IN_REVIEW (no button needed) */}
-
-                      {/* IN_REVIEW: Request Interview, Request More Info, Reject */}
-                      {status === "in_review" && (
-                        <>
-                          <button
-                            className={cn(
-                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 400,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                            disabled={loadingAction !== null}
-                            onClick={handleRequestInterview}
-                          >
-                            {loadingAction === "requestInterview"
-                              ? "Requesting..."
-                              : "Request Interview"}
-                          </button>
-                          <button
-                            onClick={() => setIsRequestOpen(true)}
-                            className={cn(
-                              "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 400,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                            disabled={loadingAction !== null}
-                          >
-                            Request More Info
-                          </button>
-                          <button
-                            className={cn(
-                              "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 400,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                            disabled={loadingAction !== null}
-                            onClick={() => setIsRejectOpen(true)}
-                          >
-                            Reject Application
-                          </button>
-                        </>
-                      )}
-
-                      {/* INTERVIEW_REQUESTED: Confirm Interview Slot, Resend Request Interview, Reject */}
-                      {status === "interview_requested" && (
-                        <>
-                          <button
-                            className={cn(
-                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 400,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                            disabled={
-                              loadingAction !== null ||
-                              !examiner.interviewSlots ||
-                              examiner.interviewSlots.length === 0 ||
-                              !examiner.interviewSlots.some(
-                                (slot) => slot.status === "REQUESTED",
-                              )
-                            }
-                            onClick={() => setIsConfirmSlotModalOpen(true)}
-                          >
-                            Confirm Interview Slot
-                          </button>
-                          <button
-                            className={cn(
-                              "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 400,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                            disabled={loadingAction !== null}
-                            onClick={handleResendInterviewRequest}
-                          >
-                            {loadingAction === "resendInterviewRequest"
-                              ? "Resending..."
-                              : "Resend Request Interview"}
-                          </button>
-                          <button
-                            className={cn(
-                              "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 400,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                            disabled={loadingAction !== null}
-                            onClick={() => setIsRejectOpen(true)}
-                          >
-                            Reject Application
-                          </button>
-                        </>
-                      )}
-
-                      {/* INTERVIEW_SCHEDULED: Mark Interview Completed, Reject */}
-                      {status === "interview_scheduled" && (
-                        <>
-                          <button
-                            className={cn(
-                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 400,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                            disabled={loadingAction !== null}
-                            onClick={handleMarkInterviewCompleted}
-                          >
-                            {loadingAction === "markInterviewCompleted"
-                              ? "Marking..."
-                              : "Interview Held"}
-                          </button>
-                          <button
-                            className={cn(
-                              "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 400,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                            disabled={loadingAction !== null}
-                            onClick={() => setIsRejectOpen(true)}
-                          >
-                            Reject Application
-                          </button>
-                        </>
-                      )}
-
-                      {/* INTERVIEW_COMPLETED: Send Contract, Reject */}
-                      {status === "interview_completed" && (
-                        <>
-                          <button
-                            onClick={() => {
-                              // Open contract creation modal to select fee structure and template
-                              setIsCreateContractModalOpen(true);
-                            }}
-                            disabled={loadingAction !== null}
-                            className={cn(
-                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 400,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                          >
-                            Send Contract
-                          </button>
-                          <button
-                            className={cn(
-                              "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 400,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                            disabled={loadingAction !== null}
-                            onClick={() => setIsRejectOpen(true)}
-                          >
-                            Reject Application
-                          </button>
-                        </>
-                      )}
-
-                      {/* CONTRACT_SENT: Review Signed Contract, Re-send Contract, Reject Application (for both applications and examiners) */}
-                      {status === "contract_sent" && (
-                        <>
-                          <button
-                            className={cn(
-                              "px-4 py-3 rounded-full flex items-center gap-2 relative",
-                              examiner.contractSignedByExaminerAt
-                                ? "bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 cursor-pointer"
-                                : "border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 400,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                            disabled={
-                              !examiner.contractSignedByExaminerAt ||
-                              loadingAction !== null
-                            }
-                            onClick={async () => {
-                              if (examiner.contractSignedByExaminerAt) {
-                                setIsContractReviewOpen(true);
-                                setLoadingContract(true);
-                                try {
-                                  const result = await getExaminerContract(
-                                    examiner.id,
-                                    isApplication,
-                                  );
-                                  if (result.success && result.contractHtml) {
-                                    setContractHtml(result.contractHtml);
-                                    if (result.contractId) {
-                                      setCurrentContractId(result.contractId);
-                                    }
-                                  } else {
-                                    toast.error("Failed to load contract");
-                                  }
-                                } catch (error) {
-                                  logger.error(
-                                    "Error loading contract:",
-                                    error,
-                                  );
-                                  toast.error("Failed to load contract");
-                                } finally {
-                                  setLoadingContract(false);
-                                }
-                              } else {
-                                toast.info(
-                                  isApplication
-                                    ? "Applicant has not signed contract yet"
-                                    : "Examiner has not signed contract yet",
-                                );
-                              }
-                            }}
-                            title={
-                              examiner.contractSignedByExaminerAt
-                                ? "Review the signed contract"
-                                : isApplication
-                                  ? "Applicant has not signed contract yet"
-                                  : "Examiner has not signed contract yet"
-                            }
-                          >
-                            Review Signed Contract
-                          </button>
-                          <button
-                            onClick={handleSendContract}
-                            disabled={loadingAction !== null}
-                            className={cn(
-                              "px-4 py-3 rounded-full border border-blue-600 text-blue-600 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 400,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                          >
-                            {loadingAction === "sendContract"
-                              ? "Re-sending..."
-                              : "Re-send Contract"}
-                          </button>
-                          <button
-                            className={cn(
-                              "px-4 py-3 rounded-full border border-red-500 text-red-500 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 400,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                            disabled={loadingAction !== null}
-                            onClick={() => setIsRejectOpen(true)}
-                          >
-                            Reject Application
-                          </button>
-                        </>
-                      )}
-
-                      {/* CONTRACT_SIGNED: Approve Application only (after admin confirms signed contract) */}
-                      {status === "contract_signed" &&
-                        examiner.contractConfirmedByAdminAt && (
-                          <button
-                            className={cn(
-                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 500,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                            disabled={loadingAction !== null}
-                            onClick={handleApprove}
-                          >
-                            {loadingAction === "approve"
-                              ? "Approving..."
-                              : isApplication
-                                ? "Approve Application"
-                                : "Approve Examiner"}
-                          </button>
-                        )}
-
-                      {/* CONTRACT_SENT: Show Approve button only after admin confirms signed contract */}
-                      {status === "contract_sent" &&
-                        examiner.contractConfirmedByAdminAt && (
-                          <button
-                            className={cn(
-                              "px-4 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
-                            )}
-                            style={{
-                              fontFamily: "Poppins, sans-serif",
-                              fontWeight: 500,
-                              lineHeight: "100%",
-                              fontSize: "14px",
-                            }}
-                            disabled={loadingAction !== null}
-                            onClick={handleApprove}
-                          >
-                            {loadingAction === "approve"
-                              ? "Approving..."
-                              : isApplication
-                                ? "Approve Application"
-                                : "Approve Examiner"}
-                          </button>
-                        )}
-
-                      {/* Suspend/Reactivate removed - skipping for now */}
-
-                      {/* Final states (REJECTED, WITHDRAWN): Read-only */}
-                      {(status === "rejected" || status === "withdrawn") && (
-                        <button
-                          className={cn(
-                            "px-4 py-3 rounded-full flex items-center gap-2 cursor-default",
-                            status === "rejected"
-                              ? "text-white bg-red-700"
-                              : "border border-gray-500 text-gray-700 bg-gray-50",
-                          )}
-                          style={{
-                            fontFamily: "Poppins, sans-serif",
-                            fontWeight: 500,
-                            lineHeight: "100%",
-                            fontSize: "14px",
-                          }}
-                          disabled
-                        >
-                          {status === "rejected" && "Rejected"}
-                          {status === "withdrawn" && "Withdrawn"}
-                        </button>
-                      )}
-                    </div>
+                    <ExaminerActions
+                      examiner={examiner}
+                      isApplication={isApplication}
+                      status={state.status}
+                      loadingAction={state.loadingAction}
+                      confirmingSlotId={state.confirmingSlotId}
+                      onApprove={actions.handleApprove}
+                      onReject={() => state.setIsRejectOpen(true)}
+                      onRequestMoreInfo={() => state.setIsRequestOpen(true)}
+                      onRequestInterview={actions.handleRequestInterview}
+                      onResendInterviewRequest={
+                        actions.handleResendInterviewRequest
+                      }
+                      onConfirmInterviewSlot={() =>
+                        state.setIsConfirmSlotModalOpen(true)
+                      }
+                      onMarkInterviewCompleted={
+                        actions.handleMarkInterviewCompleted
+                      }
+                      onSendContract={contractHandlers.handleSendContract}
+                      onReviewSignedContract={handleReviewSignedContract}
+                      onDeclineContract={actions.handleDeclineContract}
+                    />
                   </Section>
                 )}
             </div>
           </div>
-
-          {/* Fee Structure Section - Commented Out */}
-          {/* 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-              <Section
-                title="Fee Structure"
-                actionSlot={
-                  status !== "approved" ? (
-                    <button
-                      onClick={() => setIsFeeStructureOpen(true)}
-                      disabled={loadingAction === "feeStructure"}
-                      className="flex items-center gap-2 p-2 rounded-full text-cyan-600 hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      title={
-                        examiner.feeStructure
-                          ? "Edit Fee Structure"
-                          : "Add Fee Structure"
-                      }
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                  ) : null
-                }
-              >
-                  {examiner.feeStructure ? (
-                    <>
-                      <FieldRow
-                        label="IME Fee"
-                        value={`$${examiner.feeStructure.IMEFee}`}
-                        type="text"
-                      />
-                      <FieldRow
-                        label="Report Review Fee"
-                        value={`$${examiner.feeStructure.recordReviewFee}`}
-                        type="text"
-                      />
-                      {examiner.feeStructure.hourlyRate && (
-                        <FieldRow
-                          label="Hourly Rate"
-                          value={`$${examiner.feeStructure.hourlyRate}`}
-                          type="text"
-                        />
-                      )}
-                      <FieldRow
-                        label="Cancellation Fee"
-                        value={`$${examiner.feeStructure.cancellationFee}`}
-                        type="text"
-                      />
-                    </>
-                  ) : (
-                    <div className="rounded-lg bg-[#F6F6F6] px-4 py-3 min-h-[100px] flex items-center justify-center">
-                      <p className="font-poppins text-[14px] text-[#7A7A7A]">
-                        No fee structure added
-                      </p>
-                    </div>
-                  )}
-                </Section>
-            </div>
-            */}
         </div>
 
         {/* Modals */}
         <RequestInfoModal
-          open={isRequestOpen}
-          onClose={() => setIsRequestOpen(false)}
-          onSubmit={handleRequestMoreInfoSubmit}
+          open={state.isRequestOpen}
+          onClose={() => state.setIsRequestOpen(false)}
+          onSubmit={actions.handleRequestMoreInfoSubmit}
           title="Request More Info"
           maxLength={200}
         />
 
         <RejectModal
-          open={isRejectOpen}
-          onClose={() => setIsRejectOpen(false)}
-          onSubmit={handleRejectSubmit}
+          open={state.isRejectOpen}
+          onClose={() => state.setIsRejectOpen(false)}
+          onSubmit={actions.handleRejectSubmit}
           title="Reason for Rejection"
           maxLength={200}
         />
 
-        {/* Suspend Modal removed - skipping for now */}
-
-        {/* Fee Structure Modal */}
         <EditFeeStructureModal
-          open={isFeeStructureOpen}
+          open={state.isFeeStructureOpen}
           onClose={() => {
-            setIsFeeStructureOpen(false);
-            setPendingSendContract(false);
+            state.setIsFeeStructureOpen(false);
+            state.setPendingSendContract(false);
           }}
-          onSubmit={handleFeeStructureSubmit}
+          onSubmit={actions.handleFeeStructureSubmit}
           initialData={examiner.feeStructure}
           title={
             examiner.feeStructure ? "Edit Fee Structure" : "Add Fee Structure"
           }
-          isLoading={loadingAction === "feeStructure"}
+          isLoading={state.loadingAction === "feeStructure"}
         />
 
-        {/* Confirm Interview Slot Modal */}
         <ConfirmInterviewSlotModal
-          open={isConfirmSlotModalOpen}
-          onClose={() => setIsConfirmSlotModalOpen(false)}
+          open={state.isConfirmSlotModalOpen}
+          onClose={() => state.setIsConfirmSlotModalOpen(false)}
           slots={
             examiner.interviewSlots?.filter(
               (slot) =>
                 slot.startTime && slot.endTime && slot.status === "REQUESTED",
             ) || []
           }
-          onConfirm={handleConfirmInterviewSlot}
-          confirmingSlotId={confirmingSlotId}
-          isLoading={loadingAction === "confirmInterviewSlot"}
+          onConfirm={actions.handleConfirmInterviewSlot}
+          confirmingSlotId={state.confirmingSlotId}
+          isLoading={state.loadingAction === "confirmInterviewSlot"}
         />
 
-        {/* Create Contract Modal */}
         <CreateContractModal
-          open={isCreateContractModalOpen}
+          open={state.isCreateContractModalOpen}
           onClose={() => {
-            setIsCreateContractModalOpen(false);
-            setExistingContractId(undefined);
-            setExistingTemplateId(undefined);
+            state.setIsCreateContractModalOpen(false);
+            state.setExistingContractId(undefined);
+            state.setExistingTemplateId(undefined);
           }}
           examinerId={isApplication ? undefined : examiner.id}
           applicationId={isApplication ? examiner.id : undefined}
           examinerName={examiner.name || "Examiner"}
           examinerEmail={examiner.email || ""}
-          onSuccess={handleContractCreated}
-          existingContractId={existingContractId}
-          existingTemplateId={existingTemplateId}
+          onSuccess={contractHandlers.handleContractCreated}
+          existingContractId={state.existingContractId}
+          existingTemplateId={state.existingTemplateId}
         />
 
         {/* Contract Review Modal */}
-        {isContractReviewOpen && (
-          <>
-            <style jsx global>{`
-              /* Contract page styles for modal */
-              .contract-modal-container .page {
-                background: white;
-                border: 1px solid #dee2e6;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                margin: 1rem auto;
-                position: relative;
-                min-height: auto;
-                height: auto;
-                overflow: visible;
-                page-break-inside: avoid;
-                flex-shrink: 0;
-                width: 100%;
-                max-width: 794px;
-                display: flex;
-                flex-direction: column;
-                box-sizing: border-box;
-              }
-
-              .contract-modal-container .page-header {
-                flex-shrink: 0;
-                min-height: 40px;
-                background: #f8f9fa;
-                border-bottom: 1px solid #dee2e6;
-                display: flex;
-                align-items: flex-start;
-                justify-content: space-between;
-                padding: 8px 40px;
-                font-size: 12px;
-                color: #6c757d;
-                font-weight: 500;
-                z-index: 10;
-                flex-wrap: wrap;
-                overflow: hidden;
-                box-sizing: border-box;
-                position: relative;
-                margin-bottom: 0;
-              }
-
-              .contract-modal-container .page-content {
-                flex: 1;
-                margin: 0;
-                padding: 24px 40px;
-                position: relative;
-                overflow: visible;
-                word-wrap: break-word;
-                line-height: 1.6;
-                font-size: 14px;
-                color: #333;
-                background: white;
-                min-height: 0;
-                box-sizing: border-box;
-                margin-top: 0;
-                margin-bottom: 0;
-              }
-
-              .contract-modal-container .page-footer {
-                flex-shrink: 0;
-                min-height: 40px;
-                background: #f8f9fa;
-                border-top: 1px solid #dee2e6;
-                display: flex;
-                align-items: flex-start;
-                justify-content: space-between;
-                padding: 8px 40px;
-                font-size: 12px;
-                color: #6c757d;
-                font-weight: 500;
-                z-index: 10;
-                flex-wrap: wrap;
-                overflow: hidden;
-                box-sizing: border-box;
-                position: relative;
-                margin-top: 0;
-              }
-
-              .contract-modal-container .pages-container {
-                display: flex;
-                flex-direction: column;
-                gap: 0;
-                width: 100%;
-                padding: 0;
-                overflow: visible;
-              }
-
-              .contract-modal-container {
-                overflow: visible;
-              }
-
-              .contract-modal-container .page-content > *:first-child {
-                margin-top: 0;
-                padding-top: 0;
-              }
-
-              .contract-modal-container .page-content > *:last-child {
-                margin-bottom: 0;
-                padding-bottom: 0;
-              }
-
-              /* Contract preview styles (matching examiner side) */
-              .prose {
-                color: #333;
-              }
-              .prose table {
-                border-collapse: collapse;
-                margin: 1rem 0;
-                overflow: hidden;
-                width: 100%;
-              }
-              .prose table td,
-              .prose table th {
-                border: 1px solid #d1d5db;
-                box-sizing: border-box;
-                min-width: 1em;
-                padding: 0.5rem;
-                position: relative;
-                vertical-align: top;
-              }
-              .prose table th {
-                background-color: #f3f4f6;
-                font-weight: 600;
-              }
-              .prose img {
-                max-width: 100%;
-                height: auto;
-                display: inline-block;
-              }
-              .prose ul[data-type="taskList"] {
-                list-style: none;
-                padding: 0;
-              }
-              .prose ul[data-type="taskList"] li {
-                display: flex;
-                align-items: flex-start;
-                gap: 0.5rem;
-              }
-              .prose hr {
-                border: none;
-                border-top: 1px solid #d1d5db;
-                margin: 1rem 0;
-              }
-              .prose blockquote {
-                border-left: 4px solid #d1d5db;
-                padding-left: 1rem;
-                margin: 1rem 0;
-                color: #6b7280;
-                font-style: italic;
-              }
-              .prose pre {
-                background: #f3f4f6;
-                border-radius: 0.5rem;
-                padding: 1rem;
-                margin: 1rem 0;
-                overflow-x: auto;
-              }
-              .prose code {
-                background: #f3f4f6;
-                padding: 0.125rem 0.25rem;
-                border-radius: 0.25rem;
-                font-size: 0.875em;
-                font-family:
-                  ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-                  "Liberation Mono", monospace;
-              }
-
-              /* Ensure signature area is always interactive */
-              .signature-container {
-                pointer-events: auto !important;
-                position: relative;
-                z-index: 1000;
-              }
-
-              /* Ensure contract preview doesn't block signature area */
-              .contract-preview-column {
-                pointer-events: auto;
-                position: relative;
-                z-index: 1;
-              }
-
-              /* Ensure all elements inside contract preview don't overflow */
-              .contract-preview-column * {
-                max-width: 100%;
-                overflow: visible;
-              }
-
-              /* Ensure signature column is always on top */
-              .signature-column {
-                pointer-events: auto !important;
-                position: relative;
-                z-index: 1001 !important;
-                background: #f9fafb;
-              }
-
-              /* Canvas specific styles */
-              canvas.signature-canvas {
-                pointer-events: auto !important;
-                position: relative !important;
-                z-index: 1002 !important;
-                cursor: crosshair !important;
-              }
-            `}</style>
-            <div
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-              onClick={() => setIsContractReviewOpen(false)}
-            >
-              <div
-                className="bg-white w-full max-w-7xl max-h-[90vh] rounded-lg shadow-lg relative flex flex-col"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900">
-                      Review Signed Contract
-                    </h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Signed by {capitalizeWords(examiner.name)} on{" "}
-                      {examiner.contractSignedByExaminerAt
-                        ? new Date(
-                            examiner.contractSignedByExaminerAt,
-                          ).toLocaleDateString("en-US", {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          })
-                        : "N/A"}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setIsContractReviewOpen(false)}
-                    className="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full transition-colors"
-                    aria-label="Close"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* Two Column Layout */}
-                <div className="flex-1 flex overflow-hidden min-h-0 relative">
-                  {/* Left Column - Contract Preview */}
-                  <div className="contract-preview-column flex-1 overflow-y-auto overflow-x-hidden p-6 border-r border-gray-200">
-                    {loadingContract ? (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <p className="text-gray-600 font-poppins">
-                          Loading contract...
-                        </p>
-                      </div>
-                    ) : contractHtml ? (
-                      <div
-                        className="flex-1 min-w-0 bg-white rounded-[20px]"
-                        style={{
-                          padding: "40px 50px",
-                          maxWidth: "210mm",
-                          lineHeight: "1.4",
-                          boxShadow: "0px 0px 36.35px 0px #00000008",
-                        }}
-                      >
-                        <div
-                          className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none font-poppins"
-                          dangerouslySetInnerHTML={{ __html: contractHtml }}
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
-                        <p className="text-gray-600 font-poppins">
-                          Contract preview not available
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right Column - Admin Signature and Review Date */}
-                  <div className="signature-column w-96 flex-shrink-0 p-6 bg-gray-50 flex flex-col">
-                    <div className="space-y-6">
-                      {/* Review Date */}
-                      <div>
-                        <label className="block text-sm font-semibold text-black mb-2 font-poppins">
-                          Review Date
-                        </label>
-                        <input
-                          type="date"
-                          value={reviewDate}
-                          onChange={(e) => setReviewDate(e.target.value)}
-                          disabled={loadingAction !== null}
-                          className="w-full h-12 rounded-[10px] border-none bg-white px-3 text-sm text-[#333] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:opacity-50 font-poppins"
-                        />
-                      </div>
-
-                      {/* Admin Signature */}
-                      <div className="signature-container">
-                        <label className="block text-sm font-semibold text-black mb-2 font-poppins">
-                          Admin Signature
-                        </label>
-                        <div className="border-2 border-[#00A8FF] rounded-[10px] p-1 bg-white signature-container">
-                          <canvas
-                            key={
-                              isContractReviewOpen
-                                ? "canvas-open"
-                                : "canvas-closed"
-                            }
-                            ref={canvasRef}
-                            width={320}
-                            height={140}
-                            className="signature-canvas w-full cursor-crosshair bg-[#F2F5F6] rounded-[8px] select-none"
-                            style={{
-                              touchAction: "none",
-                              display: "block",
-                              pointerEvents: "auto",
-                              userSelect: "none",
-                              WebkitUserSelect: "none",
-                              position: "relative",
-                              zIndex: 1002,
-                            }}
-                          />
-                        </div>
-                        <button
-                          onClick={clearSignature}
-                          disabled={loadingAction !== null}
-                          className="mt-2 text-sm text-[#00A8FF] hover:text-[#0088CC] font-semibold underline transition-colors disabled:opacity-50 font-poppins"
-                        >
-                          Clear Signature
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer with Actions */}
-                <div className="flex items-center justify-between p-6 border-t border-gray-200">
-                  <button
-                    onClick={() => {
-                      setIsContractReviewOpen(false);
-                      clearSignature();
-                      setReviewDate(new Date().toISOString().split("T")[0]);
-                    }}
-                    className="px-6 py-3 rounded-full border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 font-poppins text-sm font-medium"
-                  >
-                    Close
-                  </button>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={handleDeclineContract}
-                      disabled={loadingAction !== null}
-                      className={cn(
-                        "px-6 py-3 rounded-full border border-red-500 text-red-700 bg-white hover:bg-red-50 font-poppins text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed",
-                      )}
-                    >
-                      {loadingAction === "reject"
-                        ? "Declining..."
-                        : "Decline Contract"}
-                    </button>
-                    <button
-                      onClick={async () => {
-                        await handleMarkContractSigned();
-                      }}
-                      disabled={loadingAction !== null}
-                      className={cn(
-                        "px-6 py-3 rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] text-white font-poppins text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
-                      )}
-                    >
-                      {loadingAction === "markContractSigned"
-                        ? "Confirming..."
-                        : "Confirm Contract"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+        <ContractReviewModal
+          isOpen={state.isContractReviewOpen}
+          onClose={() => {
+            state.setIsContractReviewOpen(false);
+            contractReview.clearSignature();
+            contractReview.setReviewDate(
+              new Date().toISOString().split("T")[0],
+            );
+          }}
+          examiner={examiner}
+          contractHtml={contractReview.contractHtml}
+          loadingContract={contractReview.loadingContract}
+          reviewDate={contractReview.reviewDate}
+          setReviewDate={contractReview.setReviewDate}
+          canvasRef={contractReview.canvasRef}
+          signatureImage={contractReview.signatureImage}
+          clearSignature={contractReview.clearSignature}
+          loadingAction={state.loadingAction}
+          onDecline={actions.handleDeclineContract}
+          onConfirm={contractReview.handleMarkContractSigned}
+        />
       </div>
       {/* Bottom padding for mobile */}
       <div className="h-6 sm:h-0" />
