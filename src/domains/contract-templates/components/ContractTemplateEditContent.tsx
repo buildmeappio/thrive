@@ -523,15 +523,15 @@ export default function ContractTemplateEditContent({ template }: Props) {
         return prev.map((v) =>
           v.id === editingVariable.id
             ? {
-              ...v,
-              key: data.key,
-              defaultValue: data.defaultValue ?? "",
-              description: data.description ?? null,
-              label: data.label ?? v.label,
-              variableType: data.variableType ?? "text",
-              options: data.options ?? null,
-              showUnderline: data.showUnderline ?? v.showUnderline ?? false,
-            }
+                ...v,
+                key: data.key,
+                defaultValue: data.defaultValue ?? "",
+                description: data.description ?? null,
+                label: data.label ?? v.label,
+                variableType: data.variableType ?? "text",
+                options: data.options ?? null,
+                showUnderline: data.showUnderline ?? v.showUnderline ?? false,
+              }
             : v,
         );
       });
@@ -542,15 +542,15 @@ export default function ContractTemplateEditContent({ template }: Props) {
         return prev.map((v) =>
           v.id === editingVariable.id
             ? {
-              ...v,
-              key: data.key,
-              defaultValue: data.defaultValue ?? "",
-              description: data.description ?? null,
-              label: data.label ?? v.label,
-              variableType: data.variableType ?? "text",
-              options: data.options ?? null,
-              showUnderline: data.showUnderline ?? v.showUnderline ?? false,
-            }
+                ...v,
+                key: data.key,
+                defaultValue: data.defaultValue ?? "",
+                description: data.description ?? null,
+                label: data.label ?? v.label,
+                variableType: data.variableType ?? "text",
+                options: data.options ?? null,
+                showUnderline: data.showUnderline ?? v.showUnderline ?? false,
+              }
             : v,
         );
       });
@@ -1100,19 +1100,21 @@ export default function ContractTemplateEditContent({ template }: Props) {
               <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6 border-b border-gray-200 overflow-x-auto pt-4">
                 <button
                   onClick={() => setActiveTab("variables")}
-                  className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "variables"
+                  className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                    activeTab === "variables"
                       ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                    }`}
+                  }`}
                 >
                   Variables
                 </button>
                 <button
                   onClick={() => setActiveTab("custom")}
-                  className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "custom"
+                  className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                    activeTab === "custom"
                       ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                    }`}
+                  }`}
                 >
                   Custom Variables
                   {customVariables.length > 0 && (
@@ -1124,10 +1126,11 @@ export default function ContractTemplateEditContent({ template }: Props) {
                 {placeholders.length > 0 && (
                   <button
                     onClick={() => setActiveTab("placeholders")}
-                    className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 relative cursor-pointer whitespace-nowrap flex-shrink-0 ${activeTab === "placeholders"
+                    className={`px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-poppins font-semibold transition-all border-b-2 relative cursor-pointer whitespace-nowrap flex-shrink-0 ${
+                      activeTab === "placeholders"
                         ? "border-[#00A8FF] text-[#00A8FF] bg-[#00A8FF]/5"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                      }`}
+                    }`}
                   >
                     Detected
                     <span className="ml-1.5 sm:ml-2 inline-flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 text-[10px] sm:text-xs font-bold text-white bg-[#00A8FF] rounded-full">
@@ -1391,10 +1394,10 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                     </button>
                                     {variable.variableType ===
                                       "checkbox_group" && (
-                                        <span className="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-semibold">
-                                          Checkbox Group
-                                        </span>
-                                      )}
+                                      <span className="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-semibold">
+                                        Checkbox Group
+                                      </span>
+                                    )}
                                   </div>
                                   <p className="text-[10px] sm:text-xs text-gray-600 mb-1 break-words">
                                     {variable.description || "No description"}
@@ -1404,7 +1407,7 @@ export default function ContractTemplateEditContent({ template }: Props) {
                                       Default: {variable.defaultValue}
                                     </p>
                                   ) : variable.variableType ===
-                                    "checkbox_group" && variable.options ? (
+                                      "checkbox_group" && variable.options ? (
                                     <div className="mt-2">
                                       <p className="text-[10px] sm:text-xs text-gray-500 mb-1">
                                         Options ({variable.options.length}):
@@ -1533,14 +1536,15 @@ export default function ContractTemplateEditContent({ template }: Props) {
                         return (
                           <div
                             key={placeholder}
-                            className={`text-xs sm:text-sm font-mono px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border flex items-center justify-between gap-2 transition-colors ${hasError
+                            className={`text-xs sm:text-sm font-mono px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border flex items-center justify-between gap-2 transition-colors ${
+                              hasError
                                 ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
                                 : isInvalid
                                   ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
                                   : hasWarning
                                     ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
                                     : "bg-gray-50 border-gray-200 hover:bg-gray-100"
-                              }`}
+                            }`}
                           >
                             <span className="break-all">{`{{${placeholder}}}`}</span>
                             {isInvalid && (
