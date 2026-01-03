@@ -59,7 +59,7 @@ export function CheckboxGroupsMenu({
         ?.map(
           (opt) => `
       <div style="margin-bottom: 4px; display: flex; align-items: center;">
-        <span class="checkbox-indicator" data-checkbox-value="${opt.value}" data-variable-key="${variable.key}" style="display: inline-block; width: 16px; height: 16px; border: 2px solid #333; margin-right: 8px; vertical-align: middle; flex-shrink: 0;">☐</span>
+        <span class="checkbox-indicator" data-checkbox-value="${opt.value}" data-variable-key="${variable.key}" style="display: inline-block; width: 16px; height: 16px; border: 1px solid #999; background-color: #fff; margin-right: 8px; vertical-align: middle; flex-shrink: 0; text-align: center; line-height: 14px; font-size: 16px; color: #000;">☐</span>
         <label style="margin: 0; font-weight: normal;">${opt.label}</label>
       </div>
     `,

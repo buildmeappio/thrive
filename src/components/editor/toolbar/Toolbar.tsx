@@ -18,7 +18,6 @@ import { LinkPopover } from "./LinkPopover";
 import { AlignmentButtons } from "./AlignmentButtons";
 import { ListButtons } from "./ListButtons";
 import { VariablesMenu } from "./VariablesMenu";
-import { CheckboxGroupsMenu } from "./CheckboxGroupsMenu";
 import { InsertMenu } from "./InsertMenu";
 import { TableMenu } from "./TableMenu";
 import { HeaderFooterButtons } from "./HeaderFooterButtons";
@@ -241,17 +240,6 @@ export function Toolbar({
       {mergedVariables.length > 0 && (
         <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
           <VariablesMenu editor={editor} availableVariables={mergedVariables} />
-        </div>
-      )}
-
-      {/* Checkbox Groups Menu */}
-      {customVariables.filter((v) => v.variableType === "checkbox_group")
-        .length > 0 && (
-        <div className="flex gap-1 border-r border-gray-200 pr-2 mr-2">
-          <CheckboxGroupsMenu
-            editor={editor}
-            customVariables={customVariables}
-          />
         </div>
       )}
 
