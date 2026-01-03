@@ -26,14 +26,16 @@ export const CheckboxGroupStyles: React.FC = () => {
         display: inline-block;
         width: 16px;
         height: 16px;
-        border: 2px solid #333;
+        border: 1px solid #999 !important;
+        background-color: #fff !important;
         margin-right: 8px;
         vertical-align: middle;
         flex-shrink: 0;
         text-align: center;
-        line-height: 12px;
-        font-size: 14px;
+        line-height: 14px;
+        font-size: 16px;
         cursor: default;
+        color: #000 !important;
       }
       .checkbox-group-variable label {
         font-weight: normal;

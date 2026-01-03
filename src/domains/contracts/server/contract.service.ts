@@ -1549,10 +1549,40 @@ export const previewContract = async (
     }
   }
 
-  // Step 7: Restore checkbox groups
+  // Step 7: Restore checkbox groups and mark selected checkboxes as checked
   checkboxGroupPlaceholders.forEach((checkboxGroup, index) => {
     const placeholderPattern = new RegExp(`__CHECKBOX_GROUP_${index}__`, "g");
-    renderedHtml = renderedHtml.replace(placeholderPattern, checkboxGroup);
+
+    // Extract variable key from checkbox group HTML
+    const keyMatch = checkboxGroup.match(/data-variable-key=["']([^"']*)["']/);
+    const variableKey = keyMatch ? keyMatch[1] : "";
+
+    // Get selected values for this checkbox group
+    let selectedValues: string[] = [];
+    if (variableKey && values[variableKey]) {
+      const selectedValue = values[variableKey];
+      if (typeof selectedValue === "string") {
+        // Split comma-separated values and trim whitespace
+        selectedValues = selectedValue.split(",").map((v) => v.trim());
+      }
+    }
+
+    // Mark selected checkboxes as checked (☑) instead of unchecked (☐)
+    let restoredGroup = checkboxGroup;
+    if (selectedValues.length > 0) {
+      // Replace ☐ with ☑ for selected checkboxes
+      restoredGroup = restoredGroup.replace(
+        /<span([^>]*)\s+data-checkbox-value=["']([^"']*)["']([^>]*)>☐<\/span>/gi,
+        (match, before, checkboxValue, after) => {
+          if (selectedValues.includes(checkboxValue)) {
+            return `<span${before} data-checkbox-value="${checkboxValue}"${after}>☑</span>`;
+          }
+          return match;
+        },
+      );
+    }
+
+    renderedHtml = renderedHtml.replace(placeholderPattern, restoredGroup);
   });
 
   // Log final rendered HTML for debugging

@@ -230,125 +230,160 @@ export default function ContractVariablesFormStep({
             Custom Variables
           </h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {initializedCustomVariables.map((variable) => {
-              const keyWithoutPrefix = variable.key.replace(/^custom\./, "");
-              const currentValue = getCustomVariableValue(keyWithoutPrefix);
-              const displayLabel =
-                variable.label || formatKeyToLabel(keyWithoutPrefix);
-              const defaultValueString =
-                typeof variable.defaultValue === "string"
-                  ? variable.defaultValue
-                  : "";
+          {/* Separate text variables and checkbox groups */}
+          {(() => {
+            const textVariables = initializedCustomVariables.filter(
+              (v) => v.variableType !== "checkbox_group",
+            );
+            const checkboxGroups = initializedCustomVariables.filter(
+              (v) => v.variableType === "checkbox_group",
+            );
 
-              if (variable.variableType === "checkbox_group") {
-                // Render checkbox group
-                const selectedValues = Array.isArray(currentValue)
-                  ? currentValue
-                  : currentValue
-                    ? [currentValue]
-                    : [];
-                const options = variable.options || [];
+            return (
+              <>
+                {/* Text Variables Section */}
+                {textVariables.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {textVariables.map((variable) => {
+                      const keyWithoutPrefix = variable.key.replace(
+                        /^custom\./,
+                        "",
+                      );
+                      const currentValue =
+                        getCustomVariableValue(keyWithoutPrefix);
+                      const displayLabel =
+                        variable.label || formatKeyToLabel(keyWithoutPrefix);
+                      const defaultValueString =
+                        typeof variable.defaultValue === "string"
+                          ? variable.defaultValue
+                          : "";
 
-                return (
-                  <div key={variable.id} className="sm:col-span-2 space-y-2">
-                    <label className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2">
-                      {displayLabel}
-                      {variable.description && (
-                        <span className="text-xs text-[#7A7A7A] font-normal ml-2">
-                          {variable.description}
-                        </span>
-                      )}
-                    </label>
-                    <div className="space-y-2">
-                      {options.map((option) => {
-                        const isChecked = selectedValues.includes(option.value);
-                        return (
+                      // Render text input
+                      const textValue =
+                        typeof currentValue === "string"
+                          ? currentValue
+                          : Array.isArray(currentValue)
+                            ? currentValue.join(", ")
+                            : defaultValueString || "";
+
+                      return (
+                        <div key={variable.id}>
                           <label
-                            key={option.value}
-                            className="flex items-center space-x-2 cursor-pointer"
+                            htmlFor={`custom-${keyWithoutPrefix}`}
+                            className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
                           >
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={(e) => {
-                                const newValues = e.target.checked
-                                  ? [...selectedValues, option.value]
-                                  : selectedValues.filter(
-                                      (v) => v !== option.value,
-                                    );
-                                handleCustomVariableChange(
-                                  keyWithoutPrefix,
-                                  newValues,
-                                );
-                              }}
-                              className="
-                                w-4 h-4
-                                rounded border-[#E5E5E5]
-                                text-[#000093] focus:ring-[#000093]
-                                cursor-pointer
-                              "
-                            />
-                            <span className="text-sm sm:text-[15px] font-poppins text-[#1A1A1A]">
-                              {option.label}
-                            </span>
+                            {displayLabel}
+                            {variable.description && (
+                              <span className="text-xs text-[#7A7A7A] font-normal ml-2">
+                                {variable.description}
+                              </span>
+                            )}
                           </label>
-                        );
-                      })}
-                    </div>
+                          <input
+                            id={`custom-${keyWithoutPrefix}`}
+                            type="text"
+                            value={textValue}
+                            onChange={(e) =>
+                              handleCustomVariableChange(
+                                keyWithoutPrefix,
+                                e.target.value,
+                              )
+                            }
+                            className="
+                              h-12 w-full
+                              rounded-xl sm:rounded-[15px]
+                              border border-[#E5E5E5] bg-[#F6F6F6]
+                              px-3 sm:px-4 outline-none
+                              placeholder:font-[400] placeholder:text-[14px]
+                              placeholder:text-[#A4A4A4]
+                              font-poppins text-[14px] sm:text-[15px]
+                              focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
+                            "
+                            placeholder={
+                              defaultValueString || `Enter ${displayLabel}`
+                            }
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              } else {
-                // Render text input
-                const textValue =
-                  typeof currentValue === "string"
-                    ? currentValue
-                    : Array.isArray(currentValue)
-                      ? currentValue.join(", ")
-                      : defaultValueString || "";
+                )}
 
-                return (
-                  <div key={variable.id}>
-                    <label
-                      htmlFor={`custom-${keyWithoutPrefix}`}
-                      className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2"
-                    >
-                      {displayLabel}
-                      {variable.description && (
-                        <span className="text-xs text-[#7A7A7A] font-normal ml-2">
-                          {variable.description}
-                        </span>
-                      )}
-                    </label>
-                    <input
-                      id={`custom-${keyWithoutPrefix}`}
-                      type="text"
-                      value={textValue}
-                      onChange={(e) =>
-                        handleCustomVariableChange(
-                          keyWithoutPrefix,
-                          e.target.value,
-                        )
-                      }
-                      className="
-                        h-12 w-full
-                        rounded-xl sm:rounded-[15px]
-                        border border-[#E5E5E5] bg-[#F6F6F6]
-                        px-3 sm:px-4 outline-none
-                        placeholder:font-[400] placeholder:text-[14px]
-                        placeholder:text-[#A4A4A4]
-                        font-poppins text-[14px] sm:text-[15px]
-                        focus:border-[#000093] focus:ring-1 focus:ring-[#000093]
-                      "
-                      placeholder={
-                        defaultValueString || `Enter ${displayLabel}`
-                      }
-                    />
+                {/* Checkbox Groups Section - Shown at the end */}
+                {checkboxGroups.length > 0 && (
+                  <div className="space-y-4">
+                    {checkboxGroups.map((variable) => {
+                      const keyWithoutPrefix = variable.key.replace(
+                        /^custom\./,
+                        "",
+                      );
+                      const currentValue =
+                        getCustomVariableValue(keyWithoutPrefix);
+                      const displayLabel =
+                        variable.label || formatKeyToLabel(keyWithoutPrefix);
+                      const selectedValues = Array.isArray(currentValue)
+                        ? currentValue
+                        : currentValue
+                          ? [currentValue]
+                          : [];
+                      const options = variable.options || [];
+
+                      return (
+                        <div key={variable.id} className="space-y-2">
+                          <label className="block font-[500] text-base sm:text-[16px] leading-[1.2] text-[#1A1A1A] font-poppins mb-2">
+                            {displayLabel}
+                            {variable.description && (
+                              <span className="text-xs text-[#7A7A7A] font-normal ml-2">
+                                {variable.description}
+                              </span>
+                            )}
+                          </label>
+                          <div className="space-y-2">
+                            {options.map((option) => {
+                              const isChecked = selectedValues.includes(
+                                option.value,
+                              );
+                              return (
+                                <label
+                                  key={option.value}
+                                  className="flex items-center space-x-2 cursor-pointer"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={(e) => {
+                                      const newValues = e.target.checked
+                                        ? [...selectedValues, option.value]
+                                        : selectedValues.filter(
+                                            (v) => v !== option.value,
+                                          );
+                                      handleCustomVariableChange(
+                                        keyWithoutPrefix,
+                                        newValues,
+                                      );
+                                    }}
+                                    className="
+                                      w-4 h-4
+                                      rounded border-[#E5E5E5]
+                                      text-[#000093] focus:ring-[#000093]
+                                      cursor-pointer
+                                    "
+                                  />
+                                  <span className="text-sm sm:text-[15px] font-poppins text-[#1A1A1A]">
+                                    {option.label}
+                                  </span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              }
-            })}
-          </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
     </div>
