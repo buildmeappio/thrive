@@ -147,6 +147,86 @@ export const ContractReviewModal = ({
         .prose {
           color: #333;
         }
+
+        /* Ensure variable spans in prose stay inline and don't break lines */
+        .prose span[title],
+        .prose span[data-signature],
+        .prose span[style*="border-bottom"],
+        .prose span[style*="display: inline"],
+        .prose span[style*="display: inline-block"] {
+          display: inline !important;
+          white-space: normal !important;
+          word-break: normal !important;
+          vertical-align: baseline !important;
+          line-height: inherit !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Prevent line breaks before/after variable spans in prose */
+        .prose p span[title],
+        .prose p span[data-signature],
+        .prose p span[style*="border-bottom"],
+        .prose li span[title],
+        .prose li span[data-signature],
+        .prose li span[style*="border-bottom"] {
+          display: inline !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Handle paragraphs that only contain variable spans - make them inline */
+        .prose p:only-child {
+          margin: 0 !important;
+          padding: 0 !important;
+          display: inline !important;
+        }
+
+        /* Merge adjacent paragraphs that contain only variables */
+        .prose p + p:has(> span[title]:only-child),
+        .prose p + p:has(> span[data-signature]:only-child) {
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+          display: inline !important;
+        }
+
+        /* Ensure list items with variables don't break */
+        .prose ul li,
+        .prose ol li {
+          line-height: 1.6 !important;
+        }
+
+        .prose ul li span[title],
+        .prose ul li span[data-signature],
+        .prose ul li span[style*="border-bottom"],
+        .prose ol li span[title],
+        .prose ol li span[data-signature],
+        .prose ol li span[style*="border-bottom"] {
+          display: inline !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Handle paragraphs in list items - minimize spacing */
+        .prose ul li p,
+        .prose ol li p {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        /* Make consecutive paragraphs in list items inline to prevent line breaks */
+        .prose ul li p + p,
+        .prose ol li p + p {
+          margin-top: 0 !important;
+          padding-top: 0 !important;
+          display: inline !important;
+        }
+
+        /* If a paragraph in a list item only contains a variable span, make it inline */
+        .prose ul li > p:only-child,
+        .prose ol li > p:only-child {
+          display: inline !important;
+        }
         .prose table {
           border-collapse: collapse;
           margin: 1rem 0;
@@ -227,6 +307,34 @@ export const ContractReviewModal = ({
         .contract-preview-column * {
           max-width: 100%;
           overflow: visible;
+        }
+
+        /* Ensure variable spans stay inline and don't break onto new lines */
+        .contract-preview-column span[title],
+        .contract-preview-column span[data-signature],
+        .contract-preview-column span[style*="border-bottom"],
+        .contract-preview-column span[style*="display: inline"],
+        .contract-preview-column span[style*="display: inline-block"] {
+          display: inline !important;
+          white-space: normal !important;
+          word-break: normal !important;
+          vertical-align: baseline !important;
+          line-height: inherit !important;
+        }
+
+        /* Ensure paragraphs containing variable spans don't force breaks */
+        .contract-preview-column p span[title],
+        .contract-preview-column p span[data-signature],
+        .contract-preview-column p span[style*="border-bottom"] {
+          display: inline !important;
+        }
+
+        /* Prevent line breaks before/after variable spans */
+        .contract-preview-column span[title]::before,
+        .contract-preview-column span[title]::after,
+        .contract-preview-column span[data-signature]::before,
+        .contract-preview-column span[data-signature]::after {
+          content: "" !important;
         }
 
         /* Ensure signature column is always on top */

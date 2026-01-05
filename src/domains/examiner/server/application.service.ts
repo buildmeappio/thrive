@@ -25,7 +25,11 @@ const includeRelations: Prisma.ExaminerApplicationInclude = {
         in: [ContractStatus.DRAFT, ContractStatus.SENT, ContractStatus.SIGNED],
       },
     },
-    include: {
+    select: {
+      id: true,
+      status: true,
+      data: true,
+      fieldValues: true, // Include fieldValues to access fees_overrides
       feeStructure: {
         include: {
           variables: {
@@ -36,6 +40,8 @@ const includeRelations: Prisma.ExaminerApplicationInclude = {
           },
         },
       },
+      createdAt: true,
+      sentAt: true,
     },
     orderBy: {
       createdAt: Prisma.SortOrder.desc,

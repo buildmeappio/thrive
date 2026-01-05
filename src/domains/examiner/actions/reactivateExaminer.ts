@@ -15,7 +15,7 @@ export const reactivateExaminer = async (id: string) => {
       throw new HttpError(404, "Examiner not found");
     }
 
-    const examinerData = ExaminerDto.toExaminerData(result as any);
+    const examinerData = await ExaminerDto.toExaminerData(result as any);
 
     // Send reactivation notification email
     const emailHtml = `

@@ -1,5 +1,4 @@
 import Section from "@/components/Section";
-import FieldRow from "@/components/FieldRow";
 import type { ContractData } from "../../types/examinerDetail.types";
 
 interface ContractDetailsSectionProps {
@@ -59,12 +58,24 @@ export const ContractDetailsSection = ({
           }
 
           return (
-            <FieldRow
+            <div
               key={key}
-              label={label}
-              value={displayValue}
-              type="text"
-            />
+              className="flex flex-col w-full rounded-lg bg-[#F6F6F6] px-3 sm:px-4 py-2 gap-1.5"
+            >
+              <span className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight tracking-[-0.03em] text-[#4E4E4E] break-words">
+                {label.includes("*") ? (
+                  <>
+                    {label.replace("*", "")}
+                    <span className="text-red-500">*</span>
+                  </>
+                ) : (
+                  label
+                )}
+              </span>
+              <span className="font-[400] font-[Poppins] text-[14px] sm:text-[16px] leading-tight tracking-[-0.03em] text-[#000080] break-words">
+                {displayValue ?? "-"}
+              </span>
+            </div>
           );
         })}
       </div>

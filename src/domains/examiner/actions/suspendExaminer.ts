@@ -18,7 +18,7 @@ export const suspendExaminer = async (
       throw new HttpError(404, "Examiner not found");
     }
 
-    const examinerData = ExaminerDto.toExaminerData(result as any);
+    const examinerData = await ExaminerDto.toExaminerData(result as any);
 
     // Send suspension notification email
     const emailHtml = `

@@ -31,6 +31,7 @@ interface UseExaminerActionsProps {
   setIsRejectOpen: (open: boolean) => void;
   setIsFeeStructureOpen: (open: boolean) => void;
   setIsCreateContractModalOpen: (open: boolean) => void;
+  setIsConfirmSlotModalOpen: (open: boolean) => void;
 }
 
 export const useExaminerActions = ({
@@ -45,6 +46,7 @@ export const useExaminerActions = ({
   setIsRejectOpen,
   setIsFeeStructureOpen,
   setIsCreateContractModalOpen,
+  setIsConfirmSlotModalOpen,
 }: UseExaminerActionsProps) => {
   const router = useRouter();
 
@@ -237,6 +239,8 @@ export const useExaminerActions = ({
         toast.success(
           "Interview slot confirmed. Confirmation email sent to examiner.",
         );
+        // Close the modal before refreshing to prevent showing empty state
+        setIsConfirmSlotModalOpen(false);
         router.refresh();
       } else {
         toast.error(

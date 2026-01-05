@@ -71,6 +71,8 @@ export type ContractFeeStructure = {
     decimals?: number | null;
     unit?: string | null;
     included?: boolean;
+    variableType?: "text" | "checkbox_group";
+    options?: Array<{ label: string; value: string }>;
   }>;
 };
 

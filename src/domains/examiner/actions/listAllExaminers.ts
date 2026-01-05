@@ -94,7 +94,7 @@ const listAllExaminers = async () => {
       (examiner) => examiner.account?.user,
     );
 
-    const examinersData = ExaminerDto.toExaminerDataList(validExaminers);
+    const examinersData = await ExaminerDto.toExaminerDataList(validExaminers);
 
     // Map specialty IDs to exam type names for all examiners
     const mappedData = await mapSpecialtyIdsToNames(examinersData);

@@ -52,8 +52,9 @@ export const Page: React.FC<PageProps> = ({
   // Calculate content area positioning
   const contentTop = headerHeight + 10; // 10px top margin + header height
   // Calculate content area height accounting for margins
+  // Reduced buffer (5px) to match pagination logic
   const contentAreaHeight =
-    CONTENT_HEIGHT_PX - headerHeight - footerHeight - 20 - 15; // Subtract 20px for margins + 15px buffer
+    CONTENT_HEIGHT_PX - headerHeight - footerHeight - 20 - 5; // Subtract 20px for margins + 5px buffer
 
   // Page content is already processed with variables during pagination
   // No need to process again - use as-is
