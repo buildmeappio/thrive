@@ -7,9 +7,28 @@ set -e
 # Usage: ./deploy-production-ec2.sh <deploy_path> <ecr_registry> <ecr_repository> <image_tag> <ecr_password> <aws_region>
 # -------------------------------
 
-# Set HOME if not set (SSM might not have it)
-export HOME="${HOME:-/home/ubuntu}"
-export USER="${USER:-ubuntu}"
+# Set HOME and USER if not set (SSM might not have it)
+# Detect actual user running the script
+if [[ -z "$HOME" ]]; then
+  if [[ -d "/home/ubuntu" ]]; then
+    export HOME="/home/ubuntu"
+    export USER="ubuntu"
+  elif [[ -d "/root" ]]; then
+    export HOME="/root"
+    export USER="root"
+  else
+    export HOME=$(eval echo ~$(whoami))
+    export USER=$(whoami)
+  fi
+fi
+
+# Ensure USER is set
+if [[ -z "$USER" ]]; then
+  export USER=$(whoami)
+fi
+
+echo "Running as user: $USER"
+echo "HOME directory: $HOME"
 
 # Color codes
 RED='\033[0;31m'
@@ -108,41 +127,18 @@ if [[ ! -d ".git" ]]; then
   exit 1
 fi
 
-# Fix git ownership issue (add directory to safe.directory)
+# Fix git ownership issue
 git config --global --add safe.directory "$DEPLOY_PATH" || true
-
-# Ensure correct ownership
 sudo chown -R $USER:$USER "$DEPLOY_PATH" || true
 
-# Configure git to use deploy keys via SSH config
-if [[ -f "$HOME/.ssh/config" ]]; then
-  # Use SSH config if it exists (should have github-admin-web configured)
-  export GIT_SSH_COMMAND="ssh -F $HOME/.ssh/config -o IdentitiesOnly=yes"
-else
-  # Fallback: use deploy key directly
-  if [[ -f "$HOME/.ssh/id_ed25519_admin-web" ]]; then
-    export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/id_ed25519_admin-web -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
-  else
-    echo -e "${YELLOW}⚠️  Warning: No SSH deploy key found. Git operations may fail.${NC}"
-  fi
+# Set up SSH for git (use deploy key if available)
+SSH_KEY_PATH="/home/ubuntu/.ssh/id_ed25519_admin-web"
+if [[ -f "$SSH_KEY_PATH" ]]; then
+  chmod 600 "$SSH_KEY_PATH" 2>/dev/null || true
+  export GIT_SSH_COMMAND="ssh -i $SSH_KEY_PATH -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
 fi
 
-# Update remote URL to use SSH alias if SSH config exists
-if [[ -f "$HOME/.ssh/config" ]]; then
-  CURRENT_REMOTE=$(git config --get remote.origin.url || echo "")
-  if [[ -n "$CURRENT_REMOTE" && "$CURRENT_REMOTE" != *"github-admin-web"* ]]; then
-    # Extract GitHub org/username from current remote
-    if [[ "$CURRENT_REMOTE" =~ git@github.com:([^/]+)/admin-web ]]; then
-      GITHUB_ORG="${BASH_REMATCH[1]}"
-      git remote set-url origin "git@github-admin-web:${GITHUB_ORG}/admin-web.git" || true
-    elif [[ "$CURRENT_REMOTE" =~ https://github.com/([^/]+)/admin-web ]]; then
-      GITHUB_ORG="${BASH_REMATCH[1]}"
-      git remote set-url origin "git@github-admin-web:${GITHUB_ORG}/admin-web.git" || true
-    fi
-  fi
-fi
-
-git fetch origin
+# Simple git operations
 git checkout main
 git pull origin main
 echo -e "${GREEN}✅ Code updated${NC}"
