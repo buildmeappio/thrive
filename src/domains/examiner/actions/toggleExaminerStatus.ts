@@ -45,7 +45,7 @@ export const toggleExaminerStatus = async (
       };
     }
 
-    const examinerData = ExaminerDto.toExaminerData(result as any);
+    const examinerData = await ExaminerDto.toExaminerData(result as any);
 
     return {
       success: true,

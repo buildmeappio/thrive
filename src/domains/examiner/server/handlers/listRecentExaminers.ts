@@ -11,7 +11,7 @@ export async function listRecentExaminers(limit = 7): Promise<ExaminerData[]> {
     "PENDING",
     "SUBMITTED",
   ]);
-  const examinersData = ExaminerDto.toExaminerDataList(examiners);
+  const examinersData = await ExaminerDto.toExaminerDataList(examiners);
 
   // Map specialty IDs to exam type names for all examiners
   const mappedData = await mapSpecialtyIdsToNames(examinersData);

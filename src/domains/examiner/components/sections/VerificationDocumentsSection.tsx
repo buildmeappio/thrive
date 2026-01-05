@@ -13,7 +13,7 @@ export const VerificationDocumentsSection = ({
     <Section title="Verification Documents">
       {examiner.medicalLicenseUrls && examiner.medicalLicenseUrls.length > 0 ? (
         // Multiple documents - show each file with Preview/Download
-        <div className="max-h-[300px] overflow-y-auto space-y-2">
+        <div className="space-y-2">
           {examiner.medicalLicenseUrls.map((url, index) => (
             <FieldRow
               key={index}
