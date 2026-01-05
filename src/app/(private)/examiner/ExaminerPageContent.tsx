@@ -37,7 +37,6 @@ interface FilterState {
 export default function ExaminerPageContent({
   examinersData,
   specialties,
-  statuses,
 }: ExaminerPageContentProps) {
   const router = useRouter();
   const [examiners, setExaminers] = useState<ExaminerData[]>(examinersData);

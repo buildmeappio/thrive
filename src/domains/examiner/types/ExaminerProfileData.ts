@@ -10,6 +10,7 @@ export type ExaminerProfileData = {
 
   // Profile info
   professionalTitle?: string;
+  professionalTitleDescription?: string;
   yearsOfIMEExperience: string;
   clinicName?: string;
   clinicAddress?: string;

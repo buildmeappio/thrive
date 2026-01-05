@@ -1,0 +1,69 @@
+export type CheckboxOption = {
+  label: string;
+  value: string;
+};
+
+export type CustomVariable = {
+  id: string;
+  key: string;
+  defaultValue: string | null;
+  description: string | null;
+  label: string | null;
+  isActive: boolean;
+  variableType: "text" | "checkbox_group";
+  options: CheckboxOption[] | null;
+  showUnderline?: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateCustomVariableInput = {
+  key: string;
+  defaultValue?: string;
+  description?: string | null;
+  label?: string | null;
+  variableType?: "text" | "checkbox_group";
+  options?: CheckboxOption[];
+  showUnderline?: boolean;
+};
+
+export type UpdateCustomVariableInput = {
+  id: string;
+  key?: string;
+  defaultValue?: string;
+  description?: string | null;
+  label?: string | null;
+  isActive?: boolean;
+  variableType?: "text" | "checkbox_group";
+  options?: CheckboxOption[];
+  showUnderline?: boolean;
+};
+
+export type ListCustomVariablesInput = {
+  isActive?: boolean;
+};
+
+export type ActionResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: string; fieldErrors?: Record<string, string> };
+
+// Component-specific types
+export type CustomVariableFormData = {
+  key: string;
+  defaultValue: string | null;
+  description?: string | null;
+  label: string;
+  variableType: "text" | "checkbox_group";
+  options?: CheckboxOption[];
+  showUnderline?: boolean;
+};
+
+export type CustomVariableDialogProps = {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: CustomVariableFormData) => Promise<void>;
+  initialData?: CustomVariable | null;
+  isLoading?: boolean;
+};
+
+export type FormErrors = Record<string, string>;

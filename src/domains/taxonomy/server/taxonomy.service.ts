@@ -7,6 +7,7 @@ import {
 } from "../types/Taxonomy";
 import prisma from "@/lib/db";
 import logger from "@/utils/logger";
+import { normalizeTaxonomyName } from "../utils/normalizeTaxonomyName";
 
 // Map taxonomy type to Prisma model
 const getPrismaModel = (type: TaxonomyType) => {
@@ -99,15 +100,53 @@ export const createTaxonomy = async (
 
     // Check for unique name constraint (except for examinationTypeBenefit)
     if (type !== "examinationTypeBenefit" && data.name) {
-      const existing = await model.findFirst({
+      // Fetch all existing taxonomies to check for normalized duplicates
+      const existingTaxonomies = await model.findMany({
         where: {
-          name: data.name,
           deletedAt: null,
+        },
+        select: {
+          id: true,
+          name: true,
         },
       });
 
-      if (existing) {
-        throw HttpError.badRequest(`A ${type} with this name already exists`);
+      const normalizedInputName = normalizeTaxonomyName(data.name);
+      const duplicate = existingTaxonomies.find(
+        (taxonomy) =>
+          normalizeTaxonomyName(taxonomy.name) === normalizedInputName,
+      );
+
+      if (duplicate) {
+        throw HttpError.badRequest(
+          `A ${type} with this name already exists (duplicate names are not allowed, even with different spacing)`,
+        );
+      }
+    }
+
+    // Check for duplicate benefit in examinationTypeBenefit
+    if (type === "examinationTypeBenefit" && data.benefit) {
+      const existingBenefits = await model.findMany({
+        where: {
+          deletedAt: null,
+          examinationTypeId: data.examinationTypeId,
+        },
+        select: {
+          id: true,
+          benefit: true,
+        },
+      });
+
+      const normalizedInputBenefit = normalizeTaxonomyName(data.benefit);
+      const duplicate = existingBenefits.find(
+        (benefit) =>
+          normalizeTaxonomyName(benefit.benefit) === normalizedInputBenefit,
+      );
+
+      if (duplicate) {
+        throw HttpError.badRequest(
+          `A benefit with this name already exists for this examination type (duplicate names are not allowed, even with different spacing)`,
+        );
       }
     }
 
@@ -191,16 +230,62 @@ export const updateTaxonomy = async (
       data.name &&
       data.name !== existing.name
     ) {
-      const nameExists = await model.findFirst({
+      // Fetch all existing taxonomies (excluding current one) to check for normalized duplicates
+      const existingTaxonomies = await model.findMany({
         where: {
-          name: data.name,
           id: { not: id },
           deletedAt: null,
         },
+        select: {
+          id: true,
+          name: true,
+        },
       });
 
-      if (nameExists) {
-        throw HttpError.badRequest(`A ${type} with this name already exists`);
+      const normalizedInputName = normalizeTaxonomyName(data.name);
+      const duplicate = existingTaxonomies.find(
+        (taxonomy) =>
+          normalizeTaxonomyName(taxonomy.name) === normalizedInputName,
+      );
+
+      if (duplicate) {
+        throw HttpError.badRequest(
+          `A ${type} with this name already exists (duplicate names are not allowed, even with different spacing)`,
+        );
+      }
+    }
+
+    // Check for duplicate benefit in examinationTypeBenefit if benefit is being updated
+    if (
+      type === "examinationTypeBenefit" &&
+      data.benefit &&
+      data.benefit !== existing.benefit
+    ) {
+      const existingBenefits = await model.findMany({
+        where: {
+          id: { not: id },
+          deletedAt: null,
+          examinationTypeId:
+            data.examinationTypeId !== undefined
+              ? data.examinationTypeId
+              : existing.examinationTypeId,
+        },
+        select: {
+          id: true,
+          benefit: true,
+        },
+      });
+
+      const normalizedInputBenefit = normalizeTaxonomyName(data.benefit);
+      const duplicate = existingBenefits.find(
+        (benefit) =>
+          normalizeTaxonomyName(benefit.benefit) === normalizedInputBenefit,
+      );
+
+      if (duplicate) {
+        throw HttpError.badRequest(
+          `A benefit with this name already exists for this examination type (duplicate names are not allowed, even with different spacing)`,
+        );
       }
     }
 
@@ -436,21 +521,22 @@ const getFrequencyCounts = async (
       }
 
       case "maximumDistanceTravel": {
-        // Count examiner profiles where maxTravelDistance matches the name
-        const names = items.map((item) => item.name);
+        // Count examiner profiles where maxTravelDistance matches the ID
+        // Note: maxTravelDistance is stored as UUID (taxonomy ID), not name
+        const ids = items.map((item) => item.id);
         const distanceCounts = await prisma.examinerProfile.groupBy({
           by: ["maxTravelDistance"],
           where: {
-            maxTravelDistance: { in: names },
+            maxTravelDistance: { in: ids },
             deletedAt: null,
           },
           _count: true,
         });
         distanceCounts.forEach((count) => {
           if (count.maxTravelDistance) {
-            // Find the item with matching name
+            // Find the item with matching ID
             const matchingItem = items.find(
-              (item) => item.name === count.maxTravelDistance,
+              (item) => item.id === count.maxTravelDistance,
             );
             if (matchingItem) {
               frequencyMap.set(matchingItem.id, count._count);
@@ -461,23 +547,52 @@ const getFrequencyCounts = async (
       }
 
       case "yearsOfExperience": {
-        // Count examiner profiles where yearsOfIMEExperience matches the name
-        const names = items.map((item) => item.name);
+        // Count examiner profiles where yearsOfIMEExperience matches the ID
+        // Note: yearsOfIMEExperience is stored as UUID (taxonomy ID), not name
+        const ids = items.map((item) => item.id);
         const experienceCounts = await prisma.examinerProfile.groupBy({
           by: ["yearsOfIMEExperience"],
           where: {
-            yearsOfIMEExperience: { in: names },
+            yearsOfIMEExperience: { in: ids },
             deletedAt: null,
           },
           _count: true,
         });
         experienceCounts.forEach((count) => {
-          // Find the item with matching name
-          const matchingItem = items.find(
-            (item) => item.name === count.yearsOfIMEExperience,
-          );
-          if (matchingItem) {
-            frequencyMap.set(matchingItem.id, count._count);
+          if (count.yearsOfIMEExperience) {
+            // Find the item with matching ID
+            const matchingItem = items.find(
+              (item) => item.id === count.yearsOfIMEExperience,
+            );
+            if (matchingItem) {
+              frequencyMap.set(matchingItem.id, count._count);
+            }
+          }
+        });
+        break;
+      }
+
+      case "professionalTitle": {
+        // Count examiner profiles where professionalTitle matches the ID
+        // Note: professionalTitle is stored as UUID (taxonomy ID), not name
+        const ids = items.map((item) => item.id);
+        const titleCounts = await prisma.examinerProfile.groupBy({
+          by: ["professionalTitle"],
+          where: {
+            professionalTitle: { in: ids },
+            deletedAt: null,
+          },
+          _count: true,
+        });
+        titleCounts.forEach((count) => {
+          if (count.professionalTitle) {
+            // Find the item with matching ID
+            const matchingItem = items.find(
+              (item) => item.id === count.professionalTitle,
+            );
+            if (matchingItem) {
+              frequencyMap.set(matchingItem.id, count._count);
+            }
           }
         });
         break;

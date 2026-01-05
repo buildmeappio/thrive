@@ -9,7 +9,6 @@ import {
   SortingState,
   flexRender,
   type ColumnDef,
-  type Row,
   type Column,
 } from "@tanstack/react-table";
 import {

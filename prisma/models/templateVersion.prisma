@@ -13,6 +13,8 @@ model TemplateVersion {
   checksumSha256      String                @map("checksum_sha256") @db.VarChar(64)
   googleDocTemplateId String?               @map("google_doc_template_id") @db.VarChar(255)
   googleDocFolderId   String?               @map("google_doc_folder_id") @db.VarChar(255)
+  headerConfig        Json?                 @map("header_config")
+  footerConfig        Json?                 @map("footer_config")
   createdBy           String                @map("created_by") @db.Uuid
   createdAt           DateTime              @default(now()) @map("created_at") @db.Timestamptz()
 

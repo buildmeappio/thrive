@@ -12,25 +12,49 @@ import { toast } from "sonner";
 import type { UserTableRow } from "../types/UserData";
 import { requestPasswordReset, updateUser } from "../actions";
 
+// Helper function to check if name contains at least one letter
+const hasAtLeastOneLetter = (value: string): boolean => {
+  return /[a-zA-Z]/.test(value);
+};
+
 const schema = z.object({
   firstName: z
     .string()
     .min(1, "First name is required")
-    .regex(
-      /^[a-zA-Z\s'-]+$/,
+    .trim()
+    .refine(
+      (val) => val.length >= 2,
+      "First name must be at least 2 characters",
+    )
+    .refine(
+      (val) => val.length <= 50,
+      "First name must be less than 50 characters",
+    )
+    .refine(
+      (val) => /^[a-zA-Z\s'-]+$/.test(val),
       "First name can only contain letters, spaces, hyphens, and apostrophes",
     )
-    .min(2, "First name must be at least 2 characters")
-    .max(50, "First name must be less than 50 characters"),
+    .refine(
+      (val) => hasAtLeastOneLetter(val),
+      "First name must contain at least one letter",
+    ),
   lastName: z
     .string()
     .min(1, "Last name is required")
-    .regex(
-      /^[a-zA-Z\s'-]+$/,
+    .trim()
+    .refine((val) => val.length >= 2, "Last name must be at least 2 characters")
+    .refine(
+      (val) => val.length <= 50,
+      "Last name must be less than 50 characters",
+    )
+    .refine(
+      (val) => /^[a-zA-Z\s'-]+$/.test(val),
       "Last name can only contain letters, spaces, hyphens, and apostrophes",
     )
-    .min(2, "Last name must be at least 2 characters")
-    .max(50, "Last name must be less than 50 characters"),
+    .refine(
+      (val) => hasAtLeastOneLetter(val),
+      "Last name must contain at least one letter",
+    ),
   email: z
     .string()
     .min(1, "Email is required")

@@ -23,6 +23,7 @@ import {
   Calendar,
   Mail,
   FileText,
+  DollarSign,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useSidebar } from "@/providers/Sidebar";
@@ -97,6 +98,24 @@ export const routes: Route[] = [
     label: "Benefits",
     href: "/dashboard/benefits",
     index: 9,
+  },
+  {
+    icon: DollarSign,
+    label: "Fee Structures",
+    href: "/dashboard/fee-structures",
+    index: 14,
+  },
+  {
+    icon: FileText,
+    label: "Contract Templates",
+    href: "/dashboard/contract-templates",
+    index: 15,
+  },
+  {
+    icon: FileText,
+    label: "Contracts",
+    href: "/dashboard/contracts",
+    index: 16,
   },
   { icon: Users, label: "Users", href: "/users", index: 10 },
   {

@@ -273,6 +273,44 @@ const getExaminerProfileById = async (id: string) => {
       }
     }
 
+    // Map professionalTitle UUID to name and description
+    if (
+      examinerProfile.professionalTitle &&
+      uuidRegex.test(examinerProfile.professionalTitle.replace(/\s/g, ""))
+    ) {
+      try {
+        const professionalTitle = await prisma.professionalTitle.findUnique({
+          where: { id: examinerProfile.professionalTitle },
+        });
+        if (professionalTitle) {
+          examinerProfileData.professionalTitle = professionalTitle.name;
+          examinerProfileData.professionalTitleDescription =
+            professionalTitle.description || undefined;
+        }
+      } catch (error) {
+        logger.error("Failed to fetch professional title:", error);
+      }
+    }
+
+    // Map maxTravelDistance UUID to name
+    if (
+      examinerProfile.maxTravelDistance &&
+      uuidRegex.test(examinerProfile.maxTravelDistance.replace(/\s/g, ""))
+    ) {
+      try {
+        const maxTravelDistance = await prisma.maximumDistanceTravel.findUnique(
+          {
+            where: { id: examinerProfile.maxTravelDistance },
+          },
+        );
+        if (maxTravelDistance) {
+          examinerProfileData.maxTravelDistance = maxTravelDistance.name;
+        }
+      } catch (error) {
+        logger.error("Failed to fetch max travel distance:", error);
+      }
+    }
+
     return examinerProfileData;
   } catch (error) {
     logger.error("Error fetching examiner profile:", error);

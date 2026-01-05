@@ -1,6 +1,7 @@
 import { User, Account, Role } from "@prisma/client";
 import { RoleType } from "@/domains/auth/constants/roles";
 import { UserLoginFlags } from "@/domains/auth/types/userFlags";
+import { formatFullName } from "@/utils/text";
 
 type UserWithAccounts = (User & UserLoginFlags) & {
   accounts: Array<Account & { role: Role }>;
@@ -24,7 +25,7 @@ export class AuthDto {
     return {
       id: u.id,
       email: u.email,
-      name: `${u.firstName} ${u.lastName}`.trim(),
+      name: formatFullName(u.firstName, u.lastName),
       image: null,
       roleName,
       accountId: primary?.id ?? "",

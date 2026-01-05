@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import Section from "@/components/Section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -179,6 +181,14 @@ export default function CreateTransporterPageContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
+          <Link
+            href="/transporter"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+              <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+            </div>
+          </Link>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
               Create New Transporter
