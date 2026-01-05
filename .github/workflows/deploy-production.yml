@@ -1,0 +1,240 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: write
+  actions: write
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check linting
+        run: npm run lint:check
+
+      - name: Format code
+        run: npm run format:check
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Create .env file from AWS Secrets Manager
+        run: |
+          # Install jq if not available
+          sudo apt-get update && sudo apt-get install -y jq || true
+
+          # Fetch secrets from AWS Secrets Manager
+          SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id prod/shared --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+          EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id prod/examiner --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+
+          # Merge secrets (examiner overrides shared) and convert JSON to .env format
+          jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
+
+      - name: Check build
+        run: |
+          npm run db:generate
+          npm run build
+
+  build-image:
+    runs-on: ubuntu-latest
+    needs: ci
+    if: github.event_name != 'pull_request'
+    environment: prod
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env file from AWS Secrets Manager
+        run: |
+          # Install jq if not available
+          sudo apt-get update && sudo apt-get install -y jq || true
+
+          # Fetch secrets from AWS Secrets Manager
+          SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id prod/shared --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+          EXAMINER_SECRET=$(aws secretsmanager get-secret-value --secret-id prod/examiner --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
+
+          # Merge secrets (examiner overrides shared) and convert JSON to .env format
+          jq -r -n --argjson shared "$SHARED_SECRET" --argjson examiner "$EXAMINER_SECRET" '$shared * $examiner | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
+
+      - name: Build and push Docker image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            --push \
+            .
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-image
+    if: github.event_name != 'pull_request'
+    environment: prod
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get ECR login token
+        id: ecr-login
+        run: |
+          ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
+          ECR_PASSWORD=$(aws ecr get-login-password --region ${{ secrets.AWS_REGION }})
+          echo "::add-mask::$ECR_PASSWORD"
+          echo "password=$ECR_PASSWORD" >> $GITHUB_OUTPUT
+          echo "registry=$ECR_REGISTRY" >> $GITHUB_OUTPUT
+
+      - name: Deploy Docker image on EC2 using SSM
+        run: |
+          # Get EC2 instance ID
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --region ${{ secrets.AWS_REGION }} \
+            --filters "Name=tag:Name,Values=prod-thrive" "Name=instance-state-name,Values=running" \
+            --query 'Reservations[0].Instances[0].InstanceId' \
+            --output text)
+
+          # Set variables
+            DEPLOY_PATH="${{ secrets.EC2_DEPLOY_PATH }}"
+            ECR_REGISTRY="${{ steps.ecr-login.outputs.registry }}"
+            ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY_NAME }}"
+            IMAGE_TAG="${{ github.sha }}"
+            ECR_PASSWORD="${{ steps.ecr-login.outputs.password }}"
+          AWS_REGION="${{ secrets.AWS_REGION }}"
+
+          # Base64 encode the script to safely pass it via SSM
+          SCRIPT_B64=$(base64 -w 0 scripts/deploy-production-ec2.sh)
+
+          # Create deployment commands as JSON array
+          # Variables are substituted here before sending to SSM
+          COMMANDS_JSON=$(jq -n \
+            --arg script_b64 "$SCRIPT_B64" \
+            --arg deploy_path "$DEPLOY_PATH" \
+            --arg ecr_registry "$ECR_REGISTRY" \
+            --arg ecr_repo "$ECR_REPOSITORY" \
+            --arg image_tag "$IMAGE_TAG" \
+            --arg ecr_password "$ECR_PASSWORD" \
+            --arg aws_region "$AWS_REGION" \
+            '{
+              commands: [
+                "mkdir -p ~/scripts",
+                "echo '"'"'" + $script_b64 + "'"'"' | base64 -d > ~/scripts/deploy-production-ec2.sh",
+                "chmod +x ~/scripts/deploy-production-ec2.sh",
+                "~/scripts/deploy-production-ec2.sh '"'"'" + $deploy_path + "'"'"' '"'"'" + $ecr_registry + "'"'"' '"'"'" + $ecr_repo + "'"'"' '"'"'" + $image_tag + "'"'"' '"'"'" + $ecr_password + "'"'"' '"'"'" + $aws_region + "'"'"'"
+              ]
+            }')
+
+          # Send command via SSM
+          COMMAND_ID=$(aws ssm send-command \
+            --region $AWS_REGION \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --parameters "$COMMANDS_JSON" \
+            --query 'Command.CommandId' \
+            --output text)
+
+          echo "Command ID: $COMMAND_ID"
+          echo "Waiting for deployment to complete..."
+
+          # Wait for command to complete (poll every 5 seconds, max 5 minutes)
+          MAX_ATTEMPTS=60
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            STATUS=$(aws ssm get-command-invocation \
+              --region $AWS_REGION \
+              --command-id "$COMMAND_ID" \
+              --instance-id "$INSTANCE_ID" \
+              --query 'Status' \
+              --output text 2>/dev/null || echo "InProgress")
+            
+            if [ "$STATUS" = "Success" ] || [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "TimedOut" ]; then
+              break
+            fi
+            
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS - Status: $STATUS"
+            sleep 5
+          done
+
+          # Get command output
+          OUTPUT=$(aws ssm get-command-invocation \
+            --region $AWS_REGION \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$INSTANCE_ID" \
+            --query '[Status,StandardOutputContent,StandardErrorContent]' \
+            --output text)
+
+          echo "Deployment Status:"
+          echo "$OUTPUT"
+
+          # Check if command succeeded
+          STATUS=$(aws ssm get-command-invocation \
+            --region $AWS_REGION \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$INSTANCE_ID" \
+            --query 'Status' \
+            --output text)
+
+          if [ "$STATUS" != "Success" ]; then
+            echo "Deployment failed with status: $STATUS"
+            exit 1
+            fi
