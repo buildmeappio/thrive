@@ -36,11 +36,19 @@ echo "Image Tag: $IMAGE_TAG"
 echo "AWS Region: $AWS_REGION"
 echo ""
 
-# Load nvm
+# Load nvm or install if not found
 export NVM_DIR="$HOME/.nvm"
+if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+  echo -e "${YELLOW}📦 NVM not found. Installing NVM...${NC}"
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+  export NVM_DIR="$HOME/.nvm"
+fi
+
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Verify nvm is available
 if ! command -v nvm &> /dev/null; then
-  echo -e "${RED}❌ NVM not found. Please install NVM first.${NC}"
+  echo -e "${RED}❌ Failed to install/load NVM${NC}"
   exit 1
 fi
 
