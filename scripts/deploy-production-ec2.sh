@@ -127,9 +127,8 @@ if [[ ! -d ".git" ]]; then
   exit 1
 fi
 
-# Fix git ownership issue
+# Fix git ownership and lock files
 git config --global --add safe.directory "$DEPLOY_PATH" || true
-sudo chown -R $USER:$USER "$DEPLOY_PATH" || true
 
 # Set up SSH for git (use deploy key if available)
 SSH_KEY_PATH="/home/ubuntu/.ssh/id_ed25519_admin-web"
