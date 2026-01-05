@@ -12,13 +12,52 @@ type ApplicationWithRelations = ExaminerApplication & {
   ndaDocument: Documents | null;
   insuranceDocument: Documents | null;
   redactedIMEReportDocument: Documents | null;
-  interviewSlot: InterviewSlot | null;
+  interviewSlots: InterviewSlot[];
+  contracts?: Array<any>; // Optional contracts relation
 };
 
 export class ApplicationDto {
   static toApplicationData(
     application: ApplicationWithRelations,
   ): ExaminerData {
+    // Extract dynamic fee structure from contract if available
+    let contractFeeStructure: ExaminerData["contractFeeStructure"] = undefined;
+    if (application.contracts && application.contracts.length > 0) {
+      const contract = application.contracts[0];
+      if (
+        contract.feeStructure &&
+        contract.data &&
+        contract.feeStructure.variables &&
+        Array.isArray(contract.feeStructure.variables) &&
+        contract.feeStructure.variables.length > 0
+      ) {
+        const contractData = contract.data as any;
+        const fees = contractData.fees || {};
+
+        contractFeeStructure = {
+          feeStructureId: contract.feeStructure.id,
+          feeStructureName: contract.feeStructure.name,
+          variables: contract.feeStructure.variables.map((variable: any) => {
+            const value =
+              fees[variable.key] !== undefined
+                ? fees[variable.key]
+                : variable.defaultValue;
+
+            return {
+              key: variable.key,
+              label: variable.label,
+              value: value,
+              type: variable.type,
+              currency: variable.currency,
+              decimals: variable.decimals,
+              unit: variable.unit,
+              included: variable.included ?? false,
+            };
+          }),
+        };
+      }
+    }
+
     return {
       id: application.id,
       name: `${application.firstName || ""} ${application.lastName || ""}`.trim(),
@@ -63,15 +102,15 @@ export class ApplicationDto {
       status: application.status as ExaminerData["status"], // Cast ExaminerStatus to ServerStatus (DRAFT is filtered out in queries)
       createdAt: application.createdAt.toISOString(),
       updatedAt: application.updatedAt.toISOString(),
-      interviewSlot: application.interviewSlot
-        ? {
-            id: application.interviewSlot.id,
-            status: application.interviewSlot.status,
-            startTime: application.interviewSlot.startTime.toISOString(),
-            endTime: application.interviewSlot.endTime.toISOString(),
-            duration: application.interviewSlot.duration,
-          }
-        : null,
+      interviewSlots: application.interviewSlots
+        ? application.interviewSlots.map((slot) => ({
+            id: slot.id,
+            status: slot.status,
+            startTime: slot.startTime.toISOString(),
+            endTime: slot.endTime.toISOString(),
+            duration: slot.duration,
+          }))
+        : undefined,
       feeStructure:
         application.IMEFee !== null &&
         application.recordReviewFee !== null &&
@@ -88,6 +127,7 @@ export class ApplicationDto {
               paymentTerms: application.paymentTerms,
             }
           : undefined,
+      contractFeeStructure,
     };
   }
 

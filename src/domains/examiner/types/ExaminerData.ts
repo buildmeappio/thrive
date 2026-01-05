@@ -40,13 +40,14 @@ export type ExaminerData = {
   createdAt: string;
   updatedAt: string;
   feeStructure?: ExaminerFeeStructure;
-  interviewSlot?: {
+  contractFeeStructure?: ContractFeeStructure;
+  interviewSlots?: {
     id: string;
     status: string;
     startTime?: string;
     endTime?: string;
     duration?: number;
-  } | null;
+  }[];
 };
 
 export type ExaminerFeeStructure = {
@@ -56,6 +57,21 @@ export type ExaminerFeeStructure = {
   hourlyRate?: number;
   cancellationFee: number;
   paymentTerms: string;
+};
+
+export type ContractFeeStructure = {
+  feeStructureId: string;
+  feeStructureName: string;
+  variables: Array<{
+    key: string;
+    label: string;
+    value: unknown;
+    type: string;
+    currency?: string | null;
+    decimals?: number | null;
+    unit?: string | null;
+    included?: boolean;
+  }>;
 };
 
 type ServerStatus =

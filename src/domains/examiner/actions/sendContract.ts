@@ -61,7 +61,11 @@ export async function sendContract(id: string) {
         );
 
       if (!contractResult.success) {
-        throw new Error(contractResult.error || "Failed to create contract");
+        throw new Error(
+          "error" in contractResult
+            ? contractResult.error
+            : "Failed to create contract",
+        );
       }
 
       logger.log(
@@ -142,7 +146,11 @@ export async function sendContract(id: string) {
       );
 
       if (!contractResult.success) {
-        throw new Error(contractResult.error || "Failed to create contract");
+        throw new Error(
+          "error" in contractResult
+            ? contractResult.error
+            : "Failed to create contract",
+        );
       }
 
       logger.log(
@@ -179,11 +187,11 @@ export async function sendContract(id: string) {
 
       logger.log(`✅ Contract signing email sent to ${examinerEmail}`);
 
-      // Update examiner status to CONTRACT_SENT
+      // Update ExaminerProfile status to CONTRACT_SENT (workflow status)
       await prisma.examinerProfile.update({
         where: { id },
         data: {
-          status: "CONTRACT_SENT",
+          status: ExaminerStatus.CONTRACT_SENT,
         },
       });
 

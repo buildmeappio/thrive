@@ -60,7 +60,7 @@ model ExaminerProfile {
   emailMarketing                    Boolean?       @map("email_marketing")
   isConsentToBackgroundVerification Boolean        @map("is_consent_to_background_verification")
   agreeToTerms                      Boolean        @map("agree_to_terms")
-  status                            ExaminerStatus @default(PENDING) @map("status")
+  status                            ExaminerStatus? @default(PENDING) @map("status")
   activationStep                    String?        @map("activation_step") @db.VarChar(255)
   approvedBy                        String?        @map("approved_by") @db.Uuid
   approvedAt                        DateTime?      @map("approved_at") @db.Timestamptz()
@@ -88,6 +88,7 @@ model ExaminerProfile {
   examinerLanguages         ExaminerLanguage[]
   claimantBookings          ClaimantBooking[]      @relation("ClaimantBookingExaminer")
   contracts                 Contract[]             @relation("ExaminerContracts")
+  tourProgress              TourProgress?          @relation("ExaminerTourProgress")
 
   // availabilityProvider - use AvailabilityProvider.findFirst({ where: { refId: id, providerType: 'EXAMINER' } })
   @@index([applicationId])

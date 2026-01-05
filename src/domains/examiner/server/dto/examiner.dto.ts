@@ -32,6 +32,44 @@ export class ExaminerDto {
   static toExaminerData(examiner: ExaminerWithRelations): ExaminerData {
     const feeStructure = examiner.feeStructure?.[0];
 
+    // Extract dynamic fee structure from contract if available
+    let contractFeeStructure: ExaminerData["contractFeeStructure"] = undefined;
+    if (examiner.contracts && examiner.contracts.length > 0) {
+      const contract = examiner.contracts[0];
+      if (
+        contract.feeStructure &&
+        contract.data &&
+        contract.feeStructure.variables &&
+        Array.isArray(contract.feeStructure.variables) &&
+        contract.feeStructure.variables.length > 0
+      ) {
+        const contractData = contract.data as any;
+        const fees = contractData.fees || {};
+
+        contractFeeStructure = {
+          feeStructureId: contract.feeStructure.id,
+          feeStructureName: contract.feeStructure.name,
+          variables: contract.feeStructure.variables.map((variable: any) => {
+            const value =
+              fees[variable.key] !== undefined
+                ? fees[variable.key]
+                : variable.defaultValue;
+
+            return {
+              key: variable.key,
+              label: variable.label,
+              value: value,
+              type: variable.type,
+              currency: variable.currency,
+              decimals: variable.decimals,
+              unit: variable.unit,
+              included: variable.included ?? false,
+            };
+          }),
+        };
+      }
+    }
+
     return {
       id: examiner.id,
       name: `${examiner.account.user.firstName} ${examiner.account.user.lastName}`.trim(),
@@ -74,9 +112,10 @@ export class ExaminerDto {
         examiner.contractSignedByExaminerAt?.toISOString() || undefined,
       contractConfirmedByAdminAt:
         examiner.contractConfirmedByAdminAt?.toISOString() || undefined,
-      status: (examiner.status ||
-        examiner.application?.status ||
-        "APPROVED") as ExaminerData["status"], // Prioritize ExaminerProfile status over application status (application is historical record)
+      status: (examiner.account.user.status || // Prioritize User.status (new data)
+        examiner.status || // Fall back to ExaminerProfile.status (legacy data)
+        examiner.application?.status || // Fall back to application status
+        "ACTIVE") as ExaminerData["status"], // Default to ACTIVE
       createdAt: examiner.createdAt.toISOString(),
       updatedAt: examiner.updatedAt.toISOString(),
       feeStructure: feeStructure
@@ -91,6 +130,7 @@ export class ExaminerDto {
             paymentTerms: feeStructure.paymentTerms,
           }
         : undefined,
+      contractFeeStructure,
     };
   }
 

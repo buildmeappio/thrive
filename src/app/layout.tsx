@@ -24,6 +24,7 @@ export default function RootLayout({
       </head>
       <body
         className={`${degular.variable} ${poppins.variable} font-degular antialiased`}
+        suppressHydrationWarning
       >
         <Provider>{children}</Provider>
       </body>

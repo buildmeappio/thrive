@@ -15,6 +15,8 @@ export { default as Pagination } from "./Pagination";
 export { PasswordInput } from "./PasswordInput";
 export { default as PhoneNumber } from "./PhoneNumber";
 export { default as Section } from "./Section";
+export { default as TableActionsDropdown } from "./TableActionsDropdown";
+export type { TableAction } from "./TableActionsDropdown";
 
 // UI Components
 export * from "./ui";

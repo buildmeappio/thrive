@@ -12,6 +12,11 @@ import {
   getWaitingToBeScheduledCount,
   getDueCasesCount,
 } from "@/domains/dashboard/actions/dashboard.actions";
+import {
+  fetchRecentMessages,
+  fetchUnreadMessagesCount,
+} from "@/domains/dashboard/actions/messages.actions";
+import { fetchRecentUpdates } from "@/domains/dashboard/actions/updates.actions";
 
 export const metadata: Metadata = {
   title: "Dashboard | Thrive Admin",
@@ -30,6 +35,9 @@ const Page = async () => {
     examiners,
     waitingToBeScheduledCount,
     dueTodayCount,
+    messages,
+    unreadCount,
+    updates,
   ] = await Promise.all([
     getOrganizationCount(),
     getCaseCount(),
@@ -39,6 +47,9 @@ const Page = async () => {
     getExaminers(3),
     getWaitingToBeScheduledCount(),
     getDueCasesCount("today"),
+    fetchRecentMessages(5), // Show 5 messages in panel
+    fetchUnreadMessagesCount(),
+    fetchRecentUpdates(4), // Show 4 updates in panel
   ]);
 
   return (
@@ -53,6 +64,9 @@ const Page = async () => {
         examinerCount={examinerCount}
         waitingToBeScheduledCount={waitingToBeScheduledCount}
         dueTodayCount={dueTodayCount}
+        messages={messages}
+        unreadCount={unreadCount}
+        updates={updates}
       />
     </DashboardShell>
   );

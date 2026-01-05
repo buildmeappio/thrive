@@ -1,5 +1,10 @@
 import prisma from "@/lib/db";
-import { ExaminerStatus } from "@prisma/client";
+import {
+  ExaminerStatus,
+  UserStatus,
+  ContractStatus,
+  Prisma,
+} from "@prisma/client";
 
 const includeRelations = {
   account: {
@@ -23,6 +28,29 @@ const includeRelations = {
       status: true,
     },
   },
+  contracts: {
+    where: {
+      status: {
+        in: [ContractStatus.DRAFT, ContractStatus.SENT, ContractStatus.SIGNED],
+      },
+    },
+    include: {
+      feeStructure: {
+        include: {
+          variables: {
+            orderBy: [
+              { sortOrder: Prisma.SortOrder.asc },
+              { createdAt: Prisma.SortOrder.asc },
+            ],
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: Prisma.SortOrder.desc,
+    },
+    take: 1, // Get the most recent contract
+  },
 };
 
 export const getRecentExaminers = async (
@@ -32,6 +60,8 @@ export const getRecentExaminers = async (
   return prisma.examinerProfile.findMany({
     where: {
       deletedAt: null,
+      // Check ExaminerProfile.status for workflow statuses
+      // User.status only tracks ACTIVE/SUSPENDED/REJECTED after password creation
       ...(status && {
         status: Array.isArray(status)
           ? { in: status as any[] }
@@ -54,11 +84,25 @@ export const getExaminerById = async (id: string) => {
 };
 
 export const approveExaminer = async (id: string, _accountId?: string) => {
-  return prisma.examinerProfile.update({
+  const profile = await prisma.examinerProfile.findUnique({
+    where: { id },
+    include: { account: true },
+  });
+
+  if (!profile) {
+    throw new Error("Examiner profile not found");
+  }
+
+  // Update ExaminerProfile status to APPROVED (workflow status)
+  await prisma.examinerProfile.update({
     where: { id },
     data: {
       status: ExaminerStatus.APPROVED,
     },
+  });
+
+  return prisma.examinerProfile.findUnique({
+    where: { id },
     include: includeRelations,
   });
 };
@@ -68,6 +112,8 @@ export const rejectExaminer = async (
   accountId?: string,
   rejectionReason?: string,
 ) => {
+  // Rejection happens during the application workflow (before account creation)
+  // Only update ExaminerProfile.status, not User.status
   return prisma.examinerProfile.update({
     where: { id },
     data: {
@@ -85,6 +131,8 @@ export const requestMoreInfoFromExaminer = async (
 ) => {
   // Note: message and documentsRequired are sent via email but not stored in DB
   // as these fields don't exist in the schema
+
+  // Update ExaminerProfile status to MORE_INFO_REQUESTED (workflow status)
   return prisma.examinerProfile.update({
     where: { id },
     data: {
@@ -96,6 +144,7 @@ export const requestMoreInfoFromExaminer = async (
 
 // New status transition methods
 export const moveToReview = async (id: string) => {
+  // Update ExaminerProfile status to IN_REVIEW (workflow status)
   return prisma.examinerProfile.update({
     where: { id },
     data: {
@@ -106,6 +155,7 @@ export const moveToReview = async (id: string) => {
 };
 
 export const scheduleInterview = async (id: string) => {
+  // Update ExaminerProfile status to INTERVIEW_SCHEDULED (workflow status)
   return prisma.examinerProfile.update({
     where: { id },
     data: {
@@ -116,6 +166,7 @@ export const scheduleInterview = async (id: string) => {
 };
 
 export const markInterviewCompleted = async (id: string) => {
+  // Update ExaminerProfile status to INTERVIEW_COMPLETED (workflow status)
   return prisma.examinerProfile.update({
     where: { id },
     data: {
@@ -126,6 +177,7 @@ export const markInterviewCompleted = async (id: string) => {
 };
 
 export const markContractSigned = async (id: string) => {
+  // Update ExaminerProfile status to CONTRACT_SIGNED (workflow status)
   return prisma.examinerProfile.update({
     where: { id },
     data: {
@@ -141,6 +193,24 @@ export const suspendExaminer = async (
   id: string,
   suspensionReason?: string,
 ) => {
+  const profile = await prisma.examinerProfile.findUnique({
+    where: { id },
+    include: { account: true },
+  });
+
+  if (!profile) {
+    throw new Error("Examiner profile not found");
+  }
+
+  // Update User status to SUSPENDED (affects account access)
+  await prisma.user.update({
+    where: { id: profile.account.userId },
+    data: {
+      status: UserStatus.SUSPENDED,
+    },
+  });
+
+  // Update ExaminerProfile status and suspension reason
   return prisma.examinerProfile.update({
     where: { id },
     data: {
@@ -152,10 +222,28 @@ export const suspendExaminer = async (
 };
 
 export const reactivateExaminer = async (id: string) => {
+  const profile = await prisma.examinerProfile.findUnique({
+    where: { id },
+    include: { account: true },
+  });
+
+  if (!profile) {
+    throw new Error("Examiner profile not found");
+  }
+
+  // Update User status to ACTIVE (restores account access)
+  await prisma.user.update({
+    where: { id: profile.account.userId },
+    data: {
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  // Update ExaminerProfile status to ACTIVE and clear suspension reason
   return prisma.examinerProfile.update({
     where: { id },
     data: {
-      status: ExaminerStatus.APPROVED, // Return to APPROVED status
+      status: ExaminerStatus.ACTIVE,
       rejectedReason: null, // Clear any suspension reason
     },
     include: includeRelations,
@@ -168,8 +256,11 @@ export const getExaminerCountThisMonth = async (status: string | string[]) => {
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
 
+  // For workflow statuses (SUBMITTED, IN_REVIEW, etc.), only check ExaminerProfile.status
+  // User.status only tracks ACTIVE/SUSPENDED/REJECTED, not workflow statuses
   return prisma.examinerProfile.count({
     where: {
+      // Check ExaminerProfile.status for all workflow statuses
       status: Array.isArray(status) ? { in: status as any[] } : (status as any),
       createdAt: {
         gte: startOfMonth,
@@ -259,9 +350,26 @@ export const createProfileFromApplication = async (
         isConsentToBackgroundVerification:
           application.isConsentToBackgroundVerification,
         agreeToTerms: application.agreeToTerms,
-        status: ExaminerStatus.ACTIVE, // Set to ACTIVE when account is created
+        // Note: Status is now stored in User model, not ExaminerProfile
       },
       include: includeRelations,
+    });
+
+    // Get the account to find the userId
+    const account = await tx.account.findUnique({
+      where: { id: accountId },
+    });
+
+    if (!account) {
+      throw new Error("Account not found");
+    }
+
+    // Set User status to ACTIVE when examiner creates account/password
+    await tx.user.update({
+      where: { id: account.userId },
+      data: {
+        status: UserStatus.ACTIVE,
+      },
     });
 
     // Create fee structure from application fee structure if it exists

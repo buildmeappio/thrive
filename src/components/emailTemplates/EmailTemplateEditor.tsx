@@ -109,6 +109,7 @@ export default function EmailTemplateEditor({
       }
     >
       <EmailEditor
+        editorId="email-template-editor"
         ref={editorRef}
         minHeight={minHeight}
         options={{

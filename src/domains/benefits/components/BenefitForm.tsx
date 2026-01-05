@@ -161,8 +161,10 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
         const response = await createBenefitAction(input);
         if (response.success) {
           toast.success("Benefit created successfully");
-          router.push("/dashboard/benefits");
-          router.refresh();
+          // Redirect to benefits page after showing toast
+          setTimeout(() => {
+            router.push("/dashboard/benefits");
+          }, 500);
         } else {
           toast.error(response.error || "Failed to create benefit");
         }

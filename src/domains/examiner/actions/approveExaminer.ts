@@ -3,7 +3,7 @@
 import { getCurrentUser } from "@/domains/auth/server/session";
 import examinerService from "../server/examiner.service";
 import applicationService from "../server/application.service";
-import contractService from "../server/contract.service";
+import prisma from "@/lib/db";
 import { sendMail } from "@/lib/email";
 import { signAccountToken, signExaminerApplicationToken } from "@/lib/jwt";
 import {
@@ -73,43 +73,45 @@ const approveExaminer = async (id: string) => {
     return application;
   } else if (entityType === "examiner") {
     // Approve the examiner
+    // Note: Contract should already be created and sent via the contract creation modal
+    // before approval is called. We no longer auto-create contracts here.
     const examiner = await examinerService.approveExaminer(id, user.accountId);
 
-    // Generate and upload contract to S3 (don't fail approval if this fails)
-    try {
-      logger.log("📄 Generating contract for examiner...");
-      const contractResult = await contractService.createAndSendContract(
-        id,
-        user.accountId,
-      );
+    // Check if contract was already created and sent
+    const existingContract = await prisma.contract.findFirst({
+      where: {
+        examinerProfileId: id,
+        status: { in: ["SENT", "SIGNED"] },
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-      if (contractResult.success) {
-        logger.log(
-          "✅ Contract generated and uploaded successfully:",
-          contractResult.contractId,
-        );
-      } else {
-        logger.error(
-          "⚠️ Failed to generate contract (but approval succeeded):",
-          contractResult.error,
-        );
-      }
-    } catch (contractError) {
-      logger.error(
-        "⚠️ Failed to generate contract (but approval succeeded):",
-        contractError,
+    if (!existingContract) {
+      logger.warn(
+        "⚠️ No contract found for examiner. Contract should be created and sent before approval.",
+      );
+    } else {
+      logger.log(
+        "✅ Contract already exists for examiner:",
+        existingContract.id,
       );
     }
 
-    // Send approval email with token (don't fail approval if email fails)
-    try {
-      await sendApprovalEmailToExaminer(examiner as any);
-      logger.log("✓ Approval email sent successfully");
-    } catch (emailError) {
-      logger.error(
-        "⚠️ Failed to send approval email (but approval succeeded):",
-        emailError,
-      );
+    // Don't send approval email if contract was already sent
+    // The contract email with signing link was already sent, so we don't need the approval email
+    if (!existingContract || existingContract.status !== "SENT") {
+      // Only send approval email if no contract was sent yet
+      try {
+        await sendApprovalEmailToExaminer(examiner as any);
+        logger.log("✓ Approval email sent successfully");
+      } catch (emailError) {
+        logger.error(
+          "⚠️ Failed to send approval email (but approval succeeded):",
+          emailError,
+        );
+      }
+    } else {
+      logger.log("✓ Contract email already sent, skipping approval email");
     }
 
     return examiner;

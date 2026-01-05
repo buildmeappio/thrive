@@ -4,7 +4,7 @@ model InterviewSlot {
   endTime       DateTime            @map("end_time") @db.Timestamptz()
   duration      Int                 @map("duration") // Duration in minutes
   status        InterviewSlotStatus @default(AVAILABLE) @map("status")
-  applicationId String?             @unique @map("application_id") @db.Uuid
+  applicationId String?             @map("application_id") @db.Uuid
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()

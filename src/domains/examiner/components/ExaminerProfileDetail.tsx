@@ -21,6 +21,97 @@ const formatText = (str: string): string => {
     .join(" ");
 };
 
+// Utility function to format professional title: name in uppercase, description in title case in brackets
+const formatProfessionalTitle = (
+  name?: string,
+  description?: string,
+): string => {
+  if (!name) return "-";
+  const nameUpper = name.toUpperCase();
+  if (description) {
+    const descriptionTitleCase = capitalizeWords(description);
+    return `${nameUpper} (${descriptionTitleCase})`;
+  }
+  return nameUpper;
+};
+
+// Utility function to convert UTC time string (HH:mm) to user's local timezone
+const convertUTCToLocalTime = (utcTimeString: string): string => {
+  try {
+    // Parse UTC time string (HH:mm format)
+    const timeMatch = utcTimeString.trim().match(/^(\d{1,2}):(\d{2})$/);
+    if (!timeMatch) {
+      return utcTimeString; // Return as-is if format doesn't match
+    }
+
+    const hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+
+    // Validate hours and minutes
+    if (
+      isNaN(hours) ||
+      isNaN(minutes) ||
+      hours < 0 ||
+      hours >= 24 ||
+      minutes < 0 ||
+      minutes >= 60
+    ) {
+      return utcTimeString; // Return as-is if invalid
+    }
+
+    // Create a date object with today's date and UTC time
+    const today = new Date();
+    const utcDate = new Date(
+      Date.UTC(
+        today.getUTCFullYear(),
+        today.getUTCMonth(),
+        today.getUTCDate(),
+        hours,
+        minutes,
+      ),
+    );
+
+    // Convert to local time and format
+    return utcDate.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } catch (error) {
+    console.error("Error converting UTC time to local:", error);
+    return utcTimeString; // Return as-is on error
+  }
+};
+
+// Utility function to format years of experience: keep numeric ranges and hyphens intact
+const formatYearsOfExperience = (str: string): string => {
+  if (!str) return str;
+  const trimmed = str.trim();
+
+  // Match patterns like "2-3", "2 - 3", "2 3", optionally with trailing text (e.g., "Years")
+  const rangeMatch = trimmed.match(/^(\d+)[\s-]+(\d+)(.*)$/i);
+  if (rangeMatch) {
+    const [, start, end, suffix] = rangeMatch;
+    const formattedSuffix = suffix
+      ? ` ${formatText(suffix.trim().replace(/^-+/, ""))}`
+      : "";
+    return `${start}-${end}${formattedSuffix}`.trim();
+  }
+
+  // Match standalone numeric range (no suffix)
+  if (/^\d+-\d+$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Otherwise, format as text (replace hyphens/underscores with spaces and capitalize)
+  return trimmed
+    .replace(/[-_]/g, " ")
+    .split(" ")
+    .filter((word) => word.length > 0)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
+
 const dayOfWeekOrder = [
   "SUNDAY",
   "MONDAY",
@@ -39,17 +130,17 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
     <DashboardShell>
       {/* Back Button and Profile Heading */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+        <div className="flex items-start sm:items-center gap-2 sm:gap-4 min-w-0 flex-1">
           <Link
             href="/examiner"
-            className="flex items-center gap-2 sm:gap-4 flex-shrink-0"
+            className="flex items-start sm:items-center gap-2 sm:gap-4 min-w-0 flex-1"
           >
-            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow flex-shrink-0">
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
-            <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+            <h1 className="text-[#000000] text-[18px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words min-w-0">
               Examiner{" "}
-              <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] bg-clip-text text-transparent break-words">
                 {capitalizeWords(fullName || profile.email)}
               </span>{" "}
               Profile
@@ -83,12 +174,19 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
                 />
                 <FieldRow
                   label="Professional Title"
-                  value={profile.professionalTitle || "-"}
+                  value={formatProfessionalTitle(
+                    profile.professionalTitle,
+                    profile.professionalTitleDescription,
+                  )}
                   type="text"
                 />
                 <FieldRow
                   label="Years of Experience"
-                  value={formatText(profile.yearsOfIMEExperience)}
+                  value={
+                    profile.yearsOfIMEExperience
+                      ? formatYearsOfExperience(profile.yearsOfIMEExperience)
+                      : "-"
+                  }
                   type="text"
                 />
                 <FieldRow
@@ -138,7 +236,7 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
                 {profile.assessmentTypeOther && (
                   <FieldRow
                     label="Other Assessment Type"
-                    value={profile.assessmentTypeOther}
+                    value={capitalizeWords(profile.assessmentTypeOther)}
                     type="text"
                   />
                 )}
@@ -210,7 +308,7 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
                                   ? day.timeSlots
                                       .map(
                                         (slot) =>
-                                          `${slot.startTime} - ${slot.endTime}`,
+                                          `${convertUTCToLocalTime(slot.startTime)} - ${convertUTCToLocalTime(slot.endTime)}`,
                                       )
                                       .join(", ")
                                   : "Unavailable"}
@@ -364,6 +462,8 @@ const ExaminerProfileDetail: React.FC<Props> = ({ profile }) => {
           </div>
         </div>
       </div>
+      {/* Bottom padding for mobile */}
+      <div className="h-6 sm:h-0" />
     </DashboardShell>
   );
 };

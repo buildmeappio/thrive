@@ -56,6 +56,19 @@ export function generateExaminerInReviewEmail(params: {
 
 export const EXAMINER_IN_REVIEW_SUBJECT = "Your Application is Now In Review";
 
+// Interview Requested
+export function generateExaminerInterviewRequestedEmail(params: {
+  firstName: string;
+  lastName: string;
+  scheduleInterviewLink: string;
+}): string {
+  const template = loadTemplate("examiner-interview-requested");
+  return renderTemplate(template, params);
+}
+
+export const EXAMINER_INTERVIEW_REQUESTED_SUBJECT =
+  "Interview Request - Please Add Your Schedule";
+
 // Interview Scheduled
 export function generateExaminerInterviewScheduledEmail(params: {
   firstName: string;
@@ -80,6 +93,21 @@ export function generateExaminerInterviewCompletedEmail(params: {
 
 export const EXAMINER_INTERVIEW_COMPLETED_SUBJECT =
   "Interview Completed - Application Update";
+
+// Interview Confirmed (Admin confirms requested slot)
+export function generateExaminerInterviewConfirmedEmail(params: {
+  firstName: string;
+  lastName: string;
+  interviewDate: string;
+  interviewTime: string;
+  duration: string;
+}): string {
+  const template = loadTemplate("examiner-interview-confirmed");
+  return renderTemplate(template, params);
+}
+
+export const EXAMINER_INTERVIEW_CONFIRMED_SUBJECT =
+  "Interview Confirmed - Your Application";
 
 // Contract Sent
 export function generateExaminerContractSentEmail(params: {
