@@ -104,6 +104,12 @@ if [[ ! -d ".git" ]]; then
   exit 1
 fi
 
+# Fix git ownership issue (add directory to safe.directory)
+git config --global --add safe.directory "$DEPLOY_PATH" || true
+
+# Ensure correct ownership
+sudo chown -R $USER:$USER "$DEPLOY_PATH" || true
+
 git fetch origin
 git checkout main
 git pull origin main
