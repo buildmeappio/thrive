@@ -839,19 +839,52 @@ const InterviewCalendar = ({
                         const isPastTime = isPast(time);
 
                         // Check if this time matches the current user's booked slot
-                        const currentUserBookedSlotMatch = existingSlots.find(
-                          (slot) => {
-                            if (!slot.isBooked) return false;
-                            if (!application.bookedSlot) return false;
-                            if (slot.id !== application.bookedSlot.id)
-                              return false;
+                        // Check both by ID match in existingSlots AND by time match with application.bookedSlot
+                        const currentUserBookedSlotMatch = (() => {
+                          if (!application.bookedSlot) return undefined;
 
-                            const slotStart = new Date(slot.startTime);
-                            return time.getTime() === slotStart.getTime();
-                          },
-                        );
+                          const bookedSlotStart = parseDate(
+                            application.bookedSlot.startTime,
+                          );
+                          if (!bookedSlotStart) return undefined;
+
+                          // First, try to find by ID in existingSlots (most reliable)
+                          const matchById = existingSlots.find(
+                            (slot) => slot.id === application.bookedSlot!.id,
+                          );
+                          if (matchById) {
+                            // Verify the time matches
+                            const slotStart = new Date(matchById.startTime);
+                            if (time.getTime() === slotStart.getTime()) {
+                              return matchById;
+                            }
+                          }
+
+                          // Fallback: check if time matches booked slot time (in case ID matching fails)
+                          if (time.getTime() === bookedSlotStart.getTime()) {
+                            // Check if there's a slot in existingSlots that matches this time
+                            const matchByTime = existingSlots.find((slot) => {
+                              const slotStart = new Date(slot.startTime);
+                              return (
+                                slotStart.getTime() === time.getTime() &&
+                                slot.isBooked
+                              );
+                            });
+                            if (
+                              matchByTime &&
+                              matchByTime.id === application.bookedSlot.id
+                            ) {
+                              return matchByTime;
+                            }
+                            // If no match found but time matches, it might be the booked slot on a different date
+                            // Return undefined to avoid false positives
+                          }
+
+                          return undefined;
+                        })();
 
                         // Check if this time conflicts with any BOOKED slot (excluding current user's)
+                        // Also check for exact time matches to show "Booked" tag
                         const conflictingSlot = existingSlots.find((slot) => {
                           if (!slot.isBooked) return false;
                           // Exclude current user's booked slot
@@ -867,11 +900,12 @@ const InterviewCalendar = ({
 
                           // Check for any overlap or exact match
                           // Time slots conflict if:
-                          // 1. Selected time starts during existing slot
-                          // 2. Selected time ends during existing slot
-                          // 3. Selected time completely contains existing slot
-                          // 4. Existing slot completely contains selected time
-                          // 5. Exact start time match
+                          // 1. Exact start time match (most important - show "Booked" tag)
+                          // 2. Selected time starts during existing slot
+                          // 3. Selected time ends during existing slot
+                          // 4. Selected time completely contains existing slot
+                          // 5. Existing slot completely contains selected time
+                          // 6. Overlaps with existing slot
                           return (
                             time.getTime() === slotStart.getTime() || // Exact start time match
                             (time >= slotStart && time < slotEnd) || // Starts during existing slot
@@ -879,6 +913,22 @@ const InterviewCalendar = ({
                             (time <= slotStart && endTime >= slotEnd) || // Completely contains existing slot
                             (time < slotStart && endTime > slotStart) // Overlaps with existing slot
                           );
+                        });
+
+                        // Also check if there's a booked slot at this exact time (for display purposes)
+                        // This ensures we show "Booked" tag even if durations don't match exactly
+                        const bookedSlotAtTime = existingSlots.find((slot) => {
+                          if (!slot.isBooked) return false;
+                          // Exclude current user's booked slot
+                          if (
+                            application.bookedSlot &&
+                            slot.id === application.bookedSlot.id
+                          )
+                            return false;
+
+                          const slotStart = new Date(slot.startTime);
+                          // Check for exact time match
+                          return time.getTime() === slotStart.getTime();
                         });
 
                         // For display only: show if this time is requested by someone else
@@ -910,6 +960,9 @@ const InterviewCalendar = ({
 
                         // Determine if this slot should be disabled
                         // Current user's booked slot should be shown but not selectable
+                        // Use bookedSlotAtTime for display, conflictingSlot for conflict detection
+                        const bookedSlotToShow =
+                          bookedSlotAtTime || conflictingSlot;
                         const isDisabled =
                           !isAvailable ||
                           isPastTime ||
@@ -969,7 +1022,7 @@ const InterviewCalendar = ({
                             title={
                               currentUserBookedSlotMatch
                                 ? "This is your confirmed interview slot"
-                                : conflictingSlot
+                                : bookedSlotToShow
                                   ? "This time slot is already booked by another user"
                                   : isPastTime
                                     ? "This time has passed"
@@ -982,7 +1035,7 @@ const InterviewCalendar = ({
                                 <span className="text-xs font-bold text-white bg-[#0090D9] px-2.5 py-1 rounded-md shadow-md border border-[#0078B8]">
                                   Your Booking
                                 </span>
-                              ) : conflictingSlot ? (
+                              ) : bookedSlotToShow ? (
                                 <span className="text-xs font-bold text-white bg-gray-500 px-2.5 py-1 rounded-md shadow-md border border-gray-600">
                                   Booked
                                 </span>
