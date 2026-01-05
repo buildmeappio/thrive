@@ -7,6 +7,10 @@ set -e
 # Usage: ./deploy-production-ec2.sh <deploy_path> <ecr_registry> <ecr_repository> <image_tag> <ecr_password> <aws_region>
 # -------------------------------
 
+# Set HOME if not set (SSM might not have it)
+export HOME="${HOME:-/home/ubuntu}"
+export USER="${USER:-ubuntu}"
+
 # Color codes
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -37,7 +41,7 @@ echo "AWS Region: $AWS_REGION"
 echo ""
 
 # Load nvm or install if not found
-export NVM_DIR="$HOME/.nvm"
+export NVM_DIR="${HOME}/.nvm"
 if [ ! -s "$NVM_DIR/nvm.sh" ]; then
   echo -e "${YELLOW}📦 NVM not found. Installing NVM...${NC}"
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
@@ -109,6 +113,34 @@ git config --global --add safe.directory "$DEPLOY_PATH" || true
 
 # Ensure correct ownership
 sudo chown -R $USER:$USER "$DEPLOY_PATH" || true
+
+# Configure git to use deploy keys via SSH config
+if [[ -f "$HOME/.ssh/config" ]]; then
+  # Use SSH config if it exists (should have github-admin-web configured)
+  export GIT_SSH_COMMAND="ssh -F $HOME/.ssh/config -o IdentitiesOnly=yes"
+else
+  # Fallback: use deploy key directly
+  if [[ -f "$HOME/.ssh/id_ed25519_admin-web" ]]; then
+    export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/id_ed25519_admin-web -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+  else
+    echo -e "${YELLOW}⚠️  Warning: No SSH deploy key found. Git operations may fail.${NC}"
+  fi
+fi
+
+# Update remote URL to use SSH alias if SSH config exists
+if [[ -f "$HOME/.ssh/config" ]]; then
+  CURRENT_REMOTE=$(git config --get remote.origin.url || echo "")
+  if [[ -n "$CURRENT_REMOTE" && "$CURRENT_REMOTE" != *"github-admin-web"* ]]; then
+    # Extract GitHub org/username from current remote
+    if [[ "$CURRENT_REMOTE" =~ git@github.com:([^/]+)/admin-web ]]; then
+      GITHUB_ORG="${BASH_REMATCH[1]}"
+      git remote set-url origin "git@github-admin-web:${GITHUB_ORG}/admin-web.git" || true
+    elif [[ "$CURRENT_REMOTE" =~ https://github.com/([^/]+)/admin-web ]]; then
+      GITHUB_ORG="${BASH_REMATCH[1]}"
+      git remote set-url origin "git@github-admin-web:${GITHUB_ORG}/admin-web.git" || true
+    fi
+  fi
+fi
 
 git fetch origin
 git checkout main
