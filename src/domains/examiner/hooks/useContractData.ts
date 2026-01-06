@@ -16,6 +16,7 @@ interface UseContractDataProps {
   isApplication: boolean;
   setContractData: (data: ContractData | null) => void;
   setLoadingContractData: (loading: boolean) => void;
+  refreshTrigger?: boolean; // Trigger to reload contract data (e.g., when modal closes)
 }
 
 export const useContractData = ({
@@ -24,14 +25,21 @@ export const useContractData = ({
   isApplication,
   setContractData,
   setLoadingContractData,
+  refreshTrigger,
 }: UseContractDataProps) => {
   useEffect(() => {
     const loadContractData = async () => {
-      // Only load if contract has been sent/signed
+      // Load contract data if:
+      // 1. Contract has been sent/signed (contract_sent, contract_signed, approved, active)
+      // 2. Interview is completed (contract may have been created but not sent yet)
       if (
-        !["contract_sent", "contract_signed", "approved", "active"].includes(
-          status,
-        )
+        ![
+          "interview_completed",
+          "contract_sent",
+          "contract_signed",
+          "approved",
+          "active",
+        ].includes(status)
       ) {
         return;
       }
@@ -67,6 +75,9 @@ export const useContractData = ({
               });
             }
           }
+        } else {
+          // No contracts found, clear contract data
+          setContractData(null);
         }
       } catch (error) {
         logger.error("Error loading contract data:", error);
@@ -82,5 +93,6 @@ export const useContractData = ({
     isApplication,
     setContractData,
     setLoadingContractData,
+    refreshTrigger,
   ]);
 };

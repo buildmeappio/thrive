@@ -46,6 +46,24 @@ const includeRelations = {
         },
       },
     },
+    select: {
+      id: true,
+      status: true,
+      data: true,
+      fieldValues: true, // Include fieldValues to access fees_overrides
+      feeStructure: {
+        include: {
+          variables: {
+            orderBy: [
+              { sortOrder: Prisma.SortOrder.asc },
+              { createdAt: Prisma.SortOrder.asc },
+            ],
+          },
+        },
+      },
+      createdAt: true,
+      sentAt: true,
+    },
     orderBy: {
       createdAt: Prisma.SortOrder.desc,
     },

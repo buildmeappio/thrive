@@ -123,8 +123,14 @@
 .ProseMirror.editor-content p,
 .editor-content p,
 .page-content p {
+  margin-top: 0;
   margin-bottom: 1em;
   line-height: var(--var-line-height);
+}
+
+/* Remove top margin from first element in page content to prevent extra spacing */
+.page-content > *:first-child {
+  margin-top: 0 !important;
 }
 
 /* Ensure empty paragraphs are visible */
@@ -134,6 +140,26 @@
 .header-content p:empty::before,
 .footer-content p:empty::before {
   display: none;
+}
+
+/* Remove margins from empty paragraphs to prevent unnecessary spacing */
+.ProseMirror.editor-content p:empty,
+.editor-content p:empty,
+.page-content p:empty,
+.header-content p:empty,
+.footer-content p:empty {
+  margin-top: 0;
+  margin-bottom: 0;
+  height: 0;
+  min-height: 0;
+}
+
+/* Handle paragraphs that only contain breaks - minimize their height */
+/* These are skipped in pagination but CSS ensures they don't add height if rendered */
+.page-content p:only-child br,
+.page-content p br:only-child {
+  line-height: 0.5em;
+  margin: 0;
 }
 
 /* Lists */

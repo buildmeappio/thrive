@@ -55,6 +55,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     isApplication,
     setContractData: state.setContractData,
     setLoadingContractData: state.setLoadingContractData,
+    refreshTrigger: state.isCreateContractModalOpen, // Reload contract data when modal opens/closes
   });
 
   // Actions hook
@@ -70,6 +71,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
     setIsRejectOpen: state.setIsRejectOpen,
     setIsFeeStructureOpen: state.setIsFeeStructureOpen,
     setIsCreateContractModalOpen: state.setIsCreateContractModalOpen,
+    setIsConfirmSlotModalOpen: state.setIsConfirmSlotModalOpen,
   });
 
   // Contract handlers hook
@@ -100,6 +102,25 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
       await contractReview.loadContract();
     }
   };
+
+  // Check if both Fee Structure and Contract Details sections exist
+  const hasFeeStructure =
+    (examiner.contractFeeStructure || examiner.feeStructure) &&
+    [
+      "interview_scheduled",
+      "interview_completed",
+      "contract_sent",
+      "contract_signed",
+      "approved",
+      "active",
+    ].includes(state.status);
+
+  const hasContractDetails =
+    state.contractData &&
+    state.contractData.fieldValues?.custom &&
+    Object.keys(state.contractData.fieldValues.custom).length > 0;
+
+  const shouldMoveIMEConsentToLeft = hasFeeStructure && hasContractDetails;
 
   return (
     <DashboardShell>
@@ -134,14 +155,26 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
               <PersonalInformationSection examiner={examiner} />
               <MedicalCredentialsSection examiner={examiner} />
               <VerificationDocumentsSection examiner={examiner} />
+              {/* Move IME and Consent to left if both Fee Structure and Contract Details exist */}
+              {shouldMoveIMEConsentToLeft && (
+                <>
+                  <IMEBackgroundSection examiner={examiner} />
+                  <ConsentSection examiner={examiner} />
+                </>
+              )}
             </div>
 
             {/* RIGHT COLUMN */}
             <div className="flex flex-col gap-6 lg:gap-10">
-              <IMEBackgroundSection examiner={examiner} />
+              {/* Show IME and Consent in right column if Fee Structure or Contract Details don't exist */}
+              {!shouldMoveIMEConsentToLeft && (
+                <>
+                  <IMEBackgroundSection examiner={examiner} />
+                  <ConsentSection examiner={examiner} />
+                </>
+              )}
               <FeeStructureSection examiner={examiner} status={state.status} />
               <ContractDetailsSection contractData={state.contractData} />
-              <ConsentSection examiner={examiner} />
               <InterviewDetailsSection
                 examiner={examiner}
                 status={state.status}

@@ -10,6 +10,7 @@ import {
   ExaminerStatus,
 } from "@prisma/client";
 import { ExaminerData } from "@/domains/examiner/types/ExaminerData";
+import { listCustomVariables } from "@/domains/custom-variables/server/customVariable.service";
 
 type ExaminerWithRelations = ExaminerProfile & {
   account: Account & {
@@ -29,8 +30,14 @@ type ExaminerWithRelations = ExaminerProfile & {
 };
 
 export class ExaminerDto {
-  static toExaminerData(examiner: ExaminerWithRelations): ExaminerData {
+  static async toExaminerData(
+    examiner: ExaminerWithRelations,
+  ): Promise<ExaminerData> {
     const feeStructure = examiner.feeStructure?.[0];
+
+    // Load custom variables to get checkbox group options
+    const customVariables = await listCustomVariables({ isActive: true });
+    const customVariablesMap = new Map(customVariables.map((v) => [v.key, v]));
 
     // Extract dynamic fee structure from contract if available
     let contractFeeStructure: ExaminerData["contractFeeStructure"] = undefined;
@@ -44,16 +51,61 @@ export class ExaminerDto {
         contract.feeStructure.variables.length > 0
       ) {
         const contractData = contract.data as any;
+        const feesOverrides =
+          (contract.fieldValues as any)?.fees_overrides || {};
         const fees = contractData.fees || {};
+        const customValues = (contract.fieldValues as any)?.custom || {};
 
         contractFeeStructure = {
           feeStructureId: contract.feeStructure.id,
           feeStructureName: contract.feeStructure.name,
           variables: contract.feeStructure.variables.map((variable: any) => {
-            const value =
-              fees[variable.key] !== undefined
-                ? fees[variable.key]
-                : variable.defaultValue;
+            // Check if this is a custom variable (starts with "custom.")
+            // Also check if the key without prefix exists in custom variables
+            const customVarKey = variable.key.startsWith("custom.")
+              ? variable.key
+              : `custom.${variable.key}`;
+            const customVar = customVariablesMap.get(customVarKey);
+
+            // Priority: fees_overrides (examiner-specific) > fees (from data) > custom values > defaultValue
+            // Check customValues with both the original key and the prefixed key
+            let value =
+              feesOverrides[variable.key] !== undefined
+                ? feesOverrides[variable.key]
+                : fees[variable.key] !== undefined
+                  ? fees[variable.key]
+                  : customValues[variable.key] !== undefined
+                    ? customValues[variable.key]
+                    : customValues[customVarKey] !== undefined
+                      ? customValues[customVarKey]
+                      : variable.defaultValue;
+
+            // For checkbox groups, preserve the full value (comma-separated)
+            // Don't split by space for checkbox groups
+            if (customVar?.variableType === "checkbox_group") {
+              // Keep the full comma-separated value for checkbox groups
+              // Convert to string if needed, but don't split by space
+              if (value !== null && value !== undefined) {
+                value = String(value).trim();
+              }
+            } else if (value !== null && value !== undefined) {
+              // Extract only the first value before any space (handles "6 4" -> "6")
+              // This ensures we only show the examiner-specific override, not the default
+              const valueStr = String(value).trim();
+
+              // Split by space and take only the first part (before the gap)
+              const parts = valueStr.split(/\s+/);
+              const firstPart = parts[0];
+
+              // Try to convert to number if it's numeric
+              const numValue = parseFloat(firstPart);
+              if (!isNaN(numValue)) {
+                value = numValue;
+              } else {
+                // Keep as string if not numeric
+                value = firstPart;
+              }
+            }
 
             return {
               key: variable.key,
@@ -64,6 +116,8 @@ export class ExaminerDto {
               decimals: variable.decimals,
               unit: variable.unit,
               included: variable.included ?? false,
+              variableType: customVar?.variableType,
+              options: customVar?.options || null,
             };
           }),
         };
@@ -134,9 +188,9 @@ export class ExaminerDto {
     };
   }
 
-  static toExaminerDataList(
+  static async toExaminerDataList(
     examiners: ExaminerWithRelations[],
-  ): ExaminerData[] {
-    return examiners.map((e) => this.toExaminerData(e));
+  ): Promise<ExaminerData[]> {
+    return Promise.all(examiners.map((e) => this.toExaminerData(e)));
   }
 }

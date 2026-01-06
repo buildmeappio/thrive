@@ -1,4 +1,5 @@
 import { useRouter } from "next/navigation";
+import { startTransition } from "react";
 import { toast } from "sonner";
 import logger from "@/utils/logger";
 import { getExaminerContract } from "../actions";
@@ -35,10 +36,15 @@ export const useContractHandlers = ({
     // After contract is created and sent, update status to contract_sent
     // Don't approve automatically - approval is a separate step
     // The status will be updated in the database by sendContract action
-    // Force a refresh to get the updated status from the server
-    router.refresh();
-    // Also update local state immediately for better UX
+    // Update local state immediately for better UX
     setStatus("contract_sent");
+    // Use startTransition to make the refresh non-blocking
+    // This prevents the browser from freezing during the server-side re-render
+    setTimeout(() => {
+      startTransition(() => {
+        router.refresh();
+      });
+    }, 2000);
   };
 
   const handleSendContract = async () => {

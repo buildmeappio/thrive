@@ -21,8 +21,8 @@ function getMinAvailableHeight(
   const headerHeight = header ? header.height || 40 : 0;
   const footerHeight = footer ? footer.height || 40 : 0;
   // Account for the 10px top and bottom margins used in rendering
-  // Add a larger buffer (15px) to account for rounding, spacing differences, and line heights
-  return CONTENT_HEIGHT_PX - headerHeight - footerHeight - 20 - 15; // 10px top + 10px bottom margin + 15px buffer
+  // Reduced buffer (5px) since we're now properly handling empty paragraphs and breaks
+  return CONTENT_HEIGHT_PX - headerHeight - footerHeight - 20 - 5; // 10px top + 10px bottom margin + 5px buffer
 }
 
 /**
@@ -118,6 +118,20 @@ export function usePagination(
           if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
           const child = node as HTMLElement;
+
+          // Skip empty paragraphs - they don't contribute to content height
+          // Check for truly empty paragraphs (no text, or only whitespace/br tags)
+          if (child.tagName === "P") {
+            const textContent = child.textContent?.trim() || "";
+            const hasOnlyBreaks =
+              child.querySelectorAll("br").length > 0 && textContent === "";
+
+            // Skip if empty (no text) or only contains breaks
+            // Hard breaks add minimal height but shouldn't cause page breaks
+            if (textContent === "" || hasOnlyBreaks) {
+              continue;
+            }
+          }
 
           // Special handling for tables that need to be split
           if (child.tagName === "TABLE") {
@@ -283,14 +297,34 @@ export function usePaginationWithLoading(
   variableValues?: Map<string, string>,
   customVariables?: CustomVariable[],
 ) {
+  // Serialize Map and Array dependencies to ensure proper cache invalidation
+  // React compares by reference, so we need to serialize for deep comparison
+  const variableValuesKey = useMemo(() => {
+    if (!variableValues) return "";
+    return JSON.stringify(Array.from(variableValues.entries()).sort());
+  }, [variableValues]);
+
+  const customVariablesKey = useMemo(() => {
+    if (!customVariables) return "";
+    return JSON.stringify(
+      customVariables.map((v) => ({
+        key: v.key,
+        showUnderline: v.showUnderline,
+        variableType: v.variableType,
+        options: v.options,
+      })),
+    );
+  }, [customVariables]);
+
   // Process variables first to get the actual content that will be rendered
   // Memoize to avoid reprocessing on every render
+  // Use serialized keys for proper cache invalidation when Map/Array contents change
   const processedContent = useMemo(() => {
     if (variableValues && customVariables) {
       return processPageContent(content, variableValues, customVariables);
     }
     return content;
-  }, [content, variableValues, customVariables]);
+  }, [content, variableValuesKey, customVariablesKey]);
 
   const { splitContentIntoPages } = usePagination(
     processedContent,
