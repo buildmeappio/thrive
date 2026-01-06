@@ -206,26 +206,39 @@ export type Step2AddressInput = z.infer<typeof step2AddressSchema>;
 export const step2MedicalCredentialsSchema = z.object({
   licenseNumber: z
     .string()
-    .transform((val) => val.trim()) // Trim whitespace
+    .transform((val) => {
+      // Trim leading and trailing whitespace
+      let trimmed = val.trim();
+      // Replace multiple consecutive spaces with single space
+      trimmed = trimmed.replace(/\s+/g, " ");
+      return trimmed;
+    })
     .refine((val) => val.length > 0, {
       message: "Medical license number is required",
     })
-    .refine((val) => val.length >= 5, {
-      message: "Medical license number must be at least 5 characters",
-    })
-    .refine((val) => val.length <= 50, {
-      message: "Medical license number must be less than 50 characters",
-    })
-    .refine((val) => !/^\s+$/.test(val), {
-      message: "Medical license number cannot contain only spaces",
+    .refine((val) => /^[a-zA-Z0-9\s]+$/.test(val), {
+      message: "License number can only contain letters, numbers, and spaces",
     })
     .refine(
       (val) => {
-        const error = validateLicenseField(val);
-        return error === null;
+        // Count only alphanumeric characters (excluding spaces) for length validation
+        const alphanumericOnly = val.replace(/\s/g, "");
+        return alphanumericOnly.length >= 4;
       },
       {
-        message: "Please enter a valid medical license number",
+        message:
+          "License number must contain at least 4 alphanumeric characters",
+      },
+    )
+    .refine(
+      (val) => {
+        // Count only alphanumeric characters (excluding spaces) for length validation
+        const alphanumericOnly = val.replace(/\s/g, "");
+        return alphanumericOnly.length <= 8;
+      },
+      {
+        message:
+          "License number must contain at most 8 alphanumeric characters",
       },
     ),
   licenseIssuingProvince: z
