@@ -23,7 +23,7 @@ const VALIDATION_PATTERNS: Record<
   RegExp
 > = {
   name: /^[a-zA-Z\s'.-]*$/, // Letters, spaces, apostrophes, hyphens, periods
-  license: /^[a-zA-Z0-9\s#-]*$/, // Alphanumeric, spaces, hash, hyphens
+  license: /^[a-zA-Z0-9\s]*$/, // Alphanumeric and spaces (4-8 alphanumeric chars validated in schema)
   numeric: /^[0-9.]*$/, // Digits and decimal point
   integer: /^[0-9]*$/, // Digits only
   banking: /^[0-9]*$/, // Digits only
@@ -175,24 +175,33 @@ export function validateNameField(value: string): string | null {
 
 /**
  * Validates license number field
+ * License number must be 4-8 alphanumeric characters (spaces allowed but normalized)
  */
 export function validateLicenseField(value: string): string | null {
   if (!value || value.trim() === "") {
     return null; // Empty validation will be handled by required field validation
   }
 
-  // Check for consecutive hyphens
-  if (/[-]{2,}/.test(value)) {
-    return "License number cannot contain consecutive hyphens";
+  // Check if it contains only alphanumeric characters and spaces
+  if (!/^[a-zA-Z0-9\s]+$/.test(value)) {
+    return "License number can only contain letters, numbers, and spaces";
   }
 
-  // Check if license starts or ends with special characters
-  if (/^[-\s#]/.test(value)) {
-    return "License number cannot start with a special character or space";
+  // Count only alphanumeric characters (excluding spaces) for length validation
+  const alphanumericOnly = value.replace(/\s/g, "");
+
+  // Check length (4-8 alphanumeric characters)
+  if (alphanumericOnly.length < 4) {
+    return "License number must contain at least 4 alphanumeric characters";
   }
 
-  if (/[-\s#]$/.test(value)) {
-    return "License number cannot end with a special character or space";
+  if (alphanumericOnly.length > 8) {
+    return "License number must contain at most 8 alphanumeric characters";
+  }
+
+  // Check for multiple consecutive spaces (should be normalized, but validate anyway)
+  if (/\s{2,}/.test(value)) {
+    return null; // This will be normalized in the transform, but we'll allow it here
   }
 
   return null; // Valid
@@ -229,14 +238,20 @@ export function handleInputChange(
   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   validationType: InputValidationType,
 ): string {
-  const filteredValue = filterInputValue(e.target.value, validationType);
+  let filteredValue = filterInputValue(e.target.value, validationType);
 
   // For numeric fields, ensure only one decimal point
   if (validationType === "numeric") {
     const parts = filteredValue.split(".");
     if (parts.length > 2) {
-      return parts[0] + "." + parts.slice(1).join("");
+      filteredValue = parts[0] + "." + parts.slice(1).join("");
     }
+  }
+
+  // For license fields, normalize multiple consecutive spaces to single space
+  // But preserve single spaces between characters
+  if (validationType === "license") {
+    filteredValue = filteredValue.replace(/\s+/g, " ");
   }
 
   return filteredValue;

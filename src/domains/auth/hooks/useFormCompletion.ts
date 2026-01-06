@@ -17,13 +17,13 @@ export function useFormCompletion<T extends FieldValues>({
 }: UseFormCompletionOptions<T>) {
   // Watch all form values to detect autofill
   const formValues = form.watch();
-  const formErrors = form.formState.errors;
 
   const isFormComplete = useMemo(() => {
     // Get all form values as fallback (handles autofill cases)
     const allFormValues = form.getValues();
 
     // Check if all required fields have values
+    // Don't check for validation errors - allow user to submit and see validation messages
     const allFieldsFilled = requiredFields.every((field) => {
       // Use watched value first, fallback to getValues() for autofill detection
       const watchedValue = formValues[field as keyof typeof formValues];
@@ -39,11 +39,10 @@ export function useFormCompletion<T extends FieldValues>({
       return Boolean(value);
     });
 
-    // Check if there are no errors in required fields
-    const noErrors = requiredFields.every((field) => !formErrors[field]);
-
-    return allFieldsFilled && noErrors;
-  }, [formValues, formErrors, requiredFields, form]);
+    // Only check if fields are filled, not validation errors
+    // Validation errors will be shown on submit, but won't disable the continue button
+    return allFieldsFilled;
+  }, [formValues, requiredFields, form]);
 
   return { isFormComplete };
 }
