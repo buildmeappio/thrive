@@ -162,7 +162,7 @@ export default function CaseDetailPageClient({
       toast.success(
         "Case rejected successfully. Rejection emails have been sent.",
       );
-      router.push("/cases");
+      router.refresh();
     } catch (error) {
       logger.error("Error rejecting case:", error);
       toast.error("Failed to reject case. Please try again.");
@@ -188,8 +188,19 @@ export default function CaseDetailPageClient({
             </span>
           </Link>
         </div>
-        <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold flex-shrink-0">
-          {formatText(caseDetails.status.name)}
+        <div className="px-[2px] py-[2px] rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] w-fit flex-shrink-0">
+          <div
+            className="px-4 py-2 rounded-full flex items-center gap-2"
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontWeight: 600,
+              fontSize: "14px",
+              color: "#004766",
+              backgroundColor: "#E0F7F4",
+            }}
+          >
+            {formatText(caseDetails.status.name)}
+          </div>
         </div>
       </div>
 
@@ -339,25 +350,6 @@ export default function CaseDetailPageClient({
                 />
               </svg>
               More Information Required
-            </button>
-          </div>
-        )}
-
-        {caseStatus === "rejected" && (
-          <div className="flex justify-end px-3 sm:px-6 pb-4 sm:pb-6">
-            <button
-              className={cn(
-                "px-4 py-3 rounded-full text-white bg-red-700 flex items-center gap-2 cursor-default",
-              )}
-              style={{
-                fontFamily: "Poppins, sans-serif",
-                fontWeight: 500,
-                lineHeight: "100%",
-                fontSize: "14px",
-              }}
-              disabled
-            >
-              Rejected
             </button>
           </div>
         )}
