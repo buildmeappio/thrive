@@ -1385,11 +1385,29 @@ const getExaminationBenefits = async (examinationTypeId: string) => {
   }
 };
 
-const getCaseList = async (userId?: string, status?: string, take?: number) => {
+const getCaseList = async (
+  userId?: string,
+  status?: string,
+  take?: number,
+  excludeStatuses?: string | string[]
+) => {
   try {
+    // Build status filter - prioritize status over excludeStatuses
+    const statusFilter = status
+      ? { status: { name: status } }
+      : excludeStatuses
+        ? {
+            status: {
+              name: Array.isArray(excludeStatuses)
+                ? { notIn: excludeStatuses }
+                : { not: excludeStatuses },
+            },
+          }
+        : {};
+
     const examinations = await prisma.examination.findMany({
       where: {
-        ...(status && { status: { name: status } }),
+        ...statusFilter,
         ...(userId && {
           case: {
             organization: {
@@ -1451,7 +1469,9 @@ const getCaseList = async (userId?: string, status?: string, take?: number) => {
         claimType: claimant?.claimType?.name || 'N/A',
         status: exam.status.name,
         specialty: exam.examinationType.name,
-        examiner: exam.examiner && `${exam.examiner.user.firstName} ${exam.examiner.user.lastName}`,
+        examiner: exam.examiner
+          ? `${exam.examiner.user.firstName} ${exam.examiner.user.lastName}`
+          : 'Not Assigned',
         submittedAt: exam.createdAt.toISOString(),
         createdBy: creator && `${creator.account.user.firstName} ${creator.account.user.lastName}`,
       };

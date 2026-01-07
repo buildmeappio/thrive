@@ -31,8 +31,8 @@ const DashboardPage = async () => {
 
     const [newDashboardCases, inProgressDashboardCases, moreInfoDashboardCases] = await Promise.all(
       [
-        getCaseList(undefined, 3),
-        getCaseList(CaseStatus.PENDING, 3),
+        getCaseList(undefined, 3, CaseStatus.REJECTED),
+        getCaseList(undefined, 3, [CaseStatus.PENDING, CaseStatus.REJECTED]),
         getCaseList(CaseStatus.INFO_REQUIRED, 3),
       ]
     );

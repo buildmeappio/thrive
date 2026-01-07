@@ -124,3 +124,92 @@ export const PriorityBadge = ({ priority }: { priority: string }) => {
     </span>
   );
 };
+
+export const RejectedBadge = () => {
+  return (
+    <div
+      className="inline-flex items-center rounded-full p-[1px]"
+      style={{
+        background: 'linear-gradient(to right, #BFDBFE, #DCFCE7)',
+      }}
+    >
+      <span className="rounded-full bg-gradient-to-r from-red-50 to-rose-100 px-6 py-2 text-sm font-medium text-red-800">
+        Rejected
+      </span>
+    </div>
+  );
+};
+
+export const CaseStatusBadge = ({ status }: { status: string }) => {
+  const getStatusConfig = (statusName: string) => {
+    const normalizedStatus = statusName.toLowerCase();
+
+    if (normalizedStatus.includes('rejected')) {
+      return {
+        bg: 'bg-gradient-to-r from-red-50 to-rose-100',
+        text: 'text-red-800',
+        label: 'Rejected',
+      };
+    }
+
+    if (normalizedStatus.includes('pending')) {
+      return {
+        bg: 'bg-gradient-to-r from-slate-50 to-gray-100',
+        text: 'text-slate-700',
+        label: 'Pending',
+      };
+    }
+
+    if (normalizedStatus.includes('ready to appointment') || normalizedStatus.includes('ready')) {
+      return {
+        bg: 'bg-gradient-to-r from-green-50 to-emerald-100',
+        text: 'text-green-800',
+        label: 'Ready to Appointment',
+      };
+    }
+
+    if (
+      normalizedStatus.includes('waiting to be scheduled') ||
+      normalizedStatus.includes('waiting')
+    ) {
+      return {
+        bg: 'bg-gradient-to-r from-blue-50 to-indigo-100',
+        text: 'text-blue-800',
+        label: 'Waiting to be Scheduled',
+      };
+    }
+
+    if (
+      normalizedStatus.includes('more information') ||
+      normalizedStatus.includes('info required')
+    ) {
+      return {
+        bg: 'bg-gradient-to-r from-purple-50 to-violet-100',
+        text: 'text-purple-700',
+        label: 'More Information required',
+      };
+    }
+
+    // Default fallback
+    return {
+      bg: 'bg-gradient-to-r from-gray-50 to-slate-100',
+      text: 'text-gray-800',
+      label: statusName,
+    };
+  };
+
+  const config = getStatusConfig(status);
+
+  return (
+    <div
+      className="inline-flex items-center rounded-full p-[1px]"
+      style={{
+        background: 'linear-gradient(to right, #BFDBFE, #DCFCE7)',
+      }}
+    >
+      <span className={`rounded-full ${config.bg} px-6 py-2 text-sm font-medium ${config.text}`}>
+        {config.label}
+      </span>
+    </div>
+  );
+};
