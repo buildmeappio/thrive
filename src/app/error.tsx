@@ -32,7 +32,15 @@ const Error = ({ error, reset }: ErrorProps) => {
 
   return (
     <>
-      <nav className="h-[5rem] md:h-[7.5rem] bg-white z-50 shadow-sm">
+      <style jsx global>{`
+        html,
+        body {
+          height: 100%;
+          margin: 0;
+          padding: 0;
+        }
+      `}</style>
+      <nav className="h-[5rem] md:h-[7.5rem] bg-white z-50 shadow-sm fixed top-0 left-0 right-0">
         <div className="flex h-full items-center justify-center">
           <Link href={href}>
             <Image
@@ -46,7 +54,7 @@ const Error = ({ error, reset }: ErrorProps) => {
           </Link>
         </div>
       </nav>
-      <div className="flex h-[calc(100vh-80px)] flex-col items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 pt-[5rem] md:pt-[7.5rem]">
         <div className="w-full max-w-md space-y-8 text-center">
           {/* Error Icon */}
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
