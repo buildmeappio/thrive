@@ -112,14 +112,18 @@ export const getExaminationBenefits = async (examinationTypeId: string) => {
   return result;
 };
 
-export const getCaseList = async (status?: string, take?: number) => {
+export const getCaseList = async (
+  status?: string,
+  take?: number,
+  excludeStatuses?: string | string[]
+) => {
   const user = await getCurrentUser();
 
   if (!user) {
     redirect(URLS.LOGIN);
   }
 
-  const result = await imeReferralHandlers.getCaseList(user.id, status, take);
+  const result = await imeReferralHandlers.getCaseList(user.id, status, take, excludeStatuses);
   return result;
 };
 

@@ -110,8 +110,10 @@ export const getFieldValidationPattern = (fieldName: string): RegExp | null => {
     (normalizedName.includes('detail') && !normalizedName.includes('address')) ||
     (normalizedName.includes('case') && normalizedName.includes('related'))
   ) {
-    // Must contain at least one letter or number - pattern allows common punctuation
-    return /^[A-Za-z0-9À-ÿ' .,!?;:()\-&@#$%*+=<>[\]{}|\\/"]+$/;
+    // Very permissive pattern for free-form text fields
+    // Allows letters, numbers, spaces, newlines, tabs, and common punctuation marks
+    // The containsOnlySpecialChars check ensures at least one letter/number exists
+    return /^[\s\S]*$/;
   }
 
   // Claim/Policy numbers - letters, numbers, hyphens

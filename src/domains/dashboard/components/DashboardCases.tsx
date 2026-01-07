@@ -91,7 +91,7 @@ const DashboardCases = ({ dashboardCases, title }: CaseProps) => {
                     <div className="col-span-2">
                       <div className="mb-1 text-gray-500">Examiner</div>
                       <div className="font-medium text-gray-900">
-                        {caseItem.examiner || 'Pending'}
+                        {caseItem.examiner || 'Not Assigned'}
                       </div>
                     </div>
                   </div>
@@ -157,8 +157,8 @@ const DashboardCases = ({ dashboardCases, title }: CaseProps) => {
                       </div>
                     </TableCell>
                     <TableCell className="font-poppins max-w-[150px] py-2 align-middle text-[12px] leading-normal font-normal tracking-[0%] text-[#4D4D4D]">
-                      <div className="truncate" title={caseItem.examiner || 'Pending'}>
-                        {caseItem.examiner || 'Pending'}
+                      <div className="truncate" title={caseItem.examiner || 'Not Assigned'}>
+                        {caseItem.examiner || 'Not Assigned'}
                       </div>
                     </TableCell>
 

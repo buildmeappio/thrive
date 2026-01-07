@@ -16,6 +16,7 @@ import { formatDate } from '@/utils/dateTime';
 import useRouter from '@/hooks/useRouter';
 import { URLS } from '@/constants/routes';
 import { getCaseDetails } from '../../server/handlers';
+import { CaseStatusBadge } from '@/components/Badge';
 
 type CaseDetailsProps = {
   examinationData: Awaited<ReturnType<typeof getCaseDetails>>['result'];
@@ -31,7 +32,10 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ examinationData }) => {
   }
 
   const { organization, documents } = caseData;
-  const { claimant, insurance, legalRepresentative } = examinationData;
+  const { claimant, insurance, legalRepresentative, status, examiner } = examinationData;
+  const examinerName = examiner?.user
+    ? `${examiner.user.firstName} ${examiner.user.lastName}`
+    : null;
 
   const accordionItems = [
     {
@@ -70,12 +74,15 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ examinationData }) => {
 
   return (
     <div className="space-y-4 px-4 md:px-0">
-      <div className="flex items-center space-x-3 md:space-x-4">
-        <ArrowLeft
-          onClick={() => router.push(URLS.CASES)}
-          className="h-[32px] w-[32px] shrink-0 cursor-pointer rounded-full border border-[#BCE8FF] bg-[#E9F8FF] p-1 text-[#000093] md:h-[38px] md:w-[38px]"
-        />
-        <div className="text-2xl font-semibold md:text-[40px]">{examinationData.caseNumber}</div>
+      <div className="flex items-center justify-between space-x-3 md:space-x-4">
+        <div className="flex items-center space-x-3 md:space-x-4">
+          <ArrowLeft
+            onClick={() => router.push(URLS.CASES)}
+            className="h-[32px] w-[32px] shrink-0 cursor-pointer rounded-full border border-[#BCE8FF] bg-[#E9F8FF] p-1 text-[#000093] md:h-[38px] md:w-[38px]"
+          />
+          <div className="text-2xl font-semibold md:text-[40px]">{examinationData.caseNumber}</div>
+        </div>
+        {status?.name && <CaseStatusBadge status={status.name} />}
       </div>
 
       {organization?.name && examinationData.createdAt && examinationData.dueDate && (
@@ -98,6 +105,12 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({ examinationData }) => {
               {formatDate(examinationData.dueDate)}
             </span>
           </div>
+          {examinerName && (
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="font-light tracking-[0%] text-[#848484]">Examiner</span>
+              <span className="font-normal tracking-[-0.01em] text-[#000000]">{examinerName}</span>
+            </div>
+          )}
         </div>
       )}
 
