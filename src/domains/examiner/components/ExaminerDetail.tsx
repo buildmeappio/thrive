@@ -184,6 +184,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
               {state.status !== "more_info_requested" &&
                 state.status !== "info_requested" &&
                 state.status !== "active" &&
+                state.status !== "rejected" &&
                 !(isApplication && state.status === "approved") && (
                   <Section title="Actions">
                     <ExaminerActions
@@ -230,6 +231,7 @@ const ExaminerDetail: ExaminerDetailComponent = (props) => {
           onSubmit={actions.handleRejectSubmit}
           title="Reason for Rejection"
           maxLength={200}
+          isLoading={state.loadingAction === "reject"}
         />
 
         <EditFeeStructureModal
