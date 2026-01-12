@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import "./PageRender.css";
 import "./EditorContentStyles.css";
 import type { HeaderConfig, FooterConfig } from "./types";
@@ -46,6 +46,33 @@ const PageRenderer: React.FC<PageRendererProps> = ({
     options: v.options,
   }));
 
+  // Serialize Map and Array dependencies to prevent infinite loops
+  // React compares by reference, so we need to serialize for deep comparison
+  const variableValuesKey = useMemo(() => {
+    if (!variableValues) return "";
+    return JSON.stringify(Array.from(variableValues.entries()).sort());
+  }, [variableValues]);
+
+  const customVariablesKey = useMemo(() => {
+    if (!customVariables || customVariables.length === 0) return "";
+    return JSON.stringify(
+      customVariables.map((v) => ({
+        key: v.key,
+        showUnderline: v.showUnderline,
+        variableType: v.variableType,
+        options: v.options,
+      })),
+    );
+  }, [customVariables]);
+
+  const headerKey = useMemo(() => {
+    return header ? JSON.stringify(header) : "";
+  }, [header]);
+
+  const footerKey = useMemo(() => {
+    return footer ? JSON.stringify(footer) : "";
+  }, [footer]);
+
   const { performPagination } = usePaginationWithLoading(
     content,
     header,
@@ -89,14 +116,10 @@ const PageRenderer: React.FC<PageRendererProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [
-    content,
-    header,
-    footer,
-    variableValues,
-    customVariables,
-    performPagination,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // performPagination is memoized and depends on content, header, footer, variableValues, customVariables
+    // We use serialized keys to prevent infinite loops from reference changes
+  }, [content, headerKey, footerKey, variableValuesKey, customVariablesKey]);
 
   return (
     <div className="page-renderer">
