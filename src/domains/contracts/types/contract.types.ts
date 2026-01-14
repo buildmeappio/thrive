@@ -40,6 +40,8 @@ export type ContractData = {
     bodyHtml: string;
     googleDocTemplateId: string | null;
     googleDocFolderId: string | null;
+    headerConfig: unknown | null;
+    footerConfig: unknown | null;
   };
   feeStructure: {
     id: string;
