@@ -200,6 +200,8 @@ export const getContract = async (id: string): Promise<ContractData> => {
       bodyHtml: contract.templateVersion.bodyHtml,
       googleDocTemplateId: contract.templateVersion.googleDocTemplateId,
       googleDocFolderId: contract.templateVersion.googleDocFolderId,
+      headerConfig: contract.templateVersion.headerConfig,
+      footerConfig: contract.templateVersion.footerConfig,
     },
     feeStructure: contract.feeStructure
       ? {
@@ -797,6 +799,29 @@ export const updateContractFeeStructure = async (
 export const previewContract = async (
   contractId: string,
 ): Promise<PreviewContractResult> => {
+  // Get contract with S3 keys from database
+  const contractDb = await prisma.contract.findUnique({
+    where: { id: contractId },
+    select: {
+      id: true,
+      status: true,
+      signedHtmlS3Key: true,
+      unsignedHtmlS3Key: true,
+    },
+  });
+
+  if (!contractDb) {
+    throw HttpError.notFound("Contract not found");
+  }
+
+  // Always regenerate HTML to ensure proper pagination
+  // For signed contracts, the signature should be in fieldValues.examiner.signature
+  // The signed HTML in S3 may have been generated with old code (only 5 pages)
+  // so we regenerate with proper pagination and use signature from fieldValues
+  logger.log(
+    `📋 Regenerating HTML for contract ${contractId} with proper pagination (status: ${contractDb.status})`,
+  );
+
   const contract = await getContract(contractId);
 
   // Check if we have stored rendered HTML for quick preview
@@ -1064,12 +1089,17 @@ export const previewContract = async (
   const customVariables = await listCustomVariables({ isActive: true });
 
   // OVERRIDE with signature from fieldValues (user-provided signature takes precedence)
+  // For signed contracts, the signature should be stored in fieldValues.examiner.signature
   if (fv && fv.examiner && fv.examiner.signature) {
     const signatureValue = String(fv.examiner.signature);
     values["application.examiner_signature"] = signatureValue;
     values["examiner.signature"] = signatureValue; // Legacy support
-    console.log(
-      `[Contract Preview] Set application.examiner_signature and examiner.signature from fieldValues`,
+    logger.log(
+      `[Contract Preview] Set application.examiner_signature and examiner.signature from fieldValues for contract ${contractId}`,
+    );
+  } else {
+    logger.warn(
+      `[Contract Preview] No examiner signature found in fieldValues for contract ${contractId} (status: ${contractDb.status})`,
     );
   }
 
@@ -1326,6 +1356,43 @@ export const previewContract = async (
   let renderedHtml = templateHtml;
   const missingPlaceholders: string[] = [];
 
+  // Step 0: Protect page breaks first to prevent them from being corrupted during replacements
+  const pageBreakPlaceholder = "__PAGE_BREAK_PLACEHOLDER__";
+  // Match various page break formats:
+  // - <div class="page-break"></div>
+  // - <div class='page-break'></div>
+  // - <div class="page-break" ></div> (with spaces)
+  // - <div class="page-break"></div> (self-closing variants)
+  const pageBreakRegex = /<div\s+class=["']page-break["'][^>]*>\s*<\/div>/gi;
+  const pageBreaks: string[] = [];
+  let pageBreakMatch;
+  let pageBreakIndex = 0;
+
+  // Extract all page breaks and replace with placeholders
+  while ((pageBreakMatch = pageBreakRegex.exec(renderedHtml)) !== null) {
+    pageBreaks.push(pageBreakMatch[0]);
+    renderedHtml =
+      renderedHtml.substring(0, pageBreakMatch.index) +
+      `${pageBreakPlaceholder}_${pageBreakIndex}__` +
+      renderedHtml.substring(pageBreakMatch.index + pageBreakMatch[0].length);
+    // Reset regex lastIndex since we modified the string
+    pageBreakRegex.lastIndex =
+      pageBreakMatch.index +
+      `${pageBreakPlaceholder}_${pageBreakIndex}__`.length;
+    pageBreakIndex++;
+  }
+
+  // Log page break count for debugging
+  if (pageBreaks.length > 0) {
+    logger.log(
+      `📄 Found ${pageBreaks.length} page break(s) in template HTML for contract ${contractId}`,
+    );
+  } else {
+    logger.warn(
+      `⚠️ No page breaks found in template HTML for contract ${contractId}. Contract will render as a single continuous document.`,
+    );
+  }
+
   // Step 1: Protect checkbox groups first
   const checkboxGroupPlaceholders: string[] = [];
   const checkboxGroupPattern =
@@ -1477,14 +1544,15 @@ export const previewContract = async (
       placeholder === "application.examiner_signature_date_time";
 
     // Admin signature is optional - only set when admin reviews the contract
-    const isAdminSignaturePlaceholder =
-      placeholder === "custom.admin_signature";
+    // COMMENTED OUT: Admin signature handling disabled for review modal
+    // const isAdminSignaturePlaceholder =
+    //   placeholder === "custom.admin_signature";
 
     // Review date is optional - only set when admin reviews the contract
     // City and province are optional - may not be available for all examiners
     const isOptionalPlaceholder =
       isSignaturePlaceholder ||
-      isAdminSignaturePlaceholder ||
+      // isAdminSignaturePlaceholder || // COMMENTED OUT: Admin signature disabled
       placeholder === "contract.review_date" ||
       placeholder === "examiner.city" ||
       placeholder === "examiner.province" ||
@@ -1562,22 +1630,23 @@ export const previewContract = async (
         } else {
           replacement = signatureUrl;
         }
-      } else if (
-        placeholder === "custom.admin_signature" &&
-        values[placeholder] &&
-        typeof values[placeholder] === "string"
-      ) {
-        const signatureUrl = String(values[placeholder]).trim();
-        if (
-          signatureUrl &&
-          (signatureUrl.startsWith("data:image/") ||
-            signatureUrl.startsWith("http://") ||
-            signatureUrl.startsWith("https://"))
-        ) {
-          replacement = `<img src="${signatureUrl}" alt="Admin Signature" data-signature="admin" style="max-width: 240px; height: auto; display: inline-block;" />`;
-        } else {
-          replacement = signatureUrl;
-        }
+        // COMMENTED OUT: Admin signature handling disabled for review modal
+        // } else if (
+        //   placeholder === "custom.admin_signature" &&
+        //   values[placeholder] &&
+        //   typeof values[placeholder] === "string"
+        // ) {
+        //   const signatureUrl = String(values[placeholder]).trim();
+        //   if (
+        //     signatureUrl &&
+        //     (signatureUrl.startsWith("data:image/") ||
+        //       signatureUrl.startsWith("http://") ||
+        //       signatureUrl.startsWith("https://"))
+        //   ) {
+        //     replacement = `<img src="${signatureUrl}" alt="Admin Signature" data-signature="admin" style="max-width: 240px; height: auto; display: inline-block;" />`;
+        //   } else {
+        //     replacement = signatureUrl;
+        //   }
       } else {
         // For regular variable values, add bold underline styling (matching template preview)
         const valueStr = String(value);
@@ -1595,18 +1664,19 @@ export const previewContract = async (
         const underscoreLine =
           '<span data-signature="examiner">________________________</span>';
         renderedHtml = renderedHtml.replace(regex, underscoreLine);
-      } else if (placeholder === "custom.admin_signature") {
-        // Admin signature placeholder - only show if contract has been reviewed
-        // If not reviewed yet, completely hide it (empty string)
-        if (contract.reviewedAt) {
-          // Contract has been reviewed, show underscores if signature not present
-          const underscoreLine =
-            '<span data-signature="admin">________________________</span>';
-          renderedHtml = renderedHtml.replace(regex, underscoreLine);
-        } else {
-          // Contract not reviewed yet - completely remove the placeholder
-          renderedHtml = renderedHtml.replace(regex, "");
-        }
+        // COMMENTED OUT: Admin signature placeholder handling disabled for review modal
+        // } else if (placeholder === "custom.admin_signature") {
+        //   // Admin signature placeholder - only show if contract has been reviewed
+        //   // If not reviewed yet, completely hide it (empty string)
+        //   if (contract.reviewedAt) {
+        //     // Contract has been reviewed, show underscores if signature not present
+        //     const underscoreLine =
+        //       '<span data-signature="admin">________________________</span>';
+        //     renderedHtml = renderedHtml.replace(regex, underscoreLine);
+        //   } else {
+        //     // Contract not reviewed yet - completely remove the placeholder
+        //     renderedHtml = renderedHtml.replace(regex, "");
+        //   }
       } else if (placeholder === "contract.review_date") {
         // Review date - only show if contract has been reviewed
         // If not reviewed yet, completely hide it (empty string)
@@ -1746,6 +1816,33 @@ export const previewContract = async (
     "$1 $2",
   );
 
+  // Step 8: Restore page breaks that were protected earlier
+  pageBreaks.forEach((pageBreak, index) => {
+    const placeholder = `${pageBreakPlaceholder}_${index}__`;
+    const beforeReplace = renderedHtml;
+    renderedHtml = renderedHtml.replace(placeholder, pageBreak);
+    if (beforeReplace === renderedHtml) {
+      logger.warn(
+        `⚠️ Failed to restore page break ${index} for contract ${contractId}. Placeholder not found: ${placeholder}`,
+      );
+    }
+  });
+
+  // Log final page break count after restoration
+  const finalPageBreakCount = (
+    renderedHtml.match(/<div\s+class=["']page-break["'][^>]*>\s*<\/div>/gi) ||
+    []
+  ).length;
+  if (finalPageBreakCount !== pageBreaks.length) {
+    logger.warn(
+      `⚠️ Page break count mismatch for contract ${contractId}. Expected ${pageBreaks.length}, found ${finalPageBreakCount} after restoration.`,
+    );
+  } else if (pageBreaks.length > 0) {
+    logger.log(
+      `✅ Successfully restored ${pageBreaks.length} page break(s) for contract ${contractId}`,
+    );
+  }
+
   // Log final rendered HTML for debugging
   logger.log(
     `✅ Contract preview HTML generated (${renderedHtml.length} characters)`,
@@ -1783,8 +1880,9 @@ export const generateAndUploadContractHtml = async (
       p !== "examiner.signature_date_time" &&
       p !== "application.examiner_signature" &&
       p !== "application.examiner_signature_date_time" &&
-      p !== "contract.review_date" &&
-      p !== "custom.admin_signature",
+      p !== "contract.review_date",
+    // COMMENTED OUT: Admin signature disabled for review modal
+    // && p !== "custom.admin_signature"
   );
 
   if (requiredPlaceholders.length > 0) {
