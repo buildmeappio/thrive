@@ -23,7 +23,6 @@ import Link from "next/link";
 
 interface FilterState {
   type: string;
-  status: string;
 }
 
 type useOrganizationTableOptions = {
@@ -102,11 +101,6 @@ export const useOrganizationTable = (props: useOrganizationTableOptions) => {
 
   const filteredData = useMemo(() => {
     let result = data;
-
-    // Filter by status
-    if (filters?.status && filters.status !== "all") {
-      result = result.filter((d) => d.status === filters.status);
-    }
 
     // Filter by type
     if (filters?.type && filters.type !== "all") {

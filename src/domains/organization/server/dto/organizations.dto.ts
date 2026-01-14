@@ -4,7 +4,6 @@ interface OrganizationInputData {
   id: string;
   name: string;
   website?: string | null;
-  status: string;
   type: OrganizationType;
   address: {
     id: string;
@@ -59,7 +58,6 @@ export class OrganizationDto {
       id: data.id,
       name: data.name,
       website: data.website,
-      status: data.status,
       typeName: data.type.name,
       address: formatAddress(data.address),
       managerName: data.manager[0]?.account?.user

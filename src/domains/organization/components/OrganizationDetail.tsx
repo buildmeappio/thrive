@@ -31,13 +31,6 @@ const formatText = (str: string): string => {
     .join(" ");
 };
 
-const mapStatus = {
-  PENDING: "pending",
-  ACCEPTED: "approved",
-  REJECTED: "rejected",
-  INFO_REQUESTED: "info_requested",
-} as const;
-
 type OrganizationDetailProps = {
   organization: Awaited<ReturnType<typeof getOrganizationById>>;
 };
@@ -47,14 +40,19 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
   const [isRequestOpen, setIsRequestOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
 
-  // Determine the current organization status from database
+  // Determine the current organization status from approvedBy/rejectedBy
   const getCurrentStatus = ():
     | "pending"
     | "approved"
     | "rejected"
     | "info_requested" => {
-    const dbStatus = organization.status;
-    return mapStatus[dbStatus as keyof typeof mapStatus] || "pending";
+    if (organization.approvedBy) {
+      return "approved";
+    }
+    if (organization.rejectedBy) {
+      return "rejected";
+    }
+    return "pending";
   };
 
   const [status, setStatus] = useState<

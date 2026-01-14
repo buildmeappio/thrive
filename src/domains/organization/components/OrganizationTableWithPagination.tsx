@@ -49,11 +49,9 @@ const truncateText = (
 type Props = {
   data: OrganizationData[];
   types?: string[];
-  statuses?: string[];
   searchQuery?: string;
   filters?: {
     type: string;
-    status: string;
   };
 };
 
@@ -155,7 +153,8 @@ const columnsDef = [
     ),
     cell: ({ row }: { row: Row<OrganizationData> }) => {
       const managerName = (row.getValue("managerName") as string) || "N/A";
-      const capitalizedManagerName = capitalizeWords(managerName);
+      const capitalizedManagerName =
+        managerName === "N/A" ? "N/A" : capitalizeWords(managerName);
       return (
         <div
           className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
@@ -190,26 +189,6 @@ const columnsDef = [
     size: 220,
   },
   {
-    accessorKey: "status",
-    header: ({ column }: { column: Column<OrganizationData, unknown> }) => (
-      <SortableHeader column={column}>Status</SortableHeader>
-    ),
-    cell: ({ row }: { row: Row<OrganizationData> }) => {
-      const status = formatText(row.getValue("status") as string);
-      return (
-        <div
-          className="text-[#4D4D4D] font-poppins text-[16px] leading-normal truncate"
-          title={status}
-        >
-          {truncateText(status, 20)}
-        </div>
-      );
-    },
-    minSize: 120,
-    maxSize: 180,
-    size: 140,
-  },
-  {
     header: "",
     accessorKey: "id",
     cell: ({ row }: { row: Row<OrganizationData> }) => {
@@ -225,17 +204,12 @@ const columnsDef = [
 export default function OrganizationTableWithPagination({
   data,
   searchQuery = "",
-  filters = { type: "all", status: "all" },
+  filters = { type: "all" },
 }: Props) {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const filtered = useMemo(() => {
     let result = data;
-
-    // Filter by status
-    if (filters.status !== "all") {
-      result = result.filter((d) => d.status === filters.status);
-    }
 
     // Filter by type
     if (filters.type !== "all") {
