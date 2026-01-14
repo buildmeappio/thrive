@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { X } from "lucide-react";
-import { useAdminSignatureCanvas } from "./hooks/useAdminSignatureCanvas";
+// COMMENTED OUT: Admin signature and review date removed
+// import { useState } from "react";
+// import { useAdminSignatureCanvas } from "./hooks/useAdminSignatureCanvas";
 
 type AdminReviewFormProps = {
   onClose: () => void;
@@ -15,21 +16,25 @@ export default function AdminReviewForm({
   onSubmit,
   isLoading = false,
 }: AdminReviewFormProps) {
-  const { canvasRef, signatureImage, clearSignature, validateSignature } =
-    useAdminSignatureCanvas();
+  // COMMENTED OUT: Admin signature canvas removed
+  // const { canvasRef, signatureImage, clearSignature, validateSignature } =
+  //   useAdminSignatureCanvas();
 
-  // Auto-fill with current date but allow editing
-  const today = new Date().toISOString().split("T")[0];
-  const [reviewDate, setReviewDate] = useState(today);
+  // COMMENTED OUT: Review date removed
+  // const today = new Date().toISOString().split("T")[0];
+  // const [reviewDate, setReviewDate] = useState(today);
 
   const handleSubmit = async () => {
-    if (!validateSignature()) {
-      return;
-    }
-    if (!signatureImage) {
-      return;
-    }
-    await onSubmit(signatureImage, reviewDate);
+    // COMMENTED OUT: No validation needed, just submit with empty values
+    // if (!validateSignature()) {
+    //   return;
+    // }
+    // if (!signatureImage) {
+    //   return;
+    // }
+    // Submit with empty signature and current date
+    const today = new Date().toISOString().split("T")[0];
+    await onSubmit("", today);
   };
 
   return (
@@ -58,8 +63,8 @@ export default function AdminReviewForm({
 
         {/* Form */}
         <div className="space-y-5 flex-1 overflow-y-auto">
-          {/* Review Date */}
-          <div>
+          {/* COMMENTED OUT: Review Date input removed */}
+          {/* <div>
             <label className="block text-sm font-semibold text-black mb-2 font-poppins">
               Review Date
             </label>
@@ -70,10 +75,10 @@ export default function AdminReviewForm({
               disabled={isLoading}
               className="mt-2 flex h-[55px] w-full items-center rounded-[10px] border-none bg-[#F2F5F6] px-3 text-sm text-[#333] placeholder:text-[14px] placeholder:text-[#9EA9AA] focus-visible:ring-2 focus-visible:ring-[#00A8FF]/30 focus-visible:ring-offset-0 focus-visible:outline-none disabled:opacity-50 font-poppins"
             />
-          </div>
+          </div> */}
 
-          {/* Admin Signature */}
-          <div>
+          {/* COMMENTED OUT: Admin Signature canvas removed */}
+          {/* <div>
             <label className="block text-sm font-semibold text-black mb-2 font-poppins">
               Admin Signature
             </label>
@@ -93,19 +98,19 @@ export default function AdminReviewForm({
             >
               Clear Signature
             </button>
-          </div>
+          </div> */}
 
           {/* Submit Button */}
           <button
             onClick={handleSubmit}
-            disabled={!signatureImage || !reviewDate || isLoading}
+            disabled={isLoading}
             className={`w-full py-3 px-4 rounded-lg font-semibold text-white text-base transition-all font-poppins ${
-              signatureImage && reviewDate && !isLoading
+              !isLoading
                 ? "cursor-pointer shadow-md hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#00A8FF]/40"
                 : "bg-gray-400 cursor-not-allowed"
             }`}
             style={
-              signatureImage && reviewDate && !isLoading
+              !isLoading
                 ? {
                     background:
                       "linear-gradient(270deg, #89D7FF 0%, #00A8FF 100%)",
@@ -113,7 +118,7 @@ export default function AdminReviewForm({
                 : {}
             }
           >
-            {isLoading ? "Processing..." : "Submit Review"}
+            {isLoading ? "Processing..." : "Confirm Contract"}
           </button>
 
           {/* Cancel Button */}

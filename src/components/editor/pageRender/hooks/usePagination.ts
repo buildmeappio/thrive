@@ -46,11 +46,38 @@ export function usePagination(
     try {
       // First, split by manual page breaks
       const pageBreakRegex = /<div\s+class="page-break"\s*><\/div>/gi;
-      const contentParts = content.split(pageBreakRegex);
+      const hasPageBreaks = pageBreakRegex.test(content);
+      const contentParts = hasPageBreaks
+        ? content.split(pageBreakRegex)
+        : [content];
       const pages: string[] = [];
 
-      for (const part of contentParts) {
+      for (let partIndex = 0; partIndex < contentParts.length; partIndex++) {
+        const part = contentParts[partIndex];
         const trimmedPart = part.trim();
+
+        // Only skip if part is truly empty (not just whitespace between page breaks)
+        // Preserve parts even if they seem empty, as they might contain important structure
+        if (!trimmedPart && partIndex < contentParts.length - 1) {
+          // Skip empty parts between page breaks, but ensure we don't lose content
+          continue;
+        }
+
+        // If this is the last part and it's empty, but we have other parts, skip it
+        if (
+          !trimmedPart &&
+          partIndex === contentParts.length - 1 &&
+          pages.length > 0
+        ) {
+          continue;
+        }
+
+        // If no content at all, create empty page to maintain structure
+        if (!trimmedPart && contentParts.length === 1) {
+          pages.push("");
+          continue;
+        }
+
         if (!trimmedPart) continue;
 
         // Parse the HTML content - preserve all content including text nodes
@@ -70,8 +97,16 @@ export function usePagination(
               node.nodeType === Node.TEXT_NODE && node.textContent?.trim(),
           );
           if (textNodes.length > 0 || trimmedPart) {
+            // Preserve the original HTML structure for plain text content
             pages.push(trimmedPart);
           }
+          continue;
+        }
+
+        // Ensure we process all nodes - don't skip any content
+        if (allNodes.length === 0 && trimmedPart) {
+          // Fallback: if parsing failed but we have content, preserve it
+          pages.push(trimmedPart);
           continue;
         }
 
@@ -232,10 +267,25 @@ export function usePagination(
 
           // Try adding this element to current page
           const testElements = [...currentPageElements, child];
-          const testHeight = measureCumulativeHeight(
-            testElements,
-            measurementContainer,
-          );
+          let testHeight: number;
+          try {
+            testHeight = measureCumulativeHeight(
+              testElements,
+              measurementContainer,
+            );
+            // If measurement fails or returns invalid value, default to adding to current page
+            if (isNaN(testHeight) || testHeight < 0) {
+              testHeight = 0;
+            }
+          } catch (error) {
+            // If measurement fails, preserve the element by adding it to current page
+            console.warn(
+              "Failed to measure element height, preserving content:",
+              error,
+            );
+            currentPageElements.push(child);
+            continue;
+          }
 
           if (testHeight > availableHeight && currentPageElements.length > 0) {
             const pageDiv = document.createElement("div");
@@ -246,10 +296,28 @@ export function usePagination(
 
             currentPageElements = [child];
 
-            const singleHeight = measureCumulativeHeight(
-              [child],
-              measurementContainer,
-            );
+            let singleHeight: number;
+            try {
+              singleHeight = measureCumulativeHeight(
+                [child],
+                measurementContainer,
+              );
+              if (isNaN(singleHeight) || singleHeight < 0) {
+                singleHeight = 0;
+              }
+            } catch (error) {
+              // If measurement fails, preserve the element on a page
+              console.warn(
+                "Failed to measure single element height, preserving content:",
+                error,
+              );
+              const pageDiv = document.createElement("div");
+              pageDiv.appendChild(child.cloneNode(true));
+              pages.push(pageDiv.innerHTML);
+              currentPageElements = [];
+              continue;
+            }
+
             if (singleHeight > availableHeight) {
               const pageDiv = document.createElement("div");
               pageDiv.appendChild(child.cloneNode(true));
@@ -274,6 +342,20 @@ export function usePagination(
       // If no pages were created, create at least one page
       if (pages.length === 0 && content.trim()) {
         pages.push(content.trim());
+      }
+
+      // Debug: Log if we're losing content
+      if (pages.length === 0 && content.trim()) {
+        console.warn(
+          "Pagination resulted in 0 pages but content exists:",
+          content.substring(0, 100),
+        );
+      }
+
+      // Ensure we preserve all content - if content exists but no pages, preserve original
+      if (pages.length === 0 && content) {
+        // Fallback: return original content as single page
+        pages.push(content);
       }
 
       return pages;
