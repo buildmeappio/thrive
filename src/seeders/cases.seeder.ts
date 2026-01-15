@@ -308,7 +308,6 @@ class CasesSeeder {
               name: caseData.organizationName,
               typeId: orgType.id,
               addressId: orgAddress.id,
-              status: "ACCEPTED",
               isAuthorized: true,
               dataSharingConsent: true,
               agreeToTermsAndPrivacy: true,
