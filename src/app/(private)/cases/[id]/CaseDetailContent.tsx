@@ -34,7 +34,7 @@ export default function CaseDetailContent({
   };
 
   return (
-    <div>
+    <div className="pb-4">
       {/* Claimant Details */}
       <CollapsibleSection title="Claimant Details" isOpen={true}>
         <FieldRow

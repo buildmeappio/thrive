@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useEffect, useState } from "react";
+import { matchesSearch } from "@/utils/search";
 import {
   useReactTable,
   getCoreRowModel,
@@ -52,8 +53,7 @@ export const useInterviewTable = (
     }
 
     // Filter by search query
-    const q = searchQuery.trim().toLowerCase();
-    if (q) {
+    if (searchQuery.trim()) {
       result = result.filter((d) =>
         [
           d.examinerName,
@@ -62,7 +62,7 @@ export const useInterviewTable = (
           formatText(d.status),
         ]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q)),
+          .some((v) => matchesSearch(searchQuery, v)),
       );
     }
 

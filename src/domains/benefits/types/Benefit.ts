@@ -18,3 +18,14 @@ export type UpdateBenefitInput = {
   benefit?: string;
   description?: string | null;
 };
+
+export type BenefitFormData = {
+  examinationTypeId: string;
+  benefit: string;
+  description?: string;
+};
+
+export type BenefitFormProps = {
+  mode: "create" | "edit";
+  benefit?: BenefitData;
+};

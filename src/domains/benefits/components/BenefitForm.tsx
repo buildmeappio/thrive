@@ -18,69 +18,26 @@ import {
 import {
   CreateBenefitInput,
   UpdateBenefitInput,
-  BenefitData,
+  BenefitFormData,
+  BenefitFormProps,
 } from "../types/Benefit";
+import { createBenefitAction, updateBenefitAction } from "../actions";
+import { useExaminationTypes } from "../hooks/useExaminationTypes";
 import {
-  createBenefitAction,
-  updateBenefitAction,
-  getExaminationTypesAction,
-} from "../actions";
+  validateAlphabetsOnly,
+  sanitizeInput,
+  BENEFIT_FIELD_LIMITS,
+} from "../utils/benefitValidation";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-type BenefitFormProps = {
-  mode: "create" | "edit";
-  benefit?: BenefitData;
-};
-
-type FormData = {
-  examinationTypeId: string;
-  benefit: string;
-  description?: string;
-};
-
-// Validation function for alphabets only with spaces between words
-const validateAlphabetsOnly = (value: string | undefined): string | true => {
-  if (!value) return true; // Allow empty for optional fields
-
-  const trimmed = value.trim();
-
-  // Check if first character is a letter
-  if (trimmed.length > 0 && !/^[a-zA-Z]/.test(trimmed)) {
-    return "First character must be a letter";
-  }
-
-  // Check if value starts with a space
-  if (value.startsWith(" ")) {
-    return "Cannot start with a space";
-  }
-
-  // Check if value ends with a space
-  if (value.endsWith(" ")) {
-    return "Cannot end with a space";
-  }
-
-  // Check if contains only letters and spaces (no numbers or special characters)
-  if (!/^[a-zA-Z\s]+$/.test(value)) {
-    return "Only letters and spaces are allowed";
-  }
-
-  // Check for consecutive spaces (more than one space)
-  if (/\s{2,}/.test(value)) {
-    return "Multiple consecutive spaces are not allowed";
-  }
-
-  return true;
-};
-
 export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [examinationTypes, setExaminationTypes] = useState<
-    { label: string; value: string }[]
-  >([]);
-  const [isLoadingTypes, setIsLoadingTypes] = useState(true);
+  const { examinationTypes, isLoading: isLoadingTypes } = useExaminationTypes(
+    benefit?.examinationTypeId,
+  );
 
   const {
     register,
@@ -88,31 +45,13 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<FormData>({
+  } = useForm<BenefitFormData>({
     defaultValues: {
       examinationTypeId: benefit?.examinationTypeId || "",
       benefit: benefit?.benefit || "",
       description: benefit?.description ?? "",
     },
   });
-
-  // Helper function to sanitize input (remove invalid characters, prevent leading/trailing spaces)
-  const sanitizeInput = (value: string): string => {
-    if (!value) return "";
-
-    // Remove non-letter/non-space characters
-    let cleaned = value.replace(/[^a-zA-Z\s]/g, "");
-
-    // Replace multiple spaces with single space
-    cleaned = cleaned.replace(/\s{2,}/g, " ");
-
-    // Remove leading space
-    if (cleaned.startsWith(" ")) {
-      cleaned = cleaned.trimStart();
-    }
-
-    return cleaned;
-  };
 
   const selectedExamType = watch("examinationTypeId");
 
@@ -125,27 +64,7 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
     }
   }, [benefit, setValue]);
 
-  useEffect(() => {
-    const fetchExaminationTypes = async () => {
-      try {
-        const response = await getExaminationTypesAction();
-        if (response.success && response.data) {
-          setExaminationTypes(response.data);
-          if (benefit && !selectedExamType) {
-            setValue("examinationTypeId", benefit.examinationTypeId);
-          }
-        }
-      } catch {
-        toast.error("Failed to load examination types");
-      } finally {
-        setIsLoadingTypes(false);
-      }
-    };
-
-    fetchExaminationTypes();
-  }, [benefit, selectedExamType, setValue]);
-
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: BenefitFormData) => {
     setIsSubmitting(true);
     try {
       // Trim benefit name and description
@@ -270,8 +189,8 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
                 required: "Benefit name is required",
                 validate: validateAlphabetsOnly,
                 maxLength: {
-                  value: 500,
-                  message: "Benefit name must be less than 500 characters",
+                  value: BENEFIT_FIELD_LIMITS.benefit,
+                  message: `Benefit name must not exceed ${BENEFIT_FIELD_LIMITS.benefit} characters`,
                 },
               })}
               onInput={(e) => {
@@ -284,6 +203,7 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
               }}
               placeholder="Enter benefit name"
               disabled={isSubmitting}
+              maxLength={BENEFIT_FIELD_LIMITS.benefit}
               className={cn(
                 "rounded-lg border-none bg-[#F2F5F6] text-[#333] focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none",
                 errors.benefit && "ring-2 ring-red-500/30",
@@ -309,6 +229,10 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
                   if (!value || value.trim() === "") return true; // Allow empty for optional field
                   return validateAlphabetsOnly(value);
                 },
+                maxLength: {
+                  value: BENEFIT_FIELD_LIMITS.description,
+                  message: `Description must not exceed ${BENEFIT_FIELD_LIMITS.description} characters`,
+                },
               })}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
@@ -321,6 +245,7 @@ export default function BenefitForm({ mode, benefit }: BenefitFormProps) {
               placeholder="Enter description (optional)"
               disabled={isSubmitting}
               rows={4}
+              maxLength={BENEFIT_FIELD_LIMITS.description}
               className={cn(
                 "border-none bg-[#F2F5F6] rounded-lg text-[#333] focus:ring-2 focus:ring-[#00A8FF]/30 focus:ring-offset-0 focus:outline-none resize-none",
                 errors.description && "ring-2 ring-red-500/30",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useEffect, useState } from "react";
+import { matchesSearch } from "@/utils/search";
 import {
   useReactTable,
   getCoreRowModel,
@@ -294,12 +295,11 @@ export const useCaseTable = (props: useCaseTableOptions) => {
     }
 
     // Filter by search query
-    const q = searchQuery.trim().toLowerCase();
-    if (q) {
+    if (searchQuery.trim()) {
       result = result.filter((d) =>
         [d.number, d.organization, d.caseType, d.status, d.urgencyLevel]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q)),
+          .some((v) => matchesSearch(searchQuery, v)),
       );
     }
 

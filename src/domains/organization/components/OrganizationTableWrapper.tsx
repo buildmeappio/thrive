@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useEffect } from "react";
+import { matchesSearch } from "@/utils/search";
 import {
   useReactTable,
   getCoreRowModel,
@@ -108,12 +109,11 @@ export const useOrganizationTable = (props: useOrganizationTableOptions) => {
     }
 
     // Filter by search query
-    const q = searchQuery.trim().toLowerCase();
-    if (q) {
+    if (searchQuery.trim()) {
       result = result.filter((d) =>
         [d.name, d.managerName, d.managerEmail, d.typeName]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q)),
+          .some((v) => matchesSearch(searchQuery, v)),
       );
     }
 

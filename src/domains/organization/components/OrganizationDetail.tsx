@@ -150,17 +150,14 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
     <DashboardShell>
       {/* Back Button and Organization Name Heading */}
       <div className="mb-6 flex items-center gap-2 sm:gap-4 flex-shrink-0">
-        <Link
-          href="/organization"
-          className="flex items-center gap-2 sm:gap-4 flex-shrink-0"
-        >
+        <Link href="/organization" className="flex-shrink-0">
           <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
             <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
           </div>
-          <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
-            {capitalizeWords(organization.name)}
-          </h1>
         </Link>
+        <h1 className="text-[#000000] text-[20px] sm:text-[28px] lg:text-[36px] font-semibold font-degular leading-tight break-words">
+          {capitalizeWords(organization.name)}
+        </h1>
       </div>
 
       <div className="w-full flex flex-col items-center">
