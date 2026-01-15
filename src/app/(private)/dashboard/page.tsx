@@ -62,8 +62,10 @@ const DashboardPage = async () => {
       ? bookingsResult.data.upcomingAppointments
       : [];
 
-  // Empty data for Waiting to be Submitted (to be implemented later)
-  const reports: ReportRow[] = [];
+  const reports =
+    bookingsResult.success && bookingsResult.data?.waitingToBeSubmitted
+      ? bookingsResult.data.waitingToBeSubmitted
+      : [];
 
   // Fetch recent updates
   const updatesResult = await getRecentUpdatesAction({
