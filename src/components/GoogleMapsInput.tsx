@@ -22,6 +22,7 @@ interface GoogleMapsInputProps {
   error?: string;
   onPlaceSelect?: (placeData: GoogleMapsPlaceData) => void;
   province?: string; // Filter addresses by province
+  maxLength?: number;
 }
 
 /**
@@ -40,6 +41,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
   error,
   onPlaceSelect,
   province,
+  maxLength,
 }) => {
   const autoCompleteRef = useRef<GoogleMapsAutocompleteInstance | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -155,6 +157,7 @@ const GoogleMapsInput: React.FC<GoogleMapsInputProps> = ({
         value={value}
         onChange={handleChange}
         placeholder={placeholder}
+        maxLength={maxLength}
         className={`h-14 ${error ? "ring-2 ring-red-500" : ""}`}
       />
       {error && (
