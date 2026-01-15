@@ -9,6 +9,7 @@ model Organization {
   isAuthorized           Boolean            @default(false) @map("is_authorized")
   dataSharingConsent     Boolean            @default(false) @map("data_sharing_consent")
   agreeToTermsAndPrivacy Boolean            @default(false) @map("agree_to_terms_and_privacy")
+  status                 OrganizationStatus @default(PENDING) @map("status")
   approvedBy             String?            @map("approved_by") @db.Uuid
   approvedAt             DateTime?          @map("approved_at") @db.Timestamptz()
   rejectedBy             String?            @map("rejected_by") @db.Uuid

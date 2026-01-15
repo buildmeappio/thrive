@@ -157,6 +157,7 @@ export default function CreateOrganizationForm({
                 value={formData.organizationName}
                 onChange={handleChange}
                 placeholder="Enter your organization name"
+                maxLength={100}
                 className={`h-14 ${errors.organizationName ? "ring-2 ring-red-500" : ""}`}
                 disabled={isCheckingName}
               />
@@ -186,6 +187,7 @@ export default function CreateOrganizationForm({
               onPlaceSelect={handlePlaceSelect}
               placeholder="Enter your address"
               error={errors.addressLookup}
+              maxLength={500}
             />
           </div>
 
@@ -202,6 +204,7 @@ export default function CreateOrganizationForm({
                 value={formData.streetAddress}
                 onChange={handleChange}
                 placeholder="Enter your street address"
+                maxLength={200}
                 className={`h-14 ${errors.streetAddress ? "ring-2 ring-red-500" : ""}`}
               />
               {errors.streetAddress && (
@@ -221,8 +224,14 @@ export default function CreateOrganizationForm({
                 value={formData.aptUnitSuite}
                 onChange={handleChange}
                 placeholder="Your apt/unit/suite"
-                className="h-14"
+                maxLength={50}
+                className={`h-14 ${errors.aptUnitSuite ? "ring-2 ring-red-500" : ""}`}
               />
+              {errors.aptUnitSuite && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.aptUnitSuite}
+                </p>
+              )}
             </div>
 
             {/* City */}
@@ -236,6 +245,7 @@ export default function CreateOrganizationForm({
                 value={formData.city}
                 onChange={handleChange}
                 placeholder="Your city"
+                maxLength={100}
                 className={`h-14 ${errors.city ? "ring-2 ring-red-500" : ""}`}
               />
               {errors.city && (
@@ -321,8 +331,14 @@ export default function CreateOrganizationForm({
                 value={formData.organizationWebsite}
                 onChange={handleChange}
                 placeholder="Enter your organization website"
-                className="h-14"
+                maxLength={255}
+                className={`h-14 ${errors.organizationWebsite ? "ring-2 ring-red-500" : ""}`}
               />
+              {errors.organizationWebsite && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.organizationWebsite}
+                </p>
+              )}
             </div>
           </div>
 

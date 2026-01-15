@@ -87,14 +87,3 @@ declare global {
     };
   }
 }
-
-// Declare google namespace for backward compatibility
-declare namespace google {
-  namespace maps {
-    namespace places {
-      type PlaceResult = GoogleMapsPlaceResult;
-      type Autocomplete = GoogleMapsAutocompleteInstance;
-    }
-    type MapsEventListener = GoogleMapsMapsEventListener;
-  }
-}

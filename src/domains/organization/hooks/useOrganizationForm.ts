@@ -10,6 +10,26 @@ import organizationActions from "../actions";
 // Canadian postal code validation regex (A1A 1A1 or A1A1A1 format)
 const CANADIAN_POSTAL_CODE_REGEX = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
 
+// Character limits for organization form fields
+const FIELD_LIMITS = {
+  organizationName: 100,
+  addressLookup: 500,
+  streetAddress: 200,
+  aptUnitSuite: 50,
+  city: 100,
+  organizationWebsite: 255,
+} as const;
+
+// Helper function to check if value contains at least one alphanumeric character
+const hasAlphanumeric = (value: string): boolean => {
+  return /[a-zA-Z0-9]/.test(value);
+};
+
+// Helper function to check if value contains at least one letter
+const hasAtLeastOneLetter = (value: string): boolean => {
+  return /[a-zA-Z]/.test(value.trim());
+};
+
 // Province code to full name mapping
 const PROVINCE_CODE_TO_NAME: Record<string, string> = {
   AB: "Alberta",
@@ -165,34 +185,84 @@ export const useOrganizationForm = () => {
       newErrors.organizationType = "Organization Type is required";
     }
 
+    // Validate Organization Name
     if (!formData.organizationName.trim()) {
       newErrors.organizationName = "Organization Name is required";
-    } else if (formData.organizationName.trim().length < 4) {
-      newErrors.organizationName =
-        "Organization Name must be at least 4 characters";
     } else {
-      // Check if organization name already exists (only on submit)
-      const nameExists = await checkOrganizationName(formData.organizationName);
-      if (nameExists) {
+      const trimmedName = formData.organizationName.trim();
+      if (trimmedName.length < 4) {
         newErrors.organizationName =
-          "An organization with this name already exists";
+          "Organization Name must be at least 4 characters";
+      } else if (trimmedName.length > FIELD_LIMITS.organizationName) {
+        newErrors.organizationName = `Organization Name must not exceed ${FIELD_LIMITS.organizationName} characters`;
+      } else if (!/^[a-zA-Z0-9\s\-'.,()&]+$/.test(trimmedName)) {
+        newErrors.organizationName =
+          "Organization Name can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands";
+      } else if (!hasAtLeastOneLetter(trimmedName)) {
+        newErrors.organizationName =
+          "Organization Name must contain at least one letter";
+      } else {
+        // Check if organization name already exists (only on submit)
+        const nameExists = await checkOrganizationName(trimmedName);
+        if (nameExists) {
+          newErrors.organizationName =
+            "An organization with this name already exists";
+        }
       }
     }
 
+    // Validate Address Lookup
     if (!formData.addressLookup.trim()) {
       newErrors.addressLookup = "Address Lookup is required";
-    } else if (formData.addressLookup.trim().length < 6) {
-      newErrors.addressLookup = "Address must be at least 6 characters";
+    } else {
+      const trimmedAddress = formData.addressLookup.trim();
+      if (trimmedAddress.length < 6) {
+        newErrors.addressLookup = "Address must be at least 6 characters";
+      } else if (trimmedAddress.length > FIELD_LIMITS.addressLookup) {
+        newErrors.addressLookup = `Address must not exceed ${FIELD_LIMITS.addressLookup} characters`;
+      } else if (!hasAlphanumeric(trimmedAddress)) {
+        newErrors.addressLookup =
+          "Address must contain at least one letter or number";
+      }
     }
 
+    // Validate Street Address
     if (!formData.streetAddress.trim()) {
       newErrors.streetAddress = "Street Address is required";
+    } else {
+      const trimmedStreet = formData.streetAddress.trim();
+      if (trimmedStreet.length > FIELD_LIMITS.streetAddress) {
+        newErrors.streetAddress = `Street Address must not exceed ${FIELD_LIMITS.streetAddress} characters`;
+      } else if (!hasAlphanumeric(trimmedStreet)) {
+        newErrors.streetAddress =
+          "Street Address must contain at least one letter or number";
+      }
     }
 
+    // Validate Apt/Unit/Suite (optional field)
+    if (formData.aptUnitSuite && formData.aptUnitSuite.trim()) {
+      const trimmedApt = formData.aptUnitSuite.trim();
+      if (trimmedApt.length > FIELD_LIMITS.aptUnitSuite) {
+        newErrors.aptUnitSuite = `Apt/Unit/Suite must not exceed ${FIELD_LIMITS.aptUnitSuite} characters`;
+      } else if (!hasAlphanumeric(trimmedApt)) {
+        newErrors.aptUnitSuite =
+          "Apt/Unit/Suite must contain at least one letter or number";
+      }
+    }
+
+    // Validate City
     if (!formData.city.trim()) {
       newErrors.city = "City is required";
+    } else {
+      const trimmedCity = formData.city.trim();
+      if (trimmedCity.length > FIELD_LIMITS.city) {
+        newErrors.city = `City must not exceed ${FIELD_LIMITS.city} characters`;
+      } else if (!hasAlphanumeric(trimmedCity)) {
+        newErrors.city = "City must contain at least one letter or number";
+      }
     }
 
+    // Validate Postal Code
     if (!formData.postalCode.trim()) {
       newErrors.postalCode = "Postal Code is required";
     } else {
@@ -203,6 +273,25 @@ export const useOrganizationForm = () => {
       if (!CANADIAN_POSTAL_CODE_REGEX.test(normalizedPostalCode)) {
         newErrors.postalCode =
           "Please enter a valid Canadian postal code (e.g., A1A 1A1)";
+      }
+    }
+
+    // Validate Organization Website (optional field)
+    if (formData.organizationWebsite && formData.organizationWebsite.trim()) {
+      const trimmedWebsite = formData.organizationWebsite.trim();
+      if (trimmedWebsite.length > FIELD_LIMITS.organizationWebsite) {
+        newErrors.organizationWebsite = `Website must not exceed ${FIELD_LIMITS.organizationWebsite} characters`;
+      } else if (!hasAlphanumeric(trimmedWebsite)) {
+        newErrors.organizationWebsite =
+          "Website must contain at least one letter or number";
+      } else {
+        // Basic URL validation (must start with http:// or https:// or be a valid domain)
+        const urlPattern =
+          /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
+        if (!urlPattern.test(trimmedWebsite)) {
+          newErrors.organizationWebsite =
+            "Please enter a valid website URL (e.g., https://example.com)";
+        }
       }
     }
 

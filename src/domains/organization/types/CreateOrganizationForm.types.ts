@@ -15,8 +15,10 @@ export interface CreateOrganizationFormErrors {
   organizationName?: string;
   addressLookup?: string;
   streetAddress?: string;
+  aptUnitSuite?: string;
   city?: string;
   postalCode?: string;
+  organizationWebsite?: string;
 }
 
 export interface CreateOrganizationFormProps {
