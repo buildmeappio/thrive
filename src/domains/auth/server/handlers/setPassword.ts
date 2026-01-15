@@ -107,37 +107,120 @@ const setPassword = async (payload: SetPasswordInput) => {
       };
     }
 
-    // Get role
-    const role = await prisma.role.findFirst({
+    // Check if user with this email already exists
+    const existingUser = await prisma.user.findUnique({
       where: {
-        name: Roles.MEDICAL_EXAMINER,
+        email: application.email,
+      },
+      include: {
+        accounts: {
+          include: {
+            role: true,
+          },
+        },
       },
     });
 
-    if (!role) {
-      throw HttpError.notFound("Medical examiner role not found");
+    let user;
+    let role;
+
+    if (existingUser) {
+      // User already exists, update password instead of creating new user
+      log(
+        `[SetPassword] User with email ${application.email} already exists, updating password`,
+      );
+      user = await userService.updateUserPassword(
+        existingUser.id,
+        hashedPassword,
+      );
+
+      // Check if user already has an account with MEDICAL_EXAMINER role
+      const existingAccount = existingUser.accounts.find(
+        (acc) => acc.role.name === Roles.MEDICAL_EXAMINER,
+      );
+
+      if (existingAccount) {
+        // Account already exists, verify it
+        await accountService.verifyAccount(existingAccount.id);
+
+        // Check if profile exists for this account
+        const existingProfile = await prisma.examinerProfile.findFirst({
+          where: {
+            accountId: existingAccount.id,
+          },
+        });
+
+        if (existingProfile) {
+          // Profile exists, return success
+          return {
+            success: true,
+            message: "Password set successfully",
+            data: user,
+          };
+        }
+        // Profile doesn't exist, continue to create it below
+        role = existingAccount.role;
+      } else {
+        // No account with MEDICAL_EXAMINER role, get role and create account
+        const medicalExaminerRole = await prisma.role.findFirst({
+          where: {
+            name: Roles.MEDICAL_EXAMINER,
+          },
+        });
+
+        if (!medicalExaminerRole) {
+          throw HttpError.notFound("Medical examiner role not found");
+        }
+        role = medicalExaminerRole;
+      }
+    } else {
+      // Get role
+      role = await prisma.role.findFirst({
+        where: {
+          name: Roles.MEDICAL_EXAMINER,
+        },
+      });
+
+      if (!role) {
+        throw HttpError.notFound("Medical examiner role not found");
+      }
+
+      // Create User - capitalize first letter of names
+      user = await prisma.user.create({
+        data: {
+          firstName: capitalizeFirstLetter(application.firstName || ""),
+          lastName: capitalizeFirstLetter(application.lastName || ""),
+          email: application.email,
+          phone: application.phone || "",
+          password: hashedPassword,
+          status: UserStatus.ACTIVE, // Set to ACTIVE after password setup
+        },
+      });
     }
 
-    // Create User - capitalize first letter of names
-    const user = await prisma.user.create({
-      data: {
-        firstName: capitalizeFirstLetter(application.firstName || ""),
-        lastName: capitalizeFirstLetter(application.lastName || ""),
-        email: application.email,
-        phone: application.phone || "",
-        password: hashedPassword,
-        status: UserStatus.ACTIVE, // Set to ACTIVE after password setup
+    // Check if account already exists before creating
+    const existingAccount = await prisma.account.findFirst({
+      where: {
+        userId: user.id,
+        roleId: role.id,
       },
     });
 
-    // Create Account
-    const account = await prisma.account.create({
-      data: {
-        userId: user.id,
-        roleId: role.id,
-        isVerified: true, // Auto-verify since application was approved
-      },
-    });
+    let account;
+    if (existingAccount) {
+      account = existingAccount;
+      // Verify the account
+      await accountService.verifyAccount(account.id);
+    } else {
+      // Create Account
+      account = await prisma.account.create({
+        data: {
+          userId: user.id,
+          roleId: role.id,
+          isVerified: true, // Auto-verify since application was approved
+        },
+      });
+    }
 
     // Create or reuse address
     let addressId = application.addressId;

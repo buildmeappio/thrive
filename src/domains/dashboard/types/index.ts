@@ -121,6 +121,7 @@ export type GetDashboardBookingsResponse = {
   data?: {
     pendingReview: DashboardBookingData[];
     upcomingAppointments: DashboardBookingData[];
+    waitingToBeSubmitted: ReportRow[];
   };
   message?: string;
 };
