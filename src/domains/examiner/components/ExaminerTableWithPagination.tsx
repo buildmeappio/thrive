@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { matchesSearch } from "@/utils/search";
 import {
   useReactTable,
   getCoreRowModel,
@@ -308,8 +309,7 @@ export const useExaminerTable = (props: useExaminerTableOptions) => {
     }
 
     // Filter by search query
-    const q = searchQuery.trim().toLowerCase();
-    if (q) {
+    if (searchQuery.trim()) {
       result = result.filter((d) => {
         // For examiners, exclude status from search; for applications, include it
         const searchFields =
@@ -318,7 +318,7 @@ export const useExaminerTable = (props: useExaminerTableOptions) => {
             : [d.name, d.email, d.specialties, d.province, d.status];
         return searchFields
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q));
+          .some((v) => matchesSearch(searchQuery, v));
       });
     }
 

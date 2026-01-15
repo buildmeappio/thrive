@@ -43,8 +43,8 @@ export default function CreateFeeStructureDialog({ open, onClose }: Props) {
     if (trimmed.length < 2) {
       return "Name must be at least 2 characters";
     }
-    if (trimmed.length > 255) {
-      return "Name must be less than 255 characters";
+    if (trimmed.length > 100) {
+      return "Name must not exceed 100 characters";
     }
     if (!/^[a-zA-Z0-9\s\-'.,()&]+$/.test(trimmed)) {
       return "Name can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands";
@@ -147,7 +147,7 @@ export default function CreateFeeStructureDialog({ open, onClose }: Props) {
                 }
               }}
               placeholder="e.g., Standard Examiner Rates 2025"
-              maxLength={255}
+              maxLength={100}
               autoFocus
               disabled={isSubmitting}
             />

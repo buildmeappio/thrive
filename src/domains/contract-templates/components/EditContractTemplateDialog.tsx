@@ -52,8 +52,8 @@ export default function EditContractTemplateDialog({
     if (trimmed.length < 2) {
       return "Display name must be at least 2 characters";
     }
-    if (trimmed.length > 255) {
-      return "Display name must be less than 255 characters";
+    if (trimmed.length > 100) {
+      return "Display name must not exceed 100 characters";
     }
     if (!/^[a-zA-Z0-9\s\-'.,()&]+$/.test(trimmed)) {
       return "Display name can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands";
@@ -186,7 +186,7 @@ export default function EditContractTemplateDialog({
               value={displayName}
               onChange={(e) => handleDisplayNameChange(e.target.value)}
               placeholder="e.g., IME Examiner Agreement"
-              maxLength={255}
+              maxLength={100}
               autoFocus
               disabled={isSubmitting}
             />

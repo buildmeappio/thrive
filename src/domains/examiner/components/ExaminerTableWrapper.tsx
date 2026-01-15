@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { matchesSearch } from "@/utils/search";
 import {
   useReactTable,
   getCoreRowModel,
@@ -179,12 +180,11 @@ export default function ExaminerTableWrapper({
     }
 
     // Filter by search query
-    const q = query.trim().toLowerCase();
-    if (q) {
+    if (query.trim()) {
       result = result.filter((d) =>
         [d.name, d.email, d.specialties, d.province, d.status]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q)),
+          .some((v) => matchesSearch(query, v)),
       );
     }
 

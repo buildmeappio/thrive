@@ -34,18 +34,6 @@ const includeRelations = {
         in: [ContractStatus.DRAFT, ContractStatus.SENT, ContractStatus.SIGNED],
       },
     },
-    include: {
-      feeStructure: {
-        include: {
-          variables: {
-            orderBy: [
-              { sortOrder: Prisma.SortOrder.asc },
-              { createdAt: Prisma.SortOrder.asc },
-            ],
-          },
-        },
-      },
-    },
     select: {
       id: true,
       status: true,

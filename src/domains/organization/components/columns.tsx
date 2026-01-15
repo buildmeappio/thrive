@@ -46,33 +46,6 @@ const Content = ({
   );
 };
 
-const StatusBadge = ({ status }: { status: OrganizationData["status"] }) => {
-  const statusConfig = {
-    PENDING: {
-      label: "Pending Approval",
-      className: "bg-yellow-100 text-yellow-800",
-    },
-    ACCEPTED: { label: "Approved", className: "bg-green-100 text-green-800" },
-    REJECTED: { label: "Rejected", className: "bg-red-100 text-red-800" },
-  } as const;
-
-  const config = statusConfig[status] || {
-    label: status,
-    className: "bg-gray-100 text-gray-800",
-  };
-
-  return (
-    <span
-      className={cn(
-        "px-2 py-1 rounded-full text-xs font-medium",
-        config.className,
-      )}
-    >
-      {config.label}
-    </span>
-  );
-};
-
 const prettyType = (s: string) =>
   s.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
 
@@ -109,11 +82,10 @@ const columns: ColumnDef<OrganizationData>[] = [
     header: () => <Header>Representative</Header>,
     accessorKey: "managerName",
     enableSorting: true,
-    cell: ({ row }) => (
-      <Content title={row.original.managerName}>
-        {row.original.managerName}
-      </Content>
-    ),
+    cell: ({ row }) => {
+      const managerName = row.original.managerName || "N/A";
+      return <Content title={managerName}>{managerName}</Content>;
+    },
   },
   {
     header: () => <Header>Email</Header>,
@@ -124,17 +96,6 @@ const columns: ColumnDef<OrganizationData>[] = [
         {row.original.managerEmail}
       </Content>
     ),
-  },
-  {
-    header: () => <Header>Status</Header>,
-    accessorKey: "status",
-    enableSorting: true,
-    cell: ({ row }) => (
-      <div className="py-2">
-        <StatusBadge status={row.original.status} />
-      </div>
-    ),
-    sortingFn: "alphanumeric",
   },
   {
     header: "",

@@ -3,7 +3,7 @@
 import examinerService from "../server/examiner.service";
 import { ExaminerDto } from "../server/dto/examiner.dto";
 import logger from "@/utils/logger";
-import { ExaminerStatus, UserStatus } from "@prisma/client";
+import { ExaminerStatus, UserStatus, Prisma } from "@prisma/client";
 
 export const toggleExaminerStatus = async (
   id: string,
@@ -53,11 +53,46 @@ export const toggleExaminerStatus = async (
     };
   } catch (error) {
     logger.error("Failed to toggle examiner status:", error);
+
+    // Handle Prisma errors with meaningful messages
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      switch (error.code) {
+        case "P2025":
+          return {
+            success: false,
+            error: "Examiner not found. Please refresh the page and try again.",
+          };
+        case "P2003":
+          return {
+            success: false,
+            error:
+              "Unable to update examiner status due to a data constraint. Please contact support if this issue persists.",
+          };
+        default:
+          return {
+            success: false,
+            error:
+              "A database error occurred while updating the examiner status. Please try again or contact support if the problem persists.",
+          };
+      }
+    }
+
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      return {
+        success: false,
+        error: "Invalid data provided. Please refresh the page and try again.",
+      };
+    }
+
+    // Handle other errors
     return {
       success: false,
       error:
         error instanceof Error
-          ? error.message
+          ? error.message.includes("prisma") ||
+            error.message.includes("database")
+            ? "A database error occurred. Please try again or contact support if the problem persists."
+            : error.message
           : "Failed to toggle examiner status. Please try again.",
     };
   }

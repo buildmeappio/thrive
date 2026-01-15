@@ -176,17 +176,14 @@ export default function CaseDetailPageClient({
       {/* Header with back button and case info */}
       <div className="flex items-center justify-between gap-2 sm:gap-4 mb-6 flex-wrap">
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-          <Link
-            href="/cases"
-            className="flex items-center gap-2 sm:gap-4 flex-shrink-0"
-          >
+          <Link href="/cases" className="flex-shrink-0">
             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
-            <span className="font-poppins text-lg sm:text-2xl lg:text-3xl font-bold text-black">
-              {caseDetails.caseNumber}
-            </span>
           </Link>
+          <span className="font-poppins text-lg sm:text-2xl lg:text-3xl font-bold text-black">
+            {caseDetails.caseNumber}
+          </span>
         </div>
         <div className="px-[2px] py-[2px] rounded-full bg-gradient-to-r from-[#00A8FF] to-[#01F4C8] w-fit flex-shrink-0">
           <div

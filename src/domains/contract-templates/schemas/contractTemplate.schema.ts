@@ -26,8 +26,8 @@ export const createContractTemplateSchema = z.object({
       "Display name must be at least 2 characters",
     )
     .refine(
-      (val) => val.length <= 255,
-      "Display name must be less than 255 characters",
+      (val) => val.length <= 100,
+      "Display name must not exceed 100 characters",
     )
     .refine(
       (val) => /^[a-zA-Z0-9\s\-'.,()&]+$/.test(val),
@@ -56,8 +56,8 @@ export const updateContractTemplateSchema = z.object({
       "Display name must be at least 2 characters",
     )
     .refine(
-      (val) => val.length <= 255,
-      "Display name must be less than 255 characters",
+      (val) => val.length <= 100,
+      "Display name must not exceed 100 characters",
     )
     .refine(
       (val) => /^[a-zA-Z0-9\s\-'.,()&]+$/.test(val),
