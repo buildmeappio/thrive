@@ -57,7 +57,7 @@ export default function CreateOrganizationForm({
       if (result.success) {
         toast.success("Organization created successfully!");
         resetForm();
-        router.push("/organization");
+        router.push(`/organization/${result.organizationId}`);
       } else {
         toast.error(result.error || "Failed to create organization");
       }
