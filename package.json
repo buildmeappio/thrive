@@ -30,10 +30,12 @@
     "docker:run": "docker build -t examiner:latest . && docker run -p 3001:3001 examiner:latest",
     "docker:stop": "docker stop examiner",
     "docker:remove": "docker rm examiner",
-    "docker:dev:up": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 docker-compose up --build -d",
+    "docker:dev:up": "cross-env NODE_ENV=development NODE_TLS_REJECT_UNAUTHORIZED=0 docker-compose up --build -d",
     "docker:dev:down": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 docker-compose down -v",
-    "docker:staging:up": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 docker-compose up --build -d",
-    "docker:staging:down": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 docker-compose down -v"
+    "docker:staging:up": "cross-env NODE_ENV=staging NODE_TLS_REJECT_UNAUTHORIZED=0 docker-compose up --build -d",
+    "docker:staging:down": "cross-env NODE_ENV=staging NODE_TLS_REJECT_UNAUTHORIZED=0 docker-compose down -v",
+    "docker:prod:up": "cross-env NODE_ENV=production NODE_TLS_REJECT_UNAUTHORIZED=0 docker-compose up --build -d",
+    "docker:prod:down": "cross-env NODE_ENV=production NODE_TLS_REJECT_UNAUTHORIZED=0 docker-compose down -v"
   },
   "optionalDependencies": {
     "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",

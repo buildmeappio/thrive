@@ -164,10 +164,10 @@ class MessagesService {
         });
       }
 
-      // 4. Organizations pending approval
+      // 4. Organizations without superadmin (need invitation)
       const pendingOrgs = await prisma.organization.findMany({
         where: {
-          status: "PENDING",
+          isAuthorized: false,
           deletedAt: null,
         },
         orderBy: { createdAt: "desc" },
@@ -179,7 +179,7 @@ class MessagesService {
           id: `org-pending-${org.id}`,
           type: "organization",
           title: `New organization registered: ${org.name}`,
-          description: "Approval needed",
+          description: "Superadmin invitation needed",
           entityId: org.id,
           entityType: "organization",
           priority: "normal",

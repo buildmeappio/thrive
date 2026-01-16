@@ -9,19 +9,15 @@ model Organization {
   isAuthorized           Boolean            @default(false) @map("is_authorized")
   dataSharingConsent     Boolean            @default(false) @map("data_sharing_consent")
   agreeToTermsAndPrivacy Boolean            @default(false) @map("agree_to_terms_and_privacy")
-  status                 OrganizationStatus @default(PENDING) @map("status")
-  approvedBy             String?            @map("approved_by") @db.Uuid
-  approvedAt             DateTime?          @map("approved_at") @db.Timestamptz()
-  rejectedBy             String?            @map("rejected_by") @db.Uuid
-  rejectedAt             DateTime?          @map("rejected_at") @db.Timestamptz()
-  rejectedReason         String?            @map("rejected_reason") @db.Text
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
 
-  manager OrganizationManager[] @relation("OrganizationManager")
-  cases   Case[]                @relation("OrganizationCases")
+  manager     OrganizationManager[]    @relation("OrganizationManager")
+  cases       Case[]                   @relation("OrganizationCases")
+  invitations OrganizationInvitation[] @relation("OrganizationInvitations")
+  roles       OrganizationRole[]        @relation("OrganizationRoles")
 
   @@map("organizations")
 }

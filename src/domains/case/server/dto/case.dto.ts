@@ -208,7 +208,6 @@ export async function toCaseDetailDto(
         id: examination.case.organization.id,
         name: examination.case.organization.name,
         website: examination.case.organization.website ?? null,
-        status: examination.case.organization.status,
         managerEmail:
           examination.case.organization.manager?.[0]?.account?.user?.email ??
           null,

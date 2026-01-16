@@ -102,7 +102,6 @@ export type CaseDetailDtoType = {
       id: string;
       name: string;
       website: string | null;
-      status: string;
       managerEmail?: string | null;
       managerName?: string | null;
     };
