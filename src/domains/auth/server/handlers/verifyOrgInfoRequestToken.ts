@@ -39,11 +39,6 @@ const verifyAndGetOrganizationInfo = async (token: string) => {
       throw HttpError.notFound('Organization not found');
     }
 
-    // Check if organization status is INFO_REQUESTED
-    if (organization.status !== 'INFO_REQUESTED') {
-      throw HttpError.badRequest('Organization is not in INFO_REQUESTED status');
-    }
-
     const manager = organization.manager[0];
     if (!manager || !manager.account || !manager.account.user) {
       throw HttpError.notFound('Organization manager not found');

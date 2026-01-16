@@ -25,7 +25,7 @@ export const credentials = CredentialsProvider({
           select: {
             id: true,
             name: true,
-            status: true,
+            isAuthorized: true,
           },
         },
       },
@@ -35,7 +35,7 @@ export const credentials = CredentialsProvider({
       ...user,
       organizationId: organizationManager?.organization?.id || null,
       organizationName: organizationManager?.organization?.name || null,
-      organizationStatus: organizationManager?.organization?.status || null,
+      organizationStatus: organizationManager?.organization?.isAuthorized ? 'accepted' : 'pending',
     };
   },
 });

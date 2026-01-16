@@ -18,7 +18,7 @@ export type FormData = {
     lastName: string;
     phoneNumber: string;
     officialEmailAddress: string;
-    jobTitle: string;
+    jobTitle?: string;
     department: string;
   };
   step3?: {

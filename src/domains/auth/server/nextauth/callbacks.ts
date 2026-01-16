@@ -25,7 +25,7 @@ export const callbacks: NonNullable<NextAuthOptions['callbacks']> = {
             select: {
               id: true,
               name: true,
-              status: true,
+              isAuthorized: true,
             },
           },
         },
@@ -34,7 +34,9 @@ export const callbacks: NonNullable<NextAuthOptions['callbacks']> = {
       if (organizationManager?.organization) {
         token.organizationId = organizationManager.organization.id;
         token.organizationName = organizationManager.organization.name;
-        token.organizationStatus = organizationManager.organization.status;
+        token.organizationStatus = organizationManager.organization.isAuthorized
+          ? 'accepted'
+          : 'pending';
       }
     }
 

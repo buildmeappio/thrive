@@ -8,7 +8,7 @@ type OrganizationDashboardProps = {
   organization: Awaited<ReturnType<typeof getOrganization>>['result'];
 };
 const OrganizationDashboard: React.FC<OrganizationDashboardProps> = ({ organization }) => {
-  return <>{organization?.status === 'PENDING' ? <Welcome /> : <Approved />}</>;
+  return <>{!organization?.isAuthorized ? <Welcome /> : <Approved />}</>;
 };
 
 export default OrganizationDashboard;

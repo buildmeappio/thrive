@@ -685,7 +685,6 @@ const updateOrganizationData = async (organizationId: string, data: UpdateOrgani
           agreeToTermsAndPrivacy: agreeTermsConditions,
           dataSharingConsent: consentSecureDataHandling,
           isAuthorized: authorizedToCreateAccount,
-          status: 'PENDING', // Reset status to PENDING after update
         },
       });
 

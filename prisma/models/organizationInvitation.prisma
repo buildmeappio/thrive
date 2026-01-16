@@ -1,0 +1,25 @@
+model OrganizationInvitation {
+  id                String    @id @unique @default(uuid()) @db.Uuid
+  organizationId     String    @map("organization_id") @db.Uuid
+  email              String    @map("email") @db.VarChar(255)
+  role               String    @map("role") @db.VarChar(50) // "super_admin" or "organization-manager" (legacy, will be replaced by organizationRoleId)
+  organizationRoleId String?   @map("organization_role_id") @db.Uuid
+  invitedBy          String    @map("invited_by") @db.Uuid // Account ID of inviter
+  token              String    @unique @map("token") @db.Text // JWT or unique token
+  expiresAt          DateTime  @map("expires_at") @db.Timestamptz()
+  acceptedAt         DateTime? @map("accepted_at") @db.Timestamptz()
+  acceptedBy         String?   @map("accepted_by") @db.Uuid // Account ID when accepted
+  
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+
+  organization     Organization     @relation("OrganizationInvitations", fields: [organizationId], references: [id])
+  organizationRole OrganizationRole? @relation("OrganizationInvitationRole", fields: [organizationRoleId], references: [id])
+
+  @@unique([organizationId, email, role])
+  @@index([email])
+  @@index([token])
+  @@index([organizationRoleId])
+  @@map("organization_invitations")
+}
