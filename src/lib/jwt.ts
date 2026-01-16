@@ -24,6 +24,7 @@ const getJwtSecret = (
     | "JWT_ORGANIZATION_INFO_REQUEST_TOKEN_SECRET"
     | "JWT_CLAIMANT_APPROVE_TOKEN_SECRET"
     | "JWT_EXAMINER_SCHEDULE_INTERVIEW_TOKEN_SECRET"
+    | "JWT_ORGANIZATION_INVITATION_TOKEN_SECRET"
     | "NEXTAUTH_SECRET",
 ) => {
   const secret = process.env[name];
@@ -322,5 +323,71 @@ export function verifyExaminerScheduleInterviewToken(token: string): {
     };
   } catch {
     throw new Error("Invalid or expired interview scheduling token");
+  }
+}
+
+/**
+ * Sign a token for organization invitation (uses JWT_ORGANIZATION_INVITATION_TOKEN_SECRET)
+ * @param payload - The data to encode in the token (should include organizationId, email, invitationId, organizationRoleId)
+ * @param expiresIn - Token expiration time (defaults to JWT_ORGANIZATION_INVITATION_TOKEN_EXPIRY env var or "7d")
+ * @returns Signed JWT token
+ */
+export function signOrganizationInvitationToken(
+  payload: {
+    organizationId: string;
+    email: string;
+    invitationId: string;
+    organizationRoleId: string;
+  },
+  expiresIn?: SignOptions["expiresIn"],
+): string {
+  const defaultExpiry =
+    (process.env
+      .JWT_ORGANIZATION_INVITATION_TOKEN_EXPIRY as SignOptions["expiresIn"]) ||
+    "7d";
+  const options: SignOptions = { expiresIn: expiresIn || defaultExpiry };
+  const JWT_ORGANIZATION_INVITATION_TOKEN_SECRET = getJwtSecret(
+    "JWT_ORGANIZATION_INVITATION_TOKEN_SECRET",
+  );
+  return jwt.sign(payload, JWT_ORGANIZATION_INVITATION_TOKEN_SECRET, options);
+}
+
+/**
+ * Verify and decode an organization invitation token (uses JWT_ORGANIZATION_INVITATION_TOKEN_SECRET)
+ * @param token - The JWT token to verify
+ * @returns Decoded token payload with organizationId, email, invitationId, and organizationRoleId
+ */
+export function verifyOrganizationInvitationToken(token: string): {
+  organizationId: string;
+  email: string;
+  invitationId: string;
+  organizationRoleId: string;
+} {
+  try {
+    const JWT_ORGANIZATION_INVITATION_TOKEN_SECRET = getJwtSecret(
+      "JWT_ORGANIZATION_INVITATION_TOKEN_SECRET",
+    );
+    const decoded = jwt.verify(
+      token,
+      JWT_ORGANIZATION_INVITATION_TOKEN_SECRET,
+    ) as jwt.JwtPayload;
+
+    if (
+      !decoded.organizationId ||
+      !decoded.email ||
+      !decoded.invitationId ||
+      !decoded.organizationRoleId
+    ) {
+      throw new Error("Invalid organization invitation token payload");
+    }
+
+    return {
+      organizationId: decoded.organizationId as string,
+      email: decoded.email as string,
+      invitationId: decoded.invitationId as string,
+      organizationRoleId: decoded.organizationRoleId as string,
+    };
+  } catch {
+    throw new Error("Invalid or expired organization invitation token");
   }
 }

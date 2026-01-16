@@ -1,24 +1,19 @@
 "use client";
 
 import logger from "@/utils/logger";
-
-// OrganizationDetail.tsx
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Section from "@/components/Section";
 import FieldRow from "@/components/FieldRow";
-import RequestOrgInfoModal from "@/components/modal/RequestOrgInfoModal";
 import { DashboardShell } from "@/layouts/dashboard";
 import getOrganizationById from "../server/handlers/getOrganizationById";
-import { cn } from "@/lib/utils";
-import RejectOrgModal from "@/components/modal/RejectOrgModal";
-import { Check, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trash2, UserPlus, Mail, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import organizationActions from "../actions";
 import { toast } from "sonner";
 import { formatPhoneNumber } from "@/utils/phone";
 import { capitalizeWords } from "@/utils/text";
 import Link from "next/link";
+import InviteSuperAdminModal from "./InviteSuperAdminModal";
 
 // Utility function to format text from database: remove _, -, and capitalize each word
 const formatText = (str: string): string => {
@@ -37,112 +32,194 @@ type OrganizationDetailProps = {
 
 const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
   const router = useRouter();
-  const [isRequestOpen, setIsRequestOpen] = useState(false);
-  const [isRejectOpen, setIsRejectOpen] = useState(false);
-
-  // Determine the current organization status from approvedBy/rejectedBy
-  const getCurrentStatus = ():
-    | "pending"
-    | "approved"
-    | "rejected"
-    | "info_requested" => {
-    if (organization.approvedBy) {
-      return "approved";
-    }
-    if (organization.rejectedBy) {
-      return "rejected";
-    }
-    return "pending";
-  };
-
-  const [status, setStatus] = useState<
-    "pending" | "approved" | "rejected" | "info_requested"
-  >(getCurrentStatus());
-  const [loadingAction, setLoadingAction] = useState<
-    "approve" | "reject" | "request" | null
-  >(null);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [superAdmin, setSuperAdmin] = useState<any>(null);
+  const [isLoadingSuperAdmin, setIsLoadingSuperAdmin] = useState(true);
+  const [isInviting, setIsInviting] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [pendingInvitation, setPendingInvitation] = useState<any>(null);
+  const [isLoadingInvitation, setIsLoadingInvitation] = useState(true);
+  const [isResending, setIsResending] = useState(false);
 
   const type = organization.type?.name
     ? formatText(organization.type.name)
     : "-";
 
-  const handleRequestSubmit = async (messageToOrganization: string) => {
-    // Check if manager email exists before proceeding
-    const managerEmail = organization.manager?.[0]?.account?.user?.email;
-    if (!managerEmail) {
-      toast.error("Cannot send request: No manager email found.");
-      return;
-    }
+  // Fetch superadmin and pending invitation on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoadingSuperAdmin(true);
+      setIsLoadingInvitation(true);
+      try {
+        // Fetch superadmin
+        const superAdminResult =
+          await organizationActions.getOrganizationSuperAdmin(organization.id);
+        if (superAdminResult.success && superAdminResult.superAdmin) {
+          setSuperAdmin(superAdminResult.superAdmin);
+        } else {
+          setSuperAdmin(null);
+        }
 
-    setLoadingAction("request");
+        // Fetch pending invitation if no superadmin
+        if (!superAdminResult.success || !superAdminResult.superAdmin) {
+          const invitationsResult = await organizationActions.getInvitations(
+            organization.id,
+          );
+          if (invitationsResult.success && invitationsResult.invitations) {
+            // Find the most recent pending invitation
+            const pending = invitationsResult.invitations.find(
+              (inv: any) =>
+                !inv.acceptedAt &&
+                !inv.deletedAt &&
+                new Date(inv.expiresAt) > new Date(),
+            );
+            setPendingInvitation(pending || null);
+          }
+        } else {
+          setPendingInvitation(null);
+        }
+      } catch (error) {
+        logger.error("Failed to fetch data:", error);
+        setSuperAdmin(null);
+        setPendingInvitation(null);
+      } finally {
+        setIsLoadingSuperAdmin(false);
+        setIsLoadingInvitation(false);
+      }
+    };
+
+    fetchData();
+  }, [organization.id]);
+
+  const handleInviteSuperAdmin = async (email: string) => {
+    setIsInviting(true);
     try {
-      await organizationActions.requestMoreInfo(
+      // Check if there's a previous pending invitation for a different email
+      const invitationsBefore = await organizationActions.getInvitations(
         organization.id,
-        messageToOrganization,
       );
-      setIsRequestOpen(false);
-      setStatus("info_requested");
-      toast.success(
-        "Request sent. An email has been sent to the organization.",
+      const hadPreviousInvitation =
+        invitationsBefore.success &&
+        invitationsBefore.invitations?.some(
+          (inv: any) =>
+            !inv.acceptedAt &&
+            !inv.deletedAt &&
+            inv.email.toLowerCase().trim() !== email.toLowerCase().trim() &&
+            new Date(inv.expiresAt) > new Date(),
+        );
+
+      // Check if there's already a pending invitation for the same email
+      const hasSameEmailInvitation =
+        invitationsBefore.success &&
+        invitationsBefore.invitations?.some(
+          (inv: any) =>
+            !inv.acceptedAt &&
+            !inv.deletedAt &&
+            inv.email.toLowerCase().trim() === email.toLowerCase().trim() &&
+            new Date(inv.expiresAt) > new Date(),
+        );
+
+      const result = await organizationActions.inviteSuperAdmin(
+        organization.id,
+        email,
       );
-      router.refresh();
+
+      if (result.success) {
+        if (hasSameEmailInvitation) {
+          toast.success("Invitation resent successfully!");
+        } else if (hadPreviousInvitation) {
+          toast.success(
+            "Previous invitation cancelled. New invitation sent successfully!",
+          );
+        } else {
+          toast.success("Superadmin invitation sent successfully!");
+        }
+
+        setIsInviteModalOpen(false);
+        // Refresh invitation data
+        const invitationsResult = await organizationActions.getInvitations(
+          organization.id,
+        );
+        if (invitationsResult.success && invitationsResult.invitations) {
+          const pending = invitationsResult.invitations.find(
+            (inv: any) =>
+              !inv.acceptedAt &&
+              !inv.deletedAt &&
+              new Date(inv.expiresAt) > new Date(),
+          );
+          setPendingInvitation(pending || null);
+        }
+        router.refresh();
+      } else {
+        toast.error(result.error || "Failed to send invitation");
+      }
     } catch (error) {
-      logger.error("Failed to request more info:", error);
-      toast.error("Failed to send request. Please try again.");
+      logger.error("Failed to invite superadmin:", error);
+      toast.error("Failed to send invitation. Please try again.");
     } finally {
-      setLoadingAction(null);
+      setIsInviting(false);
     }
   };
 
-  const handleApprove = async () => {
-    // Check if manager email exists before proceeding
-    const managerEmail = organization.manager?.[0]?.account?.user?.email;
-    if (!managerEmail) {
-      toast.error("Cannot approve organization: No manager email found.");
-      return;
-    }
+  const handleRemoveSuperAdmin = async () => {
+    if (!superAdmin) return;
 
-    setLoadingAction("approve");
+    setIsRemoving(true);
     try {
-      await organizationActions.approveOrganization(organization.id);
-      setStatus("approved");
-      toast.success(
-        "Organization approved successfully! An email has been sent to the organization.",
+      const result = await organizationActions.removeSuperAdmin(
+        organization.id,
+        superAdmin.id,
       );
-      router.refresh();
+
+      if (result.success) {
+        toast.success("Superadmin removed successfully!");
+        setSuperAdmin(null);
+        setIsRemoveModalOpen(false);
+        // Refresh invitation data after removal
+        const invitationsResult = await organizationActions.getInvitations(
+          organization.id,
+        );
+        if (invitationsResult.success && invitationsResult.invitations) {
+          const pending = invitationsResult.invitations.find(
+            (inv: any) =>
+              !inv.acceptedAt &&
+              !inv.deletedAt &&
+              new Date(inv.expiresAt) > new Date(),
+          );
+          setPendingInvitation(pending || null);
+        }
+        router.refresh();
+      } else {
+        toast.error(result.error || "Failed to remove superadmin");
+      }
     } catch (error) {
-      logger.error("Failed to approve organization:", error);
-      toast.error("Failed to approve organization. Please try again.");
+      logger.error("Failed to remove superadmin:", error);
+      toast.error("Failed to remove superadmin. Please try again.");
     } finally {
-      setLoadingAction(null);
+      setIsRemoving(false);
     }
   };
 
-  const handleRejectSubmit = async (messageToOrganization: string) => {
-    // Check if manager email exists before proceeding
-    const managerEmail = organization.manager?.[0]?.account?.user?.email;
-    if (!managerEmail) {
-      toast.error("Cannot reject organization: No manager email found.");
-      return;
-    }
+  const handleResendInvitation = async () => {
+    if (!pendingInvitation) return;
 
-    setLoadingAction("reject");
+    setIsResending(true);
     try {
-      await organizationActions.rejectOrganization(
-        organization.id,
-        messageToOrganization,
+      const result = await organizationActions.resendInvitation(
+        pendingInvitation.id,
       );
-      setIsRejectOpen(false);
-      setStatus("rejected");
-      toast.success(
-        "Organization rejected. An email has been sent to the organization.",
-      );
-      router.refresh();
+
+      if (result.success) {
+        toast.success("Invitation resent successfully!");
+      } else {
+        toast.error(result.error || "Failed to resend invitation");
+      }
     } catch (error) {
-      logger.error("Failed to reject organization:", error);
-      toast.error("Failed to reject organization. Please try again.");
+      logger.error("Failed to resend invitation:", error);
+      toast.error("Failed to resend invitation. Please try again.");
     } finally {
-      setLoadingAction(null);
+      setIsResending(false);
     }
   };
 
@@ -183,186 +260,250 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                   value={organization.website || "-"}
                   type="text"
                 />
+                <FieldRow
+                  label="Authorization Status"
+                  value={
+                    organization.isAuthorized ? "Authorized" : "Not Authorized"
+                  }
+                  type="text"
+                />
               </Section>
             </div>
 
-            {/* Right Column - Personal Details */}
+            {/* Right Column - Superadmin Details or Pending Invitation */}
             <div className="flex flex-col gap-6 lg:gap-10">
-              <Section title="Personal Details">
-                <FieldRow
-                  label="Full Name"
-                  value={
-                    organization.manager?.[0]?.account?.user
-                      ? capitalizeWords(
-                          `${organization.manager?.[0]?.account?.user.firstName ?? ""} ${organization.manager?.[0]?.account?.user.lastName ?? ""}`.trim() ||
-                            "-",
-                        )
-                      : "-"
-                  }
-                  type="text"
-                />
-                <FieldRow
-                  label="Phone Number"
-                  value={formatPhoneNumber(
-                    organization.manager?.[0]?.account?.user?.phone,
+              {/* Superadmin Details Section - Only show when superadmin exists */}
+              {superAdmin && (
+                <Section title="Superadmin Details">
+                  <FieldRow
+                    label="Full Name"
+                    value={
+                      superAdmin.account?.user
+                        ? capitalizeWords(
+                            `${superAdmin.account.user.firstName ?? ""} ${superAdmin.account.user.lastName ?? ""}`.trim() ||
+                              "-",
+                          )
+                        : "-"
+                    }
+                    type="text"
+                  />
+                  <FieldRow
+                    label="Email Address"
+                    value={superAdmin.account?.user?.email || "-"}
+                    type="text"
+                  />
+                  <FieldRow
+                    label="Phone Number"
+                    value={formatPhoneNumber(superAdmin.account?.user?.phone)}
+                    type="text"
+                  />
+                  <FieldRow
+                    label="Job Title"
+                    value={superAdmin.jobTitle || "-"}
+                    type="text"
+                  />
+                  <FieldRow
+                    label="Department"
+                    value={
+                      superAdmin.department?.name
+                        ? formatText(superAdmin.department.name)
+                        : "-"
+                    }
+                    type="text"
+                  />
+                </Section>
+              )}
+
+              {/* Pending Invitation Section - Only show when no superadmin */}
+              {!superAdmin && (
+                <Section title="Pending Invitation">
+                  {isLoadingInvitation ? (
+                    <div className="text-sm text-gray-500">Loading...</div>
+                  ) : pendingInvitation ? (
+                    <>
+                      <FieldRow
+                        label="Invited Email"
+                        value={pendingInvitation.email}
+                        type="text"
+                      />
+                      <FieldRow
+                        label="Invited Date"
+                        value={new Date(
+                          pendingInvitation.createdAt,
+                        ).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                        type="text"
+                      />
+                      <FieldRow
+                        label="Expires At"
+                        value={new Date(
+                          pendingInvitation.expiresAt,
+                        ).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                        type="text"
+                      />
+                      <FieldRow
+                        label="Status"
+                        value={
+                          new Date(pendingInvitation.expiresAt) > new Date()
+                            ? "Pending"
+                            : "Expired"
+                        }
+                        type="text"
+                      />
+                      <div className="mt-4 flex justify-end">
+                        <button
+                          onClick={handleResendInvitation}
+                          disabled={
+                            isResending ||
+                            new Date(pendingInvitation.expiresAt) <= new Date()
+                          }
+                          className="
+                            px-4 py-2 rounded-full
+                            bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]
+                            text-white hover:opacity-90
+                            disabled:opacity-50 disabled:cursor-not-allowed
+                            flex items-center gap-2
+                            transition-opacity
+                            font-poppins text-sm font-medium
+                          "
+                        >
+                          <RefreshCw
+                            className={`w-4 h-4 ${isResending ? "animate-spin" : ""}`}
+                          />
+                          {isResending ? "Resending..." : "Resend Invitation"}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-sm text-gray-500">
+                      No pending invitation
+                    </div>
                   )}
-                  type="text"
-                />
-                <FieldRow
-                  label="Email Address"
-                  value={organization.manager?.[0]?.account?.user?.email || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="Job Title"
-                  value={organization.manager?.[0]?.jobTitle || "-"}
-                  type="text"
-                />
-                <FieldRow
-                  label="Department"
-                  value={
-                    organization.manager?.[0]?.department?.name
-                      ? formatText(organization.manager[0].department.name)
-                      : "-"
-                  }
-                  type="text"
-                />
-              </Section>
+                </Section>
+              )}
             </div>
           </div>
 
           {/* Actions */}
           <div className="mt-6 pt-4 flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-end">
-            {status === "approved" ? (
+            {superAdmin ? (
               <button
-                className={cn(
-                  "px-4 py-3 rounded-full border border-green-500 text-green-700 bg-green-50 flex items-center gap-2 cursor-default",
-                )}
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  fontWeight: 500,
-                  lineHeight: "100%",
-                  fontSize: "14px",
-                }}
-                disabled
+                onClick={() => setIsRemoveModalOpen(true)}
+                disabled={isRemoving}
+                className="
+                  px-4 py-3 rounded-full
+                  text-white bg-red-700 hover:bg-red-800
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                  flex items-center gap-2
+                  transition-opacity
+                  font-poppins text-sm sm:text-base font-medium
+                "
               >
-                <Check className="w-4 h-4" />
-                Approved
-              </button>
-            ) : status === "rejected" ? (
-              <button
-                className={cn(
-                  "px-4 py-3 rounded-full text-white bg-red-700 flex items-center gap-2 cursor-default",
-                )}
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  fontWeight: 500,
-                  lineHeight: "100%",
-                  fontSize: "14px",
-                }}
-                disabled
-              >
-                Rejected
-              </button>
-            ) : status === "info_requested" ? (
-              <button
-                className={cn(
-                  "px-4 py-3 rounded-full border border-blue-500 text-blue-700 bg-blue-50 flex items-center gap-2 cursor-default",
-                )}
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  fontWeight: 500,
-                  lineHeight: "100%",
-                  fontSize: "14px",
-                }}
-                disabled
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                More Information Required
+                <Trash2 className="w-4 h-4" />
+                {isRemoving ? "Removing..." : "Remove Superadmin"}
               </button>
             ) : (
-              <>
-                <button
-                  className={cn(
-                    "px-4 py-3 rounded-full border border-cyan-400 text-cyan-600 bg-white hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed",
-                  )}
-                  style={{
-                    fontFamily: "Poppins, sans-serif",
-                    fontWeight: 400,
-                    lineHeight: "100%",
-                    fontSize: "14px",
-                  }}
-                  disabled={loadingAction !== null}
-                  onClick={handleApprove}
-                >
-                  {loadingAction === "approve" ? "Approving..." : "Approve"}
-                </button>
-
-                <button
-                  onClick={() => setIsRequestOpen(true)}
-                  className={cn(
-                    "px-4 py-3 rounded-full border border-blue-700 text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed",
-                  )}
-                  style={{
-                    fontFamily: "Poppins, sans-serif",
-                    fontWeight: 400,
-                    lineHeight: "100%",
-                    fontSize: "14px",
-                  }}
-                  disabled={loadingAction !== null}
-                >
-                  {loadingAction === "request"
-                    ? "Requesting..."
-                    : "Request More Info"}
-                </button>
-
-                <button
-                  className={cn(
-                    "px-4 py-3 rounded-full text-white bg-red-700 hover:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed",
-                  )}
-                  style={{
-                    fontFamily: "Poppins, sans-serif",
-                    fontWeight: 400,
-                    lineHeight: "100%",
-                    fontSize: "14px",
-                  }}
-                  disabled={loadingAction !== null}
-                  onClick={() => setIsRejectOpen(true)}
-                >
-                  {loadingAction === "reject" ? "Rejecting..." : "Reject"}
-                </button>
-              </>
+              <button
+                onClick={() => setIsInviteModalOpen(true)}
+                disabled={isInviting}
+                className="
+                  px-4 py-3 rounded-full
+                  bg-gradient-to-r from-[#00A8FF] to-[#01F4C8]
+                  text-white hover:opacity-90
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                  flex items-center gap-2
+                  transition-opacity
+                  font-poppins text-sm sm:text-base font-medium
+                "
+              >
+                <UserPlus className="w-4 h-4" />
+                Invite Superadmin
+              </button>
             )}
           </div>
         </div>
 
-        <RequestOrgInfoModal
-          open={isRequestOpen}
-          onClose={() => setIsRequestOpen(false)}
-          onSubmit={handleRequestSubmit}
-          title="Request More Info"
-          maxLength={200}
+        {/* Invite Superadmin Modal */}
+        <InviteSuperAdminModal
+          open={isInviteModalOpen}
+          onClose={() => setIsInviteModalOpen(false)}
+          onSubmit={handleInviteSuperAdmin}
+          isLoading={isInviting}
         />
 
-        <RejectOrgModal
-          open={isRejectOpen}
-          onClose={() => setIsRejectOpen(false)}
-          onSubmit={handleRejectSubmit}
-          title="Reason for Rejection"
-          maxLength={200}
-        />
+        {/* Remove Superadmin Confirmation Modal */}
+        {isRemoveModalOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4"
+            role="dialog"
+            aria-modal="true"
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) setIsRemoveModalOpen(false);
+            }}
+          >
+            <div
+              className="
+                relative w-full max-w-[500px]
+                rounded-2xl sm:rounded-[30px]
+                bg-white
+                p-5 sm:px-[45px] sm:py-[40px]
+                shadow-[0_4px_134.6px_0_#00000030]
+              "
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <h2 className="font-[600] text-xl sm:text-[24px] leading-[1.2] text-[#D32F2F] font-degular mb-4">
+                Remove Superadmin
+              </h2>
+              <p className="font-poppins text-sm sm:text-base text-[#1A1A1A] mb-6">
+                Are you sure you want to remove the superadmin from this
+                organization? This will set the organization to unauthorized
+                status.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setIsRemoveModalOpen(false)}
+                  disabled={isRemoving}
+                  className="
+                    h-10 sm:h-[46px]
+                    rounded-full
+                    border border-[#E5E5E5] bg-white
+                    px-8 sm:px-10 text-[#1A1A1A]
+                    transition-opacity
+                    disabled:cursor-not-allowed disabled:opacity-50
+                    hover:bg-[#F6F6F6]
+                    font-poppins text-[14px] sm:text-[16px] font-[500]
+                  "
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleRemoveSuperAdmin}
+                  disabled={isRemoving}
+                  className="
+                    h-10 sm:h-[46px]
+                    rounded-full
+                    bg-red-700 hover:bg-red-800
+                    px-8 sm:px-10 text-white
+                    transition-opacity
+                    disabled:cursor-not-allowed disabled:opacity-50
+                    font-poppins text-[14px] sm:text-[16px] font-[500]
+                  "
+                >
+                  {isRemoving ? "Removing..." : "Remove"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardShell>
   );

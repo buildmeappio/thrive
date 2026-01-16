@@ -1,21 +1,25 @@
 import getOrganizationById from "./getOrganizationById";
 import getOrganizations from "./getOrganizations";
-import approveOrganization from "./approveOrganization";
-import rejectOrganization from "./rejectOrganization";
 import getOrganizationTypes from "./getOrganizationTypes";
-import requestMoreInfoOrganization from "./requestMoreInfoOrganization";
 import checkOrganizationNameExists from "./checkOrganizationNameExists";
 import createOrganization from "./createOrganization";
+import inviteSuperAdmin from "./inviteSuperAdmin";
+import getInvitations from "./getInvitations";
+import getOrganizationSuperAdmin from "./getOrganizationSuperAdmin";
+import removeSuperAdmin from "./removeSuperAdmin";
+import resendInvitation from "./resendInvitation";
 
 const handlers = {
   getOrganizationById,
   getOrganizations,
-  approveOrganization,
-  rejectOrganization,
   getOrganizationTypes,
-  requestMoreInfoOrganization,
   checkOrganizationNameExists,
   createOrganization,
+  inviteSuperAdmin,
+  getInvitations,
+  getOrganizationSuperAdmin,
+  removeSuperAdmin,
+  resendInvitation,
 };
 
 export default handlers;
