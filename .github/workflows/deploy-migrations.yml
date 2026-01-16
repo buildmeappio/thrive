@@ -99,6 +99,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
           script: |
+            set -e
             source ~/.bashrc 2>/dev/null || source ~/.bash_profile 2>/dev/null || source ~/.profile 2>/dev/null || true
             export PATH="$HOME/.nvm/versions/node/$(ls -1 $HOME/.nvm/versions/node 2>/dev/null | tail -1)/bin:$PATH" 2>/dev/null || true
             cd ${{ secrets.APP_DIR }}
@@ -110,6 +111,64 @@ jobs:
             echo "🔍 Checking Prisma installation..."
             npm install
             git pull origin ${{ github.ref }}
+            
+            # Extract database host and port from DATABASE_URL
+            DB_URL="${{ secrets.DATABASE_URL }}"
+            DB_HOST=$(echo "$DB_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')
+            DB_PORT=$(echo "$DB_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p' || echo "5432")
+            
+            echo ""
+            echo "🔍 Testing database connectivity from EC2 instance..."
+            echo "   Database Host: $DB_HOST"
+            echo "   Database Port: $DB_PORT"
+            echo ""
+            
+            # Test DNS resolution
+            echo "   📡 Testing DNS resolution..."
+            if getent hosts "$DB_HOST" >/dev/null 2>&1 || nslookup "$DB_HOST" >/dev/null 2>&1 || host "$DB_HOST" >/dev/null 2>&1; then
+              DB_IP=$(getent hosts "$DB_HOST" | awk '{print $1}' | head -1 || echo "")
+              echo "   ✅ DNS resolution successful"
+              if [ -n "$DB_IP" ]; then
+                echo "   📍 Resolved IP: $DB_IP"
+              fi
+            else
+              echo "   ❌ DNS resolution failed for $DB_HOST"
+              echo "   ⚠️  This might indicate a network configuration issue"
+            fi
+            
+            # Test network connectivity
+            echo ""
+            echo "   🔌 Testing TCP connection to $DB_HOST:$DB_PORT..."
+            if command -v nc >/dev/null 2>&1; then
+              if timeout 10 nc -zv -w 5 "$DB_HOST" "$DB_PORT" 2>&1; then
+                echo "   ✅ Network connection successful"
+              else
+                echo "   ❌ Network connection failed"
+                echo ""
+                echo "   🔧 Troubleshooting steps:"
+                echo "   1. Verify RDS security group allows inbound from EC2 security group on port $DB_PORT"
+                echo "   2. Verify EC2 instance is in the same VPC as RDS (or VPC peering is configured)"
+                echo "   3. Verify network ACLs allow traffic between EC2 and RDS subnets"
+                echo "   4. Check if RDS is in a private subnet and EC2 can route to it"
+                exit 1
+              fi
+            elif command -v timeout >/dev/null 2>&1; then
+              if timeout 10 bash -c "echo > /dev/tcp/$DB_HOST/$DB_PORT" 2>/dev/null; then
+                echo "   ✅ Network connection successful"
+              else
+                echo "   ❌ Network connection failed"
+                echo ""
+                echo "   🔧 Troubleshooting steps:"
+                echo "   1. Verify RDS security group allows inbound from EC2 security group on port $DB_PORT"
+                echo "   2. Verify EC2 instance is in the same VPC as RDS"
+                exit 1
+              fi
+            else
+              echo "   ⚠️  No network testing tools available (nc/timeout)"
+              echo "   ⚠️  Proceeding with migration attempt..."
+            fi
+            
+            echo ""
             echo "🔄 Running Prisma migrations..."
             npx prisma migrate deploy
             echo "✅ Migrations completed successfully!"
