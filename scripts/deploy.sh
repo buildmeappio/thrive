@@ -76,11 +76,15 @@ echo "⚙️ Ecosystem Config: $ECOSYSTEM_FILE"
 echo "🌍 Environment File: $ENV_FILE"
 echo "🌿 Git Branch: $BRANCH"
 
-# 4. Checkout branch & pull latest
-echo "📥 Pulling latest code..."
-git fetch origin
-git checkout $BRANCH
-git pull origin $BRANCH
+# 4. Checkout branch & pull latest (skip if using pre-built artifacts)
+if [[ "$SKIP_BUILD" == "true" ]]; then
+  echo "⏭️ Skipping git operations (using pre-built artifacts)..."
+else
+  echo "📥 Pulling latest code..."
+  git fetch origin
+  git checkout $BRANCH
+  git pull origin $BRANCH
+fi
 
 resolve_env_file() {
   if [[ -f "$ENV_FILE" ]]; then
