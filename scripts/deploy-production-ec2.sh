@@ -59,6 +59,22 @@ echo "Image Tag: $IMAGE_TAG"
 echo "AWS Region: $AWS_REGION"
 echo ""
 
+# Function to detect Docker Compose command (prioritize docker compose over docker-compose)
+detect_docker_compose() {
+  if docker compose version &> /dev/null 2>&1; then
+    echo "docker compose"
+  elif command -v docker-compose &> /dev/null; then
+    echo "docker-compose"
+  else
+    echo -e "${RED}❌ Error: Docker Compose is not installed${NC}"
+    exit 1
+  fi
+}
+
+COMPOSE_CMD=$(detect_docker_compose)
+echo -e "${GREEN}✅ Using Docker Compose: $COMPOSE_CMD${NC}"
+echo ""
+
 # Load nvm or install if not found
 export NVM_DIR="${HOME}/.nvm"
 if [ ! -s "$NVM_DIR/nvm.sh" ]; then
@@ -161,7 +177,7 @@ docker pull "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 echo -e "${GREEN}✅ Image pulled: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG${NC}"
 echo ""
 
-# Step 6: Deploy with docker-compose
+# Step 6: Deploy with docker compose
 echo -e "${YELLOW}🚀 Deploying application...${NC}"
 
 # Find currently running container image before stopping
@@ -170,17 +186,17 @@ if [[ -z "$OLD_IMAGE" ]]; then
   OLD_IMAGE=$(docker ps --filter "name=$(basename $DEPLOY_PATH)" --format "{{.Image}}" | head -1)
 fi
 
-# Export ECR variables for docker-compose
+# Export ECR variables for docker compose
 export ECR_REGISTRY="$ECR_REGISTRY/$ECR_REPOSITORY"
 export IMAGE_TAG="$IMAGE_TAG"
 
 # Stop existing containers
 echo "Stopping existing containers..."
-docker-compose down || true
+$COMPOSE_CMD down || true
 
 # Start new containers
 echo "Starting new containers..."
-docker-compose up -d
+$COMPOSE_CMD up -d
 
 # Show running containers
 echo ""
@@ -190,7 +206,7 @@ echo "Running containers:"
 docker ps
 echo ""
 echo "Docker Compose status:"
-docker-compose ps
+$COMPOSE_CMD ps
 
 # Clean up old image if different
 if [[ -n "$OLD_IMAGE" && "$OLD_IMAGE" != "$ECR_REGISTRY:$IMAGE_TAG" ]]; then
