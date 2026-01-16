@@ -109,10 +109,13 @@ jobs:
           ls -lh deployment.tar.gz
 
           echo "📋 Verifying .next is in tarball:"
-          tar -tzf deployment.tar.gz | grep -E "^\.next" | head -10 || {
+          NEXT_COUNT=$(tar -tzf deployment.tar.gz | grep -E "^\.next" | wc -l)
+          if [ "$NEXT_COUNT" -eq 0 ]; then
             echo "❌ ERROR: .next directory not found in tarball!"
             exit 1
-          }
+          fi
+          echo "✅ Found $NEXT_COUNT .next entries in tarball (showing first 10):"
+          tar -tzf deployment.tar.gz | grep -E "^\.next" | head -10 2>/dev/null || true
 
           echo "✅ Deployment tarball created successfully"
 
@@ -159,10 +162,13 @@ jobs:
           ls -lh deployment.tar.gz
 
           echo "📋 Verifying .next is in tarball:"
-          tar -tzf deployment.tar.gz | grep -E "^\.next" | head -10 || {
+          NEXT_COUNT=$(tar -tzf deployment.tar.gz | grep -E "^\.next" | wc -l)
+          if [ "$NEXT_COUNT" -eq 0 ]; then
             echo "❌ ERROR: .next directory not found in tarball!"
             exit 1
-          }
+          fi
+          echo "✅ Found $NEXT_COUNT .next entries in tarball (showing first 10):"
+          tar -tzf deployment.tar.gz | grep -E "^\.next" | head -10 2>/dev/null || true
 
           echo "✅ Tarball verified successfully"
 
