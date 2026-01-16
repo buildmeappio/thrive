@@ -12,12 +12,12 @@
     "seed": "prisma db seed",
     "docker:dev:up": "cross-env NODE_ENV=development docker-compose --env-file .env -f docker-compose.yaml up -d",
     "docker:dev:down": "cross-env NODE_ENV=development docker-compose --env-file .env -f docker-compose.yaml down -v",
-    "docker:staging:up": "cross-env NODE_ENV=staging docker-compose --env-file .env -f docker-compose.staging.yaml up -d",
-    "docker:staging:down": "cross-env NODE_ENV=staging docker-compose --env-file .env -f docker-compose.staging.yaml down -v",
-    "docker:prod:up": "cross-env NODE_ENV=production docker-compose --env-file .env -f docker-compose.prod.yaml up -d",
-    "docker:prod:down": "cross-env NODE_ENV=production docker-compose --env-file .env -f docker-compose.prod.yaml down -v",
-    "docker:local:up": "cross-env NODE_ENV=local docker-compose --env-file .env -f docker-compose.local.yaml up -d",
-    "docker:local:down": "cross-env NODE_ENV=local docker-compose --env-file .env -f docker-compose.local.yaml down -v",
+    "docker:staging:up": "cross-env NODE_ENV=staging docker-compose --env-file .env -f docker-compose.yaml up -d",
+    "docker:staging:down": "cross-env NODE_ENV=staging docker-compose --env-file .env -f docker-compose.yaml down -v",
+    "docker:prod:up": "cross-env NODE_ENV=production docker-compose --env-file .env -f docker-compose.yaml up -d",
+    "docker:prod:down": "cross-env NODE_ENV=production docker-compose --env-file .env -f docker-compose.yaml down -v",
+    "docker:local:up": "cross-env NODE_ENV=local docker-compose --env-file .env -f docker-compose.yaml up -d",
+    "docker:local:down": "cross-env NODE_ENV=local docker-compose --env-file .env -f docker-compose.yaml down -v",
     "db:sync": "bash scripts/db-sync.sh"
   },
   "repository": {
