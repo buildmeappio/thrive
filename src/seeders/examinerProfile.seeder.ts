@@ -236,27 +236,17 @@ class ExaminerProfileSeeder {
         // Create examiner profile
         const examinerProfile = await this.db.examinerProfile.create({
           data: {
-            account: {
-              connect: { id: account.id },
-            },
+            accountId: account.id,
             provinceOfResidence: examinerData.provinceOfResidence,
             mailingAddress: examinerData.mailingAddress,
             specialties: examinerData.specialties,
             licenseNumber: examinerData.licenseNumber,
             provinceOfLicensure: examinerData.provinceOfLicensure,
             licenseExpiryDate: examinerData.licenseExpiryDate,
-            medicalLicenseDocument: {
-              connect: { id: medicalLicenseDoc.id },
-            },
-            resumeDocument: {
-              connect: { id: resumeDoc.id },
-            },
-            ndaDocument: {
-              connect: { id: ndaDoc.id },
-            },
-            insuranceDocument: {
-              connect: { id: insuranceDoc.id },
-            },
+            medicalLicenseDocumentIds: [medicalLicenseDoc.id],
+            resumeDocumentId: resumeDoc.id,
+            NdaDocumentId: ndaDoc.id,
+            insuranceDocumentId: insuranceDoc.id,
             yearsOfIMEExperience: examinerData.yearsOfIMEExperience,
             isForensicAssessmentTrained:
               examinerData.isForensicAssessmentTrained,
