@@ -106,9 +106,31 @@ jobs:
             if [ -f .env ]; then
               rm .env
             fi
+
+            # Map environment name to proper format
+            ENV_NAME="${{ needs.determine-environment.outputs.environment }}"
+            case "$ENV_NAME" in
+              "develop")
+                ENVIRONMENT="development"
+                ;;
+              "prod")
+                ENVIRONMENT="production"
+                ;;
+              "staging")
+                ENVIRONMENT="staging"
+                ;;
+              "qa")
+                ENVIRONMENT="qa"
+                ;;
+              *)
+                ENVIRONMENT="development"
+                ;;
+            esac
+
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
             echo "DATABASE_SSL_REQUIRED=false" >> .env
             echo "NODE_ENV=production" >> .env
+            echo "ENVIRONMENT=$ENVIRONMENT" >> .env
             echo "PG_EXTERNAL_PORT=${{ secrets.PG_EXTERNAL_PORT }}" >> .env
             echo "PG_USER=${{ secrets.PG_USER }}" >> .env
             echo "PG_PASSWORD=${{ secrets.PG_PASSWORD }}" >> .env
@@ -116,7 +138,7 @@ jobs:
             echo "DB_USER=${{ secrets.PG_USER }}" >> .env
             echo "DB_PASSWORD=${{ secrets.PG_PASSWORD }}" >> .env
             echo "DB_NAME=${{ secrets.PG_DB }}" >> .env
-            echo "✅ Created .env file with DATABASE_URL"
+            echo "✅ Created .env file with DATABASE_URL and ENVIRONMENT=$ENVIRONMENT"
 
       - name: Run Migrations on EC2
         uses: appleboy/ssh-action@v1.0.3
