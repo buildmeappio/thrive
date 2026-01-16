@@ -65,6 +65,18 @@ jobs:
           npm run db:generate
           npm run build
 
+      - name: Verify .next directory exists
+        if: github.event_name != 'pull_request'
+        run: |
+          if [ ! -d ".next" ]; then
+            echo "❌ Error: .next directory not found after build"
+            exit 1
+          fi
+          echo "✅ .next directory found"
+          ls -la .next | head -10
+          echo "📊 .next directory size:"
+          du -sh .next
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         if: github.event_name != 'pull_request'
@@ -113,7 +125,18 @@ jobs:
       - name: Create deployment package
         run: |
           cd artifacts
+          echo "📋 Verifying artifacts before packaging:"
+          ls -la
+          if [ -d ".next" ]; then
+            echo "✅ .next directory found in artifacts"
+            ls -la .next | head -10
+          else
+            echo "❌ ERROR: .next directory NOT found in artifacts!"
+            exit 1
+          fi
           tar -czf ../deployment.tar.gz .
+          echo "📦 Created deployment.tar.gz"
+          tar -tzf ../deployment.tar.gz | grep -E "^\.next" | head -10
           cd ..
 
       - name: Copy deployment package to EC2
@@ -153,11 +176,33 @@ jobs:
             # Extract deployment package
             echo "📦 Extracting deployment artifacts..."
             if [ -f deployment.tar.gz ]; then
-              tar -xzf deployment.tar.gz
+              # List contents before extraction for debugging
+              echo "📋 Contents of deployment.tar.gz:"
+              tar -tzf deployment.tar.gz | head -20
+              
+              # Extract with verbose output
+              tar -xzf deployment.tar.gz -v 2>&1 | head -20
               rm -f deployment.tar.gz
+              
+              # Verify .next directory exists
+              if [ -d ".next" ]; then
+                echo "✅ .next directory found after extraction"
+                ls -la .next | head -10
+              else
+                echo "❌ ERROR: .next directory NOT found after extraction!"
+                echo "📁 Current directory contents:"
+                ls -la
+                exit 1
+              fi
+              
               echo "✅ Artifacts extracted successfully"
             else
               echo "⚠️ deployment.tar.gz not found, continuing with existing files"
+              # Verify .next exists even if tarball wasn't found
+              if [ ! -d ".next" ]; then
+                echo "❌ ERROR: .next directory NOT found and no deployment.tar.gz!"
+                exit 1
+              fi
             fi
 
             # Install jq if not available
