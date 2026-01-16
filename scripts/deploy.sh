@@ -26,6 +26,7 @@ fi
 APP_NAME="app"
 ECOSYSTEM_FILE="ecosystem.config.js"
 ENV_FILE=".env"
+SKIP_BUILD=false
 
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -41,6 +42,10 @@ while [[ $# -gt 0 ]]; do
     --env)
       ENV_FILE="$2"
       shift; shift
+      ;;
+    --skip-build)
+      SKIP_BUILD=true
+      shift
       ;;
     *)
       echo "❌ Unknown option: $1"
@@ -71,11 +76,15 @@ echo "⚙️ Ecosystem Config: $ECOSYSTEM_FILE"
 echo "🌍 Environment File: $ENV_FILE"
 echo "🌿 Git Branch: $BRANCH"
 
-# 4. Checkout branch & pull latest
-echo "📥 Pulling latest code..."
-git fetch origin
-git checkout $BRANCH
-git pull origin $BRANCH
+# 4. Checkout branch & pull latest (skip if using pre-built artifacts)
+if [[ "$SKIP_BUILD" == "true" ]]; then
+  echo "⏭️ Skipping git operations (using pre-built artifacts)..."
+else
+  echo "📥 Pulling latest code..."
+  git fetch origin
+  git checkout $BRANCH
+  git pull origin $BRANCH
+fi
 
 resolve_env_file() {
   if [[ -f "$ENV_FILE" ]]; then
@@ -129,14 +138,19 @@ resolve_env_file() {
 resolve_env_file
 
 # 6. Install and build
-echo "📦 Installing dependencies..."
-npm install
+if [[ "$SKIP_BUILD" == "true" ]]; then
+  echo "⏭️ Skipping install, Prisma generation, and build (using pre-built artifacts)..."
+  echo "ℹ️  Assuming dependencies and Prisma client are already installed/generated"
+else
+  echo "📦 Installing dependencies..."
+  npm install
 
-echo "🔧 Generating Prisma client..."
-npm run db:generate
+  echo "🔧 Generating Prisma client..."
+  npm run db:generate
 
-echo "🛠️ Building project..."
-npm run build
+  echo "🛠️ Building project..."
+  npm run build
+fi
 
 # 7. Manage PM2 process
 echo "🔍 Checking existing PM2 process..."
