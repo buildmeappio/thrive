@@ -7,6 +7,29 @@ set -e
 # Usage: ./deploy-production-ec2.sh <deploy_path> <ecr_registry> <ecr_repository> <image_tag> <ecr_password> <aws_region>
 # -------------------------------
 
+# Set HOME and USER if not set (SSM might not have it)
+# Detect actual user running the script
+if [[ -z "$HOME" ]]; then
+  if [[ -d "/home/ubuntu" ]]; then
+    export HOME="/home/ubuntu"
+    export USER="ubuntu"
+  elif [[ -d "/root" ]]; then
+    export HOME="/root"
+    export USER="root"
+  else
+    export HOME=$(eval echo ~$(whoami))
+    export USER=$(whoami)
+  fi
+fi
+
+# Ensure USER is set
+if [[ -z "$USER" ]]; then
+  export USER=$(whoami)
+fi
+
+echo "Running as user: $USER"
+echo "HOME directory: $HOME"
+
 # Color codes
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -36,11 +59,19 @@ echo "Image Tag: $IMAGE_TAG"
 echo "AWS Region: $AWS_REGION"
 echo ""
 
-# Load nvm
-export NVM_DIR="$HOME/.nvm"
+# Load nvm or install if not found
+export NVM_DIR="${HOME}/.nvm"
+if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+  echo -e "${YELLOW}📦 NVM not found. Installing NVM...${NC}"
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+  export NVM_DIR="$HOME/.nvm"
+fi
+
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Verify nvm is available
 if ! command -v nvm &> /dev/null; then
-  echo -e "${RED}❌ NVM not found. Please install NVM first.${NC}"
+  echo -e "${RED}❌ Failed to install/load NVM${NC}"
   exit 1
 fi
 
@@ -96,7 +127,17 @@ if [[ ! -d ".git" ]]; then
   exit 1
 fi
 
-git fetch origin
+# Fix git ownership and lock files
+git config --global --add safe.directory "$DEPLOY_PATH" || true
+
+# Set up SSH for git (use deploy key if available)
+SSH_KEY_PATH="/home/ubuntu/.ssh/id_ed25519_admin-web"
+if [[ -f "$SSH_KEY_PATH" ]]; then
+  chmod 600 "$SSH_KEY_PATH" 2>/dev/null || true
+  export GIT_SSH_COMMAND="ssh -i $SSH_KEY_PATH -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+fi
+
+# Simple git operations
 git checkout main
 git pull origin main
 echo -e "${GREEN}✅ Code updated${NC}"
