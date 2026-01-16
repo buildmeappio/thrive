@@ -38,7 +38,7 @@ const SideBar = ({ isMobileOpen = false, onMobileClose }: SideBarProps) => {
   const [selectedBtn, setSelectedBtn] = useState<number | null>(null);
   const { isCollapsed, toggleCollapse } = useSidebar();
   const { data: session } = useSession();
-  const isOrgStatusPending = session?.user?.organizationStatus === 'PENDING';
+  const isOrgStatusPending = session?.user?.organizationStatus === 'pending';
 
   const isValidSidebarIndex = (index: string | null) => {
     return index && !isNaN(Number(index)) && Number(index) >= 0;

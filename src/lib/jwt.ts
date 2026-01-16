@@ -7,6 +7,7 @@ const jwtConfig = {
   password: env.JWT_FORGET_PASSWORD_TOKEN_SECRET,
   claimant_approve: env.JWT_CLAIMANT_APPROVE_TOKEN_SECRET,
   org_info_request: env.JWT_ORGANIZATION_INFO_REQUEST_TOKEN_SECRET,
+  org_invitation: env.JWT_ORGANIZATION_INVITATION_TOKEN_SECRET,
 } as const;
 
 const getJwtSecret = (name: keyof typeof jwtConfig) => {
@@ -104,6 +105,37 @@ export function verifyOrgInfoRequestToken(token: string): JwtPayload | null {
   try {
     const orgInfoRequestSecret = getJwtSecret('org_info_request');
     return jwt.verify(token, orgInfoRequestSecret) as JwtPayload;
+  } catch {
+    return null;
+  }
+}
+
+// ----- Organization Invitation Tokens -----
+export function verifyOrganizationInvitationToken(token: string): {
+  organizationId: string;
+  email: string;
+  invitationId: string;
+  organizationRoleId: string;
+} | null {
+  try {
+    const orgInvitationSecret = getJwtSecret('org_invitation');
+    const decoded = jwt.verify(token, orgInvitationSecret) as JwtPayload;
+
+    if (
+      !decoded.organizationId ||
+      !decoded.email ||
+      !decoded.invitationId ||
+      !decoded.organizationRoleId
+    ) {
+      return null;
+    }
+
+    return {
+      organizationId: decoded.organizationId as string,
+      email: decoded.email as string,
+      invitationId: decoded.invitationId as string,
+      organizationRoleId: decoded.organizationRoleId as string,
+    };
   } catch {
     return null;
   }

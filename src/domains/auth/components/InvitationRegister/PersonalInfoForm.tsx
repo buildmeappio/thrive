@@ -1,106 +1,101 @@
-// Step 2
+'use client';
+
 import { useState } from 'react';
 import { Formik, Form, type FormikHelpers } from 'formik';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui';
-import { Mail, User, Briefcase } from 'lucide-react';
+import { User } from 'lucide-react';
 import { Dropdown } from '@/components/Dropdown';
 import BackButton from '@/components/BackButton';
 import ContinueButton from '@/components/ContinueButton';
 import { type OrganizationRegStepProps } from '@/types/registerStepProps';
 import { useRegistrationStore } from '@/store/useRegistration';
-import { checkUserByEmail } from '../../actions';
-import { OfficeDetailsInitialValues, OfficeDetailsSchema } from '../../schemas/register';
+import { PersonalInfoInitialValues, PersonalInfoSchema } from '../../schemas/invitation';
 import { useReactiveValidation } from '@/hooks/useReactiveValidation';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import useRouter from '@/hooks/useRouter';
-import { URLS } from '@/constants/routes';
 import PhoneInput from '@/components/PhoneNumber';
 import { toast } from 'sonner';
 import log from '@/utils/log';
+
+interface InvitationData {
+  invitationId: string;
+  organizationId: string;
+  organizationName: string;
+  email: string;
+  role: string;
+  expiresAt: Date;
+}
 
 interface DepartmentOption {
   value: string;
   label: string;
 }
 
-type OfficeDetailProps = OrganizationRegStepProps & {
+type PersonalInfoFormProps = OrganizationRegStepProps & {
+  token: string;
+  invitationData: InvitationData;
   departmentTypes: DepartmentOption[];
-  isUpdateMode?: boolean;
 };
 
-const OfficeDetails: React.FC<OfficeDetailProps> = ({
+const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
   onNext,
   onPrevious,
   currentStep,
   totalSteps,
+  token,
+  invitationData,
   departmentTypes: departmentOptions,
-  isUpdateMode = false,
 }) => {
   const { setData, data, _hasHydrated } = useRegistrationStore();
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const {
     attemptedSubmit,
     handleSubmitWithValidation,
     createReactiveChangeHandler,
     createReactiveBlurHandler,
     shouldShowError,
-  } = useReactiveValidation<typeof OfficeDetailsInitialValues>();
-  const router = useRouter();
+  } = useReactiveValidation<typeof PersonalInfoInitialValues>();
 
   if (!_hasHydrated) {
     return null;
   }
 
-  // Check if all required fields are filled
-  const areAllRequiredFieldsFilled = (values: typeof OfficeDetailsInitialValues): boolean => {
+  // Initialize with email from invitation
+  const initialValues = {
+    ...PersonalInfoInitialValues,
+    ...(data.step2 && {
+      firstName: data.step2.firstName || '',
+      lastName: data.step2.lastName || '',
+      phoneNumber: data.step2.phoneNumber || '',
+      department: data.step2.department || '',
+    }),
+  };
+
+  const areAllRequiredFieldsFilled = (values: typeof PersonalInfoInitialValues): boolean => {
     return !!(
       values.firstName?.trim() &&
       values.lastName?.trim() &&
       values.phoneNumber?.trim() &&
-      values.officialEmailAddress?.trim() &&
-      values.jobTitle?.trim() &&
       values.department
     );
   };
 
   const handleSubmit = async (
-    values: typeof OfficeDetailsInitialValues,
-    actions: FormikHelpers<typeof OfficeDetailsInitialValues>
+    values: typeof PersonalInfoInitialValues,
+    actions: FormikHelpers<typeof PersonalInfoInitialValues>
   ) => {
     await handleSubmitWithValidation(values, actions, async (vals, helpers) => {
       try {
-        // Skip email check in update mode since email cannot be changed
-        if (!isUpdateMode) {
-          log.debug('Checking email:', vals.officialEmailAddress);
-          const result = await checkUserByEmail(vals.officialEmailAddress);
-
-          if (!result.success) {
-            throw new Error(result.error);
-          }
-
-          if (result.data) {
-            setShowLoginPrompt(true);
-            helpers.setSubmitting(false);
-            return;
-          }
-        }
-
-        setData('step2', vals);
+        // Store data with email from invitation
+        setData('step2', {
+          ...vals,
+          officialEmailAddress: invitationData.email,
+        });
 
         if (onNext) {
           onNext();
         }
       } catch (error) {
         log.error('Error in handleSubmit:', error);
-        let message = 'An error occurred while submitting office details';
+        let message = 'An error occurred while submitting personal information';
         if (error instanceof Error) {
           message = error.message;
         } else if (typeof error === 'string') {
@@ -114,18 +109,14 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
 
   return (
     <div
-      className="mt-4 w-full rounded-[20px] bg-white px-[10px] pb-8 md:mt-6 md:min-h-[450px] md:w-[970px] md:rounded-[30px] md:px-[75px] md:pb-4"
+      className="mt-4 w-full rounded-[20px] bg-white px-[10px] pb-4 md:mt-6 md:w-[970px] md:rounded-[30px] md:px-[75px] md:pb-6"
       style={{
         boxShadow: '0px 0px 36.35px 0px #00000008',
       }}
     >
       <Formik
-        initialValues={
-          data.step2
-            ? { ...OfficeDetailsInitialValues, ...data.step2, jobTitle: data.step2.jobTitle ?? '' }
-            : OfficeDetailsInitialValues
-        }
-        validationSchema={OfficeDetailsSchema}
+        initialValues={initialValues}
+        validationSchema={PersonalInfoSchema}
         onSubmit={handleSubmit}
         validateOnChange={false}
         validateOnBlur={false}
@@ -146,7 +137,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
 
           return (
             <Form noValidate>
-              <div className="space-y-6 px-4 pb-4 md:px-0 md:pb-6">
+              <div className="space-y-6 px-4 md:px-0">
                 <div className="mt-6 grid grid-cols-1 gap-x-14 gap-y-5 md:mt-8 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="firstName" className="text-sm text-black">
@@ -214,64 +205,12 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="officialEmailAddress" className="text-sm text-black">
-                      Official Email Address<span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      disabled={isSubmitting || isUpdateMode}
-                      name="officialEmailAddress"
-                      icon={Mail}
-                      type="email"
-                      placeholder="Enter your email address"
-                      value={values.officialEmailAddress}
-                      onChange={createReactiveChangeHandler(
-                        'officialEmailAddress',
-                        handleChange,
-                        formik
-                      )}
-                      onBlur={createReactiveBlurHandler(
-                        'officialEmailAddress',
-                        () => setFieldTouched('officialEmailAddress', true),
-                        formik
-                      )}
-                      className={isUpdateMode ? 'cursor-not-allowed bg-gray-100' : ''}
-                    />
-                    {shouldShowError('officialEmailAddress', touched, errors) &&
-                      errors.officialEmailAddress && (
-                        <p className="text-xs text-red-500">{errors.officialEmailAddress}</p>
-                      )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="jobTitle" className="text-sm text-black">
-                      Job Title<span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      disabled={isSubmitting}
-                      name="jobTitle"
-                      icon={Briefcase}
-                      placeholder="Enter your job title"
-                      value={values.jobTitle}
-                      onChange={createReactiveChangeHandler('jobTitle', handleChange, formik)}
-                      onBlur={createReactiveBlurHandler(
-                        'jobTitle',
-                        () => setFieldTouched('jobTitle', true),
-                        formik
-                      )}
-                    />
-                    {shouldShowError('jobTitle', touched, errors) && errors.jobTitle && (
-                      <p className="text-xs text-red-500">{errors.jobTitle}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
                     <Dropdown
                       id="department"
                       label="Department"
                       value={values.department}
                       onChange={async (value: string) => {
                         setFieldValue('department', value);
-                        // Validate in real-time after attempted submit
                         if (attemptedSubmit) {
                           setFieldTouched('department', true);
                           const error = await validateField('department');
@@ -295,14 +234,7 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
                 </div>
               </div>
 
-              <div className="mt-4 mb-4 flex flex-row justify-between gap-4 px-4 md:mb-0 md:px-0">
-                <BackButton
-                  onClick={onPrevious}
-                  disabled={currentStep === 1}
-                  borderColor="#000080"
-                  iconColor="#000080"
-                  isSubmitting={isSubmitting}
-                />
+              <div className="mt-6 flex flex-row justify-end gap-4 px-4 md:px-0">
                 <ContinueButton
                   isSubmitting={isSubmitting}
                   isLastStep={currentStep === totalSteps}
@@ -314,37 +246,8 @@ const OfficeDetails: React.FC<OfficeDetailProps> = ({
           );
         }}
       </Formik>
-      <Dialog open={showLoginPrompt} onOpenChange={setShowLoginPrompt}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Email Already Exists</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-gray-600">
-            This email is already registered. Would you like to log in instead?
-          </p>
-          <DialogFooter className="mt-4 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowLoginPrompt(false)}
-              className="cursor-pointer rounded-lg"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={e => {
-                e.preventDefault();
-                setShowLoginPrompt(false);
-                router.push(URLS.LOGIN);
-              }}
-              className="cursor-pointer rounded-lg bg-[#000093] hover:bg-[#000093]"
-            >
-              Go to Login
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
 
-export default OfficeDetails;
+export default PersonalInfoForm;

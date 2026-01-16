@@ -24,3 +24,19 @@ export const getOrganizationTypes = async () => {
   const result = await organizationHandlers.getOrganizationTypes();
   return result;
 };
+
+export const verifyInvitationToken = async (token: string) => {
+  return await organizationHandlers.verifyInvitationToken(token);
+};
+
+export const acceptInvitation = async (data: {
+  token: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  jobTitle?: string;
+  departmentId?: string;
+}) => {
+  return await organizationHandlers.acceptInvitation(data);
+};
