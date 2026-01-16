@@ -65,7 +65,28 @@ jobs:
           npm run db:generate
           npm run build
 
-  build-image:
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: build-artifacts
+          path: |
+            .next/
+            public/
+            prisma/
+            package.json
+            package-lock.json
+            next.config.ts
+            tailwind.config.js
+            postcss.config.mjs
+            ecosystem.config.js
+            scripts/
+            templates/
+            tsconfig.json
+            prisma.config.ts
+          retention-days: 1
+
+  deploy:
     runs-on: ubuntu-latest
     needs: ci
     if: github.event_name != 'pull_request'
@@ -84,67 +105,29 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Create .env file from AWS Secrets Manager
-        run: |
-          # Install jq if not available
-          sudo apt-get update && sudo apt-get install -y jq || true
-
-          # Fetch secrets from AWS Secrets Manager
-          SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/shared --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
-          ORGANIZATION_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/organization --region ${{ secrets.AWS_REGION }} --query SecretString --output text)
-
-          # Merge secrets (examiner overrides shared) and convert JSON to .env format
-          jq -r -n --argjson shared "$SHARED_SECRET" --argjson organization "$ORGANIZATION_SECRET" '$shared * $organization | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
-
-      - name: Build and push Docker image to ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker buildx build \
-            --platform linux/amd64 \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
-            --push \
-            .
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-image
-    if: github.event_name != 'pull_request'
-    environment: dev
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          name: build-artifacts
+          path: ./artifacts
 
-      - name: Get ECR login token
-        id: ecr-login
+      - name: Create deployment package
         run: |
-          ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
-          ECR_PASSWORD=$(aws ecr get-login-password --region ${{ secrets.AWS_REGION }})
-          echo "::add-mask::$ECR_PASSWORD"
-          echo "password=$ECR_PASSWORD" >> $GITHUB_OUTPUT
-          echo "registry=$ECR_REGISTRY" >> $GITHUB_OUTPUT
+          cd artifacts
+          tar -czf ../deployment.tar.gz .
+          cd ..
 
-      - name: Deploy Docker image on EC2 using docker-compose
+      - name: Copy deployment package to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          source: "deployment.tar.gz"
+          target: "${{ secrets.EC2_DEPLOY_PATH }}/"
+
+      - name: Run deployment script on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -152,13 +135,10 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT || 22 }}
           script: |
-            # Set deployment path and ECR variables
+            # Set deployment path and variables
             DEPLOY_PATH="${{ secrets.EC2_DEPLOY_PATH }}"
-            ECR_REGISTRY="${{ steps.ecr-login.outputs.registry }}"
-            ECR_REPOSITORY="${{ secrets.ECR_REPOSITORY_NAME }}"
-            IMAGE_TAG="${{ github.sha }}"
             AWS_REGION="${{ secrets.AWS_REGION }}"
-            ECR_PASSWORD="${{ steps.ecr-login.outputs.password }}"
+            APP_NAME="thrive-organization"
 
             # Load nvm and use Node.js version 22
             export NVM_DIR="$HOME/.nvm"
@@ -168,11 +148,18 @@ jobs:
             # Create directory if it doesn't exist
             mkdir -p $DEPLOY_PATH
 
-            # Login to Amazon ECR using the token from GitHub Actions
-            echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin $ECR_REGISTRY
+            # Change to the deployment directory
+            cd $DEPLOY_PATH
 
-            # Pull the latest image from ECR
-            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            # Extract deployment package
+            echo "📦 Extracting deployment artifacts..."
+            if [ -f deployment.tar.gz ]; then
+              tar -xzf deployment.tar.gz
+              rm -f deployment.tar.gz
+              echo "✅ Artifacts extracted successfully"
+            else
+              echo "⚠️ deployment.tar.gz not found, continuing with existing files"
+            fi
 
             # Install jq if not available
             sudo apt-get update && sudo apt-get install -y jq || true
@@ -181,43 +168,40 @@ jobs:
             SHARED_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/shared --region $AWS_REGION --query SecretString --output text)
             ORGANIZATION_SECRET=$(aws secretsmanager get-secret-value --secret-id dev/organization --region $AWS_REGION --query SecretString --output text)
 
-            # Merge secrets (examiner overrides shared) and convert JSON to .env format
-            jq -r -n --argjson shared "$SHARED_SECRET" --argjson organization "$ORGANIZATION_SECRET" '$shared * $organization | to_entries[] | "\(.key)=\(.value | tojson)"' | sudo tee $DEPLOY_PATH/.env > /dev/null
+            # Merge secrets (organization overrides shared) and convert JSON to .env format
+            jq -r -n --argjson shared "$SHARED_SECRET" --argjson organization "$ORGANIZATION_SECRET" '$shared * $organization | to_entries[] | "\(.key)=\(.value | tojson)"' > .env
 
-            # Change to the deployment directory
-            cd $DEPLOY_PATH
-
-            git checkout develop
-            git pull origin develop
-
-            # Npm ci
+            # Install production dependencies
+            echo "📦 Installing dependencies..."
             npm ci --legacy-peer-deps --include=optional
 
-            # Export ECR variables for docker-compose to use (full image path)
-            export ECR_REGISTRY=$ECR_REGISTRY/$ECR_REPOSITORY
-            export IMAGE_TAG=$IMAGE_TAG
+            # Generate Prisma client
+            echo "🔧 Generating Prisma client..."
+            npm run db:generate
 
-            # Find the currently running container image before stopping
-            OLD_IMAGE=$(docker ps --filter "ancestor=$ECR_REGISTRY:$IMAGE_TAG" --format "{{.Image}}")
-            if [ -z "$OLD_IMAGE" ]; then
-              # fallback: get the image for the current service(s), might be the previous sha
-              OLD_IMAGE=$(docker ps --filter "name=$(basename $DEPLOY_PATH)" --format "{{.Image}}")
-            fi
+            # Make deploy script executable
+            chmod +x scripts/deploy.sh || true
 
-            # Stop and remove existing containers using docker-compose
-            docker-compose down
+            # Run deployment script with skip-build flag
+            echo "🚀 Running deployment script..."
+            ./scripts/deploy.sh dev --app $APP_NAME --config ecosystem.config.js --env .env --skip-build || {
+              # Fallback: Manual PM2 deployment if script fails
+              echo "⚠️ Deploy script failed, using manual PM2 deployment..."
+              
+              # Stop existing PM2 process if running
+              if pm2 describe "$APP_NAME" > /dev/null 2>&1; then
+                echo "🛑 Stopping existing PM2 process..."
+                pm2 stop "$APP_NAME"
+                pm2 delete "$APP_NAME"
+              fi
 
-            # Start using docker-compose (will use the ECR image from docker-compose.yml)
-            docker-compose up -d
+              # Start with PM2
+              echo "🚀 Starting PM2..."
+              pm2 start ecosystem.config.js --name "$APP_NAME"
+              pm2 save
+            }
 
-            # Show running containers
-            docker ps
-            docker-compose ps
-
-            # Remove the previously running image, if any, and if the image is different from the currently deployed one
-            if [ -n "$OLD_IMAGE" ] && [ "$OLD_IMAGE" != "$ECR_REGISTRY:$IMAGE_TAG" ]; then
-              echo "Removing old Docker image $OLD_IMAGE"
-              docker rmi "$OLD_IMAGE" || true
-            else
-              echo "No previous image to remove or previous is same as current."
-            fi
+            # Show PM2 status
+            echo "📊 PM2 Status:"
+            pm2 list
+            pm2 describe "$APP_NAME" || true

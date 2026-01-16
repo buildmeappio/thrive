@@ -26,6 +26,7 @@ fi
 APP_NAME="app"
 ECOSYSTEM_FILE="ecosystem.config.js"
 ENV_FILE=".env"
+SKIP_BUILD=false
 
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -41,6 +42,10 @@ while [[ $# -gt 0 ]]; do
     --env)
       ENV_FILE="$2"
       shift; shift
+      ;;
+    --skip-build)
+      SKIP_BUILD=true
+      shift
       ;;
     *)
       echo "❌ Unknown option: $1"
@@ -135,8 +140,12 @@ npm install
 echo "🔧 Generating Prisma client..."
 npm run db:generate
 
-echo "🛠️ Building project..."
-npm run build
+if [[ "$SKIP_BUILD" == "true" ]]; then
+  echo "⏭️ Skipping build step (using pre-built artifacts)..."
+else
+  echo "🛠️ Building project..."
+  npm run build
+fi
 
 # 7. Manage PM2 process
 echo "🔍 Checking existing PM2 process..."
