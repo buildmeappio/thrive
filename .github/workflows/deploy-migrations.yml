@@ -11,11 +11,12 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Environment to deploy to"
+        description: "Environment to deploy to (select 'auto' to detect from branch)"
         required: true
         type: choice
         options:
-          - dev
+          - auto
+          - develop
           - qa
           - staging
           - prod
@@ -39,26 +40,48 @@ jobs:
       - name: Set Environment
         id: set-env
         run: |
+          # Function to determine environment from branch
+          determine_env_from_branch() {
+            if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+              echo "prod"
+            elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+              echo "staging"
+            elif [[ "${{ github.ref }}" == "refs/heads/qa" ]]; then
+              echo "qa"
+            elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+              echo "develop"
+            else
+              echo "develop"  # Default fallback
+            fi
+          }
+
           # Check if this is a manual workflow_dispatch run
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "environment=${{ inputs.environment }}" >> $GITHUB_OUTPUT
+            # Get environment from branch first
+            BRANCH_ENV=$(determine_env_from_branch)
+            
+            # Use input if provided and not "auto", otherwise use branch-based detection
+            if [[ "${{ inputs.environment }}" == "auto" ]]; then
+              ENV="$BRANCH_ENV"
+            else
+              ENV="${{ inputs.environment }}"
+              # Map legacy "dev" to "develop" if needed
+              if [[ "$ENV" == "dev" ]]; then
+                ENV="develop"
+              fi
+            fi
+            
+            echo "environment=$ENV" >> $GITHUB_OUTPUT
             echo "run_seeders=${{ inputs.run_seeders }}" >> $GITHUB_OUTPUT
           else
             # Automatic runs based on branch
-            if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-              echo "environment=prod" >> $GITHUB_OUTPUT
+            ENV=$(determine_env_from_branch)
+            echo "environment=$ENV" >> $GITHUB_OUTPUT
+            
+            # Set run_seeders based on environment
+            if [[ "$ENV" == "prod" ]]; then
               echo "run_seeders=false" >> $GITHUB_OUTPUT  # Never auto-run in prod
-            elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
-              echo "environment=staging" >> $GITHUB_OUTPUT
-              echo "run_seeders=true" >> $GITHUB_OUTPUT
-            elif [[ "${{ github.ref }}" == "refs/heads/qa" ]]; then
-              echo "environment=qa" >> $GITHUB_OUTPUT
-              echo "run_seeders=true" >> $GITHUB_OUTPUT
-            elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-              echo "environment=develop" >> $GITHUB_OUTPUT
-              echo "run_seeders=true" >> $GITHUB_OUTPUT
             else
-              echo "environment=develop" >> $GITHUB_OUTPUT
               echo "run_seeders=true" >> $GITHUB_OUTPUT
             fi
           fi
