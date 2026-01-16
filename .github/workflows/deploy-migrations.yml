@@ -102,6 +102,7 @@ jobs:
           script_stop: true
           script: |
             source ~/.bashrc 2>/dev/null || source ~/.bash_profile 2>/dev/null || source ~/.profile 2>/dev/null || true
+            set -e
             cd ${{ secrets.APP_DIR }}
             if [ -f .env ]; then
               rm .env
@@ -127,18 +128,26 @@ jobs:
                 ;;
             esac
 
-            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
-            echo "DATABASE_SSL_REQUIRED=false" >> .env
-            echo "NODE_ENV=production" >> .env
-            echo "ENVIRONMENT=$ENVIRONMENT" >> .env
-            echo "PG_EXTERNAL_PORT=${{ secrets.PG_EXTERNAL_PORT }}" >> .env
-            echo "PG_USER=${{ secrets.PG_USER }}" >> .env
-            echo "PG_PASSWORD=${{ secrets.PG_PASSWORD }}" >> .env
-            echo "PG_DB=${{ secrets.PG_DB }}" >> .env
-            echo "DB_USER=${{ secrets.PG_USER }}" >> .env
-            echo "DB_PASSWORD=${{ secrets.PG_PASSWORD }}" >> .env
-            echo "DB_NAME=${{ secrets.PG_DB }}" >> .env
-            echo "✅ Created .env file with DATABASE_URL and ENVIRONMENT=$ENVIRONMENT"
+            {
+              echo "DATABASE_URL=${{ secrets.DATABASE_URL }}"
+              echo "DATABASE_SSL_REQUIRED=false"
+              echo "NODE_ENV=production"
+              echo "ENVIRONMENT=$ENVIRONMENT"
+              echo "PG_EXTERNAL_PORT=${{ secrets.PG_EXTERNAL_PORT }}"
+              echo "PG_USER=${{ secrets.PG_USER }}"
+              echo "PG_PASSWORD=${{ secrets.PG_PASSWORD }}"
+              echo "PG_DB=${{ secrets.PG_DB }}"
+              echo "DB_USER=${{ secrets.PG_USER }}"
+              echo "DB_PASSWORD=${{ secrets.PG_PASSWORD }}"
+              echo "DB_NAME=${{ secrets.PG_DB }}"
+            } > .env
+
+            if [ -f .env ]; then
+              echo "Successfully created .env file with DATABASE_URL and ENVIRONMENT=$ENVIRONMENT"
+            else
+              echo "ERROR: Failed to create .env file"
+              exit 1
+            fi
 
       - name: Run Migrations on EC2
         uses: appleboy/ssh-action@v1.0.3
