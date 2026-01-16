@@ -252,9 +252,6 @@ jobs:
             fi
 
             echo "✅ Deployment tarball extracted successfully"
-                exit 1
-              fi
-            fi
 
             # Install jq if not available
             sudo apt-get update && sudo apt-get install -y jq || true
