@@ -257,7 +257,7 @@ export async function inviteSuperAdmin(
             {
               organizationName: organization.name,
               email: existingInvitation.email,
-              invitationLink: `${ENV.NEXT_PUBLIC_APP_URL || ""}/organization/register?token=${existingInvitation.token}`,
+              invitationLink: `${ENV.NEXT_PUBLIC_APP_URL || ""}/register?token=${existingInvitation.token}`,
               expiresAt: existingInvitation.expiresAt.toLocaleDateString(
                 "en-US",
                 {
@@ -373,11 +373,12 @@ export async function inviteSuperAdmin(
         },
       });
 
-      // Generate JWT token with invitation details
+      // Generate JWT token with invitation details (including role)
       const token = signOrganizationInvitationToken({
         organizationId,
         email: email.toLowerCase().trim(),
         invitationId: invitation.id,
+        organizationRoleId: superAdminRole.id,
       });
 
       // Update invitation with the token
@@ -400,7 +401,7 @@ export async function inviteSuperAdmin(
 
     // Send invitation email
     try {
-      const invitationLink = `${ENV.NEXT_PUBLIC_APP_URL || ""}/organization/register?token=${result.token}`;
+      const invitationLink = `${ENV.NEXT_PUBLIC_APP_URL || ""}/register?token=${result.token}`;
       const expiresAtFormatted = result.expiresAt.toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
@@ -436,6 +437,7 @@ export async function inviteSuperAdmin(
 
 /**
  * Resend an invitation email
+ * Deletes the previous invitation and creates a new one
  */
 export async function resendInvitation(invitationId: string) {
   try {
@@ -464,13 +466,79 @@ export async function resendInvitation(invitationId: string) {
       throw new HttpError(409, "Invitation has already been accepted");
     }
 
-    if (new Date() > invitation.expiresAt) {
-      throw new HttpError(410, "Invitation has expired");
+    // Get organizationRoleId from invitation, or fetch SUPER_ADMIN role if missing (for backward compatibility)
+    let organizationRoleId = invitation.organizationRoleId;
+    if (!organizationRoleId) {
+      const superAdminRole = await getSuperAdminRole();
+      organizationRoleId = superAdminRole.id;
     }
 
-    // Send invitation email
-    const invitationLink = `${ENV.NEXT_PUBLIC_APP_URL || ""}/organization/register?token=${invitation.token}`;
-    const expiresAtFormatted = invitation.expiresAt.toLocaleDateString(
+    // Calculate expiration date (7 days from now by default, or from env var)
+    const expiryString =
+      process.env.JWT_ORGANIZATION_INVITATION_TOKEN_EXPIRY || "7d";
+    let expiresInDays = 7; // Default
+
+    if (expiryString.endsWith("d")) {
+      expiresInDays = parseInt(expiryString.slice(0, -1)) || 7;
+    } else if (expiryString.endsWith("h")) {
+      expiresInDays =
+        Math.ceil(parseInt(expiryString.slice(0, -1)) || 168) / 24; // Convert hours to days
+    } else {
+      expiresInDays = parseInt(expiryString) || 7;
+    }
+
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+
+    // Delete previous invitation and create new one in a transaction
+    const newInvitation = await prisma.$transaction(async (tx) => {
+      // Hard delete the previous invitation to avoid unique constraint violation
+      await tx.organizationInvitation.delete({
+        where: { id: invitationId },
+      });
+
+      // Create new invitation record
+      const newInvitationRecord = await tx.organizationInvitation.create({
+        data: {
+          organizationId: invitation.organizationId,
+          email: invitation.email,
+          role: "SUPER_ADMIN", // Legacy field
+          organizationRoleId: organizationRoleId,
+          invitedBy: invitation.invitedBy,
+          token: "", // Temporary, will be updated
+          expiresAt,
+        },
+      });
+
+      // Generate JWT token with invitation details (including role)
+      const newToken = signOrganizationInvitationToken({
+        organizationId: invitation.organizationId,
+        email: invitation.email,
+        invitationId: newInvitationRecord.id,
+        organizationRoleId: organizationRoleId,
+      });
+
+      // Update invitation with the token
+      const updatedInvitation = await tx.organizationInvitation.update({
+        where: { id: newInvitationRecord.id },
+        data: { token: newToken },
+        include: {
+          organization: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          organizationRole: true,
+        },
+      });
+
+      return updatedInvitation;
+    });
+
+    // Send invitation email with new token
+    const invitationLink = `${ENV.NEXT_PUBLIC_APP_URL || ""}/organization/register?token=${newInvitation.token}`;
+    const expiresAtFormatted = newInvitation.expiresAt.toLocaleDateString(
       "en-US",
       {
         year: "numeric",
@@ -480,16 +548,16 @@ export async function resendInvitation(invitationId: string) {
     );
 
     const emailResult = await emailService.sendEmail(
-      `Superadmin Invitation - ${invitation.organization.name}`,
+      `Superadmin Invitation - ${newInvitation.organization.name}`,
       "organization-superadmin-invite.html",
       {
-        organizationName: invitation.organization.name,
-        email: invitation.email,
+        organizationName: newInvitation.organization.name,
+        email: newInvitation.email,
         invitationLink,
         expiresAt: expiresAtFormatted,
         year: new Date().getFullYear(),
       },
-      invitation.email,
+      newInvitation.email,
     );
 
     if (!emailResult.success) {
@@ -498,7 +566,7 @@ export async function resendInvitation(invitationId: string) {
       throw new HttpError(500, `Failed to send email: ${errorMsg}`);
     }
 
-    return invitation;
+    return newInvitation;
   } catch (error) {
     if (error instanceof HttpError) throw error;
     logger.error(error);

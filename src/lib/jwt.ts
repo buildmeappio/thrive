@@ -328,7 +328,7 @@ export function verifyExaminerScheduleInterviewToken(token: string): {
 
 /**
  * Sign a token for organization invitation (uses JWT_ORGANIZATION_INVITATION_TOKEN_SECRET)
- * @param payload - The data to encode in the token (should include organizationId, email, invitationId)
+ * @param payload - The data to encode in the token (should include organizationId, email, invitationId, organizationRoleId)
  * @param expiresIn - Token expiration time (defaults to JWT_ORGANIZATION_INVITATION_TOKEN_EXPIRY env var or "7d")
  * @returns Signed JWT token
  */
@@ -337,6 +337,7 @@ export function signOrganizationInvitationToken(
     organizationId: string;
     email: string;
     invitationId: string;
+    organizationRoleId: string;
   },
   expiresIn?: SignOptions["expiresIn"],
 ): string {
@@ -354,12 +355,13 @@ export function signOrganizationInvitationToken(
 /**
  * Verify and decode an organization invitation token (uses JWT_ORGANIZATION_INVITATION_TOKEN_SECRET)
  * @param token - The JWT token to verify
- * @returns Decoded token payload with organizationId, email, and invitationId
+ * @returns Decoded token payload with organizationId, email, invitationId, and organizationRoleId
  */
 export function verifyOrganizationInvitationToken(token: string): {
   organizationId: string;
   email: string;
   invitationId: string;
+  organizationRoleId: string;
 } {
   try {
     const JWT_ORGANIZATION_INVITATION_TOKEN_SECRET = getJwtSecret(
@@ -370,7 +372,12 @@ export function verifyOrganizationInvitationToken(token: string): {
       JWT_ORGANIZATION_INVITATION_TOKEN_SECRET,
     ) as jwt.JwtPayload;
 
-    if (!decoded.organizationId || !decoded.email || !decoded.invitationId) {
+    if (
+      !decoded.organizationId ||
+      !decoded.email ||
+      !decoded.invitationId ||
+      !decoded.organizationRoleId
+    ) {
       throw new Error("Invalid organization invitation token payload");
     }
 
@@ -378,6 +385,7 @@ export function verifyOrganizationInvitationToken(token: string): {
       organizationId: decoded.organizationId as string,
       email: decoded.email as string,
       invitationId: decoded.invitationId as string,
+      organizationRoleId: decoded.organizationRoleId as string,
     };
   } catch {
     throw new Error("Invalid or expired organization invitation token");

@@ -311,11 +311,6 @@ const OrganizationDetail = ({ organization }: OrganizationDetailProps) => {
                     }
                     type="text"
                   />
-                  <div className="mt-2">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      SUPER_ADMIN
-                    </span>
-                  </div>
                 </Section>
               )}
 
