@@ -37,7 +37,7 @@ export const feeStructureSchema = z.object({
     .min(1, "Name is required")
     .trim()
     .refine((val) => val.length >= 2, "Name must be at least 2 characters")
-    .refine((val) => val.length <= 255, "Name must be less than 255 characters")
+    .refine((val) => val.length <= 100, "Name must not exceed 100 characters")
     .refine(
       (val) => /^[a-zA-Z0-9\s\-'.,()&]+$/.test(val),
       "Name can only contain letters, numbers, spaces, hyphens, apostrophes, commas, periods, parentheses, and ampersands",

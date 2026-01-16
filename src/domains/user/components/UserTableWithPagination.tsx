@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
+import { matchesSearch } from "@/utils/search";
 import {
   flexRender,
   getCoreRowModel,
@@ -220,12 +221,11 @@ export const useUserTable = (props: useUserTableOptions) => {
     let filtered = data;
 
     // Filter by search query
-    const term = searchQuery.trim().toLowerCase();
-    if (term) {
+    if (searchQuery.trim()) {
       filtered = filtered.filter((user) =>
         [user.firstName, user.lastName, user.email]
           .filter(Boolean)
-          .some((value) => value.toLowerCase().includes(term)),
+          .some((value) => matchesSearch(searchQuery, value)),
       );
     }
 

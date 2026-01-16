@@ -3,6 +3,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { CaseData } from "../types/CaseData";
+import { matchesSearch } from "@/utils/search";
 import {
   flexRender,
   getCoreRowModel,
@@ -94,14 +95,13 @@ export default function CaseTable({
   ];
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
     return data.filter((d) => {
       const statusOk = applied.status === "ALL" || d.status === applied.status;
       const typeOk = applied.type === "ALL" || d.caseType === applied.type;
       const urgentOk =
         applied.urgency === "ALL" || d.urgencyLevel === applied.urgency;
 
-      if (!q) return statusOk && typeOk && urgentOk;
+      if (!query.trim()) return statusOk && typeOk && urgentOk;
 
       const hit = [
         d.number,
@@ -115,7 +115,7 @@ export default function CaseTable({
         new Date(d.submittedAt).toLocaleString(),
       ]
         .filter(Boolean)
-        .some((v) => String(v).toLowerCase().includes(q));
+        .some((v) => matchesSearch(query, v));
 
       return statusOk && typeOk && urgentOk && hit;
     });

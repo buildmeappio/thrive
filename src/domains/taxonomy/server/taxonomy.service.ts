@@ -53,6 +53,11 @@ const parseValueAsNumber = (value: string | number): number => {
   }
 };
 
+// Helper function to check if value contains at least one alphanumeric character
+const hasAlphanumeric = (value: string): boolean => {
+  return /[a-zA-Z0-9]/.test(value);
+};
+
 // Helper function to validate input data for empty or whitespace-only values
 const validateTaxonomyInput = (
   data: CreateTaxonomyInput | UpdateTaxonomyInput,
@@ -67,6 +72,21 @@ const validateTaxonomyInput = (
           `${key.charAt(0).toUpperCase() + key.slice(1)} cannot be empty or contain only spaces`,
         );
       }
+
+      // Skip validation for configuration value field (it's numeric)
+      if (key === "value" && type === "configuration") {
+        // Update the data with trimmed value
+        (data as any)[key] = trimmedValue;
+        return;
+      }
+
+      // Check if value contains only special characters, hyphens, or whitespace
+      if (!hasAlphanumeric(trimmedValue)) {
+        throw HttpError.badRequest(
+          `${key.charAt(0).toUpperCase() + key.slice(1)} must contain at least one letter or number`,
+        );
+      }
+
       // Update the data with trimmed value
       (data as any)[key] = trimmedValue;
     }
@@ -74,16 +94,34 @@ const validateTaxonomyInput = (
 
   // Additional validation for specific fields
   if (type !== "examinationTypeBenefit" && data.name !== undefined) {
-    if (typeof data.name === "string" && !data.name.trim()) {
-      throw HttpError.badRequest("Name cannot be empty or contain only spaces");
+    if (typeof data.name === "string") {
+      const trimmedName = data.name.trim();
+      if (!trimmedName) {
+        throw HttpError.badRequest(
+          "Name cannot be empty or contain only spaces",
+        );
+      }
+      if (!hasAlphanumeric(trimmedName)) {
+        throw HttpError.badRequest(
+          "Name must contain at least one letter or number",
+        );
+      }
     }
   }
 
   if (type === "examinationTypeBenefit" && data.benefit !== undefined) {
-    if (typeof data.benefit === "string" && !data.benefit.trim()) {
-      throw HttpError.badRequest(
-        "Benefit cannot be empty or contain only spaces",
-      );
+    if (typeof data.benefit === "string") {
+      const trimmedBenefit = data.benefit.trim();
+      if (!trimmedBenefit) {
+        throw HttpError.badRequest(
+          "Benefit cannot be empty or contain only spaces",
+        );
+      }
+      if (!hasAlphanumeric(trimmedBenefit)) {
+        throw HttpError.badRequest(
+          "Benefit must contain at least one letter or number",
+        );
+      }
     }
   }
 };

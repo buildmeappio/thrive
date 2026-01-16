@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { matchesSearch } from "@/utils/search";
 import {
   useReactTable,
   getCoreRowModel,
@@ -240,8 +241,7 @@ export default function InterpreterTableWithPagination({
     }
 
     // Filter by search query
-    const q = query.trim().toLowerCase();
-    if (q) {
+    if (query.trim()) {
       result = result.filter((d) =>
         [
           d.companyName,
@@ -251,7 +251,7 @@ export default function InterpreterTableWithPagination({
           ...d.languages.map((l) => l.name),
         ]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q)),
+          .some((v) => matchesSearch(query, v)),
       );
     }
 

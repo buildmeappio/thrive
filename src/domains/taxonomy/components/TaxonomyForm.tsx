@@ -38,6 +38,11 @@ type TaxonomyFormProps = {
   examinationTypeOptions?: { label: string; value: string }[];
 };
 
+// Helper function to check if value contains at least one alphanumeric character
+const hasAlphanumeric = (value: string): boolean => {
+  return /[a-zA-Z0-9]/.test(value);
+};
+
 const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
   mode,
   type,
@@ -197,11 +202,30 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
               id={field.name}
               {...register(field.name, {
                 required: field.required ? `${field.label} is required` : false,
+                maxLength: field.maxLength
+                  ? {
+                      value: field.maxLength,
+                      message: `${field.label} must not exceed ${field.maxLength} characters`,
+                    }
+                  : undefined,
                 validate: (value) => {
                   // Trim the value and check if it's empty or whitespace only
                   const trimmedValue = String(value || "").trim();
                   if (field.required && !trimmedValue) {
                     return `${field.label} cannot be empty or contain only spaces`;
+                  }
+
+                  // Check if value contains only special characters, hyphens, or whitespace
+                  if (trimmedValue && !hasAlphanumeric(trimmedValue)) {
+                    return `${field.label} must contain at least one letter or number`;
+                  }
+
+                  // Check maxLength if specified
+                  if (
+                    field.maxLength &&
+                    trimmedValue.length > field.maxLength
+                  ) {
+                    return `${field.label} must not exceed ${field.maxLength} characters`;
                   }
                   return true;
                 },
@@ -209,6 +233,7 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
               placeholder={field.placeholder}
               disabled={isSubmitting}
               rows={3}
+              maxLength={field.maxLength}
             />
             {error && (
               <p className="text-sm text-red-500">{error.message as string}</p>
@@ -284,12 +309,37 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
               type={isValueField && !isTimeField ? "number" : "text"}
               {...register(field.name, {
                 required: field.required ? `${field.label} is required` : false,
+                maxLength:
+                  field.maxLength && !isValueField
+                    ? {
+                        value: field.maxLength,
+                        message: `${field.label} must not exceed ${field.maxLength} characters`,
+                      }
+                    : undefined,
                 validate: (value) => {
                   const trimmedValue = String(value || "").trim();
 
                   // Check for empty or whitespace-only values
                   if (field.required && !trimmedValue) {
                     return `${field.label} cannot be empty or contain only spaces`;
+                  }
+
+                  // Check if value contains only special characters, hyphens, or whitespace (skip for numeric value fields)
+                  if (
+                    trimmedValue &&
+                    !isValueField &&
+                    !hasAlphanumeric(trimmedValue)
+                  ) {
+                    return `${field.label} must contain at least one letter or number`;
+                  }
+
+                  // Check maxLength if specified (skip for numeric value fields)
+                  if (
+                    field.maxLength &&
+                    !isValueField &&
+                    trimmedValue.length > field.maxLength
+                  ) {
+                    return `${field.label} must not exceed ${field.maxLength} characters`;
                   }
 
                   // Additional validation for value fields
@@ -319,6 +369,9 @@ const TaxonomyForm: React.FC<TaxonomyFormProps> = ({
               readOnly={isConfigurationEdit}
               className={
                 isConfigurationEdit ? "bg-gray-100 cursor-not-allowed" : ""
+              }
+              maxLength={
+                field.maxLength && !isValueField ? field.maxLength : undefined
               }
             />
             {/* Show helper text for time field */}
