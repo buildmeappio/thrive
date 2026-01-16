@@ -259,15 +259,15 @@ load_env() {
 
 # Function to check if Docker Compose is available and set the command
 check_docker_compose() {
-    # Check for docker-compose (legacy syntax) first - give it priority
-    if command -v docker-compose &> /dev/null; then
-        COMPOSE_CMD="docker-compose"
+    # Check for docker compose (newer syntax) first - prioritize it
+    if docker compose version &> /dev/null 2>&1; then
+        COMPOSE_CMD="docker compose"
         return 0
     fi
 
-    # Check for docker compose (newer syntax)
-    if docker compose version &> /dev/null 2>&1; then
-        COMPOSE_CMD="docker compose"
+    # Check for docker-compose (legacy syntax) as fallback
+    if command -v docker-compose &> /dev/null; then
+        COMPOSE_CMD="docker-compose"
         return 0
     fi
 
