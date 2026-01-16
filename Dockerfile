@@ -44,7 +44,8 @@ RUN npx prisma generate
 # RUN npm run db:migrate-deploy
 # Environment variables will be passed via --env-file during docker build
 # Increase Node.js heap size to prevent out of memory errors during build
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+# Reduced to 2GB for Lightsail 4GB RAM instance
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN npm run build
 
 
@@ -67,17 +68,29 @@ RUN for i in 1 2 3; do \
 	done && \
 	rm -rf /var/lib/apt/lists/*
 
+# Install only production dependencies to reduce image size
+COPY --from=builder /app/package.json /app/package-lock.json* ./
+RUN npm ci --omit=dev --legacy-peer-deps && \
+	npm cache clean --force && \
+	rm -rf /tmp/*
+
+# Copy Prisma schema first (needed for client generation)
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+
+# Regenerate Prisma client for production dependencies
+RUN npx prisma generate
+
 # Copy only necessary files
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/next.config.ts ./next.config.ts
 COPY --from=builder /app/tailwind.config.js ./tailwind.config.js
 COPY --from=builder /app/postcss.config.mjs ./postcss.config.mjs
 COPY --from=builder /app/templates ./templates
+
+# Set Node.js memory limit for runtime (optimized for 1GB container)
+ENV NODE_OPTIONS="--max-old-space-size=768"
 
 
 EXPOSE 3001
