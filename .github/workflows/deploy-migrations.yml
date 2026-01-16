@@ -3,16 +3,15 @@ name: Deploy Database Migrations
 on:
   push:
     branches:
-      - main      # Deploy to production
-      - staging   # Deploy to staging
-      - qa        # Deploy to QA
-      - develop   # Deploy to dev
+      - main # Deploy to production
+      - staging # Deploy to staging
+      - qa # Deploy to QA
+      - develop # Deploy to dev
 
-  
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy to'
+        description: "Environment to deploy to"
         required: true
         type: choice
         options:
@@ -21,13 +20,13 @@ on:
           - staging
           - prod
       run_seeders:
-        description: 'Run seeders after migrations?'
+        description: "Run seeders after migrations?"
         required: true
         type: boolean
         default: true
 
 permissions:
-  contents: read    # Required to checkout code
+  contents: read # Required to checkout code
 
 jobs:
   determine-environment:
@@ -64,13 +63,12 @@ jobs:
             fi
           fi
 
-
   run-migrations:
     name: Run Database Migrations
     runs-on: ubuntu-latest
     needs: [determine-environment]
     environment: ${{ needs.determine-environment.outputs.environment }}
-    
+
     steps:
       - name: Create .env file on EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -88,7 +86,6 @@ jobs:
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
             echo "DATABASE_SSL_REQUIRED=false" >> .env
             echo "NODE_ENV=production" >> .env
-            echo "NODE_TLS_REJECT_UNAUTHORIZED=0" >> .env
             echo "✅ Created .env file with DATABASE_URL"
 
       - name: Run Migrations on EC2
@@ -111,31 +108,40 @@ jobs:
             echo "🔍 Checking Prisma installation..."
             npm install
             git pull origin ${{ github.ref }}
-            
+
             # Extract database host and port from DATABASE_URL
             DB_URL="${{ secrets.DATABASE_URL }}"
             DB_HOST=$(echo "$DB_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')
             DB_PORT=$(echo "$DB_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p' || echo "5432")
-            
+
             echo ""
             echo "🔍 Testing database connectivity from EC2 instance..."
             echo "   Database Host: $DB_HOST"
             echo "   Database Port: $DB_PORT"
             echo ""
-            
-            # Test DNS resolution
-            echo "   📡 Testing DNS resolution..."
-            if getent hosts "$DB_HOST" >/dev/null 2>&1 || nslookup "$DB_HOST" >/dev/null 2>&1 || host "$DB_HOST" >/dev/null 2>&1; then
-              DB_IP=$(getent hosts "$DB_HOST" | awk '{print $1}' | head -1 || echo "")
-              echo "   ✅ DNS resolution successful"
-              if [ -n "$DB_IP" ]; then
-                echo "   📍 Resolved IP: $DB_IP"
-              fi
-            else
-              echo "   ❌ DNS resolution failed for $DB_HOST"
-              echo "   ⚠️  This might indicate a network configuration issue"
+
+            # Check if host is localhost or local IP address
+            IS_LOCALHOST=false
+            if [ "$DB_HOST" = "localhost" ] || [ "$DB_HOST" = "127.0.0.1" ] || [ "$DB_HOST" = "::1" ] || [[ "$DB_HOST" =~ ^127\. ]]; then
+              IS_LOCALHOST=true
+              echo "   ℹ️  Database host is localhost/local IP - skipping DNS resolution check"
             fi
-            
+
+            # Test DNS resolution (skip for localhost)
+            if [ "$IS_LOCALHOST" = "false" ]; then
+              echo "   📡 Testing DNS resolution..."
+              if getent hosts "$DB_HOST" >/dev/null 2>&1 || nslookup "$DB_HOST" >/dev/null 2>&1 || host "$DB_HOST" >/dev/null 2>&1; then
+                DB_IP=$(getent hosts "$DB_HOST" | awk '{print $1}' | head -1 || echo "")
+                echo "   ✅ DNS resolution successful"
+                if [ -n "$DB_IP" ]; then
+                  echo "   📍 Resolved IP: $DB_IP"
+                fi
+              else
+                echo "   ❌ DNS resolution failed for $DB_HOST"
+                echo "   ⚠️  This might indicate a network configuration issue"
+              fi
+            fi
+
             # Test network connectivity
             echo ""
             echo "   🔌 Testing TCP connection to $DB_HOST:$DB_PORT..."
@@ -167,7 +173,7 @@ jobs:
               echo "   ⚠️  No network testing tools available (nc/timeout)"
               echo "   ⚠️  Proceeding with migration attempt..."
             fi
-            
+
             echo ""
             echo "🔄 Running Prisma migrations..."
             npx prisma migrate deploy
@@ -182,7 +188,7 @@ jobs:
     # - Production: Only via manual workflow_dispatch
     if: needs.determine-environment.outputs.run_seeders == 'true'
     environment: ${{ needs.determine-environment.outputs.environment }}
-    
+
     steps:
       - name: Run Seeders on EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -210,4 +216,3 @@ jobs:
             echo "🌱 Running Prisma seeders..."
             npm run seed
             echo "✅ Seeders completed successfully!"
-
